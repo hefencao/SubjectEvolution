@@ -55,13 +55,12 @@ def build_intents(
     never derived from the temporary dense array position.
     """
     carriers = np.asarray(active, dtype=np.int32)
+    carrier_id = stable_ids[carriers].astype(np.uint64, copy=True)
+    tick_bits = np.uint64((int(tick) << 32) & 0xFFFFFFFFFFFFFFFF)
     return ActionIntentBatch(
-        intent_id=np.asarray(
-            [((int(tick) << 32) ^ int(entity_id)) & 0xFFFFFFFFFFFFFFFF for entity_id in stable_ids[carriers]],
-            dtype=np.uint64,
-        ),
+        intent_id=carrier_id ^ tick_bits,
         carrier_index=carriers,
-        carrier_id=stable_ids[carriers].astype(np.uint64, copy=True),
+        carrier_id=carrier_id,
         action=decision.action.astype(np.int16, copy=True),
         target_index=decision.selected_partner.astype(np.int32, copy=True),
         direction_x=decision.direction_x.astype(np.float32, copy=True),

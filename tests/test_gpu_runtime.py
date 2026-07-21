@@ -35,3 +35,19 @@ def test_gpu_runtime_preserves_small_world_actions_and_state(tmp_path):
     finally:
         cpu.metrics.close()
         gpu.metrics.close()
+
+
+@pytest.mark.skipif(not cupy_available(), reason="CuPy with a usable CUDA device is unavailable")
+def test_gpu_run_syncs_deferred_fields_before_returning(tmp_path):
+    cfg = load_config("configs/mvp_small.json")
+    cfg = replace(cfg, run=replace(cfg.run, ticks=3, metrics_period=99, checkpoint_period=99))
+    cpu = Simulation(cfg, tmp_path / "cpu-run", backend="cpu")
+    gpu = Simulation(cfg, tmp_path / "gpu-run", backend="gpu")
+
+    cpu.run()
+    gpu.run()
+
+    assert gpu.execution_backend == "gpu"
+    assert np.array_equal(cpu.entities.alive, gpu.entities.alive)
+    np.testing.assert_allclose(cpu.environment.resources, gpu.environment.resources, rtol=0.0, atol=2e-4)
+    np.testing.assert_allclose(cpu.information.field, gpu.information.field, rtol=0.0, atol=3e-5)

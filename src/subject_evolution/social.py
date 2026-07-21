@@ -68,14 +68,91 @@ class SocialSystem:
         self.familiarity[owner, slot] = np.clip(self.familiarity[owner, slot] + 0.05, 0.0, 1.0)
         self.last_interaction[owner, slot] = tick
 
+    def _update_unique_owners(
+        self,
+        owners: np.ndarray,
+        targets: np.ndarray,
+        trust_delta: np.ndarray,
+        tick: int,
+    ) -> None:
+        """Apply one event for each distinct owner in a vectorized batch."""
+        if owners.size == 0:
+            return
+        row_targets = self.target[owners]
+        existing_matches = row_targets == targets[:, None]
+        existing = existing_matches.any(axis=1)
+        existing_slot = existing_matches.argmax(axis=1)
+        empty = row_targets < 0
+        has_empty = empty.any(axis=1)
+        empty_slot = empty.argmax(axis=1)
+        weakest_slot = (self.trust[owners] + 0.25 * self.familiarity[owners]).argmin(axis=1)
+        slots = np.where(existing, existing_slot, np.where(has_empty, empty_slot, weakest_slot)).astype(np.int32)
+        new_relation = ~existing
+        if np.any(new_relation):
+            inserted_owners = owners[new_relation]
+            inserted_slots = slots[new_relation]
+            self.target[inserted_owners, inserted_slots] = targets[new_relation]
+            self.trust[inserted_owners, inserted_slots] = 0.0
+            self.familiarity[inserted_owners, inserted_slots] = 0.0
+        self.trust[owners, slots] = np.clip(self.trust[owners, slots] + trust_delta, 0.0, 1.0)
+        self.familiarity[owners, slots] = np.clip(self.familiarity[owners, slots] + 0.05, 0.0, 1.0)
+        self.last_interaction[owners, slots] = tick
+
     def record_shares(self, owners: np.ndarray, targets: np.ndarray, success: np.ndarray, tick: int) -> None:
+        """Apply share-derived relation events in owner-local stable order.
+
+        Relation rows are independent: reordering updates for different
+        owners cannot affect the result, while updates to one owner must keep
+        their original event sequence because a full row may replace its
+        weakest slot.  Events are therefore processed in owner-local rank
+        order, with each rank forming a vectorized batch of distinct owners.
+        """
+        owner_values = np.asarray(owners, dtype=np.int32)
+        target_values = np.asarray(targets, dtype=np.int32)
+        success_values = np.asarray(success, dtype=bool)
+        if owner_values.ndim != 1 or target_values.ndim != 1 or success_values.ndim != 1:
+            raise ValueError("share relation events must be one-dimensional")
+        if not (owner_values.size == target_values.size == success_values.size):
+            raise ValueError("share relation event arrays must have the same length")
+        if owner_values.size == 0:
+            return
+
         gain = self.cfg.social.trust_gain_share
         loss = self.cfg.social.trust_loss_failed
-        for owner, target, ok in zip(owners.tolist(), targets.tolist(), success.tolist()):
-            delta = gain if ok else -loss
-            self._update_one(owner, target, delta, tick)
-            if ok:
-                self._update_one(target, owner, gain * 0.5, tick)
+        sequence = np.arange(owner_values.size, dtype=np.int64) * 2
+        forward_delta = np.where(success_values, gain, -loss).astype(np.float64)
+        successful = np.flatnonzero(success_values)
+        event_owners = np.concatenate((owner_values, target_values[successful]))
+        event_targets = np.concatenate((target_values, owner_values[successful]))
+        event_delta = np.concatenate(
+            (forward_delta, np.full(successful.size, gain * 0.5, dtype=np.float64))
+        )
+        event_sequence = np.concatenate((sequence, sequence[successful] + 1))
+        valid = (event_owners >= 0) & (event_targets >= 0) & (event_owners != event_targets)
+        if not np.any(valid):
+            return
+        event_owners = event_owners[valid]
+        event_targets = event_targets[valid]
+        event_delta = event_delta[valid]
+        event_sequence = event_sequence[valid]
+
+        order = np.lexsort((event_sequence, event_owners))
+        event_owners = event_owners[order]
+        event_targets = event_targets[order]
+        event_delta = event_delta[order]
+        _, starts, counts = np.unique(event_owners, return_index=True, return_counts=True)
+        rank_within_owner = np.arange(event_owners.size, dtype=np.int32) - np.repeat(starts, counts)
+        # Each pass contains exactly one event per owner.  Processing the
+        # passes in rank order retains the scalar replacement semantics even
+        # when several events target one owner in the same tick.
+        for event_rank in range(int(counts.max())):
+            positions = np.flatnonzero(rank_within_owner == event_rank)
+            self._update_unique_owners(
+                event_owners[positions],
+                event_targets[positions],
+                event_delta[positions],
+                tick,
+            )
 
     def clear_dead_targets(self, alive: np.ndarray) -> None:
         valid_target = self.target >= 0

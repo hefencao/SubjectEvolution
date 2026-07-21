@@ -26,17 +26,19 @@ class InformationObservation:
 
 
 @dataclass(frozen=True)
-class PendingMessage:
-    """A direct signal kept outside the field until its scheduled reception.
+class PendingMessageBatch:
+    """A homogeneous direct-message batch kept until reception.
 
-    Slots, unlike stable entity ids, may be reused after death.  The queue
-    therefore deliberately stores receiver and sender *stable* ids.
+    Sender and receiver *stable* ids are retained rather than reusable entity
+    slots.  Arrays keep the hot queue free of one Python object per emitted
+    message.  Batches are bucketed by their shared reception tick at enqueue
+    time, so queued data is never repeatedly split on later observations.
     """
 
-    source_id: int
-    receiver_id: int
-    payload: tuple[float, float, float]
-    confidence: float
+    source_ids: np.ndarray
+    receiver_ids: np.ndarray
+    payloads: np.ndarray
+    confidences: np.ndarray
     emit_tick: int
     receive_tick: int
 
@@ -52,7 +54,7 @@ class InformationSystem:
         self.field = np.zeros((self.CHANNELS, gy, gx), dtype=np.float32)
         self.source = np.zeros_like(self.field)
         self.age = np.zeros_like(self.field, dtype=np.uint16)
-        self.pending_messages: list[PendingMessage] = []
+        self.pending_messages: list[PendingMessageBatch] = []
 
     def propagate(self) -> None:
         decay = self.cfg.environment.signal_decay
@@ -126,19 +128,21 @@ class InformationSystem:
         else:
             delays = np.zeros(source_ids.size, dtype=np.int32)
 
-        self.pending_messages.extend(
-            PendingMessage(
-                source_id=int(source_id),
-                receiver_id=int(receiver_id),
-                payload=tuple(float(v) for v in payload),
-                confidence=float(conf),
-                emit_tick=tick,
-                receive_tick=tick + int(delay),
+        # Bucket by receive tick once at emission.  Splitting a mixed-delay
+        # batch during every later observation would repeatedly copy the same
+        # message arrays until they become due.
+        for delay in np.unique(delays):
+            selected = delays == delay
+            self.pending_messages.append(
+                PendingMessageBatch(
+                    source_ids=source_ids[selected],
+                    receiver_ids=receiver_ids[selected],
+                    payloads=values[selected],
+                    confidences=confidence[selected],
+                    emit_tick=tick,
+                    receive_tick=tick + int(delay),
+                )
             )
-            for source_id, receiver_id, payload, conf, delay in zip(
-                source_ids.tolist(), receiver_ids.tolist(), values.tolist(), confidence.tolist(), delays.tolist()
-            )
-        )
         return int(source_ids.size)
 
     def _receive_direct(
@@ -160,24 +164,26 @@ class InformationSystem:
         if capacity == 0 or not self.pending_messages:
             return payload, mask, age, confidence, source, corruption
 
-        due: list[PendingMessage] = []
-        remaining: list[PendingMessage] = []
-        for message in self.pending_messages:
-            if message.receive_tick <= tick:
-                due.append(message)
+        due: list[PendingMessageBatch] = []
+        remaining: list[PendingMessageBatch] = []
+        for batch in self.pending_messages:
+            if batch.receive_tick <= tick:
+                due.append(batch)
             else:
-                remaining.append(message)
+                remaining.append(batch)
         self.pending_messages = remaining
         if not due:
             return payload, mask, age, confidence, source, corruption
 
         # Stable ordering keeps attention truncation independent of incidental
         # queue insertion order.
-        source_ids = np.fromiter((event.source_id for event in due), dtype=np.uint64, count=len(due))
-        receiver_ids = np.fromiter((event.receiver_id for event in due), dtype=np.uint64, count=len(due))
-        emit_ticks = np.fromiter((event.emit_tick for event in due), dtype=np.int64, count=len(due))
-        payloads = np.asarray([event.payload for event in due], dtype=np.float64)
-        confidences = np.fromiter((event.confidence for event in due), dtype=np.float64, count=len(due))
+        source_ids = np.concatenate([batch.source_ids for batch in due])
+        receiver_ids = np.concatenate([batch.receiver_ids for batch in due])
+        emit_ticks = np.concatenate(
+            [np.full(batch.source_ids.size, batch.emit_tick, dtype=np.int64) for batch in due]
+        )
+        payloads = np.concatenate([batch.payloads for batch in due])
+        confidences = np.concatenate([batch.confidences for batch in due])
         order = np.lexsort((emit_ticks, source_ids, receiver_ids))
         source_ids = source_ids[order]
         receiver_ids = receiver_ids[order]

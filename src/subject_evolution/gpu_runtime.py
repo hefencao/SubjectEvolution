@@ -30,10 +30,8 @@ class GpuPreparedStep:
 
     active: np.ndarray
     cells: np.ndarray
-    partners: np.ndarray
     local_resources: np.ndarray
-    resource_gradient: tuple[np.ndarray, np.ndarray]
-    danger_gradient: tuple[np.ndarray, np.ndarray]
+    resource_gradient: tuple[np.ndarray, np.ndarray] | None
     information: InformationObservation
     decision: PolicyDecision
     spatial_seconds: float
@@ -59,6 +57,26 @@ class HybridGpuRuntime:
             cfg.world.periodic,
             backend=self.backend,
         )
+        self._stable_ids: Any | None = None
+        self._genotype: Any | None = None
+        self._entity_static_dirty = True
+        self._group_ids: Any | None = None
+        self._group_dir_x: Any | None = None
+        self._group_dir_y: Any | None = None
+        self._social_state_dirty = True
+
+    def mark_entity_static_dirty(self) -> None:
+        """Require stable IDs and genotypes to be re-uploaded next tick.
+
+        These arrays change only when the CPU commit creates or destroys an
+        entity.  Keeping their device copies between ordinary ticks removes a
+        sizeable host->device transfer without making dynamic state stale.
+        """
+        self._entity_static_dirty = True
+
+    def mark_social_state_dirty(self) -> None:
+        """Require low-frequency group fields to be re-uploaded next tick."""
+        self._social_state_dirty = True
 
     def sync_from_host(self, environment: Any, information: InformationSystem) -> None:
         """Seed the device mirror from an existing CPU world snapshot."""
@@ -96,6 +114,7 @@ class HybridGpuRuntime:
         run_seed: int,
         tick: int,
         retain_logits: bool,
+        need_host_resource_gradient: bool,
     ) -> GpuPreparedStep:
         """Construct observations and actions, returning the CPU commit view."""
         xp = self.backend.xp
@@ -129,10 +148,8 @@ class HybridGpuRuntime:
             return GpuPreparedStep(
                 empty,
                 empty,
-                np.empty((0, 0), dtype=np.int32),
                 np.empty((0, 4), dtype=np.float32),
-                (np.empty(0, dtype=np.float32), np.empty(0, dtype=np.float32)),
-                (np.empty(0, dtype=np.float32), np.empty(0, dtype=np.float32)),
+                None,
                 empty_info,
                 empty_decision,
                 0.0,
@@ -145,13 +162,27 @@ class HybridGpuRuntime:
         x = self.backend.asarray(entity.x, dtype=xp.float32)
         y = self.backend.asarray(entity.y, dtype=xp.float32)
         alive = self.backend.asarray(entity.alive, dtype=bool)
-        stable_ids = self.backend.asarray(entity.entity_id, dtype=xp.uint64)
+        if self._entity_static_dirty or self._stable_ids is None or self._genotype is None:
+            self._stable_ids = self.backend.asarray(entity.entity_id, dtype=xp.uint64)
+            self._genotype = self.backend.asarray(entity.genotype, dtype=xp.float32)
+            self._entity_static_dirty = False
+        stable_ids = self._stable_ids
         energy = self.backend.asarray(entity.energy, dtype=xp.float32)
         integrity = self.backend.asarray(entity.integrity, dtype=xp.float32)
         fertility = self.backend.asarray(entity.fertility, dtype=xp.float32)
-        genotype = self.backend.asarray(entity.genotype, dtype=xp.float32)
+        genotype = self._genotype
         memory = self.backend.asarray(entity.memory, dtype=xp.float32)
-        groups = self.backend.asarray(social.group_id, dtype=xp.uint64)
+        if (
+            self._social_state_dirty
+            or self._group_ids is None
+            or self._group_dir_x is None
+            or self._group_dir_y is None
+        ):
+            self._group_ids = self.backend.asarray(social.group_id, dtype=xp.uint64)
+            self._group_dir_x = self.backend.asarray(social.group_dir_x, dtype=xp.float32)
+            self._group_dir_y = self.backend.asarray(social.group_dir_y, dtype=xp.float32)
+            self._social_state_dirty = False
+        groups = self._group_ids
         sensor_quality = self.backend.asarray(entity.sensor_quality(), dtype=xp.float32)
 
         timer = time.perf_counter()
@@ -205,10 +236,7 @@ class HybridGpuRuntime:
 
         timer = time.perf_counter()
         if social_control_enabled:
-            group_direction = (
-                self.backend.asarray(social.group_dir_x, dtype=xp.float32),
-                self.backend.asarray(social.group_dir_y, dtype=xp.float32),
-            )
+            group_direction = (self._group_dir_x, self._group_dir_y)
         else:
             group_direction = (xp.zeros_like(energy), xp.zeros_like(energy))
         device_decision = policy.decide(
@@ -234,13 +262,11 @@ class HybridGpuRuntime:
         # One synchronized host boundary for the CPU intent/commit stages.
         active_result = active_host
         cells_result = self.backend.to_numpy(cells).astype(np.int32, copy=False)
-        partners_result = self.backend.to_numpy(partners).astype(np.int32, copy=False)
         local_result = self.backend.to_numpy(local_resources).astype(np.float32, copy=False)
-        resource_result = tuple(
-            self.backend.to_numpy(value).astype(np.float32, copy=False) for value in resource_gradient
-        )
-        danger_result = tuple(
-            self.backend.to_numpy(value).astype(np.float32, copy=False) for value in danger_gradient
+        resource_result = (
+            tuple(self.backend.to_numpy(value).astype(np.float32, copy=False) for value in resource_gradient)
+            if need_host_resource_gradient
+            else None
         )
         host_info = InformationObservation(
             signals=self.backend.to_numpy(device_info.signals).astype(np.float32, copy=False),
@@ -273,10 +299,8 @@ class HybridGpuRuntime:
         return GpuPreparedStep(
             active_result,
             cells_result,
-            partners_result,
             local_result,
             resource_result,
-            danger_result,
             host_info,
             host_decision,
             spatial_seconds,

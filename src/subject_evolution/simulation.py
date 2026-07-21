@@ -11,15 +11,14 @@ from . import __version__
 from .backend import BackendUnavailableError
 from .config import SimulationConfig
 from .environment import Environment
+from .execution import ActionConflictResolver, ActionResolutionSnapshot, DeterministicActionConflictResolver
 from .gpu_runtime import HybridGpuRuntime
 from .information import InformationSystem
 from .intents import (
     ActionIntentBatch,
     ActionResolutionBatch,
     FailureReason,
-    action_rows,
     build_intents,
-    empty_resolutions,
 )
 from .metrics import MetricsWriter
 from .policy import Action, ParametricPolicy
@@ -175,6 +174,7 @@ class Simulation:
         output_dir: str | Path,
         *,
         backend: str = "cpu",
+        conflict_resolver: ActionConflictResolver | None = None,
     ) -> None:
         self.cfg = cfg
         self.output_dir = Path(output_dir)
@@ -224,10 +224,17 @@ class Simulation:
         self.action_counts = np.zeros(len(Action), dtype=np.int64)
         self.last_intents: ActionIntentBatch | None = None
         self.last_resolutions: ActionResolutionBatch | None = None
+        self.conflict_resolver = (
+            conflict_resolver if conflict_resolver is not None else DeterministicActionConflictResolver(cfg)
+        )
         self.social_control_enabled = True
         self.social_connections_enabled = True
         self.direct_messages_enabled = True
         self.freeze_genotype = False
+        # Interactive ``step()`` calls keep host field mirrors current.  A
+        # monolithic ``run()`` can defer that costly device->host copy until
+        # completion because every intervening field consumer is device-side.
+        self._defer_gpu_field_sync = False
         self._trajectory_file = None
         if cfg.run.trajectory_subject_ids:
             self._trajectory_file = (self.output_dir / "trajectory.jsonl").open("w", encoding="utf-8")
@@ -239,7 +246,14 @@ class Simulation:
         branch.  All mutable world state, including delayed messages and the
         subject graph, is deep-copied before the intervention is applied.
         """
-        branch = Simulation(self.cfg, output_dir, backend=self.execution_backend)
+        if self.gpu_runtime is not None and self._defer_gpu_field_sync:
+            self.gpu_runtime.sync_to_host(self.environment, self.information)
+        branch = Simulation(
+            self.cfg,
+            output_dir,
+            backend=self.execution_backend,
+            conflict_resolver=copy.deepcopy(self.conflict_resolver),
+        )
         branch.entities = copy.deepcopy(self.entities)
         branch.environment = copy.deepcopy(self.environment)
         branch.information = copy.deepcopy(self.information)
@@ -269,6 +283,8 @@ class Simulation:
             self.social_connections_enabled = False
             self.direct_messages_enabled = False
             self.social.reset_entities(active)
+            if self.gpu_runtime is not None:
+                self.gpu_runtime.mark_social_state_dirty()
             self.information.pending_messages.clear()
         elif normalized == "shuffle-memory":
             ids = self.entities.entity_id[active]
@@ -309,51 +325,6 @@ class Simulation:
             }
             self._trajectory_file.write(json.dumps(record, ensure_ascii=False) + "\n")
         self._trajectory_file.flush()
-
-    def _resolve_shares(
-        self,
-        intents: ActionIntentBatch,
-        resolutions: ActionResolutionBatch,
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Resolve transfers by target before any entity energy is changed."""
-        ent = self.entities
-        rows = action_rows(intents, Action.SHARE)
-        if rows.size == 0:
-            return rows, np.empty(0, dtype=np.int32), np.empty(0, dtype=np.float32)
-        owners = intents.carrier_index[rows]
-        targets = intents.target_index[rows]
-        valid = (targets >= 0) & ent.alive[targets]
-        safe_targets = np.where(valid, targets, 0)
-        # Target-first, stable-carrier ordering is the CPU reference ordering
-        # for the corresponding GPU segmented reduction.
-        order = np.lexsort((intents.carrier_id[rows], ent.entity_id[safe_targets]))
-        rows = rows[order]
-        owners = owners[order]
-        targets = targets[order]
-        valid = valid[order]
-        safe_targets = safe_targets[order]
-        proposed = np.where(
-            valid,
-            np.minimum(self.cfg.entities.share_amount, np.maximum(ent.energy[owners] - 0.5, 0.0)),
-            0.0,
-        ).astype(np.float32)
-        if not np.any(proposed > 0):
-            resolutions.success[rows] = False
-            resolutions.failure_reason[rows] = np.where(
-                valid, FailureReason.INSUFFICIENT_RESOURCE, FailureReason.INVALID_TARGET
-            )
-            return rows, targets, proposed
-        total_by_target = np.bincount(safe_targets, weights=proposed, minlength=ent.alive.size).astype(np.float32)
-        capacity = np.maximum(self.cfg.entities.max_energy - ent.energy, 0.0)
-        scale = np.ones(ent.alive.size, dtype=np.float32)
-        occupied = total_by_target > 0
-        scale[occupied] = np.minimum(1.0, capacity[occupied] / total_by_target[occupied])
-        actual = proposed * scale[safe_targets]
-        success = actual > 1e-8
-        resolutions.success[rows] = success
-        resolutions.failure_reason[rows[~success]] = FailureReason.INSUFFICIENT_CAPACITY
-        resolutions.resource_delta[rows, 0] = -actual
-        return rows, safe_targets, actual
 
     def _commit_shares(self, rows: np.ndarray, targets: np.ndarray, actual: np.ndarray) -> float:
         if rows.size == 0:
@@ -514,16 +485,18 @@ class Simulation:
                 run_seed=cfg.run.seed,
                 tick=self.tick,
                 retain_logits=self._trajectory_file is not None,
+                need_host_resource_gradient=(
+                    self.social_connections_enabled and self.tick % cfg.social.group_update_period == 0
+                ),
             )
             active = prepared.active
             if active.size == 0:
-                self.gpu_runtime.sync_to_host(self.environment, self.information)
+                if not self._defer_gpu_field_sync:
+                    self.gpu_runtime.sync_to_host(self.environment, self.information)
                 return stats
             cells = prepared.cells
-            partners = prepared.partners
             local_resources = prepared.local_resources
             resource_gradient = prepared.resource_gradient
-            danger_gradient = prepared.danger_gradient
             info = prepared.information
             decision = prepared.decision
             stats.spatial_seconds = prepared.spatial_seconds
@@ -541,55 +514,30 @@ class Simulation:
         # ----- Intent and conflict phases: no world state is changed here. -----
         phase_started = time.perf_counter()
         intents = build_intents(active, ent.entity_id, decision, self.tick)
-        resolutions = empty_resolutions(intents)
-
-        harvest_rows = action_rows(intents, Action.HARVEST)
-        harvest_cells = np.empty(0, dtype=np.int32)
-        gathered = np.empty((0, 4), dtype=np.float32)
-        if harvest_rows.size:
-            observation_rows = np.searchsorted(active, intents.carrier_index[harvest_rows])
-            harvest_cells = cells[observation_rows]
-            order = np.lexsort((intents.carrier_id[harvest_rows], harvest_cells))
-            harvest_rows = harvest_rows[order]
-            harvest_cells = harvest_cells[order]
-            base = cfg.entities.harvest_rate
-            rates = np.tile(
-                np.asarray([base, base * 0.45, base * 0.25, base * 0.18], dtype=np.float32),
-                (harvest_rows.size, 1),
-            )
-            gathered = (
-                self.gpu_runtime.resolve_harvest(harvest_cells, rates)
-                if self.gpu_runtime is not None
-                else self.environment.resolve_harvest(harvest_cells, rates)
-            )
-            resolutions.resource_delta[harvest_rows] = gathered
-            harvested = gathered[:, 0] > 1e-8
-            resolutions.success[harvest_rows] = harvested
-            resolutions.failure_reason[harvest_rows[~harvested]] = FailureReason.INSUFFICIENT_RESOURCE
-
-        share_rows, share_targets, shared = self._resolve_shares(intents, resolutions)
-
-        signal_rows = action_rows(intents, Action.SIGNAL)
-        if signal_rows.size:
-            resolutions.energy_cost[signal_rows] = cfg.entities.signal_cost
-
-        reproduce_rows = action_rows(intents, Action.REPRODUCE)
-        accepted_reproduce_rows = np.empty(0, dtype=np.int32)
-        if reproduce_rows.size:
-            parents = intents.carrier_index[reproduce_rows]
-            valid_parent = (
-                ent.energy[parents] >= cfg.entities.reproduction_threshold
-            ) & (ent.fertility[parents] >= 0.5)
-            invalid_rows = reproduce_rows[~valid_parent]
-            resolutions.success[invalid_rows] = False
-            resolutions.failure_reason[invalid_rows] = FailureReason.INSUFFICIENT_RESOURCE
-            candidates = reproduce_rows[valid_parent]
-            candidates = candidates[np.argsort(intents.carrier_id[candidates], kind="stable")]
-            accepted_reproduce_rows = candidates[: len(ent.free_slots)]
-            rejected = candidates[len(ent.free_slots) :]
-            resolutions.success[rejected] = False
-            resolutions.failure_reason[rejected] = FailureReason.INSUFFICIENT_CAPACITY
-            resolutions.energy_cost[accepted_reproduce_rows] = cfg.entities.reproduction_cost
+        snapshot = ActionResolutionSnapshot(
+            active=active,
+            cells=cells,
+            entity_id=ent.entity_id,
+            alive=ent.alive,
+            energy=ent.energy,
+            fertility=ent.fertility,
+            free_slot_count=len(ent.free_slots),
+        )
+        harvest_allocator = (
+            self.gpu_runtime.resolve_harvest
+            if self.gpu_runtime is not None
+            else self.environment.resolve_harvest
+        )
+        resolution_plan = self.conflict_resolver.resolve(snapshot, intents, harvest_allocator)
+        resolutions = resolution_plan.resolutions
+        harvest_rows = resolution_plan.harvest_rows
+        harvest_cells = resolution_plan.harvest_cells
+        gathered = resolution_plan.gathered
+        share_rows = resolution_plan.share_rows
+        share_targets = resolution_plan.share_targets
+        shared = resolution_plan.shared
+        signal_rows = resolution_plan.signal_rows
+        accepted_reproduce_rows = resolution_plan.accepted_reproduce_rows
         stats.conflict_seconds = time.perf_counter() - phase_started
         self.last_intents = intents
         self.last_resolutions = resolutions
@@ -654,6 +602,9 @@ class Simulation:
                 ent.lineage_subject_id[newborns] = lineage_subjects
                 ent.energy[accepted_parents] -= cfg.entities.reproduction_cost
                 ent.fertility[accepted_parents] -= 0.5
+                if self.gpu_runtime is not None:
+                    self.gpu_runtime.mark_entity_static_dirty()
+                    self.gpu_runtime.mark_social_state_dirty()
                 stats.births = int(newborns.size)
                 self.total_births += stats.births
 
@@ -691,6 +642,9 @@ class Simulation:
             ent.kill(dead)
             self.social.group_id[dead] = 0
             self.social.group_age[dead] = 0
+            if self.gpu_runtime is not None:
+                self.gpu_runtime.mark_entity_static_dirty()
+                self.gpu_runtime.mark_social_state_dirty()
             stats.deaths = int(dead.size)
             self.total_deaths += stats.deaths
         self.social.clear_dead_targets(ent.alive)
@@ -699,6 +653,8 @@ class Simulation:
         phase_started = time.perf_counter()
         if self.tick % cfg.social.group_update_period == 0:
             if self.social_connections_enabled:
+                if resource_gradient is None:
+                    raise RuntimeError("GPU step omitted required resource gradients")
                 self.last_group_summary = self.social.update_groups(
                     ent.alive,
                     ent.entity_id,
@@ -712,13 +668,15 @@ class Simulation:
                     np.empty(0, dtype=np.uint64), np.empty(0, dtype=np.int32), np.empty(0, dtype=np.float32)
                 )
             self.subjects.update_groups(ent.alive, self.social.group_id, self.tick)
+            if self.gpu_runtime is not None:
+                self.gpu_runtime.mark_social_state_dirty()
         stats.group_count = int(self.last_group_summary.group_ids.size)
         stats.mean_group_size = float(
             self.last_group_summary.counts.mean() if self.last_group_summary.counts.size else 0.0
         )
         stats.graph_seconds = time.perf_counter() - phase_started
         self._record_trajectories(intents, resolutions, decision.logits)
-        if self.gpu_runtime is not None:
+        if self.gpu_runtime is not None and not self._defer_gpu_field_sync:
             self.gpu_runtime.sync_to_host(self.environment, self.information)
         self.tick += 1
         return stats
@@ -795,11 +753,18 @@ class Simulation:
         window_started = started
         window_start_tick = 0
         final_row: dict[str, float | int] = {}
+        last_stats: StepStats | None = None
+        last_step_seconds = 0.0
+        previous_defer_gpu_field_sync = self._defer_gpu_field_sync
+        if self.gpu_runtime is not None:
+            self._defer_gpu_field_sync = True
         try:
             for _ in range(self.cfg.run.ticks):
                 step_started = time.perf_counter()
                 stats = self.step()
                 elapsed = time.perf_counter() - step_started
+                last_stats = stats
+                last_step_seconds = elapsed
                 if self.tick % self.cfg.run.metrics_period == 0 or self.tick == 1:
                     reported_at = time.perf_counter()
                     window_ticks = self.tick - window_start_tick
@@ -826,7 +791,27 @@ class Simulation:
                     self._checkpoint()
                 if not np.any(self.entities.alive):
                     break
+            if self.tick and (not final_row or int(final_row["tick"]) != self.tick):
+                reported_at = time.perf_counter()
+                window_ticks = self.tick - window_start_tick
+                final_row = self.metric_row(
+                    last_stats if last_stats is not None else StepStats(),
+                    last_step_seconds,
+                    wall_elapsed=reported_at - started,
+                    window_seconds=reported_at - window_started,
+                    window_ticks=window_ticks,
+                )
+                self.metrics.write(final_row)
+                print(
+                    f"tick={self.tick:7d} alive={final_row['alive']:7d} "
+                    f"groups={final_row['groups']:5d} E={final_row['mean_energy']:.3f} "
+                    f"step={last_step_seconds:.3f}s window_avg={final_row['window_seconds_per_tick']:.3f}s "
+                    f"wall={final_row['wall_elapsed_seconds']:.1f}s"
+                )
         finally:
+            if self.gpu_runtime is not None:
+                self.gpu_runtime.sync_to_host(self.environment, self.information)
+            self._defer_gpu_field_sync = previous_defer_gpu_field_sync
             self.metrics.close()
             if self._trajectory_file is not None:
                 self._trajectory_file.close()
