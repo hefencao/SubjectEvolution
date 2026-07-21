@@ -1,3 +1,13 @@
 """Nested-subject existence evolution reference implementation."""
 
-__version__ = "0.2.0"
+from .backend import Backend, BackendUnavailableError, resolve_backend, to_backend, to_numpy
+
+__version__ = "0.3.0"
+
+__all__ = [
+    "Backend",
+    "BackendUnavailableError",
+    "resolve_backend",
+    "to_backend",
+    "to_numpy",
+]

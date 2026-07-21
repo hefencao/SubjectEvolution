@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from enum import IntEnum
 import numpy as np
 
+from .backend import backend_from_array
+
 
 class Stream(IntEnum):
     ENV_RESOURCE = 1
@@ -32,44 +34,86 @@ class RandomContext:
     stream: Stream
 
 
-_MASK = np.uint64(0xFFFFFFFFFFFFFFFF)
-_C1 = np.uint64(0x9E3779B97F4A7C15)
-_C2 = np.uint64(0xBF58476D1CE4E5B9)
-_C3 = np.uint64(0x94D049BB133111EB)
+_MASK = 0xFFFFFFFFFFFFFFFF
+_C1 = 0x9E3779B97F4A7C15
+_C2 = 0xBF58476D1CE4E5B9
+_C3 = 0x94D049BB133111EB
 
 
-def _mix64(x: np.ndarray) -> np.ndarray:
-    """SplitMix64 finalizer; deterministic and vectorizable."""
-    x = (x + _C1) & _MASK
-    x = ((x ^ (x >> np.uint64(30))) * _C2) & _MASK
-    x = ((x ^ (x >> np.uint64(27))) * _C3) & _MASK
-    return x ^ (x >> np.uint64(31))
+def _any_true(xp: object, value: object) -> bool:
+    """Reduce a NumPy/CuPy boolean array to a host bool for validation."""
+    return bool(xp.any(value).item())
+
+
+def _keys_on_backend(
+    ctx: RandomContext,
+    subject_ids: np.ndarray,
+    draw_index: int,
+    xp: object,
+) -> np.ndarray:
+    """Construct SplitMix64 keys without moving an array between backends."""
+    uint64 = xp.uint64
+    ids = xp.asarray(subject_ids, dtype=np.uint64)
+    x = ids.copy()
+    # Counter arithmetic intentionally wraps at 64 bits.  Calculate the
+    # scalar terms with Python integers first, then materialize them in the
+    # selected array namespace so NumPy and CuPy use the same bit pattern.
+    x ^= uint64((int(ctx.run_seed) * 0xD1342543DE82EF95) & _MASK)
+    x ^= uint64((int(ctx.tick) * 0xA24BAED4963EE407) & _MASK)
+    x ^= uint64((int(ctx.phase) * 0x9FB21C651E98DF25) & _MASK)
+    x ^= uint64((int(ctx.stream) * 0xC13FA9A902A6328F) & _MASK)
+    x ^= uint64((int(draw_index) * 0x91E10DA5C79E7B1D) & _MASK)
+    return _mix64(x, xp)
+
+
+def _uniform01_on_backend(
+    ctx: RandomContext,
+    subject_ids: np.ndarray,
+    draw_index: int,
+    xp: object,
+) -> np.ndarray:
+    value = _keys_on_backend(ctx, subject_ids, draw_index, xp)
+    # Use the top 53 bits, matching double-precision mantissa capacity.
+    return ((value >> xp.uint64(11)).astype(np.float64)) * (1.0 / (1 << 53))
+
+
+def _mix64(x: np.ndarray, xp: object | None = None) -> np.ndarray:
+    """SplitMix64 finalizer; deterministic and vectorizable on NumPy/CuPy."""
+    if xp is None:
+        xp = backend_from_array(x).xp
+    uint64 = xp.uint64
+    mask = uint64(_MASK)
+    x = (x + uint64(_C1)) & mask
+    x = ((x ^ (x >> uint64(30))) * uint64(_C2)) & mask
+    x = ((x ^ (x >> uint64(27))) * uint64(_C3)) & mask
+    return x ^ (x >> uint64(31))
 
 
 def keys(ctx: RandomContext, subject_ids: np.ndarray, draw_index: int = 0) -> np.ndarray:
-    ids = np.asarray(subject_ids, dtype=np.uint64)
-    x = ids.copy()
-    # Counter arithmetic intentionally wraps at 64 bits; compute with Python ints
-    # to avoid NumPy overflow warnings while preserving exact modulo semantics.
-    x ^= np.uint64((int(ctx.run_seed) * 0xD1342543DE82EF95) & 0xFFFFFFFFFFFFFFFF)
-    x ^= np.uint64((int(ctx.tick) * 0xA24BAED4963EE407) & 0xFFFFFFFFFFFFFFFF)
-    x ^= np.uint64((int(ctx.phase) * 0x9FB21C651E98DF25) & 0xFFFFFFFFFFFFFFFF)
-    x ^= np.uint64((int(ctx.stream) * 0xC13FA9A902A6328F) & 0xFFFFFFFFFFFFFFFF)
-    x ^= np.uint64((int(draw_index) * 0x91E10DA5C79E7B1D) & 0xFFFFFFFFFFFFFFFF)
-    return _mix64(x)
+    """Return stateless 64-bit keys on the backend that owns ``subject_ids``.
+
+    A NumPy subject-id array keeps the CPU reference path.  A CuPy subject-id
+    array produces a CuPy array using the same counter fields and SplitMix64
+    operations, so key values are bit-for-bit comparable across the two
+    backends.
+    """
+    xp = backend_from_array(subject_ids).xp
+    return _keys_on_backend(ctx, subject_ids, draw_index, xp)
 
 
 def uniform01(ctx: RandomContext, subject_ids: np.ndarray, draw_index: int = 0) -> np.ndarray:
-    value = keys(ctx, subject_ids, draw_index)
-    # Use the top 53 bits, matching double-precision mantissa capacity.
-    return ((value >> np.uint64(11)).astype(np.float64)) * (1.0 / (1 << 53))
+    """Sample ``[0, 1)`` uniformly on the backend that owns ``subject_ids``."""
+    xp = backend_from_array(subject_ids).xp
+    return _uniform01_on_backend(ctx, subject_ids, draw_index, xp)
 
 
 def bernoulli(ctx: RandomContext, subject_ids: np.ndarray, p: float | np.ndarray, draw_index: int = 0) -> np.ndarray:
-    prob = np.asarray(p, dtype=np.float64)
-    if np.any((prob < 0.0) | (prob > 1.0)):
+    """Draw Bernoulli outcomes without mutable CPU or GPU RNG state."""
+    xp = backend_from_array(subject_ids).xp
+    prob = xp.asarray(p, dtype=np.float64)
+    if _any_true(xp, ~xp.isfinite(prob) | (prob < 0.0) | (prob > 1.0)):
         raise ValueError("Bernoulli probability must be in [0, 1]")
-    return uniform01(ctx, subject_ids, draw_index) < prob
+    return _uniform01_on_backend(ctx, subject_ids, draw_index, xp) < prob
 
 
 def normal(
@@ -79,13 +123,15 @@ def normal(
     stddev: float | np.ndarray = 1.0,
     draw_index: int = 0,
 ) -> np.ndarray:
-    std = np.asarray(stddev, dtype=np.float64)
-    if np.any(std < 0):
+    """Draw Box--Muller normals without mutable CPU or GPU RNG state."""
+    xp = backend_from_array(subject_ids).xp
+    std = xp.asarray(stddev, dtype=np.float64)
+    if _any_true(xp, ~xp.isfinite(std) | (std < 0)):
         raise ValueError("Normal stddev cannot be negative")
-    u1 = np.clip(uniform01(ctx, subject_ids, draw_index), 1e-12, 1.0)
-    u2 = uniform01(ctx, subject_ids, draw_index + 1)
-    z = np.sqrt(-2.0 * np.log(u1)) * np.cos(2.0 * np.pi * u2)
-    return np.asarray(mean, dtype=np.float64) + std * z
+    u1 = xp.clip(_uniform01_on_backend(ctx, subject_ids, draw_index, xp), 1e-12, 1.0)
+    u2 = _uniform01_on_backend(ctx, subject_ids, draw_index + 1, xp)
+    z = xp.sqrt(-2.0 * xp.log(u1)) * xp.cos(2.0 * np.pi * u2)
+    return xp.asarray(mean, dtype=np.float64) + std * z
 
 
 def categorical_from_logits(
@@ -97,24 +143,28 @@ def categorical_from_logits(
     draw_index: int = 0,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Sample one categorical action per row, returning action, probability and entropy."""
-    if temperature <= 0:
+    if not np.isfinite(temperature) or temperature <= 0:
         raise ValueError("temperature must be positive")
-    values = np.asarray(logits, dtype=np.float64) / temperature
+    xp = backend_from_array(subject_ids).xp
+    values = xp.asarray(logits, dtype=np.float64) / temperature
     if values.ndim != 2:
         raise ValueError("logits must be a 2-D array")
+    ids = xp.asarray(subject_ids, dtype=np.uint64)
+    if ids.ndim != 1 or ids.shape[0] != values.shape[0]:
+        raise ValueError("subject_ids must be a 1-D array with one ID per logits row")
     if mask is not None:
-        valid = np.asarray(mask, dtype=bool)
+        valid = xp.asarray(mask, dtype=bool)
         if valid.shape != values.shape:
             raise ValueError("mask shape must match logits")
-        if np.any(~valid.any(axis=1)):
+        if _any_true(xp, ~valid.any(axis=1)):
             raise ValueError("every row must contain at least one valid action")
-        values = np.where(valid, values, -np.inf)
-    max_values = np.max(values, axis=1, keepdims=True)
-    exp_values = np.exp(values - max_values)
+        values = xp.where(valid, values, -np.inf)
+    max_values = xp.max(values, axis=1, keepdims=True)
+    exp_values = xp.exp(values - max_values)
     probs = exp_values / exp_values.sum(axis=1, keepdims=True)
-    cdf = np.cumsum(probs, axis=1)
-    u = uniform01(ctx, subject_ids, draw_index)
+    cdf = xp.cumsum(probs, axis=1)
+    u = _uniform01_on_backend(ctx, ids, draw_index, xp)
     action = (cdf < u[:, None]).sum(axis=1).astype(np.int16)
-    selected = probs[np.arange(probs.shape[0]), action]
-    entropy = -(probs * np.log(np.clip(probs, 1e-12, 1.0))).sum(axis=1)
+    selected = probs[xp.arange(probs.shape[0]), action]
+    entropy = -(probs * xp.log(xp.clip(probs, 1e-12, 1.0))).sum(axis=1)
     return action, selected.astype(np.float32), entropy.astype(np.float32)

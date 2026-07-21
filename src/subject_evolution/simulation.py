@@ -7,6 +7,7 @@ from pathlib import Path
 import time
 import numpy as np
 
+from . import __version__
 from .config import SimulationConfig
 from .environment import Environment
 from .information import InformationSystem
@@ -724,7 +725,7 @@ class Simulation:
             if self._trajectory_file is not None:
                 self._trajectory_file.close()
         metadata = {
-            "version": "0.2.0",
+            "version": __version__,
             "ticks_completed": self.tick,
             "wall_seconds": time.perf_counter() - started,
             "final": final_row,

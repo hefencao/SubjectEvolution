@@ -1,6 +1,6 @@
-# 嵌套主体存在演化模拟：v0.2 参考执行管线
+# 嵌套主体存在演化模拟：v0.3 GPU 基础阶段
 
-这是项目规范的可运行CPU参考内核。v0.2 固化了后续 GPU 必须复用的行动意图、冲突结算、消息、候选主体图和反事实语义，而不是直接以不兼容的方式重写为 CUDA。
+这是项目规范的可运行 CPU 参考内核和分阶段 GPU 基础实现。v0.3 已迁移随机键、环境/信息场及规则网格，但完整 GPU 世界循环仍会在后续阶段逐项接入，避免破坏 v0.2 固定的行动语义。
 
 ## 已实现
 
@@ -10,6 +10,9 @@
 - 季节变化、危险场和三通道信息场；
 - 相邻网格局部伙伴采样，无全体两两搜索；
 - 无状态随机键及统一Bernoulli、Normal、Categorical采样；
+- 可选 CuPy 后端：GPU 数组上的无状态随机键和基础分布；
+- 设备版四资源环境、危险场、三通道信息场、规则网格和伙伴采样；
+- 场发射与资源提交使用稳定排序、分段归约，不依赖浮点原子累加；
 - 传播丢失、接收噪声、语义误分类和伙伴感知误差；
 - 参数化共享策略、个体遗传潜变量和有限记忆；
 - 行动采样、移动、采集、分享、发信号、繁殖和逃离；
@@ -26,7 +29,7 @@
 
 ## 尚未实现
 
-- CUDA内核和真正GPU执行；
+- 完整 GPU 世界循环（观察、策略、行动、关系、出生死亡和主体图）；
 - 完整主体图数据库及任意嵌套主体；
 - 离线反事实分支重放；
 - 信息模板寄生主体；
@@ -45,6 +48,20 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e .
 ```
+
+GPU 基础阶段需要与已安装 CUDA Toolkit 的**主版本**匹配的 **CuPy ≥ 12** 包。CUDA 13.x 应安装 `cupy-cuda13x`，CUDA 12.x 应安装 `cupy-cuda12x`；两者不能同时安装。未安装 CuPy 或无 GPU 时，CPU 参考实现与全部非 GPU 测试照常可用。
+
+本工作区的 WSL2 + CUDA Toolkit 13.3 环境可按以下方式配置：
+
+```bash
+conda activate se
+python -m pip install -U cupy-cuda13x
+export CUDA_PATH=/usr/local/cuda-13.3
+export LD_LIBRARY_PATH="$CUDA_PATH/targets/x86_64-linux/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+python -m pytest -q
+```
+
+若系统的 CUDA 安装目录不同，请把 `CUDA_PATH` 改为实际路径。上述变量让 CuPy 在 WSL 中定位工具包和动态库；可将它们写入 Conda 环境激活脚本以免每次重复设置。
 
 开发测试：
 
@@ -90,6 +107,15 @@ python -m subject_evolution.cli \
 
 当前版本是CPU参考实现，10万实体配置用于验证数据和机制，不保证实时速度。完成CPU回归测试后，GPU版本应保持相同配置、随机键、观察schema和行动语义。
 
+在有 CUDA 的机器上，先对已迁移阶段运行对照：
+
+```bash
+conda activate se
+export CUDA_PATH=/usr/local/cuda-13.3
+export LD_LIBRARY_PATH="$CUDA_PATH/targets/x86_64-linux/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+python scripts/verify_gpu_foundation.py --config configs/mvp_small.json
+```
+
 ## 随机键
 
 每个随机结果由以下字段决定：
@@ -107,6 +133,8 @@ run_seed, tick, simulation_phase, subject_id, stream_id, draw_index
 ## 架构入口
 
 - `random_api.py`：统一采样；
+- `backend.py`：可选 NumPy/CuPy 后端与显式主机/设备转换；
+- `gpu_environment.py`：设备版环境与信息场阶段；
 - `spatial.py`：空间索引与局部伙伴采样；
 - `information.py`：传播和接收误差；
 - `policy.py`：可替换策略接口的首个参数化实现；
@@ -124,6 +152,7 @@ python scripts/run_sweep.py --output runs/sweep --ticks 200 --seeds 3
 
 ## 设计文档
 
-- `docs/IMPLEMENTATION_STATUS.md`：v0.2完成度与已知简化；
+- `docs/IMPLEMENTATION_STATUS.md`：v0.3完成度与已知简化；
+- `docs/GPU_FOUNDATION.md`：GPU 基础阶段、对照语义与运行要求；
 - `docs/NEXT_GPU_PHASE.md`：GPU迁移顺序；
 - `docs/specification/`：项目总规范和四份工程规范。

@@ -1,0 +1,205 @@
+"""Device-ready environment and information-field stages.
+
+This module deliberately mirrors only stages B and C of the execution
+pipeline: dynamic resource fields and the grid-backed information field.  It
+does not expose any extra world state to a policy and can run with the NumPy
+backend for CPU/GPU parity tests when CuPy is unavailable.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+from .backend import Backend, resolve_backend
+from .config import SimulationConfig
+from .reductions import stable_segmented_sum, validate_cell_ids
+
+
+class DeviceEnvironment:
+    """SoA resource/hazard fields stored entirely on a selected backend."""
+
+    RESOURCE_CHANNELS = 4
+
+    def __init__(self, cfg: SimulationConfig, backend: Backend | str = "gpu") -> None:
+        self.cfg = cfg
+        self.backend = resolve_backend(backend) if isinstance(backend, str) else backend
+        xp = self.backend.xp
+        gx, gy = cfg.world.grid_x, cfg.world.grid_y
+        yy, xx = xp.mgrid[0:gy, 0:gx]
+        capacities = xp.asarray(cfg.environment.resource_capacity, dtype=xp.float32)[:, None, None]
+        frequencies_x = xp.asarray([0.11, 0.07, 0.05, 0.09], dtype=xp.float64)[:, None, None]
+        frequencies_y = xp.asarray([0.08, 0.13, 0.06, 0.10], dtype=xp.float64)[:, None, None]
+        base_pattern = 0.55 + 0.20 * xp.sin(xx[None, :, :] * frequencies_x)
+        base_pattern += 0.15 * xp.cos(yy[None, :, :] * frequencies_y)
+        self.resources = xp.clip(capacities * base_pattern, 0.0, capacities).astype(xp.float32)
+        self.capacity = capacities.astype(xp.float32)
+        self.regeneration = xp.asarray(cfg.environment.resource_regeneration, dtype=xp.float32)[:, None, None]
+        self.hazard = self._hazard_pattern(0)
+
+    def _hazard_pattern(self, tick: int) -> Any:
+        xp = self.backend.xp
+        gx, gy = self.cfg.world.grid_x, self.cfg.world.grid_y
+        yy, xx = xp.mgrid[0:gy, 0:gx]
+        phase = 2.0 * xp.pi * tick / max(self.cfg.environment.season_period, 1)
+        hazard = 0.5 + 0.25 * xp.sin(xx * 0.045 + phase) + 0.25 * xp.cos(yy * 0.037 - 0.7 * phase)
+        return xp.clip(hazard, 0.0, 1.0).astype(xp.float32)
+
+    def update(self, tick: int) -> None:
+        xp = self.backend.xp
+        phase = 2.0 * xp.pi * tick / max(self.cfg.environment.season_period, 1)
+        seasonal = 1.0 + self.cfg.environment.season_amplitude * xp.sin(
+            phase + xp.arange(self.RESOURCE_CHANNELS)[:, None, None] * 1.3
+        )
+        growth = self.regeneration * seasonal * (1.0 - self.resources / xp.maximum(self.capacity, 1e-6))
+        self.resources = xp.clip(self.resources + growth, 0.0, self.capacity).astype(xp.float32)
+        self.hazard = self._hazard_pattern(tick)
+
+    def cell_values(self, cell_ids: Any) -> Any:
+        xp = self.backend.xp
+        cells = validate_cell_ids(
+            cell_ids,
+            self.cfg.world.grid_x * self.cfg.world.grid_y,
+            backend=self.backend,
+        )
+        return self.resources.reshape(self.RESOURCE_CHANNELS, -1)[:, cells].T.astype(xp.float32)
+
+    def gradients_for_entities(self, entity_cells: Any, capacity: int) -> tuple[tuple[Any, Any], tuple[Any, Any]]:
+        xp = self.backend.xp
+        cells = validate_cell_ids(
+            entity_cells,
+            self.cfg.world.grid_x * self.cfg.world.grid_y,
+            backend=self.backend,
+            allow_missing=True,
+        )
+        resource = self.resources[0]
+        resource_x = 0.5 * (xp.roll(resource, -1, axis=1) - xp.roll(resource, 1, axis=1))
+        resource_y = 0.5 * (xp.roll(resource, -1, axis=0) - xp.roll(resource, 1, axis=0))
+        hazard_x = 0.5 * (xp.roll(self.hazard, -1, axis=1) - xp.roll(self.hazard, 1, axis=1))
+        hazard_y = 0.5 * (xp.roll(self.hazard, -1, axis=0) - xp.roll(self.hazard, 1, axis=0))
+        safe_cells = xp.where(cells >= 0, cells, 0)
+
+        def gather(values: Any) -> Any:
+            result = values.reshape(-1)[safe_cells]
+            return xp.where(cells >= 0, result, 0.0).astype(xp.float32)
+
+        return (gather(resource_x), gather(resource_y)), (gather(hazard_x), gather(hazard_y))
+
+    def resolve_harvest(self, cell_ids: Any, rates: Any) -> Any:
+        xp = self.backend.xp
+        cells = validate_cell_ids(
+            cell_ids,
+            self.cfg.world.grid_x * self.cfg.world.grid_y,
+            backend=self.backend,
+        )
+        requested_rates = xp.asarray(rates, dtype=xp.float32)
+        if int(cells.size) == 0:
+            return xp.empty((0, self.RESOURCE_CHANNELS), dtype=xp.float32)
+        cell_count = self.cfg.world.grid_x * self.cfg.world.grid_y
+        requests = stable_segmented_sum(
+            cells,
+            xp.ones(cells.size, dtype=xp.float32),
+            cell_count,
+            backend=self.backend,
+            dtype=xp.float32,
+        )
+        divisors = xp.maximum(requests[cells], 1.0)
+        result = xp.empty((cells.size, self.RESOURCE_CHANNELS), dtype=xp.float32)
+        flat = self.resources.reshape(self.RESOURCE_CHANNELS, -1)
+        for channel in range(self.RESOURCE_CHANNELS):
+            result[:, channel] = xp.minimum(requested_rates[:, channel], flat[channel, cells] / divisors)
+        return result
+
+    def commit_harvest(self, cell_ids: Any, gathered: Any) -> None:
+        xp = self.backend.xp
+        cells = validate_cell_ids(
+            cell_ids,
+            self.cfg.world.grid_x * self.cfg.world.grid_y,
+            backend=self.backend,
+        )
+        amounts = xp.asarray(gathered, dtype=xp.float32)
+        if int(cells.size) == 0:
+            return
+        cell_count = self.cfg.world.grid_x * self.cfg.world.grid_y
+        flat = self.resources.reshape(self.RESOURCE_CHANNELS, -1)
+        for channel in range(self.RESOURCE_CHANNELS):
+            total_taken = stable_segmented_sum(
+                cells,
+                amounts[:, channel],
+                cell_count,
+                backend=self.backend,
+                dtype=xp.float32,
+            )
+            flat[channel] = xp.maximum(flat[channel] - total_taken, 0.0)
+
+    def to_numpy(self, value: Any) -> Any:
+        return self.backend.to_numpy(value)
+
+
+class DeviceInformationField:
+    """Three-channel GPU field with a separate source buffer and field age."""
+
+    CHANNELS = 3
+
+    def __init__(self, cfg: SimulationConfig, backend: Backend | str = "gpu") -> None:
+        self.cfg = cfg
+        self.backend = resolve_backend(backend) if isinstance(backend, str) else backend
+        xp = self.backend.xp
+        shape = (self.CHANNELS, cfg.world.grid_y, cfg.world.grid_x)
+        self.field = xp.zeros(shape, dtype=xp.float32)
+        self.source = xp.zeros_like(self.field)
+        self.age = xp.zeros(shape, dtype=xp.uint16)
+
+    def propagate(self) -> None:
+        xp = self.backend.xp
+        decay = self.cfg.environment.signal_decay
+        diffusion = self.cfg.environment.signal_diffusion
+        center = self.field
+        neighbor_mean = (
+            xp.roll(center, 1, axis=1)
+            + xp.roll(center, -1, axis=1)
+            + xp.roll(center, 1, axis=2)
+            + xp.roll(center, -1, axis=2)
+        ) * 0.25
+        self.field = xp.maximum((1.0 - decay - diffusion) * center + diffusion * neighbor_mean + self.source, 0.0).astype(
+            xp.float32
+        )
+        active = self.field > 1e-6
+        self.age = xp.where(active, xp.minimum(self.age.astype(xp.uint32) + 1, 65535), 0).astype(xp.uint16)
+        self.source.fill(0.0)
+
+    def emit(self, channel: int, cell_ids: Any, strengths: Any) -> None:
+        if not 0 <= channel < self.CHANNELS:
+            raise ValueError(f"invalid signal channel {channel}")
+        xp = self.backend.xp
+        cells = validate_cell_ids(
+            cell_ids,
+            self.cfg.world.grid_x * self.cfg.world.grid_y,
+            backend=self.backend,
+        )
+        values = xp.asarray(strengths, dtype=xp.float32)
+        if int(cells.size) == 0:
+            return
+        if values.ndim != 1 or values.shape[0] != cells.shape[0]:
+            raise ValueError("strengths must contain one value per cell id")
+        # The strict path makes a deterministic cell/id sort then writes one
+        # aggregate per cell, avoiding floating scatter-add atomics.
+        cell_count = self.cfg.world.grid_x * self.cfg.world.grid_y
+        contribution = stable_segmented_sum(
+            cells, values, cell_count, backend=self.backend, dtype=xp.float32
+        )
+        self.source[channel].reshape(-1)[:] += contribution
+
+    def sample(self, cell_ids: Any) -> tuple[Any, Any]:
+        xp = self.backend.xp
+        cells = validate_cell_ids(
+            cell_ids,
+            self.cfg.world.grid_x * self.cfg.world.grid_y,
+            backend=self.backend,
+        )
+        return (
+            self.field.reshape(self.CHANNELS, -1)[:, cells].T.astype(xp.float32),
+            self.age.reshape(self.CHANNELS, -1)[:, cells].T.astype(xp.float32),
+        )
+
+    def to_numpy(self, value: Any) -> Any:
+        return self.backend.to_numpy(value)

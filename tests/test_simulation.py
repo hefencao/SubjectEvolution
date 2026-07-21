@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 import numpy as np
 
+from subject_evolution import __version__
 from subject_evolution.config import load_config
 from subject_evolution.counterfactual import run_paired
 from subject_evolution.information import InformationSystem
@@ -107,3 +108,11 @@ def test_paired_counterfactual_uses_same_initial_snapshot(tmp_path):
     assert summary.exists()
     assert result.baseline["tick"] == cfg.run.ticks
     assert result.intervention["tick"] == cfg.run.ticks
+
+
+def test_run_metadata_uses_package_version(tmp_path):
+    cfg = load_config(_config(tmp_path))
+    output = tmp_path / "run"
+    Simulation(cfg, output).run()
+    metadata = json.loads((output / "run_metadata.json").read_text(encoding="utf-8"))
+    assert metadata["version"] == __version__

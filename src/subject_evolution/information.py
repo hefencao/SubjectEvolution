@@ -5,6 +5,7 @@ import numpy as np
 
 from .config import SimulationConfig
 from .random_api import RandomContext, Stream, bernoulli, normal, uniform01
+from .reductions import stable_segmented_sum, validate_cell_ids
 
 
 @dataclass
@@ -72,8 +73,17 @@ class InformationSystem:
     def emit(self, channel: int, cell_ids: np.ndarray, strengths: np.ndarray) -> None:
         if not 0 <= channel < self.CHANNELS:
             raise ValueError(f"invalid signal channel {channel}")
+        cells = validate_cell_ids(cell_ids, self.cfg.world.grid_x * self.cfg.world.grid_y)
+        values = np.asarray(strengths, dtype=np.float32)
+        if values.ndim != 1 or values.shape[0] != cells.shape[0]:
+            raise ValueError("strengths must contain one value per cell id")
         flat = self.source[channel].reshape(-1)
-        np.add.at(flat, cell_ids.astype(np.int64), strengths.astype(np.float32))
+        flat += stable_segmented_sum(
+            cells,
+            values,
+            self.cfg.world.grid_x * self.cfg.world.grid_y,
+            dtype=np.float32,
+        )
 
     def emit_direct(
         self,
