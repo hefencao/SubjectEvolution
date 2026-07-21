@@ -159,6 +159,7 @@ class HybridGpuRuntime:
 
         # Copy the world snapshot once.  The CPU owns mutation after this
         # boundary, so all device work sees a stable tick snapshot.
+        sensor_quality_host = entity.sensor_quality()
         x = self.backend.asarray(entity.x, dtype=xp.float32)
         y = self.backend.asarray(entity.y, dtype=xp.float32)
         alive = self.backend.asarray(entity.alive, dtype=bool)
@@ -183,7 +184,7 @@ class HybridGpuRuntime:
             self._group_dir_y = self.backend.asarray(social.group_dir_y, dtype=xp.float32)
             self._social_state_dirty = False
         groups = self._group_ids
-        sensor_quality = self.backend.asarray(entity.sensor_quality(), dtype=xp.float32)
+        sensor_quality = self.backend.asarray(sensor_quality_host, dtype=xp.float32)
 
         timer = time.perf_counter()
         active = self.spatial.build(x, y, alive)
@@ -205,7 +206,7 @@ class HybridGpuRuntime:
         direct = information._receive_direct(
             active_host,
             entity.entity_id,
-            entity.sensor_quality(),
+            sensor_quality_host,
             run_seed,
             tick,
         )

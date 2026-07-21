@@ -124,6 +124,7 @@ class ParametricPolicy:
             logits,
             temperature=self.cfg.policy.temperature,
             mask=mask,
+            validate_mask=False,
         )
 
         gx, gy = resource_gradient
@@ -142,7 +143,7 @@ class ParametricPolicy:
         # When gradients vanish, exploration supplies a direction.
         magnitude = xp.hypot(dx, dy)
         explore_ctx = RandomContext(run_seed, tick, phase=51, stream=Stream.ACTION_EXECUTION)
-        angle = normal(explore_ctx, ids, 0.0, np.pi, draw_index=0)
+        angle = normal(explore_ctx, ids, 0.0, np.pi, draw_index=0, validate_stddev=False)
         fallback_x = xp.cos(angle)
         fallback_y = xp.sin(angle)
         needs_fallback = (magnitude < 1e-6) & (resource_move | move_social | flee)

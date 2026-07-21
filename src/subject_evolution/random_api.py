@@ -39,6 +39,7 @@ _MASK = 0xFFFFFFFFFFFFFFFF
 _C1 = 0x9E3779B97F4A7C15
 _C2 = 0xBF58476D1CE4E5B9
 _C3 = 0x94D049BB133111EB
+_GPU_KEY_KERNEL: Any | None = None
 
 
 def _any_true(xp: object, value: object) -> bool:
@@ -53,6 +54,12 @@ def _keys_on_backend(
     xp: object,
 ) -> np.ndarray:
     """Construct SplitMix64 keys without moving an array between backends."""
+    # CuPy otherwise evaluates every SplitMix64 xor, shift, and multiply as a
+    # separate device kernel.  The fused implementation preserves the exact
+    # uint64 arithmetic of the NumPy reference while reducing launch overhead
+    # in field observation, partner sampling, and policy sampling.
+    if callable(getattr(xp, "ElementwiseKernel", None)):
+        return _gpu_keys(ctx, subject_ids, draw_index, xp)
     uint64 = xp.uint64
     ids = xp.asarray(subject_ids, dtype=np.uint64)
     x = ids.copy()
@@ -72,6 +79,49 @@ def _keys_on_backend(
         draw = xp.asarray(draw_index, dtype=xp.uint64)
         x ^= (draw * uint64(0x91E10DA5C79E7B1D)) & uint64(_MASK)
     return _mix64(x, xp)
+
+
+def _gpu_keys(
+    ctx: RandomContext,
+    subject_ids: np.ndarray,
+    draw_index: int | Any,
+    xp: object,
+) -> np.ndarray:
+    """Fused CuPy SplitMix64 path; called only for a GPU array namespace."""
+    global _GPU_KEY_KERNEL
+    if _GPU_KEY_KERNEL is None:
+        _GPU_KEY_KERNEL = xp.ElementwiseKernel(
+            "uint64 subject_id, uint64 draw_index, uint64 seed_term, uint64 tick_term, "
+            "uint64 phase_term, uint64 stream_term, uint64 draw_multiplier, "
+            "uint64 mix_one, uint64 mix_two, uint64 mix_three",
+            "uint64 out",
+            """
+                unsigned long long x = subject_id;
+                x ^= seed_term;
+                x ^= tick_term;
+                x ^= phase_term;
+                x ^= stream_term;
+                x ^= draw_index * draw_multiplier;
+                x += mix_one;
+                x = ((x ^ (x >> 30)) * mix_two);
+                x = ((x ^ (x >> 27)) * mix_three);
+                out = x ^ (x >> 31);
+            """,
+            "subject_evolution_splitmix64",
+        )
+    uint64 = xp.uint64
+    return _GPU_KEY_KERNEL(
+        xp.asarray(subject_ids, dtype=uint64),
+        xp.asarray(draw_index, dtype=uint64),
+        uint64((int(ctx.run_seed) * 0xD1342543DE82EF95) & _MASK),
+        uint64((int(ctx.tick) * 0xA24BAED4963EE407) & _MASK),
+        uint64((int(ctx.phase) * 0x9FB21C651E98DF25) & _MASK),
+        uint64((int(ctx.stream) * 0xC13FA9A902A6328F) & _MASK),
+        uint64(0x91E10DA5C79E7B1D),
+        uint64(_C1),
+        uint64(_C2),
+        uint64(_C3),
+    )
 
 
 def _uniform01_on_backend(
@@ -120,11 +170,13 @@ def bernoulli(
     subject_ids: np.ndarray,
     p: float | np.ndarray,
     draw_index: int | Any = 0,
+    *,
+    validate_probability: bool = True,
 ) -> np.ndarray:
     """Draw Bernoulli outcomes without mutable CPU or GPU RNG state."""
     xp = backend_from_array(subject_ids).xp
     prob = xp.asarray(p, dtype=np.float64)
-    if _any_true(xp, ~xp.isfinite(prob) | (prob < 0.0) | (prob > 1.0)):
+    if validate_probability and _any_true(xp, ~xp.isfinite(prob) | (prob < 0.0) | (prob > 1.0)):
         raise ValueError("Bernoulli probability must be in [0, 1]")
     return _uniform01_on_backend(ctx, subject_ids, draw_index, xp) < prob
 
@@ -135,11 +187,13 @@ def normal(
     mean: float | np.ndarray = 0.0,
     stddev: float | np.ndarray = 1.0,
     draw_index: int | Any = 0,
+    *,
+    validate_stddev: bool = True,
 ) -> np.ndarray:
     """Draw Box--Muller normals without mutable CPU or GPU RNG state."""
     xp = backend_from_array(subject_ids).xp
     std = xp.asarray(stddev, dtype=np.float64)
-    if _any_true(xp, ~xp.isfinite(std) | (std < 0)):
+    if validate_stddev and _any_true(xp, ~xp.isfinite(std) | (std < 0)):
         raise ValueError("Normal stddev cannot be negative")
     u1 = xp.clip(_uniform01_on_backend(ctx, subject_ids, draw_index, xp), 1e-12, 1.0)
     next_draw = (
@@ -159,6 +213,8 @@ def categorical_from_logits(
     temperature: float,
     mask: np.ndarray | None = None,
     draw_index: int | Any = 0,
+    *,
+    validate_mask: bool = True,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Sample one categorical action per row, returning action, probability and entropy."""
     if not np.isfinite(temperature) or temperature <= 0:
@@ -174,7 +230,7 @@ def categorical_from_logits(
         valid = xp.asarray(mask, dtype=bool)
         if valid.shape != values.shape:
             raise ValueError("mask shape must match logits")
-        if _any_true(xp, ~valid.any(axis=1)):
+        if validate_mask and _any_true(xp, ~valid.any(axis=1)):
             raise ValueError("every row must contain at least one valid action")
         values = xp.where(valid, values, -np.inf)
     max_values = xp.max(values, axis=1, keepdims=True)

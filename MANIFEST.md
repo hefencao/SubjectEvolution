@@ -5,13 +5,13 @@ Version: 0.4.0
 | Path | Bytes | SHA-256 |
 |---|---:|---|
 | `.gitignore` | 76 | `7e131d050c3b5bd39ea4b8db107dd7f4dc9cbebb2f9372bc2c5318abc5451cc9` |
-| `CHANGELOG.md` | 3599 | `badc12caefaac197624706c58f25e5bd01276eec9cfc7fab3e6b51fedabe72be` |
-| `README.md` | 9205 | `e419e1de82b88cefbe2490da9573fc43e780efeacbbc4b070dbc48ae2d18ed4c` |
+| `CHANGELOG.md` | 3796 | `4e3355d0934a114d51b66ca52db1c002ac5ce7de27af58330989afe2ae2b8435` |
+| `README.md` | 9308 | `df27f810e3e477885c22034a2d65861ca565cf7e44de602800b50c186ed81d19` |
 | `configs/mvp_100k.json` | 1574 | `b84556ff76bd7681c8c6309032e33bde98571b834dac2025e26a249a378de99f` |
 | `configs/mvp_small.json` | 1552 | `1b9c25c305cf43adfab927b17285433ae4e8dc840d7d4f27b62cc899edb2deba` |
-| `docs/IMPLEMENTATION_STATUS.md` | 5939 | `602a6ccab4c5ef7a45a337795b33e249501f6371660926ae7e78ae82799e8887` |
-| `docs/GPU_FOUNDATION.md` | 6562 | `847edf876e69c050f67392884c6a3d342e0037b8309e3d5e34984bfaedc3d30a` |
-| `docs/NEXT_GPU_PHASE.md` | 2445 | `928e8b7a97621b8867a693c80fe00481f13d88e19f2ed9d9614a7bfa33c8ad2e` |
+| `docs/IMPLEMENTATION_STATUS.md` | 6160 | `b84933b3846fb988a09a728ecee58fce27dae0d2dd9031bef49cec162ea2c1d6` |
+| `docs/GPU_FOUNDATION.md` | 6983 | `7925aa50828769b6739406e5bce5cb9ac2acc7327dc05994ed11e4d2aa71939a` |
+| `docs/NEXT_GPU_PHASE.md` | 2508 | `6b466c5f13216aa777101d1682e4e1fcb04fd8eb988a067c06a2f9009a09d7e6` |
 | `docs/specification/00_master_project_spec.md` | 12255 | `85de7648f965f7689a59ddf2143aa273e3b8e1b8f568adafaab0609dc2391392` |
 | `docs/specification/01_data_structure_spec.md` | 10293 | `5c3d597a6afa23f97a3f7fe257c6c84119603220bf74f12a4782c44582688cbc` |
 | `docs/specification/02_gpu_execution_pipeline.md` | 9538 | `cdb1a54ce40c0e0f56ed7163048b46c0a9abd8db14d828e7eb3ad25b3743e80f` |
@@ -37,13 +37,13 @@ Version: 0.4.0
 | `src/subject_evolution/counterfactual.py` | 1878 | `01060d25ed613e43a07d1c0d4f7a3cbe18828e87f6059ad00a7b1c186baf9c7c` |
 | `src/subject_evolution/environment.py` | 5340 | `23837a3e6e3bf90fcc84d77b2ca0ce8c9412480e30822f4e62db18f677604a55` |
 | `src/subject_evolution/execution.py` | 7322 | `0214f7ae081107df68cd45d38aada390e480d62297c840ebdc9ffd1d41d130ec` |
-| `src/subject_evolution/gpu_environment.py` | 15223 | `abe69cb428365432cc89a40a784f032c6fffa32449d5f2dba6ba4f88947d9bc3` |
-| `src/subject_evolution/gpu_runtime.py` | 15729 | `a90618c64e33d376bb3eea6d4f83457f19a349a653f728d01f65faba67915ecf` |
+| `src/subject_evolution/gpu_environment.py` | 15603 | `75c65005a8c23f7d2e8590122266fa3e934c15d65dca99c033801b9ffa0034ec` |
+| `src/subject_evolution/gpu_runtime.py` | 15775 | `d999c6387774207e363b13a232edf5ea3f676f48db54e9af8aac0aab24f7e245` |
 | `src/subject_evolution/information.py` | 17532 | `51c27ce2d1d55b285ceddd4fd3cfa598ddb32398c378fb4af9287922fbb486ad` |
 | `src/subject_evolution/intents.py` | 5042 | `7762dac7631585dbc74b72762e5951ebb70e777504e866fd9417c449216322d6` |
 | `src/subject_evolution/metrics.py` | 1210 | `b273e3015c19025e0410071b47b916f06fca4973acc24cc5101a47ac90786c31` |
-| `src/subject_evolution/policy.py` | 7184 | `2e60edd8e616ed36d2106d069b800d1d7c4eb1c6aff1d2a6e87204f68b19e457` |
-| `src/subject_evolution/random_api.py` | 6947 | `a92b8c6928de3d93a0b112601e93ea9dfd1c39fddea5202c492d940dd385acec` |
+| `src/subject_evolution/policy.py` | 7240 | `210b64f7e4ecc0861791768fd78f660ac69944897cedae2507e94dff29247360` |
+| `src/subject_evolution/random_api.py` | 9148 | `e713f8b6d8e82c60d45aafe3ee885de0c497afd06c0de5decd9af0ee1e20b8bc` |
 | `src/subject_evolution/reductions.py` | 3636 | `e55f0b7d990bdcb7aba82f8d80952bd6b4810741d414ed6849092ca4112c8736` |
 | `src/subject_evolution/simulation.py` | 42731 | `ccc2fbbfb065d7c1e59301306be7cee5dc9e04ca2ca14bfe5d86290357bd3625` |
 | `src/subject_evolution/subjects.py` | 7563 | `f38da25ef31912efd49b1401302a408ae14800b3b750a823981b43f05494fcc7` |

@@ -261,13 +261,26 @@ class DeviceInformationField:
         )
         mask = xp.empty_like(raw, dtype=bool)
         for channel in range(self.CHANNELS):
-            mask[:, channel] = bernoulli(detect_ctx, ids, detection_p[:, channel], draw_index=channel)
+            mask[:, channel] = bernoulli(
+                detect_ctx,
+                ids,
+                detection_p[:, channel],
+                draw_index=channel,
+                validate_probability=False,
+            )
 
         decode_ctx = RandomContext(run_seed, tick, phase=41, stream=Stream.SIGNAL_DECODING)
         noisy = raw.copy()
         noise_scale = self.cfg.information.receiver_noise / quality
         for channel in range(self.CHANNELS):
-            noisy[:, channel] += normal(decode_ctx, ids, 0.0, noise_scale, draw_index=channel * 2)
+            noisy[:, channel] += normal(
+                decode_ctx,
+                ids,
+                0.0,
+                noise_scale,
+                draw_index=channel * 2,
+                validate_stddev=False,
+            )
         noisy = xp.maximum(noisy, 0.0)
 
         misclassified = bernoulli(
@@ -275,6 +288,7 @@ class DeviceInformationField:
             ids,
             self.cfg.information.classification_error / quality,
             draw_index=20,
+            validate_probability=False,
         )
         shifts = 1 + (uniform01(decode_ctx, ids, draw_index=21) * 2).astype(xp.int32)
         channels = (xp.arange(self.CHANNELS, dtype=xp.int32)[None, :] - shifts[:, None]) % self.CHANNELS
@@ -300,6 +314,7 @@ class DeviceInformationField:
                 ids,
                 xp.clip((1.0 - self.cfg.information.channel_loss) * quality, 0.0, 1.0),
                 draw_index=draw,
+                validate_probability=False,
             )
             partner_mask[:, draw] &= received
         partner_noise = xp.zeros_like(actual_partner_energy, dtype=xp.float64)
@@ -310,6 +325,7 @@ class DeviceInformationField:
                 0.0,
                 noise_scale,
                 draw_index=40 + draw * 2,
+                validate_stddev=False,
             )
         perceived_energy = xp.maximum(actual_partner_energy + partner_noise, 0.0)
         perceived_energy = xp.where(partner_mask, perceived_energy, 0.0).astype(xp.float32)
