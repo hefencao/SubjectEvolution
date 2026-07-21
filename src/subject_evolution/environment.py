@@ -56,8 +56,8 @@ class Environment:
         hgy = np.where(entity_cells >= 0, hgy, 0.0).astype(np.float32)
         return (rgx, rgy), (hgx, hgy)
 
-    def harvest(self, cell_ids: np.ndarray, rates: np.ndarray) -> np.ndarray:
-        """Fairly divide each channel in a cell among simultaneous harvesters."""
+    def resolve_harvest(self, cell_ids: np.ndarray, rates: np.ndarray) -> np.ndarray:
+        """Compute a fair harvest allocation without mutating world state."""
         if cell_ids.size == 0:
             return np.empty((0, 4), dtype=np.float32)
         cell_count = self.cfg.world.grid_x * self.cfg.world.grid_y
@@ -69,6 +69,22 @@ class Environment:
             available = flat[channel, cell_ids]
             per_entity = np.minimum(rates[:, channel], available / requested)
             result[:, channel] = per_entity
-            total_taken = np.bincount(cell_ids, weights=per_entity, minlength=cell_count).astype(np.float32)
+        return result
+
+    def commit_harvest(self, cell_ids: np.ndarray, gathered: np.ndarray) -> None:
+        """Apply a previously resolved harvest allocation exactly once."""
+        if cell_ids.size == 0:
+            return
+        cell_count = self.cfg.world.grid_x * self.cfg.world.grid_y
+        flat = self.resources.reshape(4, -1)
+        for channel in range(4):
+            total_taken = np.bincount(
+                cell_ids, weights=gathered[:, channel], minlength=cell_count
+            ).astype(np.float32)
             flat[channel] = np.maximum(flat[channel] - total_taken, 0.0)
+
+    def harvest(self, cell_ids: np.ndarray, rates: np.ndarray) -> np.ndarray:
+        """Backward-compatible resolve-and-commit convenience method."""
+        result = self.resolve_harvest(cell_ids, rates)
+        self.commit_harvest(cell_ids, result)
         return result

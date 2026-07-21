@@ -50,7 +50,9 @@
     "receiver_noise": 0.1,
     "classification_error": 0.05,
     "memory_decay": 0.002,
-    "max_signal_delay": 5
+    "max_signal_delay": 5,
+    "direct_message_capacity": 16,
+    "source_noise": 0.03
   },
   "policy": {
     "temperature": 0.8,

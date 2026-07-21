@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 
 from .config import load_config
+from .counterfactual import run_paired
 from .simulation import Simulation
 
 
@@ -12,6 +13,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run the nested-subject evolution MVP")
     parser.add_argument("--config", required=True, help="Path to a JSON configuration file")
     parser.add_argument("--output", required=True, help="Output directory")
+    parser.add_argument(
+        "--counterfactual",
+        help=(
+            "Run a paired branch from the same snapshot. Choices: "
+            "disable-social-control, cut-social-connections, shuffle-memory, freeze-genotype."
+        ),
+    )
     return parser
 
 
@@ -22,8 +30,12 @@ def main() -> None:
     output.mkdir(parents=True, exist_ok=True)
     shutil.copy2(config_path, output / "config.json")
     cfg = load_config(config_path)
-    simulation = Simulation(cfg, output)
-    simulation.run()
+    if args.counterfactual:
+        simulation = Simulation(cfg, output / "baseline")
+        run_paired(simulation, args.counterfactual, output)
+    else:
+        simulation = Simulation(cfg, output)
+        simulation.run()
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
-# 嵌套主体存在演化模拟：第一版参考实现
+# 嵌套主体存在演化模拟：v0.2 参考执行管线
 
-这是项目规范的首个可运行实现。它优先完成CPU参考内核、因果分阶段执行和统一采样，而不是直接追求最终GPU规模。
+这是项目规范的可运行CPU参考内核。v0.2 固化了后续 GPU 必须复用的行动意图、冲突结算、消息、候选主体图和反事实语义，而不是直接以不兼容的方式重写为 CUDA。
 
 ## 已实现
 
@@ -13,12 +13,15 @@
 - 传播丢失、接收噪声、语义误分类和伙伴感知误差；
 - 参数化共享策略、个体遗传潜变量和有限记忆；
 - 行动采样、移动、采集、分享、发信号、繁殖和逃离；
-- 资源竞争统一结算；
+- 行动提案、稳定意图ID、资源/分享/出生冲突的统一结算和执行记录；
+- 区域信号场与固定容量、带延迟的点对点消息队列；
 - 固定容量信任关系；
 - 基于高信任关系的社会群体候选识别；
 - 群体资源方向形成对成员行动的高层影响；
 - 谱系继承、变异、出生、死亡和容量管理；
 - 社会依赖代理指标、群体指标、信息检测率和行动熵；
+- 身体、谱系和社会候选主体图，以及主体ID和实体ID的显式分离；
+- 成对随机的反事实分支：关闭社会控制、切断社会连接、打乱记忆或冻结遗传；
 - 检查点、CSV指标、运行元数据和基础测试。
 
 ## 尚未实现
@@ -57,6 +60,17 @@ python -m subject_evolution.cli \
   --config configs/mvp_small.json \
   --output runs/demo
 ```
+
+运行成对反事实分支：
+
+```bash
+python -m subject_evolution.cli \
+  --config configs/mvp_small.json \
+  --output runs/social_control_off \
+  --counterfactual disable-social-control
+```
+
+该命令在`baseline/`和`intervention/`中写入两条轨迹，并在根目录写入`counterfactual_summary.json`。两条分支从同一快照和随机键规则开始。
 
 输出：
 
@@ -110,6 +124,6 @@ python scripts/run_sweep.py --output runs/sweep --ticks 200 --seeds 3
 
 ## 设计文档
 
-- `docs/IMPLEMENTATION_STATUS.md`：本版本完成度与已知简化；
+- `docs/IMPLEMENTATION_STATUS.md`：v0.2完成度与已知简化；
 - `docs/NEXT_GPU_PHASE.md`：GPU迁移顺序；
 - `docs/specification/`：项目总规范和四份工程规范。

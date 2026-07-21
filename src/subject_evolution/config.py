@@ -12,6 +12,9 @@ class RunConfig:
     ticks: int
     metrics_period: int
     checkpoint_period: int
+    # Complete action/trajectory records are opt-in.  Keeping the list empty
+    # preserves the small, aggregate-only output of the reference runner.
+    trajectory_subject_ids: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -57,6 +60,8 @@ class InformationConfig:
     classification_error: float
     memory_decay: float
     max_signal_delay: int
+    direct_message_capacity: int = 16
+    source_noise: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -111,7 +116,12 @@ def _probability(name: str, value: float) -> float:
 def load_config(path: str | Path) -> SimulationConfig:
     raw = json.loads(Path(path).read_text(encoding="utf-8"))
     cfg = SimulationConfig(
-        run=RunConfig(**_require(raw, "run")),
+        run=RunConfig(
+            **{
+                **_require(raw, "run"),
+                "trajectory_subject_ids": tuple(_require(raw, "run").get("trajectory_subject_ids", ())),
+            }
+        ),
         world=WorldConfig(**_require(raw, "world")),
         environment=EnvironmentConfig(
             resource_regeneration=tuple(_require(raw, "environment")["resource_regeneration"]),
@@ -147,6 +157,14 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("resource capacities must be positive")
     _probability("channel_loss", cfg.information.channel_loss)
     _probability("classification_error", cfg.information.classification_error)
+    if cfg.information.receiver_noise < 0:
+        raise ValueError("receiver_noise cannot be negative")
+    if cfg.information.source_noise < 0:
+        raise ValueError("source_noise cannot be negative")
+    if cfg.information.max_signal_delay < 0:
+        raise ValueError("max_signal_delay cannot be negative")
+    if cfg.information.direct_message_capacity < 0:
+        raise ValueError("direct_message_capacity cannot be negative")
     _probability("trust_group_threshold", cfg.social.trust_group_threshold)
     if cfg.policy.temperature <= 0:
         raise ValueError("policy.temperature must be positive")
