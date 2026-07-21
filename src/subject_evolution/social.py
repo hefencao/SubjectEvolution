@@ -16,6 +16,8 @@ class GroupSummary:
 class SocialSystem:
     """Fixed-capacity relationships plus approximate connected-group detection."""
 
+    _UNTRACKED_DECAY_TICK = np.iinfo(np.int64).min
+
     def __init__(self, cfg: SimulationConfig, capacity: int) -> None:
         self.cfg = cfg
         k = cfg.entities.relation_slots
@@ -23,6 +25,14 @@ class SocialSystem:
         self.trust = np.zeros((capacity, k), dtype=np.float32)
         self.familiarity = np.zeros((capacity, k), dtype=np.float32)
         self.last_interaction = np.zeros((capacity, k), dtype=np.uint32)
+        # Relationship values are materialized only at the rows that consume
+        # them (share updates or group detection).  The stored tick is the
+        # last inclusive end-of-tick decay applied to that slot.  The sentinel
+        # keeps externally seeded relationship fixtures backward-compatible:
+        # they begin to track decay when first updated by the simulation.
+        self.last_decay_tick = np.full(
+            (capacity, k), self._UNTRACKED_DECAY_TICK, dtype=np.int64
+        )
         self.group_id = np.zeros(capacity, dtype=np.uint64)
         self.group_age = np.zeros(capacity, dtype=np.uint32)
         self.group_dir_x = np.zeros(capacity, dtype=np.float32)
@@ -36,12 +46,40 @@ class SocialSystem:
         self.trust[indices] = 0.0
         self.familiarity[indices] = 0.0
         self.last_interaction[indices] = 0
+        self.last_decay_tick[indices] = self._UNTRACKED_DECAY_TICK
         self.group_id[indices] = 0
         self.group_age[indices] = 0
         self.group_dir_x[indices] = 0.0
         self.group_dir_y[indices] = 0.0
 
+    def _materialize_decay(self, rows: np.ndarray, through_tick: int) -> None:
+        """Apply deferred geometric decay through an inclusive tick boundary."""
+        owner_rows = np.asarray(rows, dtype=np.int32)
+        if owner_rows.size == 0:
+            return
+        owner_rows = np.unique(owner_rows)
+        last = self.last_decay_tick[owner_rows]
+        tracked = last != self._UNTRACKED_DECAY_TICK
+        if not np.any(tracked):
+            return
+        elapsed = np.maximum(int(through_tick) - last, 0)
+        apply = tracked & (elapsed > 0)
+        if np.any(apply):
+            factor = np.float32(max(0.0, 1.0 - self.cfg.social.relation_decay))
+            decay = np.ones(last.shape, dtype=np.float32)
+            decay[apply] = np.power(factor, elapsed[apply], dtype=np.float32)
+            self.trust[owner_rows] *= decay
+            self.familiarity[owner_rows] *= decay
+        last[tracked] = int(through_tick)
+        self.last_decay_tick[owner_rows] = last
+
     def decay(self, alive: np.ndarray) -> None:
+        """Eager compatibility operation for callers outside the main loop.
+
+        The simulation uses :meth:`_materialize_decay` at read/write
+        boundaries instead, avoiding full relation-table passes on ticks with
+        no social interaction or group recomputation.
+        """
         factor = max(0.0, 1.0 - self.cfg.social.relation_decay)
         self.trust[alive] *= factor
         self.familiarity[alive] *= factor
@@ -97,6 +135,10 @@ class SocialSystem:
         self.trust[owners, slots] = np.clip(self.trust[owners, slots] + trust_delta, 0.0, 1.0)
         self.familiarity[owners, slots] = np.clip(self.familiarity[owners, slots] + 0.05, 0.0, 1.0)
         self.last_interaction[owners, slots] = tick
+        # This relation has just been updated before the end-of-tick decay.
+        # At a later consumer boundary, ``tick - 1`` therefore denotes the
+        # last decay already reflected in its stored value.
+        self.last_decay_tick[owners, slots] = int(tick) - 1
 
     def record_shares(self, owners: np.ndarray, targets: np.ndarray, success: np.ndarray, tick: int) -> None:
         """Apply share-derived relation events in owner-local stable order.
@@ -140,6 +182,11 @@ class SocialSystem:
         event_owners = event_owners[order]
         event_targets = event_targets[order]
         event_delta = event_delta[order]
+        # A relationship may be untouched for many ticks.  Materialize only
+        # the owner rows that are about to compare, replace, or update slots;
+        # their effective values then exactly match the eager schedule at the
+        # start of this tick.
+        self._materialize_decay(np.unique(event_owners), tick - 1)
         _, starts, counts = np.unique(event_owners, return_index=True, return_counts=True)
         rank_within_owner = np.arange(event_owners.size, dtype=np.int32) - np.repeat(starts, counts)
         # Each pass contains exactly one event per owner.  Processing the
@@ -160,6 +207,7 @@ class SocialSystem:
         self.target[dead_link] = -1
         self.trust[dead_link] = 0.0
         self.familiarity[dead_link] = 0.0
+        self.last_decay_tick[dead_link] = self._UNTRACKED_DECAY_TICK
 
     def update_groups(
         self,
@@ -168,12 +216,17 @@ class SocialSystem:
         energy: np.ndarray,
         resource_grad_x: np.ndarray,
         resource_grad_y: np.ndarray,
+        tick: int,
     ) -> GroupSummary:
         active = np.flatnonzero(alive).astype(np.int32)
         if active.size == 0:
             self.group_id.fill(0)
             return GroupSummary(np.empty(0, dtype=np.uint64), np.empty(0, dtype=np.int32), np.empty(0, dtype=np.float32))
 
+        # Group detection is the other relationship consumer.  Deferring
+        # decay until this lower-frequency boundary preserves the intended
+        # geometric rule without a full O(N*K) pass every world tick.
+        self._materialize_decay(active, tick)
         labels = np.arange(alive.size, dtype=np.int32)
         trusted = (self.target >= 0) & (self.trust >= self.cfg.social.trust_group_threshold)
         # Label propagation is approximate but vectorizable and deterministic.

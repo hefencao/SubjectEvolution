@@ -203,6 +203,52 @@ def test_batched_share_relations_match_scalar_reference(tmp_path):
     np.testing.assert_allclose(actual.familiarity, expected.familiarity, rtol=0.0, atol=0.0)
 
 
+def test_lazy_relation_decay_matches_eager_tick_schedule(tmp_path):
+    cfg = load_config(_config(tmp_path))
+    cfg = replace(cfg, social=replace(cfg.social, relation_decay=0.04, group_min_members=2))
+    actual = SocialSystem(cfg, capacity=8)
+    expected = SocialSystem(cfg, capacity=8)
+    alive = np.ones(8, dtype=bool)
+    stable_ids = np.arange(1, 9, dtype=np.uint64)
+    energy = np.ones(8, dtype=np.float32)
+    gradient = np.zeros(8, dtype=np.float32)
+
+    def scalar_share(system: SocialSystem, owners, targets, success, tick: int) -> None:
+        for owner, target, ok in zip(owners, targets, success):
+            system._update_one(
+                int(owner),
+                int(target),
+                cfg.social.trust_gain_share if ok else -cfg.social.trust_loss_failed,
+                tick,
+            )
+            if ok:
+                system._update_one(int(target), int(owner), cfg.social.trust_gain_share * 0.5, tick)
+
+    first_owners = np.asarray([0, 2], dtype=np.int32)
+    first_targets = np.asarray([1, 3], dtype=np.int32)
+    first_success = np.asarray([True, False])
+    actual.record_shares(first_owners, first_targets, first_success, tick=0)
+    scalar_share(expected, first_owners, first_targets, first_success, tick=0)
+    expected.decay(alive)  # End of tick 0.
+    expected.decay(alive)  # End of tick 1.
+    expected.decay(alive)  # End of tick 2.
+
+    second_owners = np.asarray([0, 3], dtype=np.int32)
+    second_targets = np.asarray([1, 2], dtype=np.int32)
+    second_success = np.asarray([True, True])
+    actual.record_shares(second_owners, second_targets, second_success, tick=3)
+    scalar_share(expected, second_owners, second_targets, second_success, tick=3)
+    expected.decay(alive)  # End of tick 3.
+
+    # The group boundary materializes the deferred value through tick 3.
+    actual.update_groups(alive, stable_ids, energy, gradient, gradient, tick=3)
+    expected.update_groups(alive, stable_ids, energy, gradient, gradient, tick=3)
+    np.testing.assert_array_equal(actual.target, expected.target)
+    np.testing.assert_allclose(actual.trust, expected.trust, rtol=0.0, atol=2e-7)
+    np.testing.assert_allclose(actual.familiarity, expected.familiarity, rtol=0.0, atol=2e-7)
+    np.testing.assert_array_equal(actual.group_id, expected.group_id)
+
+
 def test_paired_counterfactual_uses_same_initial_snapshot(tmp_path):
     cfg = load_config(_config(tmp_path))
     sim = Simulation(cfg, tmp_path / "paired" / "baseline")
@@ -230,6 +276,9 @@ def test_run_metadata_uses_package_version(tmp_path):
     summary = json.loads((output / "summary.json").read_text(encoding="utf-8"))
     assert metadata["version"] == __version__
     assert metadata["execution_backend"] == "cpu"
+    assert metadata["control"]["arbiter"] == "SingleProposalControlArbiter"
+    assert metadata["control"]["heuristic_social_guidance_enabled"] is False
+    assert metadata["control"]["heuristic_guidance_actions"] == 0
     assert summary["window_seconds_per_tick"] >= 0.0
 
 

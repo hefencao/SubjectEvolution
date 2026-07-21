@@ -83,6 +83,14 @@ class SocialConfig:
 
 
 @dataclass(frozen=True)
+class ControlConfig:
+    """Optional controller experiments; all heuristic behaviour is opt-in."""
+
+    heuristic_social_guidance: bool = False
+    heuristic_social_guidance_weight: float = 0.25
+
+
+@dataclass(frozen=True)
 class SimulationConfig:
     run: RunConfig
     world: WorldConfig
@@ -91,6 +99,7 @@ class SimulationConfig:
     information: InformationConfig
     policy: PolicyConfig
     social: SocialConfig
+    control: ControlConfig
 
     @property
     def cell_width(self) -> float:
@@ -135,6 +144,7 @@ def load_config(path: str | Path) -> SimulationConfig:
         information=InformationConfig(**_require(raw, "information")),
         policy=PolicyConfig(**_require(raw, "policy")),
         social=SocialConfig(**_require(raw, "social")),
+        control=ControlConfig(**raw.get("control", {})),
     )
     validate_config(cfg)
     return cfg
@@ -166,6 +176,9 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.information.direct_message_capacity < 0:
         raise ValueError("direct_message_capacity cannot be negative")
     _probability("trust_group_threshold", cfg.social.trust_group_threshold)
+    if not isinstance(cfg.control.heuristic_social_guidance, bool):
+        raise ValueError("control.heuristic_social_guidance must be a boolean")
+    _probability("control.heuristic_social_guidance_weight", cfg.control.heuristic_social_guidance_weight)
     if cfg.policy.temperature <= 0:
         raise ValueError("policy.temperature must be positive")
     if cfg.entities.relation_slots <= 0:

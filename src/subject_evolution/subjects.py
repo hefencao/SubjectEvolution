@@ -158,6 +158,24 @@ class CandidateSubjectGraph:
         if changed or observed_groups:
             self.version += 1
 
+    def social_subject_ids(self, group_tokens: np.ndarray) -> np.ndarray:
+        """Resolve detector component tokens to stable social-subject IDs.
+
+        Group tokens are implementation details of ``SocialSystem``.  The
+        controller boundary must instead record the candidate graph node that
+        supplied guidance, preserving the separation of social and physical
+        identity even when detection is recomputed.
+        """
+        tokens = np.asarray(group_tokens, dtype=np.uint64)
+        result = np.zeros(tokens.shape, dtype=np.uint64)
+        if tokens.size == 0:
+            return result
+        for token in np.unique(tokens[tokens != 0]).tolist():
+            subject_id = self._group_nodes.get(int(token))
+            if subject_id is not None:
+                result[tokens == token] = np.uint64(subject_id)
+        return result
+
     @property
     def edges(self) -> tuple[SubjectEdge, ...]:
         return tuple(self._edges.values())

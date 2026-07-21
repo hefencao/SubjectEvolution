@@ -18,7 +18,16 @@ def test_intent_ids_keep_scalar_tick_and_stable_id_encoding() -> None:
     )
     tick = (1 << 32) + 17
 
-    intents = build_intents(active, stable_ids, decision, tick)
+    proposer_subject_id = np.asarray([1001, 1002], dtype=np.uint64)
+    controller_kind = np.asarray([0, 1], dtype=np.uint8)
+    intents = build_intents(
+        active,
+        stable_ids,
+        decision,
+        tick,
+        proposer_subject_id=proposer_subject_id,
+        controller_kind=controller_kind,
+    )
 
     expected = np.asarray(
         [((tick << 32) ^ int(entity_id)) & 0xFFFFFFFFFFFFFFFF for entity_id in stable_ids[active]],
@@ -26,3 +35,5 @@ def test_intent_ids_keep_scalar_tick_and_stable_id_encoding() -> None:
     )
     np.testing.assert_array_equal(intents.carrier_id, stable_ids[active])
     np.testing.assert_array_equal(intents.intent_id, expected)
+    np.testing.assert_array_equal(intents.proposer_subject_id, proposer_subject_id)
+    np.testing.assert_array_equal(intents.controller_kind, controller_kind)

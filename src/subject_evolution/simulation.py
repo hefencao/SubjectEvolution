@@ -10,6 +10,14 @@ import numpy as np
 from . import __version__
 from .backend import BackendUnavailableError
 from .config import SimulationConfig
+from .control import (
+    ControlArbiter,
+    ControllerKind,
+    HeuristicSocialGuidanceArbiter,
+    SingleProposalControlArbiter,
+    body_control_proposal,
+    social_guidance_control_proposal,
+)
 from .environment import Environment
 from .execution import ActionConflictResolver, ActionResolutionSnapshot, DeterministicActionConflictResolver
 from .gpu_runtime import HybridGpuRuntime
@@ -41,6 +49,7 @@ class StepStats:
     signal_detection_rate: float = 0.0
     partner_detection_rate: float = 0.0
     move_social_fraction: float = 0.0
+    heuristic_guidance_actions: int = 0
     direct_messages: int = 0
     environment_seconds: float = 0.0
     spatial_seconds: float = 0.0
@@ -175,6 +184,7 @@ class Simulation:
         *,
         backend: str = "cpu",
         conflict_resolver: ActionConflictResolver | None = None,
+        control_arbiter: ControlArbiter | None = None,
     ) -> None:
         self.cfg = cfg
         self.output_dir = Path(output_dir)
@@ -227,6 +237,12 @@ class Simulation:
         self.conflict_resolver = (
             conflict_resolver if conflict_resolver is not None else DeterministicActionConflictResolver(cfg)
         )
+        self.control_arbiter = control_arbiter if control_arbiter is not None else (
+            HeuristicSocialGuidanceArbiter()
+            if cfg.control.heuristic_social_guidance
+            else SingleProposalControlArbiter()
+        )
+        self.heuristic_guidance_actions = 0
         self.social_control_enabled = True
         self.social_connections_enabled = True
         self.direct_messages_enabled = True
@@ -253,6 +269,7 @@ class Simulation:
             output_dir,
             backend=self.execution_backend,
             conflict_resolver=copy.deepcopy(self.conflict_resolver),
+            control_arbiter=copy.deepcopy(self.control_arbiter),
         )
         branch.entities = copy.deepcopy(self.entities)
         branch.environment = copy.deepcopy(self.environment)
@@ -265,6 +282,7 @@ class Simulation:
         branch.total_births = self.total_births
         branch.total_deaths = self.total_deaths
         branch.action_counts = self.action_counts.copy()
+        branch.heuristic_guidance_actions = self.heuristic_guidance_actions
         branch.social_control_enabled = self.social_control_enabled
         branch.social_connections_enabled = self.social_connections_enabled
         branch.direct_messages_enabled = self.direct_messages_enabled
@@ -323,6 +341,20 @@ class Simulation:
                 "failure_reason": FailureReason(resolutions.failure_reason[row]).name,
                 "resource_delta": [float(value) for value in resolutions.resource_delta[row]],
             }
+            if intents.proposer_subject_id is not None:
+                record["proposer_subject_id"] = int(intents.proposer_subject_id[row])
+            if intents.controller_kind is not None:
+                record["controller_kind"] = ControllerKind(intents.controller_kind[row]).name
+            if intents.contributor_subject_ids is not None:
+                record["contributor_subject_ids"] = [
+                    int(subject_id) for subject_id in intents.contributor_subject_ids[row]
+                ]
+            if intents.contribution_weights is not None:
+                record["contribution_weights"] = [
+                    float(weight) for weight in intents.contribution_weights[row]
+                ]
+            if intents.heuristic_control is not None:
+                record["heuristic_control"] = bool(intents.heuristic_control[row])
             self._trajectory_file.write(json.dumps(record, ensure_ascii=False) + "\n")
         self._trajectory_file.flush()
 
@@ -502,6 +534,40 @@ class Simulation:
             stats.spatial_seconds = prepared.spatial_seconds
             stats.observation_seconds = prepared.observation_seconds
             stats.policy_seconds = prepared.policy_seconds
+        body_proposal = body_control_proposal(
+            active,
+            ent.primary_subject_id[active],
+            decision,
+            self.tick,
+        )
+        proposals = (body_proposal,)
+        if cfg.control.heuristic_social_guidance:
+            if self.social_control_enabled:
+                social_subject_id = self.subjects.social_subject_ids(self.social.group_id[active])
+                group_direction = (
+                    self.social.group_dir_x[active],
+                    self.social.group_dir_y[active],
+                )
+            else:
+                social_subject_id = np.zeros(active.size, dtype=np.uint64)
+                group_direction = (
+                    np.zeros(active.size, dtype=np.float32),
+                    np.zeros(active.size, dtype=np.float32),
+                )
+            proposals = (
+                body_proposal,
+                social_guidance_control_proposal(
+                    body_proposal,
+                    social_subject_id,
+                    group_direction,
+                    cfg.control.heuristic_social_guidance_weight,
+                ),
+            )
+        arbitration = self.control_arbiter.arbitrate(proposals)
+        decision = arbitration.decision
+        if arbitration.heuristic_applied is not None:
+            stats.heuristic_guidance_actions = int(np.count_nonzero(arbitration.heuristic_applied))
+            self.heuristic_guidance_actions += stats.heuristic_guidance_actions
         self.action_counts += np.bincount(decision.action, minlength=len(Action))
         stats.action_entropy = float(decision.entropy.mean())
         stats.signal_detection_rate = float(info.signal_mask.mean())
@@ -513,7 +579,17 @@ class Simulation:
 
         # ----- Intent and conflict phases: no world state is changed here. -----
         phase_started = time.perf_counter()
-        intents = build_intents(active, ent.entity_id, decision, self.tick)
+        intents = build_intents(
+            active,
+            ent.entity_id,
+            decision,
+            self.tick,
+            proposer_subject_id=arbitration.proposer_subject_id,
+            controller_kind=arbitration.controller_kind,
+            contributor_subject_ids=arbitration.contributor_subject_ids,
+            contribution_weights=arbitration.contribution_weights,
+            heuristic_control=arbitration.heuristic_applied,
+        )
         snapshot = ActionResolutionSnapshot(
             active=active,
             cells=cells,
@@ -629,9 +705,6 @@ class Simulation:
         ent.fertility[current_active] = np.maximum(ent.fertility[current_active] - 0.0005, 0.0)
 
         self.policy.update_memory(active, ent.memory, local_resources, info)
-        if self.social_connections_enabled:
-            self.social.decay(ent.alive)
-
         dead = current_active[
             (ent.energy[current_active] <= 0.0)
             | (ent.integrity[current_active] <= 0.0)
@@ -647,7 +720,10 @@ class Simulation:
                 self.gpu_runtime.mark_social_state_dirty()
             stats.deaths = int(dead.size)
             self.total_deaths += stats.deaths
-        self.social.clear_dead_targets(ent.alive)
+        # With no death this tick no new stale relation target can exist, so
+        # skip the otherwise full fixed-slot relationship-table scan.
+        if dead.size:
+            self.social.clear_dead_targets(ent.alive)
 
         # Candidate social subjects are updated at a slower timescale.
         phase_started = time.perf_counter()
@@ -661,6 +737,7 @@ class Simulation:
                     ent.energy,
                     resource_gradient[0],
                     resource_gradient[1],
+                    self.tick,
                 )
             else:
                 self.social.group_id.fill(0)
@@ -726,6 +803,7 @@ class Simulation:
             "grouped_fraction": grouped_fraction,
             "social_dependency_proxy": social_dependency,
             "move_social_fraction": stats.move_social_fraction,
+            "heuristic_guidance_actions_step": stats.heuristic_guidance_actions,
             "harvested_energy_step": stats.harvested_energy,
             "shared_energy_step": stats.shared_energy,
             "signals_step": stats.signals,
@@ -828,6 +906,12 @@ class Simulation:
                 "social_connections_enabled": self.social_connections_enabled,
                 "direct_messages_enabled": self.direct_messages_enabled,
                 "freeze_genotype": self.freeze_genotype,
+            },
+            "control": {
+                "arbiter": type(self.control_arbiter).__name__,
+                "heuristic_social_guidance_enabled": self.cfg.control.heuristic_social_guidance,
+                "heuristic_social_guidance_weight": self.cfg.control.heuristic_social_guidance_weight,
+                "heuristic_guidance_actions": self.heuristic_guidance_actions,
             },
         }
         (self.output_dir / "run_metadata.json").write_text(

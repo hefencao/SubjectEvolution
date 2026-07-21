@@ -67,5 +67,9 @@
     "relation_decay": 0.001,
     "trust_gain_share": 0.06,
     "trust_loss_failed": 0.015
+  },
+  "control": {
+    "heuristic_social_guidance": false,
+    "heuristic_social_guidance_weight": 0.25
   }
 }
