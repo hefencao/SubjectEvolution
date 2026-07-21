@@ -1,0 +1,69 @@
+{
+  "run": {
+    "seed": 10001,
+    "ticks": 10000,
+    "metrics_period": 20,
+    "checkpoint_period": 1000
+  },
+  "world": {
+    "width": 2048.0,
+    "height": 2048.0,
+    "grid_x": 256,
+    "grid_y": 256,
+    "initial_entities": 100000,
+    "max_entities": 131072,
+    "periodic": true
+  },
+  "environment": {
+    "resource_regeneration": [
+      0.02,
+      0.008,
+      0.005,
+      0.0025
+    ],
+    "resource_capacity": [
+      10.0,
+      7.0,
+      5.0,
+      3.0
+    ],
+    "season_period": 20000,
+    "season_amplitude": 0.35,
+    "signal_decay": 0.08,
+    "signal_diffusion": 0.1
+  },
+  "entities": {
+    "relation_slots": 16,
+    "maintenance_cost": 0.012,
+    "movement_cost": 0.008,
+    "signal_cost": 0.015,
+    "share_amount": 0.15,
+    "harvest_rate": 0.25,
+    "reproduction_threshold": 3.0,
+    "reproduction_cost": 1.5,
+    "initial_energy": 1.8,
+    "max_energy": 5.0,
+    "max_age": 100000
+  },
+  "information": {
+    "channel_loss": 0.15,
+    "receiver_noise": 0.1,
+    "classification_error": 0.05,
+    "memory_decay": 0.002,
+    "max_signal_delay": 5
+  },
+  "policy": {
+    "temperature": 0.8,
+    "partner_samples": 4,
+    "mutation_std": 0.04,
+    "group_influence": 0.3
+  },
+  "social": {
+    "group_update_period": 100,
+    "trust_group_threshold": 0.15,
+    "group_min_members": 8,
+    "relation_decay": 0.001,
+    "trust_gain_share": 0.06,
+    "trust_loss_failed": 0.015
+  }
+}

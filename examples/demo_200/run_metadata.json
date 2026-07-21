@@ -1,0 +1,39 @@
+{
+  "version": "0.1.0",
+  "ticks_completed": 200,
+  "wall_seconds": 7.047922459999995,
+  "final": {
+    "tick": 200,
+    "alive": 8184,
+    "births_step": 2,
+    "deaths_step": 8,
+    "births_total": 3462,
+    "deaths_total": 278,
+    "mean_energy": 2.319371223449707,
+    "mean_integrity": 0.9274923801422119,
+    "mean_age": 188.913734115347,
+    "lineages": 4962,
+    "groups": 209,
+    "mean_group_size": 27.358851674641148,
+    "grouped_fraction": 0.6878054740957967,
+    "social_dependency_proxy": 0.31638118624687195,
+    "move_social_fraction": 0.14635444385311336,
+    "harvested_energy_step": 122.58993530273438,
+    "shared_energy_step": 120.09634399414062,
+    "signals_step": 724,
+    "action_entropy": 1.8177119493484497,
+    "signal_detection_rate": 0.31994301994301994,
+    "partner_detection_rate": 0.8786630036630036,
+    "step_seconds": 0.03824956400001156
+  },
+  "action_counts": {
+    "REST": 145053,
+    "MOVE_RESOURCE": 520338,
+    "MOVE_SOCIAL": 195653,
+    "HARVEST": 214937,
+    "SHARE": 137163,
+    "SIGNAL": 146096,
+    "REPRODUCE": 64713,
+    "FLEE": 152014
+  }
+}
