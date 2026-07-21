@@ -1,4 +1,5 @@
 from pathlib import Path
+from dataclasses import replace
 import json
 import numpy as np
 
@@ -91,6 +92,35 @@ def test_direct_messages_have_fixed_masked_observation(tmp_path):
     assert np.all(observed.messages[0, 0] >= 0.0)
 
 
+def test_batched_direct_message_receipt_is_reproducible_and_capacity_limited(tmp_path):
+    cfg = load_config(_config(tmp_path))
+    cfg = replace(
+        cfg,
+        information=replace(cfg.information, direct_message_capacity=3, max_signal_delay=0),
+    )
+    source_ids = np.arange(100, 116, dtype=np.uint64)
+    receiver_ids = np.full(source_ids.size, 22, dtype=np.uint64)
+    payloads = np.tile(np.asarray([[0.8, 0.4, 0.2]], dtype=np.float32), (source_ids.size, 1))
+    confidences = np.ones(source_ids.size, dtype=np.float32)
+    active = np.asarray([0, 1], dtype=np.int32)
+    stable_ids = np.asarray([11, 22], dtype=np.uint64)
+    quality = np.ones(2, dtype=np.float32)
+
+    systems = [InformationSystem(cfg), InformationSystem(cfg)]
+    received = []
+    for system in systems:
+        system.emit_direct(source_ids, receiver_ids, payloads, confidences, cfg.run.seed, tick=0)
+        received.append(system._receive_direct(active, stable_ids, quality, cfg.run.seed, tick=1))
+
+    for left, right in zip(received[0], received[1]):
+        np.testing.assert_array_equal(left, right)
+    message_mask = received[0][1]
+    message_sources = received[0][4]
+    assert int(message_mask[1].sum()) <= cfg.information.direct_message_capacity
+    accepted_sources = message_sources[1, message_mask[1]]
+    assert np.all(np.diff(accepted_sources.astype(np.int64)) >= 0)
+
+
 def test_paired_counterfactual_uses_same_initial_snapshot(tmp_path):
     cfg = load_config(_config(tmp_path))
     sim = Simulation(cfg, tmp_path / "paired" / "baseline")
@@ -115,4 +145,7 @@ def test_run_metadata_uses_package_version(tmp_path):
     output = tmp_path / "run"
     Simulation(cfg, output).run()
     metadata = json.loads((output / "run_metadata.json").read_text(encoding="utf-8"))
+    summary = json.loads((output / "summary.json").read_text(encoding="utf-8"))
     assert metadata["version"] == __version__
+    assert metadata["execution_backend"] == "cpu"
+    assert summary["window_seconds_per_tick"] >= 0.0

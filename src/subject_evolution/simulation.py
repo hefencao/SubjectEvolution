@@ -8,8 +8,10 @@ import time
 import numpy as np
 
 from . import __version__
+from .backend import BackendUnavailableError
 from .config import SimulationConfig
 from .environment import Environment
+from .gpu_runtime import HybridGpuRuntime
 from .information import InformationSystem
 from .intents import (
     ActionIntentBatch,
@@ -167,7 +169,13 @@ class EntityState:
 
 
 class Simulation:
-    def __init__(self, cfg: SimulationConfig, output_dir: str | Path) -> None:
+    def __init__(
+        self,
+        cfg: SimulationConfig,
+        output_dir: str | Path,
+        *,
+        backend: str = "cpu",
+    ) -> None:
         self.cfg = cfg
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -181,6 +189,22 @@ class Simulation:
             cfg.world.height,
             cfg.world.periodic,
         )
+        requested_backend = backend.strip().lower()
+        if requested_backend == "cpu":
+            self.gpu_runtime: HybridGpuRuntime | None = None
+            self.execution_backend = "cpu"
+        elif requested_backend in {"gpu", "auto"}:
+            try:
+                self.gpu_runtime = HybridGpuRuntime(cfg, backend="gpu")
+            except BackendUnavailableError:
+                if requested_backend == "gpu":
+                    raise
+                self.gpu_runtime = None
+            self.execution_backend = "gpu" if self.gpu_runtime is not None else "cpu"
+        else:
+            raise ValueError("backend must be one of: 'cpu', 'gpu', or 'auto'")
+        if self.gpu_runtime is not None:
+            self.gpu_runtime.sync_from_host(self.environment, self.information)
         self.social = SocialSystem(cfg, cfg.world.max_entities)
         self.subjects = CandidateSubjectGraph(cfg.world.max_entities)
         initial = np.flatnonzero(self.entities.alive).astype(np.int32)
@@ -215,7 +239,7 @@ class Simulation:
         branch.  All mutable world state, including delayed messages and the
         subject graph, is deep-copied before the intervention is applied.
         """
-        branch = Simulation(self.cfg, output_dir)
+        branch = Simulation(self.cfg, output_dir, backend=self.execution_backend)
         branch.entities = copy.deepcopy(self.entities)
         branch.environment = copy.deepcopy(self.environment)
         branch.information = copy.deepcopy(self.information)
@@ -231,6 +255,8 @@ class Simulation:
         branch.social_connections_enabled = self.social_connections_enabled
         branch.direct_messages_enabled = self.direct_messages_enabled
         branch.freeze_genotype = self.freeze_genotype
+        if branch.gpu_runtime is not None:
+            branch.gpu_runtime.sync_from_host(branch.environment, branch.information)
         return branch
 
     def apply_intervention(self, intervention: str) -> None:
@@ -357,13 +383,22 @@ class Simulation:
         ent = self.entities
         actor_cells = cells
         strengths_resource = np.clip(local_resources[:, 0], 0.0, 2.0) * 0.15
-        hazard = self.environment.hazard.reshape(-1)[actor_cells]
+        hazard = (
+            self.gpu_runtime.hazard_for_cells(actor_cells)
+            if self.gpu_runtime is not None
+            else self.environment.hazard.reshape(-1)[actor_cells]
+        )
         strengths_danger = hazard * 0.15
         group_member = self.social.group_id[actors] != 0
         strengths_social = group_member.astype(np.float32) * 0.12
-        self.information.emit(0, actor_cells, strengths_resource)
-        self.information.emit(1, actor_cells, strengths_danger)
-        self.information.emit(2, actor_cells, strengths_social)
+        if self.gpu_runtime is None:
+            self.information.emit(0, actor_cells, strengths_resource)
+            self.information.emit(1, actor_cells, strengths_danger)
+            self.information.emit(2, actor_cells, strengths_social)
+        else:
+            self.gpu_runtime.emit(0, actor_cells, strengths_resource)
+            self.gpu_runtime.emit(1, actor_cells, strengths_danger)
+            self.gpu_runtime.emit(2, actor_cells, strengths_social)
         ent.energy[actors] -= self.cfg.entities.signal_cost
         valid_target = (target_indices >= 0) & ent.alive[target_indices]
         safe_targets = np.where(valid_target, target_indices, 0)
@@ -404,66 +439,96 @@ class Simulation:
         cfg = self.cfg
         ent = self.entities
         stats = StepStats()
-        phase_started = time.perf_counter()
-        self.environment.update(self.tick)
-        self.information.propagate()
-        stats.environment_seconds = time.perf_counter() - phase_started
+        if self.gpu_runtime is None:
+            phase_started = time.perf_counter()
+            self.environment.update(self.tick)
+            self.information.propagate()
+            stats.environment_seconds = time.perf_counter() - phase_started
 
-        phase_started = time.perf_counter()
-        active = self.spatial.build(ent.x, ent.y, ent.alive)
-        stats.spatial_seconds = time.perf_counter() - phase_started
-        if active.size == 0:
-            return stats
+            phase_started = time.perf_counter()
+            active = self.spatial.build(ent.x, ent.y, ent.alive)
+            stats.spatial_seconds = time.perf_counter() - phase_started
+            if active.size == 0:
+                return stats
 
-        phase_started = time.perf_counter()
-        cells = self.spatial.entity_cells[active]
-        partners = self.spatial.sample_partners(
-            active,
-            ent.entity_id,
-            cfg.run.seed,
-            self.tick,
-            cfg.policy.partner_samples,
-        )
-        local_resources = self.environment.cell_values(cells)
-        info = self.information.observe(
-            active=active,
-            stable_ids=ent.entity_id,
-            cell_ids=cells,
-            partners=partners,
-            energy=ent.energy,
-            group_id=self.social.group_id,
-            sensor_quality=ent.sensor_quality(),
-            run_seed=cfg.run.seed,
-            tick=self.tick,
-        )
-        resource_gradient, danger_gradient = self.environment.gradients_for_entities(
-            self.spatial.entity_cells, ent.alive.size
-        )
-        stats.observation_seconds = time.perf_counter() - phase_started
+            phase_started = time.perf_counter()
+            cells = self.spatial.entity_cells[active]
+            partners = self.spatial.sample_partners(
+                active,
+                ent.entity_id,
+                cfg.run.seed,
+                self.tick,
+                cfg.policy.partner_samples,
+            )
+            local_resources = self.environment.cell_values(cells)
+            info = self.information.observe(
+                active=active,
+                stable_ids=ent.entity_id,
+                cell_ids=cells,
+                partners=partners,
+                energy=ent.energy,
+                group_id=self.social.group_id,
+                sensor_quality=ent.sensor_quality(),
+                run_seed=cfg.run.seed,
+                tick=self.tick,
+            )
+            resource_gradient, danger_gradient = self.environment.gradients_for_entities(
+                self.spatial.entity_cells, ent.alive.size
+            )
+            stats.observation_seconds = time.perf_counter() - phase_started
 
-        phase_started = time.perf_counter()
-        if self.social_control_enabled:
-            group_direction = (self.social.group_dir_x, self.social.group_dir_y)
+            phase_started = time.perf_counter()
+            if self.social_control_enabled:
+                group_direction = (self.social.group_dir_x, self.social.group_dir_y)
+            else:
+                group_direction = (np.zeros_like(self.social.group_dir_x), np.zeros_like(self.social.group_dir_y))
+            decision = self.policy.decide(
+                active=active,
+                stable_ids=ent.entity_id,
+                energy=ent.energy,
+                integrity=ent.integrity,
+                fertility=ent.fertility,
+                genotype=ent.genotype,
+                memory=ent.memory,
+                local_resources=local_resources,
+                resource_gradient=resource_gradient,
+                danger_gradient=danger_gradient,
+                group_direction=group_direction,
+                partners=partners,
+                info=info,
+                run_seed=cfg.run.seed,
+                tick=self.tick,
+            )
+            stats.policy_seconds = time.perf_counter() - phase_started
         else:
-            group_direction = (np.zeros_like(self.social.group_dir_x), np.zeros_like(self.social.group_dir_y))
-        decision = self.policy.decide(
-            active=active,
-            stable_ids=ent.entity_id,
-            energy=ent.energy,
-            integrity=ent.integrity,
-            fertility=ent.fertility,
-            genotype=ent.genotype,
-            memory=ent.memory,
-            local_resources=local_resources,
-            resource_gradient=resource_gradient,
-            danger_gradient=danger_gradient,
-            group_direction=group_direction,
-            partners=partners,
-            info=info,
-            run_seed=cfg.run.seed,
-            tick=self.tick,
-        )
-        stats.policy_seconds = time.perf_counter() - phase_started
+            phase_started = time.perf_counter()
+            self.gpu_runtime.update_fields(self.tick)
+            self.gpu_runtime.backend.synchronize()
+            stats.environment_seconds = time.perf_counter() - phase_started
+            prepared = self.gpu_runtime.prepare(
+                entity=ent,
+                social=self.social,
+                information=self.information,
+                policy=self.policy,
+                social_control_enabled=self.social_control_enabled,
+                run_seed=cfg.run.seed,
+                tick=self.tick,
+                retain_logits=self._trajectory_file is not None,
+            )
+            active = prepared.active
+            if active.size == 0:
+                self.gpu_runtime.sync_to_host(self.environment, self.information)
+                return stats
+            cells = prepared.cells
+            partners = prepared.partners
+            local_resources = prepared.local_resources
+            resource_gradient = prepared.resource_gradient
+            danger_gradient = prepared.danger_gradient
+            info = prepared.information
+            decision = prepared.decision
+            stats.spatial_seconds = prepared.spatial_seconds
+            stats.observation_seconds = prepared.observation_seconds
+            stats.policy_seconds = prepared.policy_seconds
         self.action_counts += np.bincount(decision.action, minlength=len(Action))
         stats.action_entropy = float(decision.entropy.mean())
         stats.signal_detection_rate = float(info.signal_mask.mean())
@@ -492,7 +557,11 @@ class Simulation:
                 np.asarray([base, base * 0.45, base * 0.25, base * 0.18], dtype=np.float32),
                 (harvest_rows.size, 1),
             )
-            gathered = self.environment.resolve_harvest(harvest_cells, rates)
+            gathered = (
+                self.gpu_runtime.resolve_harvest(harvest_cells, rates)
+                if self.gpu_runtime is not None
+                else self.environment.resolve_harvest(harvest_cells, rates)
+            )
             resolutions.resource_delta[harvest_rows] = gathered
             harvested = gathered[:, 0] > 1e-8
             resolutions.success[harvest_rows] = harvested
@@ -545,7 +614,10 @@ class Simulation:
         ent.vy[non_movers] = 0.0
 
         if harvest_rows.size:
-            self.environment.commit_harvest(harvest_cells, gathered)
+            if self.gpu_runtime is not None:
+                self.gpu_runtime.commit_harvest(harvest_cells, gathered)
+            else:
+                self.environment.commit_harvest(harvest_cells, gathered)
             harvesters = intents.carrier_index[harvest_rows]
             ent.energy[harvesters] = np.minimum(ent.energy[harvesters] + gathered[:, 0], cfg.entities.max_energy)
             ent.integrity[harvesters] = np.minimum(ent.integrity[harvesters] + gathered[:, 1] * 0.05, 1.0)
@@ -588,7 +660,11 @@ class Simulation:
         # Existence costs and environmental damage.
         current_active = np.flatnonzero(ent.alive).astype(np.int32)
         current_cells = self.spatial.cell_ids(ent.x[current_active], ent.y[current_active])
-        hazard = self.environment.hazard.reshape(-1)[current_cells]
+        hazard = (
+            self.gpu_runtime.hazard_for_cells(current_cells)
+            if self.gpu_runtime is not None
+            else self.environment.hazard.reshape(-1)[current_cells]
+        )
         moved_now = np.zeros(ent.alive.size, dtype=bool)
         moved_now[movers] = True
         cost = cfg.entities.maintenance_cost + moved_now[current_active] * cfg.entities.movement_cost
@@ -642,10 +718,20 @@ class Simulation:
         )
         stats.graph_seconds = time.perf_counter() - phase_started
         self._record_trajectories(intents, resolutions, decision.logits)
+        if self.gpu_runtime is not None:
+            self.gpu_runtime.sync_to_host(self.environment, self.information)
         self.tick += 1
         return stats
 
-    def metric_row(self, stats: StepStats, elapsed: float) -> dict[str, float | int]:
+    def metric_row(
+        self,
+        stats: StepStats,
+        elapsed: float,
+        *,
+        wall_elapsed: float = 0.0,
+        window_seconds: float = 0.0,
+        window_ticks: int = 1,
+    ) -> dict[str, float | int]:
         ent = self.entities
         active = np.flatnonzero(ent.alive)
         alive_count = active.size
@@ -696,12 +782,18 @@ class Simulation:
             "conflict_seconds": stats.conflict_seconds,
             "graph_seconds": stats.graph_seconds,
             "step_seconds": elapsed,
+            "wall_elapsed_seconds": wall_elapsed,
+            "window_seconds": window_seconds,
+            "window_ticks": window_ticks,
+            "window_seconds_per_tick": window_seconds / max(window_ticks, 1),
         }
         row.update(self.subjects.summary())
         return row
 
     def run(self) -> dict[str, float | int]:
         started = time.perf_counter()
+        window_started = started
+        window_start_tick = 0
         final_row: dict[str, float | int] = {}
         try:
             for _ in range(self.cfg.run.ticks):
@@ -709,13 +801,27 @@ class Simulation:
                 stats = self.step()
                 elapsed = time.perf_counter() - step_started
                 if self.tick % self.cfg.run.metrics_period == 0 or self.tick == 1:
-                    final_row = self.metric_row(stats, elapsed)
+                    reported_at = time.perf_counter()
+                    window_ticks = self.tick - window_start_tick
+                    window_seconds = reported_at - window_started
+                    final_row = self.metric_row(
+                        stats,
+                        elapsed,
+                        wall_elapsed=reported_at - started,
+                        window_seconds=window_seconds,
+                        window_ticks=window_ticks,
+                    )
                     self.metrics.write(final_row)
                     print(
                         f"tick={self.tick:7d} alive={final_row['alive']:7d} "
                         f"groups={final_row['groups']:5d} E={final_row['mean_energy']:.3f} "
-                        f"step={elapsed:.3f}s"
+                        f"step={elapsed:.3f}s window_avg={final_row['window_seconds_per_tick']:.3f}s "
+                        f"wall={final_row['wall_elapsed_seconds']:.1f}s"
                     )
+                    # Start the next window before output/checkpoint work so
+                    # its average includes the non-step costs users observe.
+                    window_started = reported_at
+                    window_start_tick = self.tick
                 if self.tick % self.cfg.run.checkpoint_period == 0:
                     self._checkpoint()
                 if not np.any(self.entities.alive):
@@ -726,6 +832,7 @@ class Simulation:
                 self._trajectory_file.close()
         metadata = {
             "version": __version__,
+            "execution_backend": self.execution_backend,
             "ticks_completed": self.tick,
             "wall_seconds": time.perf_counter() - started,
             "final": final_row,

@@ -160,7 +160,6 @@ class InformationSystem:
         if capacity == 0 or not self.pending_messages:
             return payload, mask, age, confidence, source, corruption
 
-        id_to_row = {int(entity_id): row for row, entity_id in enumerate(stable_ids[active].tolist())}
         due: list[PendingMessage] = []
         remaining: list[PendingMessage] = []
         for message in self.pending_messages:
@@ -169,62 +168,112 @@ class InformationSystem:
             else:
                 remaining.append(message)
         self.pending_messages = remaining
+        if not due:
+            return payload, mask, age, confidence, source, corruption
+
         # Stable ordering keeps attention truncation independent of incidental
         # queue insertion order.
-        due.sort(key=lambda event: (event.receiver_id, event.source_id, event.emit_tick))
-        next_slot = np.zeros(active.size, dtype=np.int32)
+        source_ids = np.fromiter((event.source_id for event in due), dtype=np.uint64, count=len(due))
+        receiver_ids = np.fromiter((event.receiver_id for event in due), dtype=np.uint64, count=len(due))
+        emit_ticks = np.fromiter((event.emit_tick for event in due), dtype=np.int64, count=len(due))
+        payloads = np.asarray([event.payload for event in due], dtype=np.float64)
+        confidences = np.fromiter((event.confidence for event in due), dtype=np.float64, count=len(due))
+        order = np.lexsort((emit_ticks, source_ids, receiver_ids))
+        source_ids = source_ids[order]
+        receiver_ids = receiver_ids[order]
+        emit_ticks = emit_ticks[order]
+        payloads = payloads[order]
+        confidences = confidences[order]
+
+        # Entity slots are not ordered by stable ID after births and deaths.
+        # Resolve every receiver to its dense active row with one stable sort
+        # and binary lookup rather than a Python dictionary lookup per event.
+        active_ids = stable_ids[active].astype(np.uint64, copy=False)
+        id_order = np.argsort(active_ids, kind="stable")
+        sorted_ids = active_ids[id_order]
+        location = np.searchsorted(sorted_ids, receiver_ids)
+        in_range = location < sorted_ids.size
+        safe_location = np.where(in_range, location, 0)
+        valid = in_range & (sorted_ids[safe_location] == receiver_ids)
+        if not np.any(valid):
+            return payload, mask, age, confidence, source, corruption
+
+        rows = id_order[safe_location[valid]].astype(np.int32, copy=False)
+        source_ids = source_ids[valid]
+        receiver_ids = receiver_ids[valid]
+        emit_ticks = emit_ticks[valid]
+        payloads = payloads[valid]
+        confidences = confidences[valid]
+        quality = np.clip(sensor_quality[active[rows]], 0.05, 2.0).astype(np.float64)
         decode_ctx = RandomContext(run_seed, tick, phase=43, stream=Stream.SIGNAL_DECODING)
-        for message in due:
-            row = id_to_row.get(message.receiver_id)
-            if row is None or next_slot[row] >= capacity:
-                continue
-            receiver_id = np.asarray([message.receiver_id], dtype=np.uint64)
-            quality = float(np.clip(sensor_quality[active[row]], 0.05, 2.0))
-            strength = float(np.mean(message.payload) / (1.0 + np.mean(message.payload)))
-            detected = bool(
-                bernoulli(
-                    decode_ctx,
-                    receiver_id,
-                    np.clip((1.0 - self.cfg.information.channel_loss) * quality * (0.2 + 0.8 * strength), 0.0, 1.0),
-                    draw_index=int(message.source_id & 0x7FFFFFFF),
-                )[0]
+
+        strength = payloads.mean(axis=1)
+        strength = strength / (1.0 + strength)
+        detected = bernoulli(
+            decode_ctx,
+            receiver_ids,
+            np.clip(
+                (1.0 - self.cfg.information.channel_loss) * quality * (0.2 + 0.8 * strength),
+                0.0,
+                1.0,
+            ),
+            draw_index=source_ids & np.uint64(0x7FFFFFFF),
+        )
+
+        # The reference semantics keep the first ``capacity`` successfully
+        # detected messages per receiver in the stable order above.  Prefix
+        # sums reproduce that exact attention allocation without per-message
+        # Python state.
+        group_start = np.empty(receiver_ids.size, dtype=bool)
+        group_start[0] = True
+        group_start[1:] = receiver_ids[1:] != receiver_ids[:-1]
+        cumulative = np.cumsum(detected, dtype=np.int32)
+        group_base = np.where(group_start, cumulative - detected.astype(np.int32), 0)
+        group_base = np.maximum.accumulate(group_base)
+        slots = cumulative - group_base - 1
+        accepted = detected & (slots < capacity)
+        if not np.any(accepted):
+            return payload, mask, age, confidence, source, corruption
+
+        rows = rows[accepted]
+        slots = slots[accepted].astype(np.int32, copy=False)
+        source_ids = source_ids[accepted]
+        receiver_ids = receiver_ids[accepted]
+        emit_ticks = emit_ticks[accepted]
+        payloads = payloads[accepted]
+        confidences = confidences[accepted]
+        quality = quality[accepted]
+
+        decoded = payloads.copy()
+        draw_base = (source_ids + np.uint64(1)) & np.uint64(0x7FFFFFFF)
+        for channel in range(self.CHANNELS):
+            decoded[:, channel] += normal(
+                decode_ctx,
+                receiver_ids,
+                0.0,
+                self.cfg.information.receiver_noise / quality,
+                draw_index=(draw_base + np.uint64(channel * 17)) & np.uint64(0x7FFFFFFF),
             )
-            if not detected:
-                continue
-            slot = int(next_slot[row])
-            next_slot[row] += 1
-            decoded = np.asarray(message.payload, dtype=np.float64)
-            noise = np.asarray(
-                [
-                    normal(
-                        decode_ctx,
-                        receiver_id,
-                        0.0,
-                        self.cfg.information.receiver_noise / quality,
-                        draw_index=int((message.source_id + 1 + channel * 17) & 0x7FFFFFFF),
-                    )[0]
-                    for channel in range(self.CHANNELS)
-                ]
-            )
-            decoded = np.maximum(decoded + noise, 0.0)
-            mistaken = bool(
-                bernoulli(
-                    decode_ctx,
-                    receiver_id,
-                    np.clip(self.cfg.information.classification_error / quality, 0.0, 1.0),
-                    draw_index=int((message.source_id + 71) & 0x7FFFFFFF),
-                )[0]
-            )
-            if mistaken:
-                decoded = np.roll(decoded, 1 + int(message.source_id % (self.CHANNELS - 1)))
-                corruption[row, slot] |= np.uint8(1)
-            payload[row, slot] = decoded.astype(np.float32)
-            mask[row, slot] = True
-            age[row, slot] = max(0, tick - message.emit_tick)
-            confidence[row, slot] = np.float32(
-                np.clip(message.confidence * quality / (1.0 + self.cfg.information.receiver_noise), 0.0, 1.0)
-            )
-            source[row, slot] = np.uint64(message.source_id)
+        decoded = np.maximum(decoded, 0.0)
+        mistaken = bernoulli(
+            decode_ctx,
+            receiver_ids,
+            np.clip(self.cfg.information.classification_error / quality, 0.0, 1.0),
+            draw_index=(source_ids + np.uint64(71)) & np.uint64(0x7FFFFFFF),
+        )
+        if np.any(mistaken):
+            shift = 1 + (source_ids[mistaken] % np.uint64(self.CHANNELS - 1)).astype(np.int32)
+            columns = (np.arange(self.CHANNELS)[None, :] - shift[:, None]) % self.CHANNELS
+            decoded[mistaken] = np.take_along_axis(decoded[mistaken], columns, axis=1)
+            corruption[rows[mistaken], slots[mistaken]] = np.uint8(1)
+
+        payload[rows, slots] = decoded.astype(np.float32)
+        mask[rows, slots] = True
+        age[rows, slots] = np.maximum(tick - emit_ticks, 0).astype(np.uint32)
+        confidence[rows, slots] = np.clip(
+            confidences * quality / (1.0 + self.cfg.information.receiver_noise), 0.0, 1.0
+        ).astype(np.float32)
+        source[rows, slots] = source_ids
         return payload, mask, age, confidence, source, corruption
 
     def observe(

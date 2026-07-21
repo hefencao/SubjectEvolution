@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import IntEnum
+from typing import Any
 import numpy as np
 
 from .backend import backend_from_array
@@ -48,7 +49,7 @@ def _any_true(xp: object, value: object) -> bool:
 def _keys_on_backend(
     ctx: RandomContext,
     subject_ids: np.ndarray,
-    draw_index: int,
+    draw_index: int | Any,
     xp: object,
 ) -> np.ndarray:
     """Construct SplitMix64 keys without moving an array between backends."""
@@ -62,14 +63,21 @@ def _keys_on_backend(
     x ^= uint64((int(ctx.tick) * 0xA24BAED4963EE407) & _MASK)
     x ^= uint64((int(ctx.phase) * 0x9FB21C651E98DF25) & _MASK)
     x ^= uint64((int(ctx.stream) * 0xC13FA9A902A6328F) & _MASK)
-    x ^= uint64((int(draw_index) * 0x91E10DA5C79E7B1D) & _MASK)
+    # A scalar draw index is the usual path.  Batched event processing also
+    # needs one draw index per row; evaluating those keys together preserves
+    # the exact state-free random stream without a Python loop.
+    if np.isscalar(draw_index):
+        x ^= uint64((int(draw_index) * 0x91E10DA5C79E7B1D) & _MASK)
+    else:
+        draw = xp.asarray(draw_index, dtype=xp.uint64)
+        x ^= (draw * uint64(0x91E10DA5C79E7B1D)) & uint64(_MASK)
     return _mix64(x, xp)
 
 
 def _uniform01_on_backend(
     ctx: RandomContext,
     subject_ids: np.ndarray,
-    draw_index: int,
+    draw_index: int | Any,
     xp: object,
 ) -> np.ndarray:
     value = _keys_on_backend(ctx, subject_ids, draw_index, xp)
@@ -89,7 +97,7 @@ def _mix64(x: np.ndarray, xp: object | None = None) -> np.ndarray:
     return x ^ (x >> uint64(31))
 
 
-def keys(ctx: RandomContext, subject_ids: np.ndarray, draw_index: int = 0) -> np.ndarray:
+def keys(ctx: RandomContext, subject_ids: np.ndarray, draw_index: int | Any = 0) -> np.ndarray:
     """Return stateless 64-bit keys on the backend that owns ``subject_ids``.
 
     A NumPy subject-id array keeps the CPU reference path.  A CuPy subject-id
@@ -101,13 +109,18 @@ def keys(ctx: RandomContext, subject_ids: np.ndarray, draw_index: int = 0) -> np
     return _keys_on_backend(ctx, subject_ids, draw_index, xp)
 
 
-def uniform01(ctx: RandomContext, subject_ids: np.ndarray, draw_index: int = 0) -> np.ndarray:
+def uniform01(ctx: RandomContext, subject_ids: np.ndarray, draw_index: int | Any = 0) -> np.ndarray:
     """Sample ``[0, 1)`` uniformly on the backend that owns ``subject_ids``."""
     xp = backend_from_array(subject_ids).xp
     return _uniform01_on_backend(ctx, subject_ids, draw_index, xp)
 
 
-def bernoulli(ctx: RandomContext, subject_ids: np.ndarray, p: float | np.ndarray, draw_index: int = 0) -> np.ndarray:
+def bernoulli(
+    ctx: RandomContext,
+    subject_ids: np.ndarray,
+    p: float | np.ndarray,
+    draw_index: int | Any = 0,
+) -> np.ndarray:
     """Draw Bernoulli outcomes without mutable CPU or GPU RNG state."""
     xp = backend_from_array(subject_ids).xp
     prob = xp.asarray(p, dtype=np.float64)
@@ -121,7 +134,7 @@ def normal(
     subject_ids: np.ndarray,
     mean: float | np.ndarray = 0.0,
     stddev: float | np.ndarray = 1.0,
-    draw_index: int = 0,
+    draw_index: int | Any = 0,
 ) -> np.ndarray:
     """Draw Box--Muller normals without mutable CPU or GPU RNG state."""
     xp = backend_from_array(subject_ids).xp
@@ -129,7 +142,12 @@ def normal(
     if _any_true(xp, ~xp.isfinite(std) | (std < 0)):
         raise ValueError("Normal stddev cannot be negative")
     u1 = xp.clip(_uniform01_on_backend(ctx, subject_ids, draw_index, xp), 1e-12, 1.0)
-    u2 = _uniform01_on_backend(ctx, subject_ids, draw_index + 1, xp)
+    next_draw = (
+        int(draw_index) + 1
+        if np.isscalar(draw_index)
+        else xp.asarray(draw_index, dtype=xp.uint64) + xp.uint64(1)
+    )
+    u2 = _uniform01_on_backend(ctx, subject_ids, next_draw, xp)
     z = xp.sqrt(-2.0 * xp.log(u1)) * xp.cos(2.0 * np.pi * u2)
     return xp.asarray(mean, dtype=np.float64) + std * z
 
@@ -140,7 +158,7 @@ def categorical_from_logits(
     logits: np.ndarray,
     temperature: float,
     mask: np.ndarray | None = None,
-    draw_index: int = 0,
+    draw_index: int | Any = 0,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Sample one categorical action per row, returning action, probability and entropy."""
     if not np.isfinite(temperature) or temperature <= 0:

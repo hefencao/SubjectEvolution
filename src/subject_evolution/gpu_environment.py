@@ -12,6 +12,8 @@ from typing import Any
 
 from .backend import Backend, resolve_backend
 from .config import SimulationConfig
+from .information import InformationObservation
+from .random_api import RandomContext, Stream, bernoulli, normal, uniform01
 from .reductions import stable_segmented_sum, validate_cell_ids
 
 
@@ -199,6 +201,147 @@ class DeviceInformationField:
         return (
             self.field.reshape(self.CHANNELS, -1)[:, cells].T.astype(xp.float32),
             self.age.reshape(self.CHANNELS, -1)[:, cells].T.astype(xp.float32),
+        )
+
+    def observe(
+        self,
+        *,
+        stable_ids: Any,
+        cell_ids: Any,
+        partners: Any,
+        energy: Any,
+        group_id: Any,
+        own_group_id: Any,
+        sensor_quality: Any,
+        messages: Any,
+        message_mask: Any,
+        message_age: Any,
+        message_confidence: Any,
+        message_source_id: Any,
+        message_corruption: Any,
+        run_seed: int,
+        tick: int,
+    ) -> InformationObservation:
+        """Build the policy observation batch entirely on this backend.
+
+        Direct-message queue ownership remains with the CPU world during the
+        hybrid migration.  Its already-decoded fixed observation buffers are
+        uploaded as ordinary inputs; all field sampling, perception noise,
+        partner perception and aggregate observation construction execute on
+        the selected device.
+        """
+        xp = self.backend.xp
+        ids = xp.asarray(stable_ids, dtype=xp.uint64)
+        cells = validate_cell_ids(
+            cell_ids,
+            self.cfg.world.grid_x * self.cfg.world.grid_y,
+            backend=self.backend,
+        )
+        partner_indices = xp.asarray(partners, dtype=xp.int32)
+        energies = xp.asarray(energy, dtype=xp.float32)
+        groups = xp.asarray(group_id, dtype=xp.uint64)
+        own_groups = xp.asarray(own_group_id, dtype=xp.uint64)
+        quality = xp.clip(xp.asarray(sensor_quality, dtype=xp.float64), 0.05, 2.0)
+        raw, raw_age = self.sample(cells)
+        raw = raw.astype(xp.float64)
+        raw_age = raw_age.astype(xp.float32)
+        direct_messages = xp.asarray(messages, dtype=xp.float32)
+        direct_mask = xp.asarray(message_mask, dtype=bool)
+        direct_age = xp.asarray(message_age, dtype=xp.uint32)
+        direct_confidence = xp.asarray(message_confidence, dtype=xp.float32)
+        direct_source = xp.asarray(message_source_id, dtype=xp.uint64)
+        direct_corruption = xp.asarray(message_corruption, dtype=xp.uint8)
+
+        detect_ctx = RandomContext(run_seed, tick, phase=40, stream=Stream.SIGNAL_DETECTION)
+        strength = raw / (1.0 + raw)
+        detection_p = xp.clip(
+            (1.0 - self.cfg.information.channel_loss) * quality[:, None] * (0.2 + 0.8 * strength),
+            0.0,
+            1.0,
+        )
+        mask = xp.empty_like(raw, dtype=bool)
+        for channel in range(self.CHANNELS):
+            mask[:, channel] = bernoulli(detect_ctx, ids, detection_p[:, channel], draw_index=channel)
+
+        decode_ctx = RandomContext(run_seed, tick, phase=41, stream=Stream.SIGNAL_DECODING)
+        noisy = raw.copy()
+        noise_scale = self.cfg.information.receiver_noise / quality
+        for channel in range(self.CHANNELS):
+            noisy[:, channel] += normal(decode_ctx, ids, 0.0, noise_scale, draw_index=channel * 2)
+        noisy = xp.maximum(noisy, 0.0)
+
+        misclassified = bernoulli(
+            decode_ctx,
+            ids,
+            self.cfg.information.classification_error / quality,
+            draw_index=20,
+        )
+        shifts = 1 + (uniform01(decode_ctx, ids, draw_index=21) * 2).astype(xp.int32)
+        channels = (xp.arange(self.CHANNELS, dtype=xp.int32)[None, :] - shifts[:, None]) % self.CHANNELS
+        rotated = xp.take_along_axis(noisy, channels, axis=1)
+        rotated_mask = xp.take_along_axis(mask, channels, axis=1)
+        noisy = xp.where(misclassified[:, None], rotated, noisy)
+        mask = xp.where(misclassified[:, None], rotated_mask, mask)
+        noisy = xp.where(mask, noisy, 0.0)
+
+        if direct_messages.shape[1]:
+            message_sum = (direct_messages * direct_mask[:, :, None]).sum(axis=1)
+            message_count = xp.maximum(direct_mask.sum(axis=1, keepdims=True), 1)
+            noisy += message_sum / message_count
+        noisy = noisy.astype(xp.float32)
+
+        partner_mask = partner_indices >= 0
+        safe_partners = xp.where(partner_mask, partner_indices, 0)
+        actual_partner_energy = energies[safe_partners]
+        partner_detect_ctx = RandomContext(run_seed, tick, phase=42, stream=Stream.SIGNAL_CHANNEL)
+        for draw in range(partner_indices.shape[1]):
+            received = bernoulli(
+                partner_detect_ctx,
+                ids,
+                xp.clip((1.0 - self.cfg.information.channel_loss) * quality, 0.0, 1.0),
+                draw_index=draw,
+            )
+            partner_mask[:, draw] &= received
+        partner_noise = xp.zeros_like(actual_partner_energy, dtype=xp.float64)
+        for draw in range(partner_indices.shape[1]):
+            partner_noise[:, draw] = normal(
+                decode_ctx,
+                ids,
+                0.0,
+                noise_scale,
+                draw_index=40 + draw * 2,
+            )
+        perceived_energy = xp.maximum(actual_partner_energy + partner_noise, 0.0)
+        perceived_energy = xp.where(partner_mask, perceived_energy, 0.0).astype(xp.float32)
+        partner_groups = groups[safe_partners]
+        group_match = (own_groups[:, None] != 0) & (own_groups[:, None] == partner_groups) & partner_mask
+        partner_missing = (
+            1.0 - partner_mask.mean(axis=1)
+            if partner_mask.shape[1]
+            else xp.ones(ids.size, dtype=xp.float32)
+        )
+        uncertainty = xp.stack(
+            [
+                1.0 - mask.mean(axis=1),
+                xp.full(ids.size, self.cfg.information.receiver_noise, dtype=xp.float32),
+                partner_missing,
+            ],
+            axis=1,
+        ).astype(xp.float32)
+        return InformationObservation(
+            signals=noisy,
+            signal_mask=mask,
+            signal_age=raw_age,
+            messages=direct_messages,
+            message_mask=direct_mask,
+            message_age=direct_age,
+            message_confidence=direct_confidence,
+            message_source_id=direct_source,
+            message_corruption=direct_corruption,
+            partner_energy=perceived_energy,
+            partner_group_match=group_match.astype(xp.float32),
+            partner_mask=partner_mask,
+            uncertainty=uncertainty,
         )
 
     def to_numpy(self, value: Any) -> Any:

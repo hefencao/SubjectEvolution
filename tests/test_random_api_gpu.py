@@ -47,6 +47,17 @@ def test_gpu_keys_and_uniform_match_cpu_bit_for_bit():
     np.testing.assert_array_equal(cp.asnumpy(gpu_keys), keys(ctx, ids, draw_index=19))
     np.testing.assert_array_equal(cp.asnumpy(gpu_uniform), uniform01(ctx, ids, draw_index=19))
 
+    draw_indices = np.asarray([3, 19, 77, 91, 127, 4099], dtype=np.uint64)
+    gpu_vector_keys = keys(ctx, cp.asarray(ids), draw_index=cp.asarray(draw_indices))
+    gpu_vector_normal = normal(ctx, cp.asarray(ids), mean=0.2, stddev=1.3, draw_index=cp.asarray(draw_indices))
+    np.testing.assert_array_equal(cp.asnumpy(gpu_vector_keys), keys(ctx, ids, draw_index=draw_indices))
+    np.testing.assert_allclose(
+        cp.asnumpy(gpu_vector_normal),
+        normal(ctx, ids, mean=0.2, stddev=1.3, draw_index=draw_indices),
+        rtol=1e-12,
+        atol=1e-12,
+    )
+
 
 def test_gpu_distributions_follow_cpu_key_stream():
     ids = np.arange(1, 1025, dtype=np.uint64)
@@ -98,4 +109,3 @@ def test_gpu_distribution_moments_match_cpu_reference():
     np.testing.assert_allclose(gpu_normal, cpu_normal, rtol=1e-12, atol=1e-12)
     assert abs(float(gpu_normal.mean())) < 0.02
     assert abs(float(gpu_normal.var()) - 1.0) < 0.03
-

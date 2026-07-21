@@ -1,6 +1,6 @@
-# 嵌套主体存在演化模拟：v0.3 GPU 基础阶段
+# 嵌套主体存在演化模拟：v0.4 GPU 混合执行阶段
 
-这是项目规范的可运行 CPU 参考内核和分阶段 GPU 基础实现。v0.3 已迁移随机键、环境/信息场及规则网格，但完整 GPU 世界循环仍会在后续阶段逐项接入，避免破坏 v0.2 固定的行动语义。
+这是项目规范的可运行 CPU 参考内核和分阶段 GPU 实现。v0.4 将字段、规则网格、观察构建和参数化策略批处理接入显式 GPU 路径；行动结算、关系、出生死亡与主体图仍由 CPU 保持语义权威。
 
 ## 已实现
 
@@ -12,6 +12,8 @@
 - 无状态随机键及统一Bernoulli、Normal、Categorical采样；
 - 可选 CuPy 后端：GPU 数组上的无状态随机键和基础分布；
 - 设备版四资源环境、危险场、三通道信息场、规则网格和伙伴采样；
+- `--backend gpu` 混合运行：设备字段、伙伴采样、场/伙伴观察和策略批处理；
+- 直接消息接收改为批量随机键、稳定排序和向量化容量分配，不再逐条调用 NumPy 随机过程；
 - 场发射与资源提交使用稳定排序、分段归约，不依赖浮点原子累加；
 - 传播丢失、接收噪声、语义误分类和伙伴感知误差；
 - 参数化共享策略、个体遗传潜变量和有限记忆；
@@ -29,7 +31,7 @@
 
 ## 尚未实现
 
-- 完整 GPU 世界循环（观察、策略、行动、关系、出生死亡和主体图）；
+- 完整设备驻留世界循环（行动结算、关系、出生死亡、主体图和日志仍在 CPU）；
 - 完整主体图数据库及任意嵌套主体；
 - 离线反事实分支重放；
 - 信息模板寄生主体；
@@ -57,11 +59,12 @@ GPU 基础阶段需要与已安装 CUDA Toolkit 的**主版本**匹配的 **CuPy
 conda activate se
 python -m pip install -U cupy-cuda13x
 export CUDA_PATH=/usr/local/cuda-13.3
+export CUDA_HOME="$CUDA_PATH"
 export LD_LIBRARY_PATH="$CUDA_PATH/targets/x86_64-linux/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 python -m pytest -q
 ```
 
-若系统的 CUDA 安装目录不同，请把 `CUDA_PATH` 改为实际路径。上述变量让 CuPy 在 WSL 中定位工具包和动态库；可将它们写入 Conda 环境激活脚本以免每次重复设置。
+若系统的 CUDA 安装目录不同，请把 `CUDA_PATH` 改为实际路径。上述变量让 CuPy 在 WSL 中定位工具包和动态库；`CUDA_HOME` 应与 `CUDA_PATH` 相同，避免 Conda 遗留值导致的运行时告警。可将它们写入 Conda 环境激活脚本以免每次重复设置。
 
 开发测试：
 
@@ -75,7 +78,8 @@ pytest
 ```bash
 python -m subject_evolution.cli \
   --config configs/mvp_small.json \
-  --output runs/demo
+  --output runs/demo_gpu \
+  --backend gpu
 ```
 
 运行成对反事实分支：
@@ -91,7 +95,7 @@ python -m subject_evolution.cli \
 
 输出：
 
-- `metrics.csv`：周期指标；
+- `metrics.csv`：周期指标；`step_seconds` 仅覆盖世界 step，`window_seconds_per_tick` 是包含前一窗口日志/检查点开销的墙钟平均；
 - `summary.json`：最后一条指标；
 - `run_metadata.json`：运行时间和累计动作；
 - `checkpoint_*.npz`：抽样检查点；
@@ -102,16 +106,18 @@ python -m subject_evolution.cli \
 ```bash
 python -m subject_evolution.cli \
   --config configs/mvp_100k.json \
-  --output runs/mvp_100k
+  --output runs/mvp_100k_gpu \
+  --backend gpu
 ```
 
-当前版本是CPU参考实现，10万实体配置用于验证数据和机制，不保证实时速度。完成CPU回归测试后，GPU版本应保持相同配置、随机键、观察schema和行动语义。
+不带 `--backend` 时仍是严格 CPU 参考路径。`--backend gpu` 会明确启用混合 GPU 路径；`--backend auto` 仅在 GPU 可用时使用它，否则回退 CPU。10万实体应使用独立输出目录，避免同目录混入不同后端或中断运行的检查点。
 
 在有 CUDA 的机器上，先对已迁移阶段运行对照：
 
 ```bash
 conda activate se
 export CUDA_PATH=/usr/local/cuda-13.3
+export CUDA_HOME="$CUDA_PATH"
 export LD_LIBRARY_PATH="$CUDA_PATH/targets/x86_64-linux/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 python scripts/verify_gpu_foundation.py --config configs/mvp_small.json
 ```
@@ -135,6 +141,7 @@ run_seed, tick, simulation_phase, subject_id, stream_id, draw_index
 - `random_api.py`：统一采样；
 - `backend.py`：可选 NumPy/CuPy 后端与显式主机/设备转换；
 - `gpu_environment.py`：设备版环境与信息场阶段；
+- `gpu_runtime.py`：GPU 观察/策略与 CPU 世界提交之间的显式边界；
 - `spatial.py`：空间索引与局部伙伴采样；
 - `information.py`：传播和接收误差；
 - `policy.py`：可替换策略接口的首个参数化实现；
@@ -152,7 +159,7 @@ python scripts/run_sweep.py --output runs/sweep --ticks 200 --seeds 3
 
 ## 设计文档
 
-- `docs/IMPLEMENTATION_STATUS.md`：v0.3完成度与已知简化；
-- `docs/GPU_FOUNDATION.md`：GPU 基础阶段、对照语义与运行要求；
+- `docs/IMPLEMENTATION_STATUS.md`：v0.4完成度、实测规模与已知简化；
+- `docs/GPU_FOUNDATION.md`：GPU 混合执行、对照语义与运行要求；
 - `docs/NEXT_GPU_PHASE.md`：GPU迁移顺序；
 - `docs/specification/`：项目总规范和四份工程规范。

@@ -14,6 +14,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--config", required=True, help="Path to a JSON configuration file")
     parser.add_argument("--output", required=True, help="Output directory")
     parser.add_argument(
+        "--backend",
+        choices=("cpu", "gpu", "auto"),
+        default="cpu",
+        help="Execution backend. GPU accelerates fields, observations and policy batches; default: cpu.",
+    )
+    parser.add_argument(
         "--counterfactual",
         help=(
             "Run a paired branch from the same snapshot. Choices: "
@@ -31,10 +37,10 @@ def main() -> None:
     shutil.copy2(config_path, output / "config.json")
     cfg = load_config(config_path)
     if args.counterfactual:
-        simulation = Simulation(cfg, output / "baseline")
+        simulation = Simulation(cfg, output / "baseline", backend=args.backend)
         run_paired(simulation, args.counterfactual, output)
     else:
-        simulation = Simulation(cfg, output)
+        simulation = Simulation(cfg, output, backend=args.backend)
         simulation.run()
 
 
