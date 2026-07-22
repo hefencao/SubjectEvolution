@@ -495,6 +495,7 @@ entities:
   relation_slots: 16
   neighbor_observation_limit: 32
   message_observation_limit: 16
+  reproduction_capacity_arbitration: "stateless-random-v1"
 
 subjects:
   enabled_kinds:

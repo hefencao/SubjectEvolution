@@ -484,6 +484,10 @@ def test_scientific_mode_rejects_direct_action_replacement(tmp_path):
             7,
         ]
         assert audit["evolution_evaluation"]["feedback_to_world"] is False
+        assert (
+            audit["world_components"]["reproduction_capacity_arbitration"]
+            == "stable-id-v1"
+        )
         row = sim.metric_row(StepStats(), 0.0)
         assert not any("autonomy" in key for key in row)
         assert not any(key.startswith("entertainment_override") for key in row)
@@ -606,6 +610,11 @@ def test_run_metadata_uses_package_version(tmp_path):
     assert "heuristic_social_guidance_enabled" not in metadata["control"]
     assert metadata["scientific_validity"]["structural_evolution_provenance_valid"] is True
     assert metadata["scientific_validity"]["strict_unintervened_baseline"] is True
+    assert metadata["model_rules"] == {
+        "reproduction_capacity_arbitration": "stable-id-v1",
+        "same_tick_deaths_release_birth_slots": False,
+        "capacity_rejection_reproduction_cost": 0.0,
+    }
     assert "heuristic_guidance_actions" not in metadata["control"]
     assert summary["window_seconds_per_tick"] >= 0.0
 

@@ -38,6 +38,31 @@ def test_birth_allocation_plan_preserves_lifo_slots_without_mutating_pool() -> N
     assert plan.free_pool_version == 12
 
 
+def test_empty_birth_allocation_preserves_saturated_capacity_provenance() -> None:
+    requests = BirthRequestPlan(
+        source_rows=np.empty(0, dtype=np.int32),
+        parent_indices=np.empty(0, dtype=np.int32),
+        parent_entity_ids=np.empty(0, dtype=np.uint64),
+        parent_subject_ids=np.empty(0, dtype=np.uint64),
+        tick=7,
+        capacity_arbitration="stateless-random-v1",
+        capacity_candidate_count=12,
+        capacity_available_slots=0,
+    )
+
+    plan = plan_birth_allocations(
+        requests,
+        np.empty(0, dtype=np.int32),
+        next_entity_id=101,
+        free_pool_version=12,
+    )
+
+    assert plan.size == 0
+    assert plan.requests is requests
+    assert plan.requests.capacity_candidate_count == 12
+    assert plan.requests.capacity_available_slots == 0
+
+
 def test_entity_state_commits_birth_plan_once_and_rejects_stale_replay() -> None:
     cfg = load_config("configs/mvp_small.json")
     entities = EntityState(cfg)
@@ -68,6 +93,32 @@ def test_entity_state_commits_birth_plan_once_and_rejects_stale_replay() -> None
     assert int(entities.next_entity_id) == int(plan.offspring_entity_ids[-1]) + 1
     assert entities.free_slot_version == plan.free_pool_version + 1
     with pytest.raises(ValueError, match="pool version is stale"):
+        entities.commit_births(plan, mutation_std=0.0)
+
+
+def test_entity_state_rejects_birth_plan_from_another_capacity_model() -> None:
+    cfg = load_config("configs/mvp_small.json")
+    entities = EntityState(cfg)
+    parent = np.asarray([0], dtype=np.int32)
+    entities.primary_subject_id[parent] = np.asarray([9001], dtype=np.uint64)
+    requests = BirthRequestPlan(
+        source_rows=np.asarray([0], dtype=np.int32),
+        parent_indices=parent,
+        parent_entity_ids=entities.entity_id[parent].copy(),
+        parent_subject_ids=entities.primary_subject_id[parent].copy(),
+        tick=3,
+        capacity_arbitration="stable-id-v1",
+        capacity_candidate_count=1,
+        capacity_available_slots=1,
+    )
+    plan = plan_birth_allocations(
+        requests,
+        entities.free_slots,
+        int(entities.next_entity_id),
+        entities.free_slot_version,
+    )
+
+    with pytest.raises(ValueError, match="does not match world model rule"):
         entities.commit_births(plan, mutation_std=0.0)
 
 

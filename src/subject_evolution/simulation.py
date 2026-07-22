@@ -212,6 +212,13 @@ class EntityState:
             raise ValueError("birth allocation arrays must use integer dtypes")
         if int(requests.tick) < 0:
             raise ValueError("birth allocation tick must be non-negative")
+        if requests.capacity_arbitration not in {
+            "unspecified",
+            self.cfg.entities.reproduction_capacity_arbitration,
+        }:
+            raise ValueError(
+                "birth allocation capacity arbitration does not match world model rule"
+            )
         if count <= 0:
             return np.empty(0, dtype=np.int32), np.empty(0, dtype=np.int32)
         if int(plan.free_pool_version) != self.free_slot_version:
@@ -800,6 +807,9 @@ class Simulation:
                 "group_label_planner": type(self.group_label_planner).__name__,
                 "group_label_planner_scientific_safe": bool(
                     getattr(self.group_label_planner, "scientific_safe", False)
+                ),
+                "reproduction_capacity_arbitration": (
+                    self.cfg.entities.reproduction_capacity_arbitration
                 ),
             },
             "fixed_constraints": [
@@ -1994,6 +2004,13 @@ class Simulation:
             "final": final_row,
             "action_counts": {action.name: int(self.action_counts[action]) for action in Action},
             "subject_graph": self.subjects.summary(),
+            "model_rules": {
+                "reproduction_capacity_arbitration": (
+                    self.cfg.entities.reproduction_capacity_arbitration
+                ),
+                "same_tick_deaths_release_birth_slots": False,
+                "capacity_rejection_reproduction_cost": 0.0,
+            },
             "evolution_progress": {
                 "period": self.cfg.run.evolution_evaluation_period,
                 "evaluations": len(self.evolution_progress.records),

@@ -17,6 +17,7 @@ from .config import SimulationConfig
 from .intents import ActionIntentBatch, ActionResolutionBatch, FailureReason, action_rows, empty_resolutions
 from .lifecycle import BirthRequestPlan, empty_birth_request_plan
 from .policy import Action
+from .random_api import RandomContext, Stream, keys
 from .social import (
     RelationUpdatePlan,
     build_share_relation_update_plan,
@@ -28,6 +29,57 @@ from .social import (
 # its temporary keys on its selected backend.  The plan itself is always a
 # host-side, auditable value consumed by the world-commit phase.
 HarvestAllocator = Callable[[Any, Any], Any]
+
+
+def order_reproduction_candidates(
+    candidates: np.ndarray,
+    carrier_ids: np.ndarray,
+    *,
+    rule: str,
+    run_seed: int,
+    tick: int,
+) -> np.ndarray:
+    """Return a canonical capacity-priority order for reproduction intents.
+
+    ``stable-id-v1`` preserves archived-run semantics.  The current
+    ``stateless-random-v1`` rule derives one reproducible uint64 priority from
+    run seed, tick, stream, and stable entity ID.  SplitMix64 is a permutation
+    over uint64 inputs for a fixed context, so distinct stable IDs receive a
+    total order without mutable RNG state.  Stable ID remains only a defensive
+    tie breaker for malformed third-party batches containing duplicate IDs.
+    """
+    rows = np.asarray(candidates)
+    ids = np.asarray(carrier_ids)
+    if rows.ndim != 1 or not np.issubdtype(rows.dtype, np.integer):
+        raise ValueError("reproduction candidates must be a one-dimensional integer array")
+    if ids.ndim != 1 or not np.issubdtype(ids.dtype, np.integer):
+        raise ValueError("reproduction carrier IDs must be a one-dimensional integer array")
+    if int(tick) < 0:
+        raise ValueError("reproduction arbitration tick must be non-negative")
+    if rows.size == 0:
+        return rows.astype(np.int32, copy=True)
+    if np.any(rows < 0) or np.any(rows >= ids.size):
+        raise ValueError("reproduction candidate row is outside the intent batch")
+    candidate_ids = ids[rows].astype(np.uint64, copy=False)
+    if np.any(candidate_ids == 0):
+        raise ValueError("reproduction candidates require positive stable IDs")
+    if rule == "stable-id-v1":
+        priority = candidate_ids
+    elif rule == "stateless-random-v1":
+        priority = keys(
+            RandomContext(
+                int(run_seed),
+                int(tick),
+                phase=60,
+                stream=Stream.REPRODUCTION_CAPACITY,
+            ),
+            candidate_ids,
+            draw_index=0,
+        )
+    else:
+        raise ValueError(f"unknown reproduction capacity arbitration rule: {rule!r}")
+    order = np.lexsort((candidate_ids, priority))
+    return rows[order].astype(np.int32, copy=False)
 
 
 @dataclass(frozen=True)
@@ -240,7 +292,12 @@ class DeterministicActionConflictResolver:
             resolutions.energy_cost[signal_rows] = self.cfg.entities.signal_cost
 
         reproduce_rows = action_rows(intents, Action.REPRODUCE)
-        birth_requests = empty_birth_request_plan(intents.submit_tick)
+        capacity_rule = self.cfg.entities.reproduction_capacity_arbitration
+        birth_requests = empty_birth_request_plan(
+            intents.submit_tick,
+            capacity_arbitration=capacity_rule,
+            capacity_available_slots=snapshot.free_slot_count,
+        )
         if reproduce_rows.size:
             parents = intents.carrier_index[reproduce_rows]
             valid_parent = (
@@ -249,8 +306,13 @@ class DeterministicActionConflictResolver:
             invalid_rows = reproduce_rows[~valid_parent]
             resolutions.success[invalid_rows] = False
             resolutions.failure_reason[invalid_rows] = FailureReason.INSUFFICIENT_RESOURCE
-            candidates = reproduce_rows[valid_parent]
-            candidates = candidates[np.argsort(intents.carrier_id[candidates], kind="stable")]
+            candidates = order_reproduction_candidates(
+                reproduce_rows[valid_parent],
+                intents.carrier_id,
+                rule=self.cfg.entities.reproduction_capacity_arbitration,
+                run_seed=self.cfg.run.seed,
+                tick=intents.submit_tick,
+            )
             accepted_reproduce_rows = candidates[: snapshot.free_slot_count]
             rejected = candidates[snapshot.free_slot_count :]
             resolutions.success[rejected] = False
@@ -265,6 +327,9 @@ class DeterministicActionConflictResolver:
                     np.uint64, copy=True
                 ),
                 tick=int(intents.submit_tick),
+                capacity_arbitration=capacity_rule,
+                capacity_candidate_count=int(candidates.size),
+                capacity_available_slots=int(snapshot.free_slot_count),
             )
 
         return ActionResolutionPlan(
@@ -332,5 +397,6 @@ __all__ = [
     "GpuHarvestPlanner",
     "HarvestAllocator",
     "HarvestResolution",
+    "order_reproduction_candidates",
     "ShareResolution",
 ]

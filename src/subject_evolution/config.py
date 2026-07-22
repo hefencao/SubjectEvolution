@@ -61,6 +61,11 @@ class EntityConfig:
     initial_energy: float
     max_energy: float
     max_age: int
+    # Capacity contention is a model rule, not an execution optimization.
+    # Missing fields retain the historical stable-ID ordering so archived
+    # configs remain replayable; bundled current configs opt into the neutral
+    # stateless rule explicitly.
+    reproduction_capacity_arbitration: str = "stable-id-v1"
 
 
 @dataclass(frozen=True)
@@ -239,3 +244,11 @@ def validate_config(cfg: SimulationConfig) -> None:
     _probability("policy.mutation_probability", cfg.policy.mutation_probability)
     if cfg.entities.relation_slots <= 0:
         raise ValueError("relation_slots must be positive")
+    if cfg.entities.reproduction_capacity_arbitration not in {
+        "stable-id-v1",
+        "stateless-random-v1",
+    }:
+        raise ValueError(
+            "entities.reproduction_capacity_arbitration must be one of: "
+            "'stable-id-v1', 'stateless-random-v1'"
+        )

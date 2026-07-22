@@ -32,6 +32,10 @@ class BirthRequestPlan:
     parent_entity_ids: np.ndarray
     parent_subject_ids: np.ndarray
     tick: int
+    # Resolution provenance needed to distinguish and replay model versions.
+    capacity_arbitration: str = "unspecified"
+    capacity_candidate_count: int = 0
+    capacity_available_slots: int = 0
 
     @property
     def size(self) -> int:
@@ -69,13 +73,22 @@ class DeathEventPlan:
         return int(self.entity_indices.size)
 
 
-def empty_birth_request_plan(tick: int) -> BirthRequestPlan:
+def empty_birth_request_plan(
+    tick: int,
+    *,
+    capacity_arbitration: str = "unspecified",
+    capacity_candidate_count: int = 0,
+    capacity_available_slots: int = 0,
+) -> BirthRequestPlan:
     return BirthRequestPlan(
         source_rows=np.empty(0, dtype=np.int32),
         parent_indices=np.empty(0, dtype=np.int32),
         parent_entity_ids=np.empty(0, dtype=np.uint64),
         parent_subject_ids=np.empty(0, dtype=np.uint64),
         tick=int(tick),
+        capacity_arbitration=str(capacity_arbitration),
+        capacity_candidate_count=int(capacity_candidate_count),
+        capacity_available_slots=int(capacity_available_slots),
     )
 
 
@@ -130,6 +143,19 @@ def plan_birth_allocations(
         raise ValueError("birth request arrays must use integer dtypes")
     if int(requests.tick) < 0:
         raise ValueError("birth request tick must be non-negative")
+    if (
+        int(requests.capacity_candidate_count) < 0
+        or int(requests.capacity_available_slots) < 0
+    ):
+        raise ValueError("birth request capacity provenance must be non-negative")
+    if requests.capacity_arbitration in {
+        "stable-id-v1",
+        "stateless-random-v1",
+    } and (
+        requests.size > int(requests.capacity_candidate_count)
+        or requests.size > int(requests.capacity_available_slots)
+    ):
+        raise ValueError("birth request selection exceeds its capacity provenance")
     if requests.size and (
         np.any(request_values[0] < 0)
         or np.any(request_values[1] < 0)
@@ -138,7 +164,16 @@ def plan_birth_allocations(
     ):
         raise ValueError("birth requests require non-negative rows and positive stable IDs")
     if requests.size == 0:
-        return empty_birth_allocation_plan(requests.tick, free_pool_version)
+        # Preserve resolution provenance even when capacity accepted nobody.
+        # Replacing the request with a generic empty plan would erase the
+        # configured rule and the number of rejected candidates precisely in
+        # the fully saturated case where that audit matters most.
+        return BirthAllocationPlan(
+            requests=requests,
+            slots=np.empty(0, dtype=np.int32),
+            offspring_entity_ids=np.empty(0, dtype=np.uint64),
+            free_pool_version=int(free_pool_version),
+        )
     try:
         available_count = len(free_slots)
         selected = np.asarray(free_slots[-requests.size :])

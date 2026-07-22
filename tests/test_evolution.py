@@ -6,6 +6,7 @@ import json
 import numpy as np
 
 from subject_evolution.config import load_config
+from subject_evolution.execution import order_reproduction_candidates
 from subject_evolution.evolution import (
     BenefitFlowKind,
     LaggedBenefitBoundary,
@@ -164,6 +165,17 @@ def test_reproduction_diagnostics_separate_capacity_rejection(tmp_path) -> None:
         assert stats.reproduction_rejected_other == 0
         assert sim.total_reproduction_proposals == 32
         assert sim.total_reproduction_rejected_capacity == 24
+        expected_order = order_reproduction_candidates(
+            np.arange(active.size, dtype=np.int32),
+            sim.entities.entity_id[active],
+            rule="stateless-random-v1",
+            run_seed=cfg.run.seed,
+            tick=0,
+        )
+        np.testing.assert_array_equal(
+            sim.last_birth_allocation.requests.parent_entity_ids,
+            sim.entities.entity_id[active][expected_order[:8]],
+        )
     finally:
         sim.metrics.close()
         sim.evolution_progress.close()

@@ -1,10 +1,14 @@
-import numpy as np
+from dataclasses import replace
 
-from subject_evolution.config import load_config
+import numpy as np
+import pytest
+
+from subject_evolution.config import load_config, validate_config
 from subject_evolution.execution import (
     ActionResolutionSnapshot,
     DeterministicActionConflictResolver,
     ShareResolution,
+    order_reproduction_candidates,
 )
 from subject_evolution.intents import ActionIntentBatch, FailureReason
 from subject_evolution.policy import Action, PolicyDecision
@@ -111,8 +115,15 @@ def test_share_plan_filters_invalid_relation_targets_and_preserves_failure_reaso
     np.testing.assert_array_equal(relation_updates.reciprocal, np.asarray([False, True, False]))
 
 
-def test_reproduction_resolution_emits_stable_capacity_limited_birth_requests() -> None:
+def test_legacy_reproduction_resolution_preserves_stable_id_capacity_order() -> None:
     cfg = load_config("configs/mvp_small.json")
+    cfg = replace(
+        cfg,
+        entities=replace(
+            cfg.entities,
+            reproduction_capacity_arbitration="stable-id-v1",
+        ),
+    )
     entity_id = np.asarray([40, 10, 30, 20], dtype=np.uint64)
     primary_subject_id = np.asarray([400, 100, 300, 200], dtype=np.uint64)
     snapshot = ActionResolutionSnapshot(
@@ -149,11 +160,135 @@ def test_reproduction_resolution_emits_stable_capacity_limited_birth_requests() 
     np.testing.assert_array_equal(births.parent_entity_ids, np.asarray([10, 20], dtype=np.uint64))
     np.testing.assert_array_equal(births.parent_subject_ids, np.asarray([100, 200], dtype=np.uint64))
     assert births.tick == 12
+    assert births.capacity_arbitration == "stable-id-v1"
+    assert births.capacity_candidate_count == 4
+    assert births.capacity_available_slots == 2
     np.testing.assert_array_equal(plan.resolutions.success, np.asarray([False, True, False, True]))
     np.testing.assert_array_equal(
         plan.resolutions.failure_reason[[0, 2]],
         np.asarray([FailureReason.INSUFFICIENT_CAPACITY] * 2, dtype=np.uint8),
     )
+
+
+def test_stateless_reproduction_capacity_order_is_reproducible_and_permutation_invariant() -> None:
+    carrier_ids = np.arange(1, 65, dtype=np.uint64) * np.uint64(10)
+    candidates = np.arange(carrier_ids.size, dtype=np.int32)
+    permuted = candidates[::-1].copy()
+
+    first = order_reproduction_candidates(
+        candidates,
+        carrier_ids,
+        rule="stateless-random-v1",
+        run_seed=10001,
+        tick=12,
+    )
+    repeated = order_reproduction_candidates(
+        permuted,
+        carrier_ids,
+        rule="stateless-random-v1",
+        run_seed=10001,
+        tick=12,
+    )
+    another_tick = order_reproduction_candidates(
+        candidates,
+        carrier_ids,
+        rule="stateless-random-v1",
+        run_seed=10001,
+        tick=13,
+    )
+
+    np.testing.assert_array_equal(first, repeated)
+    assert not np.array_equal(first, another_tick)
+    np.testing.assert_array_equal(np.sort(first), candidates)
+
+
+def test_current_reproduction_plan_records_stateless_capacity_rule() -> None:
+    cfg = load_config("configs/mvp_small.json")
+    entity_id = np.asarray([40, 10, 30, 20], dtype=np.uint64)
+    snapshot = ActionResolutionSnapshot(
+        active=np.arange(4, dtype=np.int32),
+        cells=np.arange(4, dtype=np.int32),
+        entity_id=entity_id,
+        alive=np.ones(4, dtype=bool),
+        energy=np.full(
+            4,
+            cfg.entities.reproduction_threshold + 1.0,
+            dtype=np.float32,
+        ),
+        fertility=np.ones(4, dtype=np.float32),
+        primary_subject_id=np.asarray([400, 100, 300, 200], dtype=np.uint64),
+        free_slot_count=2,
+    )
+    intents = ActionIntentBatch(
+        intent_id=np.arange(1, 5, dtype=np.uint64),
+        carrier_index=np.arange(4, dtype=np.int32),
+        carrier_id=entity_id.copy(),
+        action=np.full(4, Action.REPRODUCE, dtype=np.int16),
+        target_index=np.full(4, -1, dtype=np.int32),
+        direction_x=np.zeros(4, dtype=np.float32),
+        direction_y=np.zeros(4, dtype=np.float32),
+        sampled_probability=np.ones(4, dtype=np.float32),
+        submit_tick=12,
+    )
+
+    plan = DeterministicActionConflictResolver(cfg).resolve(
+        snapshot,
+        intents,
+        lambda cells, rates: np.empty((0, 4), dtype=np.float32),
+    )
+    expected_order = order_reproduction_candidates(
+        np.arange(4, dtype=np.int32),
+        entity_id,
+        rule="stateless-random-v1",
+        run_seed=cfg.run.seed,
+        tick=12,
+    )
+
+    assert plan.birth_requests.capacity_arbitration == "stateless-random-v1"
+    assert plan.birth_requests.capacity_candidate_count == 4
+    assert plan.birth_requests.capacity_available_slots == 2
+    np.testing.assert_array_equal(
+        plan.birth_requests.parent_entity_ids,
+        entity_id[expected_order[:2]],
+    )
+
+
+def test_stateless_reproduction_capacity_has_no_stable_id_quartile_advantage() -> None:
+    carrier_ids = np.arange(1, 257, dtype=np.uint64)
+    candidates = np.arange(carrier_ids.size, dtype=np.int32)
+    accepted_by_quartile = np.zeros(4, dtype=np.int64)
+    trials = 128
+    accepted_per_trial = 64
+    for seed in range(trials):
+        ordered = order_reproduction_candidates(
+            candidates,
+            carrier_ids,
+            rule="stateless-random-v1",
+            run_seed=seed,
+            tick=37,
+        )
+        accepted_by_quartile += np.bincount(
+            ordered[:accepted_per_trial] // 64,
+            minlength=4,
+        )
+
+    rates = accepted_by_quartile / float(trials * 64)
+    assert float(rates.max() - rates.min()) < 0.04
+    assert abs(float(rates[0] - rates[-1])) < 0.03
+
+
+def test_reproduction_capacity_rule_is_validated() -> None:
+    cfg = load_config("configs/mvp_small.json")
+    invalid = replace(
+        cfg,
+        entities=replace(
+            cfg.entities,
+            reproduction_capacity_arbitration="implicit-random",
+        ),
+    )
+
+    with pytest.raises(ValueError, match="reproduction_capacity_arbitration"):
+        validate_config(invalid)
 
 
 def test_simulation_accepts_a_pluggable_conflict_resolver(tmp_path) -> None:

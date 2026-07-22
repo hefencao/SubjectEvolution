@@ -46,7 +46,8 @@
     "reproduction_cost": 1.4,
     "initial_energy": 1.8,
     "max_energy": 5.0,
-    "max_age": 5000
+    "max_age": 5000,
+    "reproduction_capacity_arbitration": "stateless-random-v1"
   },
   "information": {
     "channel_loss": 0.15,

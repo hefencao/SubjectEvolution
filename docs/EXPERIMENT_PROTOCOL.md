@@ -14,6 +14,8 @@
 
 每次运行在 `run_metadata.json.scientific_validity` 写入结构审计。`structural_evolution_provenance_valid=true` 只表示代码路径满足上述来源约束；它不是某项演化结论的统计证明。正式结论仍需多种子重复、预注册指标、对照、敏感性分析和不支持假设的结果保留。
 
+繁殖容量冲突属于物理模型规则。当前配置必须显式使用 `entities.reproduction_capacity_arbitration="stateless-random-v1"`；归档配置缺少该字段时按 `stable-id-v1` 回放。两种规则的运行不得合并为同一实验组。`run_metadata.json.model_rules` 还固定记录同 tick 死亡是否释放槽位及容量拒绝成本，避免把三个独立问题混为一次“公平性”修改。
+
 ## 干预实验
 
 干预用于观察系统响应，不能把期望结果直接写成行动。注册层预留以下稳定类别：
