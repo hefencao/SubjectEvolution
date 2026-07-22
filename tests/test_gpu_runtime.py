@@ -24,6 +24,47 @@ from subject_evolution.simulation import Simulation
 
 
 @pytest.mark.skipif(not cupy_available(), reason="CuPy with a usable CUDA device is unavailable")
+def test_gpu_evolution_evaluation_downloads_actual_policy_context(tmp_path):
+    cfg = load_config("configs/mvp_small.json")
+    cfg = replace(
+        cfg,
+        world=replace(cfg.world, initial_entities=32, max_entities=64),
+        run=replace(
+            cfg.run,
+            ticks=1,
+            metrics_period=99,
+            checkpoint_period=99,
+            evolution_evaluation_period=1,
+        ),
+    )
+    cpu = Simulation(cfg, tmp_path / "cpu-evaluation", backend="cpu")
+    gpu = Simulation(cfg, tmp_path / "gpu-evaluation", backend="gpu")
+    try:
+        cpu.step()
+        gpu_stats = gpu.step()
+        cpu_record = cpu.evolution_progress.records[0]
+        gpu_record = gpu.evolution_progress.records[0]
+
+        assert gpu_record["actual_context_available"] is True
+        assert gpu_record["actual_context_sample_size"] == 32
+        assert gpu_record["actual_context_panel_size"] == 32
+        assert gpu_stats.gpu_d2h_bytes > 0
+        np.testing.assert_array_equal(cpu.action_counts, gpu.action_counts)
+        np.testing.assert_allclose(
+            gpu_record["actual_context_mean_action_probability"],
+            cpu_record["actual_context_mean_action_probability"],
+            rtol=0.0,
+            atol=2e-6,
+        )
+        assert gpu_record["lagged_benefit_boundary_snapshot_tick"] == 0
+    finally:
+        cpu.metrics.close()
+        cpu.evolution_progress.close()
+        gpu.metrics.close()
+        gpu.evolution_progress.close()
+
+
+@pytest.mark.skipif(not cupy_available(), reason="CuPy with a usable CUDA device is unavailable")
 def test_gpu_runtime_preserves_small_world_actions_and_state(tmp_path):
     cfg = load_config("configs/mvp_small.json")
     cfg = replace(

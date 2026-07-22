@@ -31,6 +31,10 @@ class PolicyDecision:
     direction_y: np.ndarray
     selected_partner: np.ndarray
     logits: np.ndarray
+    # Read-only diagnostics produced by the same policy path that samples the
+    # action.  GPU runs only download them on scheduled evaluation ticks.
+    features: Any | None = None
+    action_mask: Any | None = None
 
 
 class ParametricPolicy:
@@ -201,6 +205,8 @@ class ParametricPolicy:
             direction_y=dy,
             selected_partner=selected_partner,
             logits=logits,
+            features=features,
+            action_mask=mask,
         )
 
     def update_memory(

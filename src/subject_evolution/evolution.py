@@ -64,6 +64,83 @@ def benefit_flow_totals(
     )
 
 
+class LaggedBenefitBoundary:
+    """Frozen group membership keyed by physical slot and stable entity ID.
+
+    Slot matching alone is unsafe because lifecycle commits reuse slots.  A
+    post-snapshot entity is therefore outside the frozen boundary even when it
+    occupies a slot that previously belonged to a grouped entity.
+    """
+
+    def __init__(self, capacity: int) -> None:
+        self.snapshot_tick = 0
+        self.entity_ids = np.zeros(capacity, dtype=np.uint64)
+        self.group_tokens = np.zeros(capacity, dtype=np.uint64)
+        self.flow_energy_total = np.zeros(BENEFIT_FLOW_COUNT, dtype=np.float64)
+
+    def clone(self) -> "LaggedBenefitBoundary":
+        branch = type(self)(self.entity_ids.size)
+        branch.snapshot_tick = self.snapshot_tick
+        branch.entity_ids = self.entity_ids.copy()
+        branch.group_tokens = self.group_tokens.copy()
+        branch.flow_energy_total = self.flow_energy_total.copy()
+        return branch
+
+    def freeze(
+        self,
+        *,
+        tick: int,
+        alive: np.ndarray,
+        stable_ids: np.ndarray,
+        group_tokens: np.ndarray,
+    ) -> None:
+        alive_values = np.asarray(alive, dtype=bool)
+        ids = np.asarray(stable_ids, dtype=np.uint64)
+        groups = np.asarray(group_tokens, dtype=np.uint64)
+        if any(value.ndim != 1 for value in (alive_values, ids, groups)) or not (
+            alive_values.size == ids.size == groups.size == self.entity_ids.size
+        ):
+            raise ValueError("lagged boundary arrays must match world capacity")
+        self.entity_ids.fill(0)
+        self.group_tokens.fill(0)
+        self.entity_ids[alive_values] = ids[alive_values]
+        self.group_tokens[alive_values] = groups[alive_values]
+        self.snapshot_tick = int(tick)
+
+    def record(
+        self,
+        *,
+        owner_indices: np.ndarray,
+        target_indices: np.ndarray,
+        current_stable_ids: np.ndarray,
+        amounts: np.ndarray,
+    ) -> np.ndarray:
+        owners = np.asarray(owner_indices, dtype=np.int32)
+        targets = np.asarray(target_indices, dtype=np.int32)
+        current_ids = np.asarray(current_stable_ids, dtype=np.uint64)
+        values = np.asarray(amounts, dtype=np.float64)
+        if any(value.ndim != 1 for value in (owners, targets, values)) or not (
+            owners.size == targets.size == values.size
+        ):
+            raise ValueError("lagged benefit event arrays must be aligned")
+        if current_ids.ndim != 1 or current_ids.size != self.entity_ids.size:
+            raise ValueError("current stable IDs must match frozen world capacity")
+        if owners.size and (
+            np.any(owners < 0)
+            or np.any(targets < 0)
+            or np.any(owners >= current_ids.size)
+            or np.any(targets >= current_ids.size)
+        ):
+            raise ValueError("lagged benefit event contains an invalid slot")
+        owner_match = self.entity_ids[owners] == current_ids[owners]
+        target_match = self.entity_ids[targets] == current_ids[targets]
+        owner_groups = np.where(owner_match, self.group_tokens[owners], 0)
+        target_groups = np.where(target_match, self.group_tokens[targets], 0)
+        totals = benefit_flow_totals(owner_groups, target_groups, values)
+        self.flow_energy_total += totals
+        return totals
+
+
 def _deterministic_sample(
     active: np.ndarray,
     stable_ids: np.ndarray,
@@ -157,6 +234,162 @@ def strategy_structure(
     }, canonical_mean
 
 
+def actual_context_policy_diagnostics(
+    active: np.ndarray,
+    stable_ids: np.ndarray,
+    genotype: np.ndarray,
+    features: np.ndarray,
+    action_mask: np.ndarray,
+    logits: np.ndarray,
+    *,
+    run_seed: int,
+    temperature: float,
+    sample_capacity: int = 4096,
+    strategy_sample_capacity: int = 1024,
+    context_panel_capacity: int = 32,
+) -> dict[str, Any]:
+    """Measure policies on observations and constraints seen by real agents.
+
+    The paired metrics describe the policy outputs actually available on this
+    tick.  The common-panel metrics additionally evaluate sampled inherited
+    strategies on the same small panel of real contexts, separating strategy
+    differences from the fact that different entities inhabit different
+    contexts.  Neither result is fed back into the simulation.
+    """
+    active_slots = np.asarray(active, dtype=np.int32)
+    ids = np.asarray(stable_ids, dtype=np.uint64)
+    observed_features = np.asarray(features, dtype=np.float32)
+    observed_mask = np.asarray(action_mask, dtype=bool)
+    observed_logits = np.asarray(logits, dtype=np.float32)
+    action_count = len(Action)
+    feature_count = ParametricPolicy.STRATEGY_FEATURES
+    row_count = active_slots.size
+    if not np.isfinite(temperature) or temperature <= 0.0:
+        raise ValueError("actual-context temperature must be positive")
+    if active_slots.ndim != 1:
+        raise ValueError("actual-context active slots must be one-dimensional")
+    if observed_features.shape != (row_count, feature_count):
+        raise ValueError("actual-context features do not align with active rows")
+    if observed_mask.shape != (row_count, action_count):
+        raise ValueError("actual-context action masks do not align with active rows")
+    if observed_logits.shape != (row_count, action_count):
+        raise ValueError("actual-context logits do not align with active rows")
+    if active_slots.size and (
+        np.any(active_slots < 0)
+        or np.any(active_slots >= ids.size)
+        or np.any(active_slots >= genotype.shape[0])
+    ):
+        raise ValueError("actual-context active slot is outside entity storage")
+    if np.any(~np.isfinite(observed_features)) or np.any(
+        ~np.isfinite(observed_logits)
+    ):
+        raise ValueError("actual-context values must be finite")
+    if np.any(~observed_mask.any(axis=1)):
+        raise ValueError("every actual context must permit at least one action")
+    if row_count == 0:
+        zeros_actions = [0.0] * action_count
+        zeros_features = [0.0] * feature_count
+        return {
+            "actual_context_sample_size": 0,
+            "actual_context_feature_mean": zeros_features,
+            "actual_context_feature_std": zeros_features,
+            "actual_context_action_feasible_fraction": zeros_actions,
+            "actual_context_mean_action_probability": zeros_actions,
+            "actual_context_policy_probability_diversity": 0.0,
+            "actual_context_mean_policy_entropy": 0.0,
+            "actual_context_dominant_action_coverage": 0,
+            "actual_context_mean_feasible_actions": 0.0,
+            "actual_context_mask_pattern_count": 0,
+            "actual_context_panel_size": 0,
+            "actual_context_strategy_sample_size": 0,
+            "actual_context_common_panel_probability_diversity": 0.0,
+            "actual_context_common_panel_mean_entropy": 0.0,
+            "actual_context_common_panel_dominant_action_coverage": 0,
+            "actual_context_common_panel_mean_action_probability": zeros_actions,
+        }
+
+    sampled_slots = _deterministic_sample(
+        active_slots, ids, run_seed, sample_capacity
+    )
+    # ``active`` originates from flatnonzero/spatial stable sorting, so slot
+    # order is monotonic on both backends.  Search explicitly and assert the
+    # mapping rather than relying on a hidden row/slot identity.
+    sampled_rows = np.searchsorted(active_slots, sampled_slots)
+    if not np.array_equal(active_slots[sampled_rows], sampled_slots):
+        raise ValueError("actual-context active rows must be sorted by slot")
+    sample_features = observed_features[sampled_rows].astype(np.float64)
+    sample_mask = observed_mask[sampled_rows]
+    sample_logits = observed_logits[sampled_rows].astype(np.float64) / temperature
+    sample_logits = np.where(sample_mask, sample_logits, -np.inf)
+    sample_logits -= np.max(sample_logits, axis=1, keepdims=True)
+    sample_probability = np.where(sample_mask, np.exp(sample_logits), 0.0)
+    sample_probability /= sample_probability.sum(axis=1, keepdims=True)
+    mask_bits = np.left_shift(
+        np.uint16(1), np.arange(action_count, dtype=np.uint16)
+    )
+    mask_patterns = np.sum(
+        sample_mask.astype(np.uint16) * mask_bits[None, :], axis=1
+    )
+
+    strategy_slots = _deterministic_sample(
+        active_slots, ids, run_seed, strategy_sample_capacity
+    )
+    context_slots = _deterministic_sample(
+        active_slots, ids, run_seed, context_panel_capacity
+    )
+    strategy = np.asarray(
+        genotype[strategy_slots, ParametricPolicy.MORPHOLOGY_TRAITS :],
+        dtype=np.float64,
+    ).reshape(strategy_slots.size, action_count, feature_count)
+    context_rows = np.searchsorted(active_slots, context_slots)
+    context_features = observed_features[context_rows].astype(np.float64)
+    context_mask = observed_mask[context_rows]
+    panel_logits = np.einsum(
+        "saf,cf->sca", strategy, context_features, optimize=True
+    )
+    panel_logits /= temperature
+    panel_logits = np.where(context_mask[None, :, :], panel_logits, -np.inf)
+    panel_logits -= np.max(panel_logits, axis=2, keepdims=True)
+    panel_probability = np.where(
+        context_mask[None, :, :], np.exp(panel_logits), 0.0
+    )
+    panel_probability /= panel_probability.sum(axis=2, keepdims=True)
+    panel_dominant = np.argmax(panel_probability, axis=2)
+
+    return {
+        "actual_context_sample_size": int(sampled_slots.size),
+        "actual_context_feature_mean": sample_features.mean(axis=0).tolist(),
+        "actual_context_feature_std": sample_features.std(axis=0).tolist(),
+        "actual_context_action_feasible_fraction": sample_mask.mean(axis=0).tolist(),
+        "actual_context_mean_action_probability": sample_probability.mean(axis=0).tolist(),
+        "actual_context_policy_probability_diversity": float(
+            np.mean(np.std(sample_probability, axis=0))
+        ),
+        "actual_context_mean_policy_entropy": float(
+            np.mean(_entropy(sample_probability))
+        ),
+        "actual_context_dominant_action_coverage": int(
+            np.unique(np.argmax(sample_probability, axis=1)).size
+        ),
+        "actual_context_mean_feasible_actions": float(sample_mask.sum(axis=1).mean()),
+        "actual_context_mask_pattern_count": int(np.unique(mask_patterns).size),
+        "actual_context_panel_size": int(context_slots.size),
+        "actual_context_strategy_sample_size": int(strategy_slots.size),
+        "actual_context_common_panel_probability_diversity": float(
+            np.mean(np.std(panel_probability, axis=0))
+        ),
+        "actual_context_common_panel_mean_entropy": float(
+            np.mean(_entropy(panel_probability))
+        ),
+        "actual_context_common_panel_dominant_action_coverage": int(
+            np.unique(panel_dominant).size
+        ),
+        "actual_context_common_panel_mean_action_probability": (
+            panel_probability.mean(axis=(0, 1)).tolist()
+        ),
+    }
+
+
 class EvolutionProgressTracker:
     """Write independent, fixed-cadence evolution diagnostics as JSONL."""
 
@@ -203,6 +436,9 @@ class EvolutionProgressTracker:
         self.previous_benefit_flow_totals = np.zeros(
             BENEFIT_FLOW_COUNT, dtype=np.float64
         )
+        self.previous_lagged_benefit_flow_totals = np.zeros(
+            BENEFIT_FLOW_COUNT, dtype=np.float64
+        )
         self.previous_shared_energy = 0.0
         self.previous_reproduction_eligible = 0
         self.previous_reproduction_proposals = 0
@@ -220,6 +456,9 @@ class EvolutionProgressTracker:
         branch.previous_action_counts = self.previous_action_counts.copy()
         branch.previous_benefit_flow_totals = (
             self.previous_benefit_flow_totals.copy()
+        )
+        branch.previous_lagged_benefit_flow_totals = (
+            self.previous_lagged_benefit_flow_totals.copy()
         )
         branch.initial_stable_ids = self.initial_stable_ids.copy()
         branch.initial_genotype = self.initial_genotype.copy()
@@ -253,6 +492,8 @@ class EvolutionProgressTracker:
         deaths_total: int,
         action_counts: np.ndarray,
         benefit_flow_energy_total: np.ndarray,
+        lagged_benefit_flow_energy_total: np.ndarray,
+        lagged_benefit_boundary_snapshot_tick: int,
         shared_energy_total: float,
         reproduction_eligible_total: int,
         reproduction_proposals_total: int,
@@ -261,6 +502,7 @@ class EvolutionProgressTracker:
         reproduction_rejected_other_total: int,
         mutation_probability: float,
         mutation_std: float,
+        actual_context_metrics: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         if self.records and int(self.records[-1]["tick"]) == int(tick):
             return self.records[-1]
@@ -329,6 +571,39 @@ class EvolutionProgressTracker:
         all_benefit = boundary_total + unbounded_window
         outgoing_boundary_total = (
             internal_window + group_to_group_window + group_to_ungrouped_window
+        )
+        lagged_benefit_totals = np.asarray(
+            lagged_benefit_flow_energy_total, dtype=np.float64
+        )
+        if lagged_benefit_totals.shape != (BENEFIT_FLOW_COUNT,):
+            raise ValueError(
+                "lagged benefit flow totals must contain every BenefitFlowKind"
+            )
+        lagged_window = (
+            lagged_benefit_totals - self.previous_lagged_benefit_flow_totals
+        )
+        lagged_internal = float(lagged_window[BenefitFlowKind.INTERNAL])
+        lagged_group_to_group = float(
+            lagged_window[BenefitFlowKind.GROUP_TO_GROUP]
+        )
+        lagged_group_to_ungrouped = float(
+            lagged_window[BenefitFlowKind.GROUP_TO_UNGROUPED]
+        )
+        lagged_ungrouped_to_group = float(
+            lagged_window[BenefitFlowKind.UNGROUPED_TO_GROUP]
+        )
+        lagged_unbounded = float(lagged_window[BenefitFlowKind.UNBOUNDED])
+        lagged_cross = (
+            lagged_group_to_group
+            + lagged_group_to_ungrouped
+            + lagged_ungrouped_to_group
+        )
+        lagged_boundary_total = lagged_internal + lagged_cross
+        lagged_all_benefit = lagged_boundary_total + lagged_unbounded
+        lagged_outgoing_total = (
+            lagged_internal
+            + lagged_group_to_group
+            + lagged_group_to_ungrouped
         )
         reproduction_eligible_window = int(
             reproduction_eligible_total - self.previous_reproduction_eligible
@@ -440,12 +715,44 @@ class EvolutionProgressTracker:
                 if outgoing_boundary_total > 0.0
                 else 0.0
             ),
+            "lagged_benefit_boundary_snapshot_tick": int(
+                lagged_benefit_boundary_snapshot_tick
+            ),
+            "lagged_benefit_internal_window": lagged_internal,
+            "lagged_benefit_group_to_group_window": lagged_group_to_group,
+            "lagged_benefit_group_to_ungrouped_window": (
+                lagged_group_to_ungrouped
+            ),
+            "lagged_benefit_ungrouped_to_group_window": (
+                lagged_ungrouped_to_group
+            ),
+            "lagged_benefit_cross_boundary_window": lagged_cross,
+            "lagged_benefit_unbounded_window": lagged_unbounded,
+            "lagged_benefit_classification_residual_window": (
+                shared_energy_window - float(lagged_window.sum())
+            ),
+            "lagged_benefit_boundary_coverage": (
+                lagged_boundary_total / lagged_all_benefit
+                if lagged_all_benefit > 0.0
+                else 0.0
+            ),
+            "lagged_benefit_boundary_cohesion": (
+                lagged_internal / lagged_boundary_total
+                if lagged_boundary_total > 0.0
+                else 0.0
+            ),
+            "lagged_benefit_boundary_outgoing_retention": (
+                lagged_internal / lagged_outgoing_total
+                if lagged_outgoing_total > 0.0
+                else 0.0
+            ),
             "mutation_probability_per_gene": float(mutation_probability),
             "mutation_std_conditional": float(mutation_std),
             "expected_strategy_genes_mutated_per_birth": float(
                 mutation_probability * ParametricPolicy.STRATEGY_GENES
             ),
             **structure,
+            **(actual_context_metrics or {}),
         }
         writer = self._writer()
         self.records.append(record)
@@ -456,6 +763,7 @@ class EvolutionProgressTracker:
         self.previous_deaths = int(deaths_total)
         self.previous_action_counts = np.asarray(action_counts, dtype=np.int64).copy()
         self.previous_benefit_flow_totals = benefit_totals.copy()
+        self.previous_lagged_benefit_flow_totals = lagged_benefit_totals.copy()
         self.previous_shared_energy = float(shared_energy_total)
         self.previous_reproduction_eligible = int(reproduction_eligible_total)
         self.previous_reproduction_proposals = int(reproduction_proposals_total)
@@ -481,6 +789,8 @@ __all__ = [
     "BENEFIT_FLOW_COUNT",
     "BenefitFlowKind",
     "EvolutionProgressTracker",
+    "LaggedBenefitBoundary",
     "benefit_flow_totals",
+    "actual_context_policy_diagnostics",
     "strategy_structure",
 ]

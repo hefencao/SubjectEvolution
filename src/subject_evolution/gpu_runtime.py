@@ -302,6 +302,7 @@ class HybridGpuRuntime:
         run_seed: int,
         tick: int,
         retain_logits: bool,
+        retain_policy_diagnostics: bool,
         need_host_resource_gradient: bool,
         entity_state_version: int,
     ) -> GpuPreparedStep:
@@ -345,6 +346,19 @@ class HybridGpuRuntime:
                 direction_y=np.empty(0, dtype=np.float32),
                 selected_partner=np.empty(0, dtype=np.int32),
                 logits=np.empty((0, 0), dtype=np.float32),
+                features=(
+                    np.empty(
+                        (0, ParametricPolicy.STRATEGY_FEATURES),
+                        dtype=np.float32,
+                    )
+                    if retain_policy_diagnostics
+                    else None
+                ),
+                action_mask=(
+                    np.empty((0, len(Action)), dtype=bool)
+                    if retain_policy_diagnostics
+                    else None
+                ),
             )
             return GpuPreparedStep(
                 empty,
@@ -481,8 +495,24 @@ class HybridGpuRuntime:
             selected_partner=self._download(device_decision.selected_partner).astype(np.int32, copy=False),
             logits=(
                 self._download(device_decision.logits).astype(np.float32, copy=False)
-                if retain_logits
+                if retain_logits or retain_policy_diagnostics
                 else np.empty((active_result.size, 0), dtype=np.float32)
+            ),
+            features=(
+                self._download(device_decision.features).astype(
+                    np.float32, copy=False
+                )
+                if retain_policy_diagnostics
+                and device_decision.features is not None
+                else None
+            ),
+            action_mask=(
+                self._download(device_decision.action_mask).astype(
+                    bool, copy=False
+                )
+                if retain_policy_diagnostics
+                and device_decision.action_mask is not None
+                else None
             ),
         )
         return GpuPreparedStep(

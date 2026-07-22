@@ -307,6 +307,8 @@ class AutonomyRecoveryArbiter:
             # Body logits remain an audit of the displaced policy proposal;
             # module application is carried by ``autonomy_applied``.
             logits=np.asarray(base.decision.logits),
+            features=base.decision.features,
+            action_mask=base.decision.action_mask,
         )
         base_subjects = (
             np.asarray(base.contributor_subject_ids, dtype=np.uint64)

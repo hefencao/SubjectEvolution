@@ -26,6 +26,8 @@ from .evolution import (
     BENEFIT_FLOW_COUNT,
     BenefitFlowKind,
     EvolutionProgressTracker,
+    LaggedBenefitBoundary,
+    actual_context_policy_diagnostics,
     benefit_flow_totals,
 )
 from .execution import (
@@ -75,6 +77,9 @@ class StepStats:
     harvested_energy: float = 0.0
     shared_energy: float = 0.0
     benefit_flow_energy: np.ndarray = field(
+        default_factory=lambda: np.zeros(BENEFIT_FLOW_COUNT, dtype=np.float64)
+    )
+    lagged_benefit_flow_energy: np.ndarray = field(
         default_factory=lambda: np.zeros(BENEFIT_FLOW_COUNT, dtype=np.float64)
     )
     reproduction_eligible: int = 0
@@ -459,6 +464,15 @@ class Simulation:
         self.benefit_flow_energy_total = np.zeros(
             BENEFIT_FLOW_COUNT, dtype=np.float64
         )
+        self.lagged_benefit_boundary = LaggedBenefitBoundary(
+            cfg.world.max_entities
+        )
+        self.lagged_benefit_boundary.freeze(
+            tick=0,
+            alive=self.entities.alive,
+            stable_ids=self.entities.entity_id,
+            group_tokens=self.social.group_id,
+        )
         self.total_reproduction_eligible = 0
         self.total_reproduction_proposals = 0
         self.total_reproduction_rejected_capacity = 0
@@ -579,6 +593,7 @@ class Simulation:
         branch.total_shared_energy = self.total_shared_energy
         branch.action_counts = self.action_counts.copy()
         branch.benefit_flow_energy_total = self.benefit_flow_energy_total.copy()
+        branch.lagged_benefit_boundary = self.lagged_benefit_boundary.clone()
         branch.total_reproduction_eligible = self.total_reproduction_eligible
         branch.total_reproduction_proposals = self.total_reproduction_proposals
         branch.total_reproduction_rejected_capacity = (
@@ -766,6 +781,10 @@ class Simulation:
                 "period_ticks": self.cfg.run.evolution_evaluation_period,
                 "feedback_to_world": False,
                 "strategy_sample_capacity": 4096,
+                "actual_context_sample_capacity": 4096,
+                "common_panel_strategy_capacity": 1024,
+                "common_panel_context_capacity": 32,
+                "lagged_boundary_identity": "stable-entity-id",
             },
             "control_arbiter": {
                 "name": type(self.control_arbiter).__name__,
@@ -898,6 +917,12 @@ class Simulation:
         flow_totals = benefit_flow_totals(owner_groups, target_groups, amounts)
         stats.benefit_flow_energy += flow_totals
         self.benefit_flow_energy_total += flow_totals
+        stats.lagged_benefit_flow_energy += self.lagged_benefit_boundary.record(
+            owner_indices=owners,
+            target_indices=targets,
+            current_stable_ids=self.entities.entity_id,
+            amounts=amounts,
+        )
         self.subjects.record_benefit_flows(
             owner_groups,
             target_groups,
@@ -992,7 +1017,10 @@ class Simulation:
             ),
         )
 
-    def _record_evolution_progress(self) -> None:
+    def _record_evolution_progress(
+        self,
+        actual_context_metrics: dict[str, object] | None = None,
+    ) -> None:
         self.evolution_progress.record(
             tick=self.tick,
             scheduled=True,
@@ -1005,6 +1033,12 @@ class Simulation:
             deaths_total=self.total_deaths,
             action_counts=self.action_counts,
             benefit_flow_energy_total=self.benefit_flow_energy_total,
+            lagged_benefit_flow_energy_total=(
+                self.lagged_benefit_boundary.flow_energy_total
+            ),
+            lagged_benefit_boundary_snapshot_tick=(
+                self.lagged_benefit_boundary.snapshot_tick
+            ),
             shared_energy_total=self.total_shared_energy,
             reproduction_eligible_total=self.total_reproduction_eligible,
             reproduction_proposals_total=self.total_reproduction_proposals,
@@ -1019,12 +1053,15 @@ class Simulation:
             ),
             mutation_probability=self.cfg.policy.mutation_probability,
             mutation_std=self.cfg.policy.mutation_std,
+            actual_context_metrics=actual_context_metrics,
         )
 
     def step(self) -> StepStats:
         cfg = self.cfg
         ent = self.entities
         stats = StepStats()
+        evaluation_due = self.evolution_progress.due(self.tick + 1)
+        actual_context_metrics: dict[str, object] | None = None
         if self.gpu_runtime is None:
             phase_started = time.perf_counter()
             self.environment.update(self.tick)
@@ -1101,6 +1138,7 @@ class Simulation:
                 run_seed=cfg.run.seed,
                 tick=self.tick,
                 retain_logits=self._trajectory_file is not None,
+                retain_policy_diagnostics=evaluation_due,
                 need_host_resource_gradient=(
                     self.autonomy_recovery_enabled
                     or (
@@ -1131,6 +1169,34 @@ class Simulation:
             stats.spatial_seconds = prepared.spatial_seconds
             stats.observation_seconds = prepared.observation_seconds
             stats.policy_seconds = prepared.policy_seconds
+        if evaluation_due:
+            evaluation_started = time.perf_counter()
+            if decision.features is None or decision.action_mask is None:
+                # Third-party policy adapters written before diagnostic
+                # payloads remain valid, but their missing observations are
+                # explicit instead of being reconstructed from changed state.
+                actual_context_metrics = {
+                    "actual_context_available": False,
+                    "actual_context_observation_tick": int(self.tick),
+                }
+            else:
+                actual_context_metrics = {
+                    "actual_context_available": True,
+                    "actual_context_observation_tick": int(self.tick),
+                    **actual_context_policy_diagnostics(
+                        active,
+                        ent.entity_id,
+                        ent.genotype,
+                        decision.features,
+                        decision.action_mask,
+                        decision.logits,
+                        run_seed=cfg.run.seed,
+                        temperature=cfg.policy.temperature,
+                    ),
+                }
+            stats.evolution_evaluation_seconds += (
+                time.perf_counter() - evaluation_started
+            )
         body_proposal = body_control_proposal(
             active,
             ent.primary_subject_id[active],
@@ -1509,8 +1575,14 @@ class Simulation:
         self.tick += 1
         if self.evolution_progress.due(self.tick):
             evaluation_started = time.perf_counter()
-            self._record_evolution_progress()
-            stats.evolution_evaluation_seconds = (
+            self._record_evolution_progress(actual_context_metrics)
+            self.lagged_benefit_boundary.freeze(
+                tick=self.tick,
+                alive=self.entities.alive,
+                stable_ids=self.entities.entity_id,
+                group_tokens=self.social.group_id,
+            )
+            stats.evolution_evaluation_seconds += (
                 time.perf_counter() - evaluation_started
             )
         return stats
