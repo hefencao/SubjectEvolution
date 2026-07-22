@@ -7,7 +7,12 @@ from subject_evolution.backend import BackendUnavailableError, cupy_available
 from subject_evolution.config import load_config
 from subject_evolution.environment import Environment
 from subject_evolution.gpu_environment import DeviceEnvironment, DeviceInformationField
-from subject_evolution.information import InformationSystem, SignalEmissionBatch, SignalEmissionPlan
+from subject_evolution.information import (
+    DirectMessageObservationPlan,
+    InformationSystem,
+    SignalEmissionBatch,
+    SignalEmissionPlan,
+)
 
 
 def _cfg():
@@ -58,6 +63,101 @@ def test_device_information_field_cpu_backend_matches_reference():
     field, age = device.sample(cells)
     np.testing.assert_allclose(field, reference.field.reshape(3, -1)[:, cells].T)
     np.testing.assert_allclose(age, reference.age.reshape(3, -1)[:, cells].T)
+
+
+def test_device_information_field_consumes_sparse_direct_message_plan_on_cpu():
+    cfg = _cfg()
+    reference_messages = InformationSystem(cfg)
+    planned_messages = InformationSystem(cfg)
+    source_ids = np.asarray([101, 102, 103], dtype=np.uint64)
+    receiver_ids = np.asarray([22, 22, 44], dtype=np.uint64)
+    payloads = np.asarray([[0.8, 0.4, 0.2], [0.6, 0.3, 0.1], [0.2, 0.5, 0.7]], dtype=np.float32)
+    confidence = np.ones(3, dtype=np.float32)
+    for information in (reference_messages, planned_messages):
+        information.emit_direct(
+            source_ids,
+            receiver_ids,
+            payloads,
+            confidence,
+            cfg.run.seed,
+            tick=0,
+        )
+    active = np.asarray([0, 1, 2], dtype=np.int32)
+    stable_ids = np.asarray([11, 22, 44], dtype=np.uint64)
+    cells = np.asarray([0, 1, 2], dtype=np.int32)
+    partners = np.empty((3, 0), dtype=np.int32)
+    energy = np.ones(3, dtype=np.float32)
+    groups = np.zeros(3, dtype=np.uint64)
+    quality = np.ones(3, dtype=np.float32)
+    reference = reference_messages.observe(
+        active, stable_ids, cells, partners, energy, groups, quality, cfg.run.seed, tick=1
+    )
+    plan = planned_messages._receive_direct_plan(
+        active, stable_ids, quality, cfg.run.seed, tick=1
+    )
+    device = DeviceInformationField(cfg, "cpu")
+    actual = device.observe(
+        stable_ids=stable_ids,
+        cell_ids=cells,
+        partners=partners,
+        energy=energy,
+        group_id=groups,
+        own_group_id=groups,
+        sensor_quality=quality,
+        direct_message_plan=plan,
+        run_seed=cfg.run.seed,
+        tick=1,
+    )
+
+    np.testing.assert_allclose(actual.signals, reference.signals, rtol=0.0, atol=2e-7)
+    np.testing.assert_array_equal(actual.signal_mask, reference.signal_mask)
+    assert actual.messages.shape == (active.size, 0, 3)
+
+
+@pytest.mark.skipif(not cupy_available(), reason="CuPy with a CUDA device is unavailable")
+def test_gpu_sparse_direct_message_reduction_matches_cpu_backend():
+    cfg = _cfg()
+    plan = DirectMessageObservationPlan(
+        row_count=3,
+        capacity=4,
+        receiver_rows=np.asarray([0, 0, 2], dtype=np.int32),
+        slots=np.asarray([0, 1, 0], dtype=np.int32),
+        payloads=np.asarray(
+            [[0.8, 0.4, 0.2], [0.6, 0.3, 0.1], [0.2, 0.5, 0.7]], dtype=np.float32
+        ),
+        ages=np.asarray([1, 1, 2], dtype=np.uint32),
+        confidences=np.asarray([0.9, 0.8, 0.7], dtype=np.float32),
+        source_ids=np.asarray([101, 102, 103], dtype=np.uint64),
+        corruption=np.asarray([0, 1, 0], dtype=np.uint8),
+    )
+    cpu = DeviceInformationField(cfg, "cpu")
+    try:
+        gpu = DeviceInformationField(cfg, "gpu")
+    except BackendUnavailableError as exc:
+        pytest.skip(str(exc))
+    stable_ids = np.asarray([11, 22, 44], dtype=np.uint64)
+    cells = np.asarray([0, 1, 2], dtype=np.int32)
+    partners = np.empty((3, 0), dtype=np.int32)
+    energy = np.ones(3, dtype=np.float32)
+    groups = np.zeros(3, dtype=np.uint64)
+    quality = np.ones(3, dtype=np.float32)
+    arguments = dict(
+        stable_ids=stable_ids,
+        cell_ids=cells,
+        partners=partners,
+        energy=energy,
+        group_id=groups,
+        own_group_id=groups,
+        sensor_quality=quality,
+        direct_message_plan=plan,
+        run_seed=cfg.run.seed,
+        tick=3,
+    )
+
+    expected = cpu.observe(**arguments)
+    actual = gpu.observe(**arguments)
+    np.testing.assert_allclose(gpu.to_numpy(actual.signals), expected.signals, rtol=2e-6, atol=2e-6)
+    np.testing.assert_array_equal(gpu.to_numpy(actual.signal_mask), expected.signal_mask)
 
 
 def test_signal_emission_plan_matches_ordered_scalar_channels_on_cpu():

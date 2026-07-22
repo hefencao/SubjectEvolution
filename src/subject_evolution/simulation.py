@@ -72,6 +72,10 @@ class StepStats:
     policy_seconds: float = 0.0
     conflict_seconds: float = 0.0
     graph_seconds: float = 0.0
+    gpu_h2d_bytes: int = 0
+    gpu_d2h_bytes: int = 0
+    gpu_direct_message_events: int = 0
+    gpu_direct_dense_bytes_avoided: int = 0
 
 
 class EntityState:
@@ -640,6 +644,7 @@ class Simulation:
             )
             stats.policy_seconds = time.perf_counter() - phase_started
         else:
+            self.gpu_runtime.begin_step_transfer_measurement()
             phase_started = time.perf_counter()
             self.gpu_runtime.update_fields(self.tick)
             self.gpu_runtime.backend.synchronize()
@@ -661,6 +666,13 @@ class Simulation:
             if active.size == 0:
                 if not self._defer_gpu_field_sync:
                     self.gpu_runtime.sync_to_host(self.environment, self.information)
+                transfer = self.gpu_runtime.finish_step_transfer_measurement()
+                stats.gpu_h2d_bytes = transfer.host_to_device_bytes
+                stats.gpu_d2h_bytes = transfer.device_to_host_bytes
+                stats.gpu_direct_message_events = transfer.direct_message_events
+                stats.gpu_direct_dense_bytes_avoided = (
+                    transfer.direct_message_dense_bytes_avoided
+                )
                 return stats
             cells = prepared.cells
             local_resources = prepared.local_resources
@@ -905,6 +917,12 @@ class Simulation:
         self._record_trajectories(intents, resolutions, decision.logits)
         if self.gpu_runtime is not None and not self._defer_gpu_field_sync:
             self.gpu_runtime.sync_to_host(self.environment, self.information)
+        if self.gpu_runtime is not None:
+            transfer = self.gpu_runtime.finish_step_transfer_measurement()
+            stats.gpu_h2d_bytes = transfer.host_to_device_bytes
+            stats.gpu_d2h_bytes = transfer.device_to_host_bytes
+            stats.gpu_direct_message_events = transfer.direct_message_events
+            stats.gpu_direct_dense_bytes_avoided = transfer.direct_message_dense_bytes_avoided
         self.tick += 1
         return stats
 
@@ -967,6 +985,10 @@ class Simulation:
             "policy_seconds": stats.policy_seconds,
             "conflict_seconds": stats.conflict_seconds,
             "graph_seconds": stats.graph_seconds,
+            "gpu_h2d_bytes": stats.gpu_h2d_bytes,
+            "gpu_d2h_bytes": stats.gpu_d2h_bytes,
+            "gpu_direct_message_events": stats.gpu_direct_message_events,
+            "gpu_direct_dense_bytes_avoided": stats.gpu_direct_dense_bytes_avoided,
             "step_seconds": elapsed,
             "wall_elapsed_seconds": wall_elapsed,
             "window_seconds": window_seconds,

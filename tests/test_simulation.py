@@ -7,6 +7,7 @@ from subject_evolution import __version__
 from subject_evolution.config import load_config
 from subject_evolution.counterfactual import run_paired
 from subject_evolution.information import (
+    DirectMessageObservationPlan,
     InformationSystem,
     SignalEmissionBatch,
     SignalEmissionPlan,
@@ -228,6 +229,41 @@ def test_batched_direct_message_receipt_is_reproducible_and_capacity_limited(tmp
     assert int(message_mask[1].sum()) <= cfg.information.direct_message_capacity
     accepted_sources = message_sources[1, message_mask[1]]
     assert np.all(np.diff(accepted_sources.astype(np.int64)) >= 0)
+
+
+def test_sparse_direct_message_plan_materializes_legacy_slots_without_dense_idle_cost(tmp_path):
+    cfg = load_config(_config(tmp_path))
+    cfg = replace(
+        cfg,
+        information=replace(cfg.information, direct_message_capacity=3, max_signal_delay=0),
+    )
+    source_ids = np.arange(100, 116, dtype=np.uint64)
+    receiver_ids = np.full(source_ids.size, 22, dtype=np.uint64)
+    payloads = np.tile(np.asarray([[0.8, 0.4, 0.2]], dtype=np.float32), (source_ids.size, 1))
+    confidences = np.ones(source_ids.size, dtype=np.float32)
+    active = np.asarray([0, 1], dtype=np.int32)
+    stable_ids = np.asarray([11, 22], dtype=np.uint64)
+    quality = np.ones(2, dtype=np.float32)
+
+    sparse_system = InformationSystem(cfg)
+    dense_system = InformationSystem(cfg)
+    for system in (sparse_system, dense_system):
+        system.emit_direct(source_ids, receiver_ids, payloads, confidences, cfg.run.seed, tick=0)
+
+    plan = sparse_system._receive_direct_plan(active, stable_ids, quality, cfg.run.seed, tick=1)
+    legacy = dense_system._receive_direct(active, stable_ids, quality, cfg.run.seed, tick=1)
+
+    assert isinstance(plan, DirectMessageObservationPlan)
+    assert plan.size <= cfg.information.direct_message_capacity
+    assert plan.sparse_nbytes < plan.dense_nbytes
+    assert plan.semantic_transfer_nbytes <= plan.sparse_nbytes
+    for actual, expected in zip(plan.materialize(), legacy):
+        np.testing.assert_array_equal(actual, expected)
+
+    empty = sparse_system._receive_direct_plan(active, stable_ids, quality, cfg.run.seed, tick=2)
+    assert empty.size == 0
+    assert empty.sparse_nbytes == 0
+    assert empty.dense_nbytes > 0
 
 
 def test_direct_message_queue_buckets_by_receive_tick(tmp_path):

@@ -40,7 +40,10 @@ def test_gpu_runtime_preserves_small_world_actions_and_state(tmp_path):
     try:
         for _ in range(3):
             cpu.step()
-            gpu.step()
+            gpu_stats = gpu.step()
+            assert gpu_stats.gpu_h2d_bytes > 0
+            assert gpu_stats.gpu_d2h_bytes > 0
+            assert gpu_stats.gpu_direct_dense_bytes_avoided > 0
 
         assert gpu.execution_backend == "gpu"
         assert isinstance(gpu.conflict_resolver, GpuActionConflictResolver)

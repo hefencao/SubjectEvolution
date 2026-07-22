@@ -163,6 +163,148 @@ class PendingMessageBatch:
     receive_tick: int
 
 
+@dataclass(frozen=True)
+class DirectMessageObservationPlan:
+    """Sparse accepted direct messages in canonical receiver/slot order.
+
+    The CPU queue owns delivery, detection, corruption and capacity
+    arbitration.  Consumers that need explicit attention slots may materialize
+    the legacy fixed tensor; GPU policies that only consume the semantic mean
+    can transfer ``receiver_rows``, ``slots`` and ``payloads`` without active-row padding.
+    """
+
+    row_count: int
+    capacity: int
+    receiver_rows: np.ndarray
+    slots: np.ndarray
+    payloads: np.ndarray
+    ages: np.ndarray
+    confidences: np.ndarray
+    source_ids: np.ndarray
+    corruption: np.ndarray
+
+    def __post_init__(self) -> None:
+        count = int(np.asarray(self.receiver_rows).size)
+        arrays = (
+            self.receiver_rows,
+            self.slots,
+            self.ages,
+            self.confidences,
+            self.source_ids,
+            self.corruption,
+        )
+        if self.row_count < 0 or self.capacity < 0:
+            raise ValueError("direct-message plan dimensions must be non-negative")
+        if any(np.asarray(value).shape != (count,) for value in arrays):
+            raise ValueError("direct-message plan vectors must have the same length")
+        if np.asarray(self.payloads).shape != (count, InformationSystem.CHANNELS):
+            raise ValueError("direct-message payloads must contain one semantic vector per event")
+        rows = np.asarray(self.receiver_rows)
+        slots = np.asarray(self.slots)
+        payloads = np.asarray(self.payloads)
+        ages = np.asarray(self.ages)
+        confidences = np.asarray(self.confidences)
+        source_ids = np.asarray(self.source_ids)
+        corruption = np.asarray(self.corruption)
+        if (
+            not np.issubdtype(rows.dtype, np.integer)
+            or not np.issubdtype(slots.dtype, np.integer)
+            or not np.issubdtype(payloads.dtype, np.floating)
+            or not np.issubdtype(ages.dtype, np.integer)
+            or not np.issubdtype(confidences.dtype, np.floating)
+            or not np.issubdtype(source_ids.dtype, np.integer)
+            or not np.issubdtype(corruption.dtype, np.integer)
+        ):
+            raise ValueError("direct-message plan arrays use incompatible dtypes")
+        if count and (
+            np.any(rows < 0)
+            or np.any(rows >= self.row_count)
+            or np.any(slots < 0)
+            or np.any(slots >= self.capacity)
+            or np.any(rows[1:] < rows[:-1])
+            or np.any((rows[1:] == rows[:-1]) & (slots[1:] <= slots[:-1]))
+            or np.any(~np.isfinite(payloads))
+            or np.any(payloads < 0.0)
+            or np.any(~np.isfinite(confidences))
+            or np.any((confidences < 0.0) | (confidences > 1.0))
+            or np.any(source_ids <= 0)
+            or np.any((corruption != 0) & (corruption != 1))
+        ):
+            raise ValueError("direct-message events contain invalid canonical values")
+
+    @classmethod
+    def empty(cls, row_count: int, capacity: int) -> "DirectMessageObservationPlan":
+        return cls(
+            row_count=int(row_count),
+            capacity=int(capacity),
+            receiver_rows=np.empty(0, dtype=np.int32),
+            slots=np.empty(0, dtype=np.int32),
+            payloads=np.empty((0, InformationSystem.CHANNELS), dtype=np.float32),
+            ages=np.empty(0, dtype=np.uint32),
+            confidences=np.empty(0, dtype=np.float32),
+            source_ids=np.empty(0, dtype=np.uint64),
+            corruption=np.empty(0, dtype=np.uint8),
+        )
+
+    @property
+    def size(self) -> int:
+        return int(self.receiver_rows.size)
+
+    @property
+    def sparse_nbytes(self) -> int:
+        return sum(
+            int(np.asarray(value).nbytes)
+            for value in (
+                self.receiver_rows,
+                self.slots,
+                self.payloads,
+                self.ages,
+                self.confidences,
+                self.source_ids,
+                self.corruption,
+            )
+        )
+
+    @property
+    def semantic_transfer_nbytes(self) -> int:
+        """Bytes needed by the current aggregate-only device policy."""
+        return int(self.receiver_rows.nbytes + self.slots.nbytes + self.payloads.nbytes)
+
+    @property
+    def dense_nbytes(self) -> int:
+        per_slot = (
+            InformationSystem.CHANNELS * np.dtype(np.float32).itemsize
+            + np.dtype(bool).itemsize
+            + np.dtype(np.uint32).itemsize
+            + np.dtype(np.float32).itemsize
+            + np.dtype(np.uint64).itemsize
+            + np.dtype(np.uint8).itemsize
+        )
+        return int(self.row_count * self.capacity * per_slot)
+
+    def materialize(
+        self,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """Create the strict fixed-slot CPU observation on demand."""
+        payload = np.zeros(
+            (self.row_count, self.capacity, InformationSystem.CHANNELS), dtype=np.float32
+        )
+        mask = np.zeros((self.row_count, self.capacity), dtype=bool)
+        age = np.zeros((self.row_count, self.capacity), dtype=np.uint32)
+        confidence = np.zeros((self.row_count, self.capacity), dtype=np.float32)
+        source = np.zeros((self.row_count, self.capacity), dtype=np.uint64)
+        corruption = np.zeros((self.row_count, self.capacity), dtype=np.uint8)
+        if self.size:
+            key = (self.receiver_rows, self.slots)
+            payload[key] = self.payloads
+            mask[key] = True
+            age[key] = self.ages
+            confidence[key] = self.confidences
+            source[key] = self.source_ids
+            corruption[key] = self.corruption
+        return payload, mask, age, confidence, source, corruption
+
+
 class InformationSystem:
     """Three-channel field: resource, danger and social guidance."""
 
@@ -270,24 +412,19 @@ class InformationSystem:
             )
         return int(source_ids.size)
 
-    def _receive_direct(
+    def _receive_direct_plan(
         self,
         active: np.ndarray,
         stable_ids: np.ndarray,
         sensor_quality: np.ndarray,
         run_seed: int,
         tick: int,
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """Consume due direct messages into a fixed, masked observation batch."""
+    ) -> DirectMessageObservationPlan:
+        """Consume due messages into a sparse canonical observation plan."""
         capacity = self.cfg.information.direct_message_capacity
-        payload = np.zeros((active.size, capacity, self.CHANNELS), dtype=np.float32)
-        mask = np.zeros((active.size, capacity), dtype=bool)
-        age = np.zeros((active.size, capacity), dtype=np.uint32)
-        confidence = np.zeros((active.size, capacity), dtype=np.float32)
-        source = np.zeros((active.size, capacity), dtype=np.uint64)
-        corruption = np.zeros((active.size, capacity), dtype=np.uint8)
+        empty = DirectMessageObservationPlan.empty(active.size, capacity)
         if capacity == 0 or not self.pending_messages:
-            return payload, mask, age, confidence, source, corruption
+            return empty
 
         due: list[PendingMessageBatch] = []
         remaining: list[PendingMessageBatch] = []
@@ -298,7 +435,7 @@ class InformationSystem:
                 remaining.append(batch)
         self.pending_messages = remaining
         if not due:
-            return payload, mask, age, confidence, source, corruption
+            return empty
 
         # Stable ordering keeps attention truncation independent of incidental
         # queue insertion order.
@@ -327,7 +464,7 @@ class InformationSystem:
         safe_location = np.where(in_range, location, 0)
         valid = in_range & (sorted_ids[safe_location] == receiver_ids)
         if not np.any(valid):
-            return payload, mask, age, confidence, source, corruption
+            return empty
 
         rows = id_order[safe_location[valid]].astype(np.int32, copy=False)
         source_ids = source_ids[valid]
@@ -364,7 +501,7 @@ class InformationSystem:
         slots = cumulative - group_base - 1
         accepted = detected & (slots < capacity)
         if not np.any(accepted):
-            return payload, mask, age, confidence, source, corruption
+            return empty
 
         rows = rows[accepted]
         slots = slots[accepted].astype(np.int32, copy=False)
@@ -396,16 +533,41 @@ class InformationSystem:
             shift = 1 + (source_ids[mistaken] % np.uint64(self.CHANNELS - 1)).astype(np.int32)
             columns = (np.arange(self.CHANNELS)[None, :] - shift[:, None]) % self.CHANNELS
             decoded[mistaken] = np.take_along_axis(decoded[mistaken], columns, axis=1)
-            corruption[rows[mistaken], slots[mistaken]] = np.uint8(1)
-
-        payload[rows, slots] = decoded.astype(np.float32)
-        mask[rows, slots] = True
-        age[rows, slots] = np.maximum(tick - emit_ticks, 0).astype(np.uint32)
-        confidence[rows, slots] = np.clip(
+        decoded = decoded.astype(np.float32)
+        message_age = np.maximum(tick - emit_ticks, 0).astype(np.uint32)
+        message_confidence = np.clip(
             confidences * quality / (1.0 + self.cfg.information.receiver_noise), 0.0, 1.0
         ).astype(np.float32)
-        source[rows, slots] = source_ids
-        return payload, mask, age, confidence, source, corruption
+        message_corruption = mistaken.astype(np.uint8)
+
+        # Active rows are slot ordered while the queue is stable-ID ordered.
+        # Canonicalize by row once on the CPU; stable sorting preserves the
+        # original source/emit ordering and therefore the legacy slot sums.
+        canonical = np.argsort(rows, kind="stable")
+        return DirectMessageObservationPlan(
+            row_count=active.size,
+            capacity=capacity,
+            receiver_rows=rows[canonical].astype(np.int32, copy=False),
+            slots=slots[canonical].astype(np.int32, copy=False),
+            payloads=decoded[canonical],
+            ages=message_age[canonical],
+            confidences=message_confidence[canonical],
+            source_ids=source_ids[canonical].astype(np.uint64, copy=False),
+            corruption=message_corruption[canonical],
+        )
+
+    def _receive_direct(
+        self,
+        active: np.ndarray,
+        stable_ids: np.ndarray,
+        sensor_quality: np.ndarray,
+        run_seed: int,
+        tick: int,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """Backward-compatible fixed observation materializer."""
+        return self._receive_direct_plan(
+            active, stable_ids, sensor_quality, run_seed, tick
+        ).materialize()
 
     def observe(
         self,

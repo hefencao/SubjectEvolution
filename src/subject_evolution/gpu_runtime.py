@@ -41,6 +41,16 @@ class GpuPreparedStep:
     policy_seconds: float
 
 
+@dataclass(frozen=True)
+class GpuTransferStats:
+    """Explicit host/device traffic recorded during one world step."""
+
+    host_to_device_bytes: int = 0
+    device_to_host_bytes: int = 0
+    direct_message_events: int = 0
+    direct_message_dense_bytes_avoided: int = 0
+
+
 class HybridGpuRuntime:
     """Run fields, observations and policy batches on a selected GPU backend."""
 
@@ -66,6 +76,39 @@ class HybridGpuRuntime:
         self._group_dir_x: Any | None = None
         self._group_dir_y: Any | None = None
         self._social_state_dirty = True
+        self._measure_transfers = False
+        self._host_to_device_bytes = 0
+        self._device_to_host_bytes = 0
+        self._direct_message_events = 0
+        self._direct_message_dense_bytes_avoided = 0
+
+    def begin_step_transfer_measurement(self) -> None:
+        self._measure_transfers = True
+        self._host_to_device_bytes = 0
+        self._device_to_host_bytes = 0
+        self._direct_message_events = 0
+        self._direct_message_dense_bytes_avoided = 0
+
+    def finish_step_transfer_measurement(self) -> GpuTransferStats:
+        result = GpuTransferStats(
+            host_to_device_bytes=self._host_to_device_bytes,
+            device_to_host_bytes=self._device_to_host_bytes,
+            direct_message_events=self._direct_message_events,
+            direct_message_dense_bytes_avoided=self._direct_message_dense_bytes_avoided,
+        )
+        self._measure_transfers = False
+        return result
+
+    def _upload(self, value: Any, *, dtype: Any | None = None, copy: bool = False) -> Any:
+        result = self.backend.asarray(value, dtype=dtype, copy=copy)
+        if self._measure_transfers:
+            self._host_to_device_bytes += int(result.nbytes)
+        return result
+
+    def _download(self, value: Any) -> np.ndarray:
+        if self._measure_transfers:
+            self._device_to_host_bytes += int(value.nbytes)
+        return self.backend.to_numpy(value)
 
     def mark_entity_static_dirty(self) -> None:
         """Require stable IDs and genotypes to be re-uploaded next tick.
@@ -83,23 +126,23 @@ class HybridGpuRuntime:
     def sync_from_host(self, environment: Any, information: InformationSystem) -> None:
         """Seed the device mirror from an existing CPU world snapshot."""
         xp = self.backend.xp
-        self.environment.resources = self.backend.asarray(environment.resources, dtype=xp.float32, copy=True)
-        self.environment.capacity = self.backend.asarray(environment.capacity, dtype=xp.float32, copy=True)
-        self.environment.regeneration = self.backend.asarray(environment.regeneration, dtype=xp.float32, copy=True)
-        self.environment.hazard = self.backend.asarray(environment.hazard, dtype=xp.float32, copy=True)
-        self.information_field.field = self.backend.asarray(information.field, dtype=xp.float32, copy=True)
-        self.information_field.source = self.backend.asarray(information.source, dtype=xp.float32, copy=True)
-        self.information_field.age = self.backend.asarray(information.age, dtype=xp.uint16, copy=True)
+        self.environment.resources = self._upload(environment.resources, dtype=xp.float32, copy=True)
+        self.environment.capacity = self._upload(environment.capacity, dtype=xp.float32, copy=True)
+        self.environment.regeneration = self._upload(environment.regeneration, dtype=xp.float32, copy=True)
+        self.environment.hazard = self._upload(environment.hazard, dtype=xp.float32, copy=True)
+        self.information_field.field = self._upload(information.field, dtype=xp.float32, copy=True)
+        self.information_field.source = self._upload(information.source, dtype=xp.float32, copy=True)
+        self.information_field.age = self._upload(information.age, dtype=xp.uint16, copy=True)
 
     def sync_to_host(self, environment: Any, information: InformationSystem) -> None:
         """Expose the current device fields to CPU-only inspection and cloning."""
-        environment.resources = self.backend.to_numpy(self.environment.resources).astype(np.float32, copy=False)
-        environment.capacity = self.backend.to_numpy(self.environment.capacity).astype(np.float32, copy=False)
-        environment.regeneration = self.backend.to_numpy(self.environment.regeneration).astype(np.float32, copy=False)
-        environment.hazard = self.backend.to_numpy(self.environment.hazard).astype(np.float32, copy=False)
-        information.field = self.backend.to_numpy(self.information_field.field).astype(np.float32, copy=False)
-        information.source = self.backend.to_numpy(self.information_field.source).astype(np.float32, copy=False)
-        information.age = self.backend.to_numpy(self.information_field.age).astype(np.uint16, copy=False)
+        environment.resources = self._download(self.environment.resources).astype(np.float32, copy=False)
+        environment.capacity = self._download(self.environment.capacity).astype(np.float32, copy=False)
+        environment.regeneration = self._download(self.environment.regeneration).astype(np.float32, copy=False)
+        environment.hazard = self._download(self.environment.hazard).astype(np.float32, copy=False)
+        information.field = self._download(self.information_field.field).astype(np.float32, copy=False)
+        information.source = self._download(self.information_field.source).astype(np.float32, copy=False)
+        information.age = self._download(self.information_field.age).astype(np.uint16, copy=False)
 
     def update_fields(self, tick: int) -> None:
         self.environment.update(tick)
@@ -162,31 +205,31 @@ class HybridGpuRuntime:
         # Copy the world snapshot once.  The CPU owns mutation after this
         # boundary, so all device work sees a stable tick snapshot.
         sensor_quality_host = entity.sensor_quality()
-        x = self.backend.asarray(entity.x, dtype=xp.float32)
-        y = self.backend.asarray(entity.y, dtype=xp.float32)
-        alive = self.backend.asarray(entity.alive, dtype=bool)
+        x = self._upload(entity.x, dtype=xp.float32)
+        y = self._upload(entity.y, dtype=xp.float32)
+        alive = self._upload(entity.alive, dtype=bool)
         if self._entity_static_dirty or self._stable_ids is None or self._genotype is None:
-            self._stable_ids = self.backend.asarray(entity.entity_id, dtype=xp.uint64)
-            self._genotype = self.backend.asarray(entity.genotype, dtype=xp.float32)
+            self._stable_ids = self._upload(entity.entity_id, dtype=xp.uint64)
+            self._genotype = self._upload(entity.genotype, dtype=xp.float32)
             self._entity_static_dirty = False
         stable_ids = self._stable_ids
-        energy = self.backend.asarray(entity.energy, dtype=xp.float32)
-        integrity = self.backend.asarray(entity.integrity, dtype=xp.float32)
-        fertility = self.backend.asarray(entity.fertility, dtype=xp.float32)
+        energy = self._upload(entity.energy, dtype=xp.float32)
+        integrity = self._upload(entity.integrity, dtype=xp.float32)
+        fertility = self._upload(entity.fertility, dtype=xp.float32)
         genotype = self._genotype
-        memory = self.backend.asarray(entity.memory, dtype=xp.float32)
+        memory = self._upload(entity.memory, dtype=xp.float32)
         if (
             self._social_state_dirty
             or self._group_ids is None
             or self._group_dir_x is None
             or self._group_dir_y is None
         ):
-            self._group_ids = self.backend.asarray(social.group_id, dtype=xp.uint64)
-            self._group_dir_x = self.backend.asarray(social.group_dir_x, dtype=xp.float32)
-            self._group_dir_y = self.backend.asarray(social.group_dir_y, dtype=xp.float32)
+            self._group_ids = self._upload(social.group_id, dtype=xp.uint64)
+            self._group_dir_x = self._upload(social.group_dir_x, dtype=xp.float32)
+            self._group_dir_y = self._upload(social.group_dir_y, dtype=xp.float32)
             self._social_state_dirty = False
         groups = self._group_ids
-        sensor_quality = self.backend.asarray(sensor_quality_host, dtype=xp.float32)
+        sensor_quality = self._upload(sensor_quality_host, dtype=xp.float32)
 
         timer = time.perf_counter()
         active = self.spatial.build(x, y, alive)
@@ -203,15 +246,21 @@ class HybridGpuRuntime:
 
         timer = time.perf_counter()
         # Delayed messages are an event queue owned by the CPU commit path.
-        # Decode it in its fixed CPU representation, then treat it as a read-
-        # only observation tensor on device.
-        direct = information._receive_direct(
+        # Decode and capacity-resolve them into a sparse immutable plan; the
+        # device observation stage materializes slots only for actual receivers.
+        direct = information._receive_direct_plan(
             active_host,
             entity.entity_id,
             sensor_quality_host,
             run_seed,
             tick,
         )
+        if self._measure_transfers:
+            self._host_to_device_bytes += direct.semantic_transfer_nbytes
+            self._direct_message_events = direct.size
+            self._direct_message_dense_bytes_avoided = max(
+                direct.dense_nbytes - direct.semantic_transfer_nbytes, 0
+            )
         local_resources = self.environment.cell_values(cells)
         device_info = self.information_field.observe(
             stable_ids=stable_ids[active],
@@ -221,12 +270,7 @@ class HybridGpuRuntime:
             group_id=groups,
             own_group_id=groups[active],
             sensor_quality=sensor_quality[active],
-            messages=direct[0],
-            message_mask=direct[1],
-            message_age=direct[2],
-            message_confidence=direct[3],
-            message_source_id=direct[4],
-            message_corruption=direct[5],
+            direct_message_plan=direct,
             run_seed=run_seed,
             tick=tick,
         )
@@ -264,16 +308,16 @@ class HybridGpuRuntime:
 
         # One synchronized host boundary for the CPU intent/commit stages.
         active_result = active_host
-        cells_result = self.backend.to_numpy(cells).astype(np.int32, copy=False)
-        local_result = self.backend.to_numpy(local_resources).astype(np.float32, copy=False)
+        cells_result = self._download(cells).astype(np.int32, copy=False)
+        local_result = self._download(local_resources).astype(np.float32, copy=False)
         resource_result = (
-            tuple(self.backend.to_numpy(value).astype(np.float32, copy=False) for value in resource_gradient)
+            tuple(self._download(value).astype(np.float32, copy=False) for value in resource_gradient)
             if need_host_resource_gradient
             else None
         )
         host_info = InformationObservation(
-            signals=self.backend.to_numpy(device_info.signals).astype(np.float32, copy=False),
-            signal_mask=self.backend.to_numpy(device_info.signal_mask).astype(bool, copy=False),
+            signals=self._download(device_info.signals).astype(np.float32, copy=False),
+            signal_mask=self._download(device_info.signal_mask).astype(bool, copy=False),
             signal_age=np.empty((active_result.size, 3), dtype=np.float32),
             messages=np.empty((active_result.size, 0, 3), dtype=np.float32),
             message_mask=np.empty((active_result.size, 0), dtype=bool),
@@ -283,18 +327,18 @@ class HybridGpuRuntime:
             message_corruption=np.empty((active_result.size, 0), dtype=np.uint8),
             partner_energy=np.empty((active_result.size, 0), dtype=np.float32),
             partner_group_match=np.empty((active_result.size, 0), dtype=np.float32),
-            partner_mask=self.backend.to_numpy(device_info.partner_mask).astype(bool, copy=False),
-            uncertainty=self.backend.to_numpy(device_info.uncertainty).astype(np.float32, copy=False),
+            partner_mask=self._download(device_info.partner_mask).astype(bool, copy=False),
+            uncertainty=self._download(device_info.uncertainty).astype(np.float32, copy=False),
         )
         host_decision = PolicyDecision(
-            action=self.backend.to_numpy(device_decision.action).astype(np.int16, copy=False),
-            probability=self.backend.to_numpy(device_decision.probability).astype(np.float32, copy=False),
-            entropy=self.backend.to_numpy(device_decision.entropy).astype(np.float32, copy=False),
-            direction_x=self.backend.to_numpy(device_decision.direction_x).astype(np.float32, copy=False),
-            direction_y=self.backend.to_numpy(device_decision.direction_y).astype(np.float32, copy=False),
-            selected_partner=self.backend.to_numpy(device_decision.selected_partner).astype(np.int32, copy=False),
+            action=self._download(device_decision.action).astype(np.int16, copy=False),
+            probability=self._download(device_decision.probability).astype(np.float32, copy=False),
+            entropy=self._download(device_decision.entropy).astype(np.float32, copy=False),
+            direction_x=self._download(device_decision.direction_x).astype(np.float32, copy=False),
+            direction_y=self._download(device_decision.direction_y).astype(np.float32, copy=False),
+            selected_partner=self._download(device_decision.selected_partner).astype(np.int32, copy=False),
             logits=(
-                self.backend.to_numpy(device_decision.logits).astype(np.float32, copy=False)
+                self._download(device_decision.logits).astype(np.float32, copy=False)
                 if retain_logits
                 else np.empty((active_result.size, 0), dtype=np.float32)
             ),
@@ -312,10 +356,10 @@ class HybridGpuRuntime:
         )
 
     def resolve_harvest(self, cell_ids: np.ndarray, rates: np.ndarray) -> np.ndarray:
-        cells = self.backend.asarray(cell_ids, dtype=self.backend.xp.int32)
-        requests = self.backend.asarray(rates, dtype=self.backend.xp.float32)
+        cells = self._upload(cell_ids, dtype=self.backend.xp.int32)
+        requests = self._upload(rates, dtype=self.backend.xp.float32)
         result = self.environment.resolve_harvest(cells, requests)
-        return self.backend.to_numpy(result).astype(np.float32, copy=False)
+        return self._download(result).astype(np.float32, copy=False)
 
     def resolve_harvest_plan(
         self,
@@ -331,7 +375,7 @@ class HybridGpuRuntime:
         the subsequent CPU world commit authoritative and replayable.
         """
         xp = self.backend.xp
-        action = self.backend.asarray(intents.action, dtype=xp.int16)
+        action = self._upload(intents.action, dtype=xp.int16)
         device_rows = xp.flatnonzero(action == int(Action.HARVEST)).astype(xp.int32, copy=False)
         if int(device_rows.size) == 0:
             return HarvestResolution(
@@ -344,10 +388,10 @@ class HybridGpuRuntime:
         # into mutable host world state.  Keeping the key construction here
         # also avoids a device->host->device round trip for ordered cells and
         # harvest-rate rows.
-        active = self.backend.asarray(snapshot.active, dtype=xp.int32)
-        cells = self.backend.asarray(snapshot.cells, dtype=xp.int32)
-        carrier_index = self.backend.asarray(intents.carrier_index, dtype=xp.int32)
-        carrier_id = self.backend.asarray(intents.carrier_id, dtype=xp.uint64)
+        active = self._upload(snapshot.active, dtype=xp.int32)
+        cells = self._upload(snapshot.cells, dtype=xp.int32)
+        carrier_index = self._upload(intents.carrier_index, dtype=xp.int32)
+        carrier_id = self._upload(intents.carrier_id, dtype=xp.uint64)
         observation_rows = xp.searchsorted(active, carrier_index[device_rows])
         device_cells = cells[observation_rows]
         order = xp.lexsort(xp.stack((carrier_id[device_rows], device_cells)))
@@ -359,22 +403,22 @@ class HybridGpuRuntime:
         rates = xp.broadcast_to(rate, (device_rows.size, DeviceEnvironment.RESOURCE_CHANNELS))
         device_gathered = self.environment.resolve_harvest(device_cells, rates)
         return HarvestResolution(
-            self.backend.to_numpy(device_rows).astype(np.int32, copy=False),
-            self.backend.to_numpy(device_cells).astype(np.int32, copy=False),
-            self.backend.to_numpy(device_gathered).astype(np.float32, copy=False),
+            self._download(device_rows).astype(np.int32, copy=False),
+            self._download(device_cells).astype(np.int32, copy=False),
+            self._download(device_gathered).astype(np.float32, copy=False),
         )
 
     def commit_harvest(self, cell_ids: np.ndarray, gathered: np.ndarray) -> None:
         self.environment.commit_harvest(
-            self.backend.asarray(cell_ids, dtype=self.backend.xp.int32),
-            self.backend.asarray(gathered, dtype=self.backend.xp.float32),
+            self._upload(cell_ids, dtype=self.backend.xp.int32),
+            self._upload(gathered, dtype=self.backend.xp.float32),
         )
 
     def emit(self, channel: int, cell_ids: np.ndarray, strengths: np.ndarray) -> None:
         self.information_field.emit(
             channel,
-            self.backend.asarray(cell_ids, dtype=self.backend.xp.int32),
-            self.backend.asarray(strengths, dtype=self.backend.xp.float32),
+            self._upload(cell_ids, dtype=self.backend.xp.int32),
+            self._upload(strengths, dtype=self.backend.xp.float32),
         )
 
     def emit_plan(self, plan: SignalEmissionPlan) -> None:
@@ -382,14 +426,14 @@ class HybridGpuRuntime:
         for batch in plan.batches:
             self.information_field.emit(
                 batch.channel,
-                self.backend.asarray(batch.cell_ids, dtype=self.backend.xp.int32),
-                self.backend.asarray(batch.strengths, dtype=self.backend.xp.float32),
+                self._upload(batch.cell_ids, dtype=self.backend.xp.int32),
+                self._upload(batch.strengths, dtype=self.backend.xp.float32),
             )
 
     def hazard_for_cells(self, cell_ids: np.ndarray) -> np.ndarray:
-        cells = self.backend.asarray(cell_ids, dtype=self.backend.xp.int32)
+        cells = self._upload(cell_ids, dtype=self.backend.xp.int32)
         values = self.environment.hazard.reshape(-1)[cells]
-        return self.backend.to_numpy(values).astype(np.float32, copy=False)
+        return self._download(values).astype(np.float32, copy=False)
 
 
-__all__ = ["GpuPreparedStep", "HybridGpuRuntime"]
+__all__ = ["GpuPreparedStep", "GpuTransferStats", "HybridGpuRuntime"]

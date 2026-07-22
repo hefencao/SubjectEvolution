@@ -12,7 +12,11 @@ from typing import Any
 
 from .backend import Backend, resolve_backend
 from .config import SimulationConfig
-from .information import InformationObservation, SignalEmissionPlan
+from .information import (
+    DirectMessageObservationPlan,
+    InformationObservation,
+    SignalEmissionPlan,
+)
 from .random_api import RandomContext, Stream, bernoulli, normal, uniform01
 from .reductions import stable_segmented_sum, validate_cell_ids
 
@@ -218,12 +222,7 @@ class DeviceInformationField:
         group_id: Any,
         own_group_id: Any,
         sensor_quality: Any,
-        messages: Any,
-        message_mask: Any,
-        message_age: Any,
-        message_confidence: Any,
-        message_source_id: Any,
-        message_corruption: Any,
+        direct_message_plan: DirectMessageObservationPlan,
         run_seed: int,
         tick: int,
     ) -> InformationObservation:
@@ -250,12 +249,11 @@ class DeviceInformationField:
         raw, raw_age = self.sample(cells)
         raw = raw.astype(xp.float64)
         raw_age = raw_age.astype(xp.float32)
-        direct_messages = xp.asarray(messages, dtype=xp.float32)
-        direct_mask = xp.asarray(message_mask, dtype=bool)
-        direct_age = xp.asarray(message_age, dtype=xp.uint32)
-        direct_confidence = xp.asarray(message_confidence, dtype=xp.float32)
-        direct_source = xp.asarray(message_source_id, dtype=xp.uint64)
-        direct_corruption = xp.asarray(message_corruption, dtype=xp.uint8)
+        if direct_message_plan.row_count != int(ids.size):
+            raise ValueError("direct-message plan rows must align with active entities")
+        direct_rows = xp.asarray(direct_message_plan.receiver_rows, dtype=xp.int32)
+        direct_slots = xp.asarray(direct_message_plan.slots, dtype=xp.int32)
+        direct_payloads = xp.asarray(direct_message_plan.payloads, dtype=xp.float32)
 
         detect_ctx = RandomContext(run_seed, tick, phase=40, stream=Stream.SIGNAL_DETECTION)
         strength = raw / (1.0 + raw)
@@ -303,10 +301,32 @@ class DeviceInformationField:
         mask = xp.where(misclassified[:, None], rotated_mask, mask)
         noisy = xp.where(mask, noisy, 0.0)
 
-        if direct_messages.shape[1]:
-            message_sum = (direct_messages * direct_mask[:, :, None]).sum(axis=1)
-            message_count = xp.maximum(direct_mask.sum(axis=1, keepdims=True), 1)
-            noisy += message_sum / message_count
+        if int(direct_rows.size):
+            # The plan is already stable-sorted by receiver row and retains
+            # legacy slot order within a receiver.  Materialize fixed slots
+            # only for rows that actually received a message.  Keeping the
+            # original capacity-wide ``sum(axis=1)`` reduction shape is
+            # necessary for long-run floating/discrete replay equivalence;
+            # the compact first dimension still avoids active-row padding.
+            starts = xp.concatenate(
+                (
+                    xp.asarray([0], dtype=xp.int64),
+                    xp.flatnonzero(direct_rows[1:] != direct_rows[:-1]).astype(xp.int64) + 1,
+                )
+            )
+            ends = xp.concatenate((starts[1:], xp.asarray([direct_rows.size], dtype=xp.int64)))
+            group_start = xp.empty(direct_rows.size, dtype=bool)
+            group_start[0] = True
+            group_start[1:] = direct_rows[1:] != direct_rows[:-1]
+            compact_rows = xp.cumsum(group_start, dtype=xp.int32) - 1
+            compact = xp.zeros(
+                (int(starts.size), direct_message_plan.capacity, self.CHANNELS),
+                dtype=xp.float32,
+            )
+            compact[compact_rows, direct_slots] = direct_payloads
+            message_sum = compact.sum(axis=1)
+            message_count = xp.maximum((ends - starts)[:, None], 1)
+            noisy[direct_rows[starts]] += message_sum / message_count
         noisy = noisy.astype(xp.float32)
 
         partner_mask = partner_indices >= 0
@@ -353,12 +373,12 @@ class DeviceInformationField:
             signals=noisy,
             signal_mask=mask,
             signal_age=raw_age,
-            messages=direct_messages,
-            message_mask=direct_mask,
-            message_age=direct_age,
-            message_confidence=direct_confidence,
-            message_source_id=direct_source,
-            message_corruption=direct_corruption,
+            messages=xp.empty((ids.size, 0, self.CHANNELS), dtype=xp.float32),
+            message_mask=xp.empty((ids.size, 0), dtype=bool),
+            message_age=xp.empty((ids.size, 0), dtype=xp.uint32),
+            message_confidence=xp.empty((ids.size, 0), dtype=xp.float32),
+            message_source_id=xp.empty((ids.size, 0), dtype=xp.uint64),
+            message_corruption=xp.empty((ids.size, 0), dtype=xp.uint8),
             partner_energy=perceived_energy,
             partner_group_match=group_match.astype(xp.float32),
             partner_mask=partner_mask,
