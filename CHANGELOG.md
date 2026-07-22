@@ -15,6 +15,8 @@
 - 将关系信任/熟悉度改为在分享写入和群体检测边界按累计 tick 物化的几何衰减；无死亡 tick 跳过整表死链接扫描，保持关系状态在 CPU 的语义权威和行动提交边界。
 - 将 GPU SplitMix64 上下文混合、draw index 和最终器融合为单个元素核；随机键与 CPU 参考逐位一致，设备内部已验证的采样参数不再触发重复主机同步。
 - 增加后端无关的 `SignalEmissionPlan`、单通道有序 `SignalEmissionBatch` 和 `SignalEmissionScheduler`；`information.signal_flush_periods` 显式定义资源/危险/社会字段的交付 cadence，高频事件可进入低频目标通道的待发队列，未到期通道不会产生零填充传输。到期通道按到达顺序合并并严格归约；默认 `[1,1,1]` 为无队列直通。撤回未带来 300 tick 端到端收益的稠密多通道默认路径。
+- 增加 `HarvestResolution`、`GpuHarvestPlanner` 和 `GpuActionConflictResolver`：GPU 仅从只读快照构建采集行/单元稳定排序与公平分配计划，CPU 仍是唯一世界提交者；分享、繁殖和位置提交继续复用严格 CPU 规则。`run.gpu_harvest_conflict_planner` 默认开启，可用于回退到 CPU 键构建做剖析。
+- 增加 GPU 采集计划对照：逐项固定稳定行/单元排序、分配、失败码，并断言计划阶段不修改设备资源；WSL RTX 4070 的 100k、300 tick 成对测量为 `31.12秒`（设备计划）对 `31.77秒`（CPU 键构建），仅作为约 `2%` 的环境相关收益记录。
 - 策略、字段感知、伙伴感知、噪声和方向选择支持 NumPy/CuPy 相同接口；
 - 指标增加窗口墙钟平均，避免单个采样 step 时间掩盖日志与检查点开销；
 - 增加端到端 CPU/GPU 小场景对照和 WSL RTX 4070 十万实体连续运行验证。

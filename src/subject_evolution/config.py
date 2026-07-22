@@ -15,6 +15,11 @@ class RunConfig:
     # Complete action/trajectory records are opt-in.  Keeping the list empty
     # preserves the small, aggregate-only output of the reference runner.
     trajectory_subject_ids: tuple[int, ...] = ()
+    # Device harvest planning keeps the same resolution/commit contract.
+    # It is enabled for the GPU hybrid path after fixed-seed plan and
+    # 100k-entity profiling checks; set false to profile the CPU key builder
+    # while retaining the device allocation/commit stages.
+    gpu_harvest_conflict_planner: bool = True
 
 
 @dataclass(frozen=True)
@@ -135,6 +140,9 @@ def load_config(path: str | Path) -> SimulationConfig:
             **{
                 **_require(raw, "run"),
                 "trajectory_subject_ids": tuple(_require(raw, "run").get("trajectory_subject_ids", ())),
+                "gpu_harvest_conflict_planner": _require(raw, "run").get(
+                    "gpu_harvest_conflict_planner", True
+                ),
             }
         ),
         world=WorldConfig(**_require(raw, "world")),
@@ -170,6 +178,8 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("grid dimensions must be positive")
     if cfg.run.ticks <= 0:
         raise ValueError("ticks must be positive")
+    if not isinstance(cfg.run.gpu_harvest_conflict_planner, bool):
+        raise ValueError("run.gpu_harvest_conflict_planner must be a boolean")
     if len(cfg.environment.resource_regeneration) != 4 or len(cfg.environment.resource_capacity) != 4:
         raise ValueError("MVP requires exactly four resource channels")
     if any(v < 0 for v in cfg.environment.resource_regeneration):

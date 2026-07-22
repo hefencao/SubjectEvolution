@@ -19,7 +19,12 @@ from .control import (
     social_guidance_control_proposal,
 )
 from .environment import Environment
-from .execution import ActionConflictResolver, ActionResolutionSnapshot, DeterministicActionConflictResolver
+from .execution import (
+    ActionConflictResolver,
+    ActionResolutionSnapshot,
+    DeterministicActionConflictResolver,
+    GpuActionConflictResolver,
+)
 from .gpu_runtime import HybridGpuRuntime
 from .information import InformationSystem, SignalEmissionBatch, SignalEmissionPlan, SignalEmissionScheduler
 from .intents import (
@@ -241,9 +246,17 @@ class Simulation:
         self.action_counts = np.zeros(len(Action), dtype=np.int64)
         self.last_intents: ActionIntentBatch | None = None
         self.last_resolutions: ActionResolutionBatch | None = None
-        self.conflict_resolver = (
-            conflict_resolver if conflict_resolver is not None else DeterministicActionConflictResolver(cfg)
-        )
+        self.conflict_resolver = conflict_resolver
+        if self.conflict_resolver is None:
+            self.conflict_resolver = (
+                GpuActionConflictResolver(cfg)
+                if self.gpu_runtime is not None and cfg.run.gpu_harvest_conflict_planner
+                else DeterministicActionConflictResolver(cfg)
+            )
+        if isinstance(self.conflict_resolver, GpuActionConflictResolver):
+            if self.gpu_runtime is None:
+                raise ValueError("GpuActionConflictResolver requires Simulation(..., backend='gpu')")
+            self.conflict_resolver.bind_harvest_planner(self.gpu_runtime)
         self.control_arbiter = control_arbiter if control_arbiter is not None else (
             HeuristicSocialGuidanceArbiter()
             if cfg.control.heuristic_social_guidance

@@ -3,7 +3,8 @@
     "seed": 10001,
     "ticks": 10000,
     "metrics_period": 20,
-    "checkpoint_period": 1000
+    "checkpoint_period": 1000,
+    "gpu_harvest_conflict_planner": true
   },
   "world": {
     "width": 2048.0,

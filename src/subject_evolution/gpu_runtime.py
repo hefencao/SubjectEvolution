@@ -18,9 +18,11 @@ import numpy as np
 
 from .backend import Backend, resolve_backend
 from .config import SimulationConfig
+from .execution import ActionResolutionSnapshot, HarvestResolution
 from .gpu_environment import DeviceEnvironment, DeviceInformationField
 from .information import InformationObservation, InformationSystem, SignalEmissionPlan
-from .policy import ParametricPolicy, PolicyDecision
+from .intents import ActionIntentBatch
+from .policy import Action, ParametricPolicy, PolicyDecision
 from .spatial import SpatialIndex
 
 
@@ -314,6 +316,53 @@ class HybridGpuRuntime:
         requests = self.backend.asarray(rates, dtype=self.backend.xp.float32)
         result = self.environment.resolve_harvest(cells, requests)
         return self.backend.to_numpy(result).astype(np.float32, copy=False)
+
+    def resolve_harvest_plan(
+        self,
+        snapshot: ActionResolutionSnapshot,
+        intents: ActionIntentBatch,
+    ) -> HarvestResolution:
+        """Resolve the harvest-only conflict subset on device without mutation.
+
+        The runtime receives exactly the immutable resolver inputs, derives
+        the reference ``(cell_id, entity_id)`` stable ordering on the device,
+        and asks :class:`DeviceEnvironment` for a fair allocation.  It never
+        calls ``commit_harvest``: returning a host ``HarvestResolution`` keeps
+        the subsequent CPU world commit authoritative and replayable.
+        """
+        xp = self.backend.xp
+        action = self.backend.asarray(intents.action, dtype=xp.int16)
+        device_rows = xp.flatnonzero(action == int(Action.HARVEST)).astype(xp.int32, copy=False)
+        if int(device_rows.size) == 0:
+            return HarvestResolution(
+                np.empty(0, dtype=np.int32),
+                np.empty(0, dtype=np.int32),
+                np.empty((0, DeviceEnvironment.RESOURCE_CHANNELS), dtype=np.float32),
+            )
+
+        # These are copies of the supplied read-only snapshot, not pointers
+        # into mutable host world state.  Keeping the key construction here
+        # also avoids a device->host->device round trip for ordered cells and
+        # harvest-rate rows.
+        active = self.backend.asarray(snapshot.active, dtype=xp.int32)
+        cells = self.backend.asarray(snapshot.cells, dtype=xp.int32)
+        carrier_index = self.backend.asarray(intents.carrier_index, dtype=xp.int32)
+        carrier_id = self.backend.asarray(intents.carrier_id, dtype=xp.uint64)
+        observation_rows = xp.searchsorted(active, carrier_index[device_rows])
+        device_cells = cells[observation_rows]
+        order = xp.lexsort(xp.stack((carrier_id[device_rows], device_cells)))
+        device_rows = device_rows[order]
+        device_cells = device_cells[order]
+
+        base = self.cfg.entities.harvest_rate
+        rate = xp.asarray([base, base * 0.45, base * 0.25, base * 0.18], dtype=xp.float32)
+        rates = xp.broadcast_to(rate, (device_rows.size, DeviceEnvironment.RESOURCE_CHANNELS))
+        device_gathered = self.environment.resolve_harvest(device_cells, rates)
+        return HarvestResolution(
+            self.backend.to_numpy(device_rows).astype(np.int32, copy=False),
+            self.backend.to_numpy(device_cells).astype(np.int32, copy=False),
+            self.backend.to_numpy(device_gathered).astype(np.float32, copy=False),
+        )
 
     def commit_harvest(self, cell_ids: np.ndarray, gathered: np.ndarray) -> None:
         self.environment.commit_harvest(

@@ -1,6 +1,6 @@
 # 嵌套主体存在演化模拟：v0.4 GPU 混合执行阶段
 
-这是项目规范的可运行 CPU 参考内核和分阶段 GPU 实现。v0.4 将字段、规则网格、观察构建和参数化策略批处理接入显式 GPU 路径；行动结算、关系、出生死亡与主体图仍由 CPU 保持语义权威。
+这是项目规范的可运行 CPU 参考内核和分阶段 GPU 实现。v0.4 将字段、规则网格、观察构建、参数化策略批处理和采集冲突子计划接入显式 GPU 路径；世界提交、关系、出生死亡与主体图仍由 CPU 保持语义权威。
 
 ## 已实现
 
@@ -13,7 +13,7 @@
 - 可选 CuPy 后端：GPU 数组上的无状态随机键和基础分布；
 - GPU 无状态随机键使用融合的 uint64 SplitMix64 元素核，仍与 CPU 键流逐位一致；
 - 设备版四资源环境、危险场、三通道信息场、规则网格和伙伴采样；
-- `--backend gpu` 混合运行：设备字段、伙伴采样、场/伙伴观察和策略批处理；
+- `--backend gpu` 混合运行：设备字段、伙伴采样、场/伙伴观察、策略批处理和只读采集冲突计划；
 - GPU 混合路径只回传 CPU 提交实际所需的结果；稳定ID、基因型和低频群体状态在设备缓存，批量 `run()` 在结束时同步字段镜像；
 - 延迟直接消息队列以数组批次保存；接收使用批量随机键、稳定排序和向量化容量分配，不再逐条创建/处理 Python 消息对象；
 - 场发射与资源提交使用稳定排序、分段归约，不依赖浮点原子累加；信号发射通过按通道有序的 `SignalEmissionPlan` 提交，未到期通道不生成或传输零值；
@@ -117,7 +117,13 @@ python -m subject_evolution.cli \
   --backend gpu
 ```
 
-不带 `--backend` 时仍是严格 CPU 参考路径。`--backend gpu` 会明确启用混合 GPU 路径；`--backend auto` 仅在 GPU 可用时使用它，否则回退 CPU。10万实体应使用独立输出目录，避免同目录混入不同后端或中断运行的检查点。
+不带 `--backend` 时仍是严格 CPU 参考路径。`--backend gpu` 会明确启用混合 GPU 路径；`--backend auto` 仅在 GPU 可用时使用它，否则回退 CPU。GPU 路径默认以 `GpuActionConflictResolver` 在设备上构建采集子计划：它只读取 `ActionResolutionSnapshot`，返回稳定排序的计划，资源/实体仍由 CPU 的统一提交阶段修改。10万实体应使用独立输出目录，避免同目录混入不同后端或中断运行的检查点。
+
+若需和旧的“CPU 构建采集键、GPU 分配资源”路径做性能剖析，可在 `run` 中明确关闭该执行优化；这不改变模型、随机键或提交顺序：
+
+```json
+"gpu_harvest_conflict_planner": false
+```
 
 在有 CUDA 的机器上，先对已迁移阶段运行对照：
 
@@ -168,11 +174,11 @@ run_seed, tick, simulation_phase, subject_id, stream_id, draw_index
 - `backend.py`：可选 NumPy/CuPy 后端与显式主机/设备转换；
 - `gpu_environment.py`：设备版环境与信息场阶段；
 - `gpu_runtime.py`：GPU 观察/策略与 CPU 世界提交之间的显式边界；
+- `execution.py`：只读 `ActionResolutionSnapshot`、可审计计划和 CPU/GPU 采集解析器；
 - `spatial.py`：空间索引与局部伙伴采样；
 - `information.py`：传播和接收误差；
 - `policy.py`：可替换策略接口的首个参数化实现；
 - `control.py`：控制提案、仲裁协议、完整贡献来源审计和可选启发式社会引导；
-- `execution.py`：可插拔冲突解析器和不可变行动解析计划；
 - `social.py`：关系和候选群体；
 - `simulation.py`：阶段化世界执行；
 - `environment.py`：资源、气候和危险。
