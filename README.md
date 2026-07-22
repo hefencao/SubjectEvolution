@@ -24,6 +24,7 @@
 - 行动采样、移动、采集、分享、发信号、繁殖和逃离；
 - 行动提案、稳定意图ID、资源/分享/出生冲突的统一结算和执行记录；
 - 后端无关的冲突解析协议：只读快照产生 `ActionResolutionPlan`，世界提交始终只读取已解析结果；
+- 分享结算产生自包含 `ShareResolution` 和规范排序的 `RelationUpdatePlan`；关系事件保留来源意图、正反向标记与 tick，提交不依赖隐式上一阶段状态；
 - 区域信号场与固定容量、带延迟的点对点消息队列；
 - 固定容量信任关系；分享事件按拥有者局部顺序分轮批处理；
 - 关系信任/熟悉度在分享写入或群体检测读取时按精确几何规则物化；无事件 tick 不再扫描整张关系表；
@@ -179,7 +180,7 @@ run_seed, tick, simulation_phase, subject_id, stream_id, draw_index
 - `information.py`：传播和接收误差；
 - `policy.py`：可替换策略接口的首个参数化实现；
 - `control.py`：控制提案、仲裁协议、完整贡献来源审计和可选启发式社会引导；
-- `social.py`：关系和候选群体；
+- `social.py`：可回放关系事件计划、固定槽关系和候选群体；
 - `simulation.py`：阶段化世界执行；
 - `environment.py`：资源、气候和危险。
 

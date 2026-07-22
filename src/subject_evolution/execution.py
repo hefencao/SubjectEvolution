@@ -16,6 +16,11 @@ import numpy as np
 from .config import SimulationConfig
 from .intents import ActionIntentBatch, ActionResolutionBatch, FailureReason, action_rows, empty_resolutions
 from .policy import Action
+from .social import (
+    RelationUpdatePlan,
+    build_share_relation_update_plan,
+    empty_relation_update_plan,
+)
 
 
 # The strict CPU allocator accepts NumPy arrays while a device planner keeps
@@ -45,9 +50,7 @@ class ActionResolutionPlan:
     harvest_rows: np.ndarray
     harvest_cells: np.ndarray
     gathered: np.ndarray
-    share_rows: np.ndarray
-    share_targets: np.ndarray
-    shared: np.ndarray
+    share: ShareResolution
     signal_rows: np.ndarray
     accepted_reproduce_rows: np.ndarray
 
@@ -64,6 +67,19 @@ class HarvestResolution:
     rows: np.ndarray
     cells: np.ndarray
     gathered: np.ndarray
+
+
+@dataclass(frozen=True)
+class ShareResolution:
+    """Resolved energy transfers and their independent relation-event plan."""
+
+    rows: np.ndarray
+    owner_indices: np.ndarray
+    target_indices: np.ndarray
+    amounts: np.ndarray
+    success: np.ndarray
+    valid_target: np.ndarray
+    relation_updates: RelationUpdatePlan
 
 
 class GpuHarvestPlanner(Protocol):
@@ -104,14 +120,23 @@ class DeterministicActionConflictResolver:
         snapshot: ActionResolutionSnapshot,
         intents: ActionIntentBatch,
         resolutions: ActionResolutionBatch,
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> ShareResolution:
         rows = action_rows(intents, Action.SHARE)
         if rows.size == 0:
-            return rows, np.empty(0, dtype=np.int32), np.empty(0, dtype=np.float32)
+            return ShareResolution(
+                rows=rows,
+                owner_indices=np.empty(0, dtype=np.int32),
+                target_indices=np.empty(0, dtype=np.int32),
+                amounts=np.empty(0, dtype=np.float32),
+                success=np.empty(0, dtype=bool),
+                valid_target=np.empty(0, dtype=bool),
+                relation_updates=empty_relation_update_plan(intents.submit_tick),
+            )
         owners = intents.carrier_index[rows]
         targets = intents.target_index[rows]
-        valid = (targets >= 0) & snapshot.alive[targets]
-        safe_targets = np.where(valid, targets, 0)
+        in_bounds = (targets >= 0) & (targets < snapshot.alive.size)
+        safe_targets = np.where(in_bounds, targets, 0)
+        valid = in_bounds & snapshot.alive[safe_targets] & (safe_targets != owners)
         order = np.lexsort((intents.carrier_id[rows], snapshot.entity_id[safe_targets]))
         rows = rows[order]
         owners = owners[order]
@@ -123,12 +148,6 @@ class DeterministicActionConflictResolver:
             np.minimum(self.cfg.entities.share_amount, np.maximum(snapshot.energy[owners] - 0.5, 0.0)),
             0.0,
         ).astype(np.float32)
-        if not np.any(proposed > 0):
-            resolutions.success[rows] = False
-            resolutions.failure_reason[rows] = np.where(
-                valid, FailureReason.INSUFFICIENT_RESOURCE, FailureReason.INVALID_TARGET
-            )
-            return rows, targets, proposed
         total_by_target = np.bincount(
             safe_targets, weights=proposed, minlength=snapshot.alive.size
         ).astype(np.float32)
@@ -139,9 +158,31 @@ class DeterministicActionConflictResolver:
         actual = proposed * scale[safe_targets]
         success = actual > 1e-8
         resolutions.success[rows] = success
-        resolutions.failure_reason[rows[~success]] = FailureReason.INSUFFICIENT_CAPACITY
+        invalid = ~valid
+        insufficient_resource = valid & (proposed <= 1e-8)
+        insufficient_capacity = valid & (proposed > 1e-8) & ~success
+        resolutions.failure_reason[rows[invalid]] = FailureReason.INVALID_TARGET
+        resolutions.failure_reason[rows[insufficient_resource]] = FailureReason.INSUFFICIENT_RESOURCE
+        resolutions.failure_reason[rows[insufficient_capacity]] = FailureReason.INSUFFICIENT_CAPACITY
         resolutions.resource_delta[rows, 0] = -actual
-        return rows, safe_targets, actual
+        relation_updates = build_share_relation_update_plan(
+            self.cfg,
+            rows,
+            owners,
+            targets,
+            success,
+            valid,
+            intents.submit_tick,
+        )
+        return ShareResolution(
+            rows=rows,
+            owner_indices=owners.astype(np.int32, copy=False),
+            target_indices=targets.astype(np.int32, copy=False),
+            amounts=actual.astype(np.float32, copy=False),
+            success=success,
+            valid_target=valid,
+            relation_updates=relation_updates,
+        )
 
     def _resolve_harvest(
         self,
@@ -188,7 +229,7 @@ class DeterministicActionConflictResolver:
             resolutions.success[harvest_rows] = harvested
             resolutions.failure_reason[harvest_rows[~harvested]] = FailureReason.INSUFFICIENT_RESOURCE
 
-        share_rows, share_targets, shared = self._resolve_shares(snapshot, intents, resolutions)
+        share = self._resolve_shares(snapshot, intents, resolutions)
 
         signal_rows = action_rows(intents, Action.SIGNAL)
         if signal_rows.size:
@@ -217,9 +258,7 @@ class DeterministicActionConflictResolver:
             harvest_rows=harvest_rows,
             harvest_cells=harvest_cells,
             gathered=gathered,
-            share_rows=share_rows,
-            share_targets=share_targets,
-            shared=shared,
+            share=share,
             signal_rows=signal_rows,
             accepted_reproduce_rows=accepted_reproduce_rows,
         )
@@ -231,8 +270,9 @@ class GpuActionConflictResolver(DeterministicActionConflictResolver):
     Only the harvest subset is delegated.  Movement is deliberately left as
     a successful intent in the common resolution batch because it has no
     contested shared state in the present model; its actual position change
-    remains in the single world-commit phase.  Shares and reproduction reuse
-    the strict reference code until their independent event plans exist.
+    remains in the single world-commit phase.  Share arbitration still
+    reuses the strict reference code but now emits an independent relation-
+    event plan; reproduction remains on the CPU.
     """
 
     def __init__(self, cfg: SimulationConfig, planner: GpuHarvestPlanner | None = None) -> None:
@@ -278,4 +318,5 @@ __all__ = [
     "GpuHarvestPlanner",
     "HarvestAllocator",
     "HarvestResolution",
+    "ShareResolution",
 ]

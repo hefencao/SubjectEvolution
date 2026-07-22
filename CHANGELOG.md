@@ -17,6 +17,8 @@
 - 增加后端无关的 `SignalEmissionPlan`、单通道有序 `SignalEmissionBatch` 和 `SignalEmissionScheduler`；`information.signal_flush_periods` 显式定义资源/危险/社会字段的交付 cadence，高频事件可进入低频目标通道的待发队列，未到期通道不会产生零填充传输。到期通道按到达顺序合并并严格归约；默认 `[1,1,1]` 为无队列直通。撤回未带来 300 tick 端到端收益的稠密多通道默认路径。
 - 增加 `HarvestResolution`、`GpuHarvestPlanner` 和 `GpuActionConflictResolver`：GPU 仅从只读快照构建采集行/单元稳定排序与公平分配计划，CPU 仍是唯一世界提交者；分享、繁殖和位置提交继续复用严格 CPU 规则。`run.gpu_harvest_conflict_planner` 默认开启，可用于回退到 CPU 键构建做剖析。
 - 增加 GPU 采集计划对照：逐项固定稳定行/单元排序、分配、失败码，并断言计划阶段不修改设备资源；WSL RTX 4070 的 100k、300 tick 成对测量为 `31.12秒`（设备计划）对 `31.77秒`（CPU 键构建），仅作为约 `2%` 的环境相关收益记录。
+- 增加自包含 `ShareResolution` 与规范 `RelationUpdatePlan`：关系事件携带来源意图行、正反向标记、稳定序号和 tick，世界提交不再通过 `last_intents/last_resolutions` 恢复输入；无效、越界、死亡及自分享目标不再污染关系，混合失败批次会保留准确失败原因。
+- 优化 CPU 固定关系槽应用：复用规范 owner 分段、以线性检查代替重复排序，并只在槽满且无现有关系时计算最弱槽；43,750 事件微基准由约 `10.95ms` 降至 `5.94ms`，100k/300 tick 从计划初版 `32.39秒` 回到 `31.34秒`。
 - 策略、字段感知、伙伴感知、噪声和方向选择支持 NumPy/CuPy 相同接口；
 - 指标增加窗口墙钟平均，避免单个采样 step 时间掩盖日志与检查点开销；
 - 增加端到端 CPU/GPU 小场景对照和 WSL RTX 4070 十万实体连续运行验证。

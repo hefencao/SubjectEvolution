@@ -24,6 +24,7 @@ from .execution import (
     ActionResolutionSnapshot,
     DeterministicActionConflictResolver,
     GpuActionConflictResolver,
+    ShareResolution,
 )
 from .gpu_runtime import HybridGpuRuntime
 from .information import InformationSystem, SignalEmissionBatch, SignalEmissionPlan, SignalEmissionScheduler
@@ -379,21 +380,21 @@ class Simulation:
             self._trajectory_file.write(json.dumps(record, ensure_ascii=False) + "\n")
         self._trajectory_file.flush()
 
-    def _commit_shares(self, rows: np.ndarray, targets: np.ndarray, actual: np.ndarray) -> float:
-        if rows.size == 0:
+    def _commit_shares(self, share: ShareResolution) -> float:
+        """Apply one self-contained share plan without consulting last-step state."""
+        if share.rows.size == 0:
             return 0.0
-        owners = self.last_intents.carrier_index[rows] if self.last_intents is not None else np.empty(0, dtype=np.int32)
-        self.entities.energy[owners] -= actual
-        np.add.at(self.entities.energy, targets, actual)
-        np.add.at(self.entities.shared_energy_received_total, targets, actual)
-        if self.social_connections_enabled and self.last_resolutions is not None:
-            self.social.record_shares(
-                owners,
-                targets,
-                self.last_resolutions.success[rows],
-                self.tick,
-            )
-        return float(actual.sum())
+        committed = share.success & share.valid_target & (share.amounts > 1e-8)
+        if np.any(committed):
+            owners = share.owner_indices[committed]
+            targets = share.target_indices[committed]
+            amounts = share.amounts[committed]
+            np.add.at(self.entities.energy, owners, -amounts)
+            np.add.at(self.entities.energy, targets, amounts)
+            np.add.at(self.entities.shared_energy_received_total, targets, amounts)
+        if self.social_connections_enabled:
+            self.social.apply_relation_updates(share.relation_updates)
+        return float(share.amounts[committed].sum())
 
     def _emit_signals(
         self,
@@ -642,9 +643,7 @@ class Simulation:
         harvest_rows = resolution_plan.harvest_rows
         harvest_cells = resolution_plan.harvest_cells
         gathered = resolution_plan.gathered
-        share_rows = resolution_plan.share_rows
-        share_targets = resolution_plan.share_targets
-        shared = resolution_plan.shared
+        share = resolution_plan.share
         signal_rows = resolution_plan.signal_rows
         accepted_reproduce_rows = resolution_plan.accepted_reproduce_rows
         stats.conflict_seconds = time.perf_counter() - phase_started
@@ -683,7 +682,7 @@ class Simulation:
             ent.harvested_energy_total[harvesters] += gathered[:, 0]
             stats.harvested_energy = float(gathered[:, 0].sum())
 
-        stats.shared_energy = self._commit_shares(share_rows, share_targets, shared)
+        stats.shared_energy = self._commit_shares(share)
 
         signal_plan = SignalEmissionPlan(())
         if signal_rows.size:

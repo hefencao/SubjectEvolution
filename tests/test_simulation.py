@@ -14,7 +14,7 @@ from subject_evolution.information import (
 )
 from subject_evolution.random_api import RandomContext, Stream, uniform01
 from subject_evolution.simulation import Simulation
-from subject_evolution.social import SocialSystem
+from subject_evolution.social import SocialSystem, build_share_relation_update_plan
 
 
 def _config(tmp_path: Path) -> Path:
@@ -300,12 +300,23 @@ def test_batched_share_relations_match_scalar_reference(tmp_path):
         if ok:
             expected._update_one(int(target), int(owner), gain * 0.5, tick)
 
-    actual.record_shares(owners, targets, success, tick)
+    relation_plan = build_share_relation_update_plan(
+        cfg,
+        rows=np.arange(owners.size, dtype=np.int32),
+        owners=owners,
+        targets=targets,
+        success=success,
+        eligible=(owners >= 0) & (targets >= 0) & (owners != targets),
+        tick=tick,
+    )
+    actual.apply_relation_updates(relation_plan)
 
     np.testing.assert_array_equal(actual.target, expected.target)
     np.testing.assert_array_equal(actual.last_interaction, expected.last_interaction)
     np.testing.assert_allclose(actual.trust, expected.trust, rtol=0.0, atol=0.0)
     np.testing.assert_allclose(actual.familiarity, expected.familiarity, rtol=0.0, atol=0.0)
+    assert relation_plan.tick == tick
+    assert np.all(np.diff(relation_plan.owner_indices) >= 0)
 
 
 def test_lazy_relation_decay_matches_eager_tick_schedule(tmp_path):
