@@ -14,7 +14,7 @@
 - GPU 无状态随机键使用融合的 uint64 SplitMix64 元素核，仍与 CPU 键流逐位一致；
 - 设备版四资源环境、危险场、三通道信息场、规则网格和伙伴采样；
 - `--backend gpu` 混合运行：设备字段、伙伴采样、场/伙伴观察、策略批处理和只读采集冲突计划；
-- GPU 混合路径只回传 CPU 提交实际所需的结果；稳定ID、基因型和低频群体状态在设备缓存，批量 `run()` 在结束时同步字段镜像；
+- GPU 混合路径使用版本化 `DeviceEntityState` 持久保存观察字段；CPU 最终提交通过密度感知 `EntityDeviceCommitPlan` 同步，高密度连续复制、低密度稀疏补丁，批量 `run()` 在结束时同步环境/信息字段镜像；
 - 延迟直接消息队列以数组批次保存；接收使用批量随机键、稳定排序和向量化容量分配，并输出后端无关的稀疏 `DirectMessageObservationPlan`；CPU 可按需物化固定注意力槽，GPU 仅为实际接收者构造紧凑槽张量；
 - 场发射与资源提交使用稳定排序、分段归约，不依赖浮点原子累加；信号发射通过按通道有序的 `SignalEmissionPlan` 提交，未到期通道不生成或传输零值；
 - 传播丢失、接收噪声、语义误分类和伙伴感知误差；
@@ -32,7 +32,7 @@
 - 基于高信任关系的社会群体候选识别；只读 `GroupDetectionSnapshot` 由可插拔规划器生成规范 `GroupLabelPlan`，社会状态和主体图分别提交；
 - 群体资源方向形成对成员行动的高层影响；
 - 谱系继承、变异、出生、死亡和容量管理；
-- 社会依赖代理指标、群体指标、信息检测率、行动熵，以及逐 step 的显式 H2D/D2H 和稠密消息字节规避统计；
+- 社会依赖代理指标、群体指标、信息检测率、行动熵，以及逐 step 的显式 H2D/D2H、实体提交字节/耗时和稠密消息字节规避统计；
 - 身体、谱系和社会候选主体图，以及主体ID和实体ID的显式分离；群体成员一次分段提交，活跃类型摘要增量维护；
 - 成对随机的反事实分支：关闭社会控制、切断社会连接、打乱记忆或冻结遗传；
 - 检查点、CSV指标、运行元数据和基础测试。
@@ -104,7 +104,7 @@ python -m subject_evolution.cli \
 
 输出：
 
-- `metrics.csv`：周期指标；`step_seconds` 仅覆盖世界 step，`window_seconds_per_tick` 是包含前一窗口日志/检查点开销的墙钟平均；即使总 tick 不整除报告周期，也会写入最后一条最终指标；
+- `metrics.csv`：周期指标；`step_seconds` 仅覆盖世界 step，`window_seconds_per_tick` 是包含前一窗口日志/检查点开销的墙钟平均；`device_commit_seconds` 和 `gpu_entity_commit_bytes` 分别记录版本化实体镜像提交的耗时与语义传输量；即使总 tick 不整除报告周期，也会写入最后一条最终指标；
 - `summary.json`：最后一条指标；
 - `run_metadata.json`：运行时间和累计动作；
 - `checkpoint_*.npz`：抽样检查点；
@@ -176,6 +176,7 @@ run_seed, tick, simulation_phase, subject_id, stream_id, draw_index
 - `backend.py`：可选 NumPy/CuPy 后端与显式主机/设备转换；
 - `gpu_environment.py`：设备版环境与信息场阶段；
 - `gpu_runtime.py`：GPU 观察/策略与 CPU 世界提交之间的显式边界；
+- `device_state.py`：持久设备实体镜像的版本化、密度感知最终状态计划；
 - `execution.py`：只读 `ActionResolutionSnapshot`、可审计计划和 CPU/GPU 采集解析器；
 - `lifecycle.py`：后端无关的出生请求/槽位分配与死亡事件计划；
 - `spatial.py`：空间索引与局部伙伴采样；

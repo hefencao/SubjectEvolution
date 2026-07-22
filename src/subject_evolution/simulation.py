@@ -18,6 +18,7 @@ from .control import (
     body_control_proposal,
     social_guidance_control_proposal,
 )
+from .device_state import EntityDeviceCommitPlan, build_entity_device_commit_plan
 from .environment import Environment
 from .execution import (
     ActionConflictResolver,
@@ -79,10 +80,12 @@ class StepStats:
     policy_seconds: float = 0.0
     conflict_seconds: float = 0.0
     graph_seconds: float = 0.0
+    device_commit_seconds: float = 0.0
     gpu_h2d_bytes: int = 0
     gpu_d2h_bytes: int = 0
     gpu_direct_message_events: int = 0
     gpu_direct_dense_bytes_avoided: int = 0
+    gpu_entity_commit_bytes: int = 0
 
 
 class EntityState:
@@ -306,6 +309,7 @@ class Simulation:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.entities = EntityState(cfg)
+        self.entity_device_version = 0
         self.environment = Environment(cfg)
         self.information = InformationSystem(cfg)
         # MVP channels flush every tick, exactly preserving current field
@@ -339,6 +343,12 @@ class Simulation:
         if self.gpu_runtime is not None:
             self.gpu_runtime.sync_from_host(self.environment, self.information)
         self.social = SocialSystem(cfg, cfg.world.max_entities)
+        if self.gpu_runtime is not None:
+            self.gpu_runtime.sync_entity_from_host(
+                self.entities,
+                self.social,
+                self.entity_device_version,
+            )
         self.subjects = CandidateSubjectGraph(cfg.world.max_entities)
         initial = np.flatnonzero(self.entities.alive).astype(np.int32)
         body_subjects, lineage_subjects = self.subjects.register_bodies(
@@ -364,6 +374,7 @@ class Simulation:
         self.last_resolutions: ActionResolutionBatch | None = None
         self.last_birth_allocation = empty_birth_allocation_plan(0)
         self.last_death_events = empty_death_event_plan(0)
+        self.last_entity_device_commit: EntityDeviceCommitPlan | None = None
         self.conflict_resolver = conflict_resolver
         if self.conflict_resolver is None:
             self.conflict_resolver = (
@@ -423,6 +434,7 @@ class Simulation:
         branch.social = copy.deepcopy(self.social)
         branch.subjects = self.subjects.clone()
         branch.tick = self.tick
+        branch.entity_device_version = self.entity_device_version
         branch.last_group_summary = copy.deepcopy(self.last_group_summary)
         branch.last_group_plan = copy.deepcopy(self.last_group_plan)
         branch.total_births = self.total_births
@@ -430,6 +442,9 @@ class Simulation:
         branch.action_counts = self.action_counts.copy()
         branch.last_birth_allocation = copy.deepcopy(self.last_birth_allocation)
         branch.last_death_events = copy.deepcopy(self.last_death_events)
+        branch.last_entity_device_commit = copy.deepcopy(
+            self.last_entity_device_commit
+        )
         branch.heuristic_guidance_actions = self.heuristic_guidance_actions
         branch.social_control_enabled = self.social_control_enabled
         branch.social_connections_enabled = self.social_connections_enabled
@@ -437,6 +452,11 @@ class Simulation:
         branch.freeze_genotype = self.freeze_genotype
         if branch.gpu_runtime is not None:
             branch.gpu_runtime.sync_from_host(branch.environment, branch.information)
+            branch.gpu_runtime.sync_entity_from_host(
+                branch.entities,
+                branch.social,
+                branch.entity_device_version,
+            )
         return branch
 
     def apply_intervention(self, intervention: str) -> None:
@@ -457,6 +477,8 @@ class Simulation:
             ctx = RandomContext(self.cfg.run.seed, self.tick, phase=90, stream=Stream.CAUSAL_INTERVENTION)
             order = np.argsort(uniform01(ctx, ids, draw_index=0), kind="stable")
             self.entities.memory[active] = self.entities.memory[active[order]].copy()
+            if self.gpu_runtime is not None:
+                self.gpu_runtime.mark_entity_static_dirty()
         elif normalized in {"freeze-genotype", "freeze-genetic-expression"}:
             self.freeze_genotype = True
         else:
@@ -681,6 +703,7 @@ class Simulation:
                 need_host_resource_gradient=(
                     self.social_connections_enabled and self.tick % cfg.social.group_update_period == 0
                 ),
+                entity_state_version=self.entity_device_version,
             )
             active = prepared.active
             if active.size == 0:
@@ -693,6 +716,7 @@ class Simulation:
                 stats.gpu_direct_dense_bytes_avoided = (
                     transfer.direct_message_dense_bytes_avoided
                 )
+                stats.gpu_entity_commit_bytes = transfer.entity_commit_bytes
                 return stats
             cells = prepared.cells
             local_resources = prepared.local_resources
@@ -832,6 +856,7 @@ class Simulation:
             stats.signals = int(signal_actors.size)
         self._flush_signal_emissions(signal_plan)
 
+        newborns = np.empty(0, dtype=np.int32)
         birth_allocation = plan_birth_allocations(
             birth_requests,
             ent.free_slots,
@@ -853,9 +878,6 @@ class Simulation:
                 ent.lineage_subject_id[newborns] = lineage_subjects
                 ent.energy[accepted_parents] -= cfg.entities.reproduction_cost
                 ent.fertility[accepted_parents] -= 0.5
-                if self.gpu_runtime is not None:
-                    self.gpu_runtime.mark_entity_static_dirty()
-                    self.gpu_runtime.mark_social_state_dirty()
                 stats.births = int(newborns.size)
                 self.total_births += stats.births
 
@@ -897,9 +919,6 @@ class Simulation:
             ent.commit_deaths(death_events)
             self.social.group_id[dead] = 0
             self.social.group_age[dead] = 0
-            if self.gpu_runtime is not None:
-                self.gpu_runtime.mark_entity_static_dirty()
-                self.gpu_runtime.mark_social_state_dirty()
             stats.deaths = int(dead.size)
             self.total_deaths += stats.deaths
         # With no death this tick no new stale relation target can exist, so
@@ -909,7 +928,8 @@ class Simulation:
 
         # Candidate social subjects are updated at a slower timescale.
         phase_started = time.perf_counter()
-        if self.tick % cfg.social.group_update_period == 0:
+        group_updated = self.tick % cfg.social.group_update_period == 0
+        if group_updated:
             group_active = np.flatnonzero(ent.alive).astype(np.int32)
             if self.social_connections_enabled:
                 if resource_gradient is None:
@@ -943,13 +963,43 @@ class Simulation:
                 self.last_group_plan.member_indices,
                 self.tick,
             )
-            if self.gpu_runtime is not None:
-                self.gpu_runtime.mark_social_state_dirty()
+        stats.graph_seconds = time.perf_counter() - phase_started
+        if self.gpu_runtime is not None:
+            phase_started = time.perf_counter()
+            lifecycle_changed = np.zeros(ent.alive.size, dtype=bool)
+            lifecycle_changed[newborns] = True
+            lifecycle_changed[dead] = True
+            lifecycle_indices = np.flatnonzero(lifecycle_changed).astype(
+                np.int32, copy=False
+            )
+            moved_now[newborns] = True
+            position_indices = np.flatnonzero(moved_now).astype(
+                np.int32, copy=False
+            )
+            social_indices = (
+                np.arange(ent.alive.size, dtype=np.int32)
+                if group_updated
+                else lifecycle_indices
+            )
+            self.last_entity_device_commit = build_entity_device_commit_plan(
+                ent,
+                self.social,
+                dynamic_indices=current_active,
+                position_indices=position_indices,
+                lifecycle_indices=lifecycle_indices,
+                social_indices=social_indices,
+                base_version=self.entity_device_version,
+                tick=self.tick,
+            )
+            self.gpu_runtime.apply_entity_commit(
+                self.last_entity_device_commit
+            )
+            self.entity_device_version = self.last_entity_device_commit.next_version
+            stats.device_commit_seconds = time.perf_counter() - phase_started
         stats.group_count = int(self.last_group_summary.group_ids.size)
         stats.mean_group_size = float(
             self.last_group_summary.counts.mean() if self.last_group_summary.counts.size else 0.0
         )
-        stats.graph_seconds = time.perf_counter() - phase_started
         self._record_trajectories(intents, resolutions, decision.logits)
         if self.gpu_runtime is not None and not self._defer_gpu_field_sync:
             self.gpu_runtime.sync_to_host(self.environment, self.information)
@@ -959,6 +1009,7 @@ class Simulation:
             stats.gpu_d2h_bytes = transfer.device_to_host_bytes
             stats.gpu_direct_message_events = transfer.direct_message_events
             stats.gpu_direct_dense_bytes_avoided = transfer.direct_message_dense_bytes_avoided
+            stats.gpu_entity_commit_bytes = transfer.entity_commit_bytes
         self.tick += 1
         return stats
 
@@ -1021,10 +1072,12 @@ class Simulation:
             "policy_seconds": stats.policy_seconds,
             "conflict_seconds": stats.conflict_seconds,
             "graph_seconds": stats.graph_seconds,
+            "device_commit_seconds": stats.device_commit_seconds,
             "gpu_h2d_bytes": stats.gpu_h2d_bytes,
             "gpu_d2h_bytes": stats.gpu_d2h_bytes,
             "gpu_direct_message_events": stats.gpu_direct_message_events,
             "gpu_direct_dense_bytes_avoided": stats.gpu_direct_dense_bytes_avoided,
+            "gpu_entity_commit_bytes": stats.gpu_entity_commit_bytes,
             "step_seconds": elapsed,
             "wall_elapsed_seconds": wall_elapsed,
             "window_seconds": window_seconds,
@@ -1126,6 +1179,14 @@ class Simulation:
                 "last_plan_tick": self.last_group_plan.tick,
                 "last_plan_groups": self.last_group_plan.group_count,
                 "last_plan_members": self.last_group_plan.member_count,
+            },
+            "device_entity_state": {
+                "version": self.entity_device_version,
+                "last_commit_bytes": (
+                    self.last_entity_device_commit.semantic_transfer_nbytes
+                    if self.last_entity_device_commit is not None
+                    else 0
+                ),
             },
         }
         (self.output_dir / "run_metadata.json").write_text(

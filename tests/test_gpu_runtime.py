@@ -61,6 +61,83 @@ def test_gpu_runtime_preserves_small_world_actions_and_state(tmp_path):
 
 
 @pytest.mark.skipif(not cupy_available(), reason="CuPy with a usable CUDA device is unavailable")
+def test_persistent_entity_mirror_matches_every_authoritative_commit(tmp_path):
+    cfg = load_config("configs/mvp_small.json")
+    cfg = replace(
+        cfg,
+        run=replace(cfg.run, ticks=4, metrics_period=99, checkpoint_period=99),
+    )
+    sim = Simulation(cfg, tmp_path / "persistent-entity", backend="gpu")
+    try:
+        for expected_version in range(1, 5):
+            stats = sim.step()
+            state = sim.gpu_runtime.entity_state
+            assert state is not None
+            assert state.version == expected_version
+            assert sim.entity_device_version == expected_version
+            assert stats.gpu_entity_commit_bytes > 0
+            assert sim.last_entity_device_commit is not None
+            assert (
+                stats.gpu_entity_commit_bytes
+                == sim.last_entity_device_commit.semantic_transfer_nbytes
+            )
+            to_host = sim.gpu_runtime.backend.to_numpy
+            np.testing.assert_array_equal(to_host(state.x), sim.entities.x)
+            np.testing.assert_array_equal(to_host(state.y), sim.entities.y)
+            np.testing.assert_array_equal(to_host(state.alive), sim.entities.alive)
+            np.testing.assert_array_equal(to_host(state.stable_ids), sim.entities.entity_id)
+            np.testing.assert_array_equal(to_host(state.energy), sim.entities.energy)
+            np.testing.assert_array_equal(to_host(state.integrity), sim.entities.integrity)
+            np.testing.assert_array_equal(to_host(state.fertility), sim.entities.fertility)
+            np.testing.assert_array_equal(to_host(state.genotype), sim.entities.genotype)
+            np.testing.assert_array_equal(to_host(state.memory), sim.entities.memory)
+            np.testing.assert_array_equal(
+                to_host(state.sensor_quality), sim.entities.sensor_quality()
+            )
+            np.testing.assert_array_equal(to_host(state.group_ids), sim.social.group_id)
+            np.testing.assert_array_equal(to_host(state.group_dir_x), sim.social.group_dir_x)
+            np.testing.assert_array_equal(to_host(state.group_dir_y), sim.social.group_dir_y)
+
+        assert sim.last_entity_device_commit is not None
+        with pytest.raises(ValueError, match="commit is stale"):
+            sim.gpu_runtime.apply_entity_commit(sim.last_entity_device_commit)
+    finally:
+        sim.metrics.close()
+
+
+@pytest.mark.skipif(not cupy_available(), reason="CuPy with a usable CUDA device is unavailable")
+def test_entity_commit_is_smaller_than_a_full_observation_mirror(tmp_path):
+    cfg = load_config("configs/mvp_small.json")
+    sim = Simulation(cfg, tmp_path / "entity-transfer", backend="gpu")
+    try:
+        sim.step()
+        stats = sim.step()
+        entity = sim.entities
+        social = sim.social
+        full_mirror_bytes = sum(
+            value.nbytes
+            for value in (
+                entity.x,
+                entity.y,
+                entity.alive,
+                entity.entity_id,
+                entity.energy,
+                entity.integrity,
+                entity.fertility,
+                entity.genotype,
+                entity.memory,
+                entity.sensor_quality(),
+                social.group_id,
+                social.group_dir_x,
+                social.group_dir_y,
+            )
+        )
+        assert 0 < stats.gpu_entity_commit_bytes < full_mirror_bytes
+    finally:
+        sim.metrics.close()
+
+
+@pytest.mark.skipif(not cupy_available(), reason="CuPy with a usable CUDA device is unavailable")
 def test_gpu_harvest_resolver_matches_reference_plan_without_mutating_fields():
     cfg = load_config("configs/mvp_small.json")
     environment = Environment(cfg)

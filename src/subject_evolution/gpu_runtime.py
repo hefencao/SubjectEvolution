@@ -18,6 +18,7 @@ import numpy as np
 
 from .backend import Backend, resolve_backend
 from .config import SimulationConfig
+from .device_state import EntityDeviceCommitPlan
 from .execution import ActionResolutionSnapshot, HarvestResolution
 from .gpu_environment import DeviceEnvironment, DeviceInformationField
 from .information import InformationObservation, InformationSystem, SignalEmissionPlan
@@ -49,6 +50,27 @@ class GpuTransferStats:
     device_to_host_bytes: int = 0
     direct_message_events: int = 0
     direct_message_dense_bytes_avoided: int = 0
+    entity_commit_bytes: int = 0
+
+
+@dataclass
+class DeviceEntityState:
+    """Persistent device inputs for spatial, observation, and policy stages."""
+
+    x: Any
+    y: Any
+    alive: Any
+    stable_ids: Any
+    energy: Any
+    integrity: Any
+    fertility: Any
+    genotype: Any
+    memory: Any
+    sensor_quality: Any
+    group_ids: Any
+    group_dir_x: Any
+    group_dir_y: Any
+    version: int
 
 
 class HybridGpuRuntime:
@@ -69,18 +91,15 @@ class HybridGpuRuntime:
             cfg.world.periodic,
             backend=self.backend,
         )
-        self._stable_ids: Any | None = None
-        self._genotype: Any | None = None
+        self.entity_state: DeviceEntityState | None = None
         self._entity_static_dirty = True
-        self._group_ids: Any | None = None
-        self._group_dir_x: Any | None = None
-        self._group_dir_y: Any | None = None
         self._social_state_dirty = True
         self._measure_transfers = False
         self._host_to_device_bytes = 0
         self._device_to_host_bytes = 0
         self._direct_message_events = 0
         self._direct_message_dense_bytes_avoided = 0
+        self._entity_commit_bytes = 0
 
     def begin_step_transfer_measurement(self) -> None:
         self._measure_transfers = True
@@ -88,6 +107,7 @@ class HybridGpuRuntime:
         self._device_to_host_bytes = 0
         self._direct_message_events = 0
         self._direct_message_dense_bytes_avoided = 0
+        self._entity_commit_bytes = 0
 
     def finish_step_transfer_measurement(self) -> GpuTransferStats:
         result = GpuTransferStats(
@@ -95,6 +115,7 @@ class HybridGpuRuntime:
             device_to_host_bytes=self._device_to_host_bytes,
             direct_message_events=self._direct_message_events,
             direct_message_dense_bytes_avoided=self._direct_message_dense_bytes_avoided,
+            entity_commit_bytes=self._entity_commit_bytes,
         )
         self._measure_transfers = False
         return result
@@ -110,18 +131,134 @@ class HybridGpuRuntime:
             self._device_to_host_bytes += int(value.nbytes)
         return self.backend.to_numpy(value)
 
-    def mark_entity_static_dirty(self) -> None:
-        """Require stable IDs and genotypes to be re-uploaded next tick.
+    def _copy_into(self, destination: Any, value: np.ndarray) -> None:
+        """Copy one contiguous host value into an existing device buffer."""
+        if self._measure_transfers:
+            self._host_to_device_bytes += int(value.nbytes)
+        destination.set(value)
 
-        These arrays change only when the CPU commit creates or destroys an
-        entity.  Keeping their device copies between ordinary ticks removes a
-        sizeable host->device transfer without making dynamic state stale.
+    def mark_entity_static_dirty(self) -> None:
+        """Require a full entity mirror refresh at the next prepare boundary.
+
+        Routine action and lifecycle commits use :meth:`apply_entity_commit`.
+        This fallback is reserved for external state mutation or interventions
+        that did not pass through the normal versioned commit protocol.
         """
         self._entity_static_dirty = True
 
     def mark_social_state_dirty(self) -> None:
-        """Require low-frequency group fields to be re-uploaded next tick."""
+        """Require all group observation fields to be refreshed next tick."""
         self._social_state_dirty = True
+
+    def sync_entity_from_host(
+        self,
+        entity: Any,
+        social: Any,
+        version: int,
+    ) -> None:
+        """Seed or explicitly repair the complete persistent entity mirror."""
+        xp = self.backend.xp
+        self.entity_state = DeviceEntityState(
+            x=self._upload(entity.x, dtype=xp.float32, copy=True),
+            y=self._upload(entity.y, dtype=xp.float32, copy=True),
+            alive=self._upload(entity.alive, dtype=bool, copy=True),
+            stable_ids=self._upload(entity.entity_id, dtype=xp.uint64, copy=True),
+            energy=self._upload(entity.energy, dtype=xp.float32, copy=True),
+            integrity=self._upload(entity.integrity, dtype=xp.float32, copy=True),
+            fertility=self._upload(entity.fertility, dtype=xp.float32, copy=True),
+            genotype=self._upload(entity.genotype, dtype=xp.float32, copy=True),
+            memory=self._upload(entity.memory, dtype=xp.float32, copy=True),
+            sensor_quality=self._upload(
+                entity.sensor_quality(), dtype=xp.float32, copy=True
+            ),
+            group_ids=self._upload(social.group_id, dtype=xp.uint64, copy=True),
+            group_dir_x=self._upload(social.group_dir_x, dtype=xp.float32, copy=True),
+            group_dir_y=self._upload(social.group_dir_y, dtype=xp.float32, copy=True),
+            version=int(version),
+        )
+        self._entity_static_dirty = False
+        self._social_state_dirty = False
+
+    def _sync_social_from_host(self, social: Any) -> None:
+        if self.entity_state is None:
+            raise RuntimeError("entity device state has not been initialized")
+        xp = self.backend.xp
+        self.entity_state.group_ids = self._upload(
+            social.group_id, dtype=xp.uint64, copy=True
+        )
+        self.entity_state.group_dir_x = self._upload(
+            social.group_dir_x, dtype=xp.float32, copy=True
+        )
+        self.entity_state.group_dir_y = self._upload(
+            social.group_dir_y, dtype=xp.float32, copy=True
+        )
+        self._social_state_dirty = False
+
+    def apply_entity_commit(self, plan: EntityDeviceCommitPlan) -> None:
+        """Apply one validated CPU final-state plan to the persistent mirror."""
+        state = self.entity_state
+        if state is None:
+            raise RuntimeError("entity device state has not been initialized")
+        plan.validate(int(state.alive.size), int(state.genotype.shape[1]))
+        if int(plan.base_version) != state.version:
+            raise ValueError(
+                "entity device commit is stale: "
+                f"mirror={state.version}, plan={plan.base_version}"
+            )
+        if self._measure_transfers:
+            self._entity_commit_bytes += plan.semantic_transfer_nbytes
+        xp = self.backend.xp
+        if plan.dynamic_full:
+            self._copy_into(state.energy, plan.dynamic_energy)
+            self._copy_into(state.integrity, plan.dynamic_integrity)
+            self._copy_into(state.fertility, plan.dynamic_fertility)
+            self._copy_into(state.memory, plan.dynamic_memory)
+            self._copy_into(state.sensor_quality, plan.dynamic_sensor_quality)
+        elif plan.dynamic_indices.size:
+            indices = self._upload(plan.dynamic_indices, dtype=xp.int32)
+            state.energy[indices] = self._upload(plan.dynamic_energy, dtype=xp.float32)
+            state.integrity[indices] = self._upload(
+                plan.dynamic_integrity, dtype=xp.float32
+            )
+            state.fertility[indices] = self._upload(
+                plan.dynamic_fertility, dtype=xp.float32
+            )
+            state.memory[indices] = self._upload(plan.dynamic_memory, dtype=xp.float32)
+            state.sensor_quality[indices] = self._upload(
+                plan.dynamic_sensor_quality, dtype=xp.float32
+            )
+        if plan.position_full:
+            self._copy_into(state.x, plan.position_x)
+            self._copy_into(state.y, plan.position_y)
+        elif plan.position_indices.size:
+            indices = self._upload(plan.position_indices, dtype=xp.int32)
+            state.x[indices] = self._upload(plan.position_x, dtype=xp.float32)
+            state.y[indices] = self._upload(plan.position_y, dtype=xp.float32)
+        if plan.lifecycle_indices.size:
+            indices = self._upload(plan.lifecycle_indices, dtype=xp.int32)
+            state.alive[indices] = self._upload(plan.lifecycle_alive, dtype=bool)
+            state.stable_ids[indices] = self._upload(
+                plan.lifecycle_entity_ids, dtype=xp.uint64
+            )
+            state.genotype[indices] = self._upload(
+                plan.lifecycle_genotype, dtype=xp.float32
+            )
+        if plan.social_full:
+            self._copy_into(state.group_ids, plan.social_group_ids)
+            self._copy_into(state.group_dir_x, plan.social_direction_x)
+            self._copy_into(state.group_dir_y, plan.social_direction_y)
+        elif plan.social_indices.size:
+            indices = self._upload(plan.social_indices, dtype=xp.int32)
+            state.group_ids[indices] = self._upload(
+                plan.social_group_ids, dtype=xp.uint64
+            )
+            state.group_dir_x[indices] = self._upload(
+                plan.social_direction_x, dtype=xp.float32
+            )
+            state.group_dir_y[indices] = self._upload(
+                plan.social_direction_y, dtype=xp.float32
+            )
+        state.version = int(plan.next_version)
 
     def sync_from_host(self, environment: Any, information: InformationSystem) -> None:
         """Seed the device mirror from an existing CPU world snapshot."""
@@ -160,9 +297,22 @@ class HybridGpuRuntime:
         tick: int,
         retain_logits: bool,
         need_host_resource_gradient: bool,
+        entity_state_version: int,
     ) -> GpuPreparedStep:
         """Construct observations and actions, returning the CPU commit view."""
         xp = self.backend.xp
+        if self.entity_state is None or self._entity_static_dirty:
+            self.sync_entity_from_host(entity, social, entity_state_version)
+        elif self._social_state_dirty:
+            self._sync_social_from_host(social)
+        state = self.entity_state
+        if state is None:
+            raise RuntimeError("entity device state has not been initialized")
+        if state.version != int(entity_state_version):
+            raise ValueError(
+                "entity device mirror version mismatch: "
+                f"mirror={state.version}, world={entity_state_version}"
+            )
         active_host = np.flatnonzero(entity.alive).astype(np.int32)
         if active_host.size == 0:
             empty = np.empty(0, dtype=np.int32)
@@ -202,34 +352,20 @@ class HybridGpuRuntime:
                 0.0,
             )
 
-        # Copy the world snapshot once.  The CPU owns mutation after this
-        # boundary, so all device work sees a stable tick snapshot.
+        # The versioned mirror is frozen for this prepare pass.  The CPU owns
+        # mutation until it publishes the next final-state commit plan.
         sensor_quality_host = entity.sensor_quality()
-        x = self._upload(entity.x, dtype=xp.float32)
-        y = self._upload(entity.y, dtype=xp.float32)
-        alive = self._upload(entity.alive, dtype=bool)
-        if self._entity_static_dirty or self._stable_ids is None or self._genotype is None:
-            self._stable_ids = self._upload(entity.entity_id, dtype=xp.uint64)
-            self._genotype = self._upload(entity.genotype, dtype=xp.float32)
-            self._entity_static_dirty = False
-        stable_ids = self._stable_ids
-        energy = self._upload(entity.energy, dtype=xp.float32)
-        integrity = self._upload(entity.integrity, dtype=xp.float32)
-        fertility = self._upload(entity.fertility, dtype=xp.float32)
-        genotype = self._genotype
-        memory = self._upload(entity.memory, dtype=xp.float32)
-        if (
-            self._social_state_dirty
-            or self._group_ids is None
-            or self._group_dir_x is None
-            or self._group_dir_y is None
-        ):
-            self._group_ids = self._upload(social.group_id, dtype=xp.uint64)
-            self._group_dir_x = self._upload(social.group_dir_x, dtype=xp.float32)
-            self._group_dir_y = self._upload(social.group_dir_y, dtype=xp.float32)
-            self._social_state_dirty = False
-        groups = self._group_ids
-        sensor_quality = self._upload(sensor_quality_host, dtype=xp.float32)
+        x = state.x
+        y = state.y
+        alive = state.alive
+        stable_ids = state.stable_ids
+        energy = state.energy
+        integrity = state.integrity
+        fertility = state.fertility
+        genotype = state.genotype
+        memory = state.memory
+        groups = state.group_ids
+        sensor_quality = state.sensor_quality
 
         timer = time.perf_counter()
         active = self.spatial.build(x, y, alive)
@@ -283,7 +419,7 @@ class HybridGpuRuntime:
 
         timer = time.perf_counter()
         if social_control_enabled:
-            group_direction = (self._group_dir_x, self._group_dir_y)
+            group_direction = (state.group_dir_x, state.group_dir_y)
         else:
             group_direction = (xp.zeros_like(energy), xp.zeros_like(energy))
         device_decision = policy.decide(
@@ -436,4 +572,9 @@ class HybridGpuRuntime:
         return self._download(values).astype(np.float32, copy=False)
 
 
-__all__ = ["GpuPreparedStep", "GpuTransferStats", "HybridGpuRuntime"]
+__all__ = [
+    "DeviceEntityState",
+    "GpuPreparedStep",
+    "GpuTransferStats",
+    "HybridGpuRuntime",
+]

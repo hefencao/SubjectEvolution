@@ -40,6 +40,7 @@ export LD_LIBRARY_PATH="$CUDA_PATH/targets/x86_64-linux/lib${LD_LIBRARY_PATH:+:$
 | 8（CPU计划边界） | `BirthRequestPlan → BirthAllocationPlan`、`DeathEventPlan` | 槽池版本和稳定 ID 固定计划快照；死亡先记录事件、主体图更新后再统一回收槽位 |
 | 8.5（观察边界） | `DirectMessageObservationPlan`、整步传输计数 | CPU 保留固定注意力槽；GPU 仅上传实际事件并只为实际接收者保留原容量归约宽度 |
 | 9（CPU计划边界） | `GroupDetectionSnapshot → GroupLabelPlan` | 标签规划器只读快照并输出规范群体聚合/成员分段；社会状态与候选主体图分别提交同一计划 |
+| 10（设备镜像边界） | `EntityDeviceCommitPlan → DeviceEntityState` | CPU 提交最终值形成版本化补丁；设备拒绝陈旧计划，高密度连续复制、低密度升序散射 |
 
 所有高竞争字段写入采用稳定 `(cell_id, 原始顺序)` 排序和分段归约。每个 cell 最后只写一次，避免 GPU 浮点 `atomicAdd` 的非确定累加顺序。信号发射以 `SignalEmissionPlan` 的有序单通道批次提交：高频事件可以追加到低频**目标通道**的待发队列；到期时该通道按到达顺序合并为一次传输与严格归约。未到期通道不会创建零填充列，也不会跨越主机/设备边界。默认 `[1,1,1]` 是无队列直通，字段扩散/衰减仍每 tick 执行；较长周期是显式信号交付延迟，而非隐式跳过字段更新。
 
@@ -51,7 +52,7 @@ GPU数组仅包含原本的世界字段。策略仍只读取既有观察结构�
 
 设备侧：环境与信息场更新、信号场发射、采集计划（稳定键排序与公平分配）、采集提交、规则网格、伙伴采样、场与伙伴观察、策略 logits/采样/方向。
 
-CPU侧：延迟消息队列的所有权及批量解码、行动意图、位置/能量提交、分享/关系事件计划与固定槽应用、生命周期提交、群体计划与主体图提交、CSV 和检查点。直接消息以 NumPy 数组批次排队并形成规范稀疏 `DirectMessageObservationPlan`；CPU 参考可按需物化 `active × capacity` 固定槽，GPU 当前只上传 receiver row、slot 和 payload，在设备上为实际接收者构造紧凑固定槽。分享结算输出自包含 `ShareResolution`，关系事件以规范 `RelationUpdatePlan` 按拥有者局部顺序分轮提交。繁殖接受输出带父实体/主体来源的 `BirthRequestPlan`，版本化槽池生成确定的 `BirthAllocationPlan`；死亡在主体失活和槽位回收前生成带组合死因与最终状态的 `DeathEventPlan`。群体规划器读取 `GroupDetectionSnapshot` 并输出含实体标签、群体聚合和一次分段成员表的 `GroupLabelPlan`；社会状态与主体图各自验证后提交。仅回传 CPU 提交实际需要的动作和观察摘要，资源梯度只在群体更新 tick 回传。稳定 ID、基因型和低频群体字段缓存在设备；批量 `run()` 在结束前才同步完整字段镜像。
+CPU侧：延迟消息队列的所有权及批量解码、行动意图、位置/能量提交、分享/关系事件计划与固定槽应用、生命周期提交、群体计划与主体图提交、CSV 和检查点。直接消息以 NumPy 数组批次排队并形成规范稀疏 `DirectMessageObservationPlan`；CPU 参考可按需物化 `active × capacity` 固定槽，GPU 当前只上传 receiver row、slot 和 payload，在设备上为实际接收者构造紧凑固定槽。分享结算输出自包含 `ShareResolution`，关系事件以规范 `RelationUpdatePlan` 按拥有者局部顺序分轮提交。繁殖接受输出带父实体/主体来源的 `BirthRequestPlan`，版本化槽池生成确定的 `BirthAllocationPlan`；死亡在主体失活和槽位回收前生成带组合死因与最终状态的 `DeathEventPlan`。群体规划器读取 `GroupDetectionSnapshot` 并输出含实体标签、群体聚合和一次分段成员表的 `GroupLabelPlan`；社会状态与主体图各自验证后提交。CPU 提交后的观察相关最终值由 `EntityDeviceCommitPlan` 同步到持久 `DeviceEntityState`，稳定 ID/genotype 只随生命周期稀疏更新，群体字段只在重算或生命周期变化时更新。批量 `run()` 在结束前才同步完整环境/信息字段镜像。
 
 行动冲突不属于某个设备后端：`execution.py` 接收只读 `ActionResolutionSnapshot` 和意图批次，输出不修改世界的 `ActionResolutionPlan`。CPU 运行使用严格 CPU 排序；GPU 运行默认以 `GpuActionConflictResolver` 仅替换采集子计划，并继续复用 CPU 的分享和繁殖规则。`run.gpu_harvest_conflict_planner=false` 可切回 CPU 键构建以做部署剖析；两条路径都只返回计划，世界提交仍只接受计划中的 `ActionResolutionBatch`。移动目前没有共享冲突，仍作为成功意图在统一 CPU 提交中更新位置，不会伪装成设备世界写入。
 
@@ -90,6 +91,6 @@ python -m subject_evolution.cli \
   --backend gpu
 ```
 
-本工作区已在 WSL2、NVIDIA GeForce RTX 4070、CUDA Toolkit 13.3 和 `cupy-cuda13x==14.1.1` 上验证：完整测试套件为 `66 passed`。三步 CPU/GPU 同种子场景动作计数一致，字段状态只存在小的 FP32 容差；`--ticks 16` 的字段最大绝对误差为 `2.12e-6`，小于 `5e-6` 容差。新增采集计划测试逐项比较稳定行/单元顺序、分配和失败码，并断言设备资源在计划阶段不变；GPU 克隆测试还确认反事实分支重绑定自己的设备运行时。关系维护优化的已预热单 step `cProfile` 由约 `0.112秒` 降至 `0.077秒`；融合随机键使同一剖析中随机相关累计时间从约 `18ms` 降至 `6ms`。三通道稠密共享排序虽然在 131,072 事件微基准中为 `3.19×`，但 300 tick 端到端运行没有提升，且会阻碍异频通道；默认运行时因此采用稀疏、有序的发射计划。默认 `[1,1,1]` cadence 是不入队的直通快路径；`(1,3,2)` 异频 cadence 的端到端 CPU/GPU 对照也已通过。阶段 8.5 的 100,000 实体、300 tick 严格 GPU 两次为 `25.55/27.14秒`。阶段 9 同配置两次为 `27.72/29.14秒`：action counts、最终离散状态和传输字节完全一致，隔离的群体图提交约 `14.1×`，但低频收益未形成可测端到端提升。部署仍应按自身负载复测。字段和策略观察当前仍固定为三通道。每通道传播频率或可变通道数必须作为显式模型配置实现，不能由调度器隐式跳过。
+本工作区已在 WSL2、NVIDIA GeForce RTX 4070、CUDA Toolkit 13.3 和 `cupy-cuda13x==14.1.1` 上验证：完整测试套件为 `69 passed`。三步 CPU/GPU 同种子场景动作计数一致，字段状态只存在小的 FP32 容差；`--ticks 16` 的字段最大绝对误差为 `2.12e-6`，小于 `5e-6` 容差。新增采集计划测试逐项比较稳定行/单元顺序、分配和失败码，并断言设备资源在计划阶段不变；GPU 克隆测试还确认反事实分支重绑定自己的设备运行时。关系维护优化的已预热单 step `cProfile` 由约 `0.112秒` 降至 `0.077秒`；融合随机键使同一剖析中随机相关累计时间从约 `18ms` 降至 `6ms`。三通道稠密共享排序虽然在 131,072 事件微基准中为 `3.19×`，但 300 tick 端到端运行没有提升，且会阻碍异频通道；默认运行时因此采用稀疏、有序的发射计划。默认 `[1,1,1]` cadence 是不入队的直通快路径；`(1,3,2)` 异频 cadence 的端到端 CPU/GPU 对照也已通过。阶段 8.5 的 100,000 实体、300 tick 严格 GPU 两次为 `25.55/27.14秒`。阶段 9 同配置两次为 `27.72/29.14秒`。阶段 10 最终为 `27.62秒`，离散轨迹完全一致，tick 300 H2D 从 `16.79MB` 降至 `9.35MB`（44.3%），但 D2H 仍为 `10.44MB`，因此不宣称端到端提速。部署仍应按自身负载复测。字段和策略观察当前仍固定为三通道。每通道传播频率或可变通道数必须作为显式模型配置实现，不能由调度器隐式跳过。
 
-下一步建立持久设备实体状态：先固定动态字段所有权、版本令牌和统一世界提交计划，再消除 `prepare()` 对高频实体数组的逐 tick 全量上传。关系槽、标签数组与生命周期 SoA 只能在同一所有权协议下联合迁移，不能继续叠加独立镜像。
+下一步压缩 GPU→CPU 提交视图：设备侧先归约 memory target、检测率和策略指标，只下载行动提交、信号发射与审计真正需要的列。任何进一步设备提交仍复用版本化计划，不能让策略核直接改写 CPU 世界。
