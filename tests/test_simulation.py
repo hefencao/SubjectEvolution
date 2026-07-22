@@ -6,7 +6,12 @@ import numpy as np
 from subject_evolution import __version__
 from subject_evolution.config import load_config
 from subject_evolution.counterfactual import run_paired
-from subject_evolution.information import InformationSystem
+from subject_evolution.information import (
+    InformationSystem,
+    SignalEmissionBatch,
+    SignalEmissionPlan,
+    SignalEmissionScheduler,
+)
 from subject_evolution.random_api import RandomContext, Stream, uniform01
 from subject_evolution.simulation import Simulation
 from subject_evolution.social import SocialSystem
@@ -92,6 +97,106 @@ def test_direct_messages_have_fixed_masked_observation(tmp_path):
     assert observed.message_mask[0, 0]
     assert observed.message_source_id[0, 0] == 11
     assert np.all(observed.messages[0, 0] >= 0.0)
+
+
+def test_signal_scheduler_buffers_low_frequency_channel_without_dense_padding(tmp_path):
+    cfg = load_config(_config(tmp_path))
+    information = InformationSystem(cfg)
+    scheduler = SignalEmissionScheduler(information.CHANNELS, flush_periods=(1, 3, 2))
+    high_frequency = SignalEmissionBatch(
+        0,
+        np.asarray([1, 1], dtype=np.int32),
+        np.asarray([0.2, 0.3], dtype=np.float32),
+        emitter="high-frequency-sensor",
+    )
+    low_frequency = SignalEmissionBatch(
+        1,
+        np.asarray([2, 2], dtype=np.int32),
+        np.asarray([0.4, 0.1], dtype=np.float32),
+        emitter="aggregated-alert",
+    )
+    scheduler.append(SignalEmissionPlan((high_frequency, low_frequency)))
+
+    due = scheduler.drain_due(tick=1)
+    assert due.batches == (high_frequency,)
+    information.emit_plan(due)
+    assert scheduler.pending_batches(1) == 1
+    assert information.source[1].sum() == 0.0
+
+    second_high_frequency = SignalEmissionBatch(
+        0,
+        np.asarray([3], dtype=np.int32),
+        np.asarray([0.6], dtype=np.float32),
+        emitter="high-frequency-sensor",
+    )
+    later_low_frequency = SignalEmissionBatch(
+        1,
+        np.asarray([2], dtype=np.int32),
+        np.asarray([0.25], dtype=np.float32),
+        emitter="aggregated-alert",
+    )
+    scheduler.append(SignalEmissionPlan((second_high_frequency, later_low_frequency)))
+    due = scheduler.drain_due(tick=2)
+    assert due.batches == (second_high_frequency,)
+    information.emit_plan(due)
+    assert scheduler.pending_batches(1) == 2
+
+    due = scheduler.drain_due(tick=3)
+    assert len(due.batches) == 1
+    assert due.batches[0].channel == 1
+    np.testing.assert_array_equal(due.batches[0].cell_ids, [2, 2, 2])
+    np.testing.assert_allclose(due.batches[0].strengths, [0.4, 0.1, 0.25])
+    information.emit_plan(due)
+    np.testing.assert_allclose(information.source[0].reshape(-1)[[1, 3]], [0.5, 0.6])
+    np.testing.assert_allclose(information.source[1].reshape(-1)[2], 0.75)
+
+
+def test_signal_scheduler_default_periods_are_a_zero_buffer_plan_passthrough():
+    scheduler = SignalEmissionScheduler(channel_count=3)
+    plan = SignalEmissionPlan(
+        (
+            SignalEmissionBatch(
+                0,
+                np.asarray([1], dtype=np.int32),
+                np.asarray([0.2], dtype=np.float32),
+                emitter="default-cadence",
+            ),
+        )
+    )
+    assert not scheduler.requires_buffering
+    assert scheduler.submit(plan, tick=17) is plan
+    assert scheduler.pending_batches(0) == 0
+
+
+def test_simulation_signal_flush_period_uses_completed_tick(tmp_path):
+    cfg = load_config(_config(tmp_path))
+    cfg = replace(cfg, information=replace(cfg.information, signal_flush_periods=(1, 3, 1)))
+    simulation = Simulation(cfg, tmp_path / "flush-period")
+    try:
+        simulation.signal_scheduler.append(
+            SignalEmissionPlan(
+                (
+                    SignalEmissionBatch(
+                        1,
+                        np.asarray([2], dtype=np.int32),
+                        np.asarray([0.4], dtype=np.float32),
+                        emitter="low-frequency-danger",
+                    ),
+                )
+            )
+        )
+        simulation._flush_signal_emissions(SignalEmissionPlan(()))
+        assert simulation.information.source[1].sum() == 0.0
+
+        simulation.tick = 1
+        simulation._flush_signal_emissions(SignalEmissionPlan(()))
+        assert simulation.information.source[1].sum() == 0.0
+
+        simulation.tick = 2
+        simulation._flush_signal_emissions(SignalEmissionPlan(()))
+        np.testing.assert_allclose(simulation.information.source[1].reshape(-1)[2], 0.4)
+    finally:
+        simulation.metrics.close()
 
 
 def test_batched_direct_message_receipt_is_reproducible_and_capacity_limited(tmp_path):

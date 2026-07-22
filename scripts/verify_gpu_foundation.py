@@ -14,7 +14,7 @@ from subject_evolution.backend import BackendUnavailableError, resolve_backend
 from subject_evolution.config import load_config
 from subject_evolution.environment import Environment
 from subject_evolution.gpu_environment import DeviceEnvironment, DeviceInformationField
-from subject_evolution.information import InformationSystem
+from subject_evolution.information import InformationSystem, SignalEmissionBatch, SignalEmissionPlan
 
 
 def parser() -> argparse.ArgumentParser:
@@ -60,19 +60,23 @@ def main() -> int:
         )
     )
     strengths = (0.01 + (cells % 11).astype(np.float32) * 0.007).astype(np.float32)
-
     cpu_seconds = 0.0
     gpu_seconds = 0.0
     for tick in range(args.ticks):
+        signal_plan = SignalEmissionPlan(
+            batches=(
+                SignalEmissionBatch(tick % cpu_field.CHANNELS, cells, strengths, emitter="foundation-check"),
+            )
+        )
         started = time.perf_counter()
         cpu_environment.update(tick)
-        cpu_field.emit(tick % cpu_field.CHANNELS, cells, strengths)
+        cpu_field.emit_plan(signal_plan)
         cpu_field.propagate()
         cpu_seconds += time.perf_counter() - started
 
         started = time.perf_counter()
         gpu_environment.update(tick)
-        gpu_field.emit(tick % gpu_field.CHANNELS, cells, strengths)
+        gpu_field.emit_plan(signal_plan)
         gpu_field.propagate()
         backend.synchronize()
         gpu_seconds += time.perf_counter() - started

@@ -19,7 +19,7 @@ import numpy as np
 from .backend import Backend, resolve_backend
 from .config import SimulationConfig
 from .gpu_environment import DeviceEnvironment, DeviceInformationField
-from .information import InformationObservation, InformationSystem
+from .information import InformationObservation, InformationSystem, SignalEmissionPlan
 from .policy import ParametricPolicy, PolicyDecision
 from .spatial import SpatialIndex
 
@@ -327,6 +327,15 @@ class HybridGpuRuntime:
             self.backend.asarray(cell_ids, dtype=self.backend.xp.int32),
             self.backend.asarray(strengths, dtype=self.backend.xp.float32),
         )
+
+    def emit_plan(self, plan: SignalEmissionPlan) -> None:
+        """Transfer only due channel batches across the explicit GPU boundary."""
+        for batch in plan.batches:
+            self.information_field.emit(
+                batch.channel,
+                self.backend.asarray(batch.cell_ids, dtype=self.backend.xp.int32),
+                self.backend.asarray(batch.strengths, dtype=self.backend.xp.float32),
+            )
 
     def hazard_for_cells(self, cell_ids: np.ndarray) -> np.ndarray:
         cells = self.backend.asarray(cell_ids, dtype=self.backend.xp.int32)

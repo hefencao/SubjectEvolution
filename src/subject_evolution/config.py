@@ -62,6 +62,11 @@ class InformationConfig:
     max_signal_delay: int
     direct_message_capacity: int = 16
     source_noise: float = 0.0
+    # Field-emission delivery cadence for the current resource/danger/social
+    # channels.  A period greater than one is an explicit aggregation delay:
+    # events queue until that channel's next flush, while field propagation
+    # itself continues at the simulation tick cadence.
+    signal_flush_periods: tuple[int, ...] = (1, 1, 1)
 
 
 @dataclass(frozen=True)
@@ -124,6 +129,7 @@ def _probability(name: str, value: float) -> float:
 
 def load_config(path: str | Path) -> SimulationConfig:
     raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    information_raw = _require(raw, "information")
     cfg = SimulationConfig(
         run=RunConfig(
             **{
@@ -141,7 +147,12 @@ def load_config(path: str | Path) -> SimulationConfig:
             signal_diffusion=_require(raw, "environment")["signal_diffusion"],
         ),
         entities=EntityConfig(**_require(raw, "entities")),
-        information=InformationConfig(**_require(raw, "information")),
+        information=InformationConfig(
+            **{
+                **information_raw,
+                "signal_flush_periods": tuple(information_raw.get("signal_flush_periods", (1, 1, 1))),
+            }
+        ),
         policy=PolicyConfig(**_require(raw, "policy")),
         social=SocialConfig(**_require(raw, "social")),
         control=ControlConfig(**raw.get("control", {})),
@@ -175,6 +186,11 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("max_signal_delay cannot be negative")
     if cfg.information.direct_message_capacity < 0:
         raise ValueError("direct_message_capacity cannot be negative")
+    if len(cfg.information.signal_flush_periods) != 3 or any(
+        not isinstance(period, int) or isinstance(period, bool) or period <= 0
+        for period in cfg.information.signal_flush_periods
+    ):
+        raise ValueError("information.signal_flush_periods must contain three positive integers")
     _probability("trust_group_threshold", cfg.social.trust_group_threshold)
     if not isinstance(cfg.control.heuristic_social_guidance, bool):
         raise ValueError("control.heuristic_social_guidance must be a boolean")

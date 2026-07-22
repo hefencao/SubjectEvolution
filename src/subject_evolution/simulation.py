@@ -21,7 +21,7 @@ from .control import (
 from .environment import Environment
 from .execution import ActionConflictResolver, ActionResolutionSnapshot, DeterministicActionConflictResolver
 from .gpu_runtime import HybridGpuRuntime
-from .information import InformationSystem
+from .information import InformationSystem, SignalEmissionBatch, SignalEmissionPlan, SignalEmissionScheduler
 from .intents import (
     ActionIntentBatch,
     ActionResolutionBatch,
@@ -192,6 +192,13 @@ class Simulation:
         self.entities = EntityState(cfg)
         self.environment = Environment(cfg)
         self.information = InformationSystem(cfg)
+        # MVP channels flush every tick, exactly preserving current field
+        # timing.  Longer periods are an explicit future model choice, not a
+        # dense zero-column performance shortcut.
+        self.signal_scheduler = SignalEmissionScheduler(
+            self.information.CHANNELS,
+            cfg.information.signal_flush_periods,
+        )
         self.spatial = SpatialIndex(
             cfg.world.grid_x,
             cfg.world.grid_y,
@@ -274,6 +281,7 @@ class Simulation:
         branch.entities = copy.deepcopy(self.entities)
         branch.environment = copy.deepcopy(self.environment)
         branch.information = copy.deepcopy(self.information)
+        branch.signal_scheduler = copy.deepcopy(self.signal_scheduler)
         branch.spatial = copy.deepcopy(self.spatial)
         branch.social = copy.deepcopy(self.social)
         branch.subjects = self.subjects.clone()
@@ -380,9 +388,9 @@ class Simulation:
         cells: np.ndarray,
         local_resources: np.ndarray,
         target_indices: np.ndarray,
-    ) -> tuple[int, int]:
+    ) -> tuple[SignalEmissionPlan, int]:
         if actors.size == 0:
-            return 0, 0
+            return SignalEmissionPlan(()), 0
         ent = self.entities
         actor_cells = cells
         strengths_resource = np.clip(local_resources[:, 0], 0.0, 2.0) * 0.15
@@ -394,14 +402,13 @@ class Simulation:
         strengths_danger = hazard * 0.15
         group_member = self.social.group_id[actors] != 0
         strengths_social = group_member.astype(np.float32) * 0.12
-        if self.gpu_runtime is None:
-            self.information.emit(0, actor_cells, strengths_resource)
-            self.information.emit(1, actor_cells, strengths_danger)
-            self.information.emit(2, actor_cells, strengths_social)
-        else:
-            self.gpu_runtime.emit(0, actor_cells, strengths_resource)
-            self.gpu_runtime.emit(1, actor_cells, strengths_danger)
-            self.gpu_runtime.emit(2, actor_cells, strengths_social)
+        signal_plan = SignalEmissionPlan(
+            batches=(
+                SignalEmissionBatch(0, actor_cells, strengths_resource, emitter="actor-resource"),
+                SignalEmissionBatch(1, actor_cells, strengths_danger, emitter="actor-danger"),
+                SignalEmissionBatch(2, actor_cells, strengths_social, emitter="actor-social"),
+            )
+        )
         ent.energy[actors] -= self.cfg.entities.signal_cost
         valid_target = (target_indices >= 0) & ent.alive[target_indices]
         safe_targets = np.where(valid_target, target_indices, 0)
@@ -418,7 +425,20 @@ class Simulation:
                 self.cfg.run.seed,
                 self.tick,
             )
-        return int(actors.size), direct_messages
+        return signal_plan, direct_messages
+
+    def _flush_signal_emissions(self, plan: SignalEmissionPlan | None = None) -> None:
+        """Commit channel batches whose modeled delivery cadence is due now."""
+        # ``self.tick`` is zero-based during a step.  Flush against the
+        # completed one-based tick so a period of three delivers after steps
+        # 3, 6, ... rather than treating construction tick zero as a flush.
+        due_plan = self.signal_scheduler.submit(plan or SignalEmissionPlan(()), self.tick + 1)
+        if not due_plan.batches:
+            return
+        if self.gpu_runtime is None:
+            self.information.emit_plan(due_plan)
+        else:
+            self.gpu_runtime.emit_plan(due_plan)
 
     def _checkpoint(self) -> None:
         active = np.flatnonzero(self.entities.alive)
@@ -652,15 +672,18 @@ class Simulation:
 
         stats.shared_energy = self._commit_shares(share_rows, share_targets, shared)
 
+        signal_plan = SignalEmissionPlan(())
         if signal_rows.size:
             signal_actors = intents.carrier_index[signal_rows]
             signal_observation_rows = np.searchsorted(active, signal_actors)
-            stats.signals, stats.direct_messages = self._emit_signals(
+            signal_plan, stats.direct_messages = self._emit_signals(
                 signal_actors,
                 cells[signal_observation_rows],
                 local_resources[signal_observation_rows],
                 intents.target_index[signal_rows],
             )
+            stats.signals = int(signal_actors.size)
+        self._flush_signal_emissions(signal_plan)
 
         if accepted_reproduce_rows.size:
             requested_parents = intents.carrier_index[accepted_reproduce_rows]

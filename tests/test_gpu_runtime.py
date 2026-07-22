@@ -51,3 +51,26 @@ def test_gpu_run_syncs_deferred_fields_before_returning(tmp_path):
     assert np.array_equal(cpu.entities.alive, gpu.entities.alive)
     np.testing.assert_allclose(cpu.environment.resources, gpu.environment.resources, rtol=0.0, atol=2e-4)
     np.testing.assert_allclose(cpu.information.field, gpu.information.field, rtol=0.0, atol=3e-5)
+
+
+@pytest.mark.skipif(not cupy_available(), reason="CuPy with a usable CUDA device is unavailable")
+def test_gpu_runtime_matches_cpu_with_delayed_signal_channel_flushes(tmp_path):
+    cfg = load_config("configs/mvp_small.json")
+    cfg = replace(
+        cfg,
+        run=replace(cfg.run, ticks=4, metrics_period=99, checkpoint_period=99),
+        information=replace(cfg.information, signal_flush_periods=(1, 3, 2)),
+    )
+    cpu = Simulation(cfg, tmp_path / "cpu-delayed-signals", backend="cpu")
+    gpu = Simulation(cfg, tmp_path / "gpu-delayed-signals", backend="gpu")
+    try:
+        for _ in range(4):
+            cpu.step()
+            gpu.step()
+
+        assert np.array_equal(cpu.action_counts, gpu.action_counts)
+        np.testing.assert_allclose(cpu.entities.energy, gpu.entities.energy, rtol=0.0, atol=2e-5)
+        np.testing.assert_allclose(cpu.information.field, gpu.information.field, rtol=0.0, atol=3e-5)
+    finally:
+        cpu.metrics.close()
+        gpu.metrics.close()

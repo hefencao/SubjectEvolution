@@ -52,7 +52,8 @@
     "memory_decay": 0.01,
     "max_signal_delay": 3,
     "direct_message_capacity": 16,
-    "source_noise": 0.03
+    "source_noise": 0.03,
+    "signal_flush_periods": [1, 1, 1]
   },
   "policy": {
     "temperature": 0.8,

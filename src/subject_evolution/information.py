@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections.abc import Iterable
+from typing import Any
 import numpy as np
 
 from .config import SimulationConfig
@@ -23,6 +25,124 @@ class InformationObservation:
     partner_group_match: np.ndarray
     partner_mask: np.ndarray
     uncertainty: np.ndarray
+
+
+@dataclass(frozen=True)
+class SignalEmissionBatch:
+    """One ordered emission stream for a single information channel.
+
+    A batch is deliberately channel-local instead of an ``(events, channels)``
+    matrix.  A scheduler queues a channel until its explicit delivery tick,
+    so sparse or low-frequency channels neither allocate zero-filled columns
+    nor cross the host/device boundary before they are due.  Array order is
+    the deterministic event order within this channel.
+    """
+
+    channel: int
+    cell_ids: Any
+    strengths: Any
+    emitter: str = "unspecified"
+
+
+@dataclass(frozen=True)
+class SignalEmissionPlan:
+    """Ordered, backend-neutral signal work for one simulation phase.
+
+    Batches targeting different channels are independent.  Repeated batches
+    for one channel retain plan order.  A cadence scheduler may explicitly
+    aggregate them into one later delivery batch; that aggregation is model
+    semantics rather than an incidental backend optimization.  Future
+    schedulers and field backends therefore only need to construct this plan;
+    they do not need to know whether execution is CPU or GPU.
+    """
+
+    batches: tuple[SignalEmissionBatch, ...]
+
+    def append(self, batch: SignalEmissionBatch) -> "SignalEmissionPlan":
+        """Return a plan with one additional ordered channel batch."""
+        return SignalEmissionPlan(self.batches + (batch,))
+
+    def extend(self, batches: Iterable[SignalEmissionBatch]) -> "SignalEmissionPlan":
+        """Return a plan extended by due batches in deterministic order."""
+        return SignalEmissionPlan(self.batches + tuple(batches))
+
+
+class SignalEmissionScheduler:
+    """Queue channel-local emission batches until their declared flush tick.
+
+    Periods describe delivery cadence, not an invisible optimization.  An
+    event appended to a channel with period greater than one becomes visible
+    only when that channel is drained.  The scheduler retains individual
+    batches until a flush.  When several batches target one due channel they
+    are concatenated once in arrival order, producing one sparse transfer and
+    one strict reduction for that channel.  This aggregation is the explicit
+    delivery semantics of a period greater than one.
+    """
+
+    def __init__(self, channel_count: int, flush_periods: Iterable[int] | None = None) -> None:
+        if channel_count <= 0:
+            raise ValueError("channel_count must be positive")
+        periods = (1,) * channel_count if flush_periods is None else tuple(flush_periods)
+        if len(periods) != channel_count or any(
+            not isinstance(period, int) or isinstance(period, bool) or period <= 0
+            for period in periods
+        ):
+            raise ValueError("flush_periods must contain one positive period per channel")
+        self.channel_count = channel_count
+        self.flush_periods = periods
+        self._pending: list[list[SignalEmissionBatch]] = [[] for _ in range(channel_count)]
+
+    @property
+    def requires_buffering(self) -> bool:
+        """Whether any channel has an explicit delayed delivery cadence."""
+        return any(period != 1 for period in self.flush_periods)
+
+    def append(self, plan: SignalEmissionPlan) -> None:
+        """Append sparse batches; callers omit channels with no new events."""
+        for batch in plan.batches:
+            if not 0 <= batch.channel < self.channel_count:
+                raise ValueError(f"invalid signal channel {batch.channel}")
+            self._pending[batch.channel].append(batch)
+
+    def submit(self, plan: SignalEmissionPlan, tick: int) -> SignalEmissionPlan:
+        """Append a plan and return the batches visible at this tick.
+
+        The all-period-one default is a zero-buffer fast path: the semantic
+        plan remains explicit, but it does not allocate queue state or add a
+        scheduling loop to the legacy per-tick field path.
+        """
+        if not self.requires_buffering:
+            return plan
+        self.append(plan)
+        return self.drain_due(tick)
+
+    def drain_due(self, tick: int) -> SignalEmissionPlan:
+        """Return and clear only channels whose configured delivery tick is due."""
+        if tick < 0:
+            raise ValueError("tick must be non-negative")
+        due: list[SignalEmissionBatch] = []
+        for channel, period in enumerate(self.flush_periods):
+            if tick % period == 0 and self._pending[channel]:
+                pending = self._pending[channel]
+                if len(pending) == 1:
+                    due.append(pending[0])
+                else:
+                    due.append(
+                        SignalEmissionBatch(
+                            channel,
+                            np.concatenate([batch.cell_ids for batch in pending]),
+                            np.concatenate([batch.strengths for batch in pending]),
+                            emitter=f"scheduled-channel-{channel}",
+                        )
+                    )
+                self._pending[channel] = []
+        return SignalEmissionPlan(tuple(due))
+
+    def pending_batches(self, channel: int) -> int:
+        """Expose queued batch count for diagnostics without exposing buffers."""
+        if not 0 <= channel < self.channel_count:
+            raise ValueError(f"invalid signal channel {channel}")
+        return len(self._pending[channel])
 
 
 @dataclass(frozen=True)
@@ -86,6 +206,11 @@ class InformationSystem:
             self.cfg.world.grid_x * self.cfg.world.grid_y,
             dtype=np.float32,
         )
+
+    def emit_plan(self, plan: SignalEmissionPlan) -> None:
+        """Commit only the due channel batches in their declared order."""
+        for batch in plan.batches:
+            self.emit(batch.channel, batch.cell_ids, batch.strengths)
 
     def emit_direct(
         self,

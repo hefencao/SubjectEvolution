@@ -12,7 +12,7 @@ from typing import Any
 
 from .backend import Backend, resolve_backend
 from .config import SimulationConfig
-from .information import InformationObservation
+from .information import InformationObservation, SignalEmissionPlan
 from .random_api import RandomContext, Stream, bernoulli, normal, uniform01
 from .reductions import stable_segmented_sum, validate_cell_ids
 
@@ -190,6 +190,11 @@ class DeviceInformationField:
             cells, values, cell_count, backend=self.backend, dtype=xp.float32
         )
         self.source[channel].reshape(-1)[:] += contribution
+
+    def emit_plan(self, plan: SignalEmissionPlan) -> None:
+        """Commit the due channel batches without creating dense zero columns."""
+        for batch in plan.batches:
+            self.emit(batch.channel, batch.cell_ids, batch.strengths)
 
     def sample(self, cell_ids: Any) -> tuple[Any, Any]:
         xp = self.backend.xp
