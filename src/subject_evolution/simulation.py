@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import copy
 import json
 from pathlib import Path
@@ -22,7 +22,12 @@ from .control import (
 )
 from .device_state import EntityDeviceCommitPlan, build_entity_device_commit_plan
 from .environment import Environment
-from .evolution import EvolutionProgressTracker
+from .evolution import (
+    BENEFIT_FLOW_COUNT,
+    BenefitFlowKind,
+    EvolutionProgressTracker,
+    benefit_flow_totals,
+)
 from .execution import (
     ActionConflictResolver,
     ActionResolutionSnapshot,
@@ -69,9 +74,15 @@ class StepStats:
     deaths: int = 0
     harvested_energy: float = 0.0
     shared_energy: float = 0.0
-    benefit_internal_energy: float = 0.0
-    benefit_cross_boundary_energy: float = 0.0
-    benefit_unbounded_energy: float = 0.0
+    benefit_flow_energy: np.ndarray = field(
+        default_factory=lambda: np.zeros(BENEFIT_FLOW_COUNT, dtype=np.float64)
+    )
+    reproduction_eligible: int = 0
+    reproduction_proposals: int = 0
+    reproduction_accepted: int = 0
+    reproduction_rejected_capacity: int = 0
+    reproduction_rejected_resource: int = 0
+    reproduction_rejected_other: int = 0
     signals: int = 0
     group_count: int = 0
     mean_group_size: float = 0.0
@@ -98,6 +109,22 @@ class StepStats:
     autonomy_restored_active: int = 0
     autonomy_harvest_attempts: int = 0
     autonomy_harvest_successes: int = 0
+
+    @property
+    def benefit_internal_energy(self) -> float:
+        return float(self.benefit_flow_energy[BenefitFlowKind.INTERNAL])
+
+    @property
+    def benefit_cross_boundary_energy(self) -> float:
+        return float(
+            self.benefit_flow_energy[BenefitFlowKind.GROUP_TO_GROUP]
+            + self.benefit_flow_energy[BenefitFlowKind.GROUP_TO_UNGROUPED]
+            + self.benefit_flow_energy[BenefitFlowKind.UNGROUPED_TO_GROUP]
+        )
+
+    @property
+    def benefit_unbounded_energy(self) -> float:
+        return float(self.benefit_flow_energy[BenefitFlowKind.UNBOUNDED])
 
 
 class EntityState:
@@ -427,10 +454,16 @@ class Simulation:
         )
         self.total_births = 0
         self.total_deaths = 0
+        self.total_shared_energy = 0.0
         self.action_counts = np.zeros(len(Action), dtype=np.int64)
-        self.benefit_internal_energy_total = 0.0
-        self.benefit_cross_boundary_energy_total = 0.0
-        self.benefit_unbounded_energy_total = 0.0
+        self.benefit_flow_energy_total = np.zeros(
+            BENEFIT_FLOW_COUNT, dtype=np.float64
+        )
+        self.total_reproduction_eligible = 0
+        self.total_reproduction_proposals = 0
+        self.total_reproduction_rejected_capacity = 0
+        self.total_reproduction_rejected_resource = 0
+        self.total_reproduction_rejected_other = 0
         self.evolution_progress = EvolutionProgressTracker(
             self.output_dir,
             period=cfg.run.evolution_evaluation_period,
@@ -497,6 +530,22 @@ class Simulation:
         if cfg.run.trajectory_subject_ids:
             self._trajectory_file = (self.output_dir / "trajectory.jsonl").open("w", encoding="utf-8")
 
+    @property
+    def benefit_internal_energy_total(self) -> float:
+        return float(self.benefit_flow_energy_total[BenefitFlowKind.INTERNAL])
+
+    @property
+    def benefit_cross_boundary_energy_total(self) -> float:
+        return float(
+            self.benefit_flow_energy_total[BenefitFlowKind.GROUP_TO_GROUP]
+            + self.benefit_flow_energy_total[BenefitFlowKind.GROUP_TO_UNGROUPED]
+            + self.benefit_flow_energy_total[BenefitFlowKind.UNGROUPED_TO_GROUP]
+        )
+
+    @property
+    def benefit_unbounded_energy_total(self) -> float:
+        return float(self.benefit_flow_energy_total[BenefitFlowKind.UNBOUNDED])
+
     def clone(self, output_dir: str | Path) -> "Simulation":
         """Clone a snapshot for paired counterfactual runs.
 
@@ -527,12 +576,20 @@ class Simulation:
         branch.last_group_plan = copy.deepcopy(self.last_group_plan)
         branch.total_births = self.total_births
         branch.total_deaths = self.total_deaths
+        branch.total_shared_energy = self.total_shared_energy
         branch.action_counts = self.action_counts.copy()
-        branch.benefit_internal_energy_total = self.benefit_internal_energy_total
-        branch.benefit_cross_boundary_energy_total = (
-            self.benefit_cross_boundary_energy_total
+        branch.benefit_flow_energy_total = self.benefit_flow_energy_total.copy()
+        branch.total_reproduction_eligible = self.total_reproduction_eligible
+        branch.total_reproduction_proposals = self.total_reproduction_proposals
+        branch.total_reproduction_rejected_capacity = (
+            self.total_reproduction_rejected_capacity
         )
-        branch.benefit_unbounded_energy_total = self.benefit_unbounded_energy_total
+        branch.total_reproduction_rejected_resource = (
+            self.total_reproduction_rejected_resource
+        )
+        branch.total_reproduction_rejected_other = (
+            self.total_reproduction_rejected_other
+        )
         branch.evolution_progress = self.evolution_progress.clone(branch.output_dir)
         branch.last_birth_allocation = copy.deepcopy(self.last_birth_allocation)
         branch.last_death_events = copy.deepcopy(self.last_death_events)
@@ -818,7 +875,11 @@ class Simulation:
             np.add.at(self.entities.shared_energy_received_total, targets, amounts)
         if self.social_connections_enabled:
             self.social.apply_relation_updates(share.relation_updates)
-        return float(share.amounts[committed].sum())
+        # Use the same float64 accounting domain as the exhaustive boundary
+        # partition.  World energy writes above retain their original FP32
+        # semantics; this only makes the diagnostic conservation residual
+        # meaningful over long windows.
+        return float(np.asarray(share.amounts[committed], dtype=np.float64).sum())
 
     def _record_benefit_boundary(
         self,
@@ -834,19 +895,9 @@ class Simulation:
         amounts = np.asarray(share.amounts[committed], dtype=np.float64)
         owner_groups = self.social.group_id[owners]
         target_groups = self.social.group_id[targets]
-        internal = (owner_groups != 0) & (owner_groups == target_groups)
-        unbounded = (owner_groups == 0) & (target_groups == 0)
-        cross_boundary = ~(internal | unbounded)
-        stats.benefit_internal_energy = float(amounts[internal].sum())
-        stats.benefit_cross_boundary_energy = float(
-            amounts[cross_boundary].sum()
-        )
-        stats.benefit_unbounded_energy = float(amounts[unbounded].sum())
-        self.benefit_internal_energy_total += stats.benefit_internal_energy
-        self.benefit_cross_boundary_energy_total += (
-            stats.benefit_cross_boundary_energy
-        )
-        self.benefit_unbounded_energy_total += stats.benefit_unbounded_energy
+        flow_totals = benefit_flow_totals(owner_groups, target_groups, amounts)
+        stats.benefit_flow_energy += flow_totals
+        self.benefit_flow_energy_total += flow_totals
         self.subjects.record_benefit_flows(
             owner_groups,
             target_groups,
@@ -953,8 +1004,19 @@ class Simulation:
             births_total=self.total_births,
             deaths_total=self.total_deaths,
             action_counts=self.action_counts,
-            internal_benefit_total=self.benefit_internal_energy_total,
-            cross_boundary_benefit_total=self.benefit_cross_boundary_energy_total,
+            benefit_flow_energy_total=self.benefit_flow_energy_total,
+            shared_energy_total=self.total_shared_energy,
+            reproduction_eligible_total=self.total_reproduction_eligible,
+            reproduction_proposals_total=self.total_reproduction_proposals,
+            reproduction_rejected_capacity_total=(
+                self.total_reproduction_rejected_capacity
+            ),
+            reproduction_rejected_resource_total=(
+                self.total_reproduction_rejected_resource
+            ),
+            reproduction_rejected_other_total=(
+                self.total_reproduction_rejected_other
+            ),
             mutation_probability=self.cfg.policy.mutation_probability,
             mutation_std=self.cfg.policy.mutation_std,
         )
@@ -1133,7 +1195,15 @@ class Simulation:
                 np.count_nonzero(arbitration.autonomy_applied)
             )
             self.autonomy_module_actions += stats.autonomy_module_actions
-        self.action_counts += np.bincount(decision.action, minlength=len(Action))
+        step_action_counts = np.bincount(decision.action, minlength=len(Action))
+        self.action_counts += step_action_counts
+        stats.reproduction_eligible = int(
+            np.count_nonzero(
+                (ent.energy[active] >= cfg.entities.reproduction_threshold)
+                & (ent.fertility[active] >= 0.5)
+            )
+        )
+        stats.reproduction_proposals = int(step_action_counts[Action.REPRODUCE])
         stats.action_entropy = float(decision.entropy.mean())
         stats.signal_detection_rate = float(info.signal_mask.mean())
         stats.partner_detection_rate = float(info.partner_mask.mean()) if info.partner_mask.size else 0.0
@@ -1180,6 +1250,19 @@ class Simulation:
         share = resolution_plan.share
         signal_rows = resolution_plan.signal_rows
         birth_requests = resolution_plan.birth_requests
+        reproduce = intents.action == int(Action.REPRODUCE)
+        stats.reproduction_rejected_capacity = int(
+            np.count_nonzero(
+                reproduce
+                & (resolutions.failure_reason == FailureReason.INSUFFICIENT_CAPACITY)
+            )
+        )
+        stats.reproduction_rejected_resource = int(
+            np.count_nonzero(
+                reproduce
+                & (resolutions.failure_reason == FailureReason.INSUFFICIENT_RESOURCE)
+            )
+        )
         autonomy_control = (
             intents.autonomy_control
             if intents.autonomy_control is not None
@@ -1229,6 +1312,7 @@ class Simulation:
             stats.harvested_energy = float(gathered[:, 0].sum())
 
         stats.shared_energy = self._commit_shares(share)
+        self.total_shared_energy += stats.shared_energy
         self._record_benefit_boundary(share, stats)
 
         signal_plan = SignalEmissionPlan(())
@@ -1272,6 +1356,24 @@ class Simulation:
                 ent.fertility[accepted_parents] -= 0.5
                 stats.births = int(newborns.size)
                 self.total_births += stats.births
+
+        stats.reproduction_accepted = stats.births
+        stats.reproduction_rejected_other = max(
+            stats.reproduction_proposals
+            - stats.reproduction_accepted
+            - stats.reproduction_rejected_capacity
+            - stats.reproduction_rejected_resource,
+            0,
+        )
+        self.total_reproduction_eligible += stats.reproduction_eligible
+        self.total_reproduction_proposals += stats.reproduction_proposals
+        self.total_reproduction_rejected_capacity += (
+            stats.reproduction_rejected_capacity
+        )
+        self.total_reproduction_rejected_resource += (
+            stats.reproduction_rejected_resource
+        )
+        self.total_reproduction_rejected_other += stats.reproduction_rejected_other
 
         # Existence costs and environmental damage.
         current_active = np.flatnonzero(ent.alive).astype(np.int32)
@@ -1474,6 +1576,27 @@ class Simulation:
             if self.autonomy_harvest_attempts
             else 0.0
         )
+        step_boundary_energy = (
+            stats.benefit_internal_energy + stats.benefit_cross_boundary_energy
+        )
+        step_benefit_energy = step_boundary_energy + stats.benefit_unbounded_energy
+        total_boundary_energy = (
+            self.benefit_internal_energy_total
+            + self.benefit_cross_boundary_energy_total
+        )
+        total_benefit_energy = (
+            total_boundary_energy + self.benefit_unbounded_energy_total
+        )
+        step_outgoing_boundary_energy = float(
+            stats.benefit_flow_energy[BenefitFlowKind.INTERNAL]
+            + stats.benefit_flow_energy[BenefitFlowKind.GROUP_TO_GROUP]
+            + stats.benefit_flow_energy[BenefitFlowKind.GROUP_TO_UNGROUPED]
+        )
+        total_outgoing_boundary_energy = float(
+            self.benefit_flow_energy_total[BenefitFlowKind.INTERNAL]
+            + self.benefit_flow_energy_total[BenefitFlowKind.GROUP_TO_GROUP]
+            + self.benefit_flow_energy_total[BenefitFlowKind.GROUP_TO_UNGROUPED]
+        )
         row: dict[str, float | int] = {
             "tick": self.tick,
             "alive": alive_count,
@@ -1481,6 +1604,41 @@ class Simulation:
             "deaths_step": stats.deaths,
             "births_total": self.total_births,
             "deaths_total": self.total_deaths,
+            "reproduction_eligible_step": stats.reproduction_eligible,
+            "reproduction_proposals_step": stats.reproduction_proposals,
+            "reproduction_accepted_step": stats.reproduction_accepted,
+            "reproduction_rejected_capacity_step": (
+                stats.reproduction_rejected_capacity
+            ),
+            "reproduction_rejected_resource_step": (
+                stats.reproduction_rejected_resource
+            ),
+            "reproduction_rejected_other_step": (
+                stats.reproduction_rejected_other
+            ),
+            "reproduction_proposal_rate_given_eligible_step": (
+                stats.reproduction_proposals / stats.reproduction_eligible
+                if stats.reproduction_eligible
+                else 0.0
+            ),
+            "reproduction_acceptance_rate_step": (
+                stats.reproduction_accepted / stats.reproduction_proposals
+                if stats.reproduction_proposals
+                else 0.0
+            ),
+            "reproduction_eligible_carrier_ticks_total": (
+                self.total_reproduction_eligible
+            ),
+            "reproduction_proposals_total": self.total_reproduction_proposals,
+            "reproduction_rejected_capacity_total": (
+                self.total_reproduction_rejected_capacity
+            ),
+            "reproduction_rejected_resource_total": (
+                self.total_reproduction_rejected_resource
+            ),
+            "reproduction_rejected_other_total": (
+                self.total_reproduction_rejected_other
+            ),
             "mean_energy": mean_energy,
             "mean_integrity": mean_integrity,
             "mean_age": mean_age,
@@ -1494,39 +1652,66 @@ class Simulation:
             "move_social_fraction": stats.move_social_fraction,
             "harvested_energy_step": stats.harvested_energy,
             "shared_energy_step": stats.shared_energy,
+            "shared_energy_total": self.total_shared_energy,
+            "benefit_classification_residual_step": (
+                stats.shared_energy - float(stats.benefit_flow_energy.sum())
+            ),
             "benefit_internal_energy_step": stats.benefit_internal_energy,
+            "benefit_group_to_group_energy_step": float(
+                stats.benefit_flow_energy[BenefitFlowKind.GROUP_TO_GROUP]
+            ),
+            "benefit_group_to_ungrouped_energy_step": float(
+                stats.benefit_flow_energy[BenefitFlowKind.GROUP_TO_UNGROUPED]
+            ),
+            "benefit_ungrouped_to_group_energy_step": float(
+                stats.benefit_flow_energy[BenefitFlowKind.UNGROUPED_TO_GROUP]
+            ),
             "benefit_cross_boundary_energy_step": (
                 stats.benefit_cross_boundary_energy
             ),
             "benefit_unbounded_energy_step": stats.benefit_unbounded_energy,
             "benefit_boundary_cohesion_step": (
-                stats.benefit_internal_energy
-                / (
-                    stats.benefit_internal_energy
-                    + stats.benefit_cross_boundary_energy
-                )
-                if (
-                    stats.benefit_internal_energy
-                    + stats.benefit_cross_boundary_energy
-                )
-                > 0.0
+                stats.benefit_internal_energy / step_boundary_energy
+                if step_boundary_energy > 0.0
+                else 0.0
+            ),
+            "benefit_boundary_coverage_step": (
+                step_boundary_energy / step_benefit_energy
+                if step_benefit_energy > 0.0
+                else 0.0
+            ),
+            "benefit_boundary_outgoing_retention_step": (
+                stats.benefit_internal_energy / step_outgoing_boundary_energy
+                if step_outgoing_boundary_energy > 0.0
                 else 0.0
             ),
             "benefit_internal_energy_total": self.benefit_internal_energy_total,
+            "benefit_group_to_group_energy_total": float(
+                self.benefit_flow_energy_total[BenefitFlowKind.GROUP_TO_GROUP]
+            ),
+            "benefit_group_to_ungrouped_energy_total": float(
+                self.benefit_flow_energy_total[BenefitFlowKind.GROUP_TO_UNGROUPED]
+            ),
+            "benefit_ungrouped_to_group_energy_total": float(
+                self.benefit_flow_energy_total[BenefitFlowKind.UNGROUPED_TO_GROUP]
+            ),
             "benefit_cross_boundary_energy_total": (
                 self.benefit_cross_boundary_energy_total
             ),
+            "benefit_unbounded_energy_total": self.benefit_unbounded_energy_total,
             "benefit_boundary_cohesion_total": (
-                self.benefit_internal_energy_total
-                / (
-                    self.benefit_internal_energy_total
-                    + self.benefit_cross_boundary_energy_total
-                )
-                if (
-                    self.benefit_internal_energy_total
-                    + self.benefit_cross_boundary_energy_total
-                )
-                > 0.0
+                self.benefit_internal_energy_total / total_boundary_energy
+                if total_boundary_energy > 0.0
+                else 0.0
+            ),
+            "benefit_boundary_coverage_total": (
+                total_boundary_energy / total_benefit_energy
+                if total_benefit_energy > 0.0
+                else 0.0
+            ),
+            "benefit_boundary_outgoing_retention_total": (
+                self.benefit_internal_energy_total / total_outgoing_boundary_energy
+                if total_outgoing_boundary_energy > 0.0
                 else 0.0
             ),
             "signals_step": stats.signals,

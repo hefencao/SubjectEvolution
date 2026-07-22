@@ -9,6 +9,7 @@ behavioural diversity without feeding any diagnostic value back into policy.
 from __future__ import annotations
 
 import copy
+from enum import IntEnum
 import json
 from pathlib import Path
 from typing import Any
@@ -17,6 +18,50 @@ import numpy as np
 
 from .policy import Action, ParametricPolicy
 from .random_api import RandomContext, Stream, keys
+
+
+class BenefitFlowKind(IntEnum):
+    """Exhaustive boundary relation for one realized benefit transfer."""
+
+    INTERNAL = 0
+    GROUP_TO_GROUP = 1
+    GROUP_TO_UNGROUPED = 2
+    UNGROUPED_TO_GROUP = 3
+    UNBOUNDED = 4
+
+
+BENEFIT_FLOW_COUNT = len(BenefitFlowKind)
+
+
+def benefit_flow_totals(
+    owner_group_tokens: np.ndarray,
+    target_group_tokens: np.ndarray,
+    amounts: np.ndarray,
+) -> np.ndarray:
+    """Return a lossless five-way energy partition for realized transfers."""
+    owners = np.asarray(owner_group_tokens, dtype=np.uint64)
+    targets = np.asarray(target_group_tokens, dtype=np.uint64)
+    values = np.asarray(amounts, dtype=np.float64)
+    if any(value.ndim != 1 for value in (owners, targets, values)) or not (
+        owners.size == targets.size == values.size
+    ):
+        raise ValueError("benefit flow arrays must be aligned and one-dimensional")
+    if np.any(~np.isfinite(values)) or np.any(values < 0.0):
+        raise ValueError("benefit flow amounts must be finite and non-negative")
+
+    kinds = np.full(owners.size, BenefitFlowKind.UNBOUNDED, dtype=np.int8)
+    owner_grouped = owners != 0
+    target_grouped = targets != 0
+    kinds[owner_grouped & (owners == targets)] = BenefitFlowKind.INTERNAL
+    kinds[owner_grouped & target_grouped & (owners != targets)] = (
+        BenefitFlowKind.GROUP_TO_GROUP
+    )
+    kinds[owner_grouped & ~target_grouped] = BenefitFlowKind.GROUP_TO_UNGROUPED
+    kinds[~owner_grouped & target_grouped] = BenefitFlowKind.UNGROUPED_TO_GROUP
+    return np.bincount(kinds, weights=values, minlength=BENEFIT_FLOW_COUNT).astype(
+        np.float64,
+        copy=False,
+    )
 
 
 def _deterministic_sample(
@@ -155,8 +200,15 @@ class EvolutionProgressTracker:
         self.previous_births = 0
         self.previous_deaths = 0
         self.previous_action_counts = np.zeros(len(Action), dtype=np.int64)
-        self.previous_internal_benefit = 0.0
-        self.previous_cross_boundary_benefit = 0.0
+        self.previous_benefit_flow_totals = np.zeros(
+            BENEFIT_FLOW_COUNT, dtype=np.float64
+        )
+        self.previous_shared_energy = 0.0
+        self.previous_reproduction_eligible = 0
+        self.previous_reproduction_proposals = 0
+        self.previous_reproduction_rejected_capacity = 0
+        self.previous_reproduction_rejected_resource = 0
+        self.previous_reproduction_rejected_other = 0
         self.records: list[dict[str, Any]] = []
         self._file = None
 
@@ -166,6 +218,9 @@ class EvolutionProgressTracker:
         branch.previous_strategy_mean = self.previous_strategy_mean.copy()
         branch.initial_strategy_mean = self.initial_strategy_mean.copy()
         branch.previous_action_counts = self.previous_action_counts.copy()
+        branch.previous_benefit_flow_totals = (
+            self.previous_benefit_flow_totals.copy()
+        )
         branch.initial_stable_ids = self.initial_stable_ids.copy()
         branch.initial_genotype = self.initial_genotype.copy()
         branch.baseline = copy.deepcopy(self.baseline)
@@ -197,8 +252,13 @@ class EvolutionProgressTracker:
         births_total: int,
         deaths_total: int,
         action_counts: np.ndarray,
-        internal_benefit_total: float,
-        cross_boundary_benefit_total: float,
+        benefit_flow_energy_total: np.ndarray,
+        shared_energy_total: float,
+        reproduction_eligible_total: int,
+        reproduction_proposals_total: int,
+        reproduction_rejected_capacity_total: int,
+        reproduction_rejected_resource_total: int,
+        reproduction_rejected_other_total: int,
         mutation_probability: float,
         mutation_std: float,
     ) -> dict[str, Any]:
@@ -224,12 +284,14 @@ class EvolutionProgressTracker:
         active = np.flatnonzero(alive).astype(np.int32)
         if active.size:
             _, counts = np.unique(lineage_ids[active], return_counts=True)
+            lineage_count = int(counts.size)
             share = counts.astype(np.float64) / active.size
             effective_lineages = float(1.0 / np.sum(share * share))
             largest_lineage_fraction = float(share.max())
             mean_generation = float(np.mean(generation[active]))
             max_generation = int(np.max(generation[active]))
         else:
+            lineage_count = 0
             effective_lineages = largest_lineage_fraction = mean_generation = 0.0
             max_generation = 0
 
@@ -240,11 +302,60 @@ class EvolutionProgressTracker:
             action_entropy = float(_entropy(action_share))
         else:
             action_entropy = 0.0
-        internal_window = float(internal_benefit_total - self.previous_internal_benefit)
-        cross_window = float(
-            cross_boundary_benefit_total - self.previous_cross_boundary_benefit
+        benefit_totals = np.asarray(benefit_flow_energy_total, dtype=np.float64)
+        if benefit_totals.shape != (BENEFIT_FLOW_COUNT,):
+            raise ValueError("benefit flow totals must contain every BenefitFlowKind")
+        benefit_window = benefit_totals - self.previous_benefit_flow_totals
+        shared_energy_window = float(
+            shared_energy_total - self.previous_shared_energy
+        )
+        internal_window = float(benefit_window[BenefitFlowKind.INTERNAL])
+        group_to_group_window = float(
+            benefit_window[BenefitFlowKind.GROUP_TO_GROUP]
+        )
+        group_to_ungrouped_window = float(
+            benefit_window[BenefitFlowKind.GROUP_TO_UNGROUPED]
+        )
+        ungrouped_to_group_window = float(
+            benefit_window[BenefitFlowKind.UNGROUPED_TO_GROUP]
+        )
+        unbounded_window = float(benefit_window[BenefitFlowKind.UNBOUNDED])
+        cross_window = (
+            group_to_group_window
+            + group_to_ungrouped_window
+            + ungrouped_to_group_window
         )
         boundary_total = internal_window + cross_window
+        all_benefit = boundary_total + unbounded_window
+        outgoing_boundary_total = (
+            internal_window + group_to_group_window + group_to_ungrouped_window
+        )
+        reproduction_eligible_window = int(
+            reproduction_eligible_total - self.previous_reproduction_eligible
+        )
+        reproduction_proposals_window = int(
+            reproduction_proposals_total - self.previous_reproduction_proposals
+        )
+        reproduction_rejected_capacity_window = int(
+            reproduction_rejected_capacity_total
+            - self.previous_reproduction_rejected_capacity
+        )
+        reproduction_rejected_resource_window = int(
+            reproduction_rejected_resource_total
+            - self.previous_reproduction_rejected_resource
+        )
+        reproduction_rejected_other_window = int(
+            reproduction_rejected_other_total
+            - self.previous_reproduction_rejected_other
+        )
+        reproduction_accepted_window = int(births_total - self.previous_births)
+        reproduction_accounting_residual = int(
+            reproduction_proposals_window
+            - reproduction_accepted_window
+            - reproduction_rejected_capacity_window
+            - reproduction_rejected_resource_window
+            - reproduction_rejected_other_window
+        )
         baseline_canonical = float(self.baseline["canonical_strategy_diversity"])
         baseline_probability = float(self.baseline["policy_probability_diversity"])
         policy_shift = float(np.linalg.norm(strategy_mean - self.previous_strategy_mean))
@@ -260,6 +371,7 @@ class EvolutionProgressTracker:
             "deaths_window": int(deaths_total - self.previous_deaths),
             "mean_generation": mean_generation,
             "max_generation": max_generation,
+            "lineage_count": lineage_count,
             "effective_lineages": effective_lineages,
             "effective_lineages_per_alive": (
                 effective_lineages / active.size if active.size else 0.0
@@ -280,10 +392,53 @@ class EvolutionProgressTracker:
                 if baseline_probability
                 else 0.0
             ),
+            "reproduction_eligible_carrier_ticks_window": (
+                reproduction_eligible_window
+            ),
+            "reproduction_proposals_window": reproduction_proposals_window,
+            "reproduction_accepted_window": reproduction_accepted_window,
+            "reproduction_rejected_capacity_window": (
+                reproduction_rejected_capacity_window
+            ),
+            "reproduction_rejected_resource_window": (
+                reproduction_rejected_resource_window
+            ),
+            "reproduction_rejected_other_window": (
+                reproduction_rejected_other_window
+            ),
+            "reproduction_accounting_residual_window": (
+                reproduction_accounting_residual
+            ),
+            "reproduction_proposal_rate_given_eligible": (
+                reproduction_proposals_window / reproduction_eligible_window
+                if reproduction_eligible_window
+                else 0.0
+            ),
+            "reproduction_acceptance_rate": (
+                reproduction_accepted_window / reproduction_proposals_window
+                if reproduction_proposals_window
+                else 0.0
+            ),
             "benefit_internal_window": internal_window,
+            "benefit_group_to_group_window": group_to_group_window,
+            "benefit_group_to_ungrouped_window": group_to_ungrouped_window,
+            "benefit_ungrouped_to_group_window": ungrouped_to_group_window,
             "benefit_cross_boundary_window": cross_window,
+            "benefit_unbounded_window": unbounded_window,
+            "benefit_total_window": shared_energy_window,
+            "benefit_classification_residual_window": (
+                shared_energy_window - float(benefit_window.sum())
+            ),
+            "benefit_boundary_coverage": (
+                boundary_total / all_benefit if all_benefit > 0.0 else 0.0
+            ),
             "benefit_boundary_cohesion": (
                 internal_window / boundary_total if boundary_total > 0.0 else 0.0
+            ),
+            "benefit_boundary_outgoing_retention": (
+                internal_window / outgoing_boundary_total
+                if outgoing_boundary_total > 0.0
+                else 0.0
             ),
             "mutation_probability_per_gene": float(mutation_probability),
             "mutation_std_conditional": float(mutation_std),
@@ -300,8 +455,19 @@ class EvolutionProgressTracker:
         self.previous_births = int(births_total)
         self.previous_deaths = int(deaths_total)
         self.previous_action_counts = np.asarray(action_counts, dtype=np.int64).copy()
-        self.previous_internal_benefit = float(internal_benefit_total)
-        self.previous_cross_boundary_benefit = float(cross_boundary_benefit_total)
+        self.previous_benefit_flow_totals = benefit_totals.copy()
+        self.previous_shared_energy = float(shared_energy_total)
+        self.previous_reproduction_eligible = int(reproduction_eligible_total)
+        self.previous_reproduction_proposals = int(reproduction_proposals_total)
+        self.previous_reproduction_rejected_capacity = int(
+            reproduction_rejected_capacity_total
+        )
+        self.previous_reproduction_rejected_resource = int(
+            reproduction_rejected_resource_total
+        )
+        self.previous_reproduction_rejected_other = int(
+            reproduction_rejected_other_total
+        )
         self.previous_strategy_mean = strategy_mean
         return record
 
@@ -311,4 +477,10 @@ class EvolutionProgressTracker:
             self._file = None
 
 
-__all__ = ["EvolutionProgressTracker", "strategy_structure"]
+__all__ = [
+    "BENEFIT_FLOW_COUNT",
+    "BenefitFlowKind",
+    "EvolutionProgressTracker",
+    "benefit_flow_totals",
+    "strategy_structure",
+]
