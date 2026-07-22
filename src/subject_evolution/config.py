@@ -98,6 +98,12 @@ class ControlConfig:
 
     heuristic_social_guidance: bool = False
     heuristic_social_guidance_weight: float = 0.25
+    # The recovery intervention deterministically selects this fraction of
+    # the living cohort.  It does not affect a run until ``restore-autonomy``
+    # is explicitly applied.
+    autonomy_recovery_fraction: float = 0.25
+    autonomy_activation_energy_fraction: float = 0.35
+    autonomy_harvest_threshold: float = 0.05
 
 
 @dataclass(frozen=True)
@@ -205,6 +211,13 @@ def validate_config(cfg: SimulationConfig) -> None:
     if not isinstance(cfg.control.heuristic_social_guidance, bool):
         raise ValueError("control.heuristic_social_guidance must be a boolean")
     _probability("control.heuristic_social_guidance_weight", cfg.control.heuristic_social_guidance_weight)
+    _probability("control.autonomy_recovery_fraction", cfg.control.autonomy_recovery_fraction)
+    _probability(
+        "control.autonomy_activation_energy_fraction",
+        cfg.control.autonomy_activation_energy_fraction,
+    )
+    if cfg.control.autonomy_harvest_threshold < 0:
+        raise ValueError("control.autonomy_harvest_threshold cannot be negative")
     if cfg.policy.temperature <= 0:
         raise ValueError("policy.temperature must be positive")
     if cfg.entities.relation_slots <= 0:

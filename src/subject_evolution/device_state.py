@@ -1,9 +1,10 @@
-"""Backend-neutral plans for keeping an accelerator observation mirror current.
+"""Backend-neutral plans for keeping an accelerator entity mirror current.
 
-The CPU world remains authoritative.  After a successful world commit it
-publishes the exact final values needed by the next observation pass.  A GPU,
-distributed replica, or replay checker can consume the same versioned plan
-without learning how the CPU containers implement actions or lifecycle.
+The CPU currently remains authoritative for the entity domain.  After a
+successful entity commit it publishes the exact final values needed by the
+next observation pass.  A GPU, distributed replica, or replay checker can
+consume the same versioned plan without learning how the current CPU
+containers implement actions or lifecycle.
 """
 
 from __future__ import annotations

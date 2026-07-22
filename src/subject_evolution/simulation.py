@@ -11,10 +11,12 @@ from . import __version__
 from .backend import BackendUnavailableError
 from .config import SimulationConfig
 from .control import (
+    AutonomyRecoveryArbiter,
     ControlArbiter,
     ControllerKind,
     HeuristicSocialGuidanceArbiter,
     SingleProposalControlArbiter,
+    autonomy_recovery_control_proposal,
     body_control_proposal,
     social_guidance_control_proposal,
 )
@@ -86,6 +88,10 @@ class StepStats:
     gpu_direct_message_events: int = 0
     gpu_direct_dense_bytes_avoided: int = 0
     gpu_entity_commit_bytes: int = 0
+    autonomy_module_actions: int = 0
+    autonomy_restored_active: int = 0
+    autonomy_harvest_attempts: int = 0
+    autonomy_harvest_successes: int = 0
 
 
 class EntityState:
@@ -397,11 +403,20 @@ class Simulation:
             else DeterministicGroupLabelPlanner()
         )
         self.heuristic_guidance_actions = 0
+        self.autonomy_recovery_enabled = False
+        self.autonomy_restored = np.zeros(cfg.world.max_entities, dtype=bool)
+        self.autonomy_observation_cohort = np.zeros(cfg.world.max_entities, dtype=bool)
+        self.autonomy_recovery_tick: int | None = None
+        self.autonomy_cohort_tick: int | None = None
+        self.autonomy_recovery_cohort_ids = np.empty(0, dtype=np.uint64)
+        self.autonomy_module_actions = 0
+        self.autonomy_harvest_attempts = 0
+        self.autonomy_harvest_successes = 0
         self.social_control_enabled = True
         self.social_connections_enabled = True
         self.direct_messages_enabled = True
         self.freeze_genotype = False
-        self.intervention_history: list[dict[str, int | str]] = []
+        self.intervention_history: list[dict[str, int | float | str]] = []
         # Interactive ``step()`` calls keep host field mirrors current.  A
         # monolithic ``run()`` can defer that costly device->host copy until
         # completion because every intervening field consumer is device-side.
@@ -447,6 +462,15 @@ class Simulation:
             self.last_entity_device_commit
         )
         branch.heuristic_guidance_actions = self.heuristic_guidance_actions
+        branch.autonomy_recovery_enabled = self.autonomy_recovery_enabled
+        branch.autonomy_restored = self.autonomy_restored.copy()
+        branch.autonomy_observation_cohort = self.autonomy_observation_cohort.copy()
+        branch.autonomy_recovery_tick = self.autonomy_recovery_tick
+        branch.autonomy_cohort_tick = self.autonomy_cohort_tick
+        branch.autonomy_recovery_cohort_ids = self.autonomy_recovery_cohort_ids.copy()
+        branch.autonomy_module_actions = self.autonomy_module_actions
+        branch.autonomy_harvest_attempts = self.autonomy_harvest_attempts
+        branch.autonomy_harvest_successes = self.autonomy_harvest_successes
         branch.social_control_enabled = self.social_control_enabled
         branch.social_connections_enabled = self.social_connections_enabled
         branch.direct_messages_enabled = self.direct_messages_enabled
@@ -465,6 +489,7 @@ class Simulation:
         """Apply one documented intervention without changing random streams."""
         normalized = intervention.strip().lower().replace("_", "-")
         active = np.flatnonzero(self.entities.alive).astype(np.int32)
+        details: dict[str, int | float | str] = {}
         if normalized in {"disable-social-control", "social-control-off"}:
             canonical = "disable-social-control"
             self.social_control_enabled = False
@@ -492,12 +517,65 @@ class Simulation:
             self.environment.reverse_spatial_orientation()
             if self.gpu_runtime is not None:
                 self.gpu_runtime.reverse_environment()
+        elif normalized in {"restore-autonomy", "restore-foraging-autonomy"}:
+            canonical = "restore-autonomy"
+            fraction = self.cfg.control.autonomy_recovery_fraction
+            cohort_size = min(active.size, int(np.ceil(active.size * fraction)))
+            selected = np.empty(0, dtype=np.int32)
+            if cohort_size:
+                ids = self.entities.entity_id[active]
+                ctx = RandomContext(
+                    self.cfg.run.seed,
+                    self.tick,
+                    phase=91,
+                    stream=Stream.CAUSAL_INTERVENTION,
+                )
+                score = uniform01(ctx, ids, draw_index=1)
+                order = np.lexsort((ids, score))
+                selected = active[order[:cohort_size]]
+            self.register_autonomy_observation_cohort(
+                self.entities.entity_id[selected],
+                tick=self.tick,
+            )
+            self.autonomy_restored[:] = self.autonomy_observation_cohort
+            self.autonomy_recovery_enabled = True
+            self.autonomy_recovery_tick = self.tick
+            self.autonomy_module_actions = 0
+            self.autonomy_harvest_attempts = 0
+            self.autonomy_harvest_successes = 0
+            if not isinstance(self.control_arbiter, AutonomyRecoveryArbiter):
+                self.control_arbiter = AutonomyRecoveryArbiter(self.control_arbiter)
+            details = {
+                "cohort_size": cohort_size,
+                "fraction": fraction,
+                "module": "independent-foraging-v1",
+            }
         else:
             raise ValueError(
                 "Unknown intervention. Expected disable-social-control, cut-social-connections, "
-                "shuffle-memory, freeze-genotype, or reverse-environment."
+                "shuffle-memory, freeze-genotype, reverse-environment, or restore-autonomy."
             )
-        self.intervention_history.append({"tick": self.tick, "type": canonical})
+        self.intervention_history.append(
+            {"tick": self.tick, "type": canonical, **details}
+        )
+
+    def register_autonomy_observation_cohort(
+        self,
+        entity_ids: np.ndarray,
+        *,
+        tick: int,
+    ) -> None:
+        """Track the same stable-ID cohort in treated and untreated branches."""
+        ids = np.asarray(entity_ids, dtype=np.uint64)
+        if ids.ndim != 1 or np.unique(ids).size != ids.size:
+            raise ValueError("autonomy observation cohort IDs must be unique and one-dimensional")
+        selected = np.isin(self.entities.entity_id, ids) & self.entities.alive
+        if np.count_nonzero(selected) != ids.size:
+            raise ValueError("autonomy observation cohort must reference living entities")
+        self.autonomy_observation_cohort.fill(False)
+        self.autonomy_observation_cohort[selected] = True
+        self.autonomy_recovery_cohort_ids = ids.copy()
+        self.autonomy_cohort_tick = int(tick)
 
     def _record_trajectories(
         self,
@@ -531,12 +609,19 @@ class Simulation:
                 record["contributor_subject_ids"] = [
                     int(subject_id) for subject_id in intents.contributor_subject_ids[row]
                 ]
+            if intents.contributor_controller_kinds is not None:
+                record["contributor_controller_kinds"] = [
+                    ControllerKind(int(kind)).name
+                    for kind in intents.contributor_controller_kinds[row]
+                ]
             if intents.contribution_weights is not None:
                 record["contribution_weights"] = [
                     float(weight) for weight in intents.contribution_weights[row]
                 ]
             if intents.heuristic_control is not None:
                 record["heuristic_control"] = bool(intents.heuristic_control[row])
+            if intents.autonomy_control is not None:
+                record["autonomy_control"] = bool(intents.autonomy_control[row])
             self._trajectory_file.write(json.dumps(record, ensure_ascii=False) + "\n")
         self._trajectory_file.flush()
 
@@ -630,6 +715,8 @@ class Simulation:
             lineage_subject_id=self.entities.lineage_subject_id[active],
             group_id=self.social.group_id[active],
             genotype=self.entities.genotype[active],
+            autonomy_restored=self.autonomy_restored[active],
+            autonomy_observation_cohort=self.autonomy_observation_cohort[active],
         )
 
     def step(self) -> StepStats:
@@ -713,7 +800,11 @@ class Simulation:
                 tick=self.tick,
                 retain_logits=self._trajectory_file is not None,
                 need_host_resource_gradient=(
-                    self.social_connections_enabled and self.tick % cfg.social.group_update_period == 0
+                    self.autonomy_recovery_enabled
+                    or (
+                        self.social_connections_enabled
+                        and self.tick % cfg.social.group_update_period == 0
+                    )
                 ),
                 entity_state_version=self.entity_device_version,
             )
@@ -767,11 +858,41 @@ class Simulation:
                     cfg.control.heuristic_social_guidance_weight,
                 ),
             )
+        if self.autonomy_recovery_enabled:
+            if resource_gradient is None:
+                raise RuntimeError("autonomy recovery requires physical resource gradients")
+            stats.autonomy_restored_active = int(
+                np.count_nonzero(self.autonomy_restored[active])
+            )
+            proposals = proposals + (
+                autonomy_recovery_control_proposal(
+                    body_proposal,
+                    ent.entity_id[active],
+                    self.autonomy_restored[active],
+                    ent.energy[active],
+                    local_resources[:, 0],
+                    (
+                        resource_gradient[0][active],
+                        resource_gradient[1][active],
+                    ),
+                    run_seed=cfg.run.seed,
+                    max_energy=cfg.entities.max_energy,
+                    activation_energy_fraction=(
+                        cfg.control.autonomy_activation_energy_fraction
+                    ),
+                    harvest_threshold=cfg.control.autonomy_harvest_threshold,
+                ),
+            )
         arbitration = self.control_arbiter.arbitrate(proposals)
         decision = arbitration.decision
         if arbitration.heuristic_applied is not None:
             stats.heuristic_guidance_actions = int(np.count_nonzero(arbitration.heuristic_applied))
             self.heuristic_guidance_actions += stats.heuristic_guidance_actions
+        if arbitration.autonomy_applied is not None:
+            stats.autonomy_module_actions = int(
+                np.count_nonzero(arbitration.autonomy_applied)
+            )
+            self.autonomy_module_actions += stats.autonomy_module_actions
         self.action_counts += np.bincount(decision.action, minlength=len(Action))
         stats.action_entropy = float(decision.entropy.mean())
         stats.signal_detection_rate = float(info.signal_mask.mean())
@@ -791,8 +912,10 @@ class Simulation:
             proposer_subject_id=arbitration.proposer_subject_id,
             controller_kind=arbitration.controller_kind,
             contributor_subject_ids=arbitration.contributor_subject_ids,
+            contributor_controller_kinds=arbitration.contributor_controller_kinds,
             contribution_weights=arbitration.contribution_weights,
             heuristic_control=arbitration.heuristic_applied,
+            autonomy_control=arbitration.autonomy_applied,
         )
         snapshot = ActionResolutionSnapshot(
             active=active,
@@ -817,6 +940,18 @@ class Simulation:
         share = resolution_plan.share
         signal_rows = resolution_plan.signal_rows
         birth_requests = resolution_plan.birth_requests
+        autonomy_control = (
+            intents.autonomy_control
+            if intents.autonomy_control is not None
+            else np.zeros(intents.action.size, dtype=bool)
+        )
+        autonomy_harvest = autonomy_control & (intents.action == int(Action.HARVEST))
+        stats.autonomy_harvest_attempts = int(np.count_nonzero(autonomy_harvest))
+        stats.autonomy_harvest_successes = int(
+            np.count_nonzero(autonomy_harvest & resolutions.success)
+        )
+        self.autonomy_harvest_attempts += stats.autonomy_harvest_attempts
+        self.autonomy_harvest_successes += stats.autonomy_harvest_successes
         stats.conflict_seconds = time.perf_counter() - phase_started
         self.last_intents = intents
         self.last_resolutions = resolutions
@@ -882,6 +1017,10 @@ class Simulation:
                 mutation_std=0.0 if self.freeze_genotype else None,
             )
             if newborns.size:
+                # Recovery is a treatment of the selected living cohort, not
+                # a hereditary trait in the current experiment.
+                self.autonomy_restored[newborns] = False
+                self.autonomy_observation_cohort[newborns] = False
                 self.social.reset_entities(newborns)
                 body_subjects, lineage_subjects = self.subjects.register_bodies(
                     newborns, ent.lineage_id, self.tick
@@ -929,6 +1068,8 @@ class Simulation:
         if dead.size:
             self.subjects.mark_dead(dead, self.tick)
             ent.commit_deaths(death_events)
+            self.autonomy_restored[dead] = False
+            self.autonomy_observation_cohort[dead] = False
             self.social.group_id[dead] = 0
             self.social.group_age[dead] = 0
             stats.deaths = int(dead.size)
@@ -1054,6 +1195,27 @@ class Simulation:
         else:
             mean_energy = mean_integrity = mean_age = social_dependency = grouped_fraction = 0.0
             lineage_count = 0
+        autonomy_cohort_size = int(self.autonomy_recovery_cohort_ids.size)
+        autonomy_restored_alive = int(
+            np.count_nonzero(self.autonomy_restored & ent.alive)
+        )
+        autonomy_cohort = self.autonomy_observation_cohort & ent.alive
+        autonomy_cohort_alive = int(np.count_nonzero(autonomy_cohort))
+        autonomy_cohort_mean_energy = (
+            float(ent.energy[autonomy_cohort].mean())
+            if autonomy_cohort_alive
+            else 0.0
+        )
+        autonomy_cohort_mean_harvested = (
+            float(ent.harvested_energy_total[autonomy_cohort].mean())
+            if autonomy_cohort_alive
+            else 0.0
+        )
+        autonomy_harvest_success_rate = (
+            self.autonomy_harvest_successes / self.autonomy_harvest_attempts
+            if self.autonomy_harvest_attempts
+            else 0.0
+        )
         row: dict[str, float | int] = {
             "tick": self.tick,
             "alive": alive_count,
@@ -1071,6 +1233,30 @@ class Simulation:
             "social_dependency_proxy": social_dependency,
             "move_social_fraction": stats.move_social_fraction,
             "heuristic_guidance_actions_step": stats.heuristic_guidance_actions,
+            "autonomy_restored_alive": autonomy_restored_alive,
+            "autonomy_cohort_alive": autonomy_cohort_alive,
+            "autonomy_cohort_survival_fraction": (
+                autonomy_cohort_alive / autonomy_cohort_size
+                if autonomy_cohort_size
+                else 0.0
+            ),
+            "autonomy_cohort_mean_energy": autonomy_cohort_mean_energy,
+            "autonomy_cohort_mean_harvested_energy_total": (
+                autonomy_cohort_mean_harvested
+            ),
+            "autonomy_module_actions_step": stats.autonomy_module_actions,
+            "autonomy_module_use_fraction_step": (
+                stats.autonomy_module_actions / stats.autonomy_restored_active
+                if stats.autonomy_restored_active
+                else 0.0
+            ),
+            "autonomy_harvest_attempts_step": stats.autonomy_harvest_attempts,
+            "autonomy_harvest_success_rate_step": (
+                stats.autonomy_harvest_successes / stats.autonomy_harvest_attempts
+                if stats.autonomy_harvest_attempts
+                else 0.0
+            ),
+            "autonomy_independent_harvest_success_rate": autonomy_harvest_success_rate,
             "harvested_energy_step": stats.harvested_energy,
             "shared_energy_step": stats.shared_energy,
             "signals_step": stats.signals,
@@ -1196,12 +1382,38 @@ class Simulation:
                 "freeze_genotype": self.freeze_genotype,
                 "environment_spatial_reversed": self.environment.spatial_reversed,
                 "history": self.intervention_history,
+                "autonomy_recovery_enabled": self.autonomy_recovery_enabled,
             },
             "control": {
                 "arbiter": type(self.control_arbiter).__name__,
+                "base_arbiter": (
+                    type(self.control_arbiter.base).__name__
+                    if isinstance(self.control_arbiter, AutonomyRecoveryArbiter)
+                    else type(self.control_arbiter).__name__
+                ),
                 "heuristic_social_guidance_enabled": self.cfg.control.heuristic_social_guidance,
                 "heuristic_social_guidance_weight": self.cfg.control.heuristic_social_guidance_weight,
                 "heuristic_guidance_actions": self.heuristic_guidance_actions,
+                "autonomy_recovery": {
+                    "module": "independent-foraging-v1",
+                    "treatment_tick": self.autonomy_recovery_tick,
+                    "cohort_tick": self.autonomy_cohort_tick,
+                    "treated": self.autonomy_recovery_enabled,
+                    "configured_fraction": self.cfg.control.autonomy_recovery_fraction,
+                    "cohort_size": int(self.autonomy_recovery_cohort_ids.size),
+                    "cohort_entity_ids": self.autonomy_recovery_cohort_ids.tolist(),
+                    "cohort_alive": int(
+                        np.count_nonzero(
+                            self.autonomy_observation_cohort & self.entities.alive
+                        )
+                    ),
+                    "treated_alive": int(
+                        np.count_nonzero(self.autonomy_restored & self.entities.alive)
+                    ),
+                    "module_actions": self.autonomy_module_actions,
+                    "harvest_attempts": self.autonomy_harvest_attempts,
+                    "harvest_successes": self.autonomy_harvest_successes,
+                },
             },
             "group_planning": {
                 "planner": type(self.group_label_planner).__name__,

@@ -25,6 +25,7 @@ class Stream(IntEnum):
     RELATION_UPDATE = 70
     GROUP_FORMATION = 71
     CAUSAL_INTERVENTION = 80
+    AUTONOMY_RECOVERY = 81
 
 
 @dataclass(frozen=True)

@@ -9,6 +9,7 @@ from typing import Any, Protocol
 import numpy as np
 
 from .policy import Action, PolicyDecision
+from .random_api import RandomContext, Stream, uniform01
 
 
 class ControllerKind(IntEnum):
@@ -18,6 +19,7 @@ class ControllerKind(IntEnum):
     INSTITUTION = 3
     HERO = 4
     EXTERNAL = 5
+    AUTONOMY = 6
 
 
 @dataclass(frozen=True)
@@ -46,8 +48,10 @@ class ArbitrationResult:
     # primary proposer above remains the dominant contributor for consumers
     # that only understand one controlling subject.
     contributor_subject_ids: np.ndarray | None = None
+    contributor_controller_kinds: np.ndarray | None = None
     contribution_weights: np.ndarray | None = None
     heuristic_applied: np.ndarray | None = None
+    autonomy_applied: np.ndarray | None = None
 
 
 class ControlArbiter(Protocol):
@@ -92,6 +96,7 @@ class SingleProposalControlArbiter:
             proposer_subject_id=proposal.proposer_subject_id,
             controller_kind=proposal.controller_kind,
             contributor_subject_ids=proposal.proposer_subject_id[:, None],
+            contributor_controller_kinds=proposal.controller_kind[:, None],
             contribution_weights=np.ones((count, 1), dtype=np.float32),
             heuristic_applied=np.zeros(count, dtype=bool),
         )
@@ -152,6 +157,206 @@ def social_guidance_control_proposal(
     )
 
 
+def autonomy_recovery_control_proposal(
+    body_proposal: ControlProposalBatch,
+    stable_entity_id: Any,
+    restored: Any,
+    energy: Any,
+    local_resource: Any,
+    resource_gradient: tuple[Any, Any],
+    *,
+    run_seed: int,
+    max_energy: float,
+    activation_energy_fraction: float,
+    harvest_threshold: float,
+) -> ControlProposalBatch:
+    """Build the first explicit, heuristic independent-foraging module.
+
+    The replacement decision sees only carrier energy, local physical
+    resource and its gradient.  It deliberately excludes message contents,
+    group direction, partners and memory, but uses the body's already chosen
+    action category as an activation trigger.  Restored rows activate when a
+    social action was selected or energy is low; fleeing is never overridden
+    by the current foraging-only module.
+    """
+    count = body_proposal.carrier_index.size
+    stable_ids = np.asarray(stable_entity_id, dtype=np.uint64)
+    restored_rows = np.asarray(restored, dtype=bool)
+    current_energy = np.asarray(energy, dtype=np.float32)
+    resource = np.asarray(local_resource, dtype=np.float32)
+    gradient_x = np.asarray(resource_gradient[0], dtype=np.float32)
+    gradient_y = np.asarray(resource_gradient[1], dtype=np.float32)
+    expected_shape = (count,)
+    if any(
+        value.shape != expected_shape
+        for value in (
+            stable_ids,
+            restored_rows,
+            current_energy,
+            resource,
+            gradient_x,
+            gradient_y,
+        )
+    ):
+        raise ValueError("autonomy recovery inputs must align with body proposal carriers")
+
+    body_action = np.asarray(body_proposal.decision.action, dtype=np.int16)
+    social_action = np.isin(
+        body_action,
+        (int(Action.MOVE_SOCIAL), int(Action.SHARE), int(Action.SIGNAL)),
+    )
+    low_energy = current_energy < max_energy * activation_energy_fraction
+    activated = restored_rows & (social_action | (low_energy & (body_action != int(Action.FLEE))))
+    harvest = (resource > harvest_threshold) & (current_energy < max_energy - 1e-6)
+    action = np.where(harvest, int(Action.HARVEST), int(Action.MOVE_RESOURCE)).astype(
+        np.int16
+    )
+
+    magnitude = np.hypot(gradient_x, gradient_y)
+    fallback = magnitude < 1e-6
+    angle = uniform01(
+        RandomContext(
+            run_seed,
+            body_proposal.submit_tick,
+            phase=52,
+            stream=Stream.AUTONOMY_RECOVERY,
+        ),
+        stable_ids,
+        draw_index=0,
+    ) * (2.0 * np.pi)
+    direction_x = np.where(fallback, np.cos(angle), gradient_x)
+    direction_y = np.where(fallback, np.sin(angle), gradient_y)
+    direction_norm = np.maximum(np.hypot(direction_x, direction_y), 1e-6)
+    direction_x = (direction_x / direction_norm).astype(np.float32)
+    direction_y = (direction_y / direction_norm).astype(np.float32)
+    autonomous_decision = replace(
+        body_proposal.decision,
+        action=action,
+        probability=np.ones(count, dtype=np.float32),
+        entropy=np.zeros(count, dtype=np.float32),
+        direction_x=direction_x,
+        direction_y=direction_y,
+        selected_partner=np.full(count, -1, dtype=np.int32),
+    )
+    return ControlProposalBatch(
+        carrier_index=body_proposal.carrier_index,
+        proposer_subject_id=body_proposal.proposer_subject_id,
+        controller_kind=np.full(count, ControllerKind.AUTONOMY, dtype=np.uint8),
+        decision=autonomous_decision,
+        submit_tick=body_proposal.submit_tick,
+        weight=activated.astype(np.float32),
+    )
+
+
+class AutonomyRecoveryArbiter:
+    """Overlay a restored module on any existing controller arbitration.
+
+    This decorator leaves the base arbiter extensible: body-only and
+    body/social arbitration keep their own semantics, then an active restored
+    module becomes the sole recorded controller for that row.
+    """
+
+    is_heuristic = True
+
+    def __init__(self, base: ControlArbiter) -> None:
+        self.base = base
+
+    def arbitrate(self, proposals: tuple[ControlProposalBatch, ...]) -> ArbitrationResult:
+        autonomy_positions = [
+            index
+            for index, proposal in enumerate(proposals)
+            if proposal.controller_kind.size
+            and np.all(proposal.controller_kind == int(ControllerKind.AUTONOMY))
+        ]
+        if len(autonomy_positions) != 1:
+            raise ValueError("autonomy recovery requires exactly one autonomy proposal batch")
+        autonomy_index = autonomy_positions[0]
+        autonomy = proposals[autonomy_index]
+        base_proposals = proposals[:autonomy_index] + proposals[autonomy_index + 1 :]
+        base = self.base.arbitrate(base_proposals)
+        if not np.array_equal(base_proposals[0].carrier_index, autonomy.carrier_index):
+            raise ValueError("autonomy recovery carriers must match base control carriers")
+        if autonomy.weight is None:
+            raise ValueError("autonomy recovery proposal requires an activation mask")
+        applied = np.asarray(autonomy.weight, dtype=np.float32) > 0.0
+        count = applied.size
+        if autonomy.weight.shape != (count,):
+            raise ValueError("autonomy recovery weights must align with carriers")
+
+        def choose(base_value: Any, autonomy_value: Any) -> np.ndarray:
+            original = np.asarray(base_value)
+            replacement = np.asarray(autonomy_value)
+            if original.shape != replacement.shape:
+                raise ValueError("autonomy decision shape must match base decision")
+            selector = applied.reshape((count,) + (1,) * (original.ndim - 1))
+            return np.where(selector, replacement, original)
+
+        decision = PolicyDecision(
+            action=choose(base.decision.action, autonomy.decision.action),
+            probability=choose(base.decision.probability, autonomy.decision.probability),
+            entropy=choose(base.decision.entropy, autonomy.decision.entropy),
+            direction_x=choose(base.decision.direction_x, autonomy.decision.direction_x),
+            direction_y=choose(base.decision.direction_y, autonomy.decision.direction_y),
+            selected_partner=choose(
+                base.decision.selected_partner,
+                autonomy.decision.selected_partner,
+            ),
+            # Body logits remain an audit of the displaced policy proposal;
+            # module application is carried by ``autonomy_applied``.
+            logits=np.asarray(base.decision.logits),
+        )
+        base_subjects = (
+            np.asarray(base.contributor_subject_ids, dtype=np.uint64)
+            if base.contributor_subject_ids is not None
+            else np.asarray(base.proposer_subject_id, dtype=np.uint64)[:, None]
+        )
+        base_weights = (
+            np.asarray(base.contribution_weights, dtype=np.float32)
+            if base.contribution_weights is not None
+            else np.ones((count, 1), dtype=np.float32)
+        )
+        base_kinds = (
+            np.asarray(base.contributor_controller_kinds, dtype=np.uint8)
+            if base.contributor_controller_kinds is not None
+            else np.asarray(base.controller_kind, dtype=np.uint8)[:, None]
+        )
+        contributor_subject_ids = np.column_stack(
+            (base_subjects, autonomy.proposer_subject_id)
+        )
+        contributor_controller_kinds = np.column_stack(
+            (base_kinds, autonomy.controller_kind)
+        )
+        contribution_weights = np.column_stack(
+            (base_weights, np.zeros(count, dtype=np.float32))
+        )
+        contribution_weights[applied, :-1] = 0.0
+        contribution_weights[applied, -1] = 1.0
+        heuristic_applied = (
+            np.asarray(base.heuristic_applied, dtype=bool).copy()
+            if base.heuristic_applied is not None
+            else np.zeros(count, dtype=bool)
+        )
+        heuristic_applied[applied] = False
+        return ArbitrationResult(
+            decision=decision,
+            proposer_subject_id=np.where(
+                applied,
+                autonomy.proposer_subject_id,
+                base.proposer_subject_id,
+            ).astype(np.uint64, copy=False),
+            controller_kind=np.where(
+                applied,
+                autonomy.controller_kind,
+                base.controller_kind,
+            ).astype(np.uint8, copy=False),
+            contributor_subject_ids=contributor_subject_ids,
+            contributor_controller_kinds=contributor_controller_kinds,
+            contribution_weights=contribution_weights,
+            heuristic_applied=heuristic_applied,
+            autonomy_applied=applied,
+        )
+
+
 class HeuristicSocialGuidanceArbiter:
     """Blend a social group's direction into a body resource-move proposal.
 
@@ -203,6 +408,9 @@ class HeuristicSocialGuidanceArbiter:
         decision = replace(body.decision, direction_x=direction_x, direction_y=direction_y)
 
         contributor_subject_ids = np.column_stack((body.proposer_subject_id, social.proposer_subject_id))
+        contributor_controller_kinds = np.column_stack(
+            (body.controller_kind, social.controller_kind)
+        )
         contribution_weights = np.zeros((count, 2), dtype=np.float32)
         contribution_weights[:, 0] = 1.0
         contribution_weights[guided, 0] = 1.0 - weight[guided]
@@ -221,6 +429,7 @@ class HeuristicSocialGuidanceArbiter:
             proposer_subject_id=proposer_subject_id,
             controller_kind=controller_kind,
             contributor_subject_ids=contributor_subject_ids,
+            contributor_controller_kinds=contributor_controller_kinds,
             contribution_weights=contribution_weights,
             heuristic_applied=guided,
         )
@@ -228,6 +437,8 @@ class HeuristicSocialGuidanceArbiter:
 
 __all__ = [
     "ArbitrationResult",
+    "AutonomyRecoveryArbiter",
+    "autonomy_recovery_control_proposal",
     "body_control_proposal",
     "ControlArbiter",
     "ControllerKind",

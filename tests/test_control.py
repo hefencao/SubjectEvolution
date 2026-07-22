@@ -5,9 +5,11 @@ import pytest
 
 from subject_evolution.control import (
     ArbitrationResult,
+    AutonomyRecoveryArbiter,
     ControllerKind,
     HeuristicSocialGuidanceArbiter,
     SingleProposalControlArbiter,
+    autonomy_recovery_control_proposal,
     body_control_proposal,
     social_guidance_control_proposal,
 )
@@ -45,6 +47,10 @@ def test_single_body_control_proposal_preserves_decision_and_provenance() -> Non
         np.asarray([ControllerKind.BODY, ControllerKind.BODY], dtype=np.uint8),
     )
     np.testing.assert_array_equal(result.contributor_subject_ids[:, 0], result.proposer_subject_id)
+    np.testing.assert_array_equal(
+        result.contributor_controller_kinds[:, 0],
+        result.controller_kind,
+    )
     np.testing.assert_array_equal(result.contribution_weights, np.ones((2, 1), dtype=np.float32))
 
 
@@ -86,9 +92,79 @@ def test_heuristic_social_guidance_only_blends_resource_move_direction() -> None
         result.contributor_subject_ids,
         np.asarray([[901, 801], [902, 802]], dtype=np.uint64),
     )
+    np.testing.assert_array_equal(
+        result.contributor_controller_kinds,
+        np.asarray(
+            [[ControllerKind.BODY, ControllerKind.SOCIAL]] * 2,
+            dtype=np.uint8,
+        ),
+    )
     np.testing.assert_allclose(
         result.contribution_weights,
         np.asarray([[0.75, 0.25], [1.0, 0.0]], dtype=np.float32),
+    )
+
+
+def test_autonomy_recovery_overlays_only_eligible_restored_rows() -> None:
+    decision = _decision(4)
+    decision.action[:] = np.asarray(
+        [Action.MOVE_SOCIAL, Action.FLEE, Action.REST, Action.REST],
+        dtype=np.int16,
+    )
+    body = body_control_proposal(
+        np.asarray([4, 2, 7, 9], dtype=np.int32),
+        np.asarray([901, 902, 903, 904], dtype=np.uint64),
+        decision,
+        tick=7,
+    )
+    autonomy = autonomy_recovery_control_proposal(
+        body,
+        np.asarray([41, 22, 73, 94], dtype=np.uint64),
+        np.ones(4, dtype=bool),
+        np.asarray([4.0, 0.2, 0.2, 4.0], dtype=np.float32),
+        np.asarray([1.0, 1.0, 0.0, 0.0], dtype=np.float32),
+        (
+            np.asarray([1.0, 0.0, 0.0, 1.0], dtype=np.float32),
+            np.asarray([0.0, 1.0, 0.0, 0.0], dtype=np.float32),
+        ),
+        run_seed=42,
+        max_energy=5.0,
+        activation_energy_fraction=0.35,
+        harvest_threshold=0.05,
+    )
+
+    result = AutonomyRecoveryArbiter(SingleProposalControlArbiter()).arbitrate(
+        (body, autonomy)
+    )
+
+    np.testing.assert_array_equal(
+        result.autonomy_applied,
+        np.asarray([True, False, True, False]),
+    )
+    np.testing.assert_array_equal(
+        result.decision.action,
+        np.asarray([Action.HARVEST, Action.FLEE, Action.MOVE_RESOURCE, Action.REST]),
+    )
+    np.testing.assert_array_equal(
+        result.controller_kind,
+        np.asarray(
+            [ControllerKind.AUTONOMY, ControllerKind.BODY, ControllerKind.AUTONOMY, ControllerKind.BODY],
+            dtype=np.uint8,
+        ),
+    )
+    np.testing.assert_array_equal(
+        result.contributor_controller_kinds,
+        np.asarray(
+            [[ControllerKind.BODY, ControllerKind.AUTONOMY]] * 4,
+            dtype=np.uint8,
+        ),
+    )
+    np.testing.assert_allclose(
+        result.contribution_weights,
+        np.asarray(
+            [[0.0, 1.0], [1.0, 0.0], [0.0, 1.0], [1.0, 0.0]],
+            dtype=np.float32,
+        ),
     )
 
 

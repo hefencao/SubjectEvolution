@@ -33,8 +33,10 @@ class ActionIntentBatch:
     proposer_subject_id: np.ndarray | None = None
     controller_kind: np.ndarray | None = None
     contributor_subject_ids: np.ndarray | None = None
+    contributor_controller_kinds: np.ndarray | None = None
     contribution_weights: np.ndarray | None = None
     heuristic_control: np.ndarray | None = None
+    autonomy_control: np.ndarray | None = None
 
 
 @dataclass
@@ -57,8 +59,10 @@ def build_intents(
     proposer_subject_id: np.ndarray | None = None,
     controller_kind: np.ndarray | None = None,
     contributor_subject_ids: np.ndarray | None = None,
+    contributor_controller_kinds: np.ndarray | None = None,
     contribution_weights: np.ndarray | None = None,
     heuristic_control: np.ndarray | None = None,
+    autonomy_control: np.ndarray | None = None,
 ) -> ActionIntentBatch:
     """Turn policy output into stable, auditable action intents.
 
@@ -79,24 +83,38 @@ def build_intents(
         if contributor_subject_ids is not None
         else None
     )
+    contributor_kinds = (
+        np.asarray(contributor_controller_kinds, dtype=np.uint8)
+        if contributor_controller_kinds is not None
+        else None
+    )
     weights = (
         np.asarray(contribution_weights, dtype=np.float32)
         if contribution_weights is not None
         else None
     )
     heuristic = np.asarray(heuristic_control, dtype=bool) if heuristic_control is not None else None
+    autonomy = np.asarray(autonomy_control, dtype=bool) if autonomy_control is not None else None
     if proposer is not None and proposer.shape != carrier_id.shape:
         raise ValueError("proposer subject ids must align with active carriers")
     if kind is not None and kind.shape != carrier_id.shape:
         raise ValueError("controller kinds must align with active carriers")
     if contributors is not None and (contributors.ndim != 2 or contributors.shape[0] != carrier_id.size):
         raise ValueError("control contributors must have one row per active carrier")
+    if contributor_kinds is not None and (
+        contributors is None or contributor_kinds.shape != contributors.shape
+    ):
+        raise ValueError("contributor controller kinds must align with contributors")
     if weights is not None and (weights.ndim != 2 or weights.shape != (carrier_id.size, contributors.shape[1] if contributors is not None else 0)):
         raise ValueError("control contribution weights must align with contributors")
     if (contributors is None) != (weights is None):
         raise ValueError("control contributors and weights must be supplied together")
+    if (contributors is None) != (contributor_kinds is None):
+        raise ValueError("control contributors and controller kinds must be supplied together")
     if heuristic is not None and heuristic.shape != carrier_id.shape:
         raise ValueError("heuristic control flags must align with active carriers")
+    if autonomy is not None and autonomy.shape != carrier_id.shape:
+        raise ValueError("autonomy control flags must align with active carriers")
     return ActionIntentBatch(
         intent_id=carrier_id ^ tick_bits,
         carrier_index=carriers,
@@ -110,8 +128,10 @@ def build_intents(
         proposer_subject_id=proposer,
         controller_kind=kind,
         contributor_subject_ids=contributors,
+        contributor_controller_kinds=contributor_kinds,
         contribution_weights=weights,
         heuristic_control=heuristic,
+        autonomy_control=autonomy,
     )
 
 

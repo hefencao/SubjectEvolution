@@ -459,6 +459,92 @@ def test_paired_counterfactual_can_branch_after_shared_prehistory(tmp_path):
     assert intervention_metadata["interventions"]["environment_spatial_reversed"]
 
 
+def test_autonomy_recovery_selects_stable_cohort_and_records_use(tmp_path):
+    cfg = load_config(_config(tmp_path))
+    sim = Simulation(cfg, tmp_path / "autonomy")
+    sim.apply_intervention("cut-social-connections")
+    sim.apply_intervention("restore-autonomy")
+    selected_ids = sim.entities.entity_id[sim.autonomy_restored].copy()
+    assert selected_ids.size == 16
+
+    def social_moves(**kwargs):
+        count = kwargs["active"].size
+        from subject_evolution.policy import PolicyDecision
+
+        return PolicyDecision(
+            action=np.full(count, 2, dtype=np.int16),
+            probability=np.ones(count, dtype=np.float32),
+            entropy=np.zeros(count, dtype=np.float32),
+            direction_x=np.zeros(count, dtype=np.float32),
+            direction_y=np.ones(count, dtype=np.float32),
+            selected_partner=np.full(count, -1, dtype=np.int32),
+            logits=np.zeros((count, 8), dtype=np.float32),
+        )
+
+    sim.policy.decide = social_moves
+    try:
+        stats = sim.step()
+        assert sim.last_intents is not None
+        assert sim.last_intents.autonomy_control is not None
+        assert np.count_nonzero(sim.last_intents.autonomy_control) == selected_ids.size
+        assert stats.autonomy_module_actions == selected_ids.size
+        assert stats.autonomy_harvest_attempts == selected_ids.size
+        assert stats.autonomy_harvest_successes > 0
+        row = sim.metric_row(stats, 0.0)
+        assert row["autonomy_cohort_survival_fraction"] == 1.0
+        assert row["autonomy_module_use_fraction_step"] == 1.0
+        assert row["autonomy_independent_harvest_success_rate"] > 0.0
+    finally:
+        sim.metrics.close()
+
+
+def test_paired_recovery_supports_a_shared_social_cut(tmp_path):
+    cfg = load_config(_config(tmp_path))
+    sim = Simulation(cfg, tmp_path / "recovery" / "baseline")
+    result = run_paired(
+        sim,
+        "restore-autonomy",
+        tmp_path / "recovery",
+        intervention_tick=2,
+        shared_intervention="cut-social-connections",
+        shared_intervention_tick=1,
+    )
+    baseline_metadata = json.loads(
+        (tmp_path / "recovery" / "baseline" / "run_metadata.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    intervention_metadata = json.loads(
+        (tmp_path / "recovery" / "intervention" / "run_metadata.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    summary = json.loads(
+        (tmp_path / "recovery" / "counterfactual_summary.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert [item["type"] for item in baseline_metadata["interventions"]["history"]] == [
+        "cut-social-connections"
+    ]
+    assert [item["type"] for item in intervention_metadata["interventions"]["history"]] == [
+        "cut-social-connections",
+        "restore-autonomy",
+    ]
+    baseline_cohort = baseline_metadata["control"]["autonomy_recovery"]
+    intervention_cohort = intervention_metadata["control"]["autonomy_recovery"]
+    assert baseline_cohort["cohort_entity_ids"] == intervention_cohort["cohort_entity_ids"]
+    assert baseline_cohort["cohort_size"] == 16
+    assert baseline_cohort["treated"] is False
+    assert intervention_cohort["treated"] is True
+    assert intervention_metadata["control"]["autonomy_recovery"]["cohort_size"] == 16
+    assert summary["shared_intervention_tick"] == 1
+    assert summary["pre_intervention"]["autonomy_cohort_alive"] == 16
+    assert result.scientific_warnings == tuple(summary["scientific_warnings"])
+    assert any("social guidance is disabled" in warning for warning in result.scientific_warnings)
+
+
 def test_run_finishes_at_absolute_horizon_after_manual_steps(tmp_path):
     cfg = load_config(_config(tmp_path))
     sim = Simulation(cfg, tmp_path / "absolute-horizon")

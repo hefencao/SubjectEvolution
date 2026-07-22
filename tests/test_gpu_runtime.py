@@ -118,6 +118,42 @@ def test_gpu_paired_run_branches_after_shared_device_prehistory(tmp_path):
 
 
 @pytest.mark.skipif(not cupy_available(), reason="CuPy with a usable CUDA device is unavailable")
+def test_gpu_runtime_matches_cpu_with_restored_autonomy_module(tmp_path):
+    cfg = load_config("configs/mvp_small.json")
+    cfg = replace(
+        cfg,
+        run=replace(cfg.run, ticks=3, metrics_period=99, checkpoint_period=99),
+    )
+    cpu = Simulation(cfg, tmp_path / "cpu-autonomy", backend="cpu")
+    gpu = Simulation(cfg, tmp_path / "gpu-autonomy", backend="gpu")
+    for simulation in (cpu, gpu):
+        simulation.apply_intervention("cut-social-connections")
+        simulation.apply_intervention("restore-autonomy")
+    try:
+        np.testing.assert_array_equal(cpu.autonomy_restored, gpu.autonomy_restored)
+        for _ in range(3):
+            cpu_stats = cpu.step()
+            gpu_stats = gpu.step()
+            assert cpu_stats.autonomy_module_actions == gpu_stats.autonomy_module_actions
+            assert cpu_stats.autonomy_harvest_attempts == gpu_stats.autonomy_harvest_attempts
+            assert cpu_stats.autonomy_harvest_successes == gpu_stats.autonomy_harvest_successes
+
+        assert cpu.last_intents is not None
+        assert gpu.last_intents is not None
+        np.testing.assert_array_equal(
+            cpu.last_intents.autonomy_control,
+            gpu.last_intents.autonomy_control,
+        )
+        np.testing.assert_array_equal(cpu.action_counts, gpu.action_counts)
+        np.testing.assert_allclose(cpu.entities.x, gpu.entities.x, rtol=0.0, atol=5e-4)
+        np.testing.assert_allclose(cpu.entities.y, gpu.entities.y, rtol=0.0, atol=5e-4)
+        np.testing.assert_allclose(cpu.entities.energy, gpu.entities.energy, rtol=0.0, atol=2e-5)
+    finally:
+        cpu.metrics.close()
+        gpu.metrics.close()
+
+
+@pytest.mark.skipif(not cupy_available(), reason="CuPy with a usable CUDA device is unavailable")
 def test_persistent_entity_mirror_matches_every_authoritative_commit(tmp_path):
     cfg = load_config("configs/mvp_small.json")
     cfg = replace(

@@ -72,6 +72,9 @@
   },
   "control": {
     "heuristic_social_guidance": false,
-    "heuristic_social_guidance_weight": 0.25
+    "heuristic_social_guidance_weight": 0.25,
+    "autonomy_recovery_fraction": 0.25,
+    "autonomy_activation_energy_fraction": 0.35,
+    "autonomy_harvest_threshold": 0.05
   }
 }
