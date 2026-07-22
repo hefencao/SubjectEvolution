@@ -9,6 +9,7 @@ import pytest
 
 from subject_evolution.backend import cupy_available
 from subject_evolution.config import load_config
+from subject_evolution.counterfactual import run_paired
 from subject_evolution.environment import Environment
 from subject_evolution.execution import (
     ActionResolutionSnapshot,
@@ -58,6 +59,62 @@ def test_gpu_runtime_preserves_small_world_actions_and_state(tmp_path):
     finally:
         cpu.metrics.close()
         gpu.metrics.close()
+
+
+@pytest.mark.skipif(not cupy_available(), reason="CuPy with a usable CUDA device is unavailable")
+def test_gpu_runtime_preserves_parity_after_environment_reversal(tmp_path):
+    cfg = load_config("configs/mvp_small.json")
+    cfg = replace(
+        cfg,
+        run=replace(cfg.run, ticks=4, metrics_period=99, checkpoint_period=99),
+    )
+    cpu = Simulation(cfg, tmp_path / "cpu-reversal", backend="cpu")
+    gpu = Simulation(cfg, tmp_path / "gpu-reversal", backend="gpu")
+    try:
+        for _ in range(2):
+            cpu.step()
+            gpu.step()
+        cpu.apply_intervention("reverse-environment")
+        gpu.apply_intervention("reverse-environment")
+        assert cpu.environment.spatial_reversed
+        assert gpu.environment.spatial_reversed
+        assert gpu.gpu_runtime.environment.spatial_reversed
+
+        for _ in range(2):
+            cpu.step()
+            gpu.step()
+
+        assert np.array_equal(cpu.entities.alive, gpu.entities.alive)
+        assert np.array_equal(cpu.action_counts, gpu.action_counts)
+        np.testing.assert_allclose(cpu.entities.x, gpu.entities.x, rtol=0.0, atol=5e-4)
+        np.testing.assert_allclose(cpu.entities.y, gpu.entities.y, rtol=0.0, atol=5e-4)
+        np.testing.assert_allclose(cpu.entities.energy, gpu.entities.energy, rtol=0.0, atol=2e-5)
+        np.testing.assert_allclose(cpu.environment.resources, gpu.environment.resources, rtol=0.0, atol=2e-4)
+        np.testing.assert_allclose(cpu.environment.hazard, gpu.environment.hazard, rtol=0.0, atol=3e-5)
+    finally:
+        cpu.metrics.close()
+        gpu.metrics.close()
+
+
+@pytest.mark.skipif(not cupy_available(), reason="CuPy with a usable CUDA device is unavailable")
+def test_gpu_paired_run_branches_after_shared_device_prehistory(tmp_path):
+    cfg = load_config("configs/mvp_small.json")
+    cfg = replace(
+        cfg,
+        run=replace(cfg.run, ticks=4, metrics_period=99, checkpoint_period=99),
+    )
+    simulation = Simulation(cfg, tmp_path / "gpu-paired" / "baseline", backend="gpu")
+    result = run_paired(
+        simulation,
+        "reverse-environment",
+        tmp_path / "gpu-paired",
+        intervention_tick=2,
+    )
+
+    assert result.pre_intervention["tick"] == 2
+    assert result.baseline["tick"] == 4
+    assert result.intervention["tick"] == 4
+    assert not simulation.environment.spatial_reversed
 
 
 @pytest.mark.skipif(not cupy_available(), reason="CuPy with a usable CUDA device is unavailable")

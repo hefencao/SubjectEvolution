@@ -401,6 +401,7 @@ class Simulation:
         self.social_connections_enabled = True
         self.direct_messages_enabled = True
         self.freeze_genotype = False
+        self.intervention_history: list[dict[str, int | str]] = []
         # Interactive ``step()`` calls keep host field mirrors current.  A
         # monolithic ``run()`` can defer that costly device->host copy until
         # completion because every intervening field consumer is device-side.
@@ -450,6 +451,7 @@ class Simulation:
         branch.social_connections_enabled = self.social_connections_enabled
         branch.direct_messages_enabled = self.direct_messages_enabled
         branch.freeze_genotype = self.freeze_genotype
+        branch.intervention_history = copy.deepcopy(self.intervention_history)
         if branch.gpu_runtime is not None:
             branch.gpu_runtime.sync_from_host(branch.environment, branch.information)
             branch.gpu_runtime.sync_entity_from_host(
@@ -464,8 +466,10 @@ class Simulation:
         normalized = intervention.strip().lower().replace("_", "-")
         active = np.flatnonzero(self.entities.alive).astype(np.int32)
         if normalized in {"disable-social-control", "social-control-off"}:
+            canonical = "disable-social-control"
             self.social_control_enabled = False
         elif normalized in {"cut-social-connections", "cut-social"}:
+            canonical = "cut-social-connections"
             self.social_connections_enabled = False
             self.direct_messages_enabled = False
             self.social.reset_entities(active)
@@ -473,6 +477,7 @@ class Simulation:
                 self.gpu_runtime.mark_social_state_dirty()
             self.information.pending_messages.clear()
         elif normalized == "shuffle-memory":
+            canonical = "shuffle-memory"
             ids = self.entities.entity_id[active]
             ctx = RandomContext(self.cfg.run.seed, self.tick, phase=90, stream=Stream.CAUSAL_INTERVENTION)
             order = np.argsort(uniform01(ctx, ids, draw_index=0), kind="stable")
@@ -480,12 +485,19 @@ class Simulation:
             if self.gpu_runtime is not None:
                 self.gpu_runtime.mark_entity_static_dirty()
         elif normalized in {"freeze-genotype", "freeze-genetic-expression"}:
+            canonical = "freeze-genotype"
             self.freeze_genotype = True
+        elif normalized in {"reverse-environment", "environment-reversal"}:
+            canonical = "reverse-environment"
+            self.environment.reverse_spatial_orientation()
+            if self.gpu_runtime is not None:
+                self.gpu_runtime.reverse_environment()
         else:
             raise ValueError(
                 "Unknown intervention. Expected disable-social-control, cut-social-connections, "
-                "shuffle-memory, or freeze-genotype."
+                "shuffle-memory, freeze-genotype, or reverse-environment."
             )
+        self.intervention_history.append({"tick": self.tick, "type": canonical})
 
     def _record_trajectories(
         self,
@@ -1087,10 +1099,22 @@ class Simulation:
         row.update(self.subjects.summary())
         return row
 
-    def run(self) -> dict[str, float | int]:
+    def run(self, until_tick: int | None = None) -> dict[str, float | int]:
+        """Advance to an absolute tick and finalize this run's outputs.
+
+        ``until_tick`` is absolute rather than a step count so a simulation
+        can be advanced to a counterfactual branch point with ``step()`` and
+        then finish at the configured horizon without extending the run.
+        """
+        target_tick = self.cfg.run.ticks if until_tick is None else int(until_tick)
+        if target_tick < self.tick:
+            raise ValueError(
+                f"until_tick {target_tick} precedes current tick {self.tick}"
+            )
         started = time.perf_counter()
         window_started = started
-        window_start_tick = 0
+        run_start_tick = self.tick
+        window_start_tick = self.tick
         final_row: dict[str, float | int] = {}
         last_stats: StepStats | None = None
         last_step_seconds = 0.0
@@ -1098,13 +1122,16 @@ class Simulation:
         if self.gpu_runtime is not None:
             self._defer_gpu_field_sync = True
         try:
-            for _ in range(self.cfg.run.ticks):
+            for _ in range(target_tick - self.tick):
                 step_started = time.perf_counter()
                 stats = self.step()
                 elapsed = time.perf_counter() - step_started
                 last_stats = stats
                 last_step_seconds = elapsed
-                if self.tick % self.cfg.run.metrics_period == 0 or self.tick == 1:
+                if (
+                    self.tick % self.cfg.run.metrics_period == 0
+                    or self.tick == run_start_tick + 1
+                ):
                     reported_at = time.perf_counter()
                     window_ticks = self.tick - window_start_tick
                     window_seconds = reported_at - window_started
@@ -1130,7 +1157,7 @@ class Simulation:
                     self._checkpoint()
                 if not np.any(self.entities.alive):
                     break
-            if self.tick and (not final_row or int(final_row["tick"]) != self.tick):
+            if not final_row or int(final_row["tick"]) != self.tick:
                 reported_at = time.perf_counter()
                 window_ticks = self.tick - window_start_tick
                 final_row = self.metric_row(
@@ -1167,6 +1194,8 @@ class Simulation:
                 "social_connections_enabled": self.social_connections_enabled,
                 "direct_messages_enabled": self.direct_messages_enabled,
                 "freeze_genotype": self.freeze_genotype,
+                "environment_spatial_reversed": self.environment.spatial_reversed,
+                "history": self.intervention_history,
             },
             "control": {
                 "arbiter": type(self.control_arbiter).__name__,

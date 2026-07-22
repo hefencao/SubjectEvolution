@@ -29,6 +29,7 @@ class DeviceEnvironment:
     def __init__(self, cfg: SimulationConfig, backend: Backend | str = "gpu") -> None:
         self.cfg = cfg
         self.backend = resolve_backend(backend) if isinstance(backend, str) else backend
+        self.spatial_reversed = False
         xp = self.backend.xp
         gx, gy = cfg.world.grid_x, cfg.world.grid_y
         yy, xx = xp.mgrid[0:gy, 0:gx]
@@ -48,7 +49,14 @@ class DeviceEnvironment:
         yy, xx = xp.mgrid[0:gy, 0:gx]
         phase = 2.0 * xp.pi * tick / max(self.cfg.environment.season_period, 1)
         hazard = 0.5 + 0.25 * xp.sin(xx * 0.045 + phase) + 0.25 * xp.cos(yy * 0.037 - 0.7 * phase)
-        return xp.clip(hazard, 0.0, 1.0).astype(xp.float32)
+        result = xp.clip(hazard, 0.0, 1.0).astype(xp.float32)
+        return result[::-1, ::-1].copy() if self.spatial_reversed else result
+
+    def reverse_spatial_orientation(self) -> None:
+        """Rotate resource and hazard geography by 180 degrees persistently."""
+        self.resources = self.resources[:, ::-1, ::-1].copy()
+        self.hazard = self.hazard[::-1, ::-1].copy()
+        self.spatial_reversed = not self.spatial_reversed
 
     def update(self, tick: int) -> None:
         xp = self.backend.xp

@@ -23,14 +23,26 @@ def build_parser() -> argparse.ArgumentParser:
         "--counterfactual",
         help=(
             "Run a paired branch from the same snapshot. Choices: "
-            "disable-social-control, cut-social-connections, shuffle-memory, freeze-genotype."
+            "disable-social-control, cut-social-connections, shuffle-memory, "
+            "freeze-genotype, reverse-environment."
+        ),
+    )
+    parser.add_argument(
+        "--intervention-tick",
+        type=int,
+        help=(
+            "Absolute tick at which a paired intervention is applied after a shared "
+            "prehistory. Defaults to 0."
         ),
     )
     return parser
 
 
 def main() -> None:
-    args = build_parser().parse_args()
+    parser = build_parser()
+    args = parser.parse_args()
+    if args.intervention_tick is not None and not args.counterfactual:
+        parser.error("--intervention-tick requires --counterfactual")
     config_path = Path(args.config)
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
@@ -38,7 +50,12 @@ def main() -> None:
     cfg = load_config(config_path)
     if args.counterfactual:
         simulation = Simulation(cfg, output / "baseline", backend=args.backend)
-        run_paired(simulation, args.counterfactual, output)
+        run_paired(
+            simulation,
+            args.counterfactual,
+            output,
+            intervention_tick=args.intervention_tick,
+        )
     else:
         simulation = Simulation(cfg, output, backend=args.backend)
         simulation.run()

@@ -420,6 +420,55 @@ def test_paired_counterfactual_uses_same_initial_snapshot(tmp_path):
     assert result.intervention["tick"] == cfg.run.ticks
 
 
+def test_paired_counterfactual_can_branch_after_shared_prehistory(tmp_path):
+    cfg = load_config(_config(tmp_path))
+    sim = Simulation(cfg, tmp_path / "scheduled" / "baseline")
+    result = run_paired(
+        sim,
+        "reverse-environment",
+        tmp_path / "scheduled",
+        intervention_tick=2,
+    )
+
+    summary = json.loads(
+        (tmp_path / "scheduled" / "counterfactual_summary.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    intervention_metadata = json.loads(
+        (tmp_path / "scheduled" / "intervention" / "run_metadata.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    baseline_metadata = json.loads(
+        (tmp_path / "scheduled" / "baseline" / "run_metadata.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert result.intervention_tick == 2
+    assert result.pre_intervention["tick"] == 2
+    assert summary["shared_prehistory_ticks"] == 2
+    assert summary["pre_intervention"] == result.pre_intervention
+    assert result.baseline["tick"] == cfg.run.ticks
+    assert result.intervention["tick"] == cfg.run.ticks
+    assert baseline_metadata["interventions"]["history"] == []
+    assert intervention_metadata["interventions"]["history"] == [
+        {"tick": 2, "type": "reverse-environment"}
+    ]
+    assert not baseline_metadata["interventions"]["environment_spatial_reversed"]
+    assert intervention_metadata["interventions"]["environment_spatial_reversed"]
+
+
+def test_run_finishes_at_absolute_horizon_after_manual_steps(tmp_path):
+    cfg = load_config(_config(tmp_path))
+    sim = Simulation(cfg, tmp_path / "absolute-horizon")
+    sim.step()
+    sim.step()
+    result = sim.run()
+    assert sim.tick == cfg.run.ticks
+    assert result["tick"] == cfg.run.ticks
+
+
 def test_run_metadata_uses_package_version(tmp_path):
     cfg = load_config(_config(tmp_path))
     output = tmp_path / "run"

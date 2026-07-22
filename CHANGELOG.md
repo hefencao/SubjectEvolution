@@ -2,6 +2,8 @@
 
 ## 0.4.0
 
+- 反事实运行支持 `--intervention-tick`：在指定绝对 tick 前只演进一份共享前史，再从同一内存快照分出基线与干预；摘要记录干预前锚点和规范干预历史。新增持久 `reverse-environment`，以 180° 空间旋转实例化 M4 环境反转并保持后续季节更新朝向，CPU/GPU 使用相同语义。
+- 修正“CPU 永久唯一世界写者”的过强架构约束：策略、观察与解析仍只读，但消费已解析、版本化计划的受控提交器可位于 CPU、GPU 或未来分布式分区。环境/信息场在 GPU 模式下已经由设备权威提交；连续多轮无端到端收益后，暂停 `HostCommitView` 等纯性能迁移，转入 M4 功能阶段。
 - 增加 CLI `--backend cpu|gpu|auto`；`gpu` 显式启用字段、空间、观察和策略的混合设备执行；
 - 增加 `gpu_runtime.py`，以可审计的主机/设备边界衔接 GPU 观察/策略与 CPU 行动提交；
 - 将直接消息接收改为稳定排序、批量随机键和向量化容量裁决，消除逐消息 NumPy 调用；
@@ -15,7 +17,7 @@
 - 将关系信任/熟悉度改为在分享写入和群体检测边界按累计 tick 物化的几何衰减；无死亡 tick 跳过整表死链接扫描，保持关系状态在 CPU 的语义权威和行动提交边界。
 - 将 GPU SplitMix64 上下文混合、draw index 和最终器融合为单个元素核；随机键与 CPU 参考逐位一致，设备内部已验证的采样参数不再触发重复主机同步。
 - 增加后端无关的 `SignalEmissionPlan`、单通道有序 `SignalEmissionBatch` 和 `SignalEmissionScheduler`；`information.signal_flush_periods` 显式定义资源/危险/社会字段的交付 cadence，高频事件可进入低频目标通道的待发队列，未到期通道不会产生零填充传输。到期通道按到达顺序合并并严格归约；默认 `[1,1,1]` 为无队列直通。撤回未带来 300 tick 端到端收益的稠密多通道默认路径。
-- 增加 `HarvestResolution`、`GpuHarvestPlanner` 和 `GpuActionConflictResolver`：GPU 仅从只读快照构建采集行/单元稳定排序与公平分配计划，CPU 仍是唯一世界提交者；分享、繁殖和位置提交继续复用严格 CPU 规则。`run.gpu_harvest_conflict_planner` 默认开启，可用于回退到 CPU 键构建做剖析。
+- 增加 `HarvestResolution`、`GpuHarvestPlanner` 和 `GpuActionConflictResolver`：GPU 从只读快照构建采集行/单元稳定排序与公平分配计划，随后由设备字段提交器扣减资源；分享、繁殖和位置提交继续复用严格 CPU 规则。`run.gpu_harvest_conflict_planner` 默认开启，可用于回退到 CPU 键构建做剖析。
 - 增加 GPU 采集计划对照：逐项固定稳定行/单元排序、分配、失败码，并断言计划阶段不修改设备资源；WSL RTX 4070 的 100k、300 tick 成对测量为 `31.12秒`（设备计划）对 `31.77秒`（CPU 键构建），仅作为约 `2%` 的环境相关收益记录。
 - 增加自包含 `ShareResolution` 与规范 `RelationUpdatePlan`：关系事件携带来源意图行、正反向标记、稳定序号和 tick，世界提交不再通过 `last_intents/last_resolutions` 恢复输入；无效、越界、死亡及自分享目标不再污染关系，混合失败批次会保留准确失败原因。
 - 优化 CPU 固定关系槽应用：复用规范 owner 分段、以线性检查代替重复排序，并只在槽满且无现有关系时计算最弱槽；43,750 事件微基准由约 `10.95ms` 降至 `5.94ms`，100k/300 tick 从计划初版 `32.39秒` 回到 `31.34秒`。
@@ -23,7 +25,7 @@
 - 增加后端无关的 `DirectMessageObservationPlan`：CPU 队列继续负责稳定排序、检测、噪声、分类和容量裁决，固定注意力槽仅按需物化；GPU 上传实际 receiver/slot/payload，并仅为实际接收者构造原容量宽度的紧凑槽，以保持旧浮点归约和长期离散轨迹。GPU step 新增显式 H2D/D2H 与稠密字节规避指标；100k/300 tick 两次由阶段 8 最快 `30.95秒` 降至 `25.55/27.14秒`，action counts 和最终离散状态一致。
 - 增加后端无关的 `GroupDetectionSnapshot`、可插拔 `GroupLabelPlanner` 和规范 `GroupLabelPlan`：固定轮标签传播与世界写入解耦，计划同时携带实体标签、群体聚合和一次分段的成员表；社会状态和候选主体图作为独立单写者验证后提交，运行元数据记录规划器与最后计划规模。
 - 候选主体图直接消费群体成员分段，消除按每个群体重复扫描全部 active slots；活跃身体/谱系/社会节点计数改为增量维护，使周期指标不再遍历全部历史节点。100k active、45,016 成员、2,648 群体的隔离提交约 `14.1×`，但 100k/300 tick 两次 `27.72/29.14秒` 相对阶段 8.5 无可宣称的端到端提升；动作计数和最终离散状态完全一致。
-- 增加版本化 `DeviceEntityState` 与后端无关的 `EntityDeviceCommitPlan`：CPU 世界仍是唯一权威写者，提交后的动态、位置、生命周期静态值和社会观察字段以 `base_version → next_version` 补丁更新持久设备镜像；重复或陈旧计划会被拒绝，克隆和外部干预可显式完整修复镜像。
+- 增加版本化 `DeviceEntityState` 与后端无关的 `EntityDeviceCommitPlan`：实体域当前由 CPU 权威提交，提交后的动态、位置、生命周期静态值和社会观察字段以 `base_version → next_version` 补丁更新持久设备镜像；重复或陈旧计划会被拒绝，克隆和外部干预可显式完整修复镜像。
 - 实体镜像提交按 50% 变更密度选择等价执行形式：高密度字段连续复制到持久缓冲，低密度字段按严格升序索引散射。淘汰了使 100k/300 tick 恶化到 `34.84秒` 的全稀疏初版，并复用上游规范索引/布尔掩码消除重复排序。最终严格运行 `27.62秒`，tick 300 H2D 由 `16,788,152` 降至 `9,345,128 bytes`（44.3%），动作和最终离散状态完全一致；D2H 未下降，故不宣称端到端提速。
 - 策略、字段感知、伙伴感知、噪声和方向选择支持 NumPy/CuPy 相同接口；
 - 指标增加窗口墙钟平均，避免单个采样 step 时间掩盖日志与检查点开销；

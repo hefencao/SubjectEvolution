@@ -11,6 +11,7 @@ class Environment:
 
     def __init__(self, cfg: SimulationConfig) -> None:
         self.cfg = cfg
+        self.spatial_reversed = False
         gx, gy = cfg.world.grid_x, cfg.world.grid_y
         yy, xx = np.mgrid[0:gy, 0:gx]
         capacities = np.asarray(cfg.environment.resource_capacity, dtype=np.float32)[:, None, None]
@@ -26,7 +27,14 @@ class Environment:
         yy, xx = np.mgrid[0:gy, 0:gx]
         phase = 2.0 * np.pi * tick / max(self.cfg.environment.season_period, 1)
         h = 0.5 + 0.25 * np.sin(xx * 0.045 + phase) + 0.25 * np.cos(yy * 0.037 - 0.7 * phase)
-        return np.clip(h, 0.0, 1.0).astype(np.float32)
+        result = np.clip(h, 0.0, 1.0).astype(np.float32)
+        return result[::-1, ::-1].copy() if self.spatial_reversed else result
+
+    def reverse_spatial_orientation(self) -> None:
+        """Rotate resource and hazard geography by 180 degrees persistently."""
+        self.resources = self.resources[:, ::-1, ::-1].copy()
+        self.hazard = self.hazard[::-1, ::-1].copy()
+        self.spatial_reversed = not self.spatial_reversed
 
     def update(self, tick: int) -> None:
         phase = 2.0 * np.pi * tick / max(self.cfg.environment.season_period, 1)

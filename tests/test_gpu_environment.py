@@ -47,6 +47,57 @@ def test_device_environment_cpu_backend_matches_reference():
     np.testing.assert_allclose(device.resources, reference.resources, rtol=0.0, atol=1e-7)
 
 
+def test_environment_reversal_is_persistent_and_device_backend_neutral():
+    cfg = _cfg()
+    reference = Environment(cfg)
+    reversed_environment = Environment(cfg)
+    device = DeviceEnvironment(cfg, "cpu")
+    original_resources = reference.resources.copy()
+    original_hazard = reference.hazard.copy()
+
+    reversed_environment.reverse_spatial_orientation()
+    device.reverse_spatial_orientation()
+    assert reversed_environment.spatial_reversed
+    assert device.spatial_reversed
+    np.testing.assert_array_equal(
+        reversed_environment.resources,
+        original_resources[:, ::-1, ::-1],
+    )
+    np.testing.assert_array_equal(
+        reversed_environment.hazard,
+        original_hazard[::-1, ::-1],
+    )
+    np.testing.assert_array_equal(device.resources, reversed_environment.resources)
+    np.testing.assert_array_equal(device.hazard, reversed_environment.hazard)
+
+    reference.update(7)
+    reversed_environment.update(7)
+    device.update(7)
+    np.testing.assert_allclose(
+        reversed_environment.resources,
+        reference.resources[:, ::-1, ::-1],
+        rtol=0.0,
+        atol=1e-7,
+    )
+    np.testing.assert_allclose(
+        reversed_environment.hazard,
+        reference.hazard[::-1, ::-1],
+        rtol=0.0,
+        atol=1e-7,
+    )
+    np.testing.assert_allclose(device.resources, reversed_environment.resources)
+    np.testing.assert_allclose(device.hazard, reversed_environment.hazard)
+
+    reversed_environment.reverse_spatial_orientation()
+    device.reverse_spatial_orientation()
+    assert not reversed_environment.spatial_reversed
+    assert not device.spatial_reversed
+    np.testing.assert_allclose(reversed_environment.resources, reference.resources)
+    np.testing.assert_allclose(reversed_environment.hazard, reference.hazard)
+    np.testing.assert_allclose(device.resources, reference.resources, rtol=0.0, atol=1e-7)
+    np.testing.assert_allclose(device.hazard, reference.hazard, rtol=0.0, atol=1e-7)
+
+
 def test_device_information_field_cpu_backend_matches_reference():
     cfg = _cfg()
     reference = InformationSystem(cfg)

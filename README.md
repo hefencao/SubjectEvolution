@@ -1,6 +1,6 @@
 # 嵌套主体存在演化模拟：v0.4 GPU 混合执行阶段
 
-这是项目规范的可运行 CPU 参考内核和分阶段 GPU 实现。v0.4 将字段、规则网格、观察构建、参数化策略批处理和采集冲突子计划接入显式 GPU 路径；世界提交、关系、出生死亡与主体图仍由 CPU 保持语义权威。分享关系与生命周期已经使用后端无关的只读计划/事件合约，为后续设备驻留或分布式实现保留同一提交边界。
+这是项目规范的可运行 CPU 参考内核和分阶段 GPU 实现。v0.4 将字段、规则网格、观察构建、参数化策略批处理和采集冲突子计划接入显式 GPU 路径；GPU 模式的环境/信息场在设备上权威演进，实体、关系、出生死亡与主体图当前仍由 CPU 提交。分享关系与生命周期已经使用后端无关的只读计划/事件合约，为后续设备驻留或分布式实现保留同一提交边界，而不把 CPU 固化为永久唯一写者。
 
 ## 已实现
 
@@ -13,7 +13,7 @@
 - 可选 CuPy 后端：GPU 数组上的无状态随机键和基础分布；
 - GPU 无状态随机键使用融合的 uint64 SplitMix64 元素核，仍与 CPU 键流逐位一致；
 - 设备版四资源环境、危险场、三通道信息场、规则网格和伙伴采样；
-- `--backend gpu` 混合运行：设备字段、伙伴采样、场/伙伴观察、策略批处理和只读采集冲突计划；
+- `--backend gpu` 混合运行：设备权威字段、伙伴采样、场/伙伴观察、策略批处理和只读采集冲突计划；
 - GPU 混合路径使用版本化 `DeviceEntityState` 持久保存观察字段；CPU 最终提交通过密度感知 `EntityDeviceCommitPlan` 同步，高密度连续复制、低密度稀疏补丁，批量 `run()` 在结束时同步环境/信息字段镜像；
 - 延迟直接消息队列以数组批次保存；接收使用批量随机键、稳定排序和向量化容量分配，并输出后端无关的稀疏 `DirectMessageObservationPlan`；CPU 可按需物化固定注意力槽，GPU 仅为实际接收者构造紧凑槽张量；
 - 场发射与资源提交使用稳定排序、分段归约，不依赖浮点原子累加；信号发射通过按通道有序的 `SignalEmissionPlan` 提交，未到期通道不生成或传输零值；
@@ -34,7 +34,7 @@
 - 谱系继承、变异、出生、死亡和容量管理；
 - 社会依赖代理指标、群体指标、信息检测率、行动熵，以及逐 step 的显式 H2D/D2H、实体提交字节/耗时和稠密消息字节规避统计；
 - 身体、谱系和社会候选主体图，以及主体ID和实体ID的显式分离；群体成员一次分段提交，活跃类型摘要增量维护；
-- 成对随机的反事实分支：关闭社会控制、切断社会连接、打乱记忆或冻结遗传；
+- 成对随机的反事实分支：可在共享前史后的指定 tick 关闭社会控制、切断社会连接、打乱记忆、冻结遗传或反转环境；
 - 检查点、CSV指标、运行元数据和基础测试。
 
 ## 尚未实现
@@ -97,10 +97,11 @@ python -m subject_evolution.cli \
 python -m subject_evolution.cli \
   --config configs/mvp_small.json \
   --output runs/social_control_off \
-  --counterfactual disable-social-control
+  --counterfactual reverse-environment \
+  --intervention-tick 100
 ```
 
-该命令在`baseline/`和`intervention/`中写入两条轨迹，并在根目录写入`counterfactual_summary.json`。两条分支从同一快照和随机键规则开始。
+该命令先演进 100 tick 共享前史，再从同一内存快照分出`baseline/`和`intervention/`，并在根目录写入含干预前锚点的`counterfactual_summary.json`。省略`--intervention-tick`时保持 tick 0 立即干预。当前`reverse-environment`将资源与危险地理旋转 180°，且后续季节危险更新保持该朝向；这是 M4 环境反转的可复现实例化，不排除未来增加其他反转算子。
 
 输出：
 
@@ -119,7 +120,7 @@ python -m subject_evolution.cli \
   --backend gpu
 ```
 
-不带 `--backend` 时仍是严格 CPU 参考路径。`--backend gpu` 会明确启用混合 GPU 路径；`--backend auto` 仅在 GPU 可用时使用它，否则回退 CPU。GPU 路径默认以 `GpuActionConflictResolver` 在设备上构建采集子计划：它只读取 `ActionResolutionSnapshot`，返回稳定排序的计划，资源/实体仍由 CPU 的统一提交阶段修改。10万实体应使用独立输出目录，避免同目录混入不同后端或中断运行的检查点。
+不带 `--backend` 时仍是严格 CPU 参考路径。`--backend gpu` 会明确启用混合 GPU 路径；`--backend auto` 仅在 GPU 可用时使用它，否则回退 CPU。GPU 路径默认以 `GpuActionConflictResolver` 在设备上构建采集子计划：它只读取 `ActionResolutionSnapshot` 并返回稳定排序的计划；随后资源由设备字段提交器修改，实体结果由当前 CPU 提交器修改。10万实体应使用独立输出目录，避免同目录混入不同后端或中断运行的检查点。
 
 若需和旧的“CPU 构建采集键、GPU 分配资源”路径做性能剖析，可在 `run` 中明确关闭该执行优化；这不改变模型、随机键或提交顺序：
 
@@ -175,7 +176,7 @@ run_seed, tick, simulation_phase, subject_id, stream_id, draw_index
 - `random_api.py`：统一采样；
 - `backend.py`：可选 NumPy/CuPy 后端与显式主机/设备转换；
 - `gpu_environment.py`：设备版环境与信息场阶段；
-- `gpu_runtime.py`：GPU 观察/策略与 CPU 世界提交之间的显式边界；
+- `gpu_runtime.py`：GPU 观察/策略、设备字段提交与主机提交之间的显式边界；
 - `device_state.py`：持久设备实体镜像的版本化、密度感知最终状态计划；
 - `execution.py`：只读 `ActionResolutionSnapshot`、可审计计划和 CPU/GPU 采集解析器；
 - `lifecycle.py`：后端无关的出生请求/槽位分配与死亡事件计划；
