@@ -34,6 +34,15 @@ from .intents import (
     FailureReason,
     build_intents,
 )
+from .lifecycle import (
+    BirthAllocationPlan,
+    DeathCause,
+    DeathEventPlan,
+    empty_birth_allocation_plan,
+    empty_death_event_plan,
+    plan_birth_allocations,
+    plan_death_events,
+)
 from .metrics import MetricsWriter
 from .policy import Action, ParametricPolicy
 from .random_api import RandomContext, Stream, normal, uniform01
@@ -94,6 +103,7 @@ class EntityState:
         self.shared_energy_received_total = np.zeros(cap, dtype=np.float32)
         self.next_entity_id = np.uint64(initial + 1)
         self.free_slots = list(range(cap - 1, initial - 1, -1))
+        self.free_slot_version = 0
 
         ids = np.arange(1, initial + 1, dtype=np.uint64)
         idx = np.arange(initial, dtype=np.int32)
@@ -118,18 +128,63 @@ class EntityState:
     def sensor_quality(self) -> np.ndarray:
         return np.clip(1.0 + 0.35 * self.genotype[:, 0] + 0.15 * self.information_store, 0.1, 2.0).astype(np.float32)
 
-    def allocate_births(
+    def commit_births(
         self,
-        parent_indices: np.ndarray,
-        tick: int,
+        plan: BirthAllocationPlan,
         mutation_std: float | None = None,
     ) -> tuple[np.ndarray, np.ndarray]:
-        count = min(parent_indices.size, len(self.free_slots))
+        """Validate and commit one preallocated birth plan exactly once."""
+        requests = plan.requests
+        arrays = (
+            requests.source_rows,
+            requests.parent_indices,
+            requests.parent_entity_ids,
+            requests.parent_subject_ids,
+            plan.slots,
+            plan.offspring_entity_ids,
+        )
+        values = tuple(np.asarray(value) for value in arrays)
+        if any(value.ndim != 1 for value in values):
+            raise ValueError("birth allocation arrays must be one-dimensional")
+        count = plan.size
+        if requests.size != count or any(value.size != count for value in values):
+            raise ValueError("birth allocation arrays must have the same length")
+        if any(not np.issubdtype(value.dtype, np.integer) for value in values):
+            raise ValueError("birth allocation arrays must use integer dtypes")
+        if int(requests.tick) < 0:
+            raise ValueError("birth allocation tick must be non-negative")
         if count <= 0:
             return np.empty(0, dtype=np.int32), np.empty(0, dtype=np.int32)
-        parents = parent_indices[:count].astype(np.int32)
-        slots = np.asarray([self.free_slots.pop() for _ in range(count)], dtype=np.int32)
-        ids = np.arange(int(self.next_entity_id), int(self.next_entity_id) + count, dtype=np.uint64)
+        if int(plan.free_pool_version) != self.free_slot_version:
+            raise ValueError("birth allocation free-slot pool version is stale")
+        parents = values[1].astype(np.int32, copy=False)
+        slots = values[4].astype(np.int32, copy=False)
+        ids = values[5].astype(np.uint64, copy=False)
+        capacity = self.alive.size
+        if (
+            np.any(parents < 0)
+            or np.any(parents >= capacity)
+            or np.any(slots < 0)
+            or np.any(slots >= capacity)
+            or np.unique(slots).size != count
+        ):
+            raise ValueError("birth allocation contains an invalid parent or slot")
+        if not np.all(self.alive[parents]) or np.any(self.alive[slots]):
+            raise ValueError("birth allocation does not match current entity occupancy")
+        if not np.array_equal(self.entity_id[parents], requests.parent_entity_ids):
+            raise ValueError("birth allocation parent entity IDs are stale")
+        if not np.array_equal(self.primary_subject_id[parents], requests.parent_subject_ids):
+            raise ValueError("birth allocation parent subject IDs are stale")
+        expected_slots = np.asarray(self.free_slots[-count:][::-1], dtype=np.int32)
+        expected_ids = np.arange(
+            int(self.next_entity_id), int(self.next_entity_id) + count, dtype=np.uint64
+        )
+        if not np.array_equal(slots, expected_slots):
+            raise ValueError("birth allocation no longer matches the free-slot pool")
+        if not np.array_equal(ids, expected_ids):
+            raise ValueError("birth allocation no longer matches the stable-ID counter")
+        del self.free_slots[-count:]
+        self.free_slot_version += 1
         self.next_entity_id = np.uint64(int(self.next_entity_id) + count)
         self.entity_id[slots] = ids
         self.lineage_id[slots] = self.lineage_id[parents]
@@ -145,6 +200,7 @@ class EntityState:
         self.primary_subject_id[slots] = 0
         self.lineage_subject_id[slots] = 0
 
+        tick = int(requests.tick)
         ctx = RandomContext(self.cfg.run.seed, tick, phase=70, stream=Stream.REPRODUCTION)
         self.x[slots] = self.x[parents] + normal(ctx, ids, 0.0, 0.35, 0).astype(np.float32)
         self.y[slots] = self.y[parents] + normal(ctx, ids, 0.0, 0.35, 2).astype(np.float32)
@@ -172,14 +228,56 @@ class EntityState:
             ).astype(np.float32)
         return parents, slots
 
-    def kill(self, indices: np.ndarray) -> None:
-        for idx in indices.tolist():
-            if self.alive[idx]:
-                self.alive[idx] = False
-                self.free_slots.append(int(idx))
+    def commit_deaths(self, plan: DeathEventPlan) -> np.ndarray:
+        """Commit canonical death events and reclaim their slots at phase end."""
+        indices = np.asarray(plan.entity_indices, dtype=np.int32)
+        arrays = (
+            indices,
+            plan.entity_ids,
+            plan.primary_subject_ids,
+            plan.cause_code,
+            plan.final_energy,
+            plan.final_integrity,
+        )
+        if any(np.asarray(value).ndim != 1 for value in arrays):
+            raise ValueError("death event arrays must be one-dimensional")
+        if len({np.asarray(value).size for value in arrays}) != 1:
+            raise ValueError("death event arrays must have the same length")
+        if indices.size == 0:
+            return indices
+        if (
+            np.any(indices < 0)
+            or np.any(indices >= self.alive.size)
+            or np.any(indices[1:] <= indices[:-1])
+            or not np.all(self.alive[indices])
+        ):
+            raise ValueError("death event plan does not match current occupancy")
+        if not np.array_equal(self.entity_id[indices], plan.entity_ids):
+            raise ValueError("death event entity IDs are stale")
+        if not np.array_equal(self.primary_subject_id[indices], plan.primary_subject_ids):
+            raise ValueError("death event subject IDs are stale")
+        cause = np.asarray(plan.cause_code, dtype=np.uint8)
+        expected_cause = (
+            (self.energy[indices] <= 0.0).astype(np.uint8)
+            * int(DeathCause.ENERGY_DEPLETED)
+            | (self.integrity[indices] <= 0.0).astype(np.uint8)
+            * int(DeathCause.INTEGRITY_DEPLETED)
+            | (self.age[indices] >= self.cfg.entities.max_age).astype(np.uint8)
+            * int(DeathCause.MAX_AGE)
+        ).astype(np.uint8)
+        if not np.array_equal(cause, expected_cause) or np.any(cause == 0):
+            raise ValueError("death event cause does not match current entity state")
+        if not np.array_equal(self.energy[indices], plan.final_energy) or not np.array_equal(
+            self.integrity[indices], plan.final_integrity
+        ):
+            raise ValueError("death event final state is stale")
+        self.alive[indices] = False
+        self.free_slots.extend(indices.tolist())
+        self.free_slot_version += 1
         self.entity_id[indices] = 0
         self.vx[indices] = 0.0
         self.vy[indices] = 0.0
+        return indices
 
 
 class Simulation:
@@ -247,6 +345,8 @@ class Simulation:
         self.action_counts = np.zeros(len(Action), dtype=np.int64)
         self.last_intents: ActionIntentBatch | None = None
         self.last_resolutions: ActionResolutionBatch | None = None
+        self.last_birth_allocation = empty_birth_allocation_plan(0)
+        self.last_death_events = empty_death_event_plan(0)
         self.conflict_resolver = conflict_resolver
         if self.conflict_resolver is None:
             self.conflict_resolver = (
@@ -304,6 +404,8 @@ class Simulation:
         branch.total_births = self.total_births
         branch.total_deaths = self.total_deaths
         branch.action_counts = self.action_counts.copy()
+        branch.last_birth_allocation = copy.deepcopy(self.last_birth_allocation)
+        branch.last_death_events = copy.deepcopy(self.last_death_events)
         branch.heuristic_guidance_actions = self.heuristic_guidance_actions
         branch.social_control_enabled = self.social_control_enabled
         branch.social_connections_enabled = self.social_connections_enabled
@@ -631,6 +733,7 @@ class Simulation:
             alive=ent.alive,
             energy=ent.energy,
             fertility=ent.fertility,
+            primary_subject_id=ent.primary_subject_id,
             free_slot_count=len(ent.free_slots),
         )
         harvest_allocator = (
@@ -645,7 +748,7 @@ class Simulation:
         gathered = resolution_plan.gathered
         share = resolution_plan.share
         signal_rows = resolution_plan.signal_rows
-        accepted_reproduce_rows = resolution_plan.accepted_reproduce_rows
+        birth_requests = resolution_plan.birth_requests
         stats.conflict_seconds = time.perf_counter() - phase_started
         self.last_intents = intents
         self.last_resolutions = resolutions
@@ -697,11 +800,16 @@ class Simulation:
             stats.signals = int(signal_actors.size)
         self._flush_signal_emissions(signal_plan)
 
-        if accepted_reproduce_rows.size:
-            requested_parents = intents.carrier_index[accepted_reproduce_rows]
-            accepted_parents, newborns = ent.allocate_births(
-                requested_parents,
-                self.tick,
+        birth_allocation = plan_birth_allocations(
+            birth_requests,
+            ent.free_slots,
+            int(ent.next_entity_id),
+            ent.free_slot_version,
+        )
+        self.last_birth_allocation = birth_allocation
+        if birth_allocation.size:
+            accepted_parents, newborns = ent.commit_births(
+                birth_allocation,
                 mutation_std=0.0 if self.freeze_genotype else None,
             )
             if newborns.size:
@@ -740,14 +848,21 @@ class Simulation:
         ent.fertility[current_active] = np.maximum(ent.fertility[current_active] - 0.0005, 0.0)
 
         self.policy.update_memory(active, ent.memory, local_resources, info)
-        dead = current_active[
-            (ent.energy[current_active] <= 0.0)
-            | (ent.integrity[current_active] <= 0.0)
-            | (ent.age[current_active] >= cfg.entities.max_age)
-        ]
+        death_events = plan_death_events(
+            active=current_active,
+            entity_ids=ent.entity_id,
+            primary_subject_ids=ent.primary_subject_id,
+            energy=ent.energy,
+            integrity=ent.integrity,
+            age=ent.age,
+            max_age=cfg.entities.max_age,
+            tick=self.tick,
+        )
+        self.last_death_events = death_events
+        dead = death_events.entity_indices
         if dead.size:
             self.subjects.mark_dead(dead, self.tick)
-            ent.kill(dead)
+            ent.commit_deaths(death_events)
             self.social.group_id[dead] = 0
             self.social.group_age[dead] = 0
             if self.gpu_runtime is not None:

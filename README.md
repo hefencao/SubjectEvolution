@@ -1,6 +1,6 @@
 # 嵌套主体存在演化模拟：v0.4 GPU 混合执行阶段
 
-这是项目规范的可运行 CPU 参考内核和分阶段 GPU 实现。v0.4 将字段、规则网格、观察构建、参数化策略批处理和采集冲突子计划接入显式 GPU 路径；世界提交、关系、出生死亡与主体图仍由 CPU 保持语义权威。
+这是项目规范的可运行 CPU 参考内核和分阶段 GPU 实现。v0.4 将字段、规则网格、观察构建、参数化策略批处理和采集冲突子计划接入显式 GPU 路径；世界提交、关系、出生死亡与主体图仍由 CPU 保持语义权威。分享关系与生命周期已经使用后端无关的只读计划/事件合约，为后续设备驻留或分布式实现保留同一提交边界。
 
 ## 已实现
 
@@ -25,6 +25,7 @@
 - 行动提案、稳定意图ID、资源/分享/出生冲突的统一结算和执行记录；
 - 后端无关的冲突解析协议：只读快照产生 `ActionResolutionPlan`，世界提交始终只读取已解析结果；
 - 分享结算产生自包含 `ShareResolution` 和规范排序的 `RelationUpdatePlan`；关系事件保留来源意图、正反向标记与 tick，提交不依赖隐式上一阶段状态；
+- 繁殖结算产生带父实体/主体来源的 `BirthRequestPlan`，版本化空闲槽池生成确定的 `BirthAllocationPlan`；死亡在回收槽位前形成含组合死因和最终状态的 `DeathEventPlan`；
 - 区域信号场与固定容量、带延迟的点对点消息队列；
 - 固定容量信任关系；分享事件按拥有者局部顺序分轮批处理；
 - 关系信任/熟悉度在分享写入或群体检测读取时按精确几何规则物化；无事件 tick 不再扫描整张关系表；
@@ -68,7 +69,7 @@ conda activate se
 python -m pip install -U cupy-cuda13x
 export CUDA_PATH=/usr/local/cuda-13.3
 export CUDA_HOME="$CUDA_PATH"
-export LD_LIBRARY_PATH="$CUDA_PATH/targets/x86_64-linux/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="$CUDA_PATH/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 python -m pytest -q
 ```
 
@@ -132,7 +133,7 @@ python -m subject_evolution.cli \
 conda activate se
 export CUDA_PATH=/usr/local/cuda-13.3
 export CUDA_HOME="$CUDA_PATH"
-export LD_LIBRARY_PATH="$CUDA_PATH/targets/x86_64-linux/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="$CUDA_PATH/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 python scripts/verify_gpu_foundation.py --config configs/mvp_small.json
 ```
 
@@ -176,6 +177,7 @@ run_seed, tick, simulation_phase, subject_id, stream_id, draw_index
 - `gpu_environment.py`：设备版环境与信息场阶段；
 - `gpu_runtime.py`：GPU 观察/策略与 CPU 世界提交之间的显式边界；
 - `execution.py`：只读 `ActionResolutionSnapshot`、可审计计划和 CPU/GPU 采集解析器；
+- `lifecycle.py`：后端无关的出生请求/槽位分配与死亡事件计划；
 - `spatial.py`：空间索引与局部伙伴采样；
 - `information.py`：传播和接收误差；
 - `policy.py`：可替换策略接口的首个参数化实现；

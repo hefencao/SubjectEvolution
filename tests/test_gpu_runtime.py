@@ -71,6 +71,7 @@ def test_gpu_harvest_resolver_matches_reference_plan_without_mutating_fields():
         alive=np.asarray([True, True, True, False]),
         energy=np.asarray([1.8, 1.0, 1.4, 0.0], dtype=np.float32),
         fertility=np.asarray([1.0, 1.0, 1.0, 0.0], dtype=np.float32),
+        primary_subject_id=np.asarray([300, 100, 200, 0], dtype=np.uint64),
         free_slot_count=0,
     )
     intents = ActionIntentBatch(

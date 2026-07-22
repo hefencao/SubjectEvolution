@@ -15,6 +15,7 @@ import numpy as np
 
 from .config import SimulationConfig
 from .intents import ActionIntentBatch, ActionResolutionBatch, FailureReason, action_rows, empty_resolutions
+from .lifecycle import BirthRequestPlan, empty_birth_request_plan
 from .policy import Action
 from .social import (
     RelationUpdatePlan,
@@ -39,6 +40,7 @@ class ActionResolutionSnapshot:
     alive: np.ndarray
     energy: np.ndarray
     fertility: np.ndarray
+    primary_subject_id: np.ndarray
     free_slot_count: int
 
 
@@ -52,7 +54,7 @@ class ActionResolutionPlan:
     gathered: np.ndarray
     share: ShareResolution
     signal_rows: np.ndarray
-    accepted_reproduce_rows: np.ndarray
+    birth_requests: BirthRequestPlan
 
 
 @dataclass(frozen=True)
@@ -236,7 +238,7 @@ class DeterministicActionConflictResolver:
             resolutions.energy_cost[signal_rows] = self.cfg.entities.signal_cost
 
         reproduce_rows = action_rows(intents, Action.REPRODUCE)
-        accepted_reproduce_rows = np.empty(0, dtype=np.int32)
+        birth_requests = empty_birth_request_plan(intents.submit_tick)
         if reproduce_rows.size:
             parents = intents.carrier_index[reproduce_rows]
             valid_parent = (
@@ -252,6 +254,16 @@ class DeterministicActionConflictResolver:
             resolutions.success[rejected] = False
             resolutions.failure_reason[rejected] = FailureReason.INSUFFICIENT_CAPACITY
             resolutions.energy_cost[accepted_reproduce_rows] = self.cfg.entities.reproduction_cost
+            accepted_parents = intents.carrier_index[accepted_reproduce_rows]
+            birth_requests = BirthRequestPlan(
+                source_rows=accepted_reproduce_rows.astype(np.int32, copy=False),
+                parent_indices=accepted_parents.astype(np.int32, copy=False),
+                parent_entity_ids=snapshot.entity_id[accepted_parents].astype(np.uint64, copy=True),
+                parent_subject_ids=snapshot.primary_subject_id[accepted_parents].astype(
+                    np.uint64, copy=True
+                ),
+                tick=int(intents.submit_tick),
+            )
 
         return ActionResolutionPlan(
             resolutions=resolutions,
@@ -260,7 +272,7 @@ class DeterministicActionConflictResolver:
             gathered=gathered,
             share=share,
             signal_rows=signal_rows,
-            accepted_reproduce_rows=accepted_reproduce_rows,
+            birth_requests=birth_requests,
         )
 
 
