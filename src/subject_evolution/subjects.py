@@ -62,6 +62,7 @@ class CandidateSubjectGraph:
         self._lineage_nodes: dict[int, int] = {}
         self._group_nodes: dict[int, int] = {}
         self._edges: dict[tuple[int, int, SubjectEdgeType], SubjectEdge] = {}
+        self._active_kind_counts = np.zeros(max(SubjectKind) + 1, dtype=np.int64)
         self.version = 0
 
     def clone(self) -> "CandidateSubjectGraph":
@@ -77,6 +78,7 @@ class CandidateSubjectGraph:
             last_update_tick=tick,
             lineage_id=lineage_id,
         )
+        self._active_kind_counts[int(kind)] += 1
         return subject_id
 
     def _lineage_node(self, lineage_id: int, tick: int) -> int:
@@ -115,33 +117,115 @@ class CandidateSubjectGraph:
         changed = False
         for slot in np.asarray(indices, dtype=np.int32).tolist():
             subject_id = int(self.body_subject_id[slot])
-            if subject_id and subject_id in self.nodes:
-                self.nodes[subject_id].active = False
-                self.nodes[subject_id].last_update_tick = tick
+            if subject_id and subject_id in self.nodes and self.nodes[subject_id].active:
+                node = self.nodes[subject_id]
+                node.active = False
+                node.last_update_tick = tick
+                self._active_kind_counts[int(node.kind)] -= 1
                 changed = True
         if changed:
             self.version += 1
 
     def update_groups(self, alive: np.ndarray, group_ids: np.ndarray, tick: int) -> None:
-        """Commit group membership at a graph-version boundary.
+        """Build canonical membership segments and commit them.
 
         ``group_ids`` are the social detector's internal component tokens;
         graph nodes receive independent IDs and may persist when the component
         is observed again in a later update.
         """
-        active_slots = np.flatnonzero(alive)
-        observed_groups = {int(group) for group in group_ids[active_slots].tolist() if group}
+        alive_values = np.asarray(alive, dtype=bool)
+        group_values = np.asarray(group_ids, dtype=np.uint64)
+        if (
+            alive_values.ndim != 1
+            or group_values.ndim != 1
+            or alive_values.size != self.body_subject_id.size
+            or group_values.size != self.body_subject_id.size
+        ):
+            raise ValueError("group graph inputs must match graph capacity")
+        active_slots = np.flatnonzero(alive_values).astype(np.int32)
+        active_groups = group_values[active_slots]
+        grouped = active_groups != 0
+        if not np.any(grouped):
+            self.commit_group_membership(
+                np.empty(0, dtype=np.uint64),
+                np.empty(0, dtype=np.int64),
+                np.empty(0, dtype=np.int32),
+                np.empty(0, dtype=np.int32),
+                tick,
+            )
+            return
+        tokens, inverse = np.unique(active_groups[grouped], return_inverse=True)
+        counts = np.bincount(inverse, minlength=tokens.size).astype(np.int32)
+        order = np.argsort(inverse, kind="stable")
+        members = active_slots[grouped][order]
+        starts = np.empty(tokens.size, dtype=np.int64)
+        starts[0] = 0
+        if tokens.size > 1:
+            np.cumsum(counts[:-1], out=starts[1:])
+        self.commit_group_membership(tokens, starts, counts, members, tick)
+
+    def commit_group_membership(
+        self,
+        group_tokens: np.ndarray,
+        member_starts: np.ndarray,
+        member_counts: np.ndarray,
+        member_indices: np.ndarray,
+        tick: int,
+    ) -> None:
+        """Commit pre-segmented membership without repeated active-row scans."""
+        tokens = np.asarray(group_tokens, dtype=np.uint64)
+        starts = np.asarray(member_starts, dtype=np.int64)
+        counts = np.asarray(member_counts, dtype=np.int32)
+        members = np.asarray(member_indices, dtype=np.int32)
+        if any(value.ndim != 1 for value in (tokens, starts, counts, members)):
+            raise ValueError("group membership plan arrays must be one-dimensional")
+        if starts.size != tokens.size or counts.size != tokens.size:
+            raise ValueError("group membership segment arrays must be aligned")
+        if tokens.size:
+            expected_starts = np.empty(tokens.size, dtype=np.int64)
+            expected_starts[0] = 0
+            if tokens.size > 1:
+                np.cumsum(counts[:-1], out=expected_starts[1:])
+            if (
+                np.any(tokens == 0)
+                or np.any(tokens[1:] <= tokens[:-1])
+                or np.any(counts <= 0)
+                or not np.array_equal(starts, expected_starts)
+            ):
+                raise ValueError("group membership segments are not canonical")
+        if int(counts.astype(np.int64).sum()) != members.size:
+            raise ValueError("group membership counts do not match member rows")
+        if members.size and (
+            np.any(members < 0)
+            or np.any(members >= self.body_subject_id.size)
+            or np.unique(members).size != members.size
+        ):
+            raise ValueError("group membership contains an invalid or duplicate slot")
+        if members.size:
+            member_groups = np.repeat(tokens, counts)
+            same_group = member_groups[1:] == member_groups[:-1]
+            if np.any(same_group & (members[1:] <= members[:-1])):
+                raise ValueError("group members must keep ascending slot order per segment")
+        if int(tick) < 0:
+            raise ValueError("group membership tick must be non-negative")
+
+        observed_groups = {int(token) for token in tokens.tolist()}
         changed = False
-        for token in observed_groups:
+        for group_row, token_value in enumerate(tokens.tolist()):
+            token = int(token_value)
             if token not in self._group_nodes:
                 self._group_nodes[token] = self._allocate(SubjectKind.SOCIAL_GROUP, tick)
                 changed = True
             node = self.nodes[self._group_nodes[token]]
-            node.active = True
+            if not node.active:
+                node.active = True
+                self._active_kind_counts[int(node.kind)] += 1
+                changed = True
             node.last_update_tick = tick
-            node.member_count = int(np.count_nonzero(group_ids[active_slots] == token))
-            members = active_slots[group_ids[active_slots] == token]
-            for slot in members.tolist():
+            start = int(starts[group_row])
+            count = int(counts[group_row])
+            node.member_count = count
+            for slot in members[start : start + count].tolist():
                 body = int(self.body_subject_id[slot])
                 if body:
                     self._edges[(body, node.subject_id, SubjectEdgeType.MEMBER_OF)] = SubjectEdge(
@@ -154,6 +238,7 @@ class CandidateSubjectGraph:
                     node.active = False
                     node.last_update_tick = tick
                     node.member_count = 0
+                    self._active_kind_counts[int(node.kind)] -= 1
                     changed = True
         if changed or observed_groups:
             self.version += 1
@@ -181,12 +266,14 @@ class CandidateSubjectGraph:
         return tuple(self._edges.values())
 
     def summary(self) -> dict[str, int]:
-        active = [node for node in self.nodes.values() if node.active]
+        body_count = int(self._active_kind_counts[int(SubjectKind.BODY)])
+        lineage_count = int(self._active_kind_counts[int(SubjectKind.GENE_LINEAGE)])
+        social_count = int(self._active_kind_counts[int(SubjectKind.SOCIAL_GROUP)])
         return {
-            "candidate_subjects": len(active),
-            "body_subjects": sum(node.kind == SubjectKind.BODY for node in active),
-            "lineage_subjects": sum(node.kind == SubjectKind.GENE_LINEAGE for node in active),
-            "social_subjects": sum(node.kind == SubjectKind.SOCIAL_GROUP for node in active),
+            "candidate_subjects": body_count + lineage_count + social_count,
+            "body_subjects": body_count,
+            "lineage_subjects": lineage_count,
+            "social_subjects": social_count,
             "subject_edges": len(self._edges),
             "subject_graph_version": self.version,
         }

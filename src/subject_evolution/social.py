@@ -1,9 +1,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Protocol
 import numpy as np
 
 from .config import SimulationConfig
+
+
+def _readonly_view(value: np.ndarray) -> np.ndarray:
+    """Return a zero-copy array view that rejects planner-side mutation."""
+    result = value.view()
+    result.flags.writeable = False
+    return result
 
 
 @dataclass
@@ -11,6 +19,202 @@ class GroupSummary:
     group_ids: np.ndarray
     counts: np.ndarray
     mean_energy: np.ndarray
+
+
+@dataclass(frozen=True)
+class GroupDetectionSnapshot:
+    """Read-only inputs for one backend-neutral group-labeling pass.
+
+    The relation table remains a fixed-slot SoA at this boundary.  A future
+    device or distributed planner can consume the same value without gaining
+    write access to ``SocialSystem`` or the candidate-subject graph.
+    """
+
+    active_indices: np.ndarray
+    active_entity_ids: np.ndarray
+    alive: np.ndarray
+    stable_ids: np.ndarray
+    energy: np.ndarray
+    relation_targets: np.ndarray
+    relation_trust: np.ndarray
+    resource_grad_x: np.ndarray
+    resource_grad_y: np.ndarray
+    trust_threshold: float
+    min_members: int
+    propagation_rounds: int
+    tick: int
+
+
+@dataclass(frozen=True)
+class GroupLabelPlan:
+    """Canonical labels, group aggregates, and segmented group membership."""
+
+    active_indices: np.ndarray
+    active_entity_ids: np.ndarray
+    entity_group_ids: np.ndarray
+    group_tokens: np.ndarray
+    member_starts: np.ndarray
+    member_counts: np.ndarray
+    member_indices: np.ndarray
+    group_direction_x: np.ndarray
+    group_direction_y: np.ndarray
+    mean_energy: np.ndarray
+    tick: int
+
+    @property
+    def group_count(self) -> int:
+        return int(self.group_tokens.size)
+
+    @property
+    def member_count(self) -> int:
+        return int(self.member_indices.size)
+
+
+def ungrouped_group_label_plan(
+    active_indices: np.ndarray,
+    active_entity_ids: np.ndarray,
+    tick: int,
+) -> GroupLabelPlan:
+    """Return a canonical plan that clears group assignment for active rows."""
+    active = np.asarray(active_indices, dtype=np.int32)
+    entity_ids = np.asarray(active_entity_ids, dtype=np.uint64)
+    if active.ndim != 1 or entity_ids.ndim != 1 or active.size != entity_ids.size:
+        raise ValueError("ungrouped plan identity arrays must be aligned and one-dimensional")
+    return GroupLabelPlan(
+        active_indices=active.copy(),
+        active_entity_ids=entity_ids.copy(),
+        entity_group_ids=np.zeros(active.size, dtype=np.uint64),
+        group_tokens=np.empty(0, dtype=np.uint64),
+        member_starts=np.empty(0, dtype=np.int64),
+        member_counts=np.empty(0, dtype=np.int32),
+        member_indices=np.empty(0, dtype=np.int32),
+        group_direction_x=np.empty(0, dtype=np.float32),
+        group_direction_y=np.empty(0, dtype=np.float32),
+        mean_energy=np.empty(0, dtype=np.float32),
+        tick=int(tick),
+    )
+
+
+class GroupLabelPlanner(Protocol):
+    """Backend-independent group planner contract."""
+
+    def plan(self, snapshot: GroupDetectionSnapshot) -> GroupLabelPlan:
+        ...
+
+
+class DeterministicGroupLabelPlanner:
+    """Reference CPU planner preserving the original label propagation rule."""
+
+    def plan(self, snapshot: GroupDetectionSnapshot) -> GroupLabelPlan:
+        active = np.asarray(snapshot.active_indices, dtype=np.int32)
+        active_ids = np.asarray(snapshot.active_entity_ids, dtype=np.uint64)
+        alive = np.asarray(snapshot.alive, dtype=bool)
+        stable_ids = np.asarray(snapshot.stable_ids, dtype=np.uint64)
+        energy = np.asarray(snapshot.energy, dtype=np.float32)
+        targets = np.asarray(snapshot.relation_targets, dtype=np.int32)
+        trust = np.asarray(snapshot.relation_trust, dtype=np.float32)
+        grad_x = np.asarray(snapshot.resource_grad_x, dtype=np.float32)
+        grad_y = np.asarray(snapshot.resource_grad_y, dtype=np.float32)
+        if any(
+            value.ndim != 1
+            for value in (active, active_ids, alive, stable_ids, energy, grad_x, grad_y)
+        ):
+            raise ValueError("group detection vectors must be one-dimensional")
+        capacity = alive.size
+        if any(value.size != capacity for value in (stable_ids, energy, grad_x, grad_y)):
+            raise ValueError("group detection world vectors must share one capacity")
+        if targets.ndim != 2 or trust.shape != targets.shape or targets.shape[0] != capacity:
+            raise ValueError("group detection relation arrays must have aligned fixed-slot shapes")
+        if np.any(targets < -1) or np.any(targets >= capacity):
+            raise ValueError("group detection relation targets are out of range")
+        if active.size != active_ids.size or not np.array_equal(active, np.flatnonzero(alive)):
+            raise ValueError("group detection active rows do not match occupancy")
+        if not np.array_equal(stable_ids[active], active_ids):
+            raise ValueError("group detection active entity IDs are stale")
+        if int(snapshot.min_members) <= 0 or int(snapshot.propagation_rounds) < 0:
+            raise ValueError("group detection parameters are invalid")
+        if active.size == 0:
+            return ungrouped_group_label_plan(active, active_ids, snapshot.tick)
+
+        labels = np.arange(capacity, dtype=np.int32)
+        trusted = (targets >= 0) & (trust >= np.float32(snapshot.trust_threshold))
+        # Fixed-round minimum-label propagation is deliberately kept as the
+        # reference semantic.  Alternative planners must emit the same plan
+        # contract, while approximate algorithms can be configured explicitly.
+        for _ in range(int(snapshot.propagation_rounds)):
+            new_labels = labels.copy()
+            for slot in range(targets.shape[1]):
+                target = targets[:, slot]
+                valid = trusted[:, slot] & alive & (target >= 0)
+                safe_target = np.where(valid, target, 0)
+                candidate = labels[safe_target]
+                new_labels = np.where(valid, np.minimum(new_labels, candidate), new_labels)
+            labels = new_labels
+
+        roots = labels[active]
+        unique_roots, inverse, counts = np.unique(roots, return_inverse=True, return_counts=True)
+        valid_group = counts >= int(snapshot.min_members)
+        root_to_group = np.zeros(unique_roots.size, dtype=np.uint64)
+        root_to_group[valid_group] = stable_ids[unique_roots[valid_group]]
+        entity_groups = root_to_group[inverse]
+        valid_members = entity_groups != 0
+        if not np.any(valid_members):
+            empty = ungrouped_group_label_plan(active, active_ids, snapshot.tick)
+            return GroupLabelPlan(
+                active_indices=empty.active_indices,
+                active_entity_ids=empty.active_entity_ids,
+                entity_group_ids=entity_groups,
+                group_tokens=empty.group_tokens,
+                member_starts=empty.member_starts,
+                member_counts=empty.member_counts,
+                member_indices=empty.member_indices,
+                group_direction_x=empty.group_direction_x,
+                group_direction_y=empty.group_direction_y,
+                mean_energy=empty.mean_energy,
+                tick=empty.tick,
+            )
+
+        group_tokens, group_inverse = np.unique(
+            entity_groups[valid_members], return_inverse=True
+        )
+        members_active_order = active[valid_members]
+        member_counts = np.bincount(group_inverse, minlength=group_tokens.size).astype(np.int32)
+        sums_x = np.bincount(
+            group_inverse, weights=grad_x[members_active_order], minlength=group_tokens.size
+        )
+        sums_y = np.bincount(
+            group_inverse, weights=grad_y[members_active_order], minlength=group_tokens.size
+        )
+        dx = sums_x / np.maximum(member_counts, 1)
+        dy = sums_y / np.maximum(member_counts, 1)
+        norm = np.maximum(np.hypot(dx, dy), 1e-6)
+        dx /= norm
+        dy /= norm
+        mean_energy = np.bincount(
+            group_inverse, weights=energy[members_active_order], minlength=group_tokens.size
+        ) / np.maximum(member_counts, 1)
+
+        # One stable grouping pass gives downstream graph commit direct slices
+        # instead of forcing one full active-row scan per observed group.
+        member_order = np.argsort(group_inverse, kind="stable")
+        member_indices = members_active_order[member_order]
+        member_starts = np.empty(group_tokens.size, dtype=np.int64)
+        member_starts[0] = 0
+        if group_tokens.size > 1:
+            np.cumsum(member_counts[:-1], out=member_starts[1:])
+        return GroupLabelPlan(
+            active_indices=active.copy(),
+            active_entity_ids=active_ids.copy(),
+            entity_group_ids=entity_groups.astype(np.uint64, copy=False),
+            group_tokens=group_tokens.astype(np.uint64, copy=False),
+            member_starts=member_starts,
+            member_counts=member_counts,
+            member_indices=member_indices.astype(np.int32, copy=False),
+            group_direction_x=dx.astype(np.float32),
+            group_direction_y=dy.astype(np.float32),
+            mean_energy=mean_energy.astype(np.float32),
+            tick=int(snapshot.tick),
+        )
 
 
 @dataclass(frozen=True)
@@ -389,57 +593,156 @@ class SocialSystem:
         resource_grad_y: np.ndarray,
         tick: int,
     ) -> GroupSummary:
-        active = np.flatnonzero(alive).astype(np.int32)
+        """Backward-compatible snapshot/plan/commit convenience wrapper."""
+        snapshot = self.group_detection_snapshot(
+            alive,
+            stable_ids,
+            energy,
+            resource_grad_x,
+            resource_grad_y,
+            tick,
+        )
+        plan = DeterministicGroupLabelPlanner().plan(snapshot)
+        return self.commit_group_plan(plan, alive, stable_ids)
+
+    def group_detection_snapshot(
+        self,
+        alive: np.ndarray,
+        stable_ids: np.ndarray,
+        energy: np.ndarray,
+        resource_grad_x: np.ndarray,
+        resource_grad_y: np.ndarray,
+        tick: int,
+    ) -> GroupDetectionSnapshot:
+        """Expose the complete read boundary for group-label planners."""
+        alive_values = np.asarray(alive, dtype=bool)
+        stable_id_values = np.asarray(stable_ids, dtype=np.uint64)
+        energy_values = np.asarray(energy, dtype=np.float32)
+        grad_x = np.asarray(resource_grad_x, dtype=np.float32)
+        grad_y = np.asarray(resource_grad_y, dtype=np.float32)
+        capacity = self.target.shape[0]
+        if any(
+            value.ndim != 1 or value.size != capacity
+            for value in (alive_values, stable_id_values, energy_values, grad_x, grad_y)
+        ):
+            raise ValueError("group detection world vectors must match social capacity")
+        active = np.flatnonzero(alive_values).astype(np.int32)
+        # Group detection is a lower-frequency relationship consumer.  The
+        # lazy decay write belongs to snapshot construction; the planner that
+        # follows is pure and has no reference to SocialSystem.
+        self._materialize_decay(active, tick, assume_unique=True)
+        return GroupDetectionSnapshot(
+            active_indices=_readonly_view(active),
+            active_entity_ids=_readonly_view(stable_id_values[active].copy()),
+            alive=_readonly_view(alive_values),
+            stable_ids=_readonly_view(stable_id_values),
+            energy=_readonly_view(energy_values),
+            relation_targets=_readonly_view(self.target),
+            relation_trust=_readonly_view(self.trust),
+            resource_grad_x=_readonly_view(grad_x),
+            resource_grad_y=_readonly_view(grad_y),
+            trust_threshold=float(self.cfg.social.trust_group_threshold),
+            min_members=int(self.cfg.social.group_min_members),
+            propagation_rounds=8,
+            tick=int(tick),
+        )
+
+    def commit_group_plan(
+        self,
+        plan: GroupLabelPlan,
+        alive: np.ndarray,
+        stable_ids: np.ndarray,
+    ) -> GroupSummary:
+        """Validate and commit one group plan against current world identity."""
+        active = np.asarray(plan.active_indices, dtype=np.int32)
+        active_ids = np.asarray(plan.active_entity_ids, dtype=np.uint64)
+        entity_groups = np.asarray(plan.entity_group_ids, dtype=np.uint64)
+        tokens = np.asarray(plan.group_tokens, dtype=np.uint64)
+        starts = np.asarray(plan.member_starts, dtype=np.int64)
+        counts = np.asarray(plan.member_counts, dtype=np.int32)
+        members = np.asarray(plan.member_indices, dtype=np.int32)
+        direction_x = np.asarray(plan.group_direction_x, dtype=np.float32)
+        direction_y = np.asarray(plan.group_direction_y, dtype=np.float32)
+        mean_energy = np.asarray(plan.mean_energy, dtype=np.float32)
+        vectors = (
+            active,
+            active_ids,
+            entity_groups,
+            tokens,
+            starts,
+            counts,
+            members,
+            direction_x,
+            direction_y,
+            mean_energy,
+        )
+        if any(value.ndim != 1 for value in vectors):
+            raise ValueError("group label plan arrays must be one-dimensional")
+        if active.size != active_ids.size or active.size != entity_groups.size:
+            raise ValueError("group label plan active arrays must be aligned")
+        if any(value.size != tokens.size for value in (starts, counts, direction_x, direction_y, mean_energy)):
+            raise ValueError("group label plan aggregate arrays must be aligned")
+        current_alive = np.asarray(alive, dtype=bool)
+        current_ids = np.asarray(stable_ids, dtype=np.uint64)
+        capacity = self.group_id.size
+        if current_alive.ndim != 1 or current_ids.ndim != 1 or current_alive.size != capacity or current_ids.size != capacity:
+            raise ValueError("group commit world vectors must match social capacity")
+        if not np.array_equal(active, np.flatnonzero(current_alive)):
+            raise ValueError("group label plan occupancy is stale")
+        if not np.array_equal(active_ids, current_ids[active]):
+            raise ValueError("group label plan entity identity is stale")
+        if tokens.size:
+            if np.any(tokens == 0) or np.any(tokens[1:] <= tokens[:-1]):
+                raise ValueError("group tokens must be nonzero and strictly ordered")
+            expected_starts = np.empty(tokens.size, dtype=np.int64)
+            expected_starts[0] = 0
+            if tokens.size > 1:
+                np.cumsum(counts[:-1], out=expected_starts[1:])
+            if np.any(counts <= 0) or not np.array_equal(starts, expected_starts):
+                raise ValueError("group membership segments are invalid")
+        if int(counts.astype(np.int64).sum()) != members.size:
+            raise ValueError("group membership segment sizes do not match members")
+        if members.size:
+            if np.any(members < 0) or np.any(members >= capacity) or np.unique(members).size != members.size:
+                raise ValueError("group membership contains an invalid or duplicate slot")
+            member_positions = np.searchsorted(active, members)
+            if np.any(member_positions >= active.size) or not np.array_equal(active[member_positions], members):
+                raise ValueError("group membership contains an inactive slot")
+            expected_member_tokens = np.repeat(tokens, counts)
+            if not np.array_equal(entity_groups[member_positions], expected_member_tokens):
+                raise ValueError("group membership segments do not match entity labels")
+            same_group = expected_member_tokens[1:] == expected_member_tokens[:-1]
+            if np.any(same_group & (members[1:] <= members[:-1])):
+                raise ValueError("group members must keep ascending slot order per segment")
+        if np.count_nonzero(entity_groups) != members.size:
+            raise ValueError("group plan labeled-member count is inconsistent")
+        if tokens.size and not np.all(np.isin(entity_groups[entity_groups != 0], tokens)):
+            raise ValueError("group plan contains an unknown group token")
+        if int(plan.tick) < 0:
+            raise ValueError("group label plan tick must be non-negative")
+        if not np.all(np.isfinite(direction_x)) or not np.all(np.isfinite(direction_y)):
+            raise ValueError("group directions must be finite")
+        if not np.all(np.isfinite(mean_energy)):
+            raise ValueError("group mean energy must be finite")
+
         if active.size == 0:
             self.group_id.fill(0)
-            return GroupSummary(np.empty(0, dtype=np.uint64), np.empty(0, dtype=np.int32), np.empty(0, dtype=np.float32))
-
-        # Group detection is the other relationship consumer.  Deferring
-        # decay until this lower-frequency boundary preserves the intended
-        # geometric rule without a full O(N*K) pass every world tick.
-        self._materialize_decay(active, tick, assume_unique=True)
-        labels = np.arange(alive.size, dtype=np.int32)
-        trusted = (self.target >= 0) & (self.trust >= self.cfg.social.trust_group_threshold)
-        # Label propagation is approximate but vectorizable and deterministic.
-        for _ in range(8):
-            new_labels = labels.copy()
-            for slot in range(self.target.shape[1]):
-                target = self.target[:, slot]
-                valid = trusted[:, slot] & alive & (target >= 0)
-                safe_target = np.where(valid, target, 0)
-                candidate = labels[safe_target]
-                new_labels = np.where(valid, np.minimum(new_labels, candidate), new_labels)
-            labels = new_labels
-
-        roots = labels[active]
-        unique_roots, inverse, counts = np.unique(roots, return_inverse=True, return_counts=True)
-        valid_group = counts >= self.cfg.social.group_min_members
-        root_to_group = np.zeros(unique_roots.size, dtype=np.uint64)
-        root_to_group[valid_group] = stable_ids[unique_roots[valid_group]]
-        new_group = root_to_group[inverse]
-
-        old = self.group_id[active].copy()
-        self.group_id[active] = new_group
-        same = old == new_group
-        self.group_age[active] = np.where((new_group != 0) & same, self.group_age[active] + 1, np.where(new_group != 0, 1, 0))
-        self.group_dir_x[active] = 0.0
-        self.group_dir_y[active] = 0.0
-
-        valid_members = new_group != 0
-        if np.any(valid_members):
-            group_values, group_inverse = np.unique(new_group[valid_members], return_inverse=True)
-            member_indices = active[valid_members]
-            sums_x = np.bincount(group_inverse, weights=resource_grad_x[member_indices], minlength=group_values.size)
-            sums_y = np.bincount(group_inverse, weights=resource_grad_y[member_indices], minlength=group_values.size)
-            member_counts = np.bincount(group_inverse, minlength=group_values.size)
-            dx = sums_x / np.maximum(member_counts, 1)
-            dy = sums_y / np.maximum(member_counts, 1)
-            norm = np.maximum(np.hypot(dx, dy), 1e-6)
-            dx /= norm
-            dy /= norm
-            self.group_dir_x[member_indices] = dx[group_inverse].astype(np.float32)
-            self.group_dir_y[member_indices] = dy[group_inverse].astype(np.float32)
-            mean_energy = np.bincount(group_inverse, weights=energy[member_indices], minlength=group_values.size) / np.maximum(member_counts, 1)
-            return GroupSummary(group_values, member_counts.astype(np.int32), mean_energy.astype(np.float32))
-
-        return GroupSummary(np.empty(0, dtype=np.uint64), np.empty(0, dtype=np.int32), np.empty(0, dtype=np.float32))
+            self.group_age.fill(0)
+            self.group_dir_x.fill(0.0)
+            self.group_dir_y.fill(0.0)
+        else:
+            old = self.group_id[active].copy()
+            self.group_id[active] = entity_groups
+            same = old == entity_groups
+            self.group_age[active] = np.where(
+                (entity_groups != 0) & same,
+                self.group_age[active] + 1,
+                np.where(entity_groups != 0, 1, 0),
+            )
+            self.group_dir_x[active] = 0.0
+            self.group_dir_y[active] = 0.0
+            if members.size:
+                group_rows = np.repeat(np.arange(tokens.size, dtype=np.int32), counts)
+                self.group_dir_x[members] = direction_x[group_rows]
+                self.group_dir_y[members] = direction_y[group_rows]
+        return GroupSummary(tokens.copy(), counts.copy(), mean_energy.copy())

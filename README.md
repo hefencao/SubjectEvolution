@@ -29,11 +29,11 @@
 - 区域信号场与固定容量、带延迟的点对点消息队列；
 - 固定容量信任关系；分享事件按拥有者局部顺序分轮批处理；
 - 关系信任/熟悉度在分享写入或群体检测读取时按精确几何规则物化；无事件 tick 不再扫描整张关系表；
-- 基于高信任关系的社会群体候选识别；
+- 基于高信任关系的社会群体候选识别；只读 `GroupDetectionSnapshot` 由可插拔规划器生成规范 `GroupLabelPlan`，社会状态和主体图分别提交；
 - 群体资源方向形成对成员行动的高层影响；
 - 谱系继承、变异、出生、死亡和容量管理；
 - 社会依赖代理指标、群体指标、信息检测率、行动熵，以及逐 step 的显式 H2D/D2H 和稠密消息字节规避统计；
-- 身体、谱系和社会候选主体图，以及主体ID和实体ID的显式分离；
+- 身体、谱系和社会候选主体图，以及主体ID和实体ID的显式分离；群体成员一次分段提交，活跃类型摘要增量维护；
 - 成对随机的反事实分支：关闭社会控制、切断社会连接、打乱记忆或冻结遗传；
 - 检查点、CSV指标、运行元数据和基础测试。
 
@@ -69,7 +69,7 @@ conda activate se
 python -m pip install -U cupy-cuda13x
 export CUDA_PATH=/usr/local/cuda-13.3
 export CUDA_HOME="$CUDA_PATH"
-export LD_LIBRARY_PATH="$CUDA_PATH/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="$CUDA_PATH/targets/x86_64-linux/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 python -m pytest -q
 ```
 
@@ -133,7 +133,7 @@ python -m subject_evolution.cli \
 conda activate se
 export CUDA_PATH=/usr/local/cuda-13.3
 export CUDA_HOME="$CUDA_PATH"
-export LD_LIBRARY_PATH="$CUDA_PATH/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="$CUDA_PATH/targets/x86_64-linux/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 python scripts/verify_gpu_foundation.py --config configs/mvp_small.json
 ```
 
@@ -183,6 +183,7 @@ run_seed, tick, simulation_phase, subject_id, stream_id, draw_index
 - `policy.py`：可替换策略接口的首个参数化实现；
 - `control.py`：控制提案、仲裁协议、完整贡献来源审计和可选启发式社会引导；
 - `social.py`：可回放关系事件计划、固定槽关系和候选群体；
+- `subjects.py`：候选主体节点、历史边与规范群体成员分段提交；
 - `simulation.py`：阶段化世界执行；
 - `environment.py`：资源、气候和危险。
 

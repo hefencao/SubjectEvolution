@@ -46,7 +46,14 @@ from .lifecycle import (
 from .metrics import MetricsWriter
 from .policy import Action, ParametricPolicy
 from .random_api import RandomContext, Stream, normal, uniform01
-from .social import GroupSummary, SocialSystem
+from .social import (
+    DeterministicGroupLabelPlanner,
+    GroupLabelPlan,
+    GroupLabelPlanner,
+    GroupSummary,
+    SocialSystem,
+    ungrouped_group_label_plan,
+)
 from .spatial import SpatialIndex
 from .subjects import CandidateSubjectGraph
 
@@ -293,6 +300,7 @@ class Simulation:
         backend: str = "cpu",
         conflict_resolver: ActionConflictResolver | None = None,
         control_arbiter: ControlArbiter | None = None,
+        group_label_planner: GroupLabelPlanner | None = None,
     ) -> None:
         self.cfg = cfg
         self.output_dir = Path(output_dir)
@@ -344,6 +352,11 @@ class Simulation:
         self.last_group_summary = GroupSummary(
             np.empty(0, dtype=np.uint64), np.empty(0, dtype=np.int32), np.empty(0, dtype=np.float32)
         )
+        self.last_group_plan: GroupLabelPlan = ungrouped_group_label_plan(
+            initial,
+            self.entities.entity_id[initial],
+            tick=0,
+        )
         self.total_births = 0
         self.total_deaths = 0
         self.action_counts = np.zeros(len(Action), dtype=np.int64)
@@ -366,6 +379,11 @@ class Simulation:
             HeuristicSocialGuidanceArbiter()
             if cfg.control.heuristic_social_guidance
             else SingleProposalControlArbiter()
+        )
+        self.group_label_planner = (
+            group_label_planner
+            if group_label_planner is not None
+            else DeterministicGroupLabelPlanner()
         )
         self.heuristic_guidance_actions = 0
         self.social_control_enabled = True
@@ -395,6 +413,7 @@ class Simulation:
             backend=self.execution_backend,
             conflict_resolver=copy.deepcopy(self.conflict_resolver),
             control_arbiter=copy.deepcopy(self.control_arbiter),
+            group_label_planner=copy.deepcopy(self.group_label_planner),
         )
         branch.entities = copy.deepcopy(self.entities)
         branch.environment = copy.deepcopy(self.environment)
@@ -405,6 +424,7 @@ class Simulation:
         branch.subjects = self.subjects.clone()
         branch.tick = self.tick
         branch.last_group_summary = copy.deepcopy(self.last_group_summary)
+        branch.last_group_plan = copy.deepcopy(self.last_group_plan)
         branch.total_births = self.total_births
         branch.total_deaths = self.total_deaths
         branch.action_counts = self.action_counts.copy()
@@ -890,10 +910,11 @@ class Simulation:
         # Candidate social subjects are updated at a slower timescale.
         phase_started = time.perf_counter()
         if self.tick % cfg.social.group_update_period == 0:
+            group_active = np.flatnonzero(ent.alive).astype(np.int32)
             if self.social_connections_enabled:
                 if resource_gradient is None:
                     raise RuntimeError("GPU step omitted required resource gradients")
-                self.last_group_summary = self.social.update_groups(
+                group_snapshot = self.social.group_detection_snapshot(
                     ent.alive,
                     ent.entity_id,
                     ent.energy,
@@ -901,12 +922,27 @@ class Simulation:
                     resource_gradient[1],
                     self.tick,
                 )
+                self.last_group_plan = self.group_label_planner.plan(group_snapshot)
             else:
-                self.social.group_id.fill(0)
-                self.last_group_summary = GroupSummary(
-                    np.empty(0, dtype=np.uint64), np.empty(0, dtype=np.int32), np.empty(0, dtype=np.float32)
+                self.last_group_plan = ungrouped_group_label_plan(
+                    group_active,
+                    ent.entity_id[group_active],
+                    self.tick,
                 )
-            self.subjects.update_groups(ent.alive, self.social.group_id, self.tick)
+            if int(self.last_group_plan.tick) != self.tick:
+                raise ValueError("group label planner returned a plan for the wrong tick")
+            self.last_group_summary = self.social.commit_group_plan(
+                self.last_group_plan,
+                ent.alive,
+                ent.entity_id,
+            )
+            self.subjects.commit_group_membership(
+                self.last_group_plan.group_tokens,
+                self.last_group_plan.member_starts,
+                self.last_group_plan.member_counts,
+                self.last_group_plan.member_indices,
+                self.tick,
+            )
             if self.gpu_runtime is not None:
                 self.gpu_runtime.mark_social_state_dirty()
         stats.group_count = int(self.last_group_summary.group_ids.size)
@@ -1084,6 +1120,12 @@ class Simulation:
                 "heuristic_social_guidance_enabled": self.cfg.control.heuristic_social_guidance,
                 "heuristic_social_guidance_weight": self.cfg.control.heuristic_social_guidance_weight,
                 "heuristic_guidance_actions": self.heuristic_guidance_actions,
+            },
+            "group_planning": {
+                "planner": type(self.group_label_planner).__name__,
+                "last_plan_tick": self.last_group_plan.tick,
+                "last_plan_groups": self.last_group_plan.group_count,
+                "last_plan_members": self.last_group_plan.member_count,
             },
         }
         (self.output_dir / "run_metadata.json").write_text(

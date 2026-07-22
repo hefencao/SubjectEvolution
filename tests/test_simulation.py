@@ -428,6 +428,8 @@ def test_run_metadata_uses_package_version(tmp_path):
     summary = json.loads((output / "summary.json").read_text(encoding="utf-8"))
     assert metadata["version"] == __version__
     assert metadata["execution_backend"] == "cpu"
+    assert metadata["group_planning"]["planner"] == "DeterministicGroupLabelPlanner"
+    assert metadata["group_planning"]["last_plan_tick"] >= 0
     assert metadata["control"]["arbiter"] == "SingleProposalControlArbiter"
     assert metadata["control"]["heuristic_social_guidance_enabled"] is False
     assert metadata["control"]["heuristic_guidance_actions"] == 0
