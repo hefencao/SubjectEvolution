@@ -34,10 +34,39 @@ class PolicyDecision:
 
 
 class ParametricPolicy:
-    """Shared policy form with per-entity inherited latent traits and finite memory."""
+    """Shared action semantics with a fully inherited linear strategy.
 
-    TRAITS = 8
+    The feature vocabulary and physical action masks are model constraints.
+    No action has a hand-authored preference: every logit coefficient lives in
+    the entity genome, is inherited by offspring, and is changed only through
+    mutation.  This separation is important for scientific runs because the
+    engine defines what an action *can* mean without encoding which action an
+    entity *should* choose.
+    """
+
+    MORPHOLOGY_TRAITS = 8
     MEMORY = 4
+    FEATURE_NAMES = (
+        "bias",
+        "energy",
+        "integrity",
+        "fertility",
+        "scarcity",
+        "local_resource",
+        "resource_signal",
+        "danger_signal",
+        "social_signal",
+        "partner_exists",
+        "mean_partner_need",
+        "uncertainty",
+        "memory_resource",
+        "memory_social",
+        "memory_danger",
+        "memory_uncertainty",
+    )
+    STRATEGY_FEATURES = len(FEATURE_NAMES)
+    STRATEGY_GENES = len(Action) * STRATEGY_FEATURES
+    GENOME_SIZE = MORPHOLOGY_TRAITS + STRATEGY_GENES
 
     def __init__(self, cfg: SimulationConfig) -> None:
         self.cfg = cfg
@@ -80,38 +109,44 @@ class ParametricPolicy:
         scarcity = 1.0 - xp.clip(local_resources[:, 0] / max(self.cfg.environment.resource_capacity[0], 1e-6), 0.0, 1.0)
         uncertainty = info.uncertainty.mean(axis=1)
 
-        logits = xp.zeros((active.size, len(Action)), dtype=xp.float32)
-        # Traits: resource seeking, sociality, signalling, reproduction, danger aversion,
-        # exploration, trust, group dependence. Values are centered near 0 and transformed here.
-        seek = 1.0 + g[:, 0]
-        social = 1.0 + g[:, 1]
-        signal_trait = 1.0 + g[:, 2]
-        reproduce_trait = 1.0 + g[:, 3]
-        danger_avoid = 1.0 + g[:, 4]
-        explore = 1.0 + g[:, 5]
-        trust = 1.0 + g[:, 6]
-        group_dependence = 1.0 + g[:, 7]
-
-        logits[:, Action.REST] = 0.25 + (1.0 - health) * 0.8 - scarcity * 0.2
-        logits[:, Action.MOVE_RESOURCE] = seek * (scarcity + resource_signal * 0.25) + uncertainty * explore * 0.25
-        logits[:, Action.MOVE_SOCIAL] = (
-            social
-            * group_dependence
-            * (0.5 + 2.0 * self.cfg.policy.group_influence)
-            * (social_signal + 0.25)
-            * partner_exists
+        local_resource = xp.clip(
+            local_resources[:, 0]
+            / max(self.cfg.environment.resource_capacity[0], 1e-6),
+            0.0,
+            1.5,
         )
-        logits[:, Action.HARVEST] = seek * xp.clip(local_resources[:, 0], 0.0, 2.0) * (1.2 - e)
-        logits[:, Action.SHARE] = social * trust * xp.maximum(e - 0.45, 0.0) * mean_partner_need * 2.5
-        logits[:, Action.SIGNAL] = signal_trait * (local_resources[:, 0] + danger_signal) * xp.maximum(e - 0.2, 0.0) * 0.35
-        logits[:, Action.REPRODUCE] = reproduce_trait * xp.maximum(e - 0.55, 0.0) * xp.maximum(fert - 0.25, 0.0) * 2.0
-        logits[:, Action.FLEE] = danger_avoid * (danger_signal + (1.0 - health) * 0.5)
-
-        # Memory produces modest path dependence without online backpropagation.
-        logits[:, Action.MOVE_RESOURCE] += mem[:, 0] * 0.25
-        logits[:, Action.MOVE_SOCIAL] += mem[:, 1] * 0.25
-        logits[:, Action.FLEE] += mem[:, 2] * 0.25
-        logits[:, Action.REST] += mem[:, 3] * 0.10
+        features = xp.stack(
+            (
+                xp.ones_like(e),
+                e,
+                health,
+                fert,
+                scarcity,
+                local_resource,
+                resource_signal,
+                danger_signal,
+                social_signal,
+                partner_exists,
+                mean_partner_need,
+                uncertainty,
+                mem[:, 0],
+                mem[:, 1],
+                mem[:, 2],
+                mem[:, 3],
+            ),
+            axis=1,
+        ).astype(xp.float32, copy=False)
+        strategy = g[:, self.MORPHOLOGY_TRAITS :].reshape(
+            active.size,
+            len(Action),
+            self.STRATEGY_FEATURES,
+        )
+        # Accumulate in a fixed feature order.  Besides making the causal
+        # mapping explicit, this avoids backend-dependent contraction plans
+        # changing fixed-seed categorical decisions near a logit tie.
+        logits = xp.zeros((active.size, len(Action)), dtype=xp.float32)
+        for feature_index in range(self.STRATEGY_FEATURES):
+            logits += strategy[:, :, feature_index] * features[:, feature_index, None]
 
         mask = xp.ones_like(logits, dtype=bool)
         mask[:, Action.SHARE] = partner_exists > 0

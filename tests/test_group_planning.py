@@ -138,8 +138,38 @@ def test_candidate_graph_consumes_segments_and_tracks_summary_incrementally() ->
     assert summary["candidate_subjects"] == 8
 
 
+def test_candidate_subject_graph_exposes_benefit_boundary_cohesion() -> None:
+    graph = CandidateSubjectGraph(4)
+    graph.register_bodies(
+        np.arange(4, dtype=np.int32),
+        np.asarray([1, 2, 3, 4], dtype=np.uint64),
+        tick=0,
+    )
+    graph.update_groups(
+        np.ones(4, dtype=bool),
+        np.asarray([10, 10, 20, 20], dtype=np.uint64),
+        tick=1,
+    )
+
+    graph.record_benefit_flows(
+        np.asarray([10, 10, 20, 0], dtype=np.uint64),
+        np.asarray([10, 20, 0, 10], dtype=np.uint64),
+        np.asarray([2.0, 1.0, 3.0, 4.0], dtype=np.float32),
+        tick=2,
+    )
+
+    summary = graph.summary()
+    assert summary["benefit_boundary_subjects"] == 2
+    assert summary["benefit_boundary_internal_total"] == 2.0
+    assert summary["benefit_boundary_external_out_total"] == 4.0
+    assert np.isclose(summary["benefit_boundary_weighted_cohesion"], 1.0 / 3.0)
+    assert np.isclose(summary["benefit_boundary_mean_cohesion"], 1.0 / 3.0)
+
+
 def test_simulation_accepts_a_pluggable_group_label_planner(tmp_path) -> None:
     class RecordingPlanner:
+        scientific_safe = True
+
         def __init__(self) -> None:
             self.calls = 0
 

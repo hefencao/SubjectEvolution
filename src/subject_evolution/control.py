@@ -68,6 +68,8 @@ class SingleProposalControlArbiter:
     return this same provenance-bearing result shape.
     """
 
+    scientific_safe = True
+
     def __init__(self, *, validate_unique_carriers: bool = False) -> None:
         # Simulation active rows come from a unique spatial index.  Keep the
         # O(N log N) duplicate assertion opt-in for tests and third-party
@@ -257,6 +259,7 @@ class AutonomyRecoveryArbiter:
     """
 
     is_heuristic = True
+    scientific_safe = False
 
     def __init__(self, base: ControlArbiter) -> None:
         self.base = base
@@ -367,6 +370,7 @@ class HeuristicSocialGuidanceArbiter:
     """
 
     is_heuristic = True
+    scientific_safe = False
 
     def arbitrate(self, proposals: tuple[ControlProposalBatch, ...]) -> ArbitrationResult:
         if len(proposals) != 2:

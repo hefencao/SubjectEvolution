@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import asdict, replace
+import json
 from pathlib import Path
-import shutil
 
 from .config import load_config
 from .counterfactual import run_paired
+from .interventions import ExperimentMode, intervention_names
 from .simulation import Simulation
 
 
@@ -22,9 +24,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--counterfactual",
         help=(
-            "Run a paired branch from the same snapshot. Choices: "
-            "disable-social-control, cut-social-connections, shuffle-memory, "
-            "freeze-genotype, reverse-environment, restore-autonomy."
+            "Run a paired branch from the same snapshot. Scientific choices: "
+            + ", ".join(intervention_names(mode=ExperimentMode.SCIENTIFIC))
+            + ". independent-foraging-override is entertainment-only."
+        ),
+    )
+    parser.add_argument(
+        "--experiment-mode",
+        choices=tuple(mode.value for mode in ExperimentMode),
+        help=(
+            "Override run.experiment_mode. Scientific mode rejects direct action "
+            "replacement; entertainment mode permits it and labels the output."
         ),
     )
     parser.add_argument(
@@ -39,7 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--shared-intervention",
         help=(
             "Apply one intervention to the still-shared history before branching; "
-            "for example cut-social-connections before testing restore-autonomy."
+            "for example cut-social-connections before an entertainment override."
         ),
     )
     parser.add_argument(
@@ -62,8 +72,13 @@ def main() -> None:
     config_path = Path(args.config)
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(config_path, output / "config.json")
     cfg = load_config(config_path)
+    if args.experiment_mode is not None:
+        cfg = replace(cfg, run=replace(cfg.run, experiment_mode=args.experiment_mode))
+    (output / "config.json").write_text(
+        json.dumps(asdict(cfg), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
     if args.counterfactual:
         simulation = Simulation(cfg, output / "baseline", backend=args.backend)
         run_paired(

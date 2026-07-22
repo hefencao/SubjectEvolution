@@ -114,6 +114,8 @@ class ActionConflictResolver(Protocol):
 class DeterministicActionConflictResolver:
     """Reference resolver using explicit stable ordering for contested targets."""
 
+    scientific_safe = True
+
     def __init__(self, cfg: SimulationConfig) -> None:
         self.cfg = cfg
 

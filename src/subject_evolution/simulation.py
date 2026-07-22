@@ -22,6 +22,7 @@ from .control import (
 )
 from .device_state import EntityDeviceCommitPlan, build_entity_device_commit_plan
 from .environment import Environment
+from .evolution import EvolutionProgressTracker
 from .execution import (
     ActionConflictResolver,
     ActionResolutionSnapshot,
@@ -31,6 +32,7 @@ from .execution import (
 )
 from .gpu_runtime import HybridGpuRuntime
 from .information import InformationSystem, SignalEmissionBatch, SignalEmissionPlan, SignalEmissionScheduler
+from .interventions import ExperimentMode, resolve_intervention
 from .intents import (
     ActionIntentBatch,
     ActionResolutionBatch,
@@ -48,7 +50,7 @@ from .lifecycle import (
 )
 from .metrics import MetricsWriter
 from .policy import Action, ParametricPolicy
-from .random_api import RandomContext, Stream, normal, uniform01
+from .random_api import RandomContext, Stream, bernoulli, normal, uniform01
 from .social import (
     DeterministicGroupLabelPlanner,
     GroupLabelPlan,
@@ -67,6 +69,9 @@ class StepStats:
     deaths: int = 0
     harvested_energy: float = 0.0
     shared_energy: float = 0.0
+    benefit_internal_energy: float = 0.0
+    benefit_cross_boundary_energy: float = 0.0
+    benefit_unbounded_energy: float = 0.0
     signals: int = 0
     group_count: int = 0
     mean_group_size: float = 0.0
@@ -83,6 +88,7 @@ class StepStats:
     conflict_seconds: float = 0.0
     graph_seconds: float = 0.0
     device_commit_seconds: float = 0.0
+    evolution_evaluation_seconds: float = 0.0
     gpu_h2d_bytes: int = 0
     gpu_d2h_bytes: int = 0
     gpu_direct_message_events: int = 0
@@ -95,7 +101,7 @@ class StepStats:
 
 
 class EntityState:
-    GENOTYPE_SIZE = 8
+    GENOTYPE_SIZE = ParametricPolicy.GENOME_SIZE
     MEMORY_SIZE = 4
 
     def __init__(self, cfg: SimulationConfig) -> None:
@@ -114,6 +120,7 @@ class EntityState:
         self.information_store = np.zeros(cap, dtype=np.float32)
         self.fertility = np.zeros(cap, dtype=np.float32)
         self.age = np.zeros(cap, dtype=np.uint32)
+        self.generation = np.zeros(cap, dtype=np.uint32)
         self.lineage_id = np.zeros(cap, dtype=np.uint64)
         self.primary_subject_id = np.zeros(cap, dtype=np.uint64)
         self.lineage_subject_id = np.zeros(cap, dtype=np.uint64)
@@ -210,6 +217,7 @@ class EntityState:
         self.lineage_id[slots] = self.lineage_id[parents]
         self.alive[slots] = True
         self.age[slots] = 0
+        self.generation[slots] = self.generation[parents] + np.uint32(1)
         self.integrity[slots] = 1.0
         self.material[slots] = 0.0
         self.information_store[slots] = 0.0
@@ -235,16 +243,29 @@ class EntityState:
         self.energy[slots] = self.cfg.entities.reproduction_cost * 0.45
 
         mut_ctx = RandomContext(self.cfg.run.seed, tick, phase=71, stream=Stream.MUTATION)
+        mutation_stddev = (
+            self.cfg.policy.mutation_std if mutation_std is None else mutation_std
+        )
         for trait in range(self.GENOTYPE_SIZE):
+            mutate = bernoulli(
+                mut_ctx,
+                ids,
+                self.cfg.policy.mutation_probability,
+                draw_index=trait * 3,
+                validate_probability=False,
+            )
             mutation = normal(
                 mut_ctx,
                 ids,
                 0.0,
-                self.cfg.policy.mutation_std if mutation_std is None else mutation_std,
-                draw_index=trait * 2,
+                mutation_stddev,
+                draw_index=trait * 3 + 1,
+                validate_stddev=False,
             )
             self.genotype[slots, trait] = np.clip(
-                self.genotype[parents, trait] + mutation, -1.5, 1.5
+                self.genotype[parents, trait] + np.where(mutate, mutation, 0.0),
+                -1.5,
+                1.5,
             ).astype(np.float32)
         return parents, slots
 
@@ -312,6 +333,37 @@ class Simulation:
         group_label_planner: GroupLabelPlanner | None = None,
     ) -> None:
         self.cfg = cfg
+        self.experiment_mode = ExperimentMode(cfg.run.experiment_mode)
+        if (
+            self.experiment_mode is ExperimentMode.SCIENTIFIC
+            and cfg.control.heuristic_social_guidance
+        ):
+            raise ValueError(
+                "heuristic_social_guidance directly alters action direction and requires "
+                "run.experiment_mode='entertainment'"
+            )
+        if (
+            self.experiment_mode is ExperimentMode.SCIENTIFIC
+            and control_arbiter is not None
+            and not bool(getattr(control_arbiter, "scientific_safe", False))
+        ):
+            raise ValueError(
+                f"control arbiter {type(control_arbiter).__name__} is not declared "
+                "scientific_safe; use a reviewed arbiter or entertainment mode"
+            )
+        for component_name, component in (
+            ("conflict resolver", conflict_resolver),
+            ("group label planner", group_label_planner),
+        ):
+            if (
+                self.experiment_mode is ExperimentMode.SCIENTIFIC
+                and component is not None
+                and not bool(getattr(component, "scientific_safe", False))
+            ):
+                raise ValueError(
+                    f"{component_name} {type(component).__name__} is not declared "
+                    "scientific_safe; use a reviewed component or entertainment mode"
+                )
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.entities = EntityState(cfg)
@@ -376,6 +428,18 @@ class Simulation:
         self.total_births = 0
         self.total_deaths = 0
         self.action_counts = np.zeros(len(Action), dtype=np.int64)
+        self.benefit_internal_energy_total = 0.0
+        self.benefit_cross_boundary_energy_total = 0.0
+        self.benefit_unbounded_energy_total = 0.0
+        self.evolution_progress = EvolutionProgressTracker(
+            self.output_dir,
+            period=cfg.run.evolution_evaluation_period,
+            run_seed=cfg.run.seed,
+            temperature=cfg.policy.temperature,
+            alive=self.entities.alive,
+            stable_ids=self.entities.entity_id,
+            genotype=self.entities.genotype,
+        )
         self.last_intents: ActionIntentBatch | None = None
         self.last_resolutions: ActionResolutionBatch | None = None
         self.last_birth_allocation = empty_birth_allocation_plan(0)
@@ -397,6 +461,14 @@ class Simulation:
             if cfg.control.heuristic_social_guidance
             else SingleProposalControlArbiter()
         )
+        if (
+            self.experiment_mode is ExperimentMode.SCIENTIFIC
+            and not bool(getattr(self.control_arbiter, "scientific_safe", False))
+        ):
+            raise ValueError(
+                f"control arbiter {type(self.control_arbiter).__name__} is not declared "
+                "scientific_safe; use a reviewed arbiter or entertainment mode"
+            )
         self.group_label_planner = (
             group_label_planner
             if group_label_planner is not None
@@ -416,7 +488,7 @@ class Simulation:
         self.social_connections_enabled = True
         self.direct_messages_enabled = True
         self.freeze_genotype = False
-        self.intervention_history: list[dict[str, int | float | str]] = []
+        self.intervention_history: list[dict[str, object]] = []
         # Interactive ``step()`` calls keep host field mirrors current.  A
         # monolithic ``run()`` can defer that costly device->host copy until
         # completion because every intervening field consumer is device-side.
@@ -456,6 +528,12 @@ class Simulation:
         branch.total_births = self.total_births
         branch.total_deaths = self.total_deaths
         branch.action_counts = self.action_counts.copy()
+        branch.benefit_internal_energy_total = self.benefit_internal_energy_total
+        branch.benefit_cross_boundary_energy_total = (
+            self.benefit_cross_boundary_energy_total
+        )
+        branch.benefit_unbounded_energy_total = self.benefit_unbounded_energy_total
+        branch.evolution_progress = self.evolution_progress.clone(branch.output_dir)
         branch.last_birth_allocation = copy.deepcopy(self.last_birth_allocation)
         branch.last_death_events = copy.deepcopy(self.last_death_events)
         branch.last_entity_device_commit = copy.deepcopy(
@@ -487,13 +565,15 @@ class Simulation:
 
     def apply_intervention(self, intervention: str) -> None:
         """Apply one documented intervention without changing random streams."""
-        normalized = intervention.strip().lower().replace("_", "-")
+        spec = resolve_intervention(intervention)
+        spec.require_mode(self.experiment_mode)
+        normalized = spec.name
         active = np.flatnonzero(self.entities.alive).astype(np.int32)
         details: dict[str, int | float | str] = {}
-        if normalized in {"disable-social-control", "social-control-off"}:
+        if normalized == "disable-social-control":
             canonical = "disable-social-control"
             self.social_control_enabled = False
-        elif normalized in {"cut-social-connections", "cut-social"}:
+        elif normalized == "cut-social-connections":
             canonical = "cut-social-connections"
             self.social_connections_enabled = False
             self.direct_messages_enabled = False
@@ -509,16 +589,16 @@ class Simulation:
             self.entities.memory[active] = self.entities.memory[active[order]].copy()
             if self.gpu_runtime is not None:
                 self.gpu_runtime.mark_entity_static_dirty()
-        elif normalized in {"freeze-genotype", "freeze-genetic-expression"}:
+        elif normalized == "freeze-genotype":
             canonical = "freeze-genotype"
             self.freeze_genotype = True
-        elif normalized in {"reverse-environment", "environment-reversal"}:
+        elif normalized == "reverse-environment":
             canonical = "reverse-environment"
             self.environment.reverse_spatial_orientation()
             if self.gpu_runtime is not None:
                 self.gpu_runtime.reverse_environment()
-        elif normalized in {"restore-autonomy", "restore-foraging-autonomy"}:
-            canonical = "restore-autonomy"
+        elif normalized == "independent-foraging-override":
+            canonical = "independent-foraging-override"
             fraction = self.cfg.control.autonomy_recovery_fraction
             cohort_size = min(active.size, int(np.ceil(active.size * fraction)))
             selected = np.empty(0, dtype=np.int32)
@@ -551,13 +631,112 @@ class Simulation:
                 "module": "independent-foraging-v1",
             }
         else:
-            raise ValueError(
-                "Unknown intervention. Expected disable-social-control, cut-social-connections, "
-                "shuffle-memory, freeze-genotype, reverse-environment, or restore-autonomy."
-            )
+            raise AssertionError(f"unhandled registered intervention: {normalized}")
         self.intervention_history.append(
-            {"tick": self.tick, "type": canonical, **details}
+            {
+                "tick": self.tick,
+                "type": canonical,
+                "kind": spec.kind.value,
+                "target_scope": spec.target_scope,
+                "direct_action_control": spec.direct_action_control,
+                "experiment_mode": self.experiment_mode.value,
+                **details,
+            }
         )
+
+    def scientific_validity(self) -> dict[str, object]:
+        """Return a machine-readable provenance audit for this run.
+
+        This is a structural audit, not a claim that one finite trajectory is
+        empirical proof.  It makes the model conditions required for such a
+        proof testable and prevents entertainment controllers from being
+        silently mixed into the scientific baseline.
+        """
+        direct_interventions = [
+            str(record["type"])
+            for record in self.intervention_history
+            if bool(record.get("direct_action_control", False))
+        ]
+        violations: list[str] = []
+        if self.experiment_mode is not ExperimentMode.SCIENTIFIC:
+            violations.append("experiment mode is entertainment")
+        if self.cfg.control.heuristic_social_guidance:
+            violations.append("heuristic social guidance alters action direction")
+        if not bool(getattr(self.control_arbiter, "scientific_safe", False)):
+            violations.append(
+                f"control arbiter {type(self.control_arbiter).__name__} is not scientific-safe"
+            )
+        if not bool(getattr(self.conflict_resolver, "scientific_safe", False)):
+            violations.append(
+                f"conflict resolver {type(self.conflict_resolver).__name__} is not scientific-safe"
+            )
+        if not bool(getattr(self.group_label_planner, "scientific_safe", False)):
+            violations.append(
+                f"group label planner {type(self.group_label_planner).__name__} is not scientific-safe"
+            )
+        if direct_interventions:
+            violations.append(
+                "direct action replacement: " + ", ".join(direct_interventions)
+            )
+        valid = not violations
+        return {
+            "structural_evolution_provenance_valid": valid,
+            "strict_unintervened_baseline": valid and not self.intervention_history,
+            "violations": violations,
+            "strategy": {
+                "architecture": "inherited-linear-policy-v1",
+                "feature_constraints": list(ParametricPolicy.FEATURE_NAMES),
+                "action_preferences_hardcoded": False,
+                "strategy_gene_count": ParametricPolicy.STRATEGY_GENES,
+                "genome_size": ParametricPolicy.GENOME_SIZE,
+                "initialization": "bounded stateless random generation",
+                "transmission": "parental inheritance with configured mutation",
+                "mutation_probability_per_gene": self.cfg.policy.mutation_probability,
+                "mutation_std_conditional": self.cfg.policy.mutation_std,
+                "morphology_gene_semantics": {
+                    "sensor_quality": 0,
+                    "movement_speed": 5,
+                    "reserved_neutral": [1, 2, 3, 4, 6, 7],
+                },
+            },
+            "state_origins": {
+                "memory": "observation-driven finite-memory dynamics",
+                "generation": "parent generation plus one at committed birth",
+                "candidate_subjects": "derived from bodies, lineages, and relation structure",
+                "subject_shift": "measured from candidate/control provenance; never assigned as a state label",
+            },
+            "evolution_evaluation": {
+                "period_ticks": self.cfg.run.evolution_evaluation_period,
+                "feedback_to_world": False,
+                "strategy_sample_capacity": 4096,
+            },
+            "control_arbiter": {
+                "name": type(self.control_arbiter).__name__,
+                "scientific_safe": bool(
+                    getattr(self.control_arbiter, "scientific_safe", False)
+                ),
+            },
+            "world_components": {
+                "conflict_resolver": type(self.conflict_resolver).__name__,
+                "conflict_resolver_scientific_safe": bool(
+                    getattr(self.conflict_resolver, "scientific_safe", False)
+                ),
+                "group_label_planner": type(self.group_label_planner).__name__,
+                "group_label_planner_scientific_safe": bool(
+                    getattr(self.group_label_planner, "scientific_safe", False)
+                ),
+            },
+            "fixed_constraints": [
+                "physical action semantics and feasibility masks",
+                "sensor feature vocabulary",
+                "inheritance and mutation mechanics",
+                "candidate-subject measurement rules",
+            ],
+            "proof_scope": (
+                "structural provenance only; evolutionary or causal claims still require "
+                "preregistered replicated experiments"
+            ),
+        }
 
     def register_autonomy_observation_cohort(
         self,
@@ -641,6 +820,40 @@ class Simulation:
             self.social.apply_relation_updates(share.relation_updates)
         return float(share.amounts[committed].sum())
 
+    def _record_benefit_boundary(
+        self,
+        share: ShareResolution,
+        stats: StepStats,
+    ) -> None:
+        """Measure realized energy flows against current candidate boundaries."""
+        committed = share.success & share.valid_target & (share.amounts > 1e-8)
+        if not np.any(committed):
+            return
+        owners = share.owner_indices[committed]
+        targets = share.target_indices[committed]
+        amounts = np.asarray(share.amounts[committed], dtype=np.float64)
+        owner_groups = self.social.group_id[owners]
+        target_groups = self.social.group_id[targets]
+        internal = (owner_groups != 0) & (owner_groups == target_groups)
+        unbounded = (owner_groups == 0) & (target_groups == 0)
+        cross_boundary = ~(internal | unbounded)
+        stats.benefit_internal_energy = float(amounts[internal].sum())
+        stats.benefit_cross_boundary_energy = float(
+            amounts[cross_boundary].sum()
+        )
+        stats.benefit_unbounded_energy = float(amounts[unbounded].sum())
+        self.benefit_internal_energy_total += stats.benefit_internal_energy
+        self.benefit_cross_boundary_energy_total += (
+            stats.benefit_cross_boundary_energy
+        )
+        self.benefit_unbounded_energy_total += stats.benefit_unbounded_energy
+        self.subjects.record_benefit_flows(
+            owner_groups,
+            target_groups,
+            amounts,
+            tick=self.tick,
+        )
+
     def _emit_signals(
         self,
         actors: np.ndarray,
@@ -715,8 +928,35 @@ class Simulation:
             lineage_subject_id=self.entities.lineage_subject_id[active],
             group_id=self.social.group_id[active],
             genotype=self.entities.genotype[active],
-            autonomy_restored=self.autonomy_restored[active],
-            autonomy_observation_cohort=self.autonomy_observation_cohort[active],
+            generation=self.entities.generation[active],
+            **(
+                {
+                    "entertainment_override": self.autonomy_restored[active],
+                    "entertainment_observation_cohort": (
+                        self.autonomy_observation_cohort[active]
+                    ),
+                }
+                if self.experiment_mode is ExperimentMode.ENTERTAINMENT
+                else {}
+            ),
+        )
+
+    def _record_evolution_progress(self) -> None:
+        self.evolution_progress.record(
+            tick=self.tick,
+            scheduled=True,
+            alive=self.entities.alive,
+            stable_ids=self.entities.entity_id,
+            lineage_ids=self.entities.lineage_id,
+            generation=self.entities.generation,
+            genotype=self.entities.genotype,
+            births_total=self.total_births,
+            deaths_total=self.total_deaths,
+            action_counts=self.action_counts,
+            internal_benefit_total=self.benefit_internal_energy_total,
+            cross_boundary_benefit_total=self.benefit_cross_boundary_energy_total,
+            mutation_probability=self.cfg.policy.mutation_probability,
+            mutation_std=self.cfg.policy.mutation_std,
         )
 
     def step(self) -> StepStats:
@@ -989,6 +1229,7 @@ class Simulation:
             stats.harvested_energy = float(gathered[:, 0].sum())
 
         stats.shared_energy = self._commit_shares(share)
+        self._record_benefit_boundary(share, stats)
 
         signal_plan = SignalEmissionPlan(())
         if signal_rows.size:
@@ -1164,6 +1405,12 @@ class Simulation:
             stats.gpu_direct_dense_bytes_avoided = transfer.direct_message_dense_bytes_avoided
             stats.gpu_entity_commit_bytes = transfer.entity_commit_bytes
         self.tick += 1
+        if self.evolution_progress.due(self.tick):
+            evaluation_started = time.perf_counter()
+            self._record_evolution_progress()
+            stats.evolution_evaluation_seconds = (
+                time.perf_counter() - evaluation_started
+            )
         return stats
 
     def metric_row(
@@ -1192,9 +1439,20 @@ class Simulation:
             )
             lineage_count = int(np.unique(ent.lineage_id[active]).size)
             grouped_fraction = float(np.mean(self.social.group_id[active] != 0))
+            strategy_genome = ent.genotype[
+                active, ParametricPolicy.MORPHOLOGY_TRAITS :
+            ]
+            strategy_mean_abs_weight = float(
+                np.mean(np.abs(strategy_genome), dtype=np.float64)
+            )
+            raw_strategy_gene_diversity = float(
+                np.mean(np.std(strategy_genome, axis=0, dtype=np.float64))
+            )
         else:
             mean_energy = mean_integrity = mean_age = social_dependency = grouped_fraction = 0.0
             lineage_count = 0
+            strategy_mean_abs_weight = 0.0
+            raw_strategy_gene_diversity = 0.0
         autonomy_cohort_size = int(self.autonomy_recovery_cohort_ids.size)
         autonomy_restored_alive = int(
             np.count_nonzero(self.autonomy_restored & ent.alive)
@@ -1231,34 +1489,46 @@ class Simulation:
             "mean_group_size": stats.mean_group_size,
             "grouped_fraction": grouped_fraction,
             "social_dependency_proxy": social_dependency,
+            "strategy_mean_abs_weight": strategy_mean_abs_weight,
+            "raw_strategy_gene_diversity": raw_strategy_gene_diversity,
             "move_social_fraction": stats.move_social_fraction,
-            "heuristic_guidance_actions_step": stats.heuristic_guidance_actions,
-            "autonomy_restored_alive": autonomy_restored_alive,
-            "autonomy_cohort_alive": autonomy_cohort_alive,
-            "autonomy_cohort_survival_fraction": (
-                autonomy_cohort_alive / autonomy_cohort_size
-                if autonomy_cohort_size
-                else 0.0
-            ),
-            "autonomy_cohort_mean_energy": autonomy_cohort_mean_energy,
-            "autonomy_cohort_mean_harvested_energy_total": (
-                autonomy_cohort_mean_harvested
-            ),
-            "autonomy_module_actions_step": stats.autonomy_module_actions,
-            "autonomy_module_use_fraction_step": (
-                stats.autonomy_module_actions / stats.autonomy_restored_active
-                if stats.autonomy_restored_active
-                else 0.0
-            ),
-            "autonomy_harvest_attempts_step": stats.autonomy_harvest_attempts,
-            "autonomy_harvest_success_rate_step": (
-                stats.autonomy_harvest_successes / stats.autonomy_harvest_attempts
-                if stats.autonomy_harvest_attempts
-                else 0.0
-            ),
-            "autonomy_independent_harvest_success_rate": autonomy_harvest_success_rate,
             "harvested_energy_step": stats.harvested_energy,
             "shared_energy_step": stats.shared_energy,
+            "benefit_internal_energy_step": stats.benefit_internal_energy,
+            "benefit_cross_boundary_energy_step": (
+                stats.benefit_cross_boundary_energy
+            ),
+            "benefit_unbounded_energy_step": stats.benefit_unbounded_energy,
+            "benefit_boundary_cohesion_step": (
+                stats.benefit_internal_energy
+                / (
+                    stats.benefit_internal_energy
+                    + stats.benefit_cross_boundary_energy
+                )
+                if (
+                    stats.benefit_internal_energy
+                    + stats.benefit_cross_boundary_energy
+                )
+                > 0.0
+                else 0.0
+            ),
+            "benefit_internal_energy_total": self.benefit_internal_energy_total,
+            "benefit_cross_boundary_energy_total": (
+                self.benefit_cross_boundary_energy_total
+            ),
+            "benefit_boundary_cohesion_total": (
+                self.benefit_internal_energy_total
+                / (
+                    self.benefit_internal_energy_total
+                    + self.benefit_cross_boundary_energy_total
+                )
+                if (
+                    self.benefit_internal_energy_total
+                    + self.benefit_cross_boundary_energy_total
+                )
+                > 0.0
+                else 0.0
+            ),
             "signals_step": stats.signals,
             "direct_messages_step": stats.direct_messages,
             "action_entropy": stats.action_entropy,
@@ -1271,6 +1541,7 @@ class Simulation:
             "conflict_seconds": stats.conflict_seconds,
             "graph_seconds": stats.graph_seconds,
             "device_commit_seconds": stats.device_commit_seconds,
+            "evolution_evaluation_seconds": stats.evolution_evaluation_seconds,
             "gpu_h2d_bytes": stats.gpu_h2d_bytes,
             "gpu_d2h_bytes": stats.gpu_d2h_bytes,
             "gpu_direct_message_events": stats.gpu_direct_message_events,
@@ -1282,6 +1553,43 @@ class Simulation:
             "window_ticks": window_ticks,
             "window_seconds_per_tick": window_seconds / max(window_ticks, 1),
         }
+        if self.experiment_mode is ExperimentMode.ENTERTAINMENT:
+            row.update(
+                {
+                    "entertainment_heuristic_guidance_actions_step": (
+                        stats.heuristic_guidance_actions
+                    ),
+                    "entertainment_override_alive": autonomy_restored_alive,
+                    "entertainment_override_cohort_alive": autonomy_cohort_alive,
+                    "entertainment_override_cohort_survival_fraction": (
+                        autonomy_cohort_alive / autonomy_cohort_size
+                        if autonomy_cohort_size
+                        else 0.0
+                    ),
+                    "entertainment_override_cohort_mean_energy": autonomy_cohort_mean_energy,
+                    "entertainment_override_cohort_mean_harvested_energy_total": (
+                        autonomy_cohort_mean_harvested
+                    ),
+                    "entertainment_override_actions_step": stats.autonomy_module_actions,
+                    "entertainment_override_use_fraction_step": (
+                        stats.autonomy_module_actions / stats.autonomy_restored_active
+                        if stats.autonomy_restored_active
+                        else 0.0
+                    ),
+                    "entertainment_override_harvest_attempts_step": (
+                        stats.autonomy_harvest_attempts
+                    ),
+                    "entertainment_override_harvest_success_rate_step": (
+                        stats.autonomy_harvest_successes
+                        / stats.autonomy_harvest_attempts
+                        if stats.autonomy_harvest_attempts
+                        else 0.0
+                    ),
+                    "entertainment_override_independent_harvest_success_rate": (
+                        autonomy_harvest_success_rate
+                    ),
+                }
+            )
         row.update(self.subjects.summary())
         return row
 
@@ -1365,56 +1673,81 @@ class Simulation:
                 self.gpu_runtime.sync_to_host(self.environment, self.information)
             self._defer_gpu_field_sync = previous_defer_gpu_field_sync
             self.metrics.close()
+            self.evolution_progress.close()
             if self._trajectory_file is not None:
                 self._trajectory_file.close()
+        interventions_metadata: dict[str, object] = {
+            "social_control_enabled": self.social_control_enabled,
+            "social_connections_enabled": self.social_connections_enabled,
+            "direct_messages_enabled": self.direct_messages_enabled,
+            "freeze_genotype": self.freeze_genotype,
+            "environment_spatial_reversed": self.environment.spatial_reversed,
+            "history": self.intervention_history,
+        }
+        control_metadata: dict[str, object] = {
+            "arbiter": type(self.control_arbiter).__name__,
+            "base_arbiter": (
+                type(self.control_arbiter.base).__name__
+                if isinstance(self.control_arbiter, AutonomyRecoveryArbiter)
+                else type(self.control_arbiter).__name__
+            ),
+        }
+        if self.experiment_mode is ExperimentMode.ENTERTAINMENT:
+            control_metadata.update(
+                {
+                    "heuristic_social_guidance_enabled": (
+                        self.cfg.control.heuristic_social_guidance
+                    ),
+                    "heuristic_social_guidance_weight": (
+                        self.cfg.control.heuristic_social_guidance_weight
+                    ),
+                    "heuristic_guidance_actions": self.heuristic_guidance_actions,
+                }
+            )
+            interventions_metadata["direct_action_override_enabled"] = (
+                self.autonomy_recovery_enabled
+            )
+            control_metadata["entertainment_action_override"] = {
+                "module": "independent-foraging-v1",
+                "treatment_tick": self.autonomy_recovery_tick,
+                "cohort_tick": self.autonomy_cohort_tick,
+                "treated": self.autonomy_recovery_enabled,
+                "configured_fraction": self.cfg.control.autonomy_recovery_fraction,
+                "cohort_size": int(self.autonomy_recovery_cohort_ids.size),
+                "cohort_entity_ids": self.autonomy_recovery_cohort_ids.tolist(),
+                "cohort_alive": int(
+                    np.count_nonzero(
+                        self.autonomy_observation_cohort & self.entities.alive
+                    )
+                ),
+                "treated_alive": int(
+                    np.count_nonzero(self.autonomy_restored & self.entities.alive)
+                ),
+                "module_actions": self.autonomy_module_actions,
+                "harvest_attempts": self.autonomy_harvest_attempts,
+                "harvest_successes": self.autonomy_harvest_successes,
+            }
         metadata = {
             "version": __version__,
             "execution_backend": self.execution_backend,
+            "experiment_mode": self.experiment_mode.value,
+            "scientific_validity": self.scientific_validity(),
             "ticks_completed": self.tick,
             "wall_seconds": time.perf_counter() - started,
             "final": final_row,
             "action_counts": {action.name: int(self.action_counts[action]) for action in Action},
             "subject_graph": self.subjects.summary(),
-            "interventions": {
-                "social_control_enabled": self.social_control_enabled,
-                "social_connections_enabled": self.social_connections_enabled,
-                "direct_messages_enabled": self.direct_messages_enabled,
-                "freeze_genotype": self.freeze_genotype,
-                "environment_spatial_reversed": self.environment.spatial_reversed,
-                "history": self.intervention_history,
-                "autonomy_recovery_enabled": self.autonomy_recovery_enabled,
-            },
-            "control": {
-                "arbiter": type(self.control_arbiter).__name__,
-                "base_arbiter": (
-                    type(self.control_arbiter.base).__name__
-                    if isinstance(self.control_arbiter, AutonomyRecoveryArbiter)
-                    else type(self.control_arbiter).__name__
+            "evolution_progress": {
+                "period": self.cfg.run.evolution_evaluation_period,
+                "evaluations": len(self.evolution_progress.records),
+                "last": (
+                    self.evolution_progress.records[-1]
+                    if self.evolution_progress.records
+                    else None
                 ),
-                "heuristic_social_guidance_enabled": self.cfg.control.heuristic_social_guidance,
-                "heuristic_social_guidance_weight": self.cfg.control.heuristic_social_guidance_weight,
-                "heuristic_guidance_actions": self.heuristic_guidance_actions,
-                "autonomy_recovery": {
-                    "module": "independent-foraging-v1",
-                    "treatment_tick": self.autonomy_recovery_tick,
-                    "cohort_tick": self.autonomy_cohort_tick,
-                    "treated": self.autonomy_recovery_enabled,
-                    "configured_fraction": self.cfg.control.autonomy_recovery_fraction,
-                    "cohort_size": int(self.autonomy_recovery_cohort_ids.size),
-                    "cohort_entity_ids": self.autonomy_recovery_cohort_ids.tolist(),
-                    "cohort_alive": int(
-                        np.count_nonzero(
-                            self.autonomy_observation_cohort & self.entities.alive
-                        )
-                    ),
-                    "treated_alive": int(
-                        np.count_nonzero(self.autonomy_restored & self.entities.alive)
-                    ),
-                    "module_actions": self.autonomy_module_actions,
-                    "harvest_attempts": self.autonomy_harvest_attempts,
-                    "harvest_successes": self.autonomy_harvest_successes,
-                },
             },
+            "interventions": interventions_metadata,
+            "control": control_metadata,
             "group_planning": {
                 "planner": type(self.group_label_planner).__name__,
                 "last_plan_tick": self.last_group_plan.tick,

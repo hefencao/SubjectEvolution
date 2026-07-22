@@ -105,6 +105,8 @@ class GroupLabelPlanner(Protocol):
 class DeterministicGroupLabelPlanner:
     """Reference CPU planner preserving the original label propagation rule."""
 
+    scientific_safe = True
+
     def plan(self, snapshot: GroupDetectionSnapshot) -> GroupLabelPlan:
         active = np.asarray(snapshot.active_indices, dtype=np.int32)
         active_ids = np.asarray(snapshot.active_entity_ids, dtype=np.uint64)

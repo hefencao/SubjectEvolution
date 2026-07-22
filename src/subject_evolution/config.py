@@ -20,6 +20,11 @@ class RunConfig:
     # 100k-entity profiling checks; set false to profile the CPU key builder
     # while retaining the device allocation/commit stages.
     gpu_harvest_conflict_planner: bool = True
+    # Scientific mode forbids direct action replacement and opt-in heuristic
+    # controllers.  Entertainment mode keeps those mechanisms available for
+    # demos without allowing their output to masquerade as scientific data.
+    experiment_mode: str = "scientific"
+    evolution_evaluation_period: int = 500
 
 
 @dataclass(frozen=True)
@@ -79,7 +84,10 @@ class PolicyConfig:
     temperature: float
     partner_samples: int
     mutation_std: float
-    group_influence: float
+    # Per-gene mutation incidence.  Mutation magnitude is conditional on this
+    # gate; separating incidence from magnitude prevents a 128-gene strategy
+    # from receiving 128 independent perturbations at every birth.
+    mutation_probability: float = 0.01
 
 
 @dataclass(frozen=True)
@@ -94,13 +102,13 @@ class SocialConfig:
 
 @dataclass(frozen=True)
 class ControlConfig:
-    """Optional controller experiments; all heuristic behaviour is opt-in."""
+    """Entertainment controller settings; all heuristic behaviour is opt-in."""
 
     heuristic_social_guidance: bool = False
     heuristic_social_guidance_weight: float = 0.25
     # The recovery intervention deterministically selects this fraction of
-    # the living cohort.  It does not affect a run until ``restore-autonomy``
-    # is explicitly applied.
+    # the living cohort.  It only affects the entertainment-only
+    # ``independent-foraging-override`` action-replacement intervention.
     autonomy_recovery_fraction: float = 0.25
     autonomy_activation_energy_fraction: float = 0.35
     autonomy_harvest_threshold: float = 0.05
@@ -141,6 +149,10 @@ def _probability(name: str, value: float) -> float:
 def load_config(path: str | Path) -> SimulationConfig:
     raw = json.loads(Path(path).read_text(encoding="utf-8"))
     information_raw = _require(raw, "information")
+    policy_raw = dict(_require(raw, "policy"))
+    # Accepted for old run files, but no longer used: action preferences are
+    # inherited genome data rather than a global hand-authored group weight.
+    policy_raw.pop("group_influence", None)
     cfg = SimulationConfig(
         run=RunConfig(
             **{
@@ -167,7 +179,7 @@ def load_config(path: str | Path) -> SimulationConfig:
                 "signal_flush_periods": tuple(information_raw.get("signal_flush_periods", (1, 1, 1))),
             }
         ),
-        policy=PolicyConfig(**_require(raw, "policy")),
+        policy=PolicyConfig(**policy_raw),
         social=SocialConfig(**_require(raw, "social")),
         control=ControlConfig(**raw.get("control", {})),
     )
@@ -186,6 +198,10 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("ticks must be positive")
     if not isinstance(cfg.run.gpu_harvest_conflict_planner, bool):
         raise ValueError("run.gpu_harvest_conflict_planner must be a boolean")
+    if cfg.run.experiment_mode not in {"scientific", "entertainment"}:
+        raise ValueError("run.experiment_mode must be 'scientific' or 'entertainment'")
+    if cfg.run.evolution_evaluation_period <= 0:
+        raise ValueError("run.evolution_evaluation_period must be positive")
     if len(cfg.environment.resource_regeneration) != 4 or len(cfg.environment.resource_capacity) != 4:
         raise ValueError("MVP requires exactly four resource channels")
     if any(v < 0 for v in cfg.environment.resource_regeneration):
@@ -220,5 +236,6 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("control.autonomy_harvest_threshold cannot be negative")
     if cfg.policy.temperature <= 0:
         raise ValueError("policy.temperature must be positive")
+    _probability("policy.mutation_probability", cfg.policy.mutation_probability)
     if cfg.entities.relation_slots <= 0:
         raise ValueError("relation_slots must be positive")

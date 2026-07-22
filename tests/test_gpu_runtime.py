@@ -122,7 +122,13 @@ def test_gpu_runtime_matches_cpu_with_restored_autonomy_module(tmp_path):
     cfg = load_config("configs/mvp_small.json")
     cfg = replace(
         cfg,
-        run=replace(cfg.run, ticks=3, metrics_period=99, checkpoint_period=99),
+        run=replace(
+            cfg.run,
+            ticks=3,
+            metrics_period=99,
+            checkpoint_period=99,
+            experiment_mode="entertainment",
+        ),
     )
     cpu = Simulation(cfg, tmp_path / "cpu-autonomy", backend="cpu")
     gpu = Simulation(cfg, tmp_path / "gpu-autonomy", backend="gpu")

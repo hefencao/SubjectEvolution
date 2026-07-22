@@ -36,6 +36,9 @@ class CandidateSubject:
     active: bool = True
     lineage_id: int = 0
     member_count: int = 0
+    benefit_internal: float = 0.0
+    benefit_external_out: float = 0.0
+    benefit_external_in: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -63,6 +66,10 @@ class CandidateSubjectGraph:
         self._group_nodes: dict[int, int] = {}
         self._edges: dict[tuple[int, int, SubjectEdgeType], SubjectEdge] = {}
         self._active_kind_counts = np.zeros(max(SubjectKind) + 1, dtype=np.int64)
+        self._active_benefit_internal = 0.0
+        self._active_benefit_external_out = 0.0
+        self._active_benefit_subjects = 0
+        self._active_benefit_cohesion_sum = 0.0
         self.version = 0
 
     def clone(self) -> "CandidateSubjectGraph":
@@ -87,6 +94,22 @@ class CandidateSubjectGraph:
             node = self._allocate(SubjectKind.GENE_LINEAGE, tick, lineage_id)
             self._lineage_nodes[lineage_id] = node
         return node
+
+    def _adjust_active_benefit_summary(
+        self, node: CandidateSubject, direction: int
+    ) -> None:
+        if node.kind != SubjectKind.SOCIAL_GROUP or not node.active:
+            return
+        internal = float(node.benefit_internal)
+        external = float(node.benefit_external_out)
+        self._active_benefit_internal += direction * internal
+        self._active_benefit_external_out += direction * external
+        denominator = internal + external
+        if denominator > 0.0:
+            self._active_benefit_subjects += direction
+            self._active_benefit_cohesion_sum += direction * (
+                internal / denominator
+            )
 
     def register_bodies(
         self,
@@ -220,6 +243,7 @@ class CandidateSubjectGraph:
             if not node.active:
                 node.active = True
                 self._active_kind_counts[int(node.kind)] += 1
+                self._adjust_active_benefit_summary(node, 1)
                 changed = True
             node.last_update_tick = tick
             start = int(starts[group_row])
@@ -235,6 +259,7 @@ class CandidateSubjectGraph:
             if token not in observed_groups:
                 node = self.nodes[subject_id]
                 if node.active:
+                    self._adjust_active_benefit_summary(node, -1)
                     node.active = False
                     node.last_update_tick = tick
                     node.member_count = 0
@@ -261,14 +286,78 @@ class CandidateSubjectGraph:
                 result[tokens == token] = np.uint64(subject_id)
         return result
 
+    def record_benefit_flows(
+        self,
+        owner_group_tokens: np.ndarray,
+        target_group_tokens: np.ndarray,
+        amounts: np.ndarray,
+        tick: int,
+    ) -> None:
+        """Attach realized benefit retention/leakage to candidate boundaries.
+
+        Only already-detected social subjects receive measurements.  A flow
+        inside one non-zero group is retained benefit; a flow from that group
+        to another or to an ungrouped target is outgoing boundary leakage.
+        External incoming benefit is tracked separately and does not inflate
+        the group's retention numerator.
+        """
+        owners = np.asarray(owner_group_tokens, dtype=np.uint64)
+        targets = np.asarray(target_group_tokens, dtype=np.uint64)
+        values = np.asarray(amounts, dtype=np.float64)
+        if any(value.ndim != 1 for value in (owners, targets, values)) or not (
+            owners.size == targets.size == values.size
+        ):
+            raise ValueError("benefit flow arrays must be aligned and one-dimensional")
+        if np.any(~np.isfinite(values)) or np.any(values < 0.0):
+            raise ValueError("benefit flow amounts must be finite and non-negative")
+        if values.size == 0:
+            return
+
+        changed = False
+
+        def add_by_token(tokens: np.ndarray, selected: np.ndarray, field: str) -> None:
+            nonlocal changed
+            selected_tokens = tokens[selected]
+            selected_values = values[selected]
+            if selected_tokens.size == 0:
+                return
+            unique, inverse = np.unique(selected_tokens, return_inverse=True)
+            totals = np.bincount(inverse, weights=selected_values)
+            for token, total in zip(unique.tolist(), totals.tolist()):
+                subject_id = self._group_nodes.get(int(token))
+                if subject_id is None or total <= 0.0:
+                    continue
+                node = self.nodes[subject_id]
+                self._adjust_active_benefit_summary(node, -1)
+                setattr(node, field, float(getattr(node, field)) + float(total))
+                node.last_update_tick = int(tick)
+                self._adjust_active_benefit_summary(node, 1)
+                changed = True
+
+        internal = (owners != 0) & (owners == targets)
+        external_out = (owners != 0) & (owners != targets)
+        external_in = (targets != 0) & (owners != targets)
+        add_by_token(owners, internal, "benefit_internal")
+        add_by_token(owners, external_out, "benefit_external_out")
+        add_by_token(targets, external_in, "benefit_external_in")
+        if changed:
+            self.version += 1
+
     @property
     def edges(self) -> tuple[SubjectEdge, ...]:
         return tuple(self._edges.values())
 
-    def summary(self) -> dict[str, int]:
+    def summary(self) -> dict[str, int | float]:
         body_count = int(self._active_kind_counts[int(SubjectKind.BODY)])
         lineage_count = int(self._active_kind_counts[int(SubjectKind.GENE_LINEAGE)])
         social_count = int(self._active_kind_counts[int(SubjectKind.SOCIAL_GROUP)])
+        internal = max(float(self._active_benefit_internal), 0.0)
+        external_out = max(float(self._active_benefit_external_out), 0.0)
+        mean_cohesion = (
+            self._active_benefit_cohesion_sum / self._active_benefit_subjects
+            if self._active_benefit_subjects
+            else 0.0
+        )
         return {
             "candidate_subjects": body_count + lineage_count + social_count,
             "body_subjects": body_count,
@@ -276,4 +365,15 @@ class CandidateSubjectGraph:
             "social_subjects": social_count,
             "subject_edges": len(self._edges),
             "subject_graph_version": self.version,
+            "benefit_boundary_subjects": int(self._active_benefit_subjects),
+            "benefit_boundary_internal_total": internal,
+            "benefit_boundary_external_out_total": external_out,
+            "benefit_boundary_weighted_cohesion": (
+                internal / (internal + external_out)
+                if internal + external_out > 0.0
+                else 0.0
+            ),
+            # Incremental subtraction can leave a few ulps outside the
+            # mathematical probability interval after very long runs.
+            "benefit_boundary_mean_cohesion": float(np.clip(mean_cohesion, 0.0, 1.0)),
         }

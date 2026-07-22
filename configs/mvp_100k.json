@@ -4,7 +4,9 @@
     "ticks": 10000,
     "metrics_period": 20,
     "checkpoint_period": 1000,
-    "gpu_harvest_conflict_planner": true
+    "gpu_harvest_conflict_planner": true,
+    "experiment_mode": "scientific",
+    "evolution_evaluation_period": 500
   },
   "world": {
     "width": 2048.0,
@@ -60,7 +62,7 @@
     "temperature": 0.8,
     "partner_samples": 4,
     "mutation_std": 0.04,
-    "group_influence": 0.3
+    "mutation_probability": 0.01
   },
   "social": {
     "group_update_period": 100,

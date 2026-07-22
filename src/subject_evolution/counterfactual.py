@@ -89,7 +89,8 @@ def run_paired(
     baseline = simulation
     branch = simulation.clone(root / "intervention")
     branch.apply_intervention(intervention)
-    if branch.intervention_history[-1]["type"] == "restore-autonomy":
+    intervention_record = branch.intervention_history[-1]
+    if intervention_record["type"] == "independent-foraging-override":
         baseline.register_autonomy_observation_cohort(
             branch.autonomy_recovery_cohort_ids,
             tick=scheduled_tick,
@@ -106,10 +107,18 @@ def run_paired(
         str(record["type"]) for record in branch.intervention_history
     }
     scientific_warnings: list[str] = []
-    if "restore-autonomy" in normalized_history and "cut-social-connections" not in normalized_history:
+    if bool(intervention_record.get("direct_action_control", False)):
         scientific_warnings.append(
-            "Autonomy recovery was not preceded by a social-connection cut; "
-            "this run measures module intervention, not post-cut recovery."
+            "This entertainment intervention directly replaces carrier actions; "
+            "its results are excluded from scientific baseline claims."
+        )
+    if (
+        "independent-foraging-override" in normalized_history
+        and "cut-social-connections" not in normalized_history
+    ):
+        scientific_warnings.append(
+            "The independent-foraging entertainment override was not preceded by "
+            "a social-connection cut; this is a module demo, not post-cut recovery."
         )
     if (
         "cut-social-connections" in normalized_history
@@ -139,12 +148,16 @@ def run_paired(
         json.dumps(
             {
                 "intervention": intervention,
+                "intervention_record": intervention_record,
                 "intervention_tick": scheduled_tick,
+                "experiment_mode": simulation.experiment_mode.value,
                 "shared_prehistory_ticks": scheduled_tick,
                 "shared_intervention": shared_intervention,
                 "shared_intervention_tick": shared_tick,
                 "paired_randomness": True,
                 "scientific_warnings": scientific_warnings,
+                "baseline_scientific_validity": baseline.scientific_validity(),
+                "intervention_scientific_validity": branch.scientific_validity(),
                 "pre_intervention": pre_intervention,
                 "baseline": baseline_row,
                 "intervention_result": intervention_row,

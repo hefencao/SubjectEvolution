@@ -14,7 +14,7 @@ from subject_evolution.information import (
     SignalEmissionScheduler,
 )
 from subject_evolution.random_api import RandomContext, Stream, uniform01
-from subject_evolution.simulation import Simulation
+from subject_evolution.simulation import Simulation, StepStats
 from subject_evolution.social import SocialSystem, build_share_relation_update_plan
 
 
@@ -453,17 +453,53 @@ def test_paired_counterfactual_can_branch_after_shared_prehistory(tmp_path):
     assert result.intervention["tick"] == cfg.run.ticks
     assert baseline_metadata["interventions"]["history"] == []
     assert intervention_metadata["interventions"]["history"] == [
-        {"tick": 2, "type": "reverse-environment"}
+        {
+            "tick": 2,
+            "type": "reverse-environment",
+            "kind": "modify-environment",
+            "target_scope": "resource-and-danger-spatial-fields",
+            "direct_action_control": False,
+            "experiment_mode": "scientific",
+        }
     ]
     assert not baseline_metadata["interventions"]["environment_spatial_reversed"]
     assert intervention_metadata["interventions"]["environment_spatial_reversed"]
 
 
+def test_scientific_mode_rejects_direct_action_replacement(tmp_path):
+    sim = Simulation(load_config(_config(tmp_path)), tmp_path / "strict")
+    try:
+        with np.testing.assert_raises_regex(ValueError, "entertainment mode"):
+            sim.apply_intervention("restore-autonomy")
+        audit = sim.scientific_validity()
+        assert audit["structural_evolution_provenance_valid"] is True
+        assert audit["strict_unintervened_baseline"] is True
+        assert audit["strategy"]["mutation_probability_per_gene"] == 0.01
+        assert audit["strategy"]["morphology_gene_semantics"]["reserved_neutral"] == [
+            1,
+            2,
+            3,
+            4,
+            6,
+            7,
+        ]
+        assert audit["evolution_evaluation"]["feedback_to_world"] is False
+        row = sim.metric_row(StepStats(), 0.0)
+        assert not any("autonomy" in key for key in row)
+        assert not any(key.startswith("entertainment_override") for key in row)
+    finally:
+        sim.metrics.close()
+
+
 def test_autonomy_recovery_selects_stable_cohort_and_records_use(tmp_path):
     cfg = load_config(_config(tmp_path))
+    cfg = replace(cfg, run=replace(cfg.run, experiment_mode="entertainment"))
     sim = Simulation(cfg, tmp_path / "autonomy")
     sim.apply_intervention("cut-social-connections")
     sim.apply_intervention("restore-autonomy")
+    assert sim.intervention_history[-1]["kind"] == "direct-action"
+    assert sim.intervention_history[-1]["direct_action_control"] is True
+    assert sim.scientific_validity()["structural_evolution_provenance_valid"] is False
     selected_ids = sim.entities.entity_id[sim.autonomy_restored].copy()
     assert selected_ids.size == 16
 
@@ -491,15 +527,16 @@ def test_autonomy_recovery_selects_stable_cohort_and_records_use(tmp_path):
         assert stats.autonomy_harvest_attempts == selected_ids.size
         assert stats.autonomy_harvest_successes > 0
         row = sim.metric_row(stats, 0.0)
-        assert row["autonomy_cohort_survival_fraction"] == 1.0
-        assert row["autonomy_module_use_fraction_step"] == 1.0
-        assert row["autonomy_independent_harvest_success_rate"] > 0.0
+        assert row["entertainment_override_cohort_survival_fraction"] == 1.0
+        assert row["entertainment_override_use_fraction_step"] == 1.0
+        assert row["entertainment_override_independent_harvest_success_rate"] > 0.0
     finally:
         sim.metrics.close()
 
 
 def test_paired_recovery_supports_a_shared_social_cut(tmp_path):
     cfg = load_config(_config(tmp_path))
+    cfg = replace(cfg, run=replace(cfg.run, experiment_mode="entertainment"))
     sim = Simulation(cfg, tmp_path / "recovery" / "baseline")
     result = run_paired(
         sim,
@@ -530,17 +567,17 @@ def test_paired_recovery_supports_a_shared_social_cut(tmp_path):
     ]
     assert [item["type"] for item in intervention_metadata["interventions"]["history"]] == [
         "cut-social-connections",
-        "restore-autonomy",
+        "independent-foraging-override",
     ]
-    baseline_cohort = baseline_metadata["control"]["autonomy_recovery"]
-    intervention_cohort = intervention_metadata["control"]["autonomy_recovery"]
+    baseline_cohort = baseline_metadata["control"]["entertainment_action_override"]
+    intervention_cohort = intervention_metadata["control"]["entertainment_action_override"]
     assert baseline_cohort["cohort_entity_ids"] == intervention_cohort["cohort_entity_ids"]
     assert baseline_cohort["cohort_size"] == 16
     assert baseline_cohort["treated"] is False
     assert intervention_cohort["treated"] is True
-    assert intervention_metadata["control"]["autonomy_recovery"]["cohort_size"] == 16
+    assert intervention_metadata["control"]["entertainment_action_override"]["cohort_size"] == 16
     assert summary["shared_intervention_tick"] == 1
-    assert summary["pre_intervention"]["autonomy_cohort_alive"] == 16
+    assert summary["pre_intervention"]["entertainment_override_cohort_alive"] == 16
     assert result.scientific_warnings == tuple(summary["scientific_warnings"])
     assert any("social guidance is disabled" in warning for warning in result.scientific_warnings)
 
@@ -566,8 +603,10 @@ def test_run_metadata_uses_package_version(tmp_path):
     assert metadata["group_planning"]["planner"] == "DeterministicGroupLabelPlanner"
     assert metadata["group_planning"]["last_plan_tick"] >= 0
     assert metadata["control"]["arbiter"] == "SingleProposalControlArbiter"
-    assert metadata["control"]["heuristic_social_guidance_enabled"] is False
-    assert metadata["control"]["heuristic_guidance_actions"] == 0
+    assert "heuristic_social_guidance_enabled" not in metadata["control"]
+    assert metadata["scientific_validity"]["structural_evolution_provenance_valid"] is True
+    assert metadata["scientific_validity"]["strict_unintervened_baseline"] is True
+    assert "heuristic_guidance_actions" not in metadata["control"]
     assert summary["window_seconds_per_tick"] >= 0.0
 
 

@@ -172,6 +172,7 @@ def test_simulation_wires_opt_in_social_guidance_to_stable_social_subjects(tmp_p
     cfg = load_config("configs/mvp_small.json")
     cfg = replace(
         cfg,
+        run=replace(cfg.run, experiment_mode="entertainment"),
         control=replace(
             cfg.control,
             heuristic_social_guidance=True,
@@ -208,6 +209,7 @@ def test_simulation_wires_opt_in_social_guidance_to_stable_social_subjects(tmp_p
 def test_simulation_accepts_a_pluggable_control_arbiter(tmp_path) -> None:
     class RecordingArbiter:
         calls = 0
+        scientific_safe = True
 
         def arbitrate(self, proposals):
             self.calls += 1
@@ -231,3 +233,21 @@ def test_simulation_accepts_a_pluggable_control_arbiter(tmp_path) -> None:
         )
     finally:
         sim.metrics.close()
+
+
+def test_scientific_mode_rejects_unreviewed_control_arbiter(tmp_path) -> None:
+    class ReplacingArbiter:
+        def arbitrate(self, proposals):
+            proposal = proposals[0]
+            return ArbitrationResult(
+                decision=proposal.decision,
+                proposer_subject_id=proposal.proposer_subject_id,
+                controller_kind=proposal.controller_kind,
+            )
+
+    with pytest.raises(ValueError, match="not declared scientific_safe"):
+        Simulation(
+            load_config("configs/mvp_small.json"),
+            tmp_path / "unsafe-arbiter",
+            control_arbiter=ReplacingArbiter(),
+        )
