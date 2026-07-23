@@ -16,11 +16,21 @@ struct SocialEvent {
     std::string text;
 };
 
+struct SocialNeighbor {
+    std::uint64_t entity_id = 0;
+    float trust = 0.0F;
+    float familiarity = 0.0F;
+    std::uint64_t last_tick = 0;
+};
+
 struct SocialStats {
     std::size_t active_agents = 0;
     std::size_t active_groups = 0;
     std::size_t relationship_edges = 0;
+    std::size_t relationship_capacity = 0;
     std::size_t active_rumors = 0;
+    std::size_t rumor_capacity = 0;
+    std::size_t suppressed_relationships = 0;
     float mean_trust = 0.0F;
     float mean_reputation = 0.0F;
     float mean_stress = 0.0F;
@@ -37,6 +47,11 @@ public:
     [[nodiscard]] const std::deque<SocialEvent>& recent_events() const noexcept {
         return recent_events_;
     }
+
+    [[nodiscard]] std::vector<SocialNeighbor> strongest_neighbors(
+        std::uint64_t entity_id,
+        std::size_t limit = 24
+    ) const;
 
 private:
     struct AgentState {
@@ -97,6 +112,9 @@ private:
     std::deque<SocialEvent> recent_events_;
     SocialStats stats_{};
 
+    std::size_t relationship_capacity_ = 50000;
+    std::size_t rumor_capacity_ = 1024;
+    std::size_t suppressed_relationships_ = 0;
     std::uint64_t last_tick_ = 0;
 };
 
