@@ -6,3 +6,4 @@ runs/
 build/
 dist/
 *.egg-info/
+src/gui/dep/

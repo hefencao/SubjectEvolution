@@ -1,0 +1,4 @@
+build/
+eco_live.bin
+__pycache__/
+*.pyc
