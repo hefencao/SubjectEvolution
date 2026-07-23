@@ -401,6 +401,58 @@ eco::LodMode next_lod_mode(eco::LodMode mode) {
     return eco::LodMode::Auto;
 }
 
+eco::EnvironmentFilterMode next_environment_filter(
+    eco::EnvironmentFilterMode mode
+) {
+    switch (mode) {
+    case eco::EnvironmentFilterMode::Instant:
+        return eco::EnvironmentFilterMode::Responsive;
+    case eco::EnvironmentFilterMode::Responsive:
+        return eco::EnvironmentFilterMode::Stable;
+    case eco::EnvironmentFilterMode::Stable:
+        return eco::EnvironmentFilterMode::Instant;
+    }
+    return eco::EnvironmentFilterMode::Stable;
+}
+
+eco::EnvironmentViewMode next_environment_view(
+    eco::EnvironmentViewMode mode
+) {
+    switch (mode) {
+    case eco::EnvironmentViewMode::Composite:
+        return eco::EnvironmentViewMode::ResourceAbsolute;
+    case eco::EnvironmentViewMode::ResourceAbsolute:
+        return eco::EnvironmentViewMode::ResourceGradient;
+    case eco::EnvironmentViewMode::ResourceGradient:
+        return eco::EnvironmentViewMode::Hazard;
+    case eco::EnvironmentViewMode::Hazard:
+        return eco::EnvironmentViewMode::PopulationDensity;
+    case eco::EnvironmentViewMode::PopulationDensity:
+        return eco::EnvironmentViewMode::ResourceDelta;
+    case eco::EnvironmentViewMode::ResourceDelta:
+        return eco::EnvironmentViewMode::Composite;
+    }
+    return eco::EnvironmentViewMode::Composite;
+}
+
+eco::BehaviorOverlayMode next_behavior_overlay(
+    eco::BehaviorOverlayMode mode
+) {
+    switch (mode) {
+    case eco::BehaviorOverlayMode::Auto:
+        return eco::BehaviorOverlayMode::Off;
+    case eco::BehaviorOverlayMode::Off:
+        return eco::BehaviorOverlayMode::Actions;
+    case eco::BehaviorOverlayMode::Actions:
+        return eco::BehaviorOverlayMode::Groups;
+    case eco::BehaviorOverlayMode::Groups:
+        return eco::BehaviorOverlayMode::Combined;
+    case eco::BehaviorOverlayMode::Combined:
+        return eco::BehaviorOverlayMode::Auto;
+    }
+    return eco::BehaviorOverlayMode::Auto;
+}
+
 void draw_sparkline(
     const char* label,
     const MetricHistory& history,
@@ -487,9 +539,9 @@ void draw_event_legend(float x, float y) {
     DrawText("death", static_cast<int>(x + 90), static_cast<int>(y), 13, LIGHTGRAY);
 
     DrawLineEx(Vector2{x + 158.0F, y + 7.0F}, Vector2{x + 168.0F, y + 7.0F},
-        1.0F, Color{117, 242, 120, 255});
+        1.0F, Color{255, 174, 48, 255});
     DrawLineEx(Vector2{x + 163.0F, y + 2.0F}, Vector2{x + 163.0F, y + 12.0F},
-        1.0F, Color{117, 242, 120, 255});
+        1.0F, Color{255, 174, 48, 255});
     DrawText("harvest", static_cast<int>(x + 174), static_cast<int>(y), 13, LIGHTGRAY);
 
     DrawText("◇ reproduce", static_cast<int>(x + 260), static_cast<int>(y), 13,
@@ -499,7 +551,7 @@ void draw_event_legend(float x, float y) {
 void draw_panel(
     const eco::Frame& frame,
     const eco::RenderOptions& options,
-    eco::RenderLod lod,
+    const eco::RenderDetail& detail,
     const eco::WorldRenderer& renderer,
     const eco::SocialLoop& social,
     const MetricHistory& history,
@@ -509,6 +561,7 @@ void draw_panel(
     const std::vector<eco::SocialNeighbor>& selected_neighbors,
     const std::string& reader_error
 ) {
+    const eco::RenderLod lod = detail.dominant;
     const float panel_width = kSidebarWidth - kPanelMargin * 2.0F;
     const float panel_height = static_cast<float>(GetScreenHeight()) - 24.0F;
 
@@ -540,28 +593,33 @@ void draw_panel(
     );
     DrawText(
         TextFormat(
-            "LOD: %s (%s)",
+            "LOD: %s (%s)  spacing %.1fpx",
             eco::render_lod_name(lod),
-            eco::lod_mode_name(options.lod_mode)
+            eco::lod_mode_name(options.lod_mode),
+            detail.projected_spacing
         ),
         26, 72, 16, SKYBLUE
     );
     DrawText(
         TextFormat(
-            "Resource %d  hazard %s  density %s  change %s",
+            "R%d view %s  hazard %s  filter %s",
             options.resource_channel + 1,
+            eco::environment_view_name(options.environment_view),
             options.show_hazard ? "on" : "off",
-            options.show_population_density ? "on" : "off",
-            options.show_environment_change ? "on" : "off"
+            eco::environment_filter_name(options.environment_filter)
         ),
         26, 95, 14, LIGHTGRAY
     );
     DrawText(
-        "1-4 resource | H hazard | P density | C change | M events",
+        TextFormat(
+            "B behavior %s | Q group-focus %s | E view | H hazard",
+            eco::behavior_overlay_name(options.behavior_overlay),
+            options.focus_selected_group ? "on" : "off"
+        ),
         26, 119, 13, GRAY
     );
     DrawText(
-        "L LOD | V flow/trails | G grid | F follow | R fit | S panel",
+        "1-4 resource | T filter | P density | C change | L LOD | M events | V flow",
         26, 139, 13, GRAY
     );
 
@@ -577,13 +635,33 @@ void draw_panel(
     DrawText("Inspector", 26, 184, 17, YELLOW);
 
     if (selected == nullptr) {
-        DrawText(
-            options.selected_entity_id == 0
-                ? "Click a visible agent in the world viewport."
-                : "Selected agent is no longer alive in this frame.",
-            26, 207, 14,
-            options.selected_entity_id == 0 ? GRAY : RED
-        );
+        const auto& groups = renderer.group_behaviors();
+        if (options.selected_entity_id != 0) {
+            DrawText("Selected agent is no longer alive in this frame.",
+                26, 207, 14, RED);
+        } else if (groups.empty()) {
+            DrawText("Click a visible agent in the world viewport.",
+                26, 207, 14, GRAY);
+        } else {
+            DrawText("Top active groups (click an agent, Q focuses its group):",
+                26, 207, 13, GRAY);
+            int y = 227;
+            for (std::size_t index = 0; index < std::min<std::size_t>(groups.size(), 4U); ++index) {
+                const auto& group = groups[index];
+                DrawText(
+                    TextFormat(
+                        "g%llu n%u %s %.0f%% coh %.2f",
+                        static_cast<unsigned long long>(group.group_id),
+                        static_cast<unsigned int>(group.members),
+                        action_name(static_cast<std::uint8_t>(group.dominant_action)),
+                        group.dominant_action_fraction * 100.0F,
+                        group.coherence
+                    ),
+                    34, y, 13, group.coherence > 0.45F ? SKYBLUE : LIGHTGRAY
+                );
+                y += 20;
+            }
+        }
     } else {
         const float speed = std::sqrt(
             selected->vx * selected->vx +
@@ -629,33 +707,56 @@ void draw_panel(
         );
         DrawText(
             TextFormat(
-                "relations shown %u  follow %s",
+                "relations %u  follow %s  group-focus %s",
                 static_cast<unsigned int>(selected_neighbors.size()),
-                follow_selected ? "on" : "off"
+                follow_selected ? "on" : "off",
+                options.focus_selected_group ? "on" : "off"
             ),
             26, 287, 14, LIGHTGRAY
         );
 
-        int neighbor_y = 307;
-        for (std::size_t index = 0;
-             index < std::min<std::size_t>(selected_neighbors.size(), 2U);
-             ++index) {
-            const auto& neighbor = selected_neighbors[index];
+        const eco::GroupBehaviorSummary* group =
+            renderer.group_behavior(selected->group_id);
+        if (group != nullptr) {
             DrawText(
                 TextFormat(
-                    "neighbor %llu  trust %.2f  familiar %.2f",
-                    static_cast<unsigned long long>(neighbor.entity_id),
-                    neighbor.trust,
-                    neighbor.familiarity
+                    "group n %u  coherence %.2f  %s %.0f%%",
+                    static_cast<unsigned int>(group->members),
+                    group->coherence,
+                    action_name(static_cast<std::uint8_t>(group->dominant_action)),
+                    group->dominant_action_fraction * 100.0F
                 ),
-                34, neighbor_y, 13,
-                neighbor.trust >= 0.0F ? GREEN : RED
+                26, 307, 13, Color{255, 204, 91, 255}
             );
-            neighbor_y += 18;
+        } else {
+            DrawText("group behavior: independent", 26, 307, 13, GRAY);
+        }
+
+        const eco::EnvironmentProbe probe = renderer.probe_environment(
+            frame, selected->x, selected->y, options.resource_channel
+        );
+        if (probe.valid) {
+            DrawText(
+                TextFormat(
+                    "cell %u,%u  R1 %.3g R2 %.3g R3 %.3g R4 %.3g",
+                    probe.cell_x, probe.cell_y,
+                    probe.resources[0], probe.resources[1],
+                    probe.resources[2], probe.resources[3]
+                ),
+                26, 327, 12, Color{102, 220, 255, 255}
+            );
+            DrawText(
+                TextFormat(
+                    "hazard %.3f  R%d gradient %.3g",
+                    probe.hazard, options.resource_channel + 1,
+                    probe.gradient_magnitude
+                ),
+                26, 343, 12, LIGHTGRAY
+            );
         }
     }
 
-    DrawText("Frame dynamics", 26, 350, 17, Color{117, 242, 120, 255});
+    DrawText("Frame dynamics", 26, 365, 17, Color{117, 242, 120, 255});
     DrawText(
         TextFormat(
             "+birth %u  -death %u  harvest %u  reproduce %u",
@@ -664,29 +765,31 @@ void draw_panel(
             static_cast<unsigned int>(diagnostics.harvests),
             static_cast<unsigned int>(diagnostics.reproductions)
         ),
-        26, 374, 14, RAYWHITE
+        26, 389, 14, RAYWHITE
     );
     DrawText(
         TextFormat(
-            "moving %u/%u  mean speed %.4f  share %u  signal %u",
+            "moveR %u  moveS %u  share %u  signal %u  flee %u",
+            static_cast<unsigned int>(diagnostics.move_resource),
+            static_cast<unsigned int>(diagnostics.move_social),
+            static_cast<unsigned int>(diagnostics.shares),
+            static_cast<unsigned int>(diagnostics.signals),
+            static_cast<unsigned int>(diagnostics.flees)
+        ),
+        26, 409, 14, RAYWHITE
+    );
+    DrawText(
+        TextFormat(
+            "moving %u/%u speed %.4f  resource %.3g hazard %.3f",
             static_cast<unsigned int>(diagnostics.moving_entities),
             static_cast<unsigned int>(frame.entities.size()),
             diagnostics.mean_speed,
-            static_cast<unsigned int>(diagnostics.shares),
-            static_cast<unsigned int>(diagnostics.signals)
-        ),
-        26, 394, 14, RAYWHITE
-    );
-    DrawText(
-        TextFormat(
-            "resource %.3f  hazard %.3f  field delta %.3f",
             diagnostics.mean_resource,
-            diagnostics.mean_hazard,
-            diagnostics.mean_environment_change
+            diagnostics.mean_hazard
         ),
-        26, 414, 14, RAYWHITE
+        26, 429, 14, RAYWHITE
     );
-    draw_event_legend(27.0F, 438.0F);
+    draw_event_legend(27.0F, 453.0F);
 
     if (!show_social) {
         return;
@@ -894,6 +997,8 @@ int main(int argc, char** argv) {
     std::uint64_t last_social_tick = 0;
     eco::RenderLod last_lod = eco::RenderLod::Macro;
     bool has_last_lod = false;
+    float last_environment_detail = -1.0F;
+    float last_density_weight = -1.0F;
 
     Camera2D camera{};
     camera.zoom = 1.0F;
@@ -974,6 +1079,7 @@ int main(int argc, char** argv) {
             const Vector2 after = GetScreenToWorld2D(mouse, camera);
             camera.target.x += before.x - after.x;
             camera.target.y += before.y - after.y;
+            heatmap_dirty = true;
         }
 
         if (mouse_in_world && IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
@@ -989,6 +1095,10 @@ int main(int argc, char** argv) {
                 camera,
                 mouse
             );
+            if (options.selected_entity_id == 0) {
+                options.focus_selected_group = false;
+                follow_selected = false;
+            }
             selected_neighbors = social.strongest_neighbors(
                 options.selected_entity_id,
                 24
@@ -1011,8 +1121,20 @@ int main(int argc, char** argv) {
             options.resource_channel = 3;
             heatmap_dirty = true;
         }
+        if (IsKeyPressed(KEY_E)) {
+            options.environment_view = next_environment_view(
+                options.environment_view
+            );
+            heatmap_dirty = true;
+        }
         if (IsKeyPressed(KEY_H)) {
             options.show_hazard = !options.show_hazard;
+            heatmap_dirty = true;
+        }
+        if (IsKeyPressed(KEY_T)) {
+            options.environment_filter = next_environment_filter(
+                options.environment_filter
+            );
             heatmap_dirty = true;
         }
         if (IsKeyPressed(KEY_P)) {
@@ -1024,6 +1146,15 @@ int main(int argc, char** argv) {
             options.show_environment_change =
                 !options.show_environment_change;
             heatmap_dirty = true;
+        }
+        if (IsKeyPressed(KEY_B)) {
+            options.behavior_overlay = next_behavior_overlay(
+                options.behavior_overlay
+            );
+        }
+        if (IsKeyPressed(KEY_Q)) {
+            options.focus_selected_group =
+                options.selected_entity_id != 0 && !options.focus_selected_group;
         }
         if (IsKeyPressed(KEY_M)) {
             options.show_event_markers =
@@ -1051,20 +1182,25 @@ int main(int argc, char** argv) {
             follow_selected = false;
         }
 
-        const eco::RenderLod lod = eco::resolve_render_lod(
+        const eco::RenderDetail detail = eco::resolve_render_detail(
             current,
             camera,
             viewport,
             options.lod_mode
         );
-        if (!has_last_lod || lod != last_lod) {
+        const eco::RenderLod lod = detail.dominant;
+        if (!has_last_lod || lod != last_lod ||
+            std::abs(detail.environment_detail - last_environment_detail) > 0.012F ||
+            std::abs(detail.density_weight - last_density_weight) > 0.012F) {
             heatmap_dirty = true;
             last_lod = lod;
             has_last_lod = true;
+            last_environment_detail = detail.environment_detail;
+            last_density_weight = detail.density_weight;
         }
 
         if (heatmap_dirty) {
-            renderer.update_heatmap(current, lod, options);
+            renderer.update_heatmap(current, detail, options);
             heatmap_dirty = false;
         }
         if (history_due) {
@@ -1115,7 +1251,7 @@ int main(int argc, char** argv) {
         draw_panel(
             current,
             options,
-            lod,
+            detail,
             renderer,
             social,
             history,
