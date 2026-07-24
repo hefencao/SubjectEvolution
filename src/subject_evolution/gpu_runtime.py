@@ -628,6 +628,21 @@ class HybridGpuRuntime:
                 if device_decision.genetic_action is not None
                 else None
             ),
+            linear_knowledge_logits=(
+                self._download(device_decision.linear_knowledge_logits).astype(
+                    np.float32, copy=False
+                )
+                if retain_policy_diagnostics
+                and device_decision.linear_knowledge_logits is not None
+                else None
+            ),
+            linear_knowledge_action=(
+                self._download(device_decision.linear_knowledge_action).astype(
+                    np.int16, copy=False
+                )
+                if device_decision.linear_knowledge_action is not None
+                else None
+            ),
         )
         return GpuPreparedStep(
             active_result,

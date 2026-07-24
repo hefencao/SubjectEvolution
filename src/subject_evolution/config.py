@@ -146,13 +146,17 @@ class KnowledgeConfig:
     log_policy_contributions: bool = False
 
     # High-extensibility latent knowledge.  Variable-length content payloads
-    # are routed through inherited, quantized linear parameters and publish
-    # only to the existing action-logit residual boundary.
+    # are routed through separately versioned inherited quantized L1/L2
+    # parameters and publish only to the action-logit residual boundary.
     latent_policy_enabled: bool = False
     latent_schema: str = "variable-latent-knowledge-v1"
     latent_router_schema: str = "quantized-linear-latent-router-v1"
     latent_length_levels: tuple[int, ...] = (4, 8, 16, 32)
+    # Width of the deterministic latent projection shared by L1 and L2.
     latent_router_hidden_width: int = 8
+    # L2-only inherited MLP width.  The activation is an exact integer hard-tanh.
+    latent_router_mlp_hidden_width: int = 8
+    latent_router_activation_clip: float = 1.0
     latent_value_quantization_scale: int = 4096
     latent_router_weight_quantization_scale: int = 2048
     latent_outcome_injection: float = 0.5
@@ -436,6 +440,7 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.knowledge.policy_residual_schema not in {
         "sparse-local-outcome-residual-v1",
         "quantized-variable-latent-residual-v1",
+        "quantized-variable-latent-mlp-residual-v1",
     }:
         raise ValueError("unknown knowledge.policy_residual_schema")
     _probability("knowledge.policy_min_confidence", cfg.knowledge.policy_min_confidence)
@@ -465,7 +470,10 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("knowledge.latent_policy_enabled must be a boolean")
     if cfg.knowledge.latent_schema != "variable-latent-knowledge-v1":
         raise ValueError("unknown knowledge.latent_schema")
-    if cfg.knowledge.latent_router_schema != "quantized-linear-latent-router-v1":
+    if cfg.knowledge.latent_router_schema not in {
+        "quantized-linear-latent-router-v1",
+        "quantized-mlp-latent-router-v1",
+    }:
         raise ValueError("unknown knowledge.latent_router_schema")
     levels = cfg.knowledge.latent_length_levels
     if (
@@ -476,6 +484,19 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("knowledge.latent_length_levels must be unique ascending integers in [1, 256]")
     if cfg.knowledge.latent_router_hidden_width <= 0 or cfg.knowledge.latent_router_hidden_width > 32:
         raise ValueError("knowledge.latent_router_hidden_width must be in [1, 32]")
+    if (
+        cfg.knowledge.latent_router_mlp_hidden_width <= 0
+        or cfg.knowledge.latent_router_mlp_hidden_width > 32
+    ):
+        raise ValueError("knowledge.latent_router_mlp_hidden_width must be in [1, 32]")
+    if (
+        not math.isfinite(cfg.knowledge.latent_router_activation_clip)
+        or cfg.knowledge.latent_router_activation_clip <= 0.0
+        or cfg.knowledge.latent_router_activation_clip > 8.0
+    ):
+        raise ValueError(
+            "knowledge.latent_router_activation_clip must be finite and in (0, 8]"
+        )
     if cfg.knowledge.latent_value_quantization_scale <= 0:
         raise ValueError("knowledge.latent_value_quantization_scale must be positive")
     if cfg.knowledge.latent_router_weight_quantization_scale <= 0:
@@ -515,6 +536,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         "inherited-linear-policy-v1",
         "inherited-linear-policy-knowledge-residual-v1",
         "inherited-variable-latent-router-v1",
+        "inherited-variable-latent-router-mlp-v1",
     }:
         raise ValueError("unknown policy.schema")
     if cfg.knowledge.policy_influence_enabled:
@@ -523,10 +545,18 @@ def validate_config(cfg: SimulationConfig) -> None:
         if cfg.knowledge.latent_policy_enabled:
             if cfg.knowledge.schema != "dynamic-knowledge-latent-v1":
                 raise ValueError("latent policy requires dynamic-knowledge-latent-v1")
-            if cfg.knowledge.policy_residual_schema != "quantized-variable-latent-residual-v1":
-                raise ValueError("latent policy requires the latent residual schema")
-            if cfg.policy.schema != "inherited-variable-latent-router-v1":
-                raise ValueError("latent policy requires inherited-variable-latent-router-v1")
+            if cfg.knowledge.latent_router_schema == "quantized-linear-latent-router-v1":
+                if cfg.knowledge.policy_residual_schema != "quantized-variable-latent-residual-v1":
+                    raise ValueError("linear latent policy requires its residual schema")
+                if cfg.policy.schema != "inherited-variable-latent-router-v1":
+                    raise ValueError("linear latent policy requires inherited-variable-latent-router-v1")
+            else:
+                if cfg.knowledge.policy_residual_schema != "quantized-variable-latent-mlp-residual-v1":
+                    raise ValueError("MLP latent policy requires its residual schema")
+                if cfg.policy.schema != "inherited-variable-latent-router-mlp-v1":
+                    raise ValueError(
+                        "MLP latent policy requires inherited-variable-latent-router-mlp-v1"
+                    )
         else:
             if cfg.knowledge.schema not in {"dynamic-knowledge-k3-v1", "dynamic-knowledge-k4-v1"}:
                 raise ValueError("K3 policy influence requires dynamic-knowledge-k3-v1 or dynamic-knowledge-k4-v1")

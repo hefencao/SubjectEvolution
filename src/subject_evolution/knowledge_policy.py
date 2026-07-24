@@ -21,6 +21,7 @@ from .knowledge import (
     OUTCOME_WIDTH,
 )
 from .latent_knowledge import (
+    LATENT_MLP_ROUTER_SCHEMA,
     LATENT_ROUTER_SCHEMA,
     LatentRouterBatch,
     VariableLatentContentStore,
@@ -55,6 +56,32 @@ class KnowledgePolicyPlan:
     quantized_residuals: np.ndarray = field(
         default_factory=lambda: np.empty(0, dtype=np.int32)
     )
+    # Optional L1 shadow residuals carried by the L2 schema.  These use their
+    # own sparse keys because an action can be zero in L2 but nonzero in L1.
+    comparison_active_rows: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.int32)
+    )
+    comparison_action_ids: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.int16)
+    )
+    comparison_residuals: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.float32)
+    )
+    comparison_quantized_residuals: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.int32)
+    )
+    router_saturation_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint32)
+    )
+    router_clipping_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint32)
+    )
+    router_hidden_abs_sums: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint64)
+    )
+    router_hidden_active_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint32)
+    )
     router_schema: str | None = None
 
     @classmethod
@@ -76,12 +103,24 @@ class KnowledgePolicyPlan:
             latent_dimension_counts=np.empty(0, dtype=np.uint32),
             latent_max_widths=np.empty(0, dtype=np.uint16),
             quantized_residuals=np.empty(0, dtype=np.int32),
+            comparison_active_rows=np.empty(0, dtype=np.int32),
+            comparison_action_ids=np.empty(0, dtype=np.int16),
+            comparison_residuals=np.empty(0, dtype=np.float32),
+            comparison_quantized_residuals=np.empty(0, dtype=np.int32),
+            router_saturation_counts=np.empty(0, dtype=np.uint32),
+            router_clipping_counts=np.empty(0, dtype=np.uint32),
+            router_hidden_abs_sums=np.empty(0, dtype=np.uint64),
+            router_hidden_active_counts=np.empty(0, dtype=np.uint32),
             router_schema=None,
         )
 
     @property
     def size(self) -> int:
         return int(self.residuals.size)
+
+    @property
+    def comparison_size(self) -> int:
+        return int(self.comparison_residuals.size)
 
     @property
     def influenced_entity_count(self) -> int:
@@ -96,6 +135,14 @@ class KnowledgePolicyPlan:
             + self.latent_dimension_counts.nbytes
             + self.latent_max_widths.nbytes
             + self.quantized_residuals.nbytes
+            + self.comparison_active_rows.nbytes
+            + self.comparison_action_ids.nbytes
+            + self.comparison_residuals.nbytes
+            + self.comparison_quantized_residuals.nbytes
+            + self.router_saturation_counts.nbytes
+            + self.router_clipping_counts.nbytes
+            + self.router_hidden_abs_sums.nbytes
+            + self.router_hidden_active_counts.nbytes
         )
 
     def validate(self, active_count: int, action_count: int) -> None:
@@ -121,9 +168,36 @@ class KnowledgePolicyPlan:
             ("latent_dimension_counts", self.latent_dimension_counts),
             ("latent_max_widths", self.latent_max_widths),
             ("quantized_residuals", self.quantized_residuals),
+            ("router_saturation_counts", self.router_saturation_counts),
+            ("router_clipping_counts", self.router_clipping_counts),
+            ("router_hidden_abs_sums", self.router_hidden_abs_sums),
+            ("router_hidden_active_counts", self.router_hidden_active_counts),
         ):
             if np.asarray(value).size not in {0, count}:
                 raise ValueError(f"knowledge policy {name} must be empty or align with residuals")
+        comparison_count = self.comparison_size
+        for name, value in (
+            ("comparison_active_rows", self.comparison_active_rows),
+            ("comparison_action_ids", self.comparison_action_ids),
+            ("comparison_quantized_residuals", self.comparison_quantized_residuals),
+        ):
+            if np.asarray(value).shape != (comparison_count,):
+                raise ValueError(f"knowledge policy {name} must align with comparison residuals")
+        if comparison_count and (
+            np.any(self.comparison_active_rows < 0)
+            or np.any(self.comparison_active_rows >= active_count)
+            or np.any(self.comparison_action_ids < 0)
+            or np.any(self.comparison_action_ids >= action_count)
+            or np.any(~np.isfinite(self.comparison_residuals))
+        ):
+            raise ValueError("knowledge policy comparison plan contains invalid values")
+        if comparison_count:
+            comparison_flat = (
+                self.comparison_active_rows.astype(np.int64) * action_count
+                + self.comparison_action_ids.astype(np.int64)
+            )
+            if np.any(comparison_flat[1:] <= comparison_flat[:-1]):
+                raise ValueError("knowledge policy comparison keys must be unique and ordered")
         if count and (
             np.any(self.active_rows < 0)
             or np.any(self.active_rows >= active_count)
@@ -150,6 +224,17 @@ class KnowledgePolicyPlan:
             rows = xp.asarray(self.active_rows, dtype=xp.int32)
             actions = xp.asarray(self.action_ids, dtype=xp.int32)
             values = xp.asarray(self.residuals, dtype=xp.float32)
+            dense[rows, actions] = values
+        return dense
+
+    def materialize_comparison(
+        self, xp: Any, active_count: int, action_count: int
+    ) -> Any:
+        dense = xp.zeros((active_count, action_count), dtype=xp.float32)
+        if self.comparison_size:
+            rows = xp.asarray(self.comparison_active_rows, dtype=xp.int32)
+            actions = xp.asarray(self.comparison_action_ids, dtype=xp.int32)
+            values = xp.asarray(self.comparison_residuals, dtype=xp.float32)
             dense[rows, actions] = values
         return dense
 
@@ -375,10 +460,20 @@ def build_latent_knowledge_policy_plan(
         action_count=action_count,
     )
     rows, actions = np.nonzero(published_q)
-    if rows.size == 0:
-        return KnowledgePolicyPlan.empty(tick)
     rows = rows.astype(np.int32, copy=False)
     actions = actions.astype(np.int16, copy=False)
+    shadow_q = np.asarray(
+        diagnostics.get(
+            "linear_shadow_published_q",
+            np.zeros((active_count, action_count), dtype=np.int32),
+        ),
+        dtype=np.int32,
+    )
+    comparison_rows, comparison_actions = np.nonzero(shadow_q)
+    comparison_rows = comparison_rows.astype(np.int32, copy=False)
+    comparison_actions = comparison_actions.astype(np.int16, copy=False)
+    if rows.size == 0 and comparison_rows.size == 0:
+        return KnowledgePolicyPlan.empty(tick)
 
     q = float(config.latent_value_quantization_scale)
     reliability = batch.reliability_q.astype(np.float64) / q
@@ -424,8 +519,56 @@ def build_latent_knowledge_policy_plan(
     max_width = np.zeros(active_count, dtype=np.uint16)
     np.maximum.at(max_width, batch.copy_active_rows, batch.latent_lengths)
 
+    copy_saturation = np.asarray(
+        diagnostics.get("copy_mlp_saturation_count", np.zeros(batch.size)),
+        dtype=np.int64,
+    )
+    copy_hidden_abs = np.asarray(
+        diagnostics.get("copy_mlp_hidden_abs_sum", np.zeros(batch.size)),
+        dtype=np.int64,
+    )
+    copy_hidden_active = np.asarray(
+        diagnostics.get("copy_mlp_hidden_active_count", np.zeros(batch.size)),
+        dtype=np.int64,
+    )
+    saturation_by_row = np.bincount(
+        batch.copy_active_rows,
+        weights=copy_saturation,
+        minlength=active_count,
+    ).astype(np.uint32)
+    hidden_abs_by_row = np.bincount(
+        batch.copy_active_rows,
+        weights=copy_hidden_abs,
+        minlength=active_count,
+    ).astype(np.uint64)
+    hidden_active_by_row = np.bincount(
+        batch.copy_active_rows,
+        weights=copy_hidden_active,
+        minlength=active_count,
+    ).astype(np.uint32)
+    clipping_by_cell = np.zeros((active_count, action_count), dtype=np.uint32)
+    copy_clip = np.asarray(
+        diagnostics.get(
+            "copy_mlp_output_clip_mask",
+            np.zeros((batch.size, action_count), dtype=bool),
+        ),
+        dtype=bool,
+    )
+    for action_index in range(action_count):
+        np.add.at(
+            clipping_by_cell[:, action_index],
+            batch.copy_active_rows,
+            copy_clip[:, action_index].astype(np.uint32),
+        )
+
     residual_q = published_q[rows, actions].astype(np.int32, copy=False)
     residuals = (residual_q.astype(np.float64) / q).astype(np.float32)
+    comparison_q = shadow_q[comparison_rows, comparison_actions].astype(
+        np.int32, copy=False
+    )
+    comparison_residuals = (
+        comparison_q.astype(np.float64) / q
+    ).astype(np.float32)
     plan = KnowledgePolicyPlan(
         tick=int(tick),
         active_rows=rows,
@@ -443,7 +586,15 @@ def build_latent_knowledge_policy_plan(
         latent_dimension_counts=dimension_sum[rows],
         latent_max_widths=max_width[rows],
         quantized_residuals=residual_q,
-        router_schema=LATENT_ROUTER_SCHEMA,
+        comparison_active_rows=comparison_rows,
+        comparison_action_ids=comparison_actions,
+        comparison_residuals=comparison_residuals,
+        comparison_quantized_residuals=comparison_q,
+        router_saturation_counts=saturation_by_row[rows],
+        router_clipping_counts=clipping_by_cell[rows, actions],
+        router_hidden_abs_sums=hidden_abs_by_row[rows],
+        router_hidden_active_counts=hidden_active_by_row[rows],
+        router_schema=config.latent_router_schema,
     )
     plan.validate(active_count, action_count)
     return plan

@@ -1,0 +1,4 @@
+condition,run_dir,tick,alive,births_total,deaths_total,mean_energy,content_count,copy_count,variant_count,genetic_to_active_action_changes,l1_shadow_to_l2_action_changes,router_saturation_units,router_clipped_outputs,transfer_committed
+L1 linear private,l1_linear_control,30,604,104,0,1.9950215816497803,4328,4386,0,2654,0,0,0,0
+L2 MLP private,l2_private_a,30,605,105,0,1.9643828868865967,4223,4281,0,2545,3560,48388,23799,0
+L2 MLP costed exchange,l2_exchange_a,30,607,107,0,1.9555587768554688,4170,4358,10,2540,3553,51305,24246,233

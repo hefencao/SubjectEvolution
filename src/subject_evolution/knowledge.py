@@ -345,6 +345,11 @@ class KnowledgeStepStats:
     policy_latent_dimensions: int = 0
     policy_latent_max_width: int = 0
     policy_quantized_residual_abs_sum: int = 0
+    policy_linear_shadow_changed_actions: int = 0
+    policy_router_saturation_units: int = 0
+    policy_router_clipped_outputs: int = 0
+    policy_router_hidden_abs_sum: int = 0
+    policy_router_hidden_active_units: int = 0
 
     @property
     def total_energy_cost(self) -> float:
@@ -788,6 +793,10 @@ class KnowledgeSystem:
                         "information_outcome", "reproduction_opportunity_outcome",
                         "router_schema", "latent_dimension_count",
                         "latent_max_width", "quantized_residual",
+                        "linear_shadow_logit_residual",
+                        "linear_shadow_quantized_residual",
+                        "router_saturation_count", "router_clipping_count",
+                        "router_hidden_abs_sum", "router_hidden_active_count",
                     ],
                 )
                 self._policy_writer.writeheader()
@@ -961,6 +970,10 @@ class KnowledgeSystem:
                         "information_outcome", "reproduction_opportunity_outcome",
                         "router_schema", "latent_dimension_count",
                         "latent_max_width", "quantized_residual",
+                        "linear_shadow_logit_residual",
+                        "linear_shadow_quantized_residual",
+                        "router_saturation_count", "router_clipping_count",
+                        "router_hidden_abs_sum", "router_hidden_active_count",
                     ],
                 )
                 result._policy_writer.writeheader()
@@ -1755,6 +1768,7 @@ class KnowledgeSystem:
         *,
         changed_actions: int = 0,
         changed_active_rows: np.ndarray | None = None,
+        comparison_changed_actions: int = 0,
     ) -> KnowledgeStepStats:
         """Record one K3 sparse residual plan without mutating knowledge state."""
         stats = KnowledgeStepStats()
@@ -1769,6 +1783,7 @@ class KnowledgeSystem:
             plan.unverified_transfer_support_counts.sum(dtype=np.int64)
         )
         stats.policy_changed_actions = int(changed_actions)
+        stats.policy_linear_shadow_changed_actions = int(comparison_changed_actions)
         stats.policy_residual_abs_sum = float(
             np.abs(plan.residuals).sum(dtype=np.float64)
         )
@@ -1783,6 +1798,19 @@ class KnowledgeSystem:
             stats.policy_quantized_residual_abs_sum = int(
                 np.abs(np.asarray(plan.quantized_residuals, dtype=np.int64)).sum()
             )
+        if getattr(plan, "router_saturation_counts", np.empty(0)).size:
+            stats.policy_router_saturation_units = int(
+                np.asarray(plan.router_saturation_counts, dtype=np.uint64).sum()
+            )
+            stats.policy_router_clipped_outputs = int(
+                np.asarray(plan.router_clipping_counts, dtype=np.uint64).sum()
+            )
+            stats.policy_router_hidden_abs_sum = int(
+                np.asarray(plan.router_hidden_abs_sums, dtype=np.uint64).sum()
+            )
+            stats.policy_router_hidden_active_units = int(
+                np.asarray(plan.router_hidden_active_counts, dtype=np.uint64).sum()
+            )
         if self.kcfg.candidate_tracking_enabled:
             self.candidates.record_policy_plan(
                 observation=self.observation,
@@ -1795,6 +1823,15 @@ class KnowledgeSystem:
                 acquisition_transfer=ACQUISITION_TRANSFER,
             )
         if self._policy_writer is not None:
+            shadow_lookup = {
+                (int(active_row), int(action_id)): (float(residual), int(residual_q))
+                for active_row, action_id, residual, residual_q in zip(
+                    getattr(plan, "comparison_active_rows", np.empty(0, dtype=np.int32)),
+                    getattr(plan, "comparison_action_ids", np.empty(0, dtype=np.int16)),
+                    getattr(plan, "comparison_residuals", np.empty(0, dtype=np.float32)),
+                    getattr(plan, "comparison_quantized_residuals", np.empty(0, dtype=np.int32)),
+                )
+            }
             for row in range(plan.size):
                 outcome = plan.weighted_outcome_vectors[row]
                 self._policy_writer.writerow(
@@ -1831,6 +1868,34 @@ class KnowledgeSystem:
                         "quantized_residual": (
                             int(plan.quantized_residuals[row])
                             if getattr(plan, "quantized_residuals", np.empty(0)).size
+                            else 0
+                        ),
+                        "linear_shadow_logit_residual": shadow_lookup.get(
+                            (int(plan.active_rows[row]), int(plan.action_ids[row])),
+                            (0.0, 0),
+                        )[0],
+                        "linear_shadow_quantized_residual": shadow_lookup.get(
+                            (int(plan.active_rows[row]), int(plan.action_ids[row])),
+                            (0.0, 0),
+                        )[1],
+                        "router_saturation_count": (
+                            int(plan.router_saturation_counts[row])
+                            if getattr(plan, "router_saturation_counts", np.empty(0)).size
+                            else 0
+                        ),
+                        "router_clipping_count": (
+                            int(plan.router_clipping_counts[row])
+                            if getattr(plan, "router_clipping_counts", np.empty(0)).size
+                            else 0
+                        ),
+                        "router_hidden_abs_sum": (
+                            int(plan.router_hidden_abs_sums[row])
+                            if getattr(plan, "router_hidden_abs_sums", np.empty(0)).size
+                            else 0
+                        ),
+                        "router_hidden_active_count": (
+                            int(plan.router_hidden_active_counts[row])
+                            if getattr(plan, "router_hidden_active_counts", np.empty(0)).size
                             else 0
                         ),
                     }
@@ -1975,6 +2040,21 @@ class KnowledgeSystem:
             "policy_latent_max_width": self.totals.policy_latent_max_width,
             "policy_quantized_residual_abs_sum_total": (
                 self.totals.policy_quantized_residual_abs_sum
+            ),
+            "policy_linear_shadow_changed_actions_total": (
+                self.totals.policy_linear_shadow_changed_actions
+            ),
+            "policy_router_saturation_units_total": (
+                self.totals.policy_router_saturation_units
+            ),
+            "policy_router_clipped_outputs_total": (
+                self.totals.policy_router_clipped_outputs
+            ),
+            "policy_router_hidden_abs_sum_total": (
+                self.totals.policy_router_hidden_abs_sum
+            ),
+            "policy_router_hidden_active_units_total": (
+                self.totals.policy_router_hidden_active_units
             ),
         }
         if self.latent_store is not None:

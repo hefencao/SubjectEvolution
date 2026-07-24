@@ -696,6 +696,21 @@ class Simulation:
                 if self.cfg.knowledge.latent_policy_enabled
                 else None
             ),
+            "knowledge_latent_projection_width": (
+                self.cfg.knowledge.latent_router_hidden_width
+                if self.cfg.knowledge.latent_policy_enabled
+                else None
+            ),
+            "knowledge_latent_mlp_hidden_width": (
+                self.cfg.knowledge.latent_router_mlp_hidden_width
+                if self.cfg.knowledge.latent_router_schema == "quantized-mlp-latent-router-v1"
+                else None
+            ),
+            "knowledge_latent_activation": (
+                "integer-hard-tanh-v1"
+                if self.cfg.knowledge.latent_router_schema == "quantized-mlp-latent-router-v1"
+                else None
+            ),
             "knowledge_latent_quantized_publish": (
                 self.cfg.knowledge.latent_policy_enabled
             ),
@@ -1357,6 +1372,21 @@ class Simulation:
                     if self.cfg.knowledge.latent_policy_enabled
                     else None
                 ),
+                "knowledge_latent_projection_width": (
+                    self.cfg.knowledge.latent_router_hidden_width
+                    if self.cfg.knowledge.latent_policy_enabled
+                    else None
+                ),
+                "knowledge_latent_mlp_hidden_width": (
+                    self.cfg.knowledge.latent_router_mlp_hidden_width
+                    if self.cfg.knowledge.latent_router_schema == "quantized-mlp-latent-router-v1"
+                    else None
+                ),
+                "knowledge_latent_activation": (
+                    "integer-hard-tanh-v1"
+                    if self.cfg.knowledge.latent_router_schema == "quantized-mlp-latent-router-v1"
+                    else None
+                ),
                 "knowledge_latent_publish_quantized": (
                     self.cfg.knowledge.latent_policy_enabled
                 ),
@@ -1394,6 +1424,17 @@ class Simulation:
                         ),
                         "latent_router_gene_start": ParametricPolicy.LATENT_ROUTER_START,
                         "latent_router_gene_stop": ParametricPolicy.genome_size_for_config(self.cfg),
+                        "latent_router_schema": self.cfg.knowledge.latent_router_schema,
+                        "latent_router_linear_shadow": (
+                            self.cfg.knowledge.latent_router_schema
+                            == "quantized-mlp-latent-router-v1"
+                        ),
+                        "latent_router_activation": (
+                            "integer-hard-tanh-v1"
+                            if self.cfg.knowledge.latent_router_schema
+                            == "quantized-mlp-latent-router-v1"
+                            else "identity"
+                        ),
                         "latent_router_public_state": [
                             "energy_fraction", "integrity", "fertility", "scarcity"
                         ],
@@ -1438,9 +1479,16 @@ class Simulation:
                 "knowledge": (
                     (
                         (
-                            "dynamic variable-length latent contents routed by inherited "
-                            "quantized linear parameters through the public action-logit "
-                            "residual boundary"
+                            (
+                                "dynamic variable-length latent contents routed by inherited "
+                                "quantized two-layer MLP parameters with an integer hard-tanh "
+                                "through the public action-logit residual boundary"
+                                if self.cfg.knowledge.latent_router_schema
+                                == "quantized-mlp-latent-router-v1"
+                                else "dynamic variable-length latent contents routed by inherited "
+                                "quantized linear parameters through the public action-logit "
+                                "residual boundary"
+                            )
                             if self.cfg.knowledge.latent_policy_enabled
                             else "dynamic costly holder copies with local current-tick "
                             "context-action-outcome statistics with a separately versioned "
@@ -1988,10 +2036,16 @@ class Simulation:
                 else np.empty(0, dtype=np.int32)
             )
             changed_actions = int(changed_active_rows.size)
+            comparison_changed_actions = (
+                int(np.count_nonzero(decision.action != decision.linear_knowledge_action))
+                if decision.linear_knowledge_action is not None
+                else 0
+            )
             policy_stats = self.knowledge.record_policy_plan(
                 knowledge_policy_plan,
                 changed_actions=changed_actions,
                 changed_active_rows=changed_active_rows,
+                comparison_changed_actions=comparison_changed_actions,
             )
             for field_name in KnowledgeStepStats.__dataclass_fields__:
                 setattr(
@@ -2983,6 +3037,21 @@ class Simulation:
                     "knowledge_policy_quantized_residual_abs_sum_step": (
                         stats.knowledge.policy_quantized_residual_abs_sum
                     ),
+                    "knowledge_policy_linear_shadow_changed_actions_step": (
+                        stats.knowledge.policy_linear_shadow_changed_actions
+                    ),
+                    "knowledge_policy_router_saturation_units_step": (
+                        stats.knowledge.policy_router_saturation_units
+                    ),
+                    "knowledge_policy_router_clipped_outputs_step": (
+                        stats.knowledge.policy_router_clipped_outputs
+                    ),
+                    "knowledge_policy_router_hidden_abs_sum_step": (
+                        stats.knowledge.policy_router_hidden_abs_sum
+                    ),
+                    "knowledge_policy_router_hidden_active_units_step": (
+                        stats.knowledge.policy_router_hidden_active_units
+                    ),
                     "knowledge_maintenance_energy_total": float(knowledge_summary["maintenance_energy_total"]),
                     "knowledge_sender_energy_total": float(knowledge_summary["sender_energy_total"]),
                     "knowledge_receiver_energy_total": float(knowledge_summary["receiver_energy_total"]),
@@ -3019,6 +3088,21 @@ class Simulation:
                     ),
                     "knowledge_policy_quantized_residual_abs_sum_total": int(
                         knowledge_summary["policy_quantized_residual_abs_sum_total"]
+                    ),
+                    "knowledge_policy_linear_shadow_changed_actions_total": int(
+                        knowledge_summary["policy_linear_shadow_changed_actions_total"]
+                    ),
+                    "knowledge_policy_router_saturation_units_total": int(
+                        knowledge_summary["policy_router_saturation_units_total"]
+                    ),
+                    "knowledge_policy_router_clipped_outputs_total": int(
+                        knowledge_summary["policy_router_clipped_outputs_total"]
+                    ),
+                    "knowledge_policy_router_hidden_abs_sum_total": int(
+                        knowledge_summary["policy_router_hidden_abs_sum_total"]
+                    ),
+                    "knowledge_policy_router_hidden_active_units_total": int(
+                        knowledge_summary["policy_router_hidden_active_units_total"]
                     ),
                     "validation_seconds": stats.validation_seconds,
                 }

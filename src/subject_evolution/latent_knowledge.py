@@ -2,9 +2,10 @@
 
 This module implements the first high-extensibility latent-knowledge schema.
 Knowledge contents own variable-length int16 latent payloads selected from a
-small set of length levels.  Per-carrier inherited router weights map those
-payloads and current local carrier state to the existing public action-logit
-residual boundary.
+small set of length levels.  Per-carrier inherited router weights map those payloads and current local carrier
+state to the existing public action-logit residual boundary.  L1 uses a linear
+router; L2 retains that router as a shadow prefix and adds a quantized two-layer
+MLP with an exact integer hard-tanh activation.
 
 The publish boundary is deliberately quantized.  Per-copy routing can run in
 NumPy or CuPy using exact integer arithmetic; the final holder/action
@@ -33,8 +34,11 @@ from .knowledge import (
 
 LATENT_SCHEMA = "variable-latent-knowledge-v1"
 LATENT_ROUTER_SCHEMA = "quantized-linear-latent-router-v1"
+LATENT_MLP_ROUTER_SCHEMA = "quantized-mlp-latent-router-v1"
 LATENT_POLICY_RESIDUAL_SCHEMA = "quantized-variable-latent-residual-v1"
+LATENT_MLP_POLICY_RESIDUAL_SCHEMA = "quantized-variable-latent-mlp-residual-v1"
 LATENT_STATE_WIDTH = 4
+LATENT_ROUTER_METADATA_WIDTH = 3
 
 
 def _mix_scalar(value: int) -> int:
@@ -635,7 +639,9 @@ def latent_router_state_features(
     return xp.stack((e, health, fert, scarcity), axis=1).astype(xp.float32, copy=False)
 
 
-def _router_gene_layout(config: KnowledgeConfig, action_count: int) -> tuple[int, int, int, int]:
+def _linear_router_gene_layout(
+    config: KnowledgeConfig, action_count: int
+) -> tuple[int, int, int, int]:
     hidden = int(config.latent_router_hidden_width)
     latent_count = action_count * hidden
     state_count = action_count * LATENT_STATE_WIDTH
@@ -643,12 +649,80 @@ def _router_gene_layout(config: KnowledgeConfig, action_count: int) -> tuple[int
     return hidden, latent_count, state_count, bias_count
 
 
-def latent_router_gene_count(config: KnowledgeConfig, action_count: int) -> int:
-    _, latent_count, state_count, bias_count = _router_gene_layout(config, action_count)
+def linear_latent_router_gene_count(config: KnowledgeConfig, action_count: int) -> int:
+    _, latent_count, state_count, bias_count = _linear_router_gene_layout(
+        config, action_count
+    )
     return latent_count + state_count + bias_count
 
 
-def _quantized_router_parameters(
+def _mlp_router_gene_layout(
+    config: KnowledgeConfig, action_count: int
+) -> tuple[int, int, int, int, int, int]:
+    projection_width = int(config.latent_router_hidden_width)
+    hidden_width = int(config.latent_router_mlp_hidden_width)
+    input_width = projection_width + LATENT_STATE_WIDTH + LATENT_ROUTER_METADATA_WIDTH
+    first_weight_count = hidden_width * input_width
+    first_bias_count = hidden_width
+    second_weight_count = action_count * hidden_width
+    second_bias_count = action_count
+    return (
+        input_width,
+        hidden_width,
+        first_weight_count,
+        first_bias_count,
+        second_weight_count,
+        second_bias_count,
+    )
+
+
+def mlp_latent_router_gene_count(config: KnowledgeConfig, action_count: int) -> int:
+    (
+        _,
+        _,
+        first_weight_count,
+        first_bias_count,
+        second_weight_count,
+        second_bias_count,
+    ) = _mlp_router_gene_layout(config, action_count)
+    return (
+        first_weight_count
+        + first_bias_count
+        + second_weight_count
+        + second_bias_count
+    )
+
+
+def latent_router_gene_count(config: KnowledgeConfig, action_count: int) -> int:
+    """Return inherited router genes for the configured latent schema.
+
+    The nonlinear L2 schema deliberately retains the complete L1 linear router
+    prefix.  That prefix provides an auditable matched-capacity shadow policy
+    and keeps L1 parameters available for later evolutionary transitions.
+    """
+    linear = linear_latent_router_gene_count(config, action_count)
+    if config.latent_router_schema == LATENT_ROUTER_SCHEMA:
+        return linear
+    if config.latent_router_schema == LATENT_MLP_ROUTER_SCHEMA:
+        return linear + mlp_latent_router_gene_count(config, action_count)
+    raise ValueError("unknown latent router schema")
+
+
+def latent_mlp_gene_start(
+    router_gene_start: int, config: KnowledgeConfig, action_count: int
+) -> int:
+    return int(router_gene_start) + linear_latent_router_gene_count(
+        config, action_count
+    )
+
+
+def _quantize_gene_block(raw: Any, *, scale: int, xp: Any) -> Any:
+    return xp.rint(xp.clip(raw, -1.0, 1.0) * int(scale)).astype(
+        xp.int16, copy=False
+    )
+
+
+def _quantized_linear_router_parameters(
     genotype: Any,
     *,
     start: int,
@@ -656,31 +730,275 @@ def _quantized_router_parameters(
     action_count: int,
 ) -> tuple[Any, Any, Any]:
     xp = backend_from_array(genotype).xp
-    hidden, latent_count, state_count, bias_count = _router_gene_layout(config, action_count)
+    hidden, latent_count, state_count, bias_count = _linear_router_gene_layout(
+        config, action_count
+    )
     required = start + latent_count + state_count + bias_count
     if genotype.ndim != 2 or genotype.shape[1] < required:
-        raise ValueError("genotype does not contain the configured latent router genes")
+        raise ValueError("genotype does not contain the configured linear latent router genes")
     scale = int(config.latent_router_weight_quantization_scale)
-    cursor = start
+    cursor = int(start)
     latent_raw = genotype[:, cursor : cursor + latent_count]
     cursor += latent_count
     state_raw = genotype[:, cursor : cursor + state_count]
     cursor += state_count
     bias_raw = genotype[:, cursor : cursor + bias_count]
-    # The router genes are mapped with a clipped linear transform rather than
-    # a transcendental activation.  The scale is a power of two, so quantizing
-    # an inherited float32 gene has the same public integer semantics on NumPy
-    # and CuPy.  Nonlinear routers are a separate future schema.
-    latent_weights = xp.rint(xp.clip(latent_raw, -1.0, 1.0) * scale).astype(xp.int16).reshape(
+    latent_weights = _quantize_gene_block(latent_raw, scale=scale, xp=xp).reshape(
         genotype.shape[0], action_count, hidden
     )
-    state_weights = xp.rint(xp.clip(state_raw, -1.0, 1.0) * scale).astype(xp.int16).reshape(
+    state_weights = _quantize_gene_block(state_raw, scale=scale, xp=xp).reshape(
         genotype.shape[0], action_count, LATENT_STATE_WIDTH
     )
-    bias = xp.rint(xp.clip(bias_raw, -1.0, 1.0) * scale).astype(xp.int16).reshape(
+    bias = _quantize_gene_block(bias_raw, scale=scale, xp=xp).reshape(
         genotype.shape[0], action_count
     )
     return latent_weights, state_weights, bias
+
+
+def _quantized_mlp_router_parameters(
+    genotype: Any,
+    *,
+    start: int,
+    config: KnowledgeConfig,
+    action_count: int,
+) -> tuple[Any, Any, Any, Any]:
+    xp = backend_from_array(genotype).xp
+    (
+        input_width,
+        hidden_width,
+        first_weight_count,
+        first_bias_count,
+        second_weight_count,
+        second_bias_count,
+    ) = _mlp_router_gene_layout(config, action_count)
+    required = (
+        int(start)
+        + first_weight_count
+        + first_bias_count
+        + second_weight_count
+        + second_bias_count
+    )
+    if genotype.ndim != 2 or genotype.shape[1] < required:
+        raise ValueError("genotype does not contain the configured MLP latent router genes")
+    scale = int(config.latent_router_weight_quantization_scale)
+    cursor = int(start)
+    first_weight_raw = genotype[:, cursor : cursor + first_weight_count]
+    cursor += first_weight_count
+    first_bias_raw = genotype[:, cursor : cursor + first_bias_count]
+    cursor += first_bias_count
+    second_weight_raw = genotype[:, cursor : cursor + second_weight_count]
+    cursor += second_weight_count
+    second_bias_raw = genotype[:, cursor : cursor + second_bias_count]
+    first_weights = _quantize_gene_block(
+        first_weight_raw, scale=scale, xp=xp
+    ).reshape(genotype.shape[0], hidden_width, input_width)
+    first_bias = _quantize_gene_block(
+        first_bias_raw, scale=scale, xp=xp
+    ).reshape(genotype.shape[0], hidden_width)
+    second_weights = _quantize_gene_block(
+        second_weight_raw, scale=scale, xp=xp
+    ).reshape(genotype.shape[0], action_count, hidden_width)
+    second_bias = _quantize_gene_block(
+        second_bias_raw, scale=scale, xp=xp
+    ).reshape(genotype.shape[0], action_count)
+    return first_weights, first_bias, second_weights, second_bias
+
+
+def _build_common_router_inputs(
+    batch: LatentRouterBatch,
+    *,
+    state_features: Any,
+    config: KnowledgeConfig,
+    xp: Any,
+) -> tuple[Any, Any, Any]:
+    """Build exact quantized latent projection, public state, and metadata."""
+    q = int(config.latent_value_quantization_scale)
+    projection_width = int(config.latent_router_hidden_width)
+    copy_count = batch.size
+    hidden_q = xp.zeros((copy_count, projection_width), dtype=xp.int64)
+    for bucket in batch.buckets:
+        rows = xp.asarray(bucket.batch_rows, dtype=xp.int32)
+        values = xp.asarray(bucket.values, dtype=xp.int64)
+        projection = xp.asarray(
+            _projection_matrix(bucket.width, projection_width), dtype=xp.int64
+        )
+        # Fixed-width integer GEMM.  Since all terms are int16/int8 and the
+        # configured widths are bounded, CPU and GPU compute the same exact sum.
+        projected = values @ projection
+        projected = _round_divide_signed_backend(
+            projected, max(bucket.width, 1), xp
+        )
+        hidden_q[rows] = projected
+
+    outcome_q = xp.asarray(batch.outcome_q, dtype=xp.int64)
+    outcome_projection = xp.asarray(
+        _outcome_projection(projection_width), dtype=xp.int64
+    )
+    injected = outcome_q @ outcome_projection
+    injected = _round_divide_signed_backend(injected, OUTCOME_WIDTH, xp)
+    injection_q = int(np.rint(float(config.latent_outcome_injection) * q))
+    hidden_q += _round_divide_signed_backend(injected * injection_q, q, xp)
+    hidden_q = xp.clip(hidden_q, -32767, 32767).astype(xp.int32)
+
+    state_host = np.asarray(to_numpy(state_features), dtype=np.float32)
+    if state_host.shape != (batch.active_count, LATENT_STATE_WIDTH):
+        raise ValueError("latent router state features have an invalid shape")
+    state_q = xp.asarray(
+        np.rint(np.clip(state_host, -2.0, 2.0) * q).astype(np.int32),
+        dtype=xp.int32,
+    )
+    reliability_q = xp.asarray(batch.reliability_q, dtype=xp.int32)
+    acquisition_transfer_q = xp.asarray(
+        (batch.acquisition_kinds == ACQUISITION_TRANSFER).astype(np.int32) * q,
+        dtype=xp.int32,
+    )
+    unverified_q = xp.asarray(
+        batch.unverified_transfer.astype(np.int32) * q,
+        dtype=xp.int32,
+    )
+    metadata_q = xp.stack(
+        (reliability_q, acquisition_transfer_q, unverified_q), axis=1
+    ).astype(xp.int32, copy=False)
+    return hidden_q, state_q, metadata_q
+
+
+def _route_linear_copy_q(
+    *,
+    hidden_q: Any,
+    state_q: Any,
+    active_rows: Any,
+    genotype: Any,
+    router_gene_start: int,
+    config: KnowledgeConfig,
+    action_count: int,
+    xp: Any,
+) -> Any:
+    q = int(config.latent_value_quantization_scale)
+    weight_q = int(config.latent_router_weight_quantization_scale)
+    latent_weights, state_weights, bias = _quantized_linear_router_parameters(
+        genotype,
+        start=int(router_gene_start),
+        config=config,
+        action_count=action_count,
+    )
+    gathered_latent = latent_weights[active_rows].astype(xp.int64)
+    gathered_state_weights = state_weights[active_rows].astype(xp.int64)
+    gathered_bias = bias[active_rows].astype(xp.int64)
+    gathered_state = state_q[active_rows].astype(xp.int64)
+    accumulator = gathered_bias * xp.int64(q)
+    for hidden in range(int(config.latent_router_hidden_width)):
+        accumulator += (
+            hidden_q[:, hidden, None].astype(xp.int64)
+            * gathered_latent[:, :, hidden]
+        )
+    for state_index in range(LATENT_STATE_WIDTH):
+        accumulator += (
+            gathered_state[:, state_index, None]
+            * gathered_state_weights[:, :, state_index]
+        )
+    return _round_divide_signed_backend(accumulator, weight_q, xp)
+
+
+def _route_mlp_copy_q(
+    *,
+    hidden_q: Any,
+    state_q: Any,
+    metadata_q: Any,
+    active_rows: Any,
+    genotype: Any,
+    router_gene_start: int,
+    config: KnowledgeConfig,
+    action_count: int,
+    xp: Any,
+) -> tuple[Any, dict[str, Any]]:
+    """Execute a two-layer inherited MLP using exact integer hard-tanh."""
+    q = int(config.latent_value_quantization_scale)
+    weight_q = int(config.latent_router_weight_quantization_scale)
+    mlp_start = latent_mlp_gene_start(router_gene_start, config, action_count)
+    first_weights, first_bias, second_weights, second_bias = (
+        _quantized_mlp_router_parameters(
+            genotype,
+            start=mlp_start,
+            config=config,
+            action_count=action_count,
+        )
+    )
+    gathered_state = state_q[active_rows].astype(xp.int32)
+    input_q = xp.concatenate(
+        (hidden_q.astype(xp.int32), gathered_state, metadata_q), axis=1
+    )
+    gathered_first_weights = first_weights[active_rows].astype(xp.int64)
+    gathered_first_bias = first_bias[active_rows].astype(xp.int64)
+    first_accumulator = gathered_first_bias * xp.int64(q)
+    for input_index in range(input_q.shape[1]):
+        first_accumulator += (
+            input_q[:, input_index, None].astype(xp.int64)
+            * gathered_first_weights[:, :, input_index]
+        )
+    pre_activation_q = _round_divide_signed_backend(
+        first_accumulator, weight_q, xp
+    )
+    activation_clip_q = max(
+        1, int(np.rint(float(config.latent_router_activation_clip) * q))
+    )
+    saturation = xp.abs(pre_activation_q) > activation_clip_q
+    activated_q = xp.clip(
+        pre_activation_q, -activation_clip_q, activation_clip_q
+    ).astype(xp.int32)
+
+    gathered_second_weights = second_weights[active_rows].astype(xp.int64)
+    gathered_second_bias = second_bias[active_rows].astype(xp.int64)
+    second_accumulator = gathered_second_bias * xp.int64(q)
+    for hidden_index in range(int(config.latent_router_mlp_hidden_width)):
+        second_accumulator += (
+            activated_q[:, hidden_index, None].astype(xp.int64)
+            * gathered_second_weights[:, :, hidden_index]
+        )
+    copy_route_q = _round_divide_signed_backend(
+        second_accumulator, weight_q, xp
+    )
+    max_q = int(np.rint(float(config.latent_max_abs_logit_residual) * q))
+    output_clip_mask = xp.abs(copy_route_q) > max_q
+    return copy_route_q, {
+        "copy_mlp_pre_activation_q": pre_activation_q,
+        "copy_mlp_hidden_q": activated_q,
+        "copy_mlp_saturation_count": saturation.sum(axis=1).astype(xp.int32),
+        "copy_mlp_hidden_abs_sum": xp.abs(activated_q).sum(axis=1).astype(xp.int64),
+        "copy_mlp_hidden_active_count": (activated_q != 0).sum(axis=1).astype(xp.int32),
+        "copy_mlp_output_clip_mask": output_clip_mask,
+    }
+
+
+def _aggregate_copy_routes(
+    copy_route_q: Any,
+    *,
+    batch: LatentRouterBatch,
+    active_rows: Any,
+    use_strength: Any,
+    config: KnowledgeConfig,
+    action_count: int,
+    xp: Any,
+) -> Any:
+    q = int(config.latent_value_quantization_scale)
+    reliability_q = xp.asarray(batch.reliability_q, dtype=xp.int64)
+    numerator = xp.zeros((batch.active_count, action_count), dtype=xp.int64)
+    denominator = xp.zeros(batch.active_count, dtype=xp.int64)
+    xp.add.at(numerator, active_rows, copy_route_q * reliability_q[:, None])
+    xp.add.at(denominator, active_rows, reliability_q)
+    safe_denominator = xp.maximum(denominator, xp.int64(1))
+    mean_route_q = _round_divide_signed_backend(
+        numerator, safe_denominator[:, None], xp
+    )
+    use_host = np.asarray(to_numpy(use_strength), dtype=np.float32)
+    use_q = xp.asarray(
+        np.rint(np.clip(use_host, 0.0, 1.0) * q).astype(np.int64),
+        dtype=xp.int64,
+    )
+    published_q = _round_divide_signed_backend(
+        mean_route_q * use_q[:, None], q, xp
+    )
+    max_q = int(np.rint(float(config.latent_max_abs_logit_residual) * q))
+    return xp.clip(published_q, -max_q, max_q).astype(xp.int32)
 
 
 def route_latent_router_batch(
@@ -693,99 +1011,110 @@ def route_latent_router_batch(
     config: KnowledgeConfig,
     action_count: int,
 ) -> tuple[np.ndarray, dict[str, np.ndarray]]:
-    """Route matched latent copies on NumPy/CuPy and publish exact int residuals.
+    """Route matched latent copies and publish exact integer residuals.
 
-    Per-copy variable-width projection and inherited routing execute on the
-    backend that owns ``genotype``.  Only quantized integer contributions are
-    returned to the CPU stable aggregation boundary.
+    L1 uses the inherited quantized linear router.  L2 retains that complete
+    router as a shadow baseline, then evaluates a separately inherited two-layer
+    MLP with an integer hard-tanh activation.  Both paths use the same common
+    latent projection and exact publication boundary.
     """
     if batch.size == 0:
+        projection_width = int(config.latent_router_hidden_width)
+        mlp_width = int(config.latent_router_mlp_hidden_width)
         return np.zeros((batch.active_count, action_count), dtype=np.int32), {
             "copy_route_q": np.empty((0, action_count), dtype=np.int32),
-            "copy_hidden_q": np.empty((0, int(config.latent_router_hidden_width)), dtype=np.int32),
+            "copy_hidden_q": np.empty((0, projection_width), dtype=np.int32),
+            "linear_shadow_published_q": np.zeros(
+                (batch.active_count, action_count), dtype=np.int32
+            ),
+            "copy_mlp_pre_activation_q": np.empty((0, mlp_width), dtype=np.int32),
+            "copy_mlp_hidden_q": np.empty((0, mlp_width), dtype=np.int32),
+            "copy_mlp_saturation_count": np.empty(0, dtype=np.int32),
+            "copy_mlp_hidden_abs_sum": np.empty(0, dtype=np.int64),
+            "copy_mlp_hidden_active_count": np.empty(0, dtype=np.int32),
+            "copy_mlp_output_clip_mask": np.empty((0, action_count), dtype=bool),
         }
     xp = backend_from_array(genotype).xp
-    q = int(config.latent_value_quantization_scale)
-    weight_q = int(config.latent_router_weight_quantization_scale)
-    hidden_width = int(config.latent_router_hidden_width)
     active_rows = xp.asarray(batch.copy_active_rows, dtype=xp.int32)
-    copy_count = batch.size
-
-    hidden_q = xp.zeros((copy_count, hidden_width), dtype=xp.int64)
-    for bucket in batch.buckets:
-        rows = xp.asarray(bucket.batch_rows, dtype=xp.int32)
-        values = xp.asarray(bucket.values, dtype=xp.int64)
-        projection = xp.asarray(_projection_matrix(bucket.width, hidden_width), dtype=xp.int64)
-        projected = values @ projection
-        projected = _round_divide_signed_backend(projected, max(bucket.width, 1), xp)
-        hidden_q[rows] = projected
-
-    # Outcome normalization is a CPU-reference publication boundary.  The GPU
-    # receives the already quantized semantic values, avoiding backend-specific
-    # division/rounding from changing a later discrete action.
-    outcome_q = xp.asarray(batch.outcome_q, dtype=xp.int64)
-    outcome_projection = xp.asarray(_outcome_projection(hidden_width), dtype=xp.int64)
-    injected = outcome_q @ outcome_projection
-    injected = _round_divide_signed_backend(injected, OUTCOME_WIDTH, xp)
-    injection_q = int(np.rint(float(config.latent_outcome_injection) * q))
-    hidden_q += _round_divide_signed_backend(injected * injection_q, q, xp)
-    hidden_q = xp.clip(hidden_q, -32767, 32767).astype(xp.int32)
-
-    # State features are only four values per active carrier.  Publish their
-    # quantized form through the CPU reference boundary, then perform the large
-    # variable-width routing batch on the selected backend.
-    state_host = np.asarray(to_numpy(state_features), dtype=np.float32)
-    if state_host.shape != (batch.active_count, LATENT_STATE_WIDTH):
-        raise ValueError("latent router state features have an invalid shape")
-    state_q = xp.asarray(
-        np.rint(np.clip(state_host, -2.0, 2.0) * q).astype(np.int32),
-        dtype=xp.int32,
+    hidden_q, state_q, metadata_q = _build_common_router_inputs(
+        batch, state_features=state_features, config=config, xp=xp
     )
-    latent_weights, state_weights, bias = _quantized_router_parameters(
-        genotype,
-        start=int(router_gene_start),
+    linear_copy_q = _route_linear_copy_q(
+        hidden_q=hidden_q,
+        state_q=state_q,
+        active_rows=active_rows,
+        genotype=genotype,
+        router_gene_start=router_gene_start,
         config=config,
         action_count=action_count,
+        xp=xp,
     )
-    gathered_latent = latent_weights[active_rows].astype(xp.int64)
-    gathered_state_weights = state_weights[active_rows].astype(xp.int64)
-    gathered_bias = bias[active_rows].astype(xp.int64)
-    gathered_state = state_q[active_rows].astype(xp.int64)
-
-    accumulator = gathered_bias * xp.int64(q)
-    # Fixed dimension order keeps the same exact integer operations on both
-    # backends and avoids backend-selected contraction plans.
-    for hidden in range(hidden_width):
-        accumulator += hidden_q[:, hidden, None].astype(xp.int64) * gathered_latent[:, :, hidden]
-    for state_index in range(LATENT_STATE_WIDTH):
-        accumulator += gathered_state[:, state_index, None] * gathered_state_weights[:, :, state_index]
-    copy_route_q = _round_divide_signed_backend(accumulator, weight_q, xp)
-
-    reliability_q = xp.asarray(batch.reliability_q, dtype=xp.int64)
-    numerator = xp.zeros((batch.active_count, action_count), dtype=xp.int64)
-    denominator = xp.zeros(batch.active_count, dtype=xp.int64)
-    # Device scatter is only over integers; addition order cannot change the
-    # result while the configured bounds remain far below int64 overflow.
-    xp.add.at(numerator, active_rows, copy_route_q * reliability_q[:, None])
-    xp.add.at(denominator, active_rows, reliability_q)
-    safe_denominator = xp.maximum(denominator, xp.int64(1))
-    mean_route_q = _round_divide_signed_backend(numerator, safe_denominator[:, None], xp)
-    use_host = np.asarray(to_numpy(use_strength), dtype=np.float32)
-    use_q = xp.asarray(
-        np.rint(np.clip(use_host, 0.0, 1.0) * q).astype(np.int64),
-        dtype=xp.int64,
+    linear_published_q = _aggregate_copy_routes(
+        linear_copy_q,
+        batch=batch,
+        active_rows=active_rows,
+        use_strength=use_strength,
+        config=config,
+        action_count=action_count,
+        xp=xp,
     )
-    published_q = _round_divide_signed_backend(mean_route_q * use_q[:, None], q, xp)
-    max_q = int(np.rint(float(config.latent_max_abs_logit_residual) * q))
-    published_q = xp.clip(published_q, -max_q, max_q).astype(xp.int32)
+
+    if config.latent_router_schema == LATENT_ROUTER_SCHEMA:
+        published_q = linear_published_q
+        diagnostics: dict[str, Any] = {
+            "copy_route_q": linear_copy_q,
+            "copy_hidden_q": hidden_q,
+            "linear_shadow_published_q": xp.zeros_like(linear_published_q),
+            "copy_mlp_pre_activation_q": xp.empty((batch.size, 0), dtype=xp.int32),
+            "copy_mlp_hidden_q": xp.empty((batch.size, 0), dtype=xp.int32),
+            "copy_mlp_saturation_count": xp.zeros(batch.size, dtype=xp.int32),
+            "copy_mlp_hidden_abs_sum": xp.zeros(batch.size, dtype=xp.int64),
+            "copy_mlp_hidden_active_count": xp.zeros(batch.size, dtype=xp.int32),
+            "copy_mlp_output_clip_mask": xp.zeros(
+                (batch.size, action_count), dtype=bool
+            ),
+        }
+    elif config.latent_router_schema == LATENT_MLP_ROUTER_SCHEMA:
+        mlp_copy_q, mlp_diagnostics = _route_mlp_copy_q(
+            hidden_q=hidden_q,
+            state_q=state_q,
+            metadata_q=metadata_q,
+            active_rows=active_rows,
+            genotype=genotype,
+            router_gene_start=router_gene_start,
+            config=config,
+            action_count=action_count,
+            xp=xp,
+        )
+        published_q = _aggregate_copy_routes(
+            mlp_copy_q,
+            batch=batch,
+            active_rows=active_rows,
+            use_strength=use_strength,
+            config=config,
+            action_count=action_count,
+            xp=xp,
+        )
+        diagnostics = {
+            "copy_route_q": mlp_copy_q,
+            "copy_hidden_q": hidden_q,
+            "linear_shadow_published_q": linear_published_q,
+            **mlp_diagnostics,
+        }
+    else:
+        raise ValueError("unknown latent router schema")
+
     return to_numpy(published_q).astype(np.int32, copy=False), {
-        "copy_route_q": to_numpy(copy_route_q).astype(np.int32, copy=False),
-        "copy_hidden_q": to_numpy(hidden_q).astype(np.int32, copy=False),
+        name: to_numpy(value)
+        for name, value in diagnostics.items()
     }
 
 
 __all__ = [
+    "LATENT_MLP_POLICY_RESIDUAL_SCHEMA",
+    "LATENT_MLP_ROUTER_SCHEMA",
     "LATENT_POLICY_RESIDUAL_SCHEMA",
+    "LATENT_ROUTER_METADATA_WIDTH",
     "LATENT_ROUTER_SCHEMA",
     "LATENT_SCHEMA",
     "LATENT_STATE_WIDTH",
@@ -793,7 +1122,10 @@ __all__ = [
     "LatentRouterBatch",
     "VariableLatentContentStore",
     "build_latent_router_batch",
+    "latent_mlp_gene_start",
     "latent_router_gene_count",
     "latent_router_state_features",
+    "linear_latent_router_gene_count",
+    "mlp_latent_router_gene_count",
     "route_latent_router_batch",
 ]

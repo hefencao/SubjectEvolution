@@ -41,6 +41,10 @@ class PolicyDecision:
     genetic_logits: Any | None = None
     knowledge_logits: Any | None = None
     genetic_action: Any | None = None
+    # L2 diagnostic shadow: the inherited L1 linear router evaluated with the
+    # same knowledge batch and counter-based action draw.
+    linear_knowledge_logits: Any | None = None
+    linear_knowledge_action: Any | None = None
 
 
 class ParametricPolicy:
@@ -103,7 +107,10 @@ class ParametricPolicy:
         return bool(
             cfg.knowledge.policy_influence_enabled
             and cfg.knowledge.latent_policy_enabled
-            and cfg.policy.schema == "inherited-variable-latent-router-v1"
+            and cfg.policy.schema in {
+                "inherited-variable-latent-router-v1",
+                "inherited-variable-latent-router-mlp-v1",
+            }
         )
 
     @classmethod
@@ -209,10 +216,19 @@ class ParametricPolicy:
         genetic_logits = xp.zeros((active.size, len(Action)), dtype=xp.float32)
         for feature_index in range(self.STRATEGY_FEATURES):
             genetic_logits += strategy[:, :, feature_index] * features[:, feature_index, None]
+        has_knowledge = bool(
+            knowledge_plan is not None
+            and (knowledge_plan.size or knowledge_plan.comparison_size)
+        )
         knowledge_logits = (
             knowledge_plan.materialize(xp, active.size, len(Action))
             if knowledge_plan is not None and knowledge_plan.size
             else xp.zeros_like(genetic_logits)
+        )
+        linear_knowledge_logits = (
+            knowledge_plan.materialize_comparison(xp, active.size, len(Action))
+            if knowledge_plan is not None and knowledge_plan.comparison_size
+            else None
         )
         logits = genetic_logits + knowledge_logits
 
@@ -222,11 +238,21 @@ class ParametricPolicy:
         mask[:, Action.SIGNAL] = energy[active] > self.cfg.entities.signal_cost
         action_ctx = RandomContext(run_seed, tick, phase=50, stream=Stream.POLICY_ACTION)
         genetic_action = None
-        if knowledge_plan is not None and knowledge_plan.size:
+        linear_knowledge_action = None
+        if has_knowledge:
             genetic_action, _, _ = categorical_from_logits(
                 action_ctx,
                 ids,
                 genetic_logits,
+                temperature=self.cfg.policy.temperature,
+                mask=mask,
+                validate_mask=False,
+            )
+        if linear_knowledge_logits is not None:
+            linear_knowledge_action, _, _ = categorical_from_logits(
+                action_ctx,
+                ids,
+                genetic_logits + linear_knowledge_logits,
                 temperature=self.cfg.policy.temperature,
                 mask=mask,
                 validate_mask=False,
@@ -284,6 +310,8 @@ class ParametricPolicy:
             genetic_logits=genetic_logits,
             knowledge_logits=knowledge_logits,
             genetic_action=genetic_action,
+            linear_knowledge_logits=linear_knowledge_logits,
+            linear_knowledge_action=linear_knowledge_action,
         )
 
     def update_memory(

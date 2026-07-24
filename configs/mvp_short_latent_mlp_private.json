@@ -70,7 +70,7 @@
     "partner_samples": 4,
     "mutation_std": 0.08,
     "mutation_probability": 0.01,
-    "schema": "inherited-linear-policy-knowledge-residual-v1"
+    "schema": "inherited-variable-latent-router-mlp-v1"
   },
   "social": {
     "group_update_period": 50,
@@ -89,14 +89,14 @@
   },
   "knowledge": {
     "enabled": true,
-    "schema": "dynamic-knowledge-k3-v1",
+    "schema": "dynamic-knowledge-latent-v1",
     "initial_content_count": 16,
     "initial_holders_fraction": 0.25,
     "holder_capacity_bytes": 512,
-    "encoded_bytes_per_copy": 64,
+    "encoded_bytes_per_copy": 96,
     "maintenance_energy_per_byte": 1e-06,
     "transfer_period": 1,
-    "transfer_probability": 0.35,
+    "transfer_probability": 0.0,
     "attention_slots_per_tick": 1,
     "transfer_base_energy_cost": 0.002,
     "transfer_energy_per_byte": 1e-05,
@@ -115,7 +115,7 @@
     "max_updates_per_outcome": 1,
     "log_outcome_updates": true,
     "policy_influence_enabled": true,
-    "policy_residual_schema": "sparse-local-outcome-residual-v1",
+    "policy_residual_schema": "quantized-variable-latent-mlp-residual-v1",
     "policy_min_confidence": 0.05,
     "policy_min_local_samples": 1,
     "policy_sample_saturation": 4.0,
@@ -130,9 +130,9 @@
     "policy_outcome_clip": 1.0,
     "policy_max_abs_logit_residual": 0.75,
     "log_policy_contributions": true,
-    "latent_policy_enabled": false,
+    "latent_policy_enabled": true,
     "latent_schema": "variable-latent-knowledge-v1",
-    "latent_router_schema": "quantized-linear-latent-router-v1",
+    "latent_router_schema": "quantized-mlp-latent-router-v1",
     "latent_length_levels": [
       4,
       8,
@@ -146,6 +146,8 @@
     "latent_base_encoded_bytes": 32,
     "latent_bytes_per_value": 2,
     "latent_max_abs_logit_residual": 0.75,
-    "latent_length_mutation_probability": 0.125
+    "latent_length_mutation_probability": 0.125,
+    "latent_router_mlp_hidden_width": 8,
+    "latent_router_activation_clip": 1.0
   }
 }

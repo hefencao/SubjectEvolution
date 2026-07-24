@@ -666,8 +666,13 @@ def _simulation_stages(cpu: Simulation, gpu: Simulation) -> list[tuple[str, Any,
     if cpu.last_policy_decision is not None or gpu.last_policy_decision is not None:
         decision_fields = (
             "features",
+            "genetic_logits",
+            "knowledge_logits",
+            "linear_knowledge_logits",
             "logits",
             "action_mask",
+            "genetic_action",
+            "linear_knowledge_action",
             "action",
             "probability",
             "entropy",
