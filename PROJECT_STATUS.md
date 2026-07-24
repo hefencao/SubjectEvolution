@@ -1,4 +1,4 @@
-# Subject Evolution 项目状态（v0.11.0）
+# Subject Evolution 项目状态（v0.12.0）
 
 ## 当前完成阶段
 
@@ -11,8 +11,8 @@
 | 知识内容谱系与候选主体图诊断 | K4 已完成 |
 | checkpoint 全世界恢复与离线分支重放 | v0.9.0 已完成 |
 | 可变长度潜知识 + 遗传量化线性路由器 | v0.10.0 L1 已完成 |
-| 可变长度潜知识 + 遗传量化两层 MLP | **v0.11.0 L2 已完成** |
-| MLP 计算能耗物理结算 | 未实现 |
+| 可变长度潜知识 + 遗传量化两层 MLP | v0.11.0 L2 已完成 |
+| 潜知识路由计算成本与预算仲裁 | **v0.12.0 已完成** |
 | 潜坐标/路由器局部学习 | 未实现 |
 | 持久设备驻留 latent arena | 未实现 |
 | 完整设备驻留世界循环 | 未实现 |
@@ -22,40 +22,44 @@
 | Hero 强化学习 | 未实现 |
 | 任意信息通道 schema | 未实现 |
 
-## v0.11.0 概要
+## v0.12.0 概要
 
-新增独立 L2 schema。每个承载体保留完整 L1 线性路由前缀，并追加一个遗传编码、整数定点的两层 MLP。输入为变长潜内容的固定投影、四维公开状态和三维可靠性/来源元数据，输出仍只发布到公开 action-logit residual 接口。
+新增独立的 `latent-routing-compute-cost-v1` 成本 schema。潜路由先生成不可变策略提案，再按实体执行 `all-or-none-per-entity-v1` 能量预算审核。只有支付成功的 residual 才进入最终 action logits。
 
-激活为 integer hard-tanh，不使用后端相关 transcendental 函数。每 tick 同时评估 genetic-only、L1 shadow 和 L2 动作，记录饱和、裁剪、隐藏活动和量化贡献。
+成本按实际潜维度、整数 MAC、活跃隐藏单元、发布 action、hard-tanh 饱和和输出裁剪分解。提交成本在 intent resolution 前从真实实体能量中扣除；策略观察仍使用扣费前状态，避免本 tick 的观察语义被隐藏改变。
 
-## 兼容性
+## 验证摘要
 
-v0.10.0 与 v0.11.0 在 L1 配置下：
+- 55 tests：54 passed，1 个真实 CUDA 测试因无 GPU 跳过；
+- 成本公式、L1/L2工作量差异、低能量拒绝、稳定仲裁、K4成本归因和完整 checkpoint 恢复均有专项测试；
+- 5个主要条件各同 seed 双重复；204个非计时指标、全部核心日志及 tick 15/30 的35个 checkpoint数组一致；
+- L1 costed 总路由能耗：0.86161672；
+- L2 same-unit 总路由能耗：1.10032021；
+- L2 budget-matched 总路由能耗：0.86154087；
+- L1/L2匹配误差约0.0088%；
+- 高成本压力场景产生451次实体级拒绝和68次同随机数动作变化。
 
-- 167 个共同非计时 metrics 字段一致；
-- outcome 日志 19 个共同字段逐行一致；
-- contribution 日志 20 个共同字段逐行一致；
-- tick 15/30 的 35 个共同 checkpoint 数组完全一致。
+## 向后兼容
 
-L2 关闭时没有改变 K1–K4 或 L1 世界语义。
+v0.11.0与v0.12.0在成本关闭时：
 
-## 验证
+- 176个共同非计时 metrics 字段一致；
+- 原知识、后果、策略贡献与演化日志一致；
+- tick 15/30的35个共同 checkpoint数组一致；
+- L1与L2均通过独立兼容对照。
 
-- 50 tests：49 passed，1 个真实 GPU 测试因无 CUDA 跳过；
-- L2 private 与 exchange 各双重复，177 个非计时指标、全部核心日志和 35 个 checkpoint 数组一致；
-- L2 完整 `.sechk` 恢复与连续世界状态一致；
-- L1 shadow、hard-tanh 饱和、输出裁剪和独立 schema 有专项测试。
+因此旧配置默认不会产生新的能量扣费或轨迹变化。
 
 ## CPU/GPU 状态
 
-L2 采用 CPU-reference 量化和整数 backend 路由，避免 `tanh/exp` 差异。关键乘加按固定维度顺序执行，L1 shadow 和 L2 都在量化边界发布。
+预算请求由CPU reference侧的不可变计划诊断计算，接受后的稀疏计划可进入CPU或设备策略。hybrid路径保持扣费前设备观察，并在策略计算后同步已提交能量。
 
-当前容器无 CUDA，真实 GPU 多 tick L2 parity 未验证。正式 scientific GPU run 仍应使用 `strict-reference`；`hybrid-accelerated` 只用于显式 parity 和性能实验。
+当前容器无CUDA，因此真实GPU多tick成本路径尚未验证。正式scientific GPU运行继续建议使用`strict-reference`。
 
 ## 下一步建议
 
-1. 在真实 GPU 上完成 L2 world parity；
-2. 将 MLP 计算量转换成明确物理能量成本，做 L1/L2 预算匹配；
-3. 做多 seed、activation clip、hidden width、residual scale 和 latent length budget sweep；
-4. 用 `.sechk` 对潜内容、L1 prefix、MLP hidden units 做离线消融；
-5. 之后再考虑潜坐标或路由器的局部学习。
+1. 在真实GPU上完成L2 + routing cost world parity；
+2. 做多seed、成本系数和预算强度sweep；
+3. 使用`.sechk`对潜长度、L1 prefix、MLP隐藏单元和成本项做离线消融；
+4. 再实现潜坐标或路由参数的局部学习，并要求学习本身有物理成本；
+5. 评估持久device-resident latent buckets，避免每tick重复构建设备视图。

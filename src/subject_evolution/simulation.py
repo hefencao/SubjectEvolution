@@ -64,6 +64,7 @@ from .knowledge_policy import (
     build_knowledge_policy_plan,
     build_latent_knowledge_policy_plan,
 )
+from .routing_cost import RoutingCostBudgetResult, apply_routing_cost_budget
 from .latent_knowledge import latent_router_state_features
 from .lifecycle import (
     BirthAllocationPlan,
@@ -713,6 +714,17 @@ class Simulation:
             ),
             "knowledge_latent_quantized_publish": (
                 self.cfg.knowledge.latent_policy_enabled
+            ),
+            "knowledge_routing_cost_enabled": self.cfg.knowledge.routing_cost_enabled,
+            "knowledge_routing_cost_schema": (
+                self.cfg.knowledge.routing_cost_schema
+                if self.cfg.knowledge.routing_cost_enabled
+                else None
+            ),
+            "knowledge_routing_budget_mode": (
+                self.cfg.knowledge.routing_budget_mode
+                if self.cfg.knowledge.routing_cost_enabled
+                else None
             ),
             "knowledge_latent_external_optimizer": False,
             "knowledge_candidate_tracking": self.cfg.knowledge.candidate_tracking_enabled,
@@ -1390,6 +1402,22 @@ class Simulation:
                 "knowledge_latent_publish_quantized": (
                     self.cfg.knowledge.latent_policy_enabled
                 ),
+                "knowledge_routing_cost_enabled": self.cfg.knowledge.routing_cost_enabled,
+                "knowledge_routing_cost_schema": (
+                    self.cfg.knowledge.routing_cost_schema
+                    if self.cfg.knowledge.routing_cost_enabled
+                    else None
+                ),
+                "knowledge_routing_budget_mode": (
+                    self.cfg.knowledge.routing_budget_mode
+                    if self.cfg.knowledge.routing_cost_enabled
+                    else None
+                ),
+                "knowledge_routing_cost_commit_boundary": (
+                    "policy-proposal preflight, energy commit before intent resolution"
+                    if self.cfg.knowledge.routing_cost_enabled
+                    else None
+                ),
                 "feature_constraints": list(ParametricPolicy.FEATURE_NAMES),
                 "action_preferences_hardcoded": False,
                 "strategy_gene_count": ParametricPolicy.STRATEGY_GENES,
@@ -1858,6 +1886,9 @@ class Simulation:
         actual_context_metrics: dict[str, object] | None = None
         knowledge_context_keys: np.ndarray | None = None
         knowledge_policy_plan = KnowledgePolicyPlan.empty(self.tick)
+        cost_free_knowledge_policy_plan = KnowledgePolicyPlan.empty(self.tick)
+        routing_cost_result: RoutingCostBudgetResult | None = None
+        policy_energy = ent.energy
         if self.gpu_runtime is None:
             phase_started = time.perf_counter()
             self.environment.update(self.tick)
@@ -1949,6 +1980,24 @@ class Simulation:
                             config=cfg.knowledge,
                             action_count=len(Action),
                         )
+                cost_free_knowledge_policy_plan = knowledge_policy_plan
+                if cfg.knowledge.routing_cost_enabled and knowledge_policy_plan.size:
+                    policy_energy = ent.energy.copy()
+                    routing_cost_result = apply_routing_cost_budget(
+                        knowledge_policy_plan,
+                        active_energy=policy_energy[active],
+                        config=cfg.knowledge,
+                        action_count=len(Action),
+                    )
+                    knowledge_policy_plan = routing_cost_result.plan
+                    charged = routing_cost_result.committed_energy > 0.0
+                    if np.any(charged):
+                        world_rows = active[routing_cost_result.active_rows[charged]]
+                        ent.energy[world_rows] = np.maximum(
+                            ent.energy[world_rows].astype(np.float64)
+                            - routing_cost_result.committed_energy[charged],
+                            0.0,
+                        ).astype(np.float32)
             stats.observation_seconds = time.perf_counter() - phase_started
 
             phase_started = time.perf_counter()
@@ -1956,10 +2005,33 @@ class Simulation:
                 group_direction = (self.social.group_dir_x, self.social.group_dir_y)
             else:
                 group_direction = (np.zeros_like(self.social.group_dir_x), np.zeros_like(self.social.group_dir_y))
+            cost_free_decision = None
+            if (
+                routing_cost_result is not None
+                and routing_cost_result.rejected_action_count > 0
+            ):
+                cost_free_decision = self.policy.decide(
+                    active=active,
+                    stable_ids=ent.entity_id,
+                    energy=policy_energy,
+                    integrity=ent.integrity,
+                    fertility=ent.fertility,
+                    genotype=ent.genotype,
+                    memory=ent.memory,
+                    local_resources=local_resources,
+                    resource_gradient=resource_gradient,
+                    danger_gradient=danger_gradient,
+                    group_direction=group_direction,
+                    partners=partners,
+                    info=info,
+                    run_seed=cfg.run.seed,
+                    tick=self.tick,
+                    knowledge_plan=cost_free_knowledge_policy_plan,
+                )
             decision = self.policy.decide(
                 active=active,
                 stable_ids=ent.entity_id,
-                energy=ent.energy,
+                energy=policy_energy,
                 integrity=ent.integrity,
                 fertility=ent.fertility,
                 genotype=ent.genotype,
@@ -1974,6 +2046,8 @@ class Simulation:
                 tick=self.tick,
                 knowledge_plan=knowledge_policy_plan,
             )
+            if cost_free_decision is not None:
+                decision.cost_free_knowledge_action = cost_free_decision.action
             stats.policy_seconds = time.perf_counter() - phase_started
         else:
             self.gpu_runtime.begin_step_transfer_measurement()
@@ -2023,11 +2097,31 @@ class Simulation:
             decision = prepared.decision
             knowledge_context_keys = prepared.knowledge_context_keys
             knowledge_policy_plan = prepared.knowledge_policy_plan
+            routing_cost_result = prepared.routing_cost_result
             stats.spatial_seconds = prepared.spatial_seconds
             stats.observation_seconds = prepared.observation_seconds
             stats.policy_seconds = prepared.policy_seconds
 
         if cfg.knowledge.enabled and cfg.knowledge.policy_influence_enabled:
+            if routing_cost_result is not None:
+                cost_induced_action_changes = (
+                    int(np.count_nonzero(
+                        decision.action != decision.cost_free_knowledge_action
+                    ))
+                    if decision.cost_free_knowledge_action is not None
+                    else 0
+                )
+                routing_stats = self.knowledge.record_routing_cost(
+                    routing_cost_result,
+                    cost_induced_action_changes=cost_induced_action_changes,
+                )
+                for field_name in KnowledgeStepStats.__dataclass_fields__:
+                    setattr(
+                        knowledge_stats,
+                        field_name,
+                        getattr(knowledge_stats, field_name)
+                        + getattr(routing_stats, field_name),
+                    )
             changed_active_rows = (
                 np.flatnonzero(decision.action != decision.genetic_action).astype(
                     np.int32, copy=False
@@ -3052,6 +3146,22 @@ class Simulation:
                     "knowledge_policy_router_hidden_active_units_step": (
                         stats.knowledge.policy_router_hidden_active_units
                     ),
+                    "knowledge_routing_requested_energy_step": stats.knowledge.routing_requested_energy,
+                    "knowledge_routing_committed_energy_step": stats.knowledge.routing_committed_energy,
+                    "knowledge_routing_rejected_energy_step": stats.knowledge.routing_rejected_energy,
+                    "knowledge_routing_requested_entities_step": stats.knowledge.routing_requested_entities,
+                    "knowledge_routing_committed_entities_step": stats.knowledge.routing_committed_entities,
+                    "knowledge_routing_rejected_entities_step": stats.knowledge.routing_rejected_entities,
+                    "knowledge_routing_accepted_actions_step": stats.knowledge.routing_accepted_actions,
+                    "knowledge_routing_rejected_actions_step": stats.knowledge.routing_rejected_actions,
+                    "knowledge_routing_latent_dimensions_step": stats.knowledge.routing_latent_dimensions,
+                    "knowledge_routing_mac_count_step": stats.knowledge.routing_mac_count,
+                    "knowledge_routing_active_hidden_units_step": stats.knowledge.routing_active_hidden_units,
+                    "knowledge_routing_saturation_count_step": stats.knowledge.routing_saturation_count,
+                    "knowledge_routing_clipped_output_count_step": stats.knowledge.routing_clipped_output_count,
+                    "knowledge_routing_cost_induced_action_changes_step": (
+                        stats.knowledge.routing_cost_induced_action_changes
+                    ),
                     "knowledge_maintenance_energy_total": float(knowledge_summary["maintenance_energy_total"]),
                     "knowledge_sender_energy_total": float(knowledge_summary["sender_energy_total"]),
                     "knowledge_receiver_energy_total": float(knowledge_summary["receiver_energy_total"]),
@@ -3104,6 +3214,48 @@ class Simulation:
                     "knowledge_policy_router_hidden_active_units_total": int(
                         knowledge_summary["policy_router_hidden_active_units_total"]
                     ),
+                    "knowledge_routing_requested_energy_total": float(
+                        knowledge_summary["routing_requested_energy_total"]
+                    ),
+                    "knowledge_routing_committed_energy_total": float(
+                        knowledge_summary["routing_committed_energy_total"]
+                    ),
+                    "knowledge_routing_rejected_energy_total": float(
+                        knowledge_summary["routing_rejected_energy_total"]
+                    ),
+                    "knowledge_routing_requested_entities_total": int(
+                        knowledge_summary["routing_requested_entities_total"]
+                    ),
+                    "knowledge_routing_committed_entities_total": int(
+                        knowledge_summary["routing_committed_entities_total"]
+                    ),
+                    "knowledge_routing_rejected_entities_total": int(
+                        knowledge_summary["routing_rejected_entities_total"]
+                    ),
+                    "knowledge_routing_accepted_actions_total": int(
+                        knowledge_summary["routing_accepted_actions_total"]
+                    ),
+                    "knowledge_routing_rejected_actions_total": int(
+                        knowledge_summary["routing_rejected_actions_total"]
+                    ),
+                    "knowledge_routing_latent_dimensions_total": int(
+                        knowledge_summary["routing_latent_dimensions_total"]
+                    ),
+                    "knowledge_routing_mac_count_total": int(
+                        knowledge_summary["routing_mac_count_total"]
+                    ),
+                    "knowledge_routing_active_hidden_units_total": int(
+                        knowledge_summary["routing_active_hidden_units_total"]
+                    ),
+                    "knowledge_routing_saturation_count_total": int(
+                        knowledge_summary["routing_saturation_count_total"]
+                    ),
+                    "knowledge_routing_clipped_output_count_total": int(
+                        knowledge_summary["routing_clipped_output_count_total"]
+                    ),
+                    "knowledge_routing_cost_induced_action_changes_total": int(
+                        knowledge_summary["routing_cost_induced_action_changes_total"]
+                    ),
                     "validation_seconds": stats.validation_seconds,
                 }
             )
@@ -3153,6 +3305,9 @@ class Simulation:
                         ),
                         "knowledge_candidate_host_cost_total": float(
                             knowledge_summary["knowledge_candidate_host_cost_total"]
+                        ),
+                        "knowledge_candidate_routing_cost_total": float(
+                            knowledge_summary["knowledge_candidate_routing_cost_total"]
                         ),
                         "knowledge_boundary_group_internal_commits": int(
                             knowledge_summary["knowledge_boundary_group_internal_commits"]

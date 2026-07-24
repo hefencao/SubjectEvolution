@@ -96,7 +96,7 @@
     "encoded_bytes_per_copy": 96,
     "maintenance_energy_per_byte": 1e-06,
     "transfer_period": 1,
-    "transfer_probability": 0.35,
+    "transfer_probability": 0.0,
     "attention_slots_per_tick": 1,
     "transfer_base_energy_cost": 0.002,
     "transfer_energy_per_byte": 1e-05,
@@ -148,6 +148,16 @@
     "latent_max_abs_logit_residual": 0.75,
     "latent_length_mutation_probability": 0.125,
     "latent_router_mlp_hidden_width": 8,
-    "latent_router_activation_clip": 1.0
+    "latent_router_activation_clip": 1.0,
+    "routing_cost_enabled": true,
+    "routing_cost_schema": "latent-routing-compute-cost-v1",
+    "routing_budget_mode": "all-or-none-per-entity-v1",
+    "routing_base_energy_cost": 0.0,
+    "routing_energy_per_latent_dimension": 2e-08,
+    "routing_energy_per_mac": 4e-08,
+    "routing_energy_per_active_hidden_unit": 1e-08,
+    "routing_energy_per_emitted_action": 2e-06,
+    "routing_energy_per_saturation": 1e-07,
+    "routing_energy_per_clipped_output": 1e-07
   }
 }

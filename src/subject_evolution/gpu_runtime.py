@@ -29,6 +29,7 @@ from .knowledge_policy import (
     build_latent_knowledge_policy_plan,
 )
 from .latent_knowledge import latent_router_state_features
+from .routing_cost import RoutingCostBudgetResult, apply_routing_cost_budget
 from .intents import ActionIntentBatch
 from .policy import Action, ParametricPolicy, PolicyDecision
 from .reductions import stable_segmented_sum
@@ -50,6 +51,7 @@ class GpuPreparedStep:
     policy_seconds: float
     knowledge_context_keys: np.ndarray
     knowledge_policy_plan: KnowledgePolicyPlan
+    routing_cost_result: RoutingCostBudgetResult | None
 
 
 @dataclass(frozen=True)
@@ -383,6 +385,7 @@ class HybridGpuRuntime:
                 0.0,
                 np.empty(0, dtype=np.uint64),
                 KnowledgePolicyPlan.empty(tick),
+                None,
             )
 
         # The versioned mirror is frozen for this prepare pass.  The CPU owns
@@ -452,6 +455,8 @@ class HybridGpuRuntime:
 
         knowledge_context_keys = np.empty(0, dtype=np.uint64)
         knowledge_policy_plan = KnowledgePolicyPlan.empty(tick)
+        routing_cost_result: RoutingCostBudgetResult | None = None
+        cost_free_plan = KnowledgePolicyPlan.empty(tick)
         if knowledge is not None and knowledge.kcfg.learning_enabled:
             device_context_keys = encode_local_context(
                 local_resources[:, 0],
@@ -520,6 +525,26 @@ class HybridGpuRuntime:
                         config=knowledge.kcfg,
                         action_count=len(Action),
                     )
+                cost_free_plan = knowledge_policy_plan
+                if knowledge.kcfg.routing_cost_enabled and knowledge_policy_plan.size:
+                    routing_cost_result = apply_routing_cost_budget(
+                        knowledge_policy_plan,
+                        active_energy=entity.energy[active_host],
+                        config=knowledge.kcfg,
+                        action_count=len(Action),
+                    )
+                    knowledge_policy_plan = routing_cost_result.plan
+                    charged_rows = routing_cost_result.active_rows[
+                        routing_cost_result.committed_energy > 0.0
+                    ]
+                    if charged_rows.size:
+                        world_rows = active_host[charged_rows]
+                        charges = routing_cost_result.committed_energy[
+                            routing_cost_result.committed_energy > 0.0
+                        ]
+                        entity.energy[world_rows] = np.maximum(
+                            entity.energy[world_rows].astype(np.float64) - charges, 0.0
+                        ).astype(np.float32)
                 if self._measure_transfers:
                     self._host_to_device_bytes += knowledge_policy_plan.semantic_transfer_nbytes
 
@@ -528,6 +553,29 @@ class HybridGpuRuntime:
             group_direction = (state.group_dir_x, state.group_dir_y)
         else:
             group_direction = (xp.zeros_like(energy), xp.zeros_like(energy))
+        cost_free_device_decision = None
+        if (
+            routing_cost_result is not None
+            and routing_cost_result.rejected_action_count > 0
+        ):
+            cost_free_device_decision = policy.decide(
+                active=active,
+                stable_ids=stable_ids,
+                energy=energy,
+                integrity=integrity,
+                fertility=fertility,
+                genotype=genotype,
+                memory=memory,
+                local_resources=local_resources,
+                resource_gradient=resource_gradient,
+                danger_gradient=danger_gradient,
+                group_direction=group_direction,
+                partners=partners,
+                info=device_info,
+                run_seed=run_seed,
+                tick=tick,
+                knowledge_plan=cost_free_plan,
+            )
         device_decision = policy.decide(
             active=active,
             stable_ids=stable_ids,
@@ -547,6 +595,8 @@ class HybridGpuRuntime:
             knowledge_plan=knowledge_policy_plan,
         )
         self.backend.synchronize()
+        if routing_cost_result is not None and routing_cost_result.committed_total > 0.0:
+            energy[active] = xp.asarray(entity.energy[active_host], dtype=xp.float32)
         policy_seconds = time.perf_counter() - timer
 
         # One synchronized host boundary for the CPU intent/commit stages.
@@ -643,6 +693,13 @@ class HybridGpuRuntime:
                 if device_decision.linear_knowledge_action is not None
                 else None
             ),
+            cost_free_knowledge_action=(
+                self._download(cost_free_device_decision.action).astype(
+                    np.int16, copy=False
+                )
+                if cost_free_device_decision is not None
+                else None
+            ),
         )
         return GpuPreparedStep(
             active_result,
@@ -656,6 +713,7 @@ class HybridGpuRuntime:
             policy_seconds,
             knowledge_context_keys,
             knowledge_policy_plan,
+            routing_cost_result,
         )
 
     def resolve_harvest(self, cell_ids: np.ndarray, rates: np.ndarray) -> np.ndarray:

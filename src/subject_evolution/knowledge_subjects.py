@@ -87,6 +87,7 @@ class KnowledgeCandidateTracker:
         self.receiver_cost = np.zeros(self._capacity, dtype=np.float64)
         self.maintenance_cost = np.zeros(self._capacity, dtype=np.float64)
         self.verification_cost = np.zeros(self._capacity, dtype=np.float64)
+        self.routing_cost = np.zeros(self._capacity, dtype=np.float64)
         self.policy_influence_events = np.zeros(self._capacity, dtype=np.uint64)
         self.policy_changed_action_events = np.zeros(self._capacity, dtype=np.uint64)
         self.policy_residual_abs_sum = np.zeros(self._capacity, dtype=np.float64)
@@ -130,7 +131,7 @@ class KnowledgeCandidateTracker:
             "descendant_variant_count", "current_unique_group_count",
             "current_unique_lineage_count", "current_unique_region_count",
             "sender_cost", "receiver_cost", "maintenance_cost", "verification_cost",
-            "host_cost_total", "holder_state_count", "nonholder_state_count",
+            "routing_cost", "host_cost_total", "holder_state_count", "nonholder_state_count",
             "holder_energy_mean", "nonholder_energy_mean", "energy_association",
             "holder_integrity_mean", "nonholder_integrity_mean", "integrity_association",
             "holder_material_mean", "nonholder_material_mean", "material_association",
@@ -208,7 +209,7 @@ class KnowledgeCandidateTracker:
             "current_unique_lineage_count", "current_unique_region_count",
             "descendant_variant_count", "transfer_attempt_count", "transfer_commit_count",
             "transfer_verified_count", "sender_cost", "receiver_cost", "maintenance_cost",
-            "verification_cost", "policy_influence_events", "policy_changed_action_events",
+            "verification_cost", "routing_cost", "policy_influence_events", "policy_changed_action_events",
             "policy_residual_abs_sum", "holder_state_count", "nonholder_state_count",
         )
         for name in vector_names:
@@ -373,6 +374,47 @@ class KnowledgeCandidateTracker:
                 "cost_attributed_to", int(content_id), self.subject_id(int(content_id)),
                 int(holder_subject_id), float(cost), int(tick),
             )
+
+    def record_routing_cost(self, *, observation: Any, result: Any) -> None:
+        if not self.enabled or np.asarray(result.active_rows).size == 0:
+            return
+        copy_holders = np.repeat(
+            observation.holder_subject_ids,
+            observation.holder_counts.astype(np.int64, copy=False),
+        )
+        for result_row in range(result.active_rows.size):
+            charged = float(result.committed_energy[result_row])
+            if charged <= 0.0:
+                continue
+            holder = int(result.holder_subject_ids[result_row])
+            # Routing considers copies matching the current holder/context.
+            # Allocate the host computation cost by encoded bytes so the
+            # content-level attribution sums exactly to the world charge.
+            plan_mask = result.plan.holder_subject_ids == holder
+            contexts = np.unique(result.plan.context_keys[plan_mask])
+            mask = copy_holders == holder
+            if contexts.size:
+                mask &= np.isin(observation.context_keys, contexts)
+            rows = np.flatnonzero(mask)
+            if rows.size == 0:
+                continue
+            content_ids = observation.content_ids[rows].astype(np.uint64)
+            weights = observation.encoded_bytes[rows].astype(np.float64)
+            unique, inverse = np.unique(content_ids, return_inverse=True)
+            content_weights = np.bincount(inverse, weights=weights, minlength=unique.size)
+            total = float(content_weights.sum())
+            if total <= 0.0:
+                content_weights = np.ones(unique.size, dtype=np.float64)
+                total = float(unique.size)
+            for content_id, weight in zip(unique.tolist(), content_weights.tolist(), strict=True):
+                row = int(content_id) - 1
+                amount = charged * float(weight) / total
+                self.routing_cost[row] += amount
+                self._add_edge(
+                    "routing_cost_attributed_to", int(content_id),
+                    self.subject_id(int(content_id)), holder, amount,
+                    int(result.plan.tick),
+                )
 
     def record_policy_plan(
         self,
@@ -639,6 +681,7 @@ class KnowledgeCandidateTracker:
             costs = (
                 self.sender_cost[row] + self.receiver_cost[row]
                 + self.maintenance_cost[row] + self.verification_cost[row]
+                + self.routing_cost[row]
             )
             self._candidate_writer.writerow(
                 {
@@ -667,6 +710,7 @@ class KnowledgeCandidateTracker:
                     "receiver_cost": float(self.receiver_cost[row]),
                     "maintenance_cost": float(self.maintenance_cost[row]),
                     "verification_cost": float(self.verification_cost[row]),
+                    "routing_cost": float(self.routing_cost[row]),
                     "host_cost_total": float(costs),
                     "holder_state_count": int(self.holder_state_count[row]),
                     "nonholder_state_count": int(self.nonholder_state_count[row]),
@@ -715,7 +759,9 @@ class KnowledgeCandidateTracker:
             "knowledge_candidate_host_cost_total": float(
                 self.sender_cost[:size].sum() + self.receiver_cost[:size].sum()
                 + self.maintenance_cost[:size].sum() + self.verification_cost[:size].sum()
+                + self.routing_cost[:size].sum()
             ),
+            "knowledge_candidate_routing_cost_total": float(self.routing_cost[:size].sum()),
             "knowledge_boundary_group_internal_commits": int(group_commits[:, 0].sum()) if size else 0,
             "knowledge_boundary_group_cross_commits": int(group_commits[:, 1].sum()) if size else 0,
             "knowledge_boundary_group_unknown_commits": int(group_commits[:, 2].sum()) if size else 0,
@@ -739,6 +785,7 @@ class KnowledgeCandidateTracker:
             or np.any(~np.isfinite(self.receiver_cost[: self._size]))
             or np.any(~np.isfinite(self.maintenance_cost[: self._size]))
             or np.any(~np.isfinite(self.verification_cost[: self._size]))
+            or np.any(~np.isfinite(self.routing_cost[: self._size]))
         ):
             raise AssertionError("knowledge candidate diagnostic invariant failed")
         active_counts = np.bincount(
@@ -766,6 +813,7 @@ class KnowledgeCandidateTracker:
             "knowledge_candidate_receiver_cost": self.receiver_cost[:size].copy(),
             "knowledge_candidate_maintenance_cost": self.maintenance_cost[:size].copy(),
             "knowledge_candidate_verification_cost": self.verification_cost[:size].copy(),
+            "knowledge_candidate_routing_cost": self.routing_cost[:size].copy(),
             "knowledge_candidate_policy_influence_events": self.policy_influence_events[:size].copy(),
             "knowledge_candidate_policy_changed_action_events": self.policy_changed_action_events[:size].copy(),
             "knowledge_candidate_policy_residual_abs_sum": self.policy_residual_abs_sum[:size].copy(),

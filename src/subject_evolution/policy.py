@@ -45,6 +45,9 @@ class PolicyDecision:
     # same knowledge batch and counter-based action draw.
     linear_knowledge_logits: Any | None = None
     linear_knowledge_action: Any | None = None
+    # Diagnostic action from the same plan before routing-budget rejection.
+    # It never controls the world and uses the same counter-based random draw.
+    cost_free_knowledge_action: Any | None = None
 
 
 class ParametricPolicy:

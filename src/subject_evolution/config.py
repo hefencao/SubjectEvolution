@@ -165,6 +165,20 @@ class KnowledgeConfig:
     latent_length_mutation_probability: float = 0.125
     latent_max_abs_logit_residual: float = 1.0
 
+    # Optional physical cost for executing the latent router.  The engine may
+    # build a diagnostic plan for any carrier, but only carriers that can pay
+    # the deterministic preflight cost publish their residuals to policy.
+    routing_cost_enabled: bool = False
+    routing_cost_schema: str = "latent-routing-compute-cost-v1"
+    routing_budget_mode: str = "all-or-none-per-entity-v1"
+    routing_base_energy_cost: float = 0.0
+    routing_energy_per_latent_dimension: float = 0.0
+    routing_energy_per_mac: float = 0.0
+    routing_energy_per_active_hidden_unit: float = 0.0
+    routing_energy_per_emitted_action: float = 0.0
+    routing_energy_per_saturation: float = 0.0
+    routing_energy_per_clipped_output: float = 0.0
+
     # K4 candidate knowledge-subject diagnostics.  This layer is observational
     # and is inert unless explicitly enabled.
     candidate_tracking_enabled: bool = False
@@ -514,6 +528,25 @@ def validate_config(cfg: SimulationConfig) -> None:
         or cfg.knowledge.latent_max_abs_logit_residual <= 0.0
     ):
         raise ValueError("knowledge.latent_max_abs_logit_residual must be positive and finite")
+    if not isinstance(cfg.knowledge.routing_cost_enabled, bool):
+        raise ValueError("knowledge.routing_cost_enabled must be a boolean")
+    if cfg.knowledge.routing_cost_schema != "latent-routing-compute-cost-v1":
+        raise ValueError("unknown knowledge.routing_cost_schema")
+    if cfg.knowledge.routing_budget_mode != "all-or-none-per-entity-v1":
+        raise ValueError("unknown knowledge.routing_budget_mode")
+    for name, value in (
+        ("routing_base_energy_cost", cfg.knowledge.routing_base_energy_cost),
+        ("routing_energy_per_latent_dimension", cfg.knowledge.routing_energy_per_latent_dimension),
+        ("routing_energy_per_mac", cfg.knowledge.routing_energy_per_mac),
+        ("routing_energy_per_active_hidden_unit", cfg.knowledge.routing_energy_per_active_hidden_unit),
+        ("routing_energy_per_emitted_action", cfg.knowledge.routing_energy_per_emitted_action),
+        ("routing_energy_per_saturation", cfg.knowledge.routing_energy_per_saturation),
+        ("routing_energy_per_clipped_output", cfg.knowledge.routing_energy_per_clipped_output),
+    ):
+        if not math.isfinite(value) or value < 0.0:
+            raise ValueError(f"knowledge.{name} must be finite and non-negative")
+    if cfg.knowledge.routing_cost_enabled and not cfg.knowledge.latent_policy_enabled:
+        raise ValueError("knowledge.routing_cost_enabled requires latent policy")
 
     if not isinstance(cfg.knowledge.candidate_tracking_enabled, bool):
         raise ValueError("knowledge.candidate_tracking_enabled must be a boolean")

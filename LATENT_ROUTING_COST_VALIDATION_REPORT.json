@@ -1,0 +1,288 @@
+{
+  "schema": "latent-routing-cost-validation-v1",
+  "version": "0.12.0",
+  "status": "implemented-short-validation-complete-real-cuda-pending",
+  "cost_schema": "latent-routing-compute-cost-v1",
+  "budget_mode": "all-or-none-per-entity-v1",
+  "formula": {
+    "terms": [
+      "base invocation",
+      "latent dimensions",
+      "integer MACs",
+      "active hidden units",
+      "emitted action cells",
+      "hard-tanh saturation",
+      "output clipping"
+    ],
+    "commit_boundary": "after immutable knowledge-policy proposal, before intent resolution",
+    "observation_energy": "pre-charge energy",
+    "world_energy": "committed charge is deducted before intent resolution"
+  },
+  "short_matrix": [
+    {
+      "condition": "L1 no-cost",
+      "run_dir": "l1_nocost_a",
+      "tick": "30",
+      "alive": "604",
+      "births_total": "104",
+      "deaths_total": "0",
+      "mean_energy": "1.9950215816497803",
+      "knowledge_policy_changed_actions_total": "2654",
+      "knowledge_routing_requested_energy_total": "0.0",
+      "knowledge_routing_committed_energy_total": "0.0",
+      "knowledge_routing_rejected_energy_total": "0.0",
+      "knowledge_routing_requested_entities_total": "0",
+      "knowledge_routing_committed_entities_total": "0",
+      "knowledge_routing_rejected_entities_total": "0",
+      "knowledge_routing_accepted_actions_total": "0",
+      "knowledge_routing_rejected_actions_total": "0",
+      "knowledge_routing_mac_count_total": "0",
+      "knowledge_routing_latent_dimensions_total": "0",
+      "knowledge_routing_active_hidden_units_total": "0",
+      "knowledge_routing_cost_induced_action_changes_total": "0"
+    },
+    {
+      "condition": "L1 costed",
+      "run_dir": "l1_costed_a",
+      "tick": "30",
+      "alive": "604",
+      "births_total": "104",
+      "deaths_total": "0",
+      "mean_energy": "1.9935989379882812",
+      "knowledge_policy_changed_actions_total": "2653",
+      "knowledge_routing_requested_energy_total": "0.8616167200000001",
+      "knowledge_routing_committed_energy_total": "0.8616167200000001",
+      "knowledge_routing_rejected_energy_total": "0.0",
+      "knowledge_routing_requested_entities_total": "14647",
+      "knowledge_routing_committed_entities_total": "14647",
+      "knowledge_routing_rejected_entities_total": "0",
+      "knowledge_routing_accepted_actions_total": "117136",
+      "knowledge_routing_rejected_actions_total": "0",
+      "knowledge_routing_mac_count_total": "15261376",
+      "knowledge_routing_latent_dimensions_total": "844484",
+      "knowledge_routing_active_hidden_units_total": "0",
+      "knowledge_routing_cost_induced_action_changes_total": "0"
+    },
+    {
+      "condition": "L2 no-cost",
+      "run_dir": "l2_nocost_a",
+      "tick": "30",
+      "alive": "605",
+      "births_total": "105",
+      "deaths_total": "0",
+      "mean_energy": "1.9643828868865967",
+      "knowledge_policy_changed_actions_total": "2545",
+      "knowledge_routing_requested_energy_total": "0.0",
+      "knowledge_routing_committed_energy_total": "0.0",
+      "knowledge_routing_rejected_energy_total": "0.0",
+      "knowledge_routing_requested_entities_total": "0",
+      "knowledge_routing_committed_entities_total": "0",
+      "knowledge_routing_rejected_entities_total": "0",
+      "knowledge_routing_accepted_actions_total": "0",
+      "knowledge_routing_rejected_actions_total": "0",
+      "knowledge_routing_mac_count_total": "0",
+      "knowledge_routing_latent_dimensions_total": "0",
+      "knowledge_routing_active_hidden_units_total": "0",
+      "knowledge_routing_cost_induced_action_changes_total": "0"
+    },
+    {
+      "condition": "L2 same-unit costed",
+      "run_dir": "l2_costed_a",
+      "tick": "30",
+      "alive": "604",
+      "births_total": "104",
+      "deaths_total": "0",
+      "mean_energy": "1.9671880006790161",
+      "knowledge_policy_changed_actions_total": "2541",
+      "knowledge_routing_requested_energy_total": "1.1003202099999998",
+      "knowledge_routing_committed_energy_total": "1.1003202099999998",
+      "knowledge_routing_rejected_energy_total": "0.0",
+      "knowledge_routing_requested_entities_total": "14616",
+      "knowledge_routing_committed_entities_total": "14616",
+      "knowledge_routing_rejected_entities_total": "0",
+      "knowledge_routing_accepted_actions_total": "116848",
+      "knowledge_routing_rejected_actions_total": "0",
+      "knowledge_routing_mac_count_total": "21029896",
+      "knowledge_routing_latent_dimensions_total": "881400",
+      "knowledge_routing_active_hidden_units_total": "481907",
+      "knowledge_routing_cost_induced_action_changes_total": "0"
+    },
+    {
+      "condition": "L2 budget-matched",
+      "run_dir": "l2_budget_matched_a",
+      "tick": "30",
+      "alive": "604",
+      "births_total": "104",
+      "deaths_total": "0",
+      "mean_energy": "1.9675816297531128",
+      "knowledge_policy_changed_actions_total": "2540",
+      "knowledge_routing_requested_energy_total": "0.8615408695999998",
+      "knowledge_routing_committed_energy_total": "0.8615408695999998",
+      "knowledge_routing_rejected_energy_total": "0.0",
+      "knowledge_routing_requested_entities_total": "14615",
+      "knowledge_routing_committed_entities_total": "14615",
+      "knowledge_routing_rejected_entities_total": "0",
+      "knowledge_routing_accepted_actions_total": "116839",
+      "knowledge_routing_rejected_actions_total": "0",
+      "knowledge_routing_mac_count_total": "21027504",
+      "knowledge_routing_latent_dimensions_total": "881304",
+      "knowledge_routing_active_hidden_units_total": "481850",
+      "knowledge_routing_cost_induced_action_changes_total": "0"
+    },
+    {
+      "condition": "L2 rejection stress",
+      "run_dir": "l2_budget_rejection",
+      "tick": "10",
+      "alive": "57",
+      "births_total": "0",
+      "deaths_total": "7",
+      "mean_energy": "1.0921411514282227",
+      "knowledge_policy_changed_actions_total": "3",
+      "knowledge_routing_requested_energy_total": "976.0",
+      "knowledge_routing_committed_energy_total": "74.0",
+      "knowledge_routing_rejected_energy_total": "902.0",
+      "knowledge_routing_requested_entities_total": "488",
+      "knowledge_routing_committed_entities_total": "37",
+      "knowledge_routing_rejected_entities_total": "451",
+      "knowledge_routing_accepted_actions_total": "296",
+      "knowledge_routing_rejected_actions_total": "3606",
+      "knowledge_routing_mac_count_total": "412280",
+      "knowledge_routing_latent_dimensions_total": "17460",
+      "knowledge_routing_active_hidden_units_total": "9395",
+      "knowledge_routing_cost_induced_action_changes_total": "68"
+    }
+  ],
+  "budget_match": {
+    "l1_committed_energy": 0.8616167200000001,
+    "l2_same_unit_committed_energy": 1.1003202099999998,
+    "l2_matched_committed_energy": 0.8615408695999998,
+    "absolute_gap": 7.585040000035459e-05,
+    "relative_gap": 8.803264634924283e-05,
+    "l2_matched_mac_unit": 2.865e-08
+  },
+  "rejection_stress": {
+    "requested_entities": 488,
+    "committed_entities": 37,
+    "rejected_entities": 451,
+    "rejected_actions": 3606,
+    "cost_induced_action_changes": 68
+  },
+  "determinism": {
+    "l1_nocost_a__l1_nocost_b": {
+      "metrics_passed": true,
+      "non_timing_fields": 204,
+      "logs": {
+        "knowledge_events.jsonl": true,
+        "knowledge_outcome_updates.csv": true,
+        "knowledge_policy_contributions.csv": true,
+        "knowledge_transfers.csv": true,
+        "evolution_progress.jsonl": true
+      },
+      "checkpoints": {
+        "15": {
+          "common_arrays": 35,
+          "differences": []
+        },
+        "30": {
+          "common_arrays": 35,
+          "differences": []
+        }
+      }
+    },
+    "l1_costed_a__l1_costed_b": {
+      "metrics_passed": true,
+      "non_timing_fields": 204,
+      "logs": {
+        "knowledge_events.jsonl": true,
+        "knowledge_outcome_updates.csv": true,
+        "knowledge_policy_contributions.csv": true,
+        "knowledge_transfers.csv": true,
+        "evolution_progress.jsonl": true,
+        "knowledge_routing_costs.csv": true
+      },
+      "checkpoints": {
+        "15": {
+          "common_arrays": 35,
+          "differences": []
+        },
+        "30": {
+          "common_arrays": 35,
+          "differences": []
+        }
+      }
+    },
+    "l2_nocost_a__l2_nocost_b": {
+      "metrics_passed": true,
+      "non_timing_fields": 204,
+      "logs": {
+        "knowledge_events.jsonl": true,
+        "knowledge_outcome_updates.csv": true,
+        "knowledge_policy_contributions.csv": true,
+        "knowledge_transfers.csv": true,
+        "evolution_progress.jsonl": true
+      },
+      "checkpoints": {
+        "15": {
+          "common_arrays": 35,
+          "differences": []
+        },
+        "30": {
+          "common_arrays": 35,
+          "differences": []
+        }
+      }
+    },
+    "l2_costed_a__l2_costed_b": {
+      "metrics_passed": true,
+      "non_timing_fields": 204,
+      "logs": {
+        "knowledge_events.jsonl": true,
+        "knowledge_outcome_updates.csv": true,
+        "knowledge_policy_contributions.csv": true,
+        "knowledge_transfers.csv": true,
+        "evolution_progress.jsonl": true,
+        "knowledge_routing_costs.csv": true
+      },
+      "checkpoints": {
+        "15": {
+          "common_arrays": 35,
+          "differences": []
+        },
+        "30": {
+          "common_arrays": 35,
+          "differences": []
+        }
+      }
+    },
+    "l2_budget_matched_a__l2_budget_matched_b": {
+      "metrics_passed": true,
+      "non_timing_fields": 204,
+      "logs": {
+        "knowledge_events.jsonl": true,
+        "knowledge_outcome_updates.csv": true,
+        "knowledge_policy_contributions.csv": true,
+        "knowledge_transfers.csv": true,
+        "evolution_progress.jsonl": true,
+        "knowledge_routing_costs.csv": true
+      },
+      "checkpoints": {
+        "15": {
+          "common_arrays": 35,
+          "differences": []
+        },
+        "30": {
+          "common_arrays": 35,
+          "differences": []
+        }
+      }
+    }
+  },
+  "compatibility_report": "V011_COST_COMPATIBILITY_REPORT.json",
+  "real_cuda_verified": false,
+  "claims": {
+    "mechanism_operational": true,
+    "deterministic_on_cpu": true,
+    "long_term_adaptive_advantage_proven": false,
+    "l2_superiority_proven": false
+  }
+}

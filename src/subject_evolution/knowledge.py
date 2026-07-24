@@ -350,6 +350,20 @@ class KnowledgeStepStats:
     policy_router_clipped_outputs: int = 0
     policy_router_hidden_abs_sum: int = 0
     policy_router_hidden_active_units: int = 0
+    routing_requested_energy: float = 0.0
+    routing_committed_energy: float = 0.0
+    routing_rejected_energy: float = 0.0
+    routing_requested_entities: int = 0
+    routing_committed_entities: int = 0
+    routing_rejected_entities: int = 0
+    routing_accepted_actions: int = 0
+    routing_rejected_actions: int = 0
+    routing_latent_dimensions: int = 0
+    routing_mac_count: int = 0
+    routing_active_hidden_units: int = 0
+    routing_saturation_count: int = 0
+    routing_clipped_output_count: int = 0
+    routing_cost_induced_action_changes: int = 0
 
     @property
     def total_energy_cost(self) -> float:
@@ -358,6 +372,7 @@ class KnowledgeStepStats:
             + self.sender_energy
             + self.receiver_energy
             + self.learning_energy
+            + self.routing_committed_energy
         )
 
 
@@ -744,6 +759,8 @@ class KnowledgeSystem:
         self._outcome_writer = None
         self._policy_file = None
         self._policy_writer = None
+        self._routing_cost_file = None
+        self._routing_cost_writer = None
         if self.kcfg.enabled:
             self._event_file = (self.output_dir / "knowledge_events.jsonl").open(
                 "w", encoding="utf-8"
@@ -800,6 +817,21 @@ class KnowledgeSystem:
                     ],
                 )
                 self._policy_writer.writeheader()
+            if self.kcfg.routing_cost_enabled:
+                self._routing_cost_file = (
+                    self.output_dir / "knowledge_routing_costs.csv"
+                ).open("w", newline="", encoding="utf-8")
+                self._routing_cost_writer = csv.DictWriter(
+                    self._routing_cost_file,
+                    fieldnames=[
+                        "tick", "entity_id", "holder_subject_id", "accepted",
+                        "requested_energy", "committed_energy",
+                        "latent_dimensions", "mac_count",
+                        "active_hidden_units", "saturation_count",
+                        "clipped_output_count", "emitted_action_count",
+                    ],
+                )
+                self._routing_cost_writer.writeheader()
             self._seed(initial_entity_ids, initial_subject_ids)
             self.candidates.ensure_catalog(self.catalog)
             self.observation = self.arena.publish(self.catalog, tick=0)
@@ -921,6 +953,8 @@ class KnowledgeSystem:
         result._outcome_writer = None
         result._policy_file = None
         result._policy_writer = None
+        result._routing_cost_file = None
+        result._routing_cost_writer = None
         if self.kcfg.enabled:
             result._event_file = (result.output_dir / "knowledge_events.jsonl").open(
                 "w", encoding="utf-8"
@@ -977,6 +1011,21 @@ class KnowledgeSystem:
                     ],
                 )
                 result._policy_writer.writeheader()
+            if self.kcfg.routing_cost_enabled:
+                result._routing_cost_file = (
+                    result.output_dir / "knowledge_routing_costs.csv"
+                ).open("w", newline="", encoding="utf-8")
+                result._routing_cost_writer = csv.DictWriter(
+                    result._routing_cost_file,
+                    fieldnames=[
+                        "tick", "entity_id", "holder_subject_id", "accepted",
+                        "requested_energy", "committed_energy",
+                        "latent_dimensions", "mac_count",
+                        "active_hidden_units", "saturation_count",
+                        "clipped_output_count", "emitted_action_count",
+                    ],
+                )
+                result._routing_cost_writer.writeheader()
         return result
 
     def _write_event(self, event: dict[str, object]) -> None:
@@ -993,6 +1042,8 @@ class KnowledgeSystem:
             self._outcome_file.flush()
         if self._policy_file is not None and not self._policy_file.closed:
             self._policy_file.flush()
+        if self._routing_cost_file is not None and not self._routing_cost_file.closed:
+            self._routing_cost_file.flush()
         self.candidates.flush()
 
     def close(self) -> None:
@@ -1004,6 +1055,8 @@ class KnowledgeSystem:
             self._outcome_file.close()
         if self._policy_file is not None and not self._policy_file.closed:
             self._policy_file.close()
+        if self._routing_cost_file is not None and not self._routing_cost_file.closed:
+            self._routing_cost_file.close()
         self.candidates.close(self.catalog)
 
     def _forget(self, tick: int) -> int:
@@ -1762,6 +1815,52 @@ class KnowledgeSystem:
         ]
         return self.arena.deactivate(remove)
 
+    def record_routing_cost(
+        self,
+        result: Any,
+        *,
+        cost_induced_action_changes: int = 0,
+    ) -> KnowledgeStepStats:
+        stats = KnowledgeStepStats()
+        if result is None or np.asarray(result.active_rows).size == 0:
+            return stats
+        stats.routing_requested_energy = float(result.requested_total)
+        stats.routing_committed_energy = float(result.committed_total)
+        stats.routing_rejected_energy = float(result.rejected_total)
+        stats.routing_requested_entities = int(result.active_rows.size)
+        stats.routing_committed_entities = int(np.count_nonzero(result.accepted))
+        stats.routing_rejected_entities = int(result.active_rows.size - stats.routing_committed_entities)
+        stats.routing_accepted_actions = int(result.accepted_action_count)
+        stats.routing_rejected_actions = int(result.rejected_action_count)
+        stats.routing_latent_dimensions = int(np.asarray(result.latent_dimensions, dtype=np.uint64).sum())
+        stats.routing_mac_count = int(np.asarray(result.mac_count, dtype=np.uint64).sum())
+        stats.routing_active_hidden_units = int(np.asarray(result.active_hidden_units, dtype=np.uint64).sum())
+        stats.routing_saturation_count = int(np.asarray(result.saturation_count, dtype=np.uint64).sum())
+        stats.routing_clipped_output_count = int(np.asarray(result.clipped_output_count, dtype=np.uint64).sum())
+        stats.routing_cost_induced_action_changes = int(cost_induced_action_changes)
+        if self.kcfg.candidate_tracking_enabled:
+            self.candidates.record_routing_cost(
+                observation=self.observation,
+                result=result,
+            )
+        if self._routing_cost_writer is not None:
+            for row in range(result.active_rows.size):
+                self._routing_cost_writer.writerow({
+                    "tick": int(result.plan.tick),
+                    "entity_id": int(result.entity_ids[row]),
+                    "holder_subject_id": int(result.holder_subject_ids[row]),
+                    "accepted": int(bool(result.accepted[row])),
+                    "requested_energy": float(result.requested_energy[row]),
+                    "committed_energy": float(result.committed_energy[row]),
+                    "latent_dimensions": int(result.latent_dimensions[row]),
+                    "mac_count": int(result.mac_count[row]),
+                    "active_hidden_units": int(result.active_hidden_units[row]),
+                    "saturation_count": int(result.saturation_count[row]),
+                    "clipped_output_count": int(result.clipped_output_count[row]),
+                    "emitted_action_count": int(result.emitted_action_count[row]),
+                })
+        return stats
+
     def record_policy_plan(
         self,
         plan: Any,
@@ -2055,6 +2154,26 @@ class KnowledgeSystem:
             ),
             "policy_router_hidden_active_units_total": (
                 self.totals.policy_router_hidden_active_units
+            ),
+            "routing_cost_enabled": self.kcfg.routing_cost_enabled,
+            "routing_cost_schema": (
+                self.kcfg.routing_cost_schema if self.kcfg.routing_cost_enabled else None
+            ),
+            "routing_requested_energy_total": self.totals.routing_requested_energy,
+            "routing_committed_energy_total": self.totals.routing_committed_energy,
+            "routing_rejected_energy_total": self.totals.routing_rejected_energy,
+            "routing_requested_entities_total": self.totals.routing_requested_entities,
+            "routing_committed_entities_total": self.totals.routing_committed_entities,
+            "routing_rejected_entities_total": self.totals.routing_rejected_entities,
+            "routing_accepted_actions_total": self.totals.routing_accepted_actions,
+            "routing_rejected_actions_total": self.totals.routing_rejected_actions,
+            "routing_latent_dimensions_total": self.totals.routing_latent_dimensions,
+            "routing_mac_count_total": self.totals.routing_mac_count,
+            "routing_active_hidden_units_total": self.totals.routing_active_hidden_units,
+            "routing_saturation_count_total": self.totals.routing_saturation_count,
+            "routing_clipped_output_count_total": self.totals.routing_clipped_output_count,
+            "routing_cost_induced_action_changes_total": (
+                self.totals.routing_cost_induced_action_changes
             ),
         }
         if self.latent_store is not None:
