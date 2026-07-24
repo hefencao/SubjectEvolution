@@ -75,10 +75,9 @@ def main() -> None:
     cfg = load_config(config_path)
     if args.experiment_mode is not None:
         cfg = replace(cfg, run=replace(cfg.run, experiment_mode=args.experiment_mode))
-    (output / "config.json").write_text(
-        json.dumps(asdict(cfg), ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    resolved = json.dumps(asdict(cfg), ensure_ascii=False, indent=2)
+    (output / "config.json").write_text(resolved, encoding="utf-8")
+    (output / "resolved_config.json").write_text(resolved, encoding="utf-8")
     if args.counterfactual:
         simulation = Simulation(cfg, output / "baseline", backend=args.backend)
         run_paired(

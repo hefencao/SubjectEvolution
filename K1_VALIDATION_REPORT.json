@@ -1,0 +1,45 @@
+{
+  "schema": "dynamic-knowledge-k1-v1",
+  "runs": [
+    "mvp_small_k1_cpu",
+    "mvp_small_k1_cpu_repeat"
+  ],
+  "ticks": 500,
+  "metrics_rows": 51,
+  "non_timing_metrics_equal": true,
+  "summary_non_timing_equal": true,
+  "run_metadata_non_timing_equal": true,
+  "knowledge_events_exact_equal": true,
+  "evolution_progress_exact_equal": true,
+  "checkpoints": {
+    "250": {
+      "same_keys": true,
+      "arrays_equal": true,
+      "array_count": 29
+    },
+    "500": {
+      "same_keys": true,
+      "arrays_equal": true,
+      "array_count": 29
+    }
+  },
+  "first_mismatch": [],
+  "final": {
+    "tick": 500,
+    "alive": 4698,
+    "births_total": 8629,
+    "deaths_total": 8931,
+    "mean_energy": 1.6009387969970703,
+    "groups": 98,
+    "knowledge_content_count": 2471,
+    "knowledge_variant_content_count": 2455,
+    "knowledge_copy_count": 12320,
+    "knowledge_holder_count": 3764,
+    "knowledge_active_encoded_bytes": 1182720,
+    "knowledge_maintenance_energy_total": 630.0826560000174,
+    "knowledge_sender_energy_total": 250.86295999999953,
+    "knowledge_receiver_energy_total": 24.205440000000042,
+    "knowledge_transfer_attempts_total": 84795,
+    "knowledge_transfer_committed_total": 50428
+  }
+}

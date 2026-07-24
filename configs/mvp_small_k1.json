@@ -1,0 +1,106 @@
+{
+  "run": {
+    "seed": 10001,
+    "ticks": 500,
+    "metrics_period": 10,
+    "checkpoint_period": 250,
+    "gpu_harvest_conflict_planner": true,
+    "experiment_mode": "scientific",
+    "evolution_evaluation_period": 500,
+    "validation_mode": true
+  },
+  "world": {
+    "width": 256.0,
+    "height": 256.0,
+    "grid_x": 64,
+    "grid_y": 64,
+    "initial_entities": 5000,
+    "max_entities": 8192,
+    "periodic": true
+  },
+  "environment": {
+    "resource_regeneration": [
+      0.03,
+      0.012,
+      0.008,
+      0.004
+    ],
+    "resource_capacity": [
+      10.0,
+      7.0,
+      5.0,
+      3.0
+    ],
+    "season_period": 400,
+    "season_amplitude": 0.35,
+    "signal_decay": 0.08,
+    "signal_diffusion": 0.12
+  },
+  "entities": {
+    "relation_slots": 8,
+    "maintenance_cost": 0.015,
+    "movement_cost": 0.01,
+    "signal_cost": 0.02,
+    "share_amount": 0.2,
+    "harvest_rate": 0.3,
+    "reproduction_threshold": 2.8,
+    "reproduction_cost": 1.4,
+    "initial_energy": 1.8,
+    "max_energy": 5.0,
+    "max_age": 5000,
+    "reproduction_capacity_arbitration": "stateless-random-v1"
+  },
+  "information": {
+    "channel_loss": 0.15,
+    "receiver_noise": 0.1,
+    "classification_error": 0.05,
+    "memory_decay": 0.01,
+    "max_signal_delay": 3,
+    "direct_message_capacity": 16,
+    "source_noise": 0.03,
+    "signal_flush_periods": [
+      1,
+      1,
+      1
+    ]
+  },
+  "policy": {
+    "temperature": 0.8,
+    "partner_samples": 4,
+    "mutation_std": 0.08,
+    "mutation_probability": 0.01
+  },
+  "social": {
+    "group_update_period": 50,
+    "trust_group_threshold": 0.12,
+    "group_min_members": 6,
+    "relation_decay": 0.002,
+    "trust_gain_share": 0.08,
+    "trust_loss_failed": 0.02
+  },
+  "control": {
+    "heuristic_social_guidance": false,
+    "heuristic_social_guidance_weight": 0.25,
+    "autonomy_recovery_fraction": 0.25,
+    "autonomy_activation_energy_fraction": 0.35,
+    "autonomy_harvest_threshold": 0.05
+  },
+  "knowledge": {
+    "enabled": true,
+    "schema": "dynamic-knowledge-k1-v1",
+    "initial_content_count": 16,
+    "initial_holders_fraction": 0.25,
+    "holder_capacity_bytes": 384,
+    "encoded_bytes_per_copy": 96,
+    "maintenance_energy_per_byte": 1e-06,
+    "transfer_period": 1,
+    "transfer_probability": 0.35,
+    "attention_slots_per_tick": 1,
+    "transfer_base_energy_cost": 0.002,
+    "transfer_energy_per_byte": 1e-05,
+    "receive_energy_per_byte": 5e-06,
+    "forget_probability": 0.0005,
+    "capacity_eviction": "oldest-copy-v1",
+    "log_transfer_events": true
+  }
+}

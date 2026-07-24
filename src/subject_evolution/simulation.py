@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import copy
+import hashlib
 import json
+import platform
 from pathlib import Path
+import sys
 import time
 import numpy as np
 
@@ -46,6 +49,7 @@ from .intents import (
     FailureReason,
     build_intents,
 )
+from .knowledge import KnowledgeStepStats, KnowledgeSystem
 from .lifecycle import (
     BirthAllocationPlan,
     DeathCause,
@@ -64,6 +68,7 @@ from .social import (
     GroupLabelPlanner,
     GroupSummary,
     SocialSystem,
+    build_share_relation_update_plan,
     ungrouped_group_label_plan,
 )
 from .spatial import SpatialIndex
@@ -114,6 +119,8 @@ class StepStats:
     autonomy_restored_active: int = 0
     autonomy_harvest_attempts: int = 0
     autonomy_harvest_successes: int = 0
+    knowledge: KnowledgeStepStats = field(default_factory=KnowledgeStepStats)
+    validation_seconds: float = 0.0
 
     @property
     def benefit_internal_energy(self) -> float:
@@ -453,6 +460,12 @@ class Simulation:
         )
         self.entities.primary_subject_id[initial] = body_subjects
         self.entities.lineage_subject_id[initial] = lineage_subjects
+        self.knowledge = KnowledgeSystem(
+            cfg,
+            self.output_dir,
+            initial_entity_ids=self.entities.entity_id[initial],
+            initial_subject_ids=self.entities.primary_subject_id[initial],
+        )
         self.policy = ParametricPolicy(cfg)
         self.metrics = MetricsWriter(self.output_dir)
         self.tick = 0
@@ -550,6 +563,65 @@ class Simulation:
         self._trajectory_file = None
         if cfg.run.trajectory_subject_ids:
             self._trajectory_file = (self.output_dir / "trajectory.jsonl").open("w", encoding="utf-8")
+        self._write_run_manifest(backend)
+
+    def _write_run_manifest(self, requested_backend: str) -> None:
+        config_payload = json.dumps(
+            self.cfg, default=lambda value: value.__dict__, sort_keys=True
+        ).encode("utf-8")
+        manifest = {
+            "version": __version__,
+            "seed": self.cfg.run.seed,
+            "requested_backend": requested_backend,
+            "execution_backend": self.execution_backend,
+            "python": sys.version,
+            "platform": platform.platform(),
+            "numpy": np.__version__,
+            "config_sha256": hashlib.sha256(config_payload).hexdigest(),
+            "strategy_schema": "inherited-linear-policy-v1",
+            "knowledge_schema": (
+                self.cfg.knowledge.schema if self.cfg.knowledge.enabled else None
+            ),
+            "validation_mode": self.cfg.run.validation_mode,
+        }
+        (self.output_dir / "run_manifest.json").write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+
+    def _validate_invariants(self) -> None:
+        ent = self.entities
+        active = np.flatnonzero(ent.alive)
+        inactive = np.flatnonzero(~ent.alive)
+        ids = ent.entity_id[active]
+        if np.any(ids == 0) or np.unique(ids).size != ids.size:
+            raise AssertionError("living entity IDs must be positive and unique")
+        if np.any(ent.entity_id[inactive] != 0):
+            raise AssertionError("inactive entity slots must not retain entity IDs")
+        free = np.asarray(ent.free_slots, dtype=np.int64)
+        if free.size != inactive.size or np.unique(free).size != free.size or not np.array_equal(
+            np.sort(free), inactive
+        ):
+            raise AssertionError("alive/free-pool invariant failed")
+        if active.size and (
+            np.any(~np.isfinite(ent.energy[active]))
+            or np.any(ent.energy[active] < -1e-6)
+            or np.any(ent.energy[active] > self.cfg.entities.max_energy + 1e-5)
+            or np.any(~np.isfinite(ent.integrity[active]))
+            or np.any(ent.integrity[active] <= 0.0)
+            or np.any(~np.isfinite(ent.fertility[active]))
+            or np.any(ent.fertility[active] < 0.0)
+        ):
+            raise AssertionError("living entity dynamic-state invariant failed")
+        if self.cfg.world.periodic and active.size and (
+            np.any(ent.x[active] < 0.0)
+            or np.any(ent.x[active] >= self.cfg.world.width)
+            or np.any(ent.y[active] < 0.0)
+            or np.any(ent.y[active] >= self.cfg.world.height)
+        ):
+            raise AssertionError("periodic position invariant failed")
+        if np.any(self.social.group_id[~ent.alive] != 0):
+            raise AssertionError("dead entities must not retain group membership")
+        self.knowledge.validate(ent.alive, ent.primary_subject_id)
 
     @property
     def benefit_internal_energy_total(self) -> float:
@@ -591,6 +663,8 @@ class Simulation:
         branch.spatial = copy.deepcopy(self.spatial)
         branch.social = copy.deepcopy(self.social)
         branch.subjects = self.subjects.clone()
+        branch.knowledge.close()
+        branch.knowledge = self.knowledge.clone(branch.output_dir)
         branch.tick = self.tick
         branch.entity_device_version = self.entity_device_version
         branch.last_group_summary = copy.deepcopy(self.last_group_summary)
@@ -764,6 +838,8 @@ class Simulation:
             "violations": violations,
             "strategy": {
                 "architecture": "inherited-linear-policy-v1",
+                "knowledge_schema": self.cfg.knowledge.schema if self.cfg.knowledge.enabled else None,
+                "knowledge_policy_influence": False,
                 "feature_constraints": list(ParametricPolicy.FEATURE_NAMES),
                 "action_preferences_hardcoded": False,
                 "strategy_gene_count": ParametricPolicy.STRATEGY_GENES,
@@ -782,6 +858,11 @@ class Simulation:
                 "memory": "observation-driven finite-memory dynamics",
                 "generation": "parent generation plus one at committed birth",
                 "candidate_subjects": "derived from bodies, lineages, and relation structure",
+                "knowledge": (
+                    "dynamic costly holder copies; excluded from policy logits in K1"
+                    if self.cfg.knowledge.enabled
+                    else "disabled"
+                ),
                 "subject_shift": "measured from candidate/control provenance; never assigned as a state label",
             },
             "evolution_evaluation": {
@@ -889,6 +970,63 @@ class Simulation:
                 record["autonomy_control"] = bool(intents.autonomy_control[row])
             self._trajectory_file.write(json.dumps(record, ensure_ascii=False) + "\n")
         self._trajectory_file.flush()
+
+    def _finalize_share_capacity(
+        self,
+        share: ShareResolution,
+        resolutions: ActionResolutionBatch,
+    ) -> ShareResolution:
+        """Re-arbitrate receiver capacity against post-harvest energy.
+
+        The intent resolver observes the pre-commit snapshot.  A target may
+        harvest in the same commit phase, so its remaining capacity can be
+        smaller by the time shares are applied.  Re-scaling here preserves the
+        max-energy invariant and updates relation/audit plans to the amount
+        actually committed rather than silently discarding overflow.
+        """
+        if share.rows.size == 0:
+            return share
+        proposed = np.asarray(share.amounts, dtype=np.float32)
+        safe_targets = np.where(share.valid_target, share.target_indices, 0)
+        total_by_target = np.bincount(
+            safe_targets,
+            weights=np.where(share.valid_target, proposed, 0.0),
+            minlength=self.entities.alive.size,
+        ).astype(np.float32)
+        capacity = np.maximum(
+            self.cfg.entities.max_energy - self.entities.energy, 0.0
+        ).astype(np.float32)
+        scale = np.ones(self.entities.alive.size, dtype=np.float32)
+        occupied = total_by_target > 0.0
+        scale[occupied] = np.minimum(
+            1.0, capacity[occupied] / total_by_target[occupied]
+        )
+        actual = proposed * scale[safe_targets]
+        success = share.valid_target & (actual > 1e-8)
+        resolutions.success[share.rows] = success
+        capacity_failed = share.valid_target & (proposed > 1e-8) & ~success
+        resolutions.failure_reason[share.rows[capacity_failed]] = (
+            FailureReason.INSUFFICIENT_CAPACITY
+        )
+        resolutions.resource_delta[share.rows, 0] = -actual
+        relation_updates = build_share_relation_update_plan(
+            self.cfg,
+            share.rows,
+            share.owner_indices,
+            share.target_indices,
+            success,
+            share.valid_target,
+            self.tick,
+        )
+        return ShareResolution(
+            rows=share.rows,
+            owner_indices=share.owner_indices,
+            target_indices=share.target_indices,
+            amounts=actual.astype(np.float32, copy=False),
+            success=success,
+            valid_target=share.valid_target,
+            relation_updates=relation_updates,
+        )
 
     def _commit_shares(self, share: ShareResolution) -> float:
         """Apply one self-contained share plan without consulting last-step state."""
@@ -999,6 +1137,7 @@ class Simulation:
             self.gpu_runtime.emit_plan(due_plan)
 
     def _checkpoint(self) -> None:
+        self.knowledge.flush()
         active = np.flatnonzero(self.entities.alive)
         path = self.output_dir / f"checkpoint_{self.tick:08d}.npz"
         np.savez_compressed(
@@ -1015,6 +1154,7 @@ class Simulation:
             group_id=self.social.group_id[active],
             genotype=self.entities.genotype[active],
             generation=self.entities.generation[active],
+            **(self.knowledge.checkpoint_arrays() if self.cfg.knowledge.enabled else {}),
             **(
                 {
                     "entertainment_override": self.autonomy_restored[active],
@@ -1070,6 +1210,7 @@ class Simulation:
         cfg = self.cfg
         ent = self.entities
         stats = StepStats()
+        knowledge_stats = stats.knowledge
         evaluation_due = self.evolution_progress.due(self.tick + 1)
         actual_context_metrics: dict[str, object] | None = None
         if self.gpu_runtime is None:
@@ -1387,6 +1528,7 @@ class Simulation:
             ent.harvested_energy_total[harvesters] += gathered[:, 0]
             stats.harvested_energy = float(gathered[:, 0].sum())
 
+        share = self._finalize_share_capacity(share, resolutions)
         stats.shared_energy = self._commit_shares(share)
         self.total_shared_energy += stats.shared_energy
         self._record_benefit_boundary(share, stats)
@@ -1403,6 +1545,33 @@ class Simulation:
             )
             stats.signals = int(signal_actors.size)
         self._flush_signal_emissions(signal_plan)
+        if self.cfg.knowledge.enabled:
+            transfer_plan = self.knowledge.plan_transfers(
+                sender_entity_indices=(
+                    intents.carrier_index[signal_rows]
+                    if signal_rows.size
+                    else np.empty(0, dtype=np.int32)
+                ),
+                receiver_entity_indices=(
+                    intents.target_index[signal_rows]
+                    if signal_rows.size
+                    else np.empty(0, dtype=np.int32)
+                ),
+                entity_ids=ent.entity_id,
+                primary_subject_ids=ent.primary_subject_id,
+                alive=ent.alive,
+                tick=self.tick,
+            )
+            transfer_stats = self.knowledge.commit_transfers(
+                transfer_plan, energy=ent.energy, alive=ent.alive
+            )
+            for field_name in KnowledgeStepStats.__dataclass_fields__:
+                setattr(
+                    knowledge_stats,
+                    field_name,
+                    getattr(knowledge_stats, field_name)
+                    + getattr(transfer_stats, field_name),
+                )
 
         newborns = np.empty(0, dtype=np.int32)
         birth_allocation = plan_birth_allocations(
@@ -1461,6 +1630,20 @@ class Simulation:
         )
         moved_now = np.zeros(ent.alive.size, dtype=bool)
         moved_now[movers] = True
+        if self.cfg.knowledge.enabled:
+            maintenance_stats = self.knowledge.charge_maintenance(
+                energy=ent.energy,
+                alive=ent.alive,
+                primary_subject_id=ent.primary_subject_id,
+                tick=self.tick,
+            )
+            for field_name in KnowledgeStepStats.__dataclass_fields__:
+                setattr(
+                    knowledge_stats,
+                    field_name,
+                    getattr(knowledge_stats, field_name)
+                    + getattr(maintenance_stats, field_name),
+                )
         cost = cfg.entities.maintenance_cost + moved_now[current_active] * cfg.entities.movement_cost
         ent.energy[current_active] -= cost.astype(np.float32)
         ent.integrity[current_active] -= (hazard * 0.0015).astype(np.float32)
@@ -1497,6 +1680,10 @@ class Simulation:
         # skip the otherwise full fixed-slot relationship-table scan.
         if dead.size:
             self.social.clear_dead_targets(ent.alive)
+        if self.cfg.knowledge.enabled:
+            knowledge_stats.removed_dead_holder += self.knowledge.remove_dead_holders(
+                ent.alive, ent.primary_subject_id
+            )
 
         # Candidate social subjects are updated at a slower timescale.
         phase_started = time.perf_counter()
@@ -1582,7 +1769,14 @@ class Simulation:
             stats.gpu_direct_message_events = transfer.direct_message_events
             stats.gpu_direct_dense_bytes_avoided = transfer.direct_message_dense_bytes_avoided
             stats.gpu_entity_commit_bytes = transfer.entity_commit_bytes
+        if self.cfg.knowledge.enabled:
+            self.knowledge.publish(self.tick + 1)
+            self.knowledge.accumulate(knowledge_stats)
         self.tick += 1
+        if self.cfg.run.validation_mode:
+            validation_started = time.perf_counter()
+            self._validate_invariants()
+            stats.validation_seconds = time.perf_counter() - validation_started
         if self.evolution_progress.due(self.tick):
             evaluation_started = time.perf_counter()
             self._record_evolution_progress(actual_context_metrics)
@@ -1857,6 +2051,44 @@ class Simulation:
                     ),
                 }
             )
+        if self.cfg.knowledge.enabled:
+            knowledge_summary = self.knowledge.summary()
+            row.update(
+                {
+                    "knowledge_content_count": int(knowledge_summary["content_count"]),
+                    "knowledge_variant_content_count": int(knowledge_summary["variant_content_count"]),
+                    "knowledge_copy_count": int(knowledge_summary["copy_count"]),
+                    "knowledge_holder_count": int(knowledge_summary["holder_count"]),
+                    "knowledge_active_encoded_bytes": int(knowledge_summary["active_encoded_bytes"]),
+                    "knowledge_maintenance_energy_step": stats.knowledge.maintenance_energy,
+                    "knowledge_sender_energy_step": stats.knowledge.sender_energy,
+                    "knowledge_receiver_energy_step": stats.knowledge.receiver_energy,
+                    "knowledge_total_energy_cost_step": stats.knowledge.total_energy_cost,
+                    "knowledge_transfer_attempts_step": stats.knowledge.transfer_attempts,
+                    "knowledge_transfer_delivered_step": stats.knowledge.transfer_delivered,
+                    "knowledge_transfer_lost_step": stats.knowledge.transfer_lost,
+                    "knowledge_transfer_corrupted_step": stats.knowledge.transfer_corrupted,
+                    "knowledge_transfer_committed_step": stats.knowledge.transfer_committed,
+                    "knowledge_transfer_duplicate_rejected_step": stats.knowledge.transfer_duplicate_rejected,
+                    "knowledge_transfer_capacity_rejected_step": stats.knowledge.transfer_capacity_rejected,
+                    "knowledge_transfer_energy_rejected_step": stats.knowledge.transfer_energy_rejected,
+                    "knowledge_attention_rejected_step": stats.knowledge.attention_rejected,
+                    "knowledge_forgotten_step": stats.knowledge.forgotten,
+                    "knowledge_evicted_capacity_step": stats.knowledge.evicted_capacity,
+                    "knowledge_evicted_maintenance_step": stats.knowledge.evicted_maintenance,
+                    "knowledge_removed_dead_holder_step": stats.knowledge.removed_dead_holder,
+                    "knowledge_maintenance_energy_total": float(knowledge_summary["maintenance_energy_total"]),
+                    "knowledge_sender_energy_total": float(knowledge_summary["sender_energy_total"]),
+                    "knowledge_receiver_energy_total": float(knowledge_summary["receiver_energy_total"]),
+                    "knowledge_transfer_attempts_total": int(knowledge_summary["transfer_attempts_total"]),
+                    "knowledge_transfer_committed_total": int(knowledge_summary["transfer_committed_total"]),
+                    "knowledge_transfer_duplicate_rejected_total": int(knowledge_summary["transfer_duplicate_rejected_total"]),
+                    "knowledge_transfer_capacity_rejected_total": int(knowledge_summary["transfer_capacity_rejected_total"]),
+                    "knowledge_transfer_energy_rejected_total": int(knowledge_summary["transfer_energy_rejected_total"]),
+                    "knowledge_attention_rejected_total": int(knowledge_summary["attention_rejected_total"]),
+                    "validation_seconds": stats.validation_seconds,
+                }
+            )
         row.update(self.subjects.summary())
         return row
 
@@ -1941,6 +2173,7 @@ class Simulation:
             self._defer_gpu_field_sync = previous_defer_gpu_field_sync
             self.metrics.close()
             self.evolution_progress.close()
+            self.knowledge.close()
             if self._trajectory_file is not None:
                 self._trajectory_file.close()
         interventions_metadata: dict[str, object] = {
@@ -2036,7 +2269,12 @@ class Simulation:
                     else 0
                 ),
             },
+            "knowledge": self.knowledge.summary(),
         }
+        (self.output_dir / "scientific_validity.json").write_text(
+            json.dumps(self.scientific_validity(), ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
         (self.output_dir / "run_metadata.json").write_text(
             json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8"
         )

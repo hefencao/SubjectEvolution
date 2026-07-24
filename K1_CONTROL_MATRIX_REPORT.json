@@ -1,0 +1,135 @@
+{
+  "schema": "dynamic-knowledge-k1-v1",
+  "seed": 10001,
+  "ticks": 500,
+  "conditions": {
+    "none": {
+      "tick": 500,
+      "alive": 4779,
+      "births_total": 8517,
+      "deaths_total": 8738,
+      "mean_energy": 1.5887545347213745,
+      "groups": 96,
+      "lineages": 1527
+    },
+    "private": {
+      "tick": 500,
+      "alive": 4766,
+      "births_total": 8535,
+      "deaths_total": 8769,
+      "mean_energy": 1.5891804695129395,
+      "groups": 85,
+      "lineages": 1549,
+      "knowledge_content_count": 16,
+      "knowledge_variant_content_count": 0,
+      "knowledge_copy_count": 204,
+      "knowledge_holder_count": 204,
+      "knowledge_active_encoded_bytes": 19584,
+      "knowledge_maintenance_energy_total": 34.33459199999969,
+      "knowledge_sender_energy_total": 0.0,
+      "knowledge_receiver_energy_total": 0.0,
+      "knowledge_transfer_attempts_total": 0,
+      "knowledge_transfer_committed_total": 0,
+      "knowledge_transfer_duplicate_rejected_total": 0,
+      "knowledge_transfer_capacity_rejected_total": 0,
+      "knowledge_transfer_energy_rejected_total": 0,
+      "knowledge_attention_rejected_total": 0
+    },
+    "costly": {
+      "tick": 500,
+      "alive": 4698,
+      "births_total": 8629,
+      "deaths_total": 8931,
+      "mean_energy": 1.6009387969970703,
+      "groups": 98,
+      "lineages": 1445,
+      "knowledge_content_count": 2471,
+      "knowledge_variant_content_count": 2455,
+      "knowledge_copy_count": 12320,
+      "knowledge_holder_count": 3764,
+      "knowledge_active_encoded_bytes": 1182720,
+      "knowledge_maintenance_energy_total": 630.0826560000174,
+      "knowledge_sender_energy_total": 250.86295999999953,
+      "knowledge_receiver_energy_total": 24.205440000000042,
+      "knowledge_transfer_attempts_total": 84795,
+      "knowledge_transfer_committed_total": 50428,
+      "knowledge_transfer_duplicate_rejected_total": 21400,
+      "knowledge_transfer_capacity_rejected_total": 0,
+      "knowledge_transfer_energy_rejected_total": 47,
+      "knowledge_attention_rejected_total": 2445
+    },
+    "zero_cost": {
+      "tick": 500,
+      "alive": 4779,
+      "births_total": 8517,
+      "deaths_total": 8738,
+      "mean_energy": 1.5887545347213745,
+      "groups": 96,
+      "lineages": 1527,
+      "knowledge_content_count": 2614,
+      "knowledge_variant_content_count": 2598,
+      "knowledge_copy_count": 13054,
+      "knowledge_holder_count": 3896,
+      "knowledge_active_encoded_bytes": 1253184,
+      "knowledge_maintenance_energy_total": 0.0,
+      "knowledge_sender_energy_total": 0.0,
+      "knowledge_receiver_energy_total": 0.0,
+      "knowledge_transfer_attempts_total": 87612,
+      "knowledge_transfer_committed_total": 52433,
+      "knowledge_transfer_duplicate_rejected_total": 21997,
+      "knowledge_transfer_capacity_rejected_total": 0,
+      "knowledge_transfer_energy_rejected_total": 0,
+      "knowledge_attention_rejected_total": 2471
+    }
+  },
+  "zero_cost_world_equals_no_knowledge": {
+    "non_timing_common_metrics_exact": true,
+    "checkpoints": {
+      "250": {
+        "common_array_count": 12,
+        "all_equal": true
+      },
+      "500": {
+        "common_array_count": 12,
+        "all_equal": true
+      }
+    },
+    "interpretation": "Knowledge data and exchange do not enter inherited-linear-policy-v1; with all knowledge costs zero, physical world state is exactly the no-knowledge control."
+  },
+  "current_costly_matches_prior_verified_semantics": true,
+  "transfer_audit_rows": {
+    "costly": {
+      "rows": 84795,
+      "attempts_total": 84795,
+      "matches": true
+    },
+    "zero_cost": {
+      "rows": 87612,
+      "attempts_total": 87612,
+      "matches": true
+    }
+  },
+  "deltas_vs_none": {
+    "private": {
+      "alive": -13,
+      "mean_energy": 0.0004259347915649414,
+      "groups": -11,
+      "births_total": 18,
+      "deaths_total": 31
+    },
+    "costly": {
+      "alive": -81,
+      "mean_energy": 0.0121842622756958,
+      "groups": 2,
+      "births_total": 112,
+      "deaths_total": 193
+    },
+    "zero_cost": {
+      "alive": 0,
+      "mean_energy": 0.0,
+      "groups": 0,
+      "births_total": 0,
+      "deaths_total": 0
+    }
+  }
+}

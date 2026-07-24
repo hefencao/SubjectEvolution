@@ -25,6 +25,7 @@ class RunConfig:
     # demos without allowing their output to masquerade as scientific data.
     experiment_mode: str = "scientific"
     evolution_evaluation_period: int = 500
+    validation_mode: bool = False
 
 
 @dataclass(frozen=True)
@@ -85,6 +86,28 @@ class InformationConfig:
 
 
 @dataclass(frozen=True)
+class KnowledgeConfig:
+    """K1 dynamic knowledge-copy settings; disabled preserves legacy runs."""
+
+    enabled: bool = False
+    schema: str = "dynamic-knowledge-k1-v1"
+    initial_content_count: int = 0
+    initial_holders_fraction: float = 0.0
+    holder_capacity_bytes: int = 0
+    encoded_bytes_per_copy: int = 64
+    maintenance_energy_per_byte: float = 0.0
+    transfer_period: int = 1
+    transfer_probability: float = 0.0
+    attention_slots_per_tick: int = 1
+    transfer_base_energy_cost: float = 0.0
+    transfer_energy_per_byte: float = 0.0
+    receive_energy_per_byte: float = 0.0
+    forget_probability: float = 0.0
+    capacity_eviction: str = "oldest-copy-v1"
+    log_transfer_events: bool = False
+
+
+@dataclass(frozen=True)
 class PolicyConfig:
     temperature: float
     partner_samples: int
@@ -126,6 +149,7 @@ class SimulationConfig:
     environment: EnvironmentConfig
     entities: EntityConfig
     information: InformationConfig
+    knowledge: KnowledgeConfig
     policy: PolicyConfig
     social: SocialConfig
     control: ControlConfig
@@ -184,6 +208,7 @@ def load_config(path: str | Path) -> SimulationConfig:
                 "signal_flush_periods": tuple(information_raw.get("signal_flush_periods", (1, 1, 1))),
             }
         ),
+        knowledge=KnowledgeConfig(**raw.get("knowledge", {})),
         policy=PolicyConfig(**policy_raw),
         social=SocialConfig(**_require(raw, "social")),
         control=ControlConfig(**raw.get("control", {})),
@@ -207,6 +232,8 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("run.experiment_mode must be 'scientific' or 'entertainment'")
     if cfg.run.evolution_evaluation_period <= 0:
         raise ValueError("run.evolution_evaluation_period must be positive")
+    if not isinstance(cfg.run.validation_mode, bool):
+        raise ValueError("run.validation_mode must be a boolean")
     if len(cfg.environment.resource_regeneration) != 4 or len(cfg.environment.resource_capacity) != 4:
         raise ValueError("MVP requires exactly four resource channels")
     if any(v < 0 for v in cfg.environment.resource_regeneration):
@@ -228,6 +255,40 @@ def validate_config(cfg: SimulationConfig) -> None:
         for period in cfg.information.signal_flush_periods
     ):
         raise ValueError("information.signal_flush_periods must contain three positive integers")
+
+    if not isinstance(cfg.knowledge.enabled, bool):
+        raise ValueError("knowledge.enabled must be a boolean")
+    if cfg.knowledge.schema != "dynamic-knowledge-k1-v1":
+        raise ValueError("knowledge.schema must be 'dynamic-knowledge-k1-v1' for K1")
+    if cfg.knowledge.initial_content_count < 0:
+        raise ValueError("knowledge.initial_content_count cannot be negative")
+    _probability("knowledge.initial_holders_fraction", cfg.knowledge.initial_holders_fraction)
+    if cfg.knowledge.holder_capacity_bytes < 0:
+        raise ValueError("knowledge.holder_capacity_bytes cannot be negative")
+    if cfg.knowledge.encoded_bytes_per_copy <= 0:
+        raise ValueError("knowledge.encoded_bytes_per_copy must be positive")
+    if cfg.knowledge.transfer_period <= 0:
+        raise ValueError("knowledge.transfer_period must be positive")
+    _probability("knowledge.transfer_probability", cfg.knowledge.transfer_probability)
+    _probability("knowledge.forget_probability", cfg.knowledge.forget_probability)
+    if cfg.knowledge.attention_slots_per_tick < 0:
+        raise ValueError("knowledge.attention_slots_per_tick cannot be negative")
+    if any(
+        value < 0.0
+        for value in (
+            cfg.knowledge.maintenance_energy_per_byte,
+            cfg.knowledge.transfer_base_energy_cost,
+            cfg.knowledge.transfer_energy_per_byte,
+            cfg.knowledge.receive_energy_per_byte,
+        )
+    ):
+        raise ValueError("knowledge energy costs cannot be negative")
+    if cfg.knowledge.capacity_eviction != "oldest-copy-v1":
+        raise ValueError("knowledge.capacity_eviction must be 'oldest-copy-v1'")
+    if not isinstance(cfg.knowledge.log_transfer_events, bool):
+        raise ValueError("knowledge.log_transfer_events must be a boolean")
+    if cfg.knowledge.enabled and cfg.knowledge.holder_capacity_bytes <= 0:
+        raise ValueError("enabled knowledge requires a positive holder_capacity_bytes")
     _probability("trust_group_threshold", cfg.social.trust_group_threshold)
     if not isinstance(cfg.control.heuristic_social_guidance, bool):
         raise ValueError("control.heuristic_social_guidance must be a boolean")
