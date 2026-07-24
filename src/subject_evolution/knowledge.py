@@ -342,6 +342,9 @@ class KnowledgeStepStats:
     policy_unverified_transfer_support_copies: int = 0
     policy_changed_actions: int = 0
     policy_residual_abs_sum: float = 0.0
+    policy_latent_dimensions: int = 0
+    policy_latent_max_width: int = 0
+    policy_quantized_residual_abs_sum: int = 0
 
     @property
     def total_energy_cost(self) -> float:
@@ -714,6 +717,13 @@ class KnowledgeSystem:
         self.cfg = cfg
         self.kcfg: KnowledgeConfig = cfg.knowledge
         self.catalog = KnowledgeCatalog()
+        if self.kcfg.latent_policy_enabled:
+            from .latent_knowledge import VariableLatentContentStore
+        self.latent_store = (
+            VariableLatentContentStore(self.kcfg, cfg.run.seed)
+            if self.kcfg.latent_policy_enabled
+            else None
+        )
         self.arena = KnowledgeArena()
         self.last_transfer_plan = KnowledgeTransferPlan.empty(0)
         self.last_outcome_plan = KnowledgeOutcomePlan.empty(0)
@@ -776,12 +786,31 @@ class KnowledgeSystem:
                         "unverified_transfer_support_count", "reliability_mass",
                         "energy_outcome", "integrity_outcome", "material_outcome",
                         "information_outcome", "reproduction_opportunity_outcome",
+                        "router_schema", "latent_dimension_count",
+                        "latent_max_width", "quantized_residual",
                     ],
                 )
                 self._policy_writer.writeheader()
             self._seed(initial_entity_ids, initial_subject_ids)
             self.candidates.ensure_catalog(self.catalog)
             self.observation = self.arena.publish(self.catalog, tick=0)
+
+    def _encoded_bytes_for_new_content(
+        self,
+        *,
+        parent_content_id: int,
+        context_key: int,
+        action_id: int,
+        source_subject_id: int,
+    ) -> int:
+        if self.latent_store is None:
+            return int(self.kcfg.encoded_bytes_per_copy)
+        return self.latent_store.encoded_bytes_for_next(
+            parent_content_id=parent_content_id,
+            context_key=context_key,
+            action_id=action_id,
+            source_subject_id=source_subject_id,
+        )
 
     def _seed(self, entity_ids: np.ndarray, subject_ids: np.ndarray) -> None:
         if self.kcfg.initial_content_count <= 0 or self.kcfg.initial_holders_fraction <= 0.0:
@@ -793,17 +822,27 @@ class KnowledgeSystem:
         source_subject = int(subjects[0]) if subjects.size else 1
         contents: list[int] = []
         for index in range(self.kcfg.initial_content_count):
+            context_key = index + 1
+            action_id = index % 8
+            encoded_bytes = self._encoded_bytes_for_new_content(
+                parent_content_id=0,
+                context_key=context_key,
+                action_id=action_id,
+                source_subject_id=source_subject,
+            )
             contents.append(
                 self.catalog.append(
                     parent_content_id=0,
-                    context_key=index + 1,
-                    action_id=index % 8,
+                    context_key=context_key,
+                    action_id=action_id,
                     outcome_vector=np.zeros(OUTCOME_WIDTH, dtype=np.float32),
-                    encoded_bytes=self.kcfg.encoded_bytes_per_copy,
+                    encoded_bytes=encoded_bytes,
                     created_tick=0,
                     source_subject_id=source_subject,
                 )
             )
+            if self.latent_store is not None:
+                self.latent_store.ensure_catalog(self.catalog)
         ctx = RandomContext(
             self.cfg.run.seed, 0, phase=90, stream=Stream.KNOWLEDGE_SEED
         )
@@ -812,7 +851,8 @@ class KnowledgeSystem:
         )
         for entity_id, subject_id in zip(ids[selected], subjects[selected], strict=True):
             content_id = contents[(int(entity_id) - 1) % len(contents)]
-            if self.kcfg.holder_capacity_bytes < self.kcfg.encoded_bytes_per_copy:
+            copy_bytes = int(self.catalog.encoded_bytes[content_id - 1])
+            if self.kcfg.holder_capacity_bytes < copy_bytes:
                 continue
             self.arena.append(
                 holder_subject_id=int(subject_id),
@@ -822,7 +862,7 @@ class KnowledgeSystem:
                 sample_count=0,
                 created_tick=0,
                 last_verified_tick=0,
-                encoded_bytes=self.kcfg.encoded_bytes_per_copy,
+                encoded_bytes=copy_bytes,
                 outcome_mean=self.catalog.outcome_vector[content_id - 1],
                 acquisition_kind=ACQUISITION_SEED,
             )
@@ -831,6 +871,7 @@ class KnowledgeSystem:
         """Return all semantic knowledge state without open output handles."""
         return {
             "catalog": copy.deepcopy(self.catalog),
+            "latent_store": copy.deepcopy(self.latent_store),
             "arena": copy.deepcopy(self.arena),
             "last_transfer_plan": copy.deepcopy(self.last_transfer_plan),
             "last_outcome_plan": copy.deepcopy(self.last_outcome_plan),
@@ -842,6 +883,7 @@ class KnowledgeSystem:
     def restore_state(self, state: dict[str, Any]) -> None:
         """Restore semantic state while retaining this run's output writers."""
         self.catalog = copy.deepcopy(state["catalog"])
+        self.latent_store = copy.deepcopy(state.get("latent_store"))
         self.arena = copy.deepcopy(state["arena"])
         self.last_transfer_plan = copy.deepcopy(state["last_transfer_plan"])
         self.last_outcome_plan = copy.deepcopy(state["last_outcome_plan"])
@@ -854,6 +896,7 @@ class KnowledgeSystem:
         result.cfg = self.cfg
         result.kcfg = self.kcfg
         result.catalog = copy.deepcopy(self.catalog)
+        result.latent_store = copy.deepcopy(self.latent_store)
         result.arena = copy.deepcopy(self.arena)
         result.last_transfer_plan = copy.deepcopy(self.last_transfer_plan)
         result.last_outcome_plan = copy.deepcopy(self.last_outcome_plan)
@@ -916,6 +959,8 @@ class KnowledgeSystem:
                         "unverified_transfer_support_count", "reliability_mass",
                         "energy_outcome", "integrity_outcome", "material_outcome",
                         "information_outcome", "reproduction_opportunity_outcome",
+                        "router_schema", "latent_dimension_count",
+                        "latent_max_width", "quantized_residual",
                     ],
                 )
                 result._policy_writer.writeheader()
@@ -1289,17 +1334,26 @@ class KnowledgeSystem:
                 continue
             receiver_subject = int(plan.receiver_subject_ids[row])
             content_id = int(plan.content_ids[row])
+            storage_encoded_bytes = encoded_bytes
+            if bool(plan.corrupted[row]) and self.latent_store is not None:
+                source_catalog_row = content_id - 1
+                storage_encoded_bytes = self.latent_store.encoded_bytes_for_next(
+                    parent_content_id=content_id,
+                    context_key=int(self.catalog.context_key[source_catalog_row]),
+                    action_id=int(self.catalog.action_id[source_catalog_row]),
+                    source_subject_id=int(plan.sender_subject_ids[row]),
+                )
             if self.arena.has_content(receiver_subject, content_id):
                 stats.transfer_duplicate_rejected += 1
                 record(row, "duplicate-rejected", sender_cost_charged=send_cost)
                 continue
-            if encoded_bytes > self.kcfg.holder_capacity_bytes:
+            if storage_encoded_bytes > self.kcfg.holder_capacity_bytes:
                 stats.transfer_capacity_rejected += 1
                 record(row, "oversize-rejected", sender_cost_charged=send_cost)
                 continue
             required = max(
                 self.arena.holder_bytes(receiver_subject)
-                + encoded_bytes
+                + storage_encoded_bytes
                 - self.kcfg.holder_capacity_bytes,
                 0,
             )
@@ -1307,7 +1361,10 @@ class KnowledgeSystem:
                 stats.evicted_capacity += self.arena.evict_oldest(
                     receiver_subject, required
                 )
-            if self.arena.holder_bytes(receiver_subject) + encoded_bytes > self.kcfg.holder_capacity_bytes:
+            if (
+                self.arena.holder_bytes(receiver_subject) + storage_encoded_bytes
+                > self.kcfg.holder_capacity_bytes
+            ):
                 stats.transfer_capacity_rejected += 1
                 record(row, "capacity-rejected", sender_cost_charged=send_cost)
                 continue
@@ -1326,6 +1383,13 @@ class KnowledgeSystem:
                     run_seed=self.cfg.run.seed,
                     outcome_vector=transmitted_outcome,
                 )
+                if self.latent_store is not None:
+                    self.latent_store.ensure_catalog(self.catalog)
+                    encoded_bytes = int(self.catalog.encoded_bytes[content_id - 1])
+                    if encoded_bytes != storage_encoded_bytes:
+                        raise AssertionError(
+                            "latent variant byte preview disagrees with committed content"
+                        )
                 stats.transfer_corrupted += 1
             if plan.source_confidences.size == plan.size:
                 source_confidence = float(plan.source_confidences[row])
@@ -1487,7 +1551,6 @@ class KnowledgeSystem:
             )
 
         canonical = np.lexsort((plan.entity_ids, plan.holder_subject_ids))
-        encoded_bytes = int(self.kcfg.encoded_bytes_per_copy)
         verification_cost = float(self.kcfg.verification_energy_cost)
         for plan_row in canonical:
             carrier = int(plan.carrier_indices[plan_row])
@@ -1573,6 +1636,12 @@ class KnowledgeSystem:
             stats.outcome_unmatched += 1
             if not self.kcfg.experience_creation_enabled:
                 continue
+            encoded_bytes = self._encoded_bytes_for_new_content(
+                parent_content_id=0,
+                context_key=context,
+                action_id=action,
+                source_subject_id=holder,
+            )
             if encoded_bytes > self.kcfg.holder_capacity_bytes:
                 stats.learning_capacity_rejected += 1
                 continue
@@ -1605,6 +1674,9 @@ class KnowledgeSystem:
                 created_tick=plan.tick,
                 source_subject_id=holder,
             )
+            if self.latent_store is not None:
+                self.latent_store.ensure_catalog(self.catalog)
+                encoded_bytes = int(self.catalog.encoded_bytes[content_id - 1])
             if self.kcfg.candidate_tracking_enabled:
                 self.candidates.ensure_catalog(self.catalog)
             copy_id = self.arena.append(
@@ -1700,6 +1772,17 @@ class KnowledgeSystem:
         stats.policy_residual_abs_sum = float(
             np.abs(plan.residuals).sum(dtype=np.float64)
         )
+        if getattr(plan, "latent_dimension_counts", np.empty(0)).size:
+            stats.policy_latent_dimensions = int(
+                np.asarray(plan.latent_dimension_counts, dtype=np.uint64).sum()
+            )
+            stats.policy_latent_max_width = int(
+                np.asarray(plan.latent_max_widths, dtype=np.uint16).max(initial=0)
+            )
+        if getattr(plan, "quantized_residuals", np.empty(0)).size:
+            stats.policy_quantized_residual_abs_sum = int(
+                np.abs(np.asarray(plan.quantized_residuals, dtype=np.int64)).sum()
+            )
         if self.kcfg.candidate_tracking_enabled:
             self.candidates.record_policy_plan(
                 observation=self.observation,
@@ -1734,11 +1817,29 @@ class KnowledgeSystem:
                         "material_outcome": float(outcome[2]),
                         "information_outcome": float(outcome[3]),
                         "reproduction_opportunity_outcome": float(outcome[4]),
+                        "router_schema": getattr(plan, "router_schema", None),
+                        "latent_dimension_count": (
+                            int(plan.latent_dimension_counts[row])
+                            if getattr(plan, "latent_dimension_counts", np.empty(0)).size
+                            else 0
+                        ),
+                        "latent_max_width": (
+                            int(plan.latent_max_widths[row])
+                            if getattr(plan, "latent_max_widths", np.empty(0)).size
+                            else 0
+                        ),
+                        "quantized_residual": (
+                            int(plan.quantized_residuals[row])
+                            if getattr(plan, "quantized_residuals", np.empty(0)).size
+                            else 0
+                        ),
                     }
                 )
         return stats
 
     def publish(self, tick: int) -> KnowledgeObservationPlan:
+        if self.latent_store is not None:
+            self.latent_store.ensure_catalog(self.catalog)
         self.observation = self.arena.publish(self.catalog, tick)
         return self.observation
 
@@ -1784,6 +1885,12 @@ class KnowledgeSystem:
 
     def accumulate(self, step: KnowledgeStepStats) -> None:
         for name in KnowledgeStepStats.__dataclass_fields__:
+            if name == "policy_latent_max_width":
+                self.totals.policy_latent_max_width = max(
+                    self.totals.policy_latent_max_width,
+                    step.policy_latent_max_width,
+                )
+                continue
             setattr(self.totals, name, getattr(self.totals, name) + getattr(step, name))
 
     def summary(self) -> dict[str, int | float | str | bool]:
@@ -1864,7 +1971,14 @@ class KnowledgeSystem:
             ),
             "policy_changed_actions_total": self.totals.policy_changed_actions,
             "policy_residual_abs_sum_total": self.totals.policy_residual_abs_sum,
+            "policy_latent_dimensions_total": self.totals.policy_latent_dimensions,
+            "policy_latent_max_width": self.totals.policy_latent_max_width,
+            "policy_quantized_residual_abs_sum_total": (
+                self.totals.policy_quantized_residual_abs_sum
+            ),
         }
+        if self.latent_store is not None:
+            summary.update(self.latent_store.summary())
         summary.update(self.candidates.summary())
         return summary
 
@@ -1899,6 +2013,15 @@ class KnowledgeSystem:
             or np.any(~np.isfinite(self.catalog.outcome_vector[: self.catalog.size]))
         ):
             raise AssertionError("knowledge catalog invariant failed")
+        if self.latent_store is not None:
+            self.latent_store.ensure_catalog(self.catalog)
+            if self.latent_store.size != self.catalog.size:
+                raise AssertionError("latent knowledge store is missing catalog contents")
+            if any(
+                int(value) not in set(self.kcfg.latent_length_levels)
+                for value in self.latent_store.length[: self.latent_store.size]
+            ):
+                raise AssertionError("latent knowledge length level invariant failed")
         self.candidates.validate(self.catalog, self.arena)
 
     def checkpoint_arrays(self) -> dict[str, np.ndarray]:
@@ -1926,6 +2049,15 @@ class KnowledgeSystem:
             "knowledge_copy_outcome_m2": self.arena.outcome_m2[active],
             "knowledge_copy_acquisition_kind": self.arena.acquisition_kind[active],
         }
+        if self.latent_store is not None:
+            latent = self.latent_store.arrays()
+            arrays.update(
+                {
+                    "knowledge_latent_length": latent["length"],
+                    "knowledge_latent_offset": latent["offset"],
+                    "knowledge_latent_values": latent["values"],
+                }
+            )
         arrays.update(self.candidates.checkpoint_arrays())
         return arrays
 

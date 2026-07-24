@@ -10,6 +10,7 @@ from .config import SimulationConfig
 from .information import InformationObservation
 from .knowledge import OUTCOME_WIDTH
 from .knowledge_policy import KnowledgePolicyPlan
+from .latent_knowledge import latent_router_gene_count
 from .random_api import RandomContext, Stream, categorical_from_logits, normal
 
 
@@ -83,6 +84,7 @@ class ParametricPolicy:
     KNOWLEDGE_PREFERENCE_STOP = KNOWLEDGE_PREFERENCE_START + KNOWLEDGE_OUTCOME_PREFERENCE_GENES
     KNOWLEDGE_USE_STRENGTH_INDEX = KNOWLEDGE_PREFERENCE_STOP
     K3_GENOME_SIZE = KNOWLEDGE_USE_STRENGTH_INDEX + 1
+    LATENT_ROUTER_START = K3_GENOME_SIZE
     # Legacy alias retained for archived K1/K2 code and external readers.
     GENOME_SIZE = BASE_GENOME_SIZE
 
@@ -96,8 +98,26 @@ class ParametricPolicy:
             and cfg.policy.schema == "inherited-linear-policy-knowledge-residual-v1"
         )
 
+    @staticmethod
+    def uses_latent_router(cfg: SimulationConfig) -> bool:
+        return bool(
+            cfg.knowledge.policy_influence_enabled
+            and cfg.knowledge.latent_policy_enabled
+            and cfg.policy.schema == "inherited-variable-latent-router-v1"
+        )
+
+    @classmethod
+    def latent_router_gene_start(cls, cfg: SimulationConfig) -> int:
+        if not cls.uses_latent_router(cfg):
+            raise ValueError("configuration does not use the latent router schema")
+        return cls.LATENT_ROUTER_START
+
     @classmethod
     def genome_size_for_config(cls, cfg: SimulationConfig) -> int:
+        if cls.uses_latent_router(cfg):
+            return cls.LATENT_ROUTER_START + latent_router_gene_count(
+                cfg.knowledge, len(Action)
+            )
         return cls.K3_GENOME_SIZE if cls.uses_knowledge_residual(cfg) else cls.BASE_GENOME_SIZE
 
     @classmethod

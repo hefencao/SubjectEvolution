@@ -1,0 +1,87 @@
+{
+  "schema": "variable-latent-validation-v1",
+  "version": "0.10.0",
+  "test_scope": {
+    "ticks": 30,
+    "initial_entities": 500,
+    "max_entities": 768,
+    "seed": 10001,
+    "backend": "cpu"
+  },
+  "unit_tests": {
+    "total": 46,
+    "passed": 45,
+    "skipped": 1,
+    "failed": 0,
+    "skip_reason": "CuPy/CUDA unavailable"
+  },
+  "determinism": {
+    "latent_private": {
+      "files": {
+        "metrics_non_timing_exact": true,
+        "knowledge_events.jsonl": true,
+        "knowledge_transfers.csv": true,
+        "knowledge_outcome_updates.csv": true,
+        "knowledge_policy_contributions.csv": true,
+        "evolution_progress.jsonl": true
+      },
+      "checkpoints": [
+        {
+          "file": "checkpoint_00000015.npz",
+          "array_count": 35,
+          "exact": true,
+          "mismatches": []
+        },
+        {
+          "file": "checkpoint_00000030.npz",
+          "array_count": 35,
+          "exact": true,
+          "mismatches": []
+        }
+      ],
+      "passed": true
+    },
+    "latent_exchange": {
+      "files": {
+        "metrics_non_timing_exact": true,
+        "knowledge_events.jsonl": true,
+        "knowledge_transfers.csv": true,
+        "knowledge_outcome_updates.csv": true,
+        "knowledge_policy_contributions.csv": true,
+        "evolution_progress.jsonl": true
+      },
+      "checkpoints": [
+        {
+          "file": "checkpoint_00000015.npz",
+          "array_count": 35,
+          "exact": true,
+          "mismatches": []
+        },
+        {
+          "file": "checkpoint_00000030.npz",
+          "array_count": 35,
+          "exact": true,
+          "mismatches": []
+        }
+      ],
+      "passed": true
+    }
+  },
+  "full_checkpoint_latent_restore_exact": true,
+  "variant_length_mutation_test": true,
+  "cpu_gpu_contract": {
+    "published_outcomes_quantized_on_cpu_reference": true,
+    "published_state_quantized_on_cpu_reference": true,
+    "published_use_strength_quantized_on_cpu_reference": true,
+    "router_gene_mapping": "clipped-linear-power-of-two-quantization",
+    "backend_router_arithmetic": "integer",
+    "stable_final_aggregation": true,
+    "real_cuda_tested": false
+  },
+  "known_limits": [
+    "L1 uses a quantized linear router; the reserved nonlinear L2 router is not implemented.",
+    "Latent payloads are content-level and local K2 outcomes are injected at routing time; direct local gradient updates to latent coordinates are not implemented.",
+    "GPU buckets are materialized from the host arena each tick; a persistent device-resident latent arena is not implemented.",
+    "Real CuPy/CUDA multi-tick parity remains to be run on a GPU host."
+  ]
+}

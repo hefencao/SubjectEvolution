@@ -8,7 +8,7 @@ weighted.  No global reward or optimizer is introduced.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
@@ -19,6 +19,13 @@ from .knowledge import (
     ACQUISITION_TRANSFER,
     KnowledgeObservationPlan,
     OUTCOME_WIDTH,
+)
+from .latent_knowledge import (
+    LATENT_ROUTER_SCHEMA,
+    LatentRouterBatch,
+    VariableLatentContentStore,
+    build_latent_router_batch,
+    route_latent_router_batch,
 )
 
 
@@ -39,6 +46,16 @@ class KnowledgePolicyPlan:
     unverified_transfer_support_counts: np.ndarray
     reliability_mass: np.ndarray
     weighted_outcome_vectors: np.ndarray
+    latent_dimension_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint32)
+    )
+    latent_max_widths: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint16)
+    )
+    quantized_residuals: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.int32)
+    )
+    router_schema: str | None = None
 
     @classmethod
     def empty(cls, tick: int = 0) -> "KnowledgePolicyPlan":
@@ -56,6 +73,10 @@ class KnowledgePolicyPlan:
             unverified_transfer_support_counts=np.empty(0, dtype=np.uint16),
             reliability_mass=np.empty(0, dtype=np.float32),
             weighted_outcome_vectors=np.empty((0, OUTCOME_WIDTH), dtype=np.float32),
+            latent_dimension_counts=np.empty(0, dtype=np.uint32),
+            latent_max_widths=np.empty(0, dtype=np.uint16),
+            quantized_residuals=np.empty(0, dtype=np.int32),
+            router_schema=None,
         )
 
     @property
@@ -72,6 +93,9 @@ class KnowledgePolicyPlan:
             self.active_rows.nbytes
             + self.action_ids.nbytes
             + self.residuals.nbytes
+            + self.latent_dimension_counts.nbytes
+            + self.latent_max_widths.nbytes
+            + self.quantized_residuals.nbytes
         )
 
     def validate(self, active_count: int, action_count: int) -> None:
@@ -93,6 +117,13 @@ class KnowledgePolicyPlan:
             raise ValueError("knowledge policy plan vectors must align")
         if self.weighted_outcome_vectors.shape != (count, OUTCOME_WIDTH):
             raise ValueError("knowledge policy outcome diagnostics must have width five")
+        for name, value in (
+            ("latent_dimension_counts", self.latent_dimension_counts),
+            ("latent_max_widths", self.latent_max_widths),
+            ("quantized_residuals", self.quantized_residuals),
+        ):
+            if np.asarray(value).size not in {0, count}:
+                raise ValueError(f"knowledge policy {name} must be empty or align with residuals")
         if count and (
             np.any(self.active_rows < 0)
             or np.any(self.active_rows >= active_count)
@@ -296,4 +327,130 @@ def build_knowledge_policy_plan(
     return plan
 
 
-__all__ = ["KnowledgePolicyPlan", "build_knowledge_policy_plan"]
+def build_latent_knowledge_policy_plan(
+    observation: KnowledgeObservationPlan,
+    latent_store: VariableLatentContentStore,
+    *,
+    tick: int,
+    entity_ids: np.ndarray,
+    holder_subject_ids: np.ndarray,
+    context_keys: np.ndarray,
+    genotype: Any,
+    router_gene_start: int,
+    use_strength: Any,
+    state_features: Any,
+    config: KnowledgeConfig,
+    action_count: int,
+) -> KnowledgePolicyPlan:
+    """Build a sparse residual through the variable-length latent router.
+
+    Matching and final aggregation use the CPU reference ordering.  The
+    variable-width projection and inherited router execute on the backend that
+    owns ``genotype``; their published contributions are quantized integers.
+    """
+    ids = np.asarray(entity_ids, dtype=np.uint64)
+    holders = np.asarray(holder_subject_ids, dtype=np.uint64)
+    contexts = np.asarray(context_keys, dtype=np.uint64)
+    active_count = ids.size
+    if not config.latent_policy_enabled or active_count == 0 or observation.copy_count == 0:
+        return KnowledgePolicyPlan.empty(tick)
+    batch = build_latent_router_batch(
+        observation,
+        latent_store,
+        tick=tick,
+        entity_ids=ids,
+        holder_subject_ids=holders,
+        context_keys=contexts,
+        config=config,
+    )
+    if batch.size == 0:
+        return KnowledgePolicyPlan.empty(tick)
+    published_q, diagnostics = route_latent_router_batch(
+        batch,
+        genotype=genotype,
+        router_gene_start=router_gene_start,
+        use_strength=use_strength,
+        state_features=state_features,
+        config=config,
+        action_count=action_count,
+    )
+    rows, actions = np.nonzero(published_q)
+    if rows.size == 0:
+        return KnowledgePolicyPlan.empty(tick)
+    rows = rows.astype(np.int32, copy=False)
+    actions = actions.astype(np.int16, copy=False)
+
+    q = float(config.latent_value_quantization_scale)
+    reliability = batch.reliability_q.astype(np.float64) / q
+    row_count = np.bincount(batch.copy_active_rows, minlength=active_count).astype(np.uint16)
+    private_count = np.bincount(
+        batch.copy_active_rows,
+        weights=(batch.acquisition_kinds == ACQUISITION_PRIVATE_EXPERIENCE).astype(np.int64),
+        minlength=active_count,
+    ).astype(np.uint16)
+    transfer_count = np.bincount(
+        batch.copy_active_rows,
+        weights=(batch.acquisition_kinds == ACQUISITION_TRANSFER).astype(np.int64),
+        minlength=active_count,
+    ).astype(np.uint16)
+    unverified_count = np.bincount(
+        batch.copy_active_rows,
+        weights=batch.unverified_transfer.astype(np.int64),
+        minlength=active_count,
+    ).astype(np.uint16)
+    reliability_mass = np.bincount(
+        batch.copy_active_rows,
+        weights=reliability,
+        minlength=active_count,
+    ).astype(np.float64)
+    weighted_outcome_sum = np.zeros((active_count, OUTCOME_WIDTH), dtype=np.float64)
+    for coordinate in range(OUTCOME_WIDTH):
+        weighted_outcome_sum[:, coordinate] = np.bincount(
+            batch.copy_active_rows,
+            weights=reliability * batch.outcome_vectors[:, coordinate],
+            minlength=active_count,
+        )
+    weighted_outcomes = np.divide(
+        weighted_outcome_sum,
+        np.maximum(reliability_mass[:, None], 1e-30),
+        out=np.zeros_like(weighted_outcome_sum),
+        where=reliability_mass[:, None] > 0.0,
+    )
+    dimension_sum = np.bincount(
+        batch.copy_active_rows,
+        weights=batch.latent_lengths.astype(np.int64),
+        minlength=active_count,
+    ).astype(np.uint32)
+    max_width = np.zeros(active_count, dtype=np.uint16)
+    np.maximum.at(max_width, batch.copy_active_rows, batch.latent_lengths)
+
+    residual_q = published_q[rows, actions].astype(np.int32, copy=False)
+    residuals = (residual_q.astype(np.float64) / q).astype(np.float32)
+    plan = KnowledgePolicyPlan(
+        tick=int(tick),
+        active_rows=rows,
+        entity_ids=ids[rows].copy(),
+        holder_subject_ids=holders[rows].copy(),
+        context_keys=contexts[rows].copy(),
+        action_ids=actions,
+        residuals=residuals,
+        support_copy_counts=row_count[rows],
+        private_support_counts=private_count[rows],
+        transfer_support_counts=transfer_count[rows],
+        unverified_transfer_support_counts=unverified_count[rows],
+        reliability_mass=reliability_mass[rows].astype(np.float32),
+        weighted_outcome_vectors=weighted_outcomes[rows].astype(np.float32),
+        latent_dimension_counts=dimension_sum[rows],
+        latent_max_widths=max_width[rows],
+        quantized_residuals=residual_q,
+        router_schema=LATENT_ROUTER_SCHEMA,
+    )
+    plan.validate(active_count, action_count)
+    return plan
+
+
+__all__ = [
+    "KnowledgePolicyPlan",
+    "build_knowledge_policy_plan",
+    "build_latent_knowledge_policy_plan",
+]

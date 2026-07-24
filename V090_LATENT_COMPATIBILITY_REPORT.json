@@ -1,0 +1,41 @@
+{
+  "schema": "v090-v010-latent-off-compatibility-v1",
+  "config": "mvp_short_k4_candidates, ticks overridden to 20",
+  "metrics_common_non_timing_fields": 172,
+  "metrics_mismatches": [],
+  "logs_exact": {
+    "knowledge_events.jsonl": true,
+    "knowledge_transfers.csv": true,
+    "knowledge_outcome_updates.csv": true,
+    "knowledge_content_lineage.csv": true,
+    "knowledge_subject_candidates.csv": true,
+    "knowledge_subject_edges.csv": true,
+    "knowledge_boundary_flows.csv": true
+  },
+  "policy_log_rows": 9593,
+  "policy_common_columns": 16,
+  "policy_common_row_mismatches": 0,
+  "policy_new_diagnostic_columns": [
+    "latent_dimension_count",
+    "latent_max_width",
+    "quantized_residual",
+    "router_schema"
+  ],
+  "checkpoints": [
+    {
+      "file": "checkpoint_00000010.npz",
+      "old_arrays": 52,
+      "new_arrays": 52,
+      "common_arrays": 52,
+      "mismatches": []
+    },
+    {
+      "file": "checkpoint_00000020.npz",
+      "old_arrays": 52,
+      "new_arrays": 52,
+      "common_arrays": 52,
+      "mismatches": []
+    }
+  ],
+  "passed": true
+}

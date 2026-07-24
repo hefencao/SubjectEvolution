@@ -23,7 +23,12 @@ from .execution import ActionResolutionSnapshot, HarvestResolution
 from .gpu_environment import DeviceEnvironment, DeviceInformationField
 from .information import InformationObservation, InformationSystem, SignalEmissionPlan
 from .knowledge import KnowledgeSystem, encode_local_context
-from .knowledge_policy import KnowledgePolicyPlan, build_knowledge_policy_plan
+from .knowledge_policy import (
+    KnowledgePolicyPlan,
+    build_knowledge_policy_plan,
+    build_latent_knowledge_policy_plan,
+)
+from .latent_knowledge import latent_router_state_features
 from .intents import ActionIntentBatch
 from .policy import Action, ParametricPolicy, PolicyDecision
 from .reductions import stable_segmented_sum
@@ -437,7 +442,6 @@ class HybridGpuRuntime:
             direct_message_plan=direct,
             run_seed=run_seed,
             tick=tick,
-            knowledge_plan=knowledge_policy_plan,
         )
         resource_gradient, danger_gradient = self.environment.gradients_for_entities(
             self.spatial.entity_cells,
@@ -461,22 +465,61 @@ class HybridGpuRuntime:
                 np.uint64, copy=False
             )
             if knowledge.kcfg.policy_influence_enabled:
-                host_genotype = entity.genotype[active_host]
-                knowledge_policy_plan = build_knowledge_policy_plan(
-                    knowledge.observation,
-                    tick=tick,
-                    entity_ids=entity.entity_id[active_host],
-                    holder_subject_ids=entity.primary_subject_id[active_host],
-                    context_keys=knowledge_context_keys,
-                    outcome_preferences=ParametricPolicy.outcome_preferences_from_genotype(
-                        host_genotype
-                    ),
-                    use_strength=ParametricPolicy.knowledge_use_strength_from_genotype(
-                        host_genotype
-                    ),
-                    config=knowledge.kcfg,
-                    action_count=len(Action),
-                )
+                if knowledge.kcfg.latent_policy_enabled:
+                    if knowledge.latent_store is None:
+                        raise RuntimeError("latent policy is enabled without a latent content store")
+                    knowledge.latent_store.ensure_catalog(knowledge.catalog)
+                    # Publish the small four-coordinate router state through
+                    # the CPU reference path.  Variable-width projections and
+                    # inherited routing still execute on the GPU, while a
+                    # backend-specific division cannot move a quantized state
+                    # coordinate across a later action boundary.
+                    local_resource_host = self._download(
+                        local_resources[:, 0]
+                    ).astype(np.float32, copy=False)
+                    router_state = latent_router_state_features(
+                        energy=entity.energy[active_host],
+                        integrity=entity.integrity[active_host],
+                        fertility=entity.fertility[active_host],
+                        local_resource=local_resource_host,
+                        max_energy=self.cfg.entities.max_energy,
+                        resource_capacity=self.cfg.environment.resource_capacity[0],
+                    )
+                    active_genotype_device = genotype[active]
+                    active_genotype_host = entity.genotype[active_host]
+                    knowledge_policy_plan = build_latent_knowledge_policy_plan(
+                        knowledge.observation,
+                        knowledge.latent_store,
+                        tick=tick,
+                        entity_ids=entity.entity_id[active_host],
+                        holder_subject_ids=entity.primary_subject_id[active_host],
+                        context_keys=knowledge_context_keys,
+                        genotype=active_genotype_device,
+                        router_gene_start=ParametricPolicy.latent_router_gene_start(self.cfg),
+                        use_strength=ParametricPolicy.knowledge_use_strength_from_genotype(
+                            active_genotype_host
+                        ),
+                        state_features=router_state,
+                        config=knowledge.kcfg,
+                        action_count=len(Action),
+                    )
+                else:
+                    host_genotype = entity.genotype[active_host]
+                    knowledge_policy_plan = build_knowledge_policy_plan(
+                        knowledge.observation,
+                        tick=tick,
+                        entity_ids=entity.entity_id[active_host],
+                        holder_subject_ids=entity.primary_subject_id[active_host],
+                        context_keys=knowledge_context_keys,
+                        outcome_preferences=ParametricPolicy.outcome_preferences_from_genotype(
+                            host_genotype
+                        ),
+                        use_strength=ParametricPolicy.knowledge_use_strength_from_genotype(
+                            host_genotype
+                        ),
+                        config=knowledge.kcfg,
+                        action_count=len(Action),
+                    )
                 if self._measure_transfers:
                     self._host_to_device_bytes += knowledge_policy_plan.semantic_transfer_nbytes
 
@@ -501,6 +544,7 @@ class HybridGpuRuntime:
             info=device_info,
             run_seed=run_seed,
             tick=tick,
+            knowledge_plan=knowledge_policy_plan,
         )
         self.backend.synchronize()
         policy_seconds = time.perf_counter() - timer

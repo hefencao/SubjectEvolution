@@ -145,6 +145,22 @@ class KnowledgeConfig:
     policy_max_abs_logit_residual: float = 1.0
     log_policy_contributions: bool = False
 
+    # High-extensibility latent knowledge.  Variable-length content payloads
+    # are routed through inherited, quantized linear parameters and publish
+    # only to the existing action-logit residual boundary.
+    latent_policy_enabled: bool = False
+    latent_schema: str = "variable-latent-knowledge-v1"
+    latent_router_schema: str = "quantized-linear-latent-router-v1"
+    latent_length_levels: tuple[int, ...] = (4, 8, 16, 32)
+    latent_router_hidden_width: int = 8
+    latent_value_quantization_scale: int = 4096
+    latent_router_weight_quantization_scale: int = 2048
+    latent_outcome_injection: float = 0.5
+    latent_base_encoded_bytes: int = 32
+    latent_bytes_per_value: int = 2
+    latent_length_mutation_probability: float = 0.125
+    latent_max_abs_logit_residual: float = 1.0
+
     # K4 candidate knowledge-subject diagnostics.  This layer is observational
     # and is inert unless explicitly enabled.
     candidate_tracking_enabled: bool = False
@@ -265,6 +281,11 @@ def load_config(path: str | Path) -> SimulationConfig:
                         "policy_outcome_scales", (1.0, 1.0, 1.0, 1.0, 1.0)
                     )
                 ),
+                "latent_length_levels": tuple(
+                    raw.get("knowledge", {}).get(
+                        "latent_length_levels", (4, 8, 16, 32)
+                    )
+                ),
             }
         ),
         policy=PolicyConfig(**policy_raw),
@@ -335,11 +356,12 @@ def validate_config(cfg: SimulationConfig) -> None:
         "dynamic-knowledge-k2-v1",
         "dynamic-knowledge-k3-v1",
         "dynamic-knowledge-k4-v1",
+        "dynamic-knowledge-latent-v1",
     }:
         raise ValueError(
             "knowledge.schema must be one of: 'dynamic-knowledge-k1-v1', "
             "'dynamic-knowledge-k2-v1', 'dynamic-knowledge-k3-v1', "
-            "'dynamic-knowledge-k4-v1'"
+            "'dynamic-knowledge-k4-v1', 'dynamic-knowledge-latent-v1'"
         )
     if cfg.knowledge.initial_content_count < 0:
         raise ValueError("knowledge.initial_content_count cannot be negative")
@@ -400,6 +422,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         "dynamic-knowledge-k2-v1",
         "dynamic-knowledge-k3-v1",
         "dynamic-knowledge-k4-v1",
+        "dynamic-knowledge-latent-v1",
     }:
         raise ValueError(
             "knowledge.learning_enabled requires K2 or K3 knowledge schema"
@@ -410,11 +433,11 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("enabled knowledge requires a positive holder_capacity_bytes")
     if not isinstance(cfg.knowledge.policy_influence_enabled, bool):
         raise ValueError("knowledge.policy_influence_enabled must be a boolean")
-    if cfg.knowledge.policy_residual_schema != "sparse-local-outcome-residual-v1":
-        raise ValueError(
-            "knowledge.policy_residual_schema must be "
-            "'sparse-local-outcome-residual-v1'"
-        )
+    if cfg.knowledge.policy_residual_schema not in {
+        "sparse-local-outcome-residual-v1",
+        "quantized-variable-latent-residual-v1",
+    }:
+        raise ValueError("unknown knowledge.policy_residual_schema")
     _probability("knowledge.policy_min_confidence", cfg.knowledge.policy_min_confidence)
     if cfg.knowledge.policy_min_local_samples < 0:
         raise ValueError("knowledge.policy_min_local_samples cannot be negative")
@@ -438,6 +461,39 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("knowledge.policy_max_abs_logit_residual must be positive and finite")
     if not isinstance(cfg.knowledge.log_policy_contributions, bool):
         raise ValueError("knowledge.log_policy_contributions must be a boolean")
+    if not isinstance(cfg.knowledge.latent_policy_enabled, bool):
+        raise ValueError("knowledge.latent_policy_enabled must be a boolean")
+    if cfg.knowledge.latent_schema != "variable-latent-knowledge-v1":
+        raise ValueError("unknown knowledge.latent_schema")
+    if cfg.knowledge.latent_router_schema != "quantized-linear-latent-router-v1":
+        raise ValueError("unknown knowledge.latent_router_schema")
+    levels = cfg.knowledge.latent_length_levels
+    if (
+        not levels
+        or tuple(sorted(set(levels))) != tuple(levels)
+        or any(not isinstance(value, int) or isinstance(value, bool) or value <= 0 or value > 256 for value in levels)
+    ):
+        raise ValueError("knowledge.latent_length_levels must be unique ascending integers in [1, 256]")
+    if cfg.knowledge.latent_router_hidden_width <= 0 or cfg.knowledge.latent_router_hidden_width > 32:
+        raise ValueError("knowledge.latent_router_hidden_width must be in [1, 32]")
+    if cfg.knowledge.latent_value_quantization_scale <= 0:
+        raise ValueError("knowledge.latent_value_quantization_scale must be positive")
+    if cfg.knowledge.latent_router_weight_quantization_scale <= 0:
+        raise ValueError("knowledge.latent_router_weight_quantization_scale must be positive")
+    if not math.isfinite(cfg.knowledge.latent_outcome_injection) or cfg.knowledge.latent_outcome_injection < 0.0:
+        raise ValueError("knowledge.latent_outcome_injection must be finite and non-negative")
+    if cfg.knowledge.latent_base_encoded_bytes <= 0 or cfg.knowledge.latent_bytes_per_value <= 0:
+        raise ValueError("latent encoded byte parameters must be positive")
+    _probability(
+        "knowledge.latent_length_mutation_probability",
+        cfg.knowledge.latent_length_mutation_probability,
+    )
+    if (
+        not math.isfinite(cfg.knowledge.latent_max_abs_logit_residual)
+        or cfg.knowledge.latent_max_abs_logit_residual <= 0.0
+    ):
+        raise ValueError("knowledge.latent_max_abs_logit_residual must be positive and finite")
+
     if not isinstance(cfg.knowledge.candidate_tracking_enabled, bool):
         raise ValueError("knowledge.candidate_tracking_enabled must be a boolean")
     if cfg.knowledge.candidate_schema != "knowledge-subject-candidate-v1":
@@ -451,24 +507,37 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.knowledge.candidate_tracking_enabled:
         if not cfg.knowledge.enabled or not cfg.knowledge.learning_enabled:
             raise ValueError("K4 candidate tracking requires enabled K2 learning")
-        if cfg.knowledge.schema != "dynamic-knowledge-k4-v1":
-            raise ValueError("K4 candidate tracking requires dynamic-knowledge-k4-v1")
+        if cfg.knowledge.schema not in {"dynamic-knowledge-k4-v1", "dynamic-knowledge-latent-v1"}:
+            raise ValueError("K4 candidate tracking requires K4 or latent knowledge schema")
         if not cfg.knowledge.policy_influence_enabled:
             raise ValueError("K4 candidate tracking requires K3 policy influence")
     if cfg.policy.schema not in {
         "inherited-linear-policy-v1",
         "inherited-linear-policy-knowledge-residual-v1",
+        "inherited-variable-latent-router-v1",
     }:
         raise ValueError("unknown policy.schema")
     if cfg.knowledge.policy_influence_enabled:
         if not cfg.knowledge.enabled or not cfg.knowledge.learning_enabled:
-            raise ValueError("K3 policy influence requires enabled K2 learning")
-        if cfg.knowledge.schema not in {"dynamic-knowledge-k3-v1", "dynamic-knowledge-k4-v1"}:
-            raise ValueError("K3 policy influence requires dynamic-knowledge-k3-v1 or dynamic-knowledge-k4-v1")
-        if cfg.policy.schema != "inherited-linear-policy-knowledge-residual-v1":
-            raise ValueError("K3 policy influence requires the K3 policy schema")
+            raise ValueError("knowledge policy influence requires enabled local learning")
+        if cfg.knowledge.latent_policy_enabled:
+            if cfg.knowledge.schema != "dynamic-knowledge-latent-v1":
+                raise ValueError("latent policy requires dynamic-knowledge-latent-v1")
+            if cfg.knowledge.policy_residual_schema != "quantized-variable-latent-residual-v1":
+                raise ValueError("latent policy requires the latent residual schema")
+            if cfg.policy.schema != "inherited-variable-latent-router-v1":
+                raise ValueError("latent policy requires inherited-variable-latent-router-v1")
+        else:
+            if cfg.knowledge.schema not in {"dynamic-knowledge-k3-v1", "dynamic-knowledge-k4-v1"}:
+                raise ValueError("K3 policy influence requires dynamic-knowledge-k3-v1 or dynamic-knowledge-k4-v1")
+            if cfg.knowledge.policy_residual_schema != "sparse-local-outcome-residual-v1":
+                raise ValueError("K3 policy influence requires sparse-local-outcome-residual-v1")
+            if cfg.policy.schema != "inherited-linear-policy-knowledge-residual-v1":
+                raise ValueError("K3 policy influence requires the K3 policy schema")
     elif cfg.policy.schema != "inherited-linear-policy-v1":
-        raise ValueError("K3 policy schema requires knowledge.policy_influence_enabled")
+        raise ValueError("knowledge policy schema requires policy influence")
+    if cfg.knowledge.latent_policy_enabled and not cfg.knowledge.policy_influence_enabled:
+        raise ValueError("knowledge.latent_policy_enabled requires policy influence")
     _probability("trust_group_threshold", cfg.social.trust_group_threshold)
     if not isinstance(cfg.control.heuristic_social_guidance, bool):
         raise ValueError("control.heuristic_social_guidance must be a boolean")

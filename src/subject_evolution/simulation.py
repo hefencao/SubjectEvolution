@@ -59,7 +59,12 @@ from .knowledge import (
     OUTCOME_STATUS_SUCCESS,
     encode_local_context,
 )
-from .knowledge_policy import KnowledgePolicyPlan, build_knowledge_policy_plan
+from .knowledge_policy import (
+    KnowledgePolicyPlan,
+    build_knowledge_policy_plan,
+    build_latent_knowledge_policy_plan,
+)
+from .latent_knowledge import latent_router_state_features
 from .lifecycle import (
     BirthAllocationPlan,
     DeathCause,
@@ -675,6 +680,26 @@ class Simulation:
                 if self.cfg.knowledge.policy_influence_enabled
                 else None
             ),
+            "knowledge_latent_policy_enabled": self.cfg.knowledge.latent_policy_enabled,
+            "knowledge_latent_schema": (
+                self.cfg.knowledge.latent_schema
+                if self.cfg.knowledge.latent_policy_enabled
+                else None
+            ),
+            "knowledge_latent_router_schema": (
+                self.cfg.knowledge.latent_router_schema
+                if self.cfg.knowledge.latent_policy_enabled
+                else None
+            ),
+            "knowledge_latent_length_levels": (
+                list(self.cfg.knowledge.latent_length_levels)
+                if self.cfg.knowledge.latent_policy_enabled
+                else None
+            ),
+            "knowledge_latent_quantized_publish": (
+                self.cfg.knowledge.latent_policy_enabled
+            ),
+            "knowledge_latent_external_optimizer": False,
             "knowledge_candidate_tracking": self.cfg.knowledge.candidate_tracking_enabled,
             "knowledge_candidate_schema": (
                 self.cfg.knowledge.candidate_schema
@@ -1316,13 +1341,41 @@ class Simulation:
                 ),
                 "knowledge_candidate_diagnostic_only": True,
                 "knowledge_candidate_subjecthood_truth_claimed": False,
+                "knowledge_latent_policy_enabled": self.cfg.knowledge.latent_policy_enabled,
+                "knowledge_latent_schema": (
+                    self.cfg.knowledge.latent_schema
+                    if self.cfg.knowledge.latent_policy_enabled
+                    else None
+                ),
+                "knowledge_latent_router_schema": (
+                    self.cfg.knowledge.latent_router_schema
+                    if self.cfg.knowledge.latent_policy_enabled
+                    else None
+                ),
+                "knowledge_latent_length_levels": (
+                    list(self.cfg.knowledge.latent_length_levels)
+                    if self.cfg.knowledge.latent_policy_enabled
+                    else None
+                ),
+                "knowledge_latent_publish_quantized": (
+                    self.cfg.knowledge.latent_policy_enabled
+                ),
                 "feature_constraints": list(ParametricPolicy.FEATURE_NAMES),
                 "action_preferences_hardcoded": False,
                 "strategy_gene_count": ParametricPolicy.STRATEGY_GENES,
                 "knowledge_preference_gene_count": (
-                    ParametricPolicy.KNOWLEDGE_OUTCOME_PREFERENCE_GENES + 1
-                    if self.cfg.knowledge.policy_influence_enabled
-                    else 0
+                    (
+                        ParametricPolicy.KNOWLEDGE_OUTCOME_PREFERENCE_GENES
+                        + 1
+                        + ParametricPolicy.genome_size_for_config(self.cfg)
+                        - ParametricPolicy.LATENT_ROUTER_START
+                    )
+                    if self.cfg.knowledge.latent_policy_enabled
+                    else (
+                        ParametricPolicy.KNOWLEDGE_OUTCOME_PREFERENCE_GENES + 1
+                        if self.cfg.knowledge.policy_influence_enabled
+                        else 0
+                    )
                 ),
                 "genome_size": ParametricPolicy.genome_size_for_config(self.cfg),
                 "initialization": "bounded stateless random generation",
@@ -1336,22 +1389,40 @@ class Simulation:
                 },
                 "knowledge_preference_gene_semantics": (
                     {
-                        "outcome_preference_indices": list(
-                            range(
-                                ParametricPolicy.KNOWLEDGE_PREFERENCE_START,
-                                ParametricPolicy.KNOWLEDGE_PREFERENCE_STOP,
-                            )
-                        ),
                         "knowledge_use_strength_index": (
                             ParametricPolicy.KNOWLEDGE_USE_STRENGTH_INDEX
                         ),
-                        "outcome_order": [
-                            "energy", "integrity", "material", "information",
-                            "reproduction_opportunity",
+                        "latent_router_gene_start": ParametricPolicy.LATENT_ROUTER_START,
+                        "latent_router_gene_stop": ParametricPolicy.genome_size_for_config(self.cfg),
+                        "latent_router_public_state": [
+                            "energy_fraction", "integrity", "fertility", "scarcity"
                         ],
+                        "latent_router_output": "action_logit_residual",
+                        "latent_router_parameter_origin": "inherited genome",
+                        "latent_content_origin": "world-internal content lineage and local outcomes",
+                        "latent_external_training": False,
+                        "latent_publication": "CPU-reference quantized integers with stable aggregation",
                     }
-                    if self.cfg.knowledge.policy_influence_enabled
-                    else None
+                    if self.cfg.knowledge.latent_policy_enabled
+                    else (
+                        {
+                            "outcome_preference_indices": list(
+                                range(
+                                    ParametricPolicy.KNOWLEDGE_PREFERENCE_START,
+                                    ParametricPolicy.KNOWLEDGE_PREFERENCE_STOP,
+                                )
+                            ),
+                            "knowledge_use_strength_index": (
+                                ParametricPolicy.KNOWLEDGE_USE_STRENGTH_INDEX
+                            ),
+                            "outcome_order": [
+                                "energy", "integrity", "material", "information",
+                                "reproduction_opportunity",
+                            ],
+                        }
+                        if self.cfg.knowledge.policy_influence_enabled
+                        else None
+                    )
                 ),
             },
             "state_origins": {
@@ -1366,9 +1437,15 @@ class Simulation:
                 ),
                 "knowledge": (
                     (
-                        "dynamic costly holder copies with local current-tick "
-                        "context-action-outcome statistics with a separately versioned "
-                        "sparse residual in K3"
+                        (
+                            "dynamic variable-length latent contents routed by inherited "
+                            "quantized linear parameters through the public action-logit "
+                            "residual boundary"
+                            if self.cfg.knowledge.latent_policy_enabled
+                            else "dynamic costly holder copies with local current-tick "
+                            "context-action-outcome statistics with a separately versioned "
+                            "sparse residual in K3"
+                        )
                         if self.cfg.knowledge.policy_influence_enabled
                         else "context-action-outcome statistics; excluded from policy logits in K2"
                     )
@@ -1780,21 +1857,50 @@ class Simulation:
                 )
                 if cfg.knowledge.policy_influence_enabled:
                     active_genotype = ent.genotype[active]
-                    knowledge_policy_plan = build_knowledge_policy_plan(
-                        self.knowledge.observation,
-                        tick=self.tick,
-                        entity_ids=ent.entity_id[active],
-                        holder_subject_ids=ent.primary_subject_id[active],
-                        context_keys=knowledge_context_keys,
-                        outcome_preferences=ParametricPolicy.outcome_preferences_from_genotype(
-                            active_genotype
-                        ),
-                        use_strength=ParametricPolicy.knowledge_use_strength_from_genotype(
-                            active_genotype
-                        ),
-                        config=cfg.knowledge,
-                        action_count=len(Action),
-                    )
+                    if cfg.knowledge.latent_policy_enabled:
+                        if self.knowledge.latent_store is None:
+                            raise RuntimeError("latent policy is enabled without a latent content store")
+                        self.knowledge.latent_store.ensure_catalog(self.knowledge.catalog)
+                        router_state = latent_router_state_features(
+                            energy=ent.energy[active],
+                            integrity=ent.integrity[active],
+                            fertility=ent.fertility[active],
+                            local_resource=local_resources[:, 0],
+                            max_energy=cfg.entities.max_energy,
+                            resource_capacity=cfg.environment.resource_capacity[0],
+                        )
+                        knowledge_policy_plan = build_latent_knowledge_policy_plan(
+                            self.knowledge.observation,
+                            self.knowledge.latent_store,
+                            tick=self.tick,
+                            entity_ids=ent.entity_id[active],
+                            holder_subject_ids=ent.primary_subject_id[active],
+                            context_keys=knowledge_context_keys,
+                            genotype=active_genotype,
+                            router_gene_start=ParametricPolicy.latent_router_gene_start(cfg),
+                            use_strength=ParametricPolicy.knowledge_use_strength_from_genotype(
+                                active_genotype
+                            ),
+                            state_features=router_state,
+                            config=cfg.knowledge,
+                            action_count=len(Action),
+                        )
+                    else:
+                        knowledge_policy_plan = build_knowledge_policy_plan(
+                            self.knowledge.observation,
+                            tick=self.tick,
+                            entity_ids=ent.entity_id[active],
+                            holder_subject_ids=ent.primary_subject_id[active],
+                            context_keys=knowledge_context_keys,
+                            outcome_preferences=ParametricPolicy.outcome_preferences_from_genotype(
+                                active_genotype
+                            ),
+                            use_strength=ParametricPolicy.knowledge_use_strength_from_genotype(
+                                active_genotype
+                            ),
+                            config=cfg.knowledge,
+                            action_count=len(Action),
+                        )
             stats.observation_seconds = time.perf_counter() - phase_started
 
             phase_started = time.perf_counter()
@@ -2872,6 +2978,11 @@ class Simulation:
                         else 0.0
                     ),
                     "knowledge_policy_max_abs_residual_step": stats.knowledge_policy_max_abs_residual,
+                    "knowledge_policy_latent_dimensions_step": stats.knowledge.policy_latent_dimensions,
+                    "knowledge_policy_latent_max_width_step": stats.knowledge.policy_latent_max_width,
+                    "knowledge_policy_quantized_residual_abs_sum_step": (
+                        stats.knowledge.policy_quantized_residual_abs_sum
+                    ),
                     "knowledge_maintenance_energy_total": float(knowledge_summary["maintenance_energy_total"]),
                     "knowledge_sender_energy_total": float(knowledge_summary["sender_energy_total"]),
                     "knowledge_receiver_energy_total": float(knowledge_summary["receiver_energy_total"]),
@@ -2900,9 +3011,35 @@ class Simulation:
                     ),
                     "knowledge_policy_changed_actions_total": int(knowledge_summary["policy_changed_actions_total"]),
                     "knowledge_policy_residual_abs_sum_total": float(knowledge_summary["policy_residual_abs_sum_total"]),
+                    "knowledge_policy_latent_dimensions_total": int(
+                        knowledge_summary["policy_latent_dimensions_total"]
+                    ),
+                    "knowledge_policy_latent_max_width": int(
+                        knowledge_summary["policy_latent_max_width"]
+                    ),
+                    "knowledge_policy_quantized_residual_abs_sum_total": int(
+                        knowledge_summary["policy_quantized_residual_abs_sum_total"]
+                    ),
                     "validation_seconds": stats.validation_seconds,
                 }
             )
+            if self.cfg.knowledge.latent_policy_enabled:
+                row.update(
+                    {
+                        "knowledge_latent_content_count": int(
+                            knowledge_summary["latent_content_count"]
+                        ),
+                        "knowledge_latent_total_dimensions": int(
+                            knowledge_summary["latent_total_dimensions"]
+                        ),
+                        "knowledge_latent_mean_dimensions": float(
+                            knowledge_summary["latent_mean_dimensions"]
+                        ),
+                        "knowledge_latent_max_dimensions": int(
+                            knowledge_summary["latent_max_dimensions"]
+                        ),
+                    }
+                )
             if self.cfg.knowledge.candidate_tracking_enabled:
                 row.update(
                     {

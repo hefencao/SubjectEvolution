@@ -1,0 +1,80 @@
+{
+  "schema": "latent-determinism-hashes-v1",
+  "version": "0.10.0",
+  "pairs": {
+    "latent_private": {
+      "knowledge_events.jsonl": {
+        "a_sha256": "4accf24e918ee31dd0baa4fb765f795a1f30b0fd7ffa81378378ca0865784515",
+        "b_sha256": "4accf24e918ee31dd0baa4fb765f795a1f30b0fd7ffa81378378ca0865784515",
+        "exact": true
+      },
+      "knowledge_transfers.csv": {
+        "a_sha256": "8a7eeb19028db07a7ebe47c8be5788758240de5d06da30378b2a337a54824468",
+        "b_sha256": "8a7eeb19028db07a7ebe47c8be5788758240de5d06da30378b2a337a54824468",
+        "exact": true
+      },
+      "knowledge_outcome_updates.csv": {
+        "a_sha256": "14f85aa20dc313ce053b3e63744251b5d178527a21644767bd00c82cfcfca1ac",
+        "b_sha256": "14f85aa20dc313ce053b3e63744251b5d178527a21644767bd00c82cfcfca1ac",
+        "exact": true
+      },
+      "knowledge_policy_contributions.csv": {
+        "a_sha256": "a70bf53e5b481ec2c928f3687aea544e80d625a946d634a3aa4825cef75b5ab3",
+        "b_sha256": "a70bf53e5b481ec2c928f3687aea544e80d625a946d634a3aa4825cef75b5ab3",
+        "exact": true
+      },
+      "evolution_progress.jsonl": {
+        "a_sha256": "5fbd7cae62e29072a2380ea6131a4572c1f6273c7e7194b93c0bd284fc62d90f",
+        "b_sha256": "5fbd7cae62e29072a2380ea6131a4572c1f6273c7e7194b93c0bd284fc62d90f",
+        "exact": true
+      },
+      "checkpoint_00000015.npz": {
+        "array_count": 35,
+        "exact": true,
+        "mismatches": []
+      },
+      "checkpoint_00000030.npz": {
+        "array_count": 35,
+        "exact": true,
+        "mismatches": []
+      }
+    },
+    "latent_exchange": {
+      "knowledge_events.jsonl": {
+        "a_sha256": "446aad2f91ab94980f5d1d2dfa7b82b3955a20210493dcc878b5357d0fea9f69",
+        "b_sha256": "446aad2f91ab94980f5d1d2dfa7b82b3955a20210493dcc878b5357d0fea9f69",
+        "exact": true
+      },
+      "knowledge_transfers.csv": {
+        "a_sha256": "eadfc83ef92e3c718e1e88f95cb8a8d3884bd3be75409a9a2c057be30461da82",
+        "b_sha256": "eadfc83ef92e3c718e1e88f95cb8a8d3884bd3be75409a9a2c057be30461da82",
+        "exact": true
+      },
+      "knowledge_outcome_updates.csv": {
+        "a_sha256": "2a4e144e8a7d839d061c79a9681c4f5c2a93eb67b18b5c3b08bbca55ae03044e",
+        "b_sha256": "2a4e144e8a7d839d061c79a9681c4f5c2a93eb67b18b5c3b08bbca55ae03044e",
+        "exact": true
+      },
+      "knowledge_policy_contributions.csv": {
+        "a_sha256": "8ba99a45034f3893430abca157521e4a230fedfbffeae82fa9d712fc1d702539",
+        "b_sha256": "8ba99a45034f3893430abca157521e4a230fedfbffeae82fa9d712fc1d702539",
+        "exact": true
+      },
+      "evolution_progress.jsonl": {
+        "a_sha256": "899815a8c4ffaec862260c5e831716eb01d9d9d3f5a3a8a74b854d147facee32",
+        "b_sha256": "899815a8c4ffaec862260c5e831716eb01d9d9d3f5a3a8a74b854d147facee32",
+        "exact": true
+      },
+      "checkpoint_00000015.npz": {
+        "array_count": 35,
+        "exact": true,
+        "mismatches": []
+      },
+      "checkpoint_00000030.npz": {
+        "array_count": 35,
+        "exact": true,
+        "mismatches": []
+      }
+    }
+  }
+}
