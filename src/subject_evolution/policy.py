@@ -139,6 +139,19 @@ class ParametricPolicy:
             cfg.knowledge
         )
 
+
+    @classmethod
+    def sparse_selection_capacity_gene_index(cls, cfg: SimulationConfig) -> int | None:
+        if (
+            not cfg.knowledge.sparse_selection_enabled
+            or cfg.knowledge.sparse_selection_capacity_schema
+            != "inherited-discrete-topk-v1"
+        ):
+            return None
+        return cls.sparse_selection_gene_start(cfg) + sparse_selection_gene_count(
+            cfg.knowledge
+        ) - 1
+
     @classmethod
     def genome_size_for_config(cls, cfg: SimulationConfig) -> int:
         if cls.uses_latent_router(cfg):

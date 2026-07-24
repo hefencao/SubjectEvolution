@@ -178,3 +178,11 @@ L2 保留完整 L1 路由前缀并在同一 batch 上同时计算 L1 shadow，pa
 稀疏选择不使用全局类别 embedding、Softmax 或浮点 Top-k。Query、Key、可靠性缩放和分数均为整数；稳定排序键为 `(-score_q, copy_id, content_id)`。首版 hybrid 路径由 host authority 构造临时 workset，再允许设备批量执行选中副本的 L1/L2 整数路由。
 
 Parity 报告现包含 working-memory entity state、knowledge-policy-plan、selection IDs/scores、genetic/L1/L2/memory-free actions。当前容器无 CUDA，因此只完成 CPU 与模拟设备测试；真实 GPU 上仍须验证 host/device 同步、选中 workset、路由成本扣费和多 tick world state。
+
+## v0.14.0 可演化选择容量与因果消融 parity 边界
+
+可演化 Top-k 容量只新增一个宿主遗传基因，并通过 CPU-reference 的定点映射选择配置中公开的离散容量等级。候选知识评分、稳定排序和临时 workset 语义沿用 v0.13.0：排序键为 `(-score_q, copy_id, content_id)`，不使用全局类别 embedding、Softmax 或设备相关的不稳定 Top-k。
+
+工作记忆消融会清零并冻结持久 `int16` 记忆状态；选择器旁路只移除临时筛选，不删除或修改权威知识副本。两类干预均写入完整 checkpoint 和 intervention history，可在共同随机数下重放。
+
+当前容器没有 CUDA。v0.14.0 已完成 CPU reference、模拟设备、checkpoint/replay 和旧固定-K兼容测试，但真实 CuPy 多 tick world parity 尚未验证。硬件验收仍需比较每实体请求容量、选中 copy/content IDs、路由成本、memory/selection ablation 状态以及最终离散 action 和完整世界 checkpoint。

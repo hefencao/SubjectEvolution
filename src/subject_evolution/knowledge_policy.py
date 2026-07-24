@@ -89,6 +89,9 @@ class KnowledgePolicyPlan:
     selection_selected_counts: np.ndarray = field(
         default_factory=lambda: np.empty(0, dtype=np.uint16)
     )
+    selection_requested_top_k: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint16)
+    )
     selection_tie_counts: np.ndarray = field(
         default_factory=lambda: np.empty(0, dtype=np.uint16)
     )
@@ -146,6 +149,9 @@ class KnowledgePolicyPlan:
     work_selection_selected_counts: np.ndarray = field(
         default_factory=lambda: np.empty(0, dtype=np.uint16)
     )
+    work_selection_requested_top_k: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint16)
+    )
     work_selection_tie_counts: np.ndarray = field(
         default_factory=lambda: np.empty(0, dtype=np.uint16)
     )
@@ -184,6 +190,7 @@ class KnowledgePolicyPlan:
             router_hidden_active_counts=np.empty(0, dtype=np.uint32),
             selection_candidate_counts=np.empty(0, dtype=np.uint16),
             selection_selected_counts=np.empty(0, dtype=np.uint16),
+            selection_requested_top_k=np.empty(0, dtype=np.uint16),
             selection_tie_counts=np.empty(0, dtype=np.uint16),
             selection_score_thresholds_q=np.empty(0, dtype=np.int64),
             selection_active_rows=np.empty(0, dtype=np.int32),
@@ -202,6 +209,7 @@ class KnowledgePolicyPlan:
             work_router_hidden_active_counts=np.empty(0, dtype=np.uint32),
             work_selection_candidate_counts=np.empty(0, dtype=np.uint16),
             work_selection_selected_counts=np.empty(0, dtype=np.uint16),
+            work_selection_requested_top_k=np.empty(0, dtype=np.uint16),
             work_selection_tie_counts=np.empty(0, dtype=np.uint16),
             work_selection_score_thresholds_q=np.empty(0, dtype=np.int64),
             router_schema=None,
@@ -239,6 +247,7 @@ class KnowledgePolicyPlan:
             + self.router_hidden_active_counts.nbytes
             + self.selection_candidate_counts.nbytes
             + self.selection_selected_counts.nbytes
+            + self.selection_requested_top_k.nbytes
             + self.selection_tie_counts.nbytes
             + self.selection_score_thresholds_q.nbytes
             + self.selection_active_rows.nbytes
@@ -257,6 +266,7 @@ class KnowledgePolicyPlan:
             + self.work_router_hidden_active_counts.nbytes
             + self.work_selection_candidate_counts.nbytes
             + self.work_selection_selected_counts.nbytes
+            + self.work_selection_requested_top_k.nbytes
             + self.work_selection_tie_counts.nbytes
             + self.work_selection_score_thresholds_q.nbytes
         )
@@ -290,6 +300,7 @@ class KnowledgePolicyPlan:
             ("router_hidden_active_counts", self.router_hidden_active_counts),
             ("selection_candidate_counts", self.selection_candidate_counts),
             ("selection_selected_counts", self.selection_selected_counts),
+            ("selection_requested_top_k", self.selection_requested_top_k),
             ("selection_tie_counts", self.selection_tie_counts),
             ("selection_score_thresholds_q", self.selection_score_thresholds_q),
         ):
@@ -328,6 +339,10 @@ class KnowledgePolicyPlan:
         ):
             if np.asarray(value).shape != (work_count,):
                 raise ValueError(f"knowledge policy {name} must align with work rows")
+        if np.asarray(self.work_selection_requested_top_k).size not in {0, work_count}:
+            raise ValueError(
+                "knowledge policy work_selection_requested_top_k must be empty or align with work rows"
+            )
         if work_count and (
             np.any(self.work_active_rows < 0)
             or np.any(self.work_active_rows >= active_count)
@@ -336,6 +351,13 @@ class KnowledgePolicyPlan:
             or np.any(self.work_context_keys == 0)
             or np.any(self.work_active_rows[1:] <= self.work_active_rows[:-1])
             or np.any(self.work_selection_selected_counts > self.work_selection_candidate_counts)
+            or (
+                self.work_selection_requested_top_k.size
+                and np.any(
+                    self.work_selection_selected_counts
+                    > self.work_selection_requested_top_k
+                )
+            )
         ):
             raise ValueError("knowledge policy per-entity work diagnostics are invalid")
         comparison_count = self.comparison_size
@@ -587,6 +609,7 @@ def build_latent_knowledge_policy_plan(
     router_gene_start: int,
     selection_gene_start: int | None = None,
     working_memory_q: np.ndarray | None = None,
+    selection_enabled: bool | None = None,
     use_strength: Any = None,
     state_features: Any = None,
     config: KnowledgeConfig,
@@ -615,7 +638,11 @@ def build_latent_knowledge_policy_plan(
     )
     if batch.size == 0:
         return KnowledgePolicyPlan.empty(tick)
-    if config.sparse_selection_enabled:
+    selection_is_enabled = (
+        config.sparse_selection_enabled
+        if selection_enabled is None else bool(selection_enabled)
+    )
+    if selection_is_enabled:
         if selection_gene_start is None or working_memory_q is None:
             raise ValueError("sparse selection requires genes and working memory")
         selection = select_latent_router_batch(
@@ -754,6 +781,7 @@ def build_latent_knowledge_policy_plan(
 
     selection_candidate_count = selection.candidate_count
     selection_selected_count = selection.selected_count
+    selection_requested_top_k = selection.requested_top_k
     selection_tie_count = selection.tie_count
     selection_threshold = selection.threshold_q
     # Work rows include every entity for which selection inspected at least one
@@ -796,12 +824,25 @@ def build_latent_knowledge_policy_plan(
         router_hidden_active_counts=hidden_active_by_row[rows],
         selection_candidate_counts=selection_candidate_count[rows],
         selection_selected_counts=selection_selected_count[rows],
+        selection_requested_top_k=selection_requested_top_k[rows],
         selection_tie_counts=selection_tie_count[rows],
         selection_score_thresholds_q=selection_threshold[rows],
-        selection_active_rows=batch.copy_active_rows.copy(),
-        selection_copy_ids=batch.copy_ids.copy(),
-        selection_content_ids=batch.content_ids.copy(),
-        selection_scores_q=selection.selected_scores_q.copy(),
+        selection_active_rows=(
+            batch.copy_active_rows.copy()
+            if selection_is_enabled else np.empty(0, dtype=np.int32)
+        ),
+        selection_copy_ids=(
+            batch.copy_ids.copy()
+            if selection_is_enabled else np.empty(0, dtype=np.uint64)
+        ),
+        selection_content_ids=(
+            batch.content_ids.copy()
+            if selection_is_enabled else np.empty(0, dtype=np.uint64)
+        ),
+        selection_scores_q=(
+            selection.selected_scores_q.copy()
+            if selection_is_enabled else np.empty(0, dtype=np.int64)
+        ),
         work_active_rows=work_rows.copy(),
         work_entity_ids=ids[work_rows].copy(),
         work_holder_subject_ids=holders[work_rows].copy(),
@@ -816,10 +857,11 @@ def build_latent_knowledge_policy_plan(
         work_router_hidden_active_counts=hidden_active_by_row[work_rows],
         work_selection_candidate_counts=selection_candidate_count[work_rows],
         work_selection_selected_counts=selection_selected_count[work_rows],
+        work_selection_requested_top_k=selection_requested_top_k[work_rows],
         work_selection_tie_counts=selection_tie_count[work_rows],
         work_selection_score_thresholds_q=selection_threshold[work_rows],
         router_schema=config.latent_router_schema,
-        selection_schema=(config.sparse_selection_schema if config.sparse_selection_enabled else None),
+        selection_schema=(config.sparse_selection_schema if selection_is_enabled else None),
     )
     plan.validate(active_count, action_count)
     return plan

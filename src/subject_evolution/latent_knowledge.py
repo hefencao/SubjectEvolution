@@ -503,6 +503,7 @@ class SparseSelectionResult:
     batch: LatentRouterBatch
     candidate_count: np.ndarray
     selected_count: np.ndarray
+    requested_top_k: np.ndarray
     tie_count: np.ndarray
     threshold_q: np.ndarray
     selected_original_rows: np.ndarray
@@ -517,6 +518,7 @@ class SparseSelectionResult:
             batch=batch,
             candidate_count=counts.copy(),
             selected_count=counts.copy(),
+            requested_top_k=counts.copy(),
             tie_count=np.zeros(batch.active_count, dtype=np.uint16),
             threshold_q=np.zeros(batch.active_count, dtype=np.int64),
             selected_original_rows=np.arange(batch.size, dtype=np.int32),
@@ -529,7 +531,10 @@ def sparse_selection_gene_count(config: KnowledgeConfig) -> int:
         return 0
     query_width = int(config.latent_router_hidden_width)
     input_width = LATENT_STATE_WIDTH + int(config.working_memory_width)
-    return query_width * input_width + query_width
+    count = query_width * input_width + query_width
+    if config.sparse_selection_capacity_schema == "inherited-discrete-topk-v1":
+        count += 1
+    return count
 
 
 def _subset_latent_router_batch(
@@ -593,20 +598,9 @@ def select_latent_router_batch(
     """Select a stable Top-k per carrier using inherited integer Query-Key scores."""
     if not config.sparse_selection_enabled or batch.size == 0:
         return SparseSelectionResult.passthrough(batch)
-    top_k = int(config.sparse_selection_top_k)
     candidate_count = np.bincount(
         batch.copy_active_rows, minlength=batch.active_count
     ).astype(np.uint16)
-    if top_k == 0:
-        return SparseSelectionResult(
-            batch=LatentRouterBatch.empty(batch.tick, batch.active_count),
-            candidate_count=candidate_count,
-            selected_count=np.zeros(batch.active_count, dtype=np.uint16),
-            tie_count=np.zeros(batch.active_count, dtype=np.uint16),
-            threshold_q=np.zeros(batch.active_count, dtype=np.int64),
-            selected_original_rows=np.empty(0, dtype=np.int32),
-            selected_scores_q=np.empty(0, dtype=np.int64),
-        )
 
     hidden_q, state_q, _ = _build_common_router_inputs(
         batch, state_features=state_features, config=config, xp=np
@@ -624,8 +618,13 @@ def select_latent_router_batch(
     genes = np.asarray(to_numpy(genotype), dtype=np.float32)
     input_width = query_input.shape[1]
     weight_count = query_width * input_width
-    required = int(selection_gene_start) + weight_count + query_width
-    if genes.ndim != 2 or genes.shape[1] < required:
+    capacity_gene_count = int(
+        config.sparse_selection_capacity_schema == "inherited-discrete-topk-v1"
+    )
+    required = (
+        int(selection_gene_start) + weight_count + query_width + capacity_gene_count
+    )
+    if genes.ndim != 2 or genes.shape[0] != batch.active_count or genes.shape[1] < required:
         raise ValueError("genotype does not contain sparse-selection genes")
     weight_scale = int(config.latent_router_weight_quantization_scale)
     cursor = int(selection_gene_start)
@@ -636,6 +635,19 @@ def select_latent_router_batch(
     bias = np.rint(
         np.clip(genes[:, cursor : cursor + query_width], -1.0, 1.0) * weight_scale
     ).astype(np.int16)
+    cursor += query_width
+    if config.sparse_selection_capacity_schema == "inherited-discrete-topk-v1":
+        levels = np.asarray(config.sparse_selection_capacity_levels, dtype=np.uint16)
+        raw_capacity = np.clip(genes[:, cursor], -1.0, 1.0).astype(np.float64)
+        level_index = np.floor(0.5 * (raw_capacity + 1.0) * levels.size).astype(
+            np.int64
+        )
+        level_index = np.clip(level_index, 0, levels.size - 1)
+        requested_top_k = levels[level_index].astype(np.uint16, copy=False)
+    else:
+        requested_top_k = np.full(
+            batch.active_count, int(config.sparse_selection_top_k), dtype=np.uint16
+        )
     accumulator = bias.astype(np.int64) * np.int64(latent_q)
     for input_index in range(input_width):
         accumulator += (
@@ -664,6 +676,9 @@ def select_latent_router_batch(
     for active_row in range(batch.active_count):
         candidates = np.flatnonzero(batch.copy_active_rows == active_row).astype(np.int32)
         if candidates.size == 0:
+            continue
+        top_k = int(requested_top_k[active_row])
+        if top_k <= 0:
             continue
         order = np.lexsort((
             batch.content_ids[candidates],
@@ -695,6 +710,7 @@ def select_latent_router_batch(
         batch=_subset_latent_router_batch(batch, selected),
         candidate_count=candidate_count,
         selected_count=selected_count,
+        requested_top_k=requested_top_k.copy(),
         tie_count=tie_count,
         threshold_q=threshold_q,
         selected_original_rows=selected.copy(),

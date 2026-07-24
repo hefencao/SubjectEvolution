@@ -366,6 +366,8 @@ class KnowledgeStepStats:
     routing_cost_induced_action_changes: int = 0
     selection_candidate_copies: int = 0
     selection_selected_copies: int = 0
+    selection_requested_top_k_sum: int = 0
+    selection_zero_capacity_entities: int = 0
     selection_tie_count: int = 0
     selection_committed_energy: float = 0.0
     working_memory_requested_energy: float = 0.0
@@ -763,6 +765,10 @@ class KnowledgeSystem:
         self.last_outcome_plan = KnowledgeOutcomePlan.empty(0)
         self.observation = KnowledgeObservationPlan.empty(0)
         self.totals = KnowledgeStepStats()
+        # Runtime causal-ablation flags.  They are world state and therefore
+        # checkpointed/cloned, but remain false for ordinary runs.
+        self.working_memory_ablation_enabled = False
+        self.sparse_selection_ablation_enabled = False
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.candidates = KnowledgeCandidateTracker(self.kcfg, self.output_dir)
@@ -833,7 +839,8 @@ class KnowledgeSystem:
                         "router_saturation_count", "router_clipping_count",
                         "router_hidden_abs_sum", "router_hidden_active_count",
                         "selection_schema", "selection_candidate_count",
-                        "selection_selected_count", "selection_tie_count",
+                        "selection_selected_count", "selection_requested_top_k",
+                        "selection_tie_count",
                         "selection_score_threshold_q",
                     ],
                 )
@@ -851,7 +858,7 @@ class KnowledgeSystem:
                         "active_hidden_units", "saturation_count",
                         "clipped_output_count", "emitted_action_count",
                         "selection_candidate_count", "selection_selected_count",
-                        "selection_energy",
+                        "selection_requested_top_k", "selection_energy",
                     ],
                 )
                 self._routing_cost_writer.writeheader()
@@ -879,6 +886,7 @@ class KnowledgeSystem:
                     fieldnames=[
                         "tick", "active_row", "entity_id", "holder_subject_id",
                         "copy_id", "content_id", "score_q", "rank_within_entity",
+                        "requested_top_k",
                     ],
                 )
                 self._selection_writer.writeheader()
@@ -968,6 +976,12 @@ class KnowledgeSystem:
             "last_outcome_plan": copy.deepcopy(self.last_outcome_plan),
             "observation": copy.deepcopy(self.observation),
             "totals": copy.deepcopy(self.totals),
+            "working_memory_ablation_enabled": bool(
+                self.working_memory_ablation_enabled
+            ),
+            "sparse_selection_ablation_enabled": bool(
+                self.sparse_selection_ablation_enabled
+            ),
             "candidates": self.candidates.snapshot_state(),
         }
 
@@ -980,6 +994,12 @@ class KnowledgeSystem:
         self.last_outcome_plan = copy.deepcopy(state["last_outcome_plan"])
         self.observation = copy.deepcopy(state["observation"])
         self.totals = copy.deepcopy(state["totals"])
+        self.working_memory_ablation_enabled = bool(
+            state.get("working_memory_ablation_enabled", False)
+        )
+        self.sparse_selection_ablation_enabled = bool(
+            state.get("sparse_selection_ablation_enabled", False)
+        )
         # Trusted checkpoints from earlier schemas unpickle the historical
         # dataclass without fields introduced later.  Initialize only missing
         # cumulative diagnostics; existing values remain untouched.
@@ -1000,6 +1020,12 @@ class KnowledgeSystem:
         result.last_outcome_plan = copy.deepcopy(self.last_outcome_plan)
         result.observation = copy.deepcopy(self.observation)
         result.totals = copy.deepcopy(self.totals)
+        result.working_memory_ablation_enabled = bool(
+            self.working_memory_ablation_enabled
+        )
+        result.sparse_selection_ablation_enabled = bool(
+            self.sparse_selection_ablation_enabled
+        )
         result.output_dir = Path(output_dir)
         result.output_dir.mkdir(parents=True, exist_ok=True)
         result.candidates = self.candidates.clone(result.output_dir)
@@ -1070,7 +1096,8 @@ class KnowledgeSystem:
                         "router_saturation_count", "router_clipping_count",
                         "router_hidden_abs_sum", "router_hidden_active_count",
                         "selection_schema", "selection_candidate_count",
-                        "selection_selected_count", "selection_tie_count",
+                        "selection_selected_count", "selection_requested_top_k",
+                        "selection_tie_count",
                         "selection_score_threshold_q",
                     ],
                 )
@@ -1088,7 +1115,7 @@ class KnowledgeSystem:
                         "active_hidden_units", "saturation_count",
                         "clipped_output_count", "emitted_action_count",
                         "selection_candidate_count", "selection_selected_count",
-                        "selection_energy",
+                        "selection_requested_top_k", "selection_energy",
                     ],
                 )
                 result._routing_cost_writer.writeheader()
@@ -1116,6 +1143,7 @@ class KnowledgeSystem:
                     fieldnames=[
                         "tick", "active_row", "entity_id", "holder_subject_id",
                         "copy_id", "content_id", "score_q", "rank_within_entity",
+                        "requested_top_k",
                     ],
                 )
                 result._selection_writer.writeheader()
@@ -1939,12 +1967,18 @@ class KnowledgeSystem:
         stats.routing_saturation_count = int(np.asarray(result.saturation_count, dtype=np.uint64).sum())
         stats.routing_clipped_output_count = int(np.asarray(result.clipped_output_count, dtype=np.uint64).sum())
         stats.routing_cost_induced_action_changes = int(cost_induced_action_changes)
-        if self.kcfg.sparse_selection_enabled:
+        if getattr(result.plan, "selection_schema", None) is not None:
             stats.selection_candidate_copies = int(
                 np.asarray(result.selection_candidate_count, dtype=np.uint64).sum()
             )
             stats.selection_selected_copies = int(
                 np.asarray(result.selection_selected_count, dtype=np.uint64).sum()
+            )
+            stats.selection_requested_top_k_sum = int(
+                np.asarray(result.selection_requested_top_k, dtype=np.uint64).sum()
+            )
+            stats.selection_zero_capacity_entities = int(
+                np.count_nonzero(np.asarray(result.selection_requested_top_k) == 0)
             )
             stats.selection_committed_energy = float(
                 np.asarray(result.selection_energy, dtype=np.float64)[result.accepted].sum()
@@ -1971,6 +2005,7 @@ class KnowledgeSystem:
                     "emitted_action_count": int(result.emitted_action_count[row]),
                     "selection_candidate_count": int(result.selection_candidate_count[row]),
                     "selection_selected_count": int(result.selection_selected_count[row]),
+                    "selection_requested_top_k": int(result.selection_requested_top_k[row]),
                     "selection_energy": float(result.selection_energy[row]),
                 })
         return stats
@@ -2103,6 +2138,15 @@ class KnowledgeSystem:
             stats.selection_selected_copies = int(
                 np.asarray(plan.selection_selected_counts, dtype=np.uint64)[first_rows].sum()
             )
+            if not self.kcfg.routing_cost_enabled:
+                stats.selection_requested_top_k_sum = int(
+                    np.asarray(plan.selection_requested_top_k, dtype=np.uint64)[first_rows].sum()
+                )
+                stats.selection_zero_capacity_entities = int(
+                    np.count_nonzero(
+                        np.asarray(plan.selection_requested_top_k, dtype=np.uint16)[first_rows] == 0
+                    )
+                )
             stats.selection_tie_count = int(
                 np.asarray(plan.selection_tie_counts, dtype=np.uint64)[first_rows].sum()
             )
@@ -2115,6 +2159,14 @@ class KnowledgeSystem:
                     np.asarray(plan.work_active_rows, dtype=np.int32).tolist(),
                     np.asarray(plan.work_entity_ids, dtype=np.uint64).tolist(),
                     np.asarray(plan.work_holder_subject_ids, dtype=np.uint64).tolist(),
+                    strict=True,
+                )
+            }
+            requested_top_k_map = {
+                int(active_row): int(requested_top_k)
+                for active_row, requested_top_k in zip(
+                    np.asarray(plan.work_active_rows, dtype=np.int32).tolist(),
+                    np.asarray(plan.work_selection_requested_top_k, dtype=np.uint16).tolist(),
                     strict=True,
                 )
             }
@@ -2142,6 +2194,7 @@ class KnowledgeSystem:
                     "content_id": int(content_ids[index]),
                     "score_q": int(scores[index]),
                     "rank_within_entity": rank,
+                    "requested_top_k": requested_top_k_map.get(active_row, 0),
                 })
         if self.kcfg.candidate_tracking_enabled:
             self.candidates.record_policy_plan(
@@ -2238,6 +2291,10 @@ class KnowledgeSystem:
                         "selection_selected_count": (
                             int(plan.selection_selected_counts[row])
                             if getattr(plan, "selection_selected_counts", np.empty(0)).size else 0
+                        ),
+                        "selection_requested_top_k": (
+                            int(plan.selection_requested_top_k[row])
+                            if getattr(plan, "selection_requested_top_k", np.empty(0)).size else 0
                         ),
                         "selection_tie_count": (
                             int(plan.selection_tie_counts[row])
@@ -2431,6 +2488,12 @@ class KnowledgeSystem:
             ),
             "selection_candidate_copies_total": self.totals.selection_candidate_copies,
             "selection_selected_copies_total": self.totals.selection_selected_copies,
+            "selection_requested_top_k_sum_total": (
+                self.totals.selection_requested_top_k_sum
+            ),
+            "selection_zero_capacity_entities_total": (
+                self.totals.selection_zero_capacity_entities
+            ),
             "selection_tie_count_total": self.totals.selection_tie_count,
             "selection_committed_energy_total": self.totals.selection_committed_energy,
             "working_memory_schema": (

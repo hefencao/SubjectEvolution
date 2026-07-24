@@ -195,6 +195,11 @@ class KnowledgeConfig:
     sparse_selection_enabled: bool = False
     sparse_selection_schema: str = "sparse-query-key-topk-router-v1"
     sparse_selection_top_k: int = 4
+    # Capacity can remain a fixed config value (legacy semantics) or become an
+    # inherited discrete trait.  The levels are ordered capacity/cost options;
+    # no category semantics are attached to them.
+    sparse_selection_capacity_schema: str = "fixed-config-topk-v1"
+    sparse_selection_capacity_levels: tuple[int, ...] = (0, 1, 2, 4, 8)
     sparse_selection_score_clip: int = 1_000_000_000
     sparse_selection_base_energy_cost: float = 0.0
     sparse_selection_energy_per_candidate: float = 0.0
@@ -323,6 +328,11 @@ def load_config(path: str | Path) -> SimulationConfig:
                 "latent_length_levels": tuple(
                     raw.get("knowledge", {}).get(
                         "latent_length_levels", (4, 8, 16, 32)
+                    )
+                ),
+                "sparse_selection_capacity_levels": tuple(
+                    raw.get("knowledge", {}).get(
+                        "sparse_selection_capacity_levels", (0, 1, 2, 4, 8)
                     )
                 ),
             }
@@ -598,6 +608,28 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("unknown knowledge.sparse_selection_schema")
     if cfg.knowledge.sparse_selection_top_k < 0 or cfg.knowledge.sparse_selection_top_k > 64:
         raise ValueError("knowledge.sparse_selection_top_k must be in [0, 64]")
+    if cfg.knowledge.sparse_selection_capacity_schema not in {
+        "fixed-config-topk-v1", "inherited-discrete-topk-v1"
+    }:
+        raise ValueError("unknown knowledge.sparse_selection_capacity_schema")
+    capacity_levels = cfg.knowledge.sparse_selection_capacity_levels
+    if (
+        not capacity_levels
+        or tuple(sorted(set(capacity_levels))) != tuple(capacity_levels)
+        or any(
+            not isinstance(value, int) or isinstance(value, bool)
+            or value < 0 or value > 64
+            for value in capacity_levels
+        )
+    ):
+        raise ValueError(
+            "knowledge.sparse_selection_capacity_levels must be unique ascending integers in [0, 64]"
+        )
+    if (
+        cfg.knowledge.sparse_selection_capacity_schema == "inherited-discrete-topk-v1"
+        and not cfg.knowledge.sparse_selection_enabled
+    ):
+        raise ValueError("inherited sparse-selection capacity requires sparse selection")
     if cfg.knowledge.sparse_selection_score_clip <= 0:
         raise ValueError("knowledge.sparse_selection_score_clip must be positive")
     if cfg.knowledge.working_memory_enabled and not cfg.knowledge.latent_policy_enabled:

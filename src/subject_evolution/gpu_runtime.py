@@ -505,7 +505,15 @@ class HybridGpuRuntime:
                             ParametricPolicy.sparse_selection_gene_start(self.cfg)
                             if knowledge.kcfg.sparse_selection_enabled else None
                         ),
-                        working_memory_q=entity.working_memory_q[active_host],
+                        working_memory_q=(
+                            np.zeros_like(entity.working_memory_q[active_host])
+                            if knowledge.working_memory_ablation_enabled
+                            else entity.working_memory_q[active_host]
+                        ),
+                        selection_enabled=(
+                            knowledge.kcfg.sparse_selection_enabled
+                            and not knowledge.sparse_selection_ablation_enabled
+                        ),
                         use_strength=ParametricPolicy.knowledge_use_strength_from_genotype(
                             active_genotype_host
                         ),

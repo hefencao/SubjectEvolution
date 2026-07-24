@@ -18,6 +18,7 @@ from subject_evolution.latent_knowledge import (
     LatentBucket,
     LatentRouterBatch,
     select_latent_router_batch,
+    sparse_selection_gene_count,
 )
 from subject_evolution.policy import Action, ParametricPolicy
 from subject_evolution.routing_cost import apply_routing_cost_budget
@@ -310,6 +311,99 @@ class WorkingMemorySelectionTests(unittest.TestCase):
                     simulation.knowledge.close()
                     simulation.metrics.close()
                     simulation.evolution_progress.close()
+
+
+    def test_inherited_topk_capacity_is_discrete_auditable_and_one_gene(self) -> None:
+        fixed = self._cfg(
+            sparse_selection_capacity_schema="fixed-config-topk-v1",
+            sparse_selection_top_k=4,
+        )
+        inherited = self._cfg(
+            sparse_selection_capacity_schema="inherited-discrete-topk-v1",
+            sparse_selection_capacity_levels=(0, 1, 2, 4, 8),
+        )
+        self.assertEqual(
+            ParametricPolicy.genome_size_for_config(inherited),
+            ParametricPolicy.genome_size_for_config(fixed) + 1,
+        )
+        self.assertEqual(
+            ParametricPolicy.sparse_selection_capacity_gene_index(inherited),
+            ParametricPolicy.sparse_selection_gene_start(inherited)
+            + sparse_selection_gene_count(inherited.knowledge) - 1,
+        )
+        self.assertIsNone(ParametricPolicy.sparse_selection_capacity_gene_index(fixed))
+
+        expected = ((-1.0, 0), (0.0, 2), (0.25, 4), (1.0, 8))
+        for gene_value, top_k in expected:
+            genes = np.zeros(
+                (1, ParametricPolicy.genome_size_for_config(inherited)),
+                dtype=np.float32,
+            )
+            genes[
+                0, ParametricPolicy.sparse_selection_capacity_gene_index(inherited)
+            ] = gene_value
+            selected = select_latent_router_batch(
+                self._batch(),
+                genotype=genes,
+                selection_gene_start=ParametricPolicy.sparse_selection_gene_start(
+                    inherited
+                ),
+                state_features=np.zeros((1, 4), dtype=np.float32),
+                working_memory_q=np.zeros((1, 4), dtype=np.int16),
+                config=inherited.knowledge,
+            )
+            self.assertEqual(int(selected.requested_top_k[0]), top_k)
+            self.assertEqual(int(selected.selected_count[0]), min(top_k, 3))
+
+    def test_memory_and_selection_ablation_are_checkpointed_world_state(self) -> None:
+        cfg = self._cfg(
+            sparse_selection_capacity_schema="inherited-discrete-topk-v1",
+            sparse_selection_capacity_levels=(0, 1, 2, 4),
+        )
+        cfg = replace(
+            cfg,
+            run=replace(
+                cfg.run, ticks=5, metrics_period=5, checkpoint_period=5,
+                full_checkpoint_enabled=True,
+            ),
+            world=replace(cfg.world, initial_entities=24, max_entities=40),
+        )
+        validate_config(cfg)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            simulation = Simulation(cfg, root / "source", backend="cpu")
+            try:
+                simulation.step()
+                authoritative_copy_count = simulation.knowledge.arena.active_count
+                simulation.apply_intervention("ablate-working-memory")
+                simulation.apply_intervention("bypass-sparse-selection")
+                self.assertEqual(
+                    simulation.knowledge.arena.active_count, authoritative_copy_count
+                )
+                self.assertTrue(simulation.knowledge.working_memory_ablation_enabled)
+                self.assertTrue(simulation.knowledge.sparse_selection_ablation_enabled)
+                self.assertTrue(np.all(simulation.entities.working_memory_q == 0))
+                simulation.step()
+                self.assertTrue(np.all(simulation.entities.working_memory_q == 0))
+                self.assertIsNone(simulation.last_knowledge_policy_plan.selection_schema)
+                checkpoint = simulation.save_full_checkpoint(root / "ablated.sechk")
+                restored = Simulation.from_checkpoint(
+                    checkpoint, root / "restored", backend="cpu", until_tick=5
+                )
+                try:
+                    self.assertTrue(restored.knowledge.working_memory_ablation_enabled)
+                    self.assertTrue(restored.knowledge.sparse_selection_ablation_enabled)
+                    restored.step()
+                    self.assertTrue(np.all(restored.entities.working_memory_q == 0))
+                    self.assertIsNone(restored.last_knowledge_policy_plan.selection_schema)
+                finally:
+                    restored.knowledge.close()
+                    restored.metrics.close()
+                    restored.evolution_progress.close()
+            finally:
+                simulation.knowledge.close()
+                simulation.metrics.close()
+                simulation.evolution_progress.close()
 
     def test_modules_off_preserve_v012_genome_width(self) -> None:
         base = load_config(ROOT / "configs" / "mvp_short_latent_l2_budget_matched.json")

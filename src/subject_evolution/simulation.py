@@ -769,7 +769,25 @@ class Simulation:
             ),
             "knowledge_sparse_selection_top_k": (
                 self.cfg.knowledge.sparse_selection_top_k
+                if (
+                    self.cfg.knowledge.sparse_selection_enabled
+                    and self.cfg.knowledge.sparse_selection_capacity_schema
+                    == "fixed-config-topk-v1"
+                )
+                else None
+            ),
+            "knowledge_sparse_selection_capacity_schema": (
+                self.cfg.knowledge.sparse_selection_capacity_schema
                 if self.cfg.knowledge.sparse_selection_enabled else None
+            ),
+            "knowledge_sparse_selection_capacity_levels": (
+                list(self.cfg.knowledge.sparse_selection_capacity_levels)
+                if (
+                    self.cfg.knowledge.sparse_selection_enabled
+                    and self.cfg.knowledge.sparse_selection_capacity_schema
+                    == "inherited-discrete-topk-v1"
+                )
+                else None
             ),
             "knowledge_sparse_selection_authority": (
                 "ephemeral-workset-only"
@@ -1321,6 +1339,23 @@ class Simulation:
             self.entities.memory[active] = self.entities.memory[active[order]].copy()
             if self.gpu_runtime is not None:
                 self.gpu_runtime.mark_entity_static_dirty()
+        elif normalized == "ablate-working-memory":
+            if not self.cfg.knowledge.working_memory_enabled:
+                raise ValueError("ablate-working-memory requires working memory to be enabled")
+            canonical = "ablate-working-memory"
+            self.knowledge.working_memory_ablation_enabled = True
+            self.entities.working_memory_q[:] = 0
+            self.entities.working_memory_previous_observation_q[:] = 0
+            self.entities.memory[:] = 0.0
+            if self.gpu_runtime is not None:
+                self.gpu_runtime.mark_entity_static_dirty()
+            details = {"memory_coordinates_cleared": int(active.size * self.cfg.knowledge.working_memory_width)}
+        elif normalized == "bypass-sparse-selection":
+            if not self.cfg.knowledge.sparse_selection_enabled:
+                raise ValueError("bypass-sparse-selection requires sparse selection to be enabled")
+            canonical = "bypass-sparse-selection"
+            self.knowledge.sparse_selection_ablation_enabled = True
+            details = {"authority": "ephemeral-selector-only", "knowledge_copies_removed": 0}
         elif normalized == "freeze-genotype":
             canonical = "freeze-genotype"
             self.freeze_genotype = True
@@ -1590,6 +1625,24 @@ class Simulation:
                         "latent_content_origin": "world-internal content lineage and local outcomes",
                         "latent_external_training": False,
                         "latent_publication": "CPU-reference quantized integers with stable aggregation",
+                        "sparse_selection_capacity_schema": (
+                            self.cfg.knowledge.sparse_selection_capacity_schema
+                            if self.cfg.knowledge.sparse_selection_enabled else None
+                        ),
+                        "sparse_selection_capacity_gene_index": (
+                            ParametricPolicy.sparse_selection_capacity_gene_index(
+                                self.cfg
+                            )
+                        ),
+                        "sparse_selection_capacity_levels": (
+                            list(self.cfg.knowledge.sparse_selection_capacity_levels)
+                            if (
+                                self.cfg.knowledge.sparse_selection_enabled
+                                and self.cfg.knowledge.sparse_selection_capacity_schema
+                                == "inherited-discrete-topk-v1"
+                            )
+                            else None
+                        ),
                     }
                     if self.cfg.knowledge.latent_policy_enabled
                     else (
@@ -2095,7 +2148,15 @@ class Simulation:
                                 ParametricPolicy.sparse_selection_gene_start(cfg)
                                 if cfg.knowledge.sparse_selection_enabled else None
                             ),
-                            working_memory_q=ent.working_memory_q[active],
+                            working_memory_q=(
+                                np.zeros_like(ent.working_memory_q[active])
+                                if self.knowledge.working_memory_ablation_enabled
+                                else ent.working_memory_q[active]
+                            ),
+                            selection_enabled=(
+                                cfg.knowledge.sparse_selection_enabled
+                                and not self.knowledge.sparse_selection_ablation_enabled
+                            ),
                             use_strength=ParametricPolicy.knowledge_use_strength_from_genotype(
                                 active_genotype
                             ),
@@ -2756,7 +2817,10 @@ class Simulation:
                     + getattr(outcome_stats, field_name),
                 )
 
-        if cfg.knowledge.working_memory_enabled:
+        if (
+            cfg.knowledge.working_memory_enabled
+            and not self.knowledge.working_memory_ablation_enabled
+        ):
             if working_memory_state_features is None or working_memory_actual_outcomes is None:
                 raise RuntimeError("working memory requires latent state and committed outcomes")
             selected_actions = np.asarray(decision.action, dtype=np.int16)
@@ -3404,6 +3468,12 @@ class Simulation:
                     "knowledge_selection_selected_copies_step": (
                         stats.knowledge.selection_selected_copies
                     ),
+                    "knowledge_selection_requested_top_k_sum_step": (
+                        stats.knowledge.selection_requested_top_k_sum
+                    ),
+                    "knowledge_selection_zero_capacity_entities_step": (
+                        stats.knowledge.selection_zero_capacity_entities
+                    ),
                     "knowledge_selection_tie_count_step": (
                         stats.knowledge.selection_tie_count
                     ),
@@ -3536,6 +3606,12 @@ class Simulation:
                     ),
                     "knowledge_selection_selected_copies_total": int(
                         knowledge_summary["selection_selected_copies_total"]
+                    ),
+                    "knowledge_selection_requested_top_k_sum_total": int(
+                        knowledge_summary["selection_requested_top_k_sum_total"]
+                    ),
+                    "knowledge_selection_zero_capacity_entities_total": int(
+                        knowledge_summary["selection_zero_capacity_entities_total"]
                     ),
                     "knowledge_selection_tie_count_total": int(
                         knowledge_summary["selection_tie_count_total"]

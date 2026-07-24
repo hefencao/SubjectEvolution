@@ -60,6 +60,18 @@ INTERVENTIONS = (
         "entity-memory-state",
     ),
     InterventionSpec(
+        "ablate-working-memory",
+        InterventionKind.MODIFY_EXISTENCE,
+        "quantized-working-memory-state-and-updates",
+        aliases=("working-memory-off",),
+    ),
+    InterventionSpec(
+        "bypass-sparse-selection",
+        InterventionKind.MODIFY_RULES,
+        "ephemeral-knowledge-topk-selector",
+        aliases=("selection-off", "topk-off"),
+    ),
+    InterventionSpec(
         "freeze-genotype",
         InterventionKind.MODIFY_RULES,
         "inheritance-mutation-rule",

@@ -38,6 +38,7 @@ class RoutingCostBudgetResult:
     emitted_action_count: np.ndarray
     selection_candidate_count: np.ndarray
     selection_selected_count: np.ndarray
+    selection_requested_top_k: np.ndarray
     selection_energy: np.ndarray
     accepted_action_count: int
     rejected_action_count: int
@@ -60,6 +61,7 @@ class RoutingCostBudgetResult:
             emitted_action_count=np.empty(0, dtype=np.uint32),
             selection_candidate_count=np.empty(0, dtype=np.uint32),
             selection_selected_count=np.empty(0, dtype=np.uint32),
+            selection_requested_top_k=np.empty(0, dtype=np.uint32),
             selection_energy=np.empty(0, dtype=np.float64),
             accepted_action_count=0,
             rejected_action_count=0,
@@ -123,6 +125,7 @@ def _filter_plan(plan: KnowledgePolicyPlan, accepted_rows: np.ndarray) -> Knowle
         ),
         selection_candidate_counts=optional(plan.selection_candidate_counts, primary_keep),
         selection_selected_counts=optional(plan.selection_selected_counts, primary_keep),
+        selection_requested_top_k=optional(plan.selection_requested_top_k, primary_keep),
         selection_tie_counts=optional(plan.selection_tie_counts, primary_keep),
         selection_score_thresholds_q=optional(
             plan.selection_score_thresholds_q, primary_keep
@@ -162,6 +165,9 @@ def _filter_plan(plan: KnowledgePolicyPlan, accepted_rows: np.ndarray) -> Knowle
         ),
         work_selection_selected_counts=(
             plan.work_selection_selected_counts[work_keep].copy()
+        ),
+        work_selection_requested_top_k=optional(
+            plan.work_selection_requested_top_k, work_keep
         ),
         work_selection_tie_counts=(
             plan.work_selection_tie_counts[work_keep].copy()
@@ -207,6 +213,7 @@ def apply_routing_cost_budget(
     emitted = np.zeros(unique_rows.size, dtype=np.uint32)
     selection_candidates = np.zeros(unique_rows.size, dtype=np.uint32)
     selection_selected = np.zeros(unique_rows.size, dtype=np.uint32)
+    selection_requested_top_k = np.zeros(unique_rows.size, dtype=np.uint32)
     selection_energy = np.zeros(unique_rows.size, dtype=np.float64)
 
     projection_width = int(config.latent_router_hidden_width)
@@ -230,6 +237,11 @@ def apply_routing_cost_budget(
             clipping_count = int(plan.work_router_clipping_counts[wi])
             candidate_count = int(plan.work_selection_candidate_counts[wi])
             selected_count = int(plan.work_selection_selected_counts[wi])
+            requested_top_k = int(
+                plan.work_selection_requested_top_k[wi]
+                if plan.work_selection_requested_top_k.size
+                else selected_count
+            )
         else:
             first = int(np.flatnonzero(mask)[0])
             entity_ids[output_row] = plan.entity_ids[first]
@@ -258,6 +270,10 @@ def apply_routing_cost_budget(
             selected_count = int(
                 np.max(plan.selection_selected_counts[mask], initial=copy_count)
                 if plan.selection_selected_counts.size else copy_count
+            )
+            requested_top_k = int(
+                np.max(plan.selection_requested_top_k[mask], initial=selected_count)
+                if plan.selection_requested_top_k.size else selected_count
             )
 
         # Shared latent projection plus five-dimensional local-outcome injection.
@@ -289,11 +305,12 @@ def apply_routing_cost_budget(
         emitted[output_row] = np.uint32(emitted_count)
         selection_candidates[output_row] = np.uint32(candidate_count)
         selection_selected[output_row] = np.uint32(selected_count)
+        selection_requested_top_k[output_row] = np.uint32(requested_top_k)
         selection_energy[output_row] = (
             float(config.sparse_selection_base_energy_cost)
             + candidate_count * float(config.sparse_selection_energy_per_candidate)
             + selected_count * float(config.sparse_selection_energy_per_selected_copy)
-            if config.sparse_selection_enabled else 0.0
+            if plan.selection_schema is not None else 0.0
         )
         requested[output_row] = (
             float(config.routing_base_energy_cost)
@@ -329,6 +346,7 @@ def apply_routing_cost_budget(
         emitted_action_count=emitted,
         selection_candidate_count=selection_candidates,
         selection_selected_count=selection_selected,
+        selection_requested_top_k=selection_requested_top_k,
         selection_energy=selection_energy,
         accepted_action_count=accepted_action_count,
         rejected_action_count=int(plan.size - accepted_action_count),
