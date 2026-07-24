@@ -59,6 +59,15 @@ def compare_array(
     rtol: float = DEFAULT_RTOL,
 ) -> dict[str, Any]:
     """Compare one array and return a compact, machine-readable result."""
+    if reference is None or candidate is None:
+        passed = reference is None and candidate is None
+        return {
+            "name": name,
+            "passed": passed,
+            "reason": None if passed else "optional-presence-mismatch",
+            "reference_present": reference is not None,
+            "candidate_present": candidate is not None,
+        }
     ref = np.asarray(to_numpy(reference))
     got = np.asarray(to_numpy(candidate))
     result: dict[str, Any] = {
@@ -559,7 +568,10 @@ def run_stage_parity(
             )
             decision_fields = (
                 "features",
+                "genetic_logits",
+                "knowledge_logits",
                 "logits",
+                "genetic_action",
                 "action_mask",
                 "action",
                 "probability",

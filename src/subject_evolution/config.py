@@ -93,10 +93,10 @@ class InformationConfig:
 
 @dataclass(frozen=True)
 class KnowledgeConfig:
-    """Dynamic knowledge-copy settings for K1/K2; disabled preserves legacy runs.
+    """Dynamic knowledge-copy settings for K1/K2/K3.
 
-    K2 adds local context-action-outcome statistics without changing the
-    inherited policy schema or feeding knowledge into action logits.
+    K3 is separately gated and never changes the meaning of the legacy 128
+    inherited linear-policy genes.
     """
 
     enabled: bool = False
@@ -128,6 +128,19 @@ class KnowledgeConfig:
     max_updates_per_outcome: int = 1
     log_outcome_updates: bool = False
 
+    # K3 sparse local-outcome residuals.  All fields are inert unless the
+    # separately versioned policy and knowledge schemas are enabled.
+    policy_influence_enabled: bool = False
+    policy_residual_schema: str = "sparse-local-outcome-residual-v1"
+    policy_min_confidence: float = 0.0
+    policy_min_local_samples: int = 1
+    policy_sample_saturation: float = 4.0
+    policy_unverified_transfer_weight: float = 0.25
+    policy_outcome_scales: tuple[float, float, float, float, float] = (1.0, 1.0, 1.0, 1.0, 1.0)
+    policy_outcome_clip: float = 1.0
+    policy_max_abs_logit_residual: float = 1.0
+    log_policy_contributions: bool = False
+
 
 @dataclass(frozen=True)
 class PolicyConfig:
@@ -138,6 +151,7 @@ class PolicyConfig:
     # gate; separating incidence from magnitude prevents a 128-gene strategy
     # from receiving 128 independent perturbations at every birth.
     mutation_probability: float = 0.01
+    schema: str = "inherited-linear-policy-v1"
 
 
 @dataclass(frozen=True)
@@ -230,7 +244,16 @@ def load_config(path: str | Path) -> SimulationConfig:
                 "signal_flush_periods": tuple(information_raw.get("signal_flush_periods", (1, 1, 1))),
             }
         ),
-        knowledge=KnowledgeConfig(**raw.get("knowledge", {})),
+        knowledge=KnowledgeConfig(
+            **{
+                **raw.get("knowledge", {}),
+                "policy_outcome_scales": tuple(
+                    raw.get("knowledge", {}).get(
+                        "policy_outcome_scales", (1.0, 1.0, 1.0, 1.0, 1.0)
+                    )
+                ),
+            }
+        ),
         policy=PolicyConfig(**policy_raw),
         social=SocialConfig(**_require(raw, "social")),
         control=ControlConfig(**raw.get("control", {})),
@@ -295,10 +318,11 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.knowledge.schema not in {
         "dynamic-knowledge-k1-v1",
         "dynamic-knowledge-k2-v1",
+        "dynamic-knowledge-k3-v1",
     }:
         raise ValueError(
-            "knowledge.schema must be 'dynamic-knowledge-k1-v1' or "
-            "'dynamic-knowledge-k2-v1'"
+            "knowledge.schema must be one of: 'dynamic-knowledge-k1-v1', "
+            "'dynamic-knowledge-k2-v1', 'dynamic-knowledge-k3-v1'"
         )
     if cfg.knowledge.initial_content_count < 0:
         raise ValueError("knowledge.initial_content_count cannot be negative")
@@ -355,14 +379,61 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("knowledge.max_updates_per_outcome must be positive")
     if not isinstance(cfg.knowledge.log_outcome_updates, bool):
         raise ValueError("knowledge.log_outcome_updates must be a boolean")
-    if cfg.knowledge.learning_enabled and cfg.knowledge.schema != "dynamic-knowledge-k2-v1":
+    if cfg.knowledge.learning_enabled and cfg.knowledge.schema not in {
+        "dynamic-knowledge-k2-v1",
+        "dynamic-knowledge-k3-v1",
+    }:
         raise ValueError(
-            "knowledge.learning_enabled requires schema 'dynamic-knowledge-k2-v1'"
+            "knowledge.learning_enabled requires K2 or K3 knowledge schema"
         )
     if cfg.knowledge.learning_enabled and not cfg.knowledge.enabled:
         raise ValueError("knowledge.learning_enabled requires knowledge.enabled")
     if cfg.knowledge.enabled and cfg.knowledge.holder_capacity_bytes <= 0:
         raise ValueError("enabled knowledge requires a positive holder_capacity_bytes")
+    if not isinstance(cfg.knowledge.policy_influence_enabled, bool):
+        raise ValueError("knowledge.policy_influence_enabled must be a boolean")
+    if cfg.knowledge.policy_residual_schema != "sparse-local-outcome-residual-v1":
+        raise ValueError(
+            "knowledge.policy_residual_schema must be "
+            "'sparse-local-outcome-residual-v1'"
+        )
+    _probability("knowledge.policy_min_confidence", cfg.knowledge.policy_min_confidence)
+    if cfg.knowledge.policy_min_local_samples < 0:
+        raise ValueError("knowledge.policy_min_local_samples cannot be negative")
+    if cfg.knowledge.policy_sample_saturation <= 0.0:
+        raise ValueError("knowledge.policy_sample_saturation must be positive")
+    _probability(
+        "knowledge.policy_unverified_transfer_weight",
+        cfg.knowledge.policy_unverified_transfer_weight,
+    )
+    if (
+        len(cfg.knowledge.policy_outcome_scales) != 5
+        or any(not math.isfinite(v) or v <= 0.0 for v in cfg.knowledge.policy_outcome_scales)
+    ):
+        raise ValueError("knowledge.policy_outcome_scales must contain five positive finite values")
+    if not math.isfinite(cfg.knowledge.policy_outcome_clip) or cfg.knowledge.policy_outcome_clip <= 0.0:
+        raise ValueError("knowledge.policy_outcome_clip must be positive and finite")
+    if (
+        not math.isfinite(cfg.knowledge.policy_max_abs_logit_residual)
+        or cfg.knowledge.policy_max_abs_logit_residual <= 0.0
+    ):
+        raise ValueError("knowledge.policy_max_abs_logit_residual must be positive and finite")
+    if not isinstance(cfg.knowledge.log_policy_contributions, bool):
+        raise ValueError("knowledge.log_policy_contributions must be a boolean")
+    if cfg.policy.schema not in {
+        "inherited-linear-policy-v1",
+        "inherited-linear-policy-knowledge-residual-v1",
+    }:
+        raise ValueError("unknown policy.schema")
+    if cfg.knowledge.policy_influence_enabled:
+        if not cfg.knowledge.enabled or not cfg.knowledge.learning_enabled:
+            raise ValueError("K3 policy influence requires enabled K2 learning")
+        if cfg.knowledge.schema != "dynamic-knowledge-k3-v1":
+            raise ValueError("K3 policy influence requires dynamic-knowledge-k3-v1")
+        if cfg.policy.schema != "inherited-linear-policy-knowledge-residual-v1":
+            raise ValueError("K3 policy influence requires the K3 policy schema")
+    elif cfg.policy.schema != "inherited-linear-policy-v1":
+        raise ValueError("K3 policy schema requires knowledge.policy_influence_enabled")
     _probability("trust_group_threshold", cfg.social.trust_group_threshold)
     if not isinstance(cfg.control.heuristic_social_guidance, bool):
         raise ValueError("control.heuristic_social_guidance must be a boolean")

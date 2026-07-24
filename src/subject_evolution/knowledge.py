@@ -3,8 +3,8 @@
 K1 establishes immutable content records, independently degradable holder
 copies, explicit transfer plans, capacity arbitration, and auditable physical
 costs.  K2 adds current-tick local context-action-outcome statistics and local
-verification.  Neither stage feeds knowledge into policy logits or alters
-``inherited-linear-policy-v1``.
+verification.  K3 may publish a separately versioned sparse policy residual;
+the legacy ``inherited-linear-policy-v1`` coefficients retain their meaning.
 """
 
 from __future__ import annotations
@@ -18,6 +18,7 @@ from typing import Any
 
 import numpy as np
 
+from .backend import backend_from_array
 from .config import KnowledgeConfig, SimulationConfig
 from .random_api import RandomContext, Stream, bernoulli, uniform01
 
@@ -53,28 +54,29 @@ def encode_local_context(
     observation.  No future state, global fitness, or population statistic is
     available to this encoder.
     """
-    resource = np.asarray(resource, dtype=np.float32)
-    hazard = np.asarray(hazard, dtype=np.float32)
-    energy = np.asarray(energy, dtype=np.float32)
-    integrity = np.asarray(integrity, dtype=np.float32)
-    grouped = np.asarray(grouped, dtype=bool)
+    xp = backend_from_array(resource).xp
+    resource = xp.asarray(resource, dtype=xp.float32)
+    hazard = xp.asarray(hazard, dtype=xp.float32)
+    energy = xp.asarray(energy, dtype=xp.float32)
+    integrity = xp.asarray(integrity, dtype=xp.float32)
+    grouped = xp.asarray(grouped, dtype=bool)
     shape = resource.shape
     if any(value.shape != shape for value in (hazard, energy, integrity, grouped)):
         raise ValueError("local knowledge context inputs must align")
-    resource_bin = np.where(resource < 0.05, 0, np.where(resource < 0.5, 1, 2))
-    hazard_bin = np.where(hazard < 0.25, 0, np.where(hazard < 0.6, 1, 2))
+    resource_bin = xp.where(resource < 0.05, 0, xp.where(resource < 0.5, 1, 2))
+    hazard_bin = xp.where(hazard < 0.25, 0, xp.where(hazard < 0.6, 1, 2))
     energy_fraction = energy / max(float(max_energy), 1e-12)
-    energy_bin = np.where(energy_fraction < 0.35, 0, np.where(energy_fraction < 0.7, 1, 2))
-    integrity_bin = np.where(integrity < 0.5, 0, np.where(integrity < 0.85, 1, 2))
+    energy_bin = xp.where(energy_fraction < 0.35, 0, xp.where(energy_fraction < 0.7, 1, 2))
+    integrity_bin = xp.where(integrity < 0.5, 0, xp.where(integrity < 0.85, 1, 2))
     keys = (
         1
         + resource_bin
         + 3 * hazard_bin
         + 9 * energy_bin
         + 27 * integrity_bin
-        + 81 * grouped.astype(np.int16)
+        + 81 * grouped.astype(xp.int16)
     )
-    return keys.astype(np.uint64, copy=False)
+    return keys.astype(xp.uint64, copy=False)
 
 
 def _readonly(value: np.ndarray, dtype: Any | None = None) -> np.ndarray:
@@ -98,6 +100,7 @@ class KnowledgeObservationPlan:
     outcome_vectors: np.ndarray
     confidences: np.ndarray
     sample_counts: np.ndarray
+    acquisition_kinds: np.ndarray
     encoded_bytes: np.ndarray
 
     @classmethod
@@ -114,6 +117,7 @@ class KnowledgeObservationPlan:
             outcome_vectors=_readonly(np.empty((0, OUTCOME_WIDTH)), np.float32),
             confidences=_readonly(np.empty(0), np.float32),
             sample_counts=_readonly(np.empty(0), np.uint32),
+            acquisition_kinds=_readonly(np.empty(0), np.uint8),
             encoded_bytes=_readonly(np.empty(0), np.uint32),
         )
 
@@ -329,6 +333,14 @@ class KnowledgeStepStats:
     learning_capacity_rejected: int = 0
     learning_match_limit_skipped: int = 0
     confidence_decayed: int = 0
+    policy_influenced_entities: int = 0
+    policy_influenced_actions: int = 0
+    policy_support_copies: int = 0
+    policy_private_support_copies: int = 0
+    policy_transfer_support_copies: int = 0
+    policy_unverified_transfer_support_copies: int = 0
+    policy_changed_actions: int = 0
+    policy_residual_abs_sum: float = 0.0
 
     @property
     def total_energy_cost(self) -> float:
@@ -683,6 +695,7 @@ class KnowledgeArena:
             outcome_vectors=_readonly(self.outcome_mean[rows], np.float32),
             confidences=_readonly(self.confidence[rows], np.float32),
             sample_counts=_readonly(self.sample_count[rows], np.uint32),
+            acquisition_kinds=_readonly(self.acquisition_kind[rows], np.uint8),
             encoded_bytes=_readonly(self.encoded_bytes[rows], np.uint32),
         )
 
@@ -712,6 +725,8 @@ class KnowledgeSystem:
         self._transfer_writer = None
         self._outcome_file = None
         self._outcome_writer = None
+        self._policy_file = None
+        self._policy_writer = None
         if self.kcfg.enabled:
             self._event_file = (self.output_dir / "knowledge_events.jsonl").open(
                 "w", encoding="utf-8"
@@ -746,6 +761,22 @@ class KnowledgeSystem:
                     ],
                 )
                 self._outcome_writer.writeheader()
+            if self.kcfg.log_policy_contributions:
+                self._policy_file = (
+                    self.output_dir / "knowledge_policy_contributions.csv"
+                ).open("w", newline="", encoding="utf-8")
+                self._policy_writer = csv.DictWriter(
+                    self._policy_file,
+                    fieldnames=[
+                        "tick", "entity_id", "holder_subject_id", "context_key",
+                        "action_id", "logit_residual", "support_copy_count",
+                        "private_support_count", "transfer_support_count",
+                        "unverified_transfer_support_count", "reliability_mass",
+                        "energy_outcome", "integrity_outcome", "material_outcome",
+                        "information_outcome", "reproduction_opportunity_outcome",
+                    ],
+                )
+                self._policy_writer.writeheader()
             self._seed(initial_entity_ids, initial_subject_ids)
             self.observation = self.arena.publish(self.catalog, tick=0)
 
@@ -810,6 +841,8 @@ class KnowledgeSystem:
         result._transfer_writer = None
         result._outcome_file = None
         result._outcome_writer = None
+        result._policy_file = None
+        result._policy_writer = None
         if self.kcfg.enabled:
             result._event_file = (result.output_dir / "knowledge_events.jsonl").open(
                 "w", encoding="utf-8"
@@ -844,6 +877,22 @@ class KnowledgeSystem:
                     ],
                 )
                 result._outcome_writer.writeheader()
+            if self.kcfg.log_policy_contributions:
+                result._policy_file = (
+                    result.output_dir / "knowledge_policy_contributions.csv"
+                ).open("w", newline="", encoding="utf-8")
+                result._policy_writer = csv.DictWriter(
+                    result._policy_file,
+                    fieldnames=[
+                        "tick", "entity_id", "holder_subject_id", "context_key",
+                        "action_id", "logit_residual", "support_copy_count",
+                        "private_support_count", "transfer_support_count",
+                        "unverified_transfer_support_count", "reliability_mass",
+                        "energy_outcome", "integrity_outcome", "material_outcome",
+                        "information_outcome", "reproduction_opportunity_outcome",
+                    ],
+                )
+                result._policy_writer.writeheader()
         return result
 
     def _write_event(self, event: dict[str, object]) -> None:
@@ -858,6 +907,8 @@ class KnowledgeSystem:
             self._transfer_file.flush()
         if self._outcome_file is not None and not self._outcome_file.closed:
             self._outcome_file.flush()
+        if self._policy_file is not None and not self._policy_file.closed:
+            self._policy_file.flush()
 
     def close(self) -> None:
         if self._event_file is not None and not self._event_file.closed:
@@ -866,6 +917,8 @@ class KnowledgeSystem:
             self._transfer_file.close()
         if self._outcome_file is not None and not self._outcome_file.closed:
             self._outcome_file.close()
+        if self._policy_file is not None and not self._policy_file.closed:
+            self._policy_file.close()
 
     def _forget(self, tick: int) -> int:
         if self.kcfg.forget_probability <= 0.0 or self.arena.active_count == 0:
@@ -1504,6 +1557,50 @@ class KnowledgeSystem:
         ]
         return self.arena.deactivate(remove)
 
+    def record_policy_plan(self, plan: Any, *, changed_actions: int = 0) -> KnowledgeStepStats:
+        """Record one K3 sparse residual plan without mutating knowledge state."""
+        stats = KnowledgeStepStats()
+        if not self.kcfg.policy_influence_enabled:
+            return stats
+        stats.policy_influenced_entities = int(plan.influenced_entity_count)
+        stats.policy_influenced_actions = int(plan.size)
+        stats.policy_support_copies = int(plan.support_copy_counts.sum(dtype=np.int64))
+        stats.policy_private_support_copies = int(plan.private_support_counts.sum(dtype=np.int64))
+        stats.policy_transfer_support_copies = int(plan.transfer_support_counts.sum(dtype=np.int64))
+        stats.policy_unverified_transfer_support_copies = int(
+            plan.unverified_transfer_support_counts.sum(dtype=np.int64)
+        )
+        stats.policy_changed_actions = int(changed_actions)
+        stats.policy_residual_abs_sum = float(
+            np.abs(plan.residuals).sum(dtype=np.float64)
+        )
+        if self._policy_writer is not None:
+            for row in range(plan.size):
+                outcome = plan.weighted_outcome_vectors[row]
+                self._policy_writer.writerow(
+                    {
+                        "tick": int(plan.tick),
+                        "entity_id": int(plan.entity_ids[row]),
+                        "holder_subject_id": int(plan.holder_subject_ids[row]),
+                        "context_key": int(plan.context_keys[row]),
+                        "action_id": int(plan.action_ids[row]),
+                        "logit_residual": float(plan.residuals[row]),
+                        "support_copy_count": int(plan.support_copy_counts[row]),
+                        "private_support_count": int(plan.private_support_counts[row]),
+                        "transfer_support_count": int(plan.transfer_support_counts[row]),
+                        "unverified_transfer_support_count": int(
+                            plan.unverified_transfer_support_counts[row]
+                        ),
+                        "reliability_mass": float(plan.reliability_mass[row]),
+                        "energy_outcome": float(outcome[0]),
+                        "integrity_outcome": float(outcome[1]),
+                        "material_outcome": float(outcome[2]),
+                        "information_outcome": float(outcome[3]),
+                        "reproduction_opportunity_outcome": float(outcome[4]),
+                    }
+                )
+        return stats
+
     def publish(self, tick: int) -> KnowledgeObservationPlan:
         self.observation = self.arena.publish(self.catalog, tick)
         return self.observation
@@ -1527,7 +1624,12 @@ class KnowledgeSystem:
                 self.kcfg.outcome_schema if self.kcfg.learning_enabled else None
             ),
             "learning_enabled": self.kcfg.learning_enabled,
-            "policy_influence": False,
+            "policy_influence": self.kcfg.policy_influence_enabled,
+            "policy_residual_schema": (
+                self.kcfg.policy_residual_schema
+                if self.kcfg.policy_influence_enabled
+                else None
+            ),
             "content_count": self.catalog.size,
             "variant_content_count": variants,
             "copy_count": self.arena.active_count,
@@ -1575,6 +1677,16 @@ class KnowledgeSystem:
                 self.totals.learning_match_limit_skipped
             ),
             "confidence_decayed_total": self.totals.confidence_decayed,
+            "policy_influenced_entities_total": self.totals.policy_influenced_entities,
+            "policy_influenced_actions_total": self.totals.policy_influenced_actions,
+            "policy_support_copies_total": self.totals.policy_support_copies,
+            "policy_private_support_copies_total": self.totals.policy_private_support_copies,
+            "policy_transfer_support_copies_total": self.totals.policy_transfer_support_copies,
+            "policy_unverified_transfer_support_copies_total": (
+                self.totals.policy_unverified_transfer_support_copies
+            ),
+            "policy_changed_actions_total": self.totals.policy_changed_actions,
+            "policy_residual_abs_sum_total": self.totals.policy_residual_abs_sum,
         }
 
     def validate(self, alive: np.ndarray, primary_subject_ids: np.ndarray) -> None:

@@ -58,6 +58,7 @@ from .knowledge import (
     OUTCOME_STATUS_SUCCESS,
     encode_local_context,
 )
+from .knowledge_policy import KnowledgePolicyPlan, build_knowledge_policy_plan
 from .lifecycle import (
     BirthAllocationPlan,
     DeathCause,
@@ -155,6 +156,7 @@ class StepStats:
     autonomy_harvest_successes: int = 0
     knowledge: KnowledgeStepStats = field(default_factory=KnowledgeStepStats)
     validation_seconds: float = 0.0
+    knowledge_policy_max_abs_residual: float = 0.0
 
     @property
     def benefit_internal_energy(self) -> float:
@@ -174,7 +176,6 @@ class StepStats:
 
 
 class EntityState:
-    GENOTYPE_SIZE = ParametricPolicy.GENOME_SIZE
     MEMORY_SIZE = 4
 
     def __init__(self, cfg: SimulationConfig) -> None:
@@ -197,7 +198,8 @@ class EntityState:
         self.lineage_id = np.zeros(cap, dtype=np.uint64)
         self.primary_subject_id = np.zeros(cap, dtype=np.uint64)
         self.lineage_subject_id = np.zeros(cap, dtype=np.uint64)
-        self.genotype = np.zeros((cap, self.GENOTYPE_SIZE), dtype=np.float32)
+        self.genotype_size = ParametricPolicy.genome_size_for_config(cfg)
+        self.genotype = np.zeros((cap, self.genotype_size), dtype=np.float32)
         self.memory = np.zeros((cap, self.MEMORY_SIZE), dtype=np.float32)
         self.harvested_energy_total = np.zeros(cap, dtype=np.float32)
         self.shared_energy_received_total = np.zeros(cap, dtype=np.float32)
@@ -223,7 +225,7 @@ class EntityState:
         ).astype(np.float32)
         self.integrity[idx] = 1.0
         self.fertility[idx] = 0.25
-        for trait in range(self.GENOTYPE_SIZE):
+        for trait in range(self.genotype_size):
             self.genotype[idx, trait] = np.clip(
                 normal(init_ctx, ids, 0.0, 0.25, 10 + trait * 2), -0.8, 0.8
             ).astype(np.float32)
@@ -329,7 +331,7 @@ class EntityState:
         mutation_stddev = (
             self.cfg.policy.mutation_std if mutation_std is None else mutation_std
         )
-        for trait in range(self.GENOTYPE_SIZE):
+        for trait in range(self.genotype_size):
             mutate = bernoulli(
                 mut_ctx,
                 ids,
@@ -651,7 +653,7 @@ class Simulation:
             "platform": platform.platform(),
             "numpy": np.__version__,
             "config_sha256": hashlib.sha256(config_payload).hexdigest(),
-            "strategy_schema": "inherited-linear-policy-v1",
+            "strategy_schema": self.cfg.policy.schema,
             "knowledge_schema": (
                 self.cfg.knowledge.schema if self.cfg.knowledge.enabled else None
             ),
@@ -663,6 +665,12 @@ class Simulation:
             "knowledge_outcome_schema": (
                 self.cfg.knowledge.outcome_schema
                 if self.cfg.knowledge.learning_enabled
+                else None
+            ),
+            "knowledge_policy_influence": self.cfg.knowledge.policy_influence_enabled,
+            "knowledge_policy_residual_schema": (
+                self.cfg.knowledge.policy_residual_schema
+                if self.cfg.knowledge.policy_influence_enabled
                 else None
             ),
             "validation_mode": self.cfg.run.validation_mode,
@@ -959,7 +967,7 @@ class Simulation:
                 "hybrid_acceleration_parity_proven": False,
             },
             "strategy": {
-                "architecture": "inherited-linear-policy-v1",
+                "architecture": self.cfg.policy.schema,
                 "knowledge_schema": self.cfg.knowledge.schema if self.cfg.knowledge.enabled else None,
                 "knowledge_outcome_schema": (
                     self.cfg.knowledge.outcome_schema
@@ -967,11 +975,21 @@ class Simulation:
                     else None
                 ),
                 "knowledge_learning_enabled": self.cfg.knowledge.learning_enabled,
-                "knowledge_policy_influence": False,
+                "knowledge_policy_influence": self.cfg.knowledge.policy_influence_enabled,
+                "knowledge_policy_residual_schema": (
+                    self.cfg.knowledge.policy_residual_schema
+                    if self.cfg.knowledge.policy_influence_enabled
+                    else None
+                ),
                 "feature_constraints": list(ParametricPolicy.FEATURE_NAMES),
                 "action_preferences_hardcoded": False,
                 "strategy_gene_count": ParametricPolicy.STRATEGY_GENES,
-                "genome_size": ParametricPolicy.GENOME_SIZE,
+                "knowledge_preference_gene_count": (
+                    ParametricPolicy.KNOWLEDGE_OUTCOME_PREFERENCE_GENES + 1
+                    if self.cfg.knowledge.policy_influence_enabled
+                    else 0
+                ),
+                "genome_size": ParametricPolicy.genome_size_for_config(self.cfg),
                 "initialization": "bounded stateless random generation",
                 "transmission": "parental inheritance with configured mutation",
                 "mutation_probability_per_gene": self.cfg.policy.mutation_probability,
@@ -981,6 +999,25 @@ class Simulation:
                     "movement_speed": 5,
                     "reserved_neutral": [1, 2, 3, 4, 6, 7],
                 },
+                "knowledge_preference_gene_semantics": (
+                    {
+                        "outcome_preference_indices": list(
+                            range(
+                                ParametricPolicy.KNOWLEDGE_PREFERENCE_START,
+                                ParametricPolicy.KNOWLEDGE_PREFERENCE_STOP,
+                            )
+                        ),
+                        "knowledge_use_strength_index": (
+                            ParametricPolicy.KNOWLEDGE_USE_STRENGTH_INDEX
+                        ),
+                        "outcome_order": [
+                            "energy", "integrity", "material", "information",
+                            "reproduction_opportunity",
+                        ],
+                    }
+                    if self.cfg.knowledge.policy_influence_enabled
+                    else None
+                ),
             },
             "state_origins": {
                 "memory": "observation-driven finite-memory dynamics",
@@ -989,8 +1026,10 @@ class Simulation:
                 "knowledge": (
                     (
                         "dynamic costly holder copies with local current-tick "
-                        "context-action-outcome statistics; excluded from policy "
-                        "logits in K2"
+                        "context-action-outcome statistics with a separately versioned "
+                        "sparse residual in K3"
+                        if self.cfg.knowledge.policy_influence_enabled
+                        else "context-action-outcome statistics; excluded from policy logits in K2"
                     )
                     if self.cfg.knowledge.learning_enabled
                     else (
@@ -1349,6 +1388,8 @@ class Simulation:
         knowledge_stats = stats.knowledge
         evaluation_due = self.evolution_progress.due(self.tick + 1)
         actual_context_metrics: dict[str, object] | None = None
+        knowledge_context_keys: np.ndarray | None = None
+        knowledge_policy_plan = KnowledgePolicyPlan.empty(self.tick)
         if self.gpu_runtime is None:
             phase_started = time.perf_counter()
             self.environment.update(self.tick)
@@ -1385,6 +1426,32 @@ class Simulation:
             resource_gradient, danger_gradient = self.environment.gradients_for_entities(
                 self.spatial.entity_cells, ent.alive.size
             )
+            if cfg.knowledge.enabled and cfg.knowledge.learning_enabled:
+                knowledge_context_keys = encode_local_context(
+                    local_resources[:, 0],
+                    self.environment.hazard.reshape(-1)[cells],
+                    ent.energy[active],
+                    ent.integrity[active],
+                    self.social.group_id[active] != 0,
+                    max_energy=cfg.entities.max_energy,
+                )
+                if cfg.knowledge.policy_influence_enabled:
+                    active_genotype = ent.genotype[active]
+                    knowledge_policy_plan = build_knowledge_policy_plan(
+                        self.knowledge.observation,
+                        tick=self.tick,
+                        entity_ids=ent.entity_id[active],
+                        holder_subject_ids=ent.primary_subject_id[active],
+                        context_keys=knowledge_context_keys,
+                        outcome_preferences=ParametricPolicy.outcome_preferences_from_genotype(
+                            active_genotype
+                        ),
+                        use_strength=ParametricPolicy.knowledge_use_strength_from_genotype(
+                            active_genotype
+                        ),
+                        config=cfg.knowledge,
+                        action_count=len(Action),
+                    )
             stats.observation_seconds = time.perf_counter() - phase_started
 
             phase_started = time.perf_counter()
@@ -1408,6 +1475,7 @@ class Simulation:
                 info=info,
                 run_seed=cfg.run.seed,
                 tick=self.tick,
+                knowledge_plan=knowledge_policy_plan,
             )
             stats.policy_seconds = time.perf_counter() - phase_started
         else:
@@ -1436,6 +1504,7 @@ class Simulation:
                     )
                 ),
                 entity_state_version=self.entity_device_version,
+                knowledge=self.knowledge if cfg.knowledge.enabled else None,
             )
             active = prepared.active
             if active.size == 0:
@@ -1455,9 +1524,33 @@ class Simulation:
             resource_gradient = prepared.resource_gradient
             info = prepared.information
             decision = prepared.decision
+            knowledge_context_keys = prepared.knowledge_context_keys
+            knowledge_policy_plan = prepared.knowledge_policy_plan
             stats.spatial_seconds = prepared.spatial_seconds
             stats.observation_seconds = prepared.observation_seconds
             stats.policy_seconds = prepared.policy_seconds
+
+        if cfg.knowledge.enabled and cfg.knowledge.policy_influence_enabled:
+            changed_actions = (
+                int(np.count_nonzero(decision.action != decision.genetic_action))
+                if decision.genetic_action is not None
+                else 0
+            )
+            policy_stats = self.knowledge.record_policy_plan(
+                knowledge_policy_plan, changed_actions=changed_actions
+            )
+            for field_name in KnowledgeStepStats.__dataclass_fields__:
+                setattr(
+                    knowledge_stats,
+                    field_name,
+                    getattr(knowledge_stats, field_name)
+                    + getattr(policy_stats, field_name),
+                )
+            stats.knowledge_policy_max_abs_residual = (
+                float(np.max(np.abs(knowledge_policy_plan.residuals)))
+                if knowledge_policy_plan.size
+                else 0.0
+            )
 
         # Keep one immutable host-side diagnostic snapshot.  It is overwritten
         # each tick and is used only by validation/parity tooling to locate the
@@ -1645,25 +1738,13 @@ class Simulation:
         self.last_intents = intents
         self.last_resolutions = resolutions
 
-        knowledge_context_keys: np.ndarray | None = None
         knowledge_pre_energy: np.ndarray | None = None
         knowledge_pre_integrity: np.ndarray | None = None
         knowledge_pre_information: np.ndarray | None = None
         knowledge_pre_reproduction: np.ndarray | None = None
         if self.cfg.knowledge.enabled and self.cfg.knowledge.learning_enabled:
-            local_hazard = (
-                self.gpu_runtime.hazard_for_cells(cells)
-                if self.gpu_runtime is not None
-                else self.environment.hazard.reshape(-1)[cells]
-            )
-            knowledge_context_keys = encode_local_context(
-                local_resources[:, 0],
-                local_hazard,
-                ent.energy[active],
-                ent.integrity[active],
-                self.social.group_id[active] != 0,
-                max_energy=cfg.entities.max_energy,
-            )
+            if knowledge_context_keys is None:
+                raise RuntimeError("knowledge learning requires the pre-action context snapshot")
             knowledge_pre_energy = ent.energy[active].astype(np.float32, copy=True)
             knowledge_pre_integrity = ent.integrity[active].astype(
                 np.float32, copy=True
@@ -2085,7 +2166,7 @@ class Simulation:
             lineage_count = int(np.unique(ent.lineage_id[active]).size)
             grouped_fraction = float(np.mean(self.social.group_id[active] != 0))
             strategy_genome = ent.genotype[
-                active, ParametricPolicy.MORPHOLOGY_TRAITS :
+                active, ParametricPolicy.STRATEGY_START : ParametricPolicy.STRATEGY_STOP
             ]
             strategy_mean_abs_weight = float(
                 np.mean(np.abs(strategy_genome), dtype=np.float64)
@@ -2093,11 +2174,33 @@ class Simulation:
             raw_strategy_gene_diversity = float(
                 np.mean(np.std(strategy_genome, axis=0, dtype=np.float64))
             )
+            if self.cfg.knowledge.policy_influence_enabled:
+                knowledge_preferences = ParametricPolicy.outcome_preferences_from_genotype(
+                    ent.genotype[active]
+                )
+                knowledge_preference_mean = knowledge_preferences.mean(
+                    axis=0, dtype=np.float64
+                )
+                knowledge_preference_diversity = knowledge_preferences.std(
+                    axis=0, dtype=np.float64
+                )
+                knowledge_use_strength_mean = float(
+                    ParametricPolicy.knowledge_use_strength_from_genotype(
+                        ent.genotype[active]
+                    ).mean(dtype=np.float64)
+                )
+            else:
+                knowledge_preference_mean = np.zeros(5, dtype=np.float64)
+                knowledge_preference_diversity = np.zeros(5, dtype=np.float64)
+                knowledge_use_strength_mean = 0.0
         else:
             mean_energy = mean_integrity = mean_age = social_dependency = grouped_fraction = 0.0
             lineage_count = 0
             strategy_mean_abs_weight = 0.0
             raw_strategy_gene_diversity = 0.0
+            knowledge_preference_mean = np.zeros(5, dtype=np.float64)
+            knowledge_preference_diversity = np.zeros(5, dtype=np.float64)
+            knowledge_use_strength_mean = 0.0
         autonomy_cohort_size = int(self.autonomy_recovery_cohort_ids.size)
         autonomy_restored_alive = int(
             np.count_nonzero(self.autonomy_restored & ent.alive)
@@ -2192,6 +2295,17 @@ class Simulation:
             "social_dependency_proxy": social_dependency,
             "strategy_mean_abs_weight": strategy_mean_abs_weight,
             "raw_strategy_gene_diversity": raw_strategy_gene_diversity,
+            "knowledge_outcome_preference_energy_mean": float(knowledge_preference_mean[0]),
+            "knowledge_outcome_preference_integrity_mean": float(knowledge_preference_mean[1]),
+            "knowledge_outcome_preference_material_mean": float(knowledge_preference_mean[2]),
+            "knowledge_outcome_preference_information_mean": float(knowledge_preference_mean[3]),
+            "knowledge_outcome_preference_reproduction_mean": float(knowledge_preference_mean[4]),
+            "knowledge_outcome_preference_energy_diversity": float(knowledge_preference_diversity[0]),
+            "knowledge_outcome_preference_integrity_diversity": float(knowledge_preference_diversity[1]),
+            "knowledge_outcome_preference_material_diversity": float(knowledge_preference_diversity[2]),
+            "knowledge_outcome_preference_information_diversity": float(knowledge_preference_diversity[3]),
+            "knowledge_outcome_preference_reproduction_diversity": float(knowledge_preference_diversity[4]),
+            "knowledge_use_strength_mean": knowledge_use_strength_mean,
             "move_social_fraction": stats.move_social_fraction,
             "harvested_energy_step": stats.harvested_energy,
             "shared_energy_step": stats.shared_energy,
@@ -2358,6 +2472,23 @@ class Simulation:
                     "knowledge_learning_capacity_rejected_step": stats.knowledge.learning_capacity_rejected,
                     "knowledge_learning_match_limit_skipped_step": stats.knowledge.learning_match_limit_skipped,
                     "knowledge_confidence_decayed_step": stats.knowledge.confidence_decayed,
+                    "knowledge_policy_influenced_entities_step": stats.knowledge.policy_influenced_entities,
+                    "knowledge_policy_influenced_actions_step": stats.knowledge.policy_influenced_actions,
+                    "knowledge_policy_support_copies_step": stats.knowledge.policy_support_copies,
+                    "knowledge_policy_private_support_copies_step": stats.knowledge.policy_private_support_copies,
+                    "knowledge_policy_transfer_support_copies_step": stats.knowledge.policy_transfer_support_copies,
+                    "knowledge_policy_unverified_transfer_support_copies_step": (
+                        stats.knowledge.policy_unverified_transfer_support_copies
+                    ),
+                    "knowledge_policy_changed_actions_step": stats.knowledge.policy_changed_actions,
+                    "knowledge_policy_residual_abs_sum_step": stats.knowledge.policy_residual_abs_sum,
+                    "knowledge_policy_mean_abs_residual_step": (
+                        stats.knowledge.policy_residual_abs_sum
+                        / stats.knowledge.policy_influenced_actions
+                        if stats.knowledge.policy_influenced_actions
+                        else 0.0
+                    ),
+                    "knowledge_policy_max_abs_residual_step": stats.knowledge_policy_max_abs_residual,
                     "knowledge_maintenance_energy_total": float(knowledge_summary["maintenance_energy_total"]),
                     "knowledge_sender_energy_total": float(knowledge_summary["sender_energy_total"]),
                     "knowledge_receiver_energy_total": float(knowledge_summary["receiver_energy_total"]),
@@ -2376,6 +2507,16 @@ class Simulation:
                     "knowledge_outcome_unmatched_total": int(knowledge_summary["outcome_unmatched_total"]),
                     "knowledge_learning_energy_rejected_total": int(knowledge_summary["learning_energy_rejected_total"]),
                     "knowledge_learning_capacity_rejected_total": int(knowledge_summary["learning_capacity_rejected_total"]),
+                    "knowledge_policy_influenced_entities_total": int(knowledge_summary["policy_influenced_entities_total"]),
+                    "knowledge_policy_influenced_actions_total": int(knowledge_summary["policy_influenced_actions_total"]),
+                    "knowledge_policy_support_copies_total": int(knowledge_summary["policy_support_copies_total"]),
+                    "knowledge_policy_private_support_copies_total": int(knowledge_summary["policy_private_support_copies_total"]),
+                    "knowledge_policy_transfer_support_copies_total": int(knowledge_summary["policy_transfer_support_copies_total"]),
+                    "knowledge_policy_unverified_transfer_support_copies_total": int(
+                        knowledge_summary["policy_unverified_transfer_support_copies_total"]
+                    ),
+                    "knowledge_policy_changed_actions_total": int(knowledge_summary["policy_changed_actions_total"]),
+                    "knowledge_policy_residual_abs_sum_total": float(knowledge_summary["policy_residual_abs_sum_total"]),
                     "validation_seconds": stats.validation_seconds,
                 }
             )

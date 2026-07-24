@@ -1,0 +1,123 @@
+{
+  "schema": "k3-short-validation-v1",
+  "version": "0.7.0",
+  "backend": "cpu",
+  "seed": 10001,
+  "ticks": 30,
+  "initial_entities": 500,
+  "conditions": {
+    "k2_control": {
+      "runtime_seconds": [
+        1.9,
+        1.92
+      ],
+      "deterministic_metric_differences": 0,
+      "checkpoint_comparison": {
+        "15": {
+          "common_arrays": 32,
+          "different": []
+        },
+        "30": {
+          "common_arrays": 32,
+          "different": []
+        }
+      },
+      "knowledge_events_equal": true,
+      "policy_contributions_equal": null,
+      "final": {
+        "tick": 30,
+        "alive": 608,
+        "births_total": 108,
+        "deaths_total": 0,
+        "mean_energy": 1.9267023801803589,
+        "knowledge_copy_count": 2315,
+        "knowledge_outcome_updates_total": 8026,
+        "knowledge_policy_influenced_entities_total": 0,
+        "knowledge_policy_influenced_actions_total": 0,
+        "knowledge_policy_changed_actions_total": 0,
+        "knowledge_policy_residual_abs_sum_total": 0.0,
+        "knowledge_transfer_committed_total": 228,
+        "knowledge_use_strength_mean": 0.0
+      }
+    },
+    "k3_private": {
+      "runtime_seconds": [
+        2.09,
+        1.98
+      ],
+      "deterministic_metric_differences": 0,
+      "checkpoint_comparison": {
+        "15": {
+          "common_arrays": 32,
+          "different": []
+        },
+        "30": {
+          "common_arrays": 32,
+          "different": []
+        }
+      },
+      "knowledge_events_equal": true,
+      "policy_contributions_equal": true,
+      "final": {
+        "tick": 30,
+        "alive": 609,
+        "births_total": 109,
+        "deaths_total": 0,
+        "mean_energy": 1.9357316493988037,
+        "knowledge_copy_count": 2325,
+        "knowledge_outcome_updates_total": 8162,
+        "knowledge_policy_influenced_entities_total": 10041,
+        "knowledge_policy_influenced_actions_total": 15493,
+        "knowledge_policy_changed_actions_total": 31,
+        "knowledge_policy_residual_abs_sum_total": 95.22633888213254,
+        "knowledge_transfer_committed_total": 0,
+        "knowledge_use_strength_mean": 0.5026440498570504
+      }
+    },
+    "k3_exchange": {
+      "runtime_seconds": [
+        1.93,
+        2.02
+      ],
+      "deterministic_metric_differences": 0,
+      "checkpoint_comparison": {
+        "15": {
+          "common_arrays": 32,
+          "different": []
+        },
+        "30": {
+          "common_arrays": 32,
+          "different": []
+        }
+      },
+      "knowledge_events_equal": true,
+      "policy_contributions_equal": true,
+      "final": {
+        "tick": 30,
+        "alive": 608,
+        "births_total": 108,
+        "deaths_total": 0,
+        "mean_energy": 1.9369333982467651,
+        "knowledge_copy_count": 2323,
+        "knowledge_outcome_updates_total": 8059,
+        "knowledge_policy_influenced_entities_total": 10362,
+        "knowledge_policy_influenced_actions_total": 15855,
+        "knowledge_policy_changed_actions_total": 29,
+        "knowledge_policy_residual_abs_sum_total": 95.04590196155216,
+        "knowledge_transfer_committed_total": 224,
+        "knowledge_use_strength_mean": 0.5027657872261969
+      }
+    }
+  },
+  "test_suite": {
+    "passed": 31,
+    "skipped": 1,
+    "skip_reason": "real CUDA/CuPy unavailable in current container"
+  },
+  "gpu_validation": {
+    "k2_hybrid_user_confirmed_ticks": 1000,
+    "k3_real_gpu_validated": false,
+    "reason": "current container has no CUDA/CuPy"
+  },
+  "compatibility_report": "K2_K3_COMPATIBILITY_REPORT.json"
+}

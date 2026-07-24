@@ -188,7 +188,7 @@ def strategy_structure(
         }, np.zeros(ParametricPolicy.STRATEGY_GENES, dtype=np.float64)
 
     raw = np.asarray(
-        genotype[sampled, ParametricPolicy.MORPHOLOGY_TRAITS :],
+        genotype[sampled, ParametricPolicy.STRATEGY_START : ParametricPolicy.STRATEGY_STOP],
         dtype=np.float64,
     ).reshape(sampled.size, len(Action), ParametricPolicy.STRATEGY_FEATURES)
     # Softmax is invariant to a feature coefficient shared by all actions.
@@ -338,7 +338,7 @@ def actual_context_policy_diagnostics(
         active_slots, ids, run_seed, context_panel_capacity
     )
     strategy = np.asarray(
-        genotype[strategy_slots, ParametricPolicy.MORPHOLOGY_TRAITS :],
+        genotype[strategy_slots, ParametricPolicy.STRATEGY_START : ParametricPolicy.STRATEGY_STOP],
         dtype=np.float64,
     ).reshape(strategy_slots.size, action_count, feature_count)
     context_rows = np.searchsorted(active_slots, context_slots)
@@ -413,7 +413,7 @@ class EvolutionProgressTracker:
         self.initial_stable_ids = np.asarray(stable_ids[sampled], dtype=np.uint64).copy()
         self.initial_genotype = np.asarray(genotype[sampled], dtype=np.float32).copy()
         initial_strategy = self.initial_genotype[
-            :, ParametricPolicy.MORPHOLOGY_TRAITS :
+            :, ParametricPolicy.STRATEGY_START : ParametricPolicy.STRATEGY_STOP
         ].astype(np.float64).reshape(
             sampled.size,
             len(Action),

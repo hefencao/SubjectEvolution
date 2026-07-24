@@ -22,6 +22,8 @@ from .device_state import EntityDeviceCommitPlan
 from .execution import ActionResolutionSnapshot, HarvestResolution
 from .gpu_environment import DeviceEnvironment, DeviceInformationField
 from .information import InformationObservation, InformationSystem, SignalEmissionPlan
+from .knowledge import KnowledgeSystem, encode_local_context
+from .knowledge_policy import KnowledgePolicyPlan, build_knowledge_policy_plan
 from .intents import ActionIntentBatch
 from .policy import Action, ParametricPolicy, PolicyDecision
 from .reductions import stable_segmented_sum
@@ -41,6 +43,8 @@ class GpuPreparedStep:
     spatial_seconds: float
     observation_seconds: float
     policy_seconds: float
+    knowledge_context_keys: np.ndarray
+    knowledge_policy_plan: KnowledgePolicyPlan
 
 
 @dataclass(frozen=True)
@@ -306,6 +310,7 @@ class HybridGpuRuntime:
         retain_policy_diagnostics: bool,
         need_host_resource_gradient: bool,
         entity_state_version: int,
+        knowledge: KnowledgeSystem | None = None,
     ) -> GpuPreparedStep:
         """Construct observations and actions, returning the CPU commit view."""
         xp = self.backend.xp
@@ -371,6 +376,8 @@ class HybridGpuRuntime:
                 0.0,
                 0.0,
                 0.0,
+                np.empty(0, dtype=np.uint64),
+                KnowledgePolicyPlan.empty(tick),
             )
 
         # The versioned mirror is frozen for this prepare pass.  The CPU owns
@@ -430,6 +437,7 @@ class HybridGpuRuntime:
             direct_message_plan=direct,
             run_seed=run_seed,
             tick=tick,
+            knowledge_plan=knowledge_policy_plan,
         )
         resource_gradient, danger_gradient = self.environment.gradients_for_entities(
             self.spatial.entity_cells,
@@ -437,6 +445,40 @@ class HybridGpuRuntime:
         )
         self.backend.synchronize()
         observation_seconds = time.perf_counter() - timer
+
+        knowledge_context_keys = np.empty(0, dtype=np.uint64)
+        knowledge_policy_plan = KnowledgePolicyPlan.empty(tick)
+        if knowledge is not None and knowledge.kcfg.learning_enabled:
+            device_context_keys = encode_local_context(
+                local_resources[:, 0],
+                self.environment.hazard.reshape(-1)[cells],
+                energy[active],
+                integrity[active],
+                groups[active] != 0,
+                max_energy=self.cfg.entities.max_energy,
+            )
+            knowledge_context_keys = self._download(device_context_keys).astype(
+                np.uint64, copy=False
+            )
+            if knowledge.kcfg.policy_influence_enabled:
+                host_genotype = entity.genotype[active_host]
+                knowledge_policy_plan = build_knowledge_policy_plan(
+                    knowledge.observation,
+                    tick=tick,
+                    entity_ids=entity.entity_id[active_host],
+                    holder_subject_ids=entity.primary_subject_id[active_host],
+                    context_keys=knowledge_context_keys,
+                    outcome_preferences=ParametricPolicy.outcome_preferences_from_genotype(
+                        host_genotype
+                    ),
+                    use_strength=ParametricPolicy.knowledge_use_strength_from_genotype(
+                        host_genotype
+                    ),
+                    config=knowledge.kcfg,
+                    action_count=len(Action),
+                )
+                if self._measure_transfers:
+                    self._host_to_device_bytes += knowledge_policy_plan.semantic_transfer_nbytes
 
         timer = time.perf_counter()
         if social_control_enabled:
@@ -527,6 +569,21 @@ class HybridGpuRuntime:
                 and device_decision.action_mask is not None
                 else None
             ),
+            genetic_logits=(
+                self._download(device_decision.genetic_logits).astype(np.float32, copy=False)
+                if retain_policy_diagnostics and device_decision.genetic_logits is not None
+                else None
+            ),
+            knowledge_logits=(
+                self._download(device_decision.knowledge_logits).astype(np.float32, copy=False)
+                if retain_policy_diagnostics and device_decision.knowledge_logits is not None
+                else None
+            ),
+            genetic_action=(
+                self._download(device_decision.genetic_action).astype(np.int16, copy=False)
+                if device_decision.genetic_action is not None
+                else None
+            ),
         )
         return GpuPreparedStep(
             active_result,
@@ -538,6 +595,8 @@ class HybridGpuRuntime:
             spatial_seconds,
             observation_seconds,
             policy_seconds,
+            knowledge_context_keys,
+            knowledge_policy_plan,
         )
 
     def resolve_harvest(self, cell_ids: np.ndarray, rates: np.ndarray) -> np.ndarray:

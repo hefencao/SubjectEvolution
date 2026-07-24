@@ -8,6 +8,8 @@ import numpy as np
 from .backend import backend_from_array
 from .config import SimulationConfig
 from .information import InformationObservation
+from .knowledge import OUTCOME_WIDTH
+from .knowledge_policy import KnowledgePolicyPlan
 from .random_api import RandomContext, Stream, categorical_from_logits, normal
 
 
@@ -35,6 +37,9 @@ class PolicyDecision:
     # action.  GPU runs only download them on scheduled evaluation ticks.
     features: Any | None = None
     action_mask: Any | None = None
+    genetic_logits: Any | None = None
+    knowledge_logits: Any | None = None
+    genetic_action: Any | None = None
 
 
 class ParametricPolicy:
@@ -70,10 +75,42 @@ class ParametricPolicy:
     )
     STRATEGY_FEATURES = len(FEATURE_NAMES)
     STRATEGY_GENES = len(Action) * STRATEGY_FEATURES
-    GENOME_SIZE = MORPHOLOGY_TRAITS + STRATEGY_GENES
+    STRATEGY_START = MORPHOLOGY_TRAITS
+    STRATEGY_STOP = STRATEGY_START + STRATEGY_GENES
+    BASE_GENOME_SIZE = STRATEGY_STOP
+    KNOWLEDGE_OUTCOME_PREFERENCE_GENES = OUTCOME_WIDTH
+    KNOWLEDGE_PREFERENCE_START = BASE_GENOME_SIZE
+    KNOWLEDGE_PREFERENCE_STOP = KNOWLEDGE_PREFERENCE_START + KNOWLEDGE_OUTCOME_PREFERENCE_GENES
+    KNOWLEDGE_USE_STRENGTH_INDEX = KNOWLEDGE_PREFERENCE_STOP
+    K3_GENOME_SIZE = KNOWLEDGE_USE_STRENGTH_INDEX + 1
+    # Legacy alias retained for archived K1/K2 code and external readers.
+    GENOME_SIZE = BASE_GENOME_SIZE
 
     def __init__(self, cfg: SimulationConfig) -> None:
         self.cfg = cfg
+
+    @staticmethod
+    def uses_knowledge_residual(cfg: SimulationConfig) -> bool:
+        return bool(
+            cfg.knowledge.policy_influence_enabled
+            and cfg.policy.schema == "inherited-linear-policy-knowledge-residual-v1"
+        )
+
+    @classmethod
+    def genome_size_for_config(cls, cfg: SimulationConfig) -> int:
+        return cls.K3_GENOME_SIZE if cls.uses_knowledge_residual(cfg) else cls.BASE_GENOME_SIZE
+
+    @classmethod
+    def outcome_preferences_from_genotype(cls, genotype: Any) -> Any:
+        xp = backend_from_array(genotype).xp
+        raw = genotype[:, cls.KNOWLEDGE_PREFERENCE_START : cls.KNOWLEDGE_PREFERENCE_STOP]
+        return xp.tanh(raw).astype(xp.float32, copy=False)
+
+    @classmethod
+    def knowledge_use_strength_from_genotype(cls, genotype: Any) -> Any:
+        xp = backend_from_array(genotype).xp
+        raw = genotype[:, cls.KNOWLEDGE_USE_STRENGTH_INDEX]
+        return xp.clip(0.5 * (raw + 1.0), 0.0, 1.0).astype(xp.float32, copy=False)
 
     def decide(
         self,
@@ -92,6 +129,7 @@ class ParametricPolicy:
         info: InformationObservation,
         run_seed: int,
         tick: int,
+        knowledge_plan: KnowledgePolicyPlan | None = None,
     ) -> PolicyDecision:
         xp = backend_from_array(active).xp
         ids = stable_ids[active]
@@ -140,7 +178,7 @@ class ParametricPolicy:
             ),
             axis=1,
         ).astype(xp.float32, copy=False)
-        strategy = g[:, self.MORPHOLOGY_TRAITS :].reshape(
+        strategy = g[:, self.STRATEGY_START : self.STRATEGY_STOP].reshape(
             active.size,
             len(Action),
             self.STRATEGY_FEATURES,
@@ -148,15 +186,31 @@ class ParametricPolicy:
         # Accumulate in a fixed feature order.  Besides making the causal
         # mapping explicit, this avoids backend-dependent contraction plans
         # changing fixed-seed categorical decisions near a logit tie.
-        logits = xp.zeros((active.size, len(Action)), dtype=xp.float32)
+        genetic_logits = xp.zeros((active.size, len(Action)), dtype=xp.float32)
         for feature_index in range(self.STRATEGY_FEATURES):
-            logits += strategy[:, :, feature_index] * features[:, feature_index, None]
+            genetic_logits += strategy[:, :, feature_index] * features[:, feature_index, None]
+        knowledge_logits = (
+            knowledge_plan.materialize(xp, active.size, len(Action))
+            if knowledge_plan is not None and knowledge_plan.size
+            else xp.zeros_like(genetic_logits)
+        )
+        logits = genetic_logits + knowledge_logits
 
         mask = xp.ones_like(logits, dtype=bool)
         mask[:, Action.SHARE] = partner_exists > 0
         mask[:, Action.REPRODUCE] = (energy[active] >= self.cfg.entities.reproduction_threshold) & (fertility[active] >= 0.5)
         mask[:, Action.SIGNAL] = energy[active] > self.cfg.entities.signal_cost
         action_ctx = RandomContext(run_seed, tick, phase=50, stream=Stream.POLICY_ACTION)
+        genetic_action = None
+        if knowledge_plan is not None and knowledge_plan.size:
+            genetic_action, _, _ = categorical_from_logits(
+                action_ctx,
+                ids,
+                genetic_logits,
+                temperature=self.cfg.policy.temperature,
+                mask=mask,
+                validate_mask=False,
+            )
         action, probability, entropy = categorical_from_logits(
             action_ctx,
             ids,
@@ -207,6 +261,9 @@ class ParametricPolicy:
             logits=logits,
             features=features,
             action_mask=mask,
+            genetic_logits=genetic_logits,
+            knowledge_logits=knowledge_logits,
+            genetic_action=genetic_action,
         )
 
     def update_memory(
