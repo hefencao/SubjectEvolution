@@ -1,5 +1,6 @@
 #include "eco/renderer.hpp"
 #include "render/renderer_internal.hpp"
+#include "render/renderer_state.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -158,13 +159,71 @@ const char* behavior_overlay_name(BehaviorOverlayMode mode) noexcept {
     return "unknown";
 }
 
-Color color_for_entity(const EntitySample& entity, float max_energy) {
+const char* overlay_temporal_name(OverlayTemporalMode mode) noexcept {
+    switch (mode) {
+    case OverlayTemporalMode::Instant:
+        return "instant";
+    case OverlayTemporalMode::Responsive:
+        return "responsive";
+    case OverlayTemporalMode::Stable:
+        return "stable";
+    }
+    return "stable";
+}
+
+const char* action_filter_name(ActionFilterMode mode) noexcept {
+    switch (mode) {
+    case ActionFilterMode::All:
+        return "all";
+    case ActionFilterMode::Movement:
+        return "movement";
+    case ActionFilterMode::Resource:
+        return "resource";
+    case ActionFilterMode::Social:
+        return "social";
+    case ActionFilterMode::Reproduction:
+        return "reproduction";
+    case ActionFilterMode::Survival:
+        return "survival";
+    }
+    return "all";
+}
+
+bool action_matches_filter(Action action, ActionFilterMode mode) noexcept {
+    switch (mode) {
+    case ActionFilterMode::All:
+        return true;
+    case ActionFilterMode::Movement:
+        return action == Action::MoveResource ||
+               action == Action::MoveSocial ||
+               action == Action::Flee;
+    case ActionFilterMode::Resource:
+        return action == Action::MoveResource ||
+               action == Action::Harvest;
+    case ActionFilterMode::Social:
+        return action == Action::MoveSocial ||
+               action == Action::Share ||
+               action == Action::Signal;
+    case ActionFilterMode::Reproduction:
+        return action == Action::Reproduce;
+    case ActionFilterMode::Survival:
+        return action == Action::Flee ||
+               action == Action::Rest;
+    }
+    return true;
+}
+
+Color render_internal::color_for_entity_visual(
+    const EntitySample& entity,
+    float max_energy,
+    std::uint64_t visual_key
+) {
     const float energy = clamp01(
         entity.energy / std::max(max_energy, 1.0e-6F)
     );
     const float integrity = clamp01(entity.integrity);
 
-    if (entity.group_id == 0) {
+    if (entity.group_id == 0 || visual_key == 0) {
         return Color{
             static_cast<unsigned char>(92.0F + 42.0F * energy),
             static_cast<unsigned char>(154.0F + 58.0F * integrity),
@@ -173,33 +232,88 @@ Color color_for_entity(const EntitySample& entity, float max_energy) {
         };
     }
 
-    const std::uint64_t hash = mix_id(entity.group_id);
-    const float hue = static_cast<float>(hash & 0xFFFFU) / 65535.0F;
+    const std::uint64_t hash = mix_id(visual_key);
+    // Use more than the low 16 bits so nearby/reissued group ids do not form
+    // visibly correlated hues. The key itself is renderer-stable across frames.
+    const std::uint32_t hue_bits = static_cast<std::uint32_t>(
+        (hash ^ (hash >> 29U) ^ (hash >> 47U)) & 0xFFFFFFU
+    );
+    const float hue = static_cast<float>(hue_bits) / 16777215.0F;
     const float saturation = 0.72F + 0.20F * integrity;
     const float value = 0.86F + 0.14F * energy;
     return hsv_color(hue, saturation, value, 255);
 }
 
+Color color_for_entity(const EntitySample& entity, float max_energy) {
+    return render_internal::color_for_entity_visual(entity, max_energy, entity.group_id);
+}
+
+WorldRenderer::WorldRenderer()
+    : state_(std::make_unique<RendererState>()) {}
+
 WorldRenderer::~WorldRenderer() {
-    if (heatmap_.id != 0) {
-        UnloadTexture(heatmap_);
+    if (state_ != nullptr && state_->environment.heatmap.id != 0) {
+        UnloadTexture(state_->environment.heatmap);
     }
 }
 
+WorldRenderer::WorldRenderer(WorldRenderer&&) noexcept = default;
+WorldRenderer& WorldRenderer::operator=(WorldRenderer&&) noexcept = default;
+
+void WorldRenderer::reset_stream_state() {
+    std::uint64_t next_epoch = 1;
+    if (state_ != nullptr) {
+        next_epoch = state_->stream_epoch + 1;
+        if (state_->environment.heatmap.id != 0) {
+            UnloadTexture(state_->environment.heatmap);
+        }
+    }
+    state_ = std::make_unique<RendererState>();
+    state_->stream_epoch = next_epoch;
+}
+
+const FrameDiagnostics& WorldRenderer::diagnostics() const noexcept {
+    return state_->observation.diagnostics;
+}
+
+const std::vector<GroupBehaviorSummary>& WorldRenderer::group_behaviors(
+    OverlayTemporalMode mode
+) const noexcept {
+    return select_group_behaviors(state_->groups, mode);
+}
+
+const OverlayBudget& WorldRenderer::overlay_budget() const noexcept {
+    return state_->overlay_budget;
+}
+
+const OverlayUsage& WorldRenderer::overlay_usage() const noexcept {
+    return state_->overlay_usage;
+}
+
+const RenderPerformance& WorldRenderer::performance() const noexcept {
+    return state_->performance;
+}
+
+std::uint64_t WorldRenderer::stream_epoch() const noexcept {
+    return state_->stream_epoch;
+}
+
 const GroupBehaviorSummary* WorldRenderer::group_behavior(
-    std::uint64_t group_id
+    std::uint64_t group_id,
+    OverlayTemporalMode mode
 ) const noexcept {
     if (group_id == 0) {
         return nullptr;
     }
+    const auto& groups = select_group_behaviors(state_->groups, mode);
     const auto iterator = std::find_if(
-        group_behaviors_.begin(),
-        group_behaviors_.end(),
+        groups.begin(),
+        groups.end(),
         [group_id](const GroupBehaviorSummary& group) {
             return group.group_id == group_id;
         }
     );
-    return iterator == group_behaviors_.end() ? nullptr : &*iterator;
+    return iterator == groups.end() ? nullptr : &*iterator;
 }
 
 }  // namespace eco

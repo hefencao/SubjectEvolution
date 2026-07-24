@@ -1,5 +1,6 @@
 #include "eco/renderer.hpp"
 #include "render/renderer_internal.hpp"
+#include "render/renderer_state.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -16,10 +17,14 @@ void WorldRenderer::draw_group_history_overlay(
     const RenderDetail& detail,
     const RenderOptions& options,
     std::uint64_t selected_group_id,
+    const OverlayBudget& budget,
     float weight
 ) const {
     weight = clamp01(weight);
-    if (weight < 0.035F || group_behaviors_.empty() ||
+    const auto& display_groups = select_group_behaviors(
+        state_->groups, options.overlay_temporal
+    );
+    if (weight < 0.035F || display_groups.empty() ||
         (!options.show_group_trails && selected_group_id == 0)) {
         return;
     }
@@ -52,8 +57,16 @@ void WorldRenderer::draw_group_history_overlay(
                left <= expanded.x + expanded.width &&
                top <= expanded.y + expanded.height;
     };
-    const std::size_t ordinary_budget = static_cast<std::size_t>(
-        lerp_value(8.0F, 26.0F, clamp01(detail.density_weight + 0.35F * detail.agent_weight))
+    const std::size_t remaining_marker_budget =
+        budget.group_markers > state_->overlay_usage.group_markers
+            ? budget.group_markers - state_->overlay_usage.group_markers
+            : 0U;
+    const std::size_t ordinary_budget = std::min<std::size_t>(
+        remaining_marker_budget,
+        static_cast<std::size_t>(
+            lerp_value(8.0F, 26.0F,
+                clamp01(detail.density_weight + 0.35F * detail.agent_weight))
+        )
     );
     std::size_t drawn = 0;
 
@@ -99,7 +112,7 @@ void WorldRenderer::draw_group_history_overlay(
         }
     };
 
-    for (const GroupBehaviorSummary& group : group_behaviors_) {
+    for (const GroupBehaviorSummary& group : display_groups) {
         const bool selected = group.group_id == selected_group_id && selected_group_id != 0;
         if (options.focus_selected_group && selected_group_id != 0 && !selected) {
             continue;
@@ -111,11 +124,12 @@ void WorldRenderer::draw_group_history_overlay(
             continue;
         }
 
-        const auto trail_iterator = group_trails_.find(group.group_id);
+        const auto trail_iterator = state_->groups.trails.find(group.group_id);
         const bool has_trail = options.show_group_trails &&
-            trail_iterator != group_trails_.end() &&
+            trail_iterator != state_->groups.trails.end() &&
             trail_iterator->second.size() >= 2U;
-        Color color = color_for_group_id(group.group_id, 255);
+        Color color = color_for_group_id(
+            group.visual_key != 0 ? group.visual_key : group.group_id, 255);
         const float selected_boost = selected ? 1.0F : 0.0F;
         const float base_alpha = weight * (0.16F + 0.34F * group.coherence +
             0.20F * group.active_fraction + 0.32F * selected_boost);
@@ -140,7 +154,9 @@ void WorldRenderer::draw_group_history_overlay(
                     nearest_periodic(before.y, camera.target.y, frame.layout.world_height)
                 };
                 const Vector2 end{start.x + dx, start.y + dy};
-                if (!segment_visible(start, end, selected ? 260.0F : 130.0F)) {
+                if (!segment_visible(start, end, selected ? 260.0F : 130.0F) ||
+                    state_->overlay_usage.group_trail_segments >=
+                        budget.group_trail_segments) {
                     continue;
                 }
                 const float age = static_cast<float>(index - first) /
@@ -150,6 +166,7 @@ void WorldRenderer::draw_group_history_overlay(
                     (selected ? 1.15F : 0.0F)) * inverse_zoom;
                 DrawLineEx(start, end, width + 2.0F * inverse_zoom, Fade(BLACK, alpha * 0.65F));
                 DrawLineEx(start, end, width, Fade(color, alpha));
+                ++state_->overlay_usage.group_trail_segments;
             }
         }
 
@@ -178,12 +195,148 @@ void WorldRenderer::draw_group_history_overlay(
                 display_center,
                 selected ? 7.2F : 4.8F,
                 camera,
-                selected ? 0.96F : 0.42F * weight
+                selected ? 0.96F : 0.42F * weight,
+                Vector2{group.mean_vx, group.mean_vy}
             );
         }
+        ++state_->overlay_usage.group_markers;
         if (!selected) {
             ++drawn;
         }
+    }
+}
+
+
+void WorldRenderer::draw_group_landmarks_overlay(
+    const Frame& frame,
+    const Camera2D& camera,
+    Rectangle viewport,
+    const RenderDetail& detail,
+    const RenderOptions& options,
+    std::uint64_t selected_group_id,
+    const OverlayBudget& budget,
+    float weight
+) const {
+    weight = clamp01(weight);
+    const auto& display_groups = select_group_behaviors(
+        state_->groups, options.overlay_temporal
+    );
+    if (!options.show_group_landmarks || weight < 0.04F ||
+        display_groups.empty() ||
+        state_->overlay_usage.group_markers >= budget.group_markers) {
+        return;
+    }
+
+    const float inverse_zoom = 1.0F / std::max(camera.zoom, 0.001F);
+    const auto nearest_periodic = [](float value, float target, float extent) {
+        if (extent <= 0.0F) {
+            return value;
+        }
+        return value + std::round((target - value) / extent) * extent;
+    };
+    const Rectangle expanded{
+        viewport.x - 24.0F,
+        viewport.y - 24.0F,
+        viewport.width + 48.0F,
+        viewport.height + 48.0F
+    };
+    const std::size_t remaining = budget.group_markers -
+        state_->overlay_usage.group_markers;
+    const std::size_t landmark_limit = std::min<std::size_t>(
+        remaining,
+        static_cast<std::size_t>(std::clamp(
+            lerp_value(5.0F, 12.0F,
+                clamp01(detail.density_weight + 0.25F * detail.agent_weight)),
+            4.0F,
+            14.0F
+        ))
+    );
+
+    std::size_t drawn = 0;
+    for (const GroupBehaviorSummary& group : display_groups) {
+        if (drawn >= landmark_limit || group.members < 12U) {
+            break;
+        }
+        if (options.focus_selected_group && selected_group_id != 0 &&
+            group.group_id != selected_group_id) {
+            continue;
+        }
+
+        const Vector2 world_center{
+            nearest_periodic(group.x, camera.target.x, frame.layout.world_width),
+            nearest_periodic(group.y, camera.target.y, frame.layout.world_height)
+        };
+        const Vector2 screen = GetWorldToScreen2D(world_center, camera);
+        if (screen.x < expanded.x || screen.y < expanded.y ||
+            screen.x > expanded.x + expanded.width ||
+            screen.y > expanded.y + expanded.height) {
+            continue;
+        }
+
+        const bool selected = group.group_id == selected_group_id &&
+            selected_group_id != 0;
+        const float member_curve = std::clamp(
+            std::log1p(static_cast<float>(group.members)) / 7.8F,
+            0.0F,
+            1.0F
+        );
+        const float radius_pixels = 3.0F + 3.8F * member_curve +
+            (selected ? 2.0F : 0.0F);
+        const float radius = radius_pixels * inverse_zoom;
+        const std::uint64_t color_key = group.visual_key != 0
+            ? group.visual_key
+            : group.group_id;
+        const Color color = color_for_group_id(
+            color_key,
+            static_cast<unsigned char>(std::clamp(
+                (0.42F + 0.48F * weight + (selected ? 0.10F : 0.0F)) * 255.0F,
+                0.0F,
+                255.0F
+            ))
+        );
+
+        DrawCircleV(world_center, radius + 1.8F * inverse_zoom,
+            Fade(BLACK, 0.62F * weight));
+        DrawCircleLines(
+            static_cast<int>(world_center.x),
+            static_cast<int>(world_center.y),
+            radius,
+            color
+        );
+        DrawCircleV(world_center, std::max(0.85F, radius_pixels * 0.22F) * inverse_zoom,
+            Fade(color, selected ? 0.95F : 0.72F));
+
+        const float speed = std::sqrt(
+            group.mean_vx * group.mean_vx + group.mean_vy * group.mean_vy
+        );
+        if (finite_value(speed) && speed > 0.012F && group.coherence > 0.14F) {
+            const Vector2 direction{
+                group.mean_vx / speed,
+                group.mean_vy / speed
+            };
+            const float length = (7.0F + 14.0F * group.coherence +
+                4.0F * member_curve) * inverse_zoom;
+            const Vector2 end{
+                world_center.x + direction.x * length,
+                world_center.y + direction.y * length
+            };
+            DrawLineEx(world_center, end,
+                (0.8F + 1.0F * member_curve) * inverse_zoom,
+                Fade(color, 0.68F * weight));
+        } else if (group.dominant_action != Action::Rest &&
+            group.dominant_action_fraction > 0.28F &&
+            !action_uses_direction(group.dominant_action)) {
+            draw_action_glyph(
+                group.dominant_action,
+                world_center,
+                3.6F + 2.0F * member_curve,
+                camera,
+                0.48F * weight
+            );
+        }
+
+        ++drawn;
+        ++state_->overlay_usage.group_markers;
     }
 }
 
@@ -198,7 +351,10 @@ std::uint64_t WorldRenderer::pick_group(
 
     const float world_width = frame.layout.world_width;
     const float world_height = frame.layout.world_height;
-    for (const GroupBehaviorSummary& group : group_behaviors_) {
+    const auto& display_groups = select_group_behaviors(
+        state_->groups, OverlayTemporalMode::Stable
+    );
+    for (const GroupBehaviorSummary& group : display_groups) {
         if (group.group_id == 0 || group.members == 0 ||
             !finite_value(group.x) || !finite_value(group.y)) {
             continue;

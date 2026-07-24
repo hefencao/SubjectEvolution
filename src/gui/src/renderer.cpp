@@ -1,5 +1,5 @@
 #include "eco/renderer.hpp"
 
-// v13: implementation is split across renderer_core.cpp,
-// renderer_environment.cpp, renderer_observation.cpp, renderer_groups.cpp,
-// renderer_draw.cpp, and render/renderer_internal.cpp.
+// Compatibility translation unit retained for projects that still list
+// src/renderer.cpp explicitly. The v14 implementation lives in the separately
+// compiled renderer_* modules registered by renderer_sources.cmake.

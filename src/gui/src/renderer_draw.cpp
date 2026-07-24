@@ -1,10 +1,13 @@
 #include "eco/renderer.hpp"
 #include "render/renderer_internal.hpp"
+#include "render/renderer_state.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <chrono>
 #include <limits>
 #include <unordered_map>
 #include <vector>
@@ -21,42 +24,45 @@ void WorldRenderer::draw(
     const RenderOptions& options,
     const std::vector<SocialNeighbor>& selected_neighbors
 ) const {
-    if (heatmap_.id == 0) {
+    const auto timing_start = std::chrono::steady_clock::now();
+    state_->overlay_usage = OverlayUsage{};
+
+    if (state_->environment.heatmap.id == 0) {
+        record_timing(
+            0.0,
+            state_->performance.draw_ms,
+            state_->performance.draw_ema_ms
+        );
         return;
     }
 
-    const float world_width = frame.layout.world_width;
-    const float world_height = frame.layout.world_height;
-    const RenderDetail detail = resolve_render_detail(
+    const RenderContext context = build_render_context(
         frame,
         camera,
         viewport,
-        options.lod_mode
+        options,
+        selected_neighbors.size()
     );
+    state_->overlay_budget = context.budget;
+    const float world_width = context.world_width;
+    const float world_height = context.world_height;
+    const RenderDetail& detail = context.detail;
     const float micro_detail = clamp01(detail.micro_weight);
-    const BehaviorWeights behavior = resolve_behavior_weights(
-        options.behavior_overlay,
-        detail
+    const BehaviorWeights& behavior = context.behavior;
+    const auto& display_groups = select_group_behaviors(
+        state_->groups, options.overlay_temporal
     );
-    const EntitySample* selected_entity = nullptr;
-    std::uint64_t selected_group_id = options.selected_group_id;
-    if (options.selected_entity_id != 0) {
-        for (const EntitySample& entity : frame.entities) {
-            if (entity.entity_id == options.selected_entity_id) {
-                selected_entity = &entity;
-                if (entity.group_id != 0) {
-                    selected_group_id = entity.group_id;
-                }
-                break;
-            }
-        }
-    }
+    const auto& display_action_field = select_action_field(
+        state_->action_field, options.overlay_temporal
+    );
+    const EntitySample* selected_entity = context.selected_entity;
+    const std::uint64_t selected_group_id = context.selected_group_id;
 
     DrawTexturePro(
-        heatmap_,
+        state_->environment.heatmap,
         Rectangle{0.0F, 0.0F,
-            static_cast<float>(heatmap_.width),
-            static_cast<float>(heatmap_.height)},
+            static_cast<float>(state_->environment.heatmap.width),
+            static_cast<float>(state_->environment.heatmap.height)},
         Rectangle{0.0F, 0.0F, world_width, world_height},
         Vector2{0.0F, 0.0F},
         0.0F,
@@ -89,11 +95,33 @@ void WorldRenderer::draw(
         rlEnd();
     }
 
-    const float flow_weight = options.show_velocity
-        ? std::max(detail.flow_weight, 0.42F)
-        : detail.flow_weight;
-    if (flow_weight > 0.04F) {
-        draw_flow_field(frame, camera, flow_weight);
+    // The raw per-frame flow field is an explicit diagnostic layer. Group
+    // migration presets use temporally smoothed group vectors instead; drawing
+    // the raw field implicitly made F3/F5 shimmer even with stable overlays.
+    if (options.show_velocity && detail.flow_weight > 0.04F) {
+        draw_flow_field(
+            frame,
+            camera,
+            std::max(detail.flow_weight, 0.42F)
+        );
+    }
+
+    if (options.show_group_landmarks) {
+        draw_group_landmarks_overlay(
+            frame,
+            camera,
+            viewport,
+            detail,
+            options,
+            selected_group_id,
+            context.budget,
+            std::clamp(
+                0.34F + 0.56F * detail.density_weight +
+                    0.18F * detail.agent_weight,
+                0.0F,
+                1.0F
+            )
+        );
     }
 
     if (behavior.groups > 0.035F) {
@@ -104,12 +132,17 @@ void WorldRenderer::draw(
             detail,
             options,
             selected_group_id,
+            context.budget,
             behavior.groups
         );
-        draw_group_behavior_overlay(
-            group_behaviors_,
+        state_->overlay_usage.group_markers += draw_group_behavior_overlay(
+            display_groups,
             camera,
-            behavior.groups * (options.show_group_trails ? 0.42F : 0.78F)
+            context.budget.group_markers > state_->overlay_usage.group_markers
+                ? context.budget.group_markers - state_->overlay_usage.group_markers
+                : 0U,
+            behavior.groups * (options.show_group_trails ? 0.42F : 0.78F),
+            options.action_filter
         );
     } else if (selected_group_id != 0) {
         RenderOptions selected_group_options = options;
@@ -122,6 +155,7 @@ void WorldRenderer::draw(
             detail,
             selected_group_options,
             selected_group_id,
+            context.budget,
             0.92F
         );
     }
@@ -129,33 +163,155 @@ void WorldRenderer::draw(
     const float aggregate_action_weight = behavior.actions *
         (1.0F - 0.78F * detail.micro_weight);
     if (aggregate_action_weight > 0.05F) {
-        draw_action_activity_field(
-            frame,
+        state_->overlay_usage.action_glyphs += draw_action_activity_field(
+            display_action_field,
+            frame.layout,
             camera,
-            aggregate_action_weight
+            context.budget.action_glyphs,
+            aggregate_action_weight,
+            options.action_filter
         );
     }
 
-    const Vector2 top_left = GetScreenToWorld2D(
-        Vector2{viewport.x, viewport.y},
-        camera
-    );
-    const Vector2 bottom_right = GetScreenToWorld2D(
-        Vector2{viewport.x + viewport.width, viewport.y + viewport.height},
-        camera
-    );
-    const float left = std::min(top_left.x, bottom_right.x);
-    const float right = std::max(top_left.x, bottom_right.x);
-    const float top = std::min(top_left.y, bottom_right.y);
-    const float bottom = std::max(top_left.y, bottom_right.y);
+    const float left = context.left;
+    const float right = context.right;
+    const float top = context.top;
+    const float bottom = context.bottom;
+
+    // Overview gets a small spatial lifecycle summary at macro/medium scales.
+    // It uses compact signed ticks instead of the old city-like event circles:
+    // cyan points toward net births and red toward net deaths.
+    if (options.show_group_landmarks && options.show_event_markers &&
+        detail.density_weight > 0.22F &&
+        context.budget.event_markers > state_->overlay_usage.event_markers) {
+        constexpr int columns = 18;
+        constexpr int rows = 11;
+        constexpr int cell_count = columns * rows;
+        struct LifecycleCell {
+            float births = 0.0F;
+            float deaths = 0.0F;
+            float sum_x = 0.0F;
+            float sum_y = 0.0F;
+            float total = 0.0F;
+        };
+        static thread_local std::array<LifecycleCell, cell_count> cells{};
+        cells.fill(LifecycleCell{});
+
+        for (const EventMarker& marker : state_->observation.event_markers) {
+            if (marker.kind != EventKind::Birth && marker.kind != EventKind::Death) {
+                continue;
+            }
+            const float age = frame.tick >= marker.tick
+                ? static_cast<float>(frame.tick - marker.tick)
+                : 0.0F;
+            const float recency = 1.0F - clamp01(age / 72.0F);
+            if (recency <= 0.02F) {
+                continue;
+            }
+            const int column = std::clamp(
+                static_cast<int>(marker.x / std::max(world_width, 1.0F) * columns),
+                0,
+                columns - 1
+            );
+            const int row = std::clamp(
+                static_cast<int>(marker.y / std::max(world_height, 1.0F) * rows),
+                0,
+                rows - 1
+            );
+            LifecycleCell& cell = cells[static_cast<std::size_t>(row * columns + column)];
+            if (marker.kind == EventKind::Birth) {
+                cell.births += recency;
+            } else {
+                cell.deaths += recency;
+            }
+            cell.sum_x += marker.x * recency;
+            cell.sum_y += marker.y * recency;
+            cell.total += recency;
+        }
+
+        struct LifecycleCandidate {
+            int index = 0;
+            float score = 0.0F;
+        };
+        std::vector<LifecycleCandidate> candidates;
+        candidates.reserve(cell_count);
+        for (int index = 0; index < cell_count; ++index) {
+            const LifecycleCell& cell = cells[static_cast<std::size_t>(index)];
+            const float activity = cell.births + cell.deaths;
+            if (activity < 1.4F) {
+                continue;
+            }
+            const float imbalance = std::abs(cell.births - cell.deaths) /
+                std::max(activity, 1.0e-5F);
+            candidates.push_back(LifecycleCandidate{
+                index,
+                std::log1p(activity) * (0.45F + 0.55F * imbalance)
+            });
+        }
+        std::sort(candidates.begin(), candidates.end(),
+            [](const LifecycleCandidate& lhs, const LifecycleCandidate& rhs) {
+                return lhs.score > rhs.score;
+            });
+
+        const std::size_t remaining = context.budget.event_markers -
+            state_->overlay_usage.event_markers;
+        const std::size_t limit = std::min<std::size_t>(
+            remaining,
+            std::min<std::size_t>(candidates.size(), 10U)
+        );
+        const float inverse_zoom = context.inverse_zoom;
+        for (std::size_t candidate_index = 0; candidate_index < limit; ++candidate_index) {
+            const LifecycleCell& cell = cells[
+                static_cast<std::size_t>(candidates[candidate_index].index)
+            ];
+            if (cell.total <= 1.0e-5F) {
+                continue;
+            }
+            const Vector2 center{
+                cell.sum_x / cell.total,
+                cell.sum_y / cell.total
+            };
+            const bool net_birth = cell.births >= cell.deaths;
+            const float activity = cell.births + cell.deaths;
+            const float length = std::clamp(
+                5.0F + 2.1F * std::log1p(activity),
+                6.0F,
+                13.0F
+            ) * inverse_zoom;
+            const Color color = net_birth
+                ? Fade(Color{74, 232, 255, 255}, 0.50F)
+                : Fade(Color{255, 91, 91, 255}, 0.50F);
+            const Vector2 start{
+                center.x,
+                center.y + (net_birth ? length * 0.48F : -length * 0.48F)
+            };
+            const Vector2 end{
+                center.x,
+                center.y + (net_birth ? -length * 0.52F : length * 0.52F)
+            };
+            DrawLineEx(start, end, 1.35F * inverse_zoom, color);
+            const float cap = 2.5F * inverse_zoom;
+            DrawLineEx(
+                Vector2{end.x - cap, end.y},
+                Vector2{end.x + cap, end.y},
+                1.0F * inverse_zoom,
+                color
+            );
+            ++state_->overlay_usage.event_markers;
+        }
+    }
 
     // Selected-agent relationship topology is deliberately local and bounded.
-    const auto selected_position = current_positions_.find(options.selected_entity_id);
-    if (selected_position != current_positions_.end()) {
+    const auto selected_position = state_->observation.current_positions.find(options.selected_entity_id);
+    if (selected_position != state_->observation.current_positions.end()) {
         const Vector2 source{selected_position->second.x, selected_position->second.y};
+        std::size_t relationship_count = 0;
         for (const SocialNeighbor& neighbor : selected_neighbors) {
-            const auto target_iterator = current_positions_.find(neighbor.entity_id);
-            if (target_iterator == current_positions_.end()) {
+            if (relationship_count >= context.budget.relationship_lines) {
+                break;
+            }
+            const auto target_iterator = state_->observation.current_positions.find(neighbor.entity_id);
+            if (target_iterator == state_->observation.current_positions.end()) {
                 continue;
             }
 
@@ -170,7 +326,9 @@ void WorldRenderer::draw(
             const float width = (0.7F + 1.6F * neighbor.familiarity) /
                 std::max(camera.zoom, 0.001F);
             DrawLineEx(source, target, width, relationship_color);
+            ++relationship_count;
         }
+        state_->overlay_usage.relationship_lines = relationship_count;
     }
 
     if (options.show_event_markers) {
@@ -180,16 +338,40 @@ void WorldRenderer::draw(
         // "cities" and obscured resources, so spatial glyphs enter only when
         // agents themselves have become readable.
         if (event_detail >= 0.18F) {
-            const std::size_t marker_budget = static_cast<std::size_t>(
-                lerp_value(36.0F, 320.0F, event_detail)
-            );
+            const std::size_t marker_budget =
+                context.budget.event_markers > state_->overlay_usage.event_markers
+                    ? context.budget.event_markers - state_->overlay_usage.event_markers
+                    : 0U;
             std::size_t drawn = 0;
 
-            for (auto iterator = event_markers_.rbegin();
-                 iterator != event_markers_.rend() && drawn < marker_budget;
+            for (auto iterator = state_->observation.event_markers.rbegin();
+                 iterator != state_->observation.event_markers.rend() && drawn < marker_budget;
                  ++iterator) {
                 const EventMarker& marker = *iterator;
                 if (marker.x < left || marker.x > right || marker.y < top || marker.y > bottom) {
+                    continue;
+                }
+
+                bool event_matches_filter = true;
+                switch (options.action_filter) {
+                case ActionFilterMode::All:
+                    break;
+                case ActionFilterMode::Movement:
+                case ActionFilterMode::Social:
+                    event_matches_filter = false;
+                    break;
+                case ActionFilterMode::Resource:
+                    event_matches_filter = marker.kind == EventKind::Harvest;
+                    break;
+                case ActionFilterMode::Reproduction:
+                    event_matches_filter = marker.kind == EventKind::Birth ||
+                        marker.kind == EventKind::Reproduce;
+                    break;
+                case ActionFilterMode::Survival:
+                    event_matches_filter = marker.kind == EventKind::Death;
+                    break;
+                }
+                if (!event_matches_filter) {
                     continue;
                 }
 
@@ -259,12 +441,13 @@ void WorldRenderer::draw(
                 }
                 ++drawn;
             }
-                }
+            state_->overlay_usage.event_markers += drawn;
+        }
     }
 
     static thread_local std::vector<const EntitySample*> render_entities;
     static thread_local std::vector<const EntitySample*> tile_representatives;
-    static thread_local std::vector<std::uint8_t> tile_priorities;
+    static thread_local std::vector<std::uint16_t> tile_priorities;
     render_entities.clear();
 
     if (detail.agent_weight > 0.025F) {
@@ -278,13 +461,7 @@ void WorldRenderer::draw(
             5,
             30
         );
-        const std::size_t entity_budget = static_cast<std::size_t>(
-            lerp_value(
-                420.0F,
-                28000.0F,
-                std::pow(sample_detail, 1.58F)
-            )
-        );
+        const std::size_t entity_budget = context.budget.agent_markers;
         const int tile_columns = std::max(
             1,
             static_cast<int>(std::ceil(viewport.width / tile_pixels))
@@ -309,9 +486,13 @@ void WorldRenderer::draw(
                 !is_visible(entity, left, top, right, bottom, padding)) {
                 continue;
             }
+            const bool previously_rendered =
+                state_->observation.previous_rendered_entities.find(entity.entity_id) !=
+                state_->observation.previous_rendered_entities.end();
             if (candidate_stride > 1 &&
                 entity.entity_id != options.selected_entity_id &&
                 entity.action_success == 0 &&
+                !previously_rendered &&
                 mix_id(entity.entity_id) % candidate_stride != 0) {
                 continue;
             }
@@ -335,11 +516,22 @@ void WorldRenderer::draw(
                 static_cast<std::size_t>(tile_y) *
                     static_cast<std::size_t>(tile_columns) +
                 static_cast<std::size_t>(tile_x);
-            std::uint8_t priority = entity.entity_id == options.selected_entity_id ? 6U :
+            const Action entity_action = static_cast<Action>(entity.action);
+            const bool filter_match = action_matches_filter(
+                entity_action, options.action_filter);
+            const std::uint16_t base_priority =
+                entity.entity_id == options.selected_entity_id ? 7U :
                 (options.focus_selected_group && selected_group_id != 0 &&
-                 entity.group_id == selected_group_id) ? 5U :
+                 entity.group_id == selected_group_id) ? 6U :
+                (options.action_filter != ActionFilterMode::All && filter_match) ? 5U :
                 entity.action_success != 0 ? 4U :
                 entity.group_id != 0 ? 2U : 1U;
+            // Preserve the previous frame's representative when semantic
+            // priority is equal. This removes the apparent group-color flicker
+            // caused by a different member winning the same screen tile.
+            const std::uint16_t priority = static_cast<std::uint16_t>(
+                base_priority * 2U + (previously_rendered ? 1U : 0U)
+            );
             if (tile_priorities[tile_index] > priority) {
                 continue;
             }
@@ -361,22 +553,28 @@ void WorldRenderer::draw(
                 }
             }
         }
+        state_->overlay_usage.agent_markers = render_entities.size();
+        state_->observation.previous_rendered_entities.clear();
+        state_->observation.previous_rendered_entities.reserve(
+            render_entities.size() * 5U / 4U + 1U
+        );
+        for (const EntitySample* entity : render_entities) {
+            state_->observation.previous_rendered_entities.insert(entity->entity_id);
+        }
 
         const float trail_weight = options.show_velocity
             ? std::max(detail.agent_weight, 0.48F)
             : detail.micro_weight * 0.26F;
         if (trail_weight > 0.035F && !render_entities.empty()) {
-            const std::size_t trail_budget = static_cast<std::size_t>(
-                lerp_value(180.0F, 4200.0F, trail_weight)
-            );
+            const std::size_t trail_budget = context.budget.agent_trails;
             const std::size_t trail_stride = std::max<std::size_t>(
                 1,
                 render_entities.size() / std::max<std::size_t>(trail_budget, 1U)
             );
             for (std::size_t index = 0; index < render_entities.size(); index += trail_stride) {
                 const EntitySample* entity = render_entities[index];
-                const auto previous = previous_positions_.find(entity->entity_id);
-                if (previous == previous_positions_.end()) {
+                const auto previous = state_->observation.previous_positions.find(entity->entity_id);
+                if (previous == state_->observation.previous_positions.end()) {
                     continue;
                 }
                 const float speed = std::sqrt(
@@ -401,6 +599,7 @@ void WorldRenderer::draw(
                     lerp_value(0.55F, 1.05F, detail.micro_weight) * inverse_zoom,
                     Fade(Color{108, 229, 255, 255}, 0.30F * trail_weight)
                 );
+                ++state_->overlay_usage.agent_trails;
             }
         }
 
@@ -435,13 +634,30 @@ void WorldRenderer::draw(
 
         const SolidQuadBatch body_batch = begin_solid_quad_batch();
         for (const EntitySample* entity : render_entities) {
-            Color color = color_for_entity(*entity, frame.layout.max_energy);
+            const auto visual_key_iterator =
+                state_->groups.visual_keys.find(entity->group_id);
+            const std::uint64_t visual_key = visual_key_iterator !=
+                state_->groups.visual_keys.end()
+                    ? visual_key_iterator->second
+                    : entity->group_id;
+            Color color = color_for_entity_visual(
+                *entity,
+                frame.layout.max_energy,
+                visual_key
+            );
             color.a = static_cast<unsigned char>(std::min<int>(color.a, body_alpha));
             if (options.focus_selected_group && selected_group_id != 0 &&
                 entity->group_id != selected_group_id &&
                 entity->entity_id != options.selected_entity_id) {
                 color.a = static_cast<unsigned char>(
                     std::min<int>(color.a, 10 + static_cast<int>(28.0F * detail.micro_weight))
+                );
+            }
+            if (options.action_filter != ActionFilterMode::All &&
+                entity->entity_id != options.selected_entity_id &&
+                !action_matches_filter(static_cast<Action>(entity->action), options.action_filter)) {
+                color.a = static_cast<unsigned char>(
+                    std::min<int>(color.a, 10 + static_cast<int>(24.0F * detail.agent_weight))
                 );
             }
 
@@ -478,6 +694,11 @@ void WorldRenderer::draw(
                         std::min<int>(alpha, 6 + static_cast<int>(12.0F * detail.micro_weight))
                     );
                 }
+                if (options.action_filter != ActionFilterMode::All &&
+                    entity->entity_id != options.selected_entity_id &&
+                    !action_matches_filter(static_cast<Action>(entity->action), options.action_filter)) {
+                    alpha = static_cast<unsigned char>(std::min<int>(alpha, 8));
+                }
                 emit_solid_quad(
                     core_batch,
                     entity->x - core_radius,
@@ -493,9 +714,10 @@ void WorldRenderer::draw(
         const float individual_action_weight = behavior.actions *
             smooth_range(0.28F, 0.78F, detail.micro_weight);
         if (individual_action_weight > 0.05F && !render_entities.empty()) {
-            const std::size_t action_budget = static_cast<std::size_t>(
-                lerp_value(80.0F, 320.0F, individual_action_weight)
-            );
+            const std::size_t action_budget =
+                context.budget.action_glyphs > state_->overlay_usage.action_glyphs
+                    ? context.budget.action_glyphs - state_->overlay_usage.action_glyphs
+                    : 0U;
             std::size_t drawn_actions = 0;
             for (const EntitySample* entity : render_entities) {
                 if (options.focus_selected_group && selected_group_id != 0 &&
@@ -506,21 +728,37 @@ void WorldRenderer::draw(
                 const bool movement = action == Action::MoveResource ||
                     action == Action::MoveSocial || action == Action::Flee;
                 if (action == Action::Rest || action == Action::None ||
+                    !action_matches_filter(action, options.action_filter) ||
                     (entity->action_success == 0 && !movement)) {
                     continue;
                 }
-                draw_action_glyph(
+                Vector2 direction{entity->vx, entity->vy};
+                const auto previous =
+                    state_->observation.previous_positions.find(entity->entity_id);
+                if (previous != state_->observation.previous_positions.end()) {
+                    direction = resolve_motion_vector(
+                        direction,
+                        Vector2{entity->x, entity->y},
+                        Vector2{previous->second.x, previous->second.y},
+                        world_width,
+                        world_height
+                    );
+                }
+                if (draw_action_glyph(
                     action,
                     Vector2{entity->x, entity->y},
                     lerp_value(3.6F, 6.2F, detail.micro_weight),
                     camera,
                     individual_action_weight *
-                        (entity->action_success != 0 ? 0.90F : 0.48F)
-                );
-                if (++drawn_actions >= action_budget) {
-                    break;
+                        (entity->action_success != 0 ? 0.90F : 0.48F),
+                    direction
+                )) {
+                    if (++drawn_actions >= action_budget) {
+                        break;
+                    }
                 }
             }
+            state_->overlay_usage.action_glyphs += drawn_actions;
         }
     }
 
@@ -541,8 +779,8 @@ void WorldRenderer::draw(
             const Vector2 center{selected->x, selected->y};
 
             if (selected->target_id != 0) {
-                const auto target = current_positions_.find(selected->target_id);
-                if (target != current_positions_.end()) {
+                const auto target = state_->observation.current_positions.find(selected->target_id);
+                if (target != state_->observation.current_positions.end()) {
                     Vector2 target_position{target->second.x, target->second.y};
                     target_position.x = center.x + wrapped_delta(
                         target_position.x - center.x,
@@ -598,6 +836,16 @@ void WorldRenderer::draw(
             }
         }
     }
+
+    state_->performance.tick = frame.tick;
+    const double elapsed_ms = std::chrono::duration<double, std::milli>(
+        std::chrono::steady_clock::now() - timing_start
+    ).count();
+    record_timing(
+        elapsed_ms,
+        state_->performance.draw_ms,
+        state_->performance.draw_ema_ms
+    );
 }
 
 std::uint64_t WorldRenderer::pick_entity(

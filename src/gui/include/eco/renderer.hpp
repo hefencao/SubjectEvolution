@@ -4,14 +4,18 @@
 #include "eco/social_loop.hpp"
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
-#include <deque>
-#include <unordered_map>
+#include <memory>
 #include <vector>
 
 #include <raylib.h>
 
 namespace eco {
+
+namespace render_internal {
+struct RendererState;
+}
 
 enum class RenderLod : std::uint8_t {
     Macro,
@@ -49,6 +53,26 @@ enum class BehaviorOverlayMode : std::uint8_t {
     Combined,
 };
 
+// Filters the semantic behavior layer without changing the underlying entity
+// colors. This is used by observation presets to isolate movement, resource,
+// social, reproductive or survival behavior at any LOD.
+enum class ActionFilterMode : std::uint8_t {
+    All,
+    Movement,
+    Resource,
+    Social,
+    Reproduction,
+    Survival,
+};
+
+// Controls temporal persistence of behavior and group overlays. Environment
+// filtering remains independent because it operates on a different signal.
+enum class OverlayTemporalMode : std::uint8_t {
+    Instant,
+    Responsive,
+    Stable,
+};
+
 struct RenderDetail {
     double estimated_visible = 0.0;
     float projected_spacing = 0.0F;
@@ -70,10 +94,13 @@ struct RenderOptions {
     bool show_event_markers = true;
     bool focus_selected_group = false;
     bool show_group_trails = true;
+    bool show_group_landmarks = false;
     LodMode lod_mode = LodMode::Auto;
     EnvironmentFilterMode environment_filter = EnvironmentFilterMode::Stable;
     EnvironmentViewMode environment_view = EnvironmentViewMode::Composite;
     BehaviorOverlayMode behavior_overlay = BehaviorOverlayMode::Auto;
+    ActionFilterMode action_filter = ActionFilterMode::All;
+    OverlayTemporalMode overlay_temporal = OverlayTemporalMode::Stable;
     std::uint64_t selected_entity_id = 0;
     std::uint64_t selected_group_id = 0;
 };
@@ -99,6 +126,10 @@ struct FrameDiagnostics {
 
 struct GroupBehaviorSummary {
     std::uint64_t group_id = 0;
+    // Stable renderer-owned identity used only for color continuity. It can
+    // survive transient simulation group-id reassignment when the same spatial
+    // cohort is matched across adjacent frames.
+    std::uint64_t visual_key = 0;
     std::size_t members = 0;
     float x = 0.0F;
     float y = 0.0F;
@@ -126,6 +157,39 @@ struct EnvironmentProbe {
     float gradient_magnitude = 0.0F;
 };
 
+// A single budget is shared by every overlay layer. This keeps Macro and
+// Medium readable when group trails, behavior glyphs, events and social links
+// are enabled at the same time.
+struct OverlayBudget {
+    std::size_t agent_markers = 0;
+    std::size_t agent_trails = 0;
+    std::size_t event_markers = 0;
+    std::size_t action_glyphs = 0;
+    std::size_t group_markers = 0;
+    std::size_t group_trail_segments = 0;
+    std::size_t relationship_lines = 0;
+};
+
+struct OverlayUsage {
+    std::size_t agent_markers = 0;
+    std::size_t agent_trails = 0;
+    std::size_t event_markers = 0;
+    std::size_t action_glyphs = 0;
+    std::size_t group_markers = 0;
+    std::size_t group_trail_segments = 0;
+    std::size_t relationship_lines = 0;
+};
+
+struct RenderPerformance {
+    std::uint64_t tick = 0;
+    double observe_ms = 0.0;
+    double heatmap_ms = 0.0;
+    double draw_ms = 0.0;
+    double observe_ema_ms = 0.0;
+    double heatmap_ema_ms = 0.0;
+    double draw_ema_ms = 0.0;
+};
+
 [[nodiscard]] RenderDetail resolve_render_detail(
     const Frame& frame,
     const Camera2D& camera,
@@ -145,6 +209,9 @@ struct EnvironmentProbe {
 [[nodiscard]] const char* environment_filter_name(EnvironmentFilterMode mode) noexcept;
 [[nodiscard]] const char* environment_view_name(EnvironmentViewMode mode) noexcept;
 [[nodiscard]] const char* behavior_overlay_name(BehaviorOverlayMode mode) noexcept;
+[[nodiscard]] const char* action_filter_name(ActionFilterMode mode) noexcept;
+[[nodiscard]] const char* overlay_temporal_name(OverlayTemporalMode mode) noexcept;
+[[nodiscard]] bool action_matches_filter(Action action, ActionFilterMode mode) noexcept;
 
 class WorldRenderer {
 public:
@@ -155,11 +222,18 @@ public:
         Reproduce,
     };
 
-    WorldRenderer() = default;
+    WorldRenderer();
     ~WorldRenderer();
 
     WorldRenderer(const WorldRenderer&) = delete;
     WorldRenderer& operator=(const WorldRenderer&) = delete;
+    WorldRenderer(WorldRenderer&&) noexcept;
+    WorldRenderer& operator=(WorldRenderer&&) noexcept;
+
+    // Clears every display-derived cache and advances stream_epoch(). Use this
+    // when attaching to another mmap stream. Tick rollback and layout changes
+    // are detected automatically by observe_frame().
+    void reset_stream_state();
 
     void observe_frame(const Frame& frame);
 
@@ -191,16 +265,14 @@ public:
         float radius_pixels = 24.0F
     ) const;
 
-    [[nodiscard]] const FrameDiagnostics& diagnostics() const noexcept {
-        return diagnostics_;
-    }
-
-    [[nodiscard]] const std::vector<GroupBehaviorSummary>& group_behaviors() const noexcept {
-        return group_behaviors_;
-    }
+    [[nodiscard]] const FrameDiagnostics& diagnostics() const noexcept;
+    [[nodiscard]] const std::vector<GroupBehaviorSummary>& group_behaviors(
+        OverlayTemporalMode mode = OverlayTemporalMode::Stable
+    ) const noexcept;
 
     [[nodiscard]] const GroupBehaviorSummary* group_behavior(
-        std::uint64_t group_id
+        std::uint64_t group_id,
+        OverlayTemporalMode mode = OverlayTemporalMode::Stable
     ) const noexcept;
 
     [[nodiscard]] EnvironmentProbe probe_environment(
@@ -210,59 +282,16 @@ public:
         int resource_channel
     ) const noexcept;
 
+    [[nodiscard]] const OverlayBudget& overlay_budget() const noexcept;
+    [[nodiscard]] const OverlayUsage& overlay_usage() const noexcept;
+    [[nodiscard]] const RenderPerformance& performance() const noexcept;
+    [[nodiscard]] std::uint64_t stream_epoch() const noexcept;
+
 private:
-    struct PositionSample {
-        float x = 0.0F;
-        float y = 0.0F;
-        float vx = 0.0F;
-        float vy = 0.0F;
-    };
-
-    struct GroupTrailPoint {
-        std::uint64_t tick = 0;
-        float x = 0.0F;
-        float y = 0.0F;
-        std::size_t members = 0;
-        float coherence = 0.0F;
-        Action dominant_action = Action::Rest;
-    };
-
-    struct EventMarker {
-        std::uint64_t entity_id = 0;
-        std::uint64_t tick = 0;
-        float x = 0.0F;
-        float y = 0.0F;
-        EventKind kind = EventKind::Birth;
-    };
-
     void ensure_texture(
         std::uint32_t grid_x,
         std::uint32_t grid_y
     );
-
-    Texture2D heatmap_{};
-    std::uint32_t grid_x_ = 0;
-    std::uint32_t grid_y_ = 0;
-    std::vector<Color> pixels_;
-    int texture_filter_ = -1;
-
-    std::array<float, 4> resource_low_{};
-    std::array<float, 4> resource_high_{};
-    std::array<bool, 4> resource_scale_initialized_{};
-    std::array<float, 4> resource_adaptive_low_{};
-    std::array<float, 4> resource_adaptive_high_{};
-    std::array<bool, 4> resource_adaptive_initialized_{};
-    std::array<std::vector<float>, 4> filtered_resources_;
-    std::vector<float> filtered_hazard_;
-    std::array<std::vector<float>, 4> previous_resources_;
-    std::vector<float> previous_hazard_;
-    std::uint64_t last_heatmap_tick_ = 0;
-
-    std::unordered_map<std::uint64_t, PositionSample> previous_positions_;
-    std::unordered_map<std::uint64_t, PositionSample> current_positions_;
-    std::vector<EventMarker> event_markers_;
-    std::unordered_map<std::uint64_t, std::deque<GroupTrailPoint>> group_trails_;
-    std::uint64_t last_group_trail_tick_ = 0;
 
     void draw_group_history_overlay(
         const Frame& frame,
@@ -271,6 +300,18 @@ private:
         const RenderDetail& detail,
         const RenderOptions& options,
         std::uint64_t selected_group_id,
+        const OverlayBudget& budget,
+        float weight
+    ) const;
+
+    void draw_group_landmarks_overlay(
+        const Frame& frame,
+        const Camera2D& camera,
+        Rectangle viewport,
+        const RenderDetail& detail,
+        const RenderOptions& options,
+        std::uint64_t selected_group_id,
+        const OverlayBudget& budget,
         float weight
     ) const;
 
@@ -281,10 +322,7 @@ private:
         const EntitySample& selected
     ) const;
 
-    FrameDiagnostics diagnostics_{};
-    std::vector<GroupBehaviorSummary> group_behaviors_;
-    std::uint64_t last_observed_tick_ = 0;
-    bool has_observed_frame_ = false;
+    mutable std::unique_ptr<render_internal::RendererState> state_;
 };
 
 Color color_for_entity(

@@ -1,12 +1,13 @@
-# v13 renderer implementation modules.
-# Include this file from the project root CMakeLists.txt, then add
-# ${ECO_RENDERER_SOURCES} to the eco_game_runtime target.
-set(ECO_RENDERER_SOURCES
-    src/gui/src/renderer.cpp
-    src/gui/src/renderer_internal.cpp
-    src/gui/src/renderer_core.cpp
-    src/gui/src/renderer_environment.cpp
-    src/gui/src/renderer_observation.cpp
-    src/gui/src/renderer_groups.cpp
-    src/gui/src/renderer_draw.cpp
+# v14 renderer implementation modules.
+# Include this file after the eco_game_runtime target is created:
+#   include("${CMAKE_CURRENT_LIST_DIR}/renderer_sources.cmake")
+#   target_sources(eco_game_runtime PRIVATE ${ECO_RENDERER_MODULE_SOURCES})
+set(ECO_RENDERER_MODULE_SOURCES
+    "${CMAKE_CURRENT_LIST_DIR}/src/renderer_internal.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/src/renderer_context.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/src/renderer_core.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/src/renderer_environment.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/src/renderer_observation.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/src/renderer_groups.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/src/renderer_draw.cpp"
 )

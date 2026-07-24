@@ -80,3 +80,7 @@ if(ECO_BUILD_TESTS)
 
     add_test(NAME protocol_layout_test COMMAND protocol_layout_test)
 endif()
+
+# BEGIN ECO_RENDERER_V14_CONTEXT
+target_sources(eco_game_runtime PRIVATE "src/renderer_context.cpp")
+# END ECO_RENDERER_V14_CONTEXT

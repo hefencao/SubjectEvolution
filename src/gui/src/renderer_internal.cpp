@@ -49,6 +49,51 @@ float lerp_value(float low, float high, float weight) {
     return low + (high - low) * clamp01(weight);
 }
 
+float temporal_alpha_for_half_life(
+    float half_life_ticks,
+    std::uint64_t elapsed_ticks
+) noexcept {
+    if (half_life_ticks <= 0.0F || elapsed_ticks == 0) {
+        return elapsed_ticks == 0 ? 0.0F : 1.0F;
+    }
+    const float elapsed = static_cast<float>(elapsed_ticks);
+    return clamp01(1.0F - std::exp2(-elapsed / half_life_ticks));
+}
+
+const std::vector<GroupBehaviorSummary>& select_group_behaviors(
+    const GroupCache& groups,
+    OverlayTemporalMode mode
+) noexcept {
+    switch (mode) {
+    case OverlayTemporalMode::Instant:
+        return groups.behaviors;
+    case OverlayTemporalMode::Responsive:
+        return groups.responsive_behaviors.empty()
+            ? groups.behaviors
+            : groups.responsive_behaviors;
+    case OverlayTemporalMode::Stable:
+        return groups.stable_behaviors.empty()
+            ? groups.behaviors
+            : groups.stable_behaviors;
+    }
+    return groups.behaviors;
+}
+
+const std::array<ActionActivityCell, kActionFieldCellCount>& select_action_field(
+    const ActionFieldCache& field,
+    OverlayTemporalMode mode
+) noexcept {
+    switch (mode) {
+    case OverlayTemporalMode::Instant:
+        return field.raw;
+    case OverlayTemporalMode::Responsive:
+        return field.responsive;
+    case OverlayTemporalMode::Stable:
+        return field.stable;
+    }
+    return field.raw;
+}
+
 std::uint64_t mix_id(std::uint64_t value) {
     value ^= value >> 33U;
     value *= 0xff51afd7ed558ccdULL;
@@ -291,6 +336,7 @@ Color heat_color(
     float gradient_x,
     float gradient_y,
     float hazard_edge,
+    float depletion,
     const RenderDetail& detail,
     const RenderOptions& options
 ) {
@@ -300,6 +346,7 @@ Color heat_color(
     resource_change = std::clamp(resource_change, -1.0F, 1.0F);
     hazard_change = std::clamp(hazard_change, -1.0F, 1.0F);
     hazard_edge = clamp01(hazard_edge);
+    depletion = clamp01(depletion);
 
     const float gradient_magnitude = clamp01(
         std::sqrt(gradient_x * gradient_x + gradient_y * gradient_y)
@@ -409,11 +456,15 @@ Color heat_color(
     }
 
     if (options.show_population_density) {
-        const float density_strength = 0.12F * detail.density_weight;
+        // When resources are globally depleted, population structure becomes
+        // the most useful remaining macro signal. Raise density contrast
+        // smoothly instead of leaving the overview almost blank.
+        const float density_strength =
+            (0.10F + 0.22F * depletion) * detail.density_weight;
         const float density_curve = std::sqrt(population_density) * density_strength;
-        red += density_curve * 10.0F;
-        green += density_curve * 78.0F;
-        blue += density_curve * 94.0F;
+        red += density_curve * (10.0F + 8.0F * depletion);
+        green += density_curve * (74.0F + 42.0F * depletion);
+        blue += density_curve * (90.0F + 48.0F * depletion);
     }
 
     if (options.show_environment_change) {
@@ -719,39 +770,121 @@ Color behavior_color(Action action, unsigned char alpha) {
 
 
 Color color_for_group_id(std::uint64_t group_id, unsigned char alpha) {
+    if (group_id == 0) {
+        return Color{118, 154, 176, alpha};
+    }
     const std::uint64_t hash = mix_id(group_id);
-    const float hue = static_cast<float>(hash & 0xFFFFU) / 65535.0F;
+    const std::uint32_t hue_bits = static_cast<std::uint32_t>(
+        (hash ^ (hash >> 29U) ^ (hash >> 47U)) & 0xFFFFFFU
+    );
+    const float hue = static_cast<float>(hue_bits) / 16777215.0F;
     return hsv_color(hue, 0.78F, 0.98F, alpha);
 }
+
+bool action_uses_direction(Action action) noexcept {
+    return action == Action::MoveResource ||
+           action == Action::MoveSocial ||
+           action == Action::Flee;
+}
+
+Vector2 resolve_motion_vector(
+    Vector2 velocity,
+    Vector2 current,
+    Vector2 previous,
+    float world_width,
+    float world_height
+) noexcept {
+    const float velocity_length = std::sqrt(
+        velocity.x * velocity.x + velocity.y * velocity.y
+    );
+    if (finite_value(velocity.x) && finite_value(velocity.y) &&
+        velocity_length > 1.0e-5F) {
+        return velocity;
+    }
+
+    if (!valid_world_position(current.x, current.y) ||
+        !valid_world_position(previous.x, previous.y)) {
+        return Vector2{0.0F, 0.0F};
+    }
+    return Vector2{
+        wrapped_delta(current.x - previous.x, world_width),
+        wrapped_delta(current.y - previous.y, world_height)
+    };
+}
+
+namespace {
+
+struct GlyphBasis {
+    Vector2 forward{1.0F, 0.0F};
+    Vector2 side{0.0F, 1.0F};
+    bool valid = true;
+};
+
+GlyphBasis glyph_basis(Action action, Vector2 direction) {
+    if (!action_uses_direction(action)) {
+        return GlyphBasis{};
+    }
+    const float length = std::sqrt(
+        direction.x * direction.x + direction.y * direction.y
+    );
+    if (!finite_value(direction.x) || !finite_value(direction.y) ||
+        length <= 1.0e-5F) {
+        return GlyphBasis{Vector2{1.0F, 0.0F}, Vector2{0.0F, 1.0F}, false};
+    }
+    const Vector2 forward{direction.x / length, direction.y / length};
+    return GlyphBasis{forward, Vector2{-forward.y, forward.x}, true};
+}
+
+Vector2 glyph_point(
+    Vector2 center,
+    const GlyphBasis& basis,
+    float local_x,
+    float local_y
+) {
+    return Vector2{
+        center.x + basis.forward.x * local_x + basis.side.x * local_y,
+        center.y + basis.forward.y * local_x + basis.side.y * local_y
+    };
+}
+
+}  // namespace
 
 void draw_action_glyph_layer(
     Action action,
     Vector2 center,
     float radius,
     float width,
-    Color color
+    Color color,
+    Vector2 direction
 ) {
+    const GlyphBasis basis = glyph_basis(action, direction);
+    if (!basis.valid) {
+        return;
+    }
+    const auto point = [&](float x, float y) {
+        return glyph_point(center, basis, x, y);
+    };
+
     switch (action) {
     case Action::MoveResource:
-        DrawLineEx(Vector2{center.x - radius, center.y},
-            Vector2{center.x + radius * 0.75F, center.y}, width, color);
-        DrawLineEx(Vector2{center.x + radius * 0.75F, center.y},
-            Vector2{center.x + radius * 0.15F, center.y - radius * 0.58F}, width, color);
-        DrawLineEx(Vector2{center.x + radius * 0.75F, center.y},
-            Vector2{center.x + radius * 0.15F, center.y + radius * 0.58F}, width, color);
+        DrawLineEx(point(-radius, 0.0F), point(radius * 0.75F, 0.0F), width, color);
+        DrawLineEx(point(radius * 0.75F, 0.0F),
+            point(radius * 0.15F, -radius * 0.58F), width, color);
+        DrawLineEx(point(radius * 0.75F, 0.0F),
+            point(radius * 0.15F, radius * 0.58F), width, color);
         break;
     case Action::MoveSocial:
-        DrawCircleV(Vector2{center.x - radius * 0.52F, center.y}, radius * 0.24F, color);
-        DrawCircleV(Vector2{center.x + radius * 0.52F, center.y}, radius * 0.24F, color);
-        DrawLineEx(Vector2{center.x - radius * 0.28F, center.y},
-            Vector2{center.x + radius * 0.28F, center.y}, width, color);
+        DrawCircleV(point(-radius * 0.52F, 0.0F), radius * 0.24F, color);
+        DrawCircleV(point(radius * 0.52F, 0.0F), radius * 0.24F, color);
+        DrawLineEx(point(-radius * 0.28F, 0.0F),
+            point(radius * 0.28F, 0.0F), width, color);
         break;
     case Action::Harvest:
         // Pickaxe glyph remains visible over green resources.
-        DrawLineEx(Vector2{center.x - radius * 0.48F, center.y + radius * 0.72F},
-            Vector2{center.x + radius * 0.28F, center.y - radius * 0.42F}, width, color);
-        DrawLineEx(Vector2{center.x - radius * 0.46F, center.y - radius * 0.42F},
-            Vector2{center.x + radius * 0.72F, center.y - radius * 0.08F}, width, color);
+        DrawLineEx(point(-radius * 0.48F, radius * 0.72F),
+            point(radius * 0.28F, -radius * 0.42F), width, color);
+        DrawLineEx(point(-radius * 0.46F, -radius * 0.42F),
+            point(radius * 0.72F, -radius * 0.08F), width, color);
         break;
     case Action::Share:
         DrawCircleLines(static_cast<int>(center.x - radius * 0.56F),
@@ -780,10 +913,10 @@ void draw_action_glyph_layer(
     case Action::Flee:
         for (int offset = -1; offset <= 1; offset += 2) {
             const float shift = static_cast<float>(offset) * radius * 0.28F;
-            DrawLineEx(Vector2{center.x - radius * 0.75F + shift, center.y - radius * 0.62F},
-                Vector2{center.x + shift, center.y}, width, color);
-            DrawLineEx(Vector2{center.x + shift, center.y},
-                Vector2{center.x - radius * 0.75F + shift, center.y + radius * 0.62F}, width, color);
+            DrawLineEx(point(-radius * 0.75F + shift, -radius * 0.62F),
+                point(shift, 0.0F), width, color);
+            DrawLineEx(point(shift, 0.0F),
+                point(-radius * 0.75F + shift, radius * 0.62F), width, color);
         }
         break;
     case Action::Rest:
@@ -799,15 +932,20 @@ void draw_action_glyph_layer(
     }
 }
 
-void draw_action_glyph(
+bool draw_action_glyph(
     Action action,
     Vector2 center,
     float radius_pixels,
     const Camera2D& camera,
-    float alpha
+    float alpha,
+    Vector2 direction
 ) {
     if (action_index(action) < 0 || alpha <= 0.01F) {
-        return;
+        return false;
+    }
+    const GlyphBasis basis = glyph_basis(action, direction);
+    if (!basis.valid) {
+        return false;
     }
     const float inverse_zoom = 1.0F / std::max(camera.zoom, 0.001F);
     const float radius = radius_pixels * inverse_zoom;
@@ -821,15 +959,18 @@ void draw_action_glyph(
         center,
         radius + 1.1F * inverse_zoom,
         shadow_width,
-        Color{2, 4, 7, static_cast<unsigned char>(opacity * 0.78F)}
+        Color{2, 4, 7, static_cast<unsigned char>(opacity * 0.78F)},
+        direction
     );
     draw_action_glyph_layer(
         action,
         center,
         radius,
         color_width,
-        behavior_color(action, opacity)
+        behavior_color(action, opacity),
+        direction
     );
+    return true;
 }
 
 BehaviorWeights resolve_behavior_weights(
@@ -862,57 +1003,17 @@ BehaviorWeights resolve_behavior_weights(
     };
 }
 
-struct ActionActivityCell {
-    std::array<float, 8> weights{};
-    float sum_x = 0.0F;
-    float sum_y = 0.0F;
-    float total = 0.0F;
-    std::uint32_t samples = 0;
-};
-
-void draw_action_activity_field(
-    const Frame& frame,
+std::size_t draw_action_activity_field(
+    const std::array<ActionActivityCell, kActionFieldCellCount>& cells,
+    const FileHeader& layout,
     const Camera2D& camera,
-    float weight
+    std::size_t budget,
+    float weight,
+    ActionFilterMode filter
 ) {
     weight = clamp01(weight);
-    if (weight < 0.08F || frame.entities.empty()) {
-        return;
-    }
-
-    constexpr int columns = 24;
-    constexpr int rows = 15;
-    constexpr int count = columns * rows;
-    static thread_local std::array<ActionActivityCell, count> cells{};
-    cells.fill(ActionActivityCell{});
-
-    const float world_width = std::max(frame.layout.world_width, 1.0F);
-    const float world_height = std::max(frame.layout.world_height, 1.0F);
-
-    for (const EntitySample& entity : frame.entities) {
-        if (!valid_entity_sample(entity)) {
-            continue;
-        }
-        const Action action = static_cast<Action>(entity.action);
-        const int index = action_index(action);
-        if (index < 0 || action == Action::Rest) {
-            continue;
-        }
-        const int column = std::clamp(
-            static_cast<int>(entity.x / world_width * columns), 0, columns - 1);
-        const int row = std::clamp(
-            static_cast<int>(entity.y / world_height * rows), 0, rows - 1);
-        ActionActivityCell& cell = cells[static_cast<std::size_t>(row * columns + column)];
-        const bool movement = action == Action::MoveResource ||
-            action == Action::MoveSocial || action == Action::Flee;
-        const float sample_weight = entity.action_success != 0
-            ? 2.4F
-            : movement ? 0.58F : 0.22F;
-        cell.weights[static_cast<std::size_t>(index)] += sample_weight;
-        cell.total += sample_weight;
-        cell.sum_x += entity.x * sample_weight;
-        cell.sum_y += entity.y * sample_weight;
-        ++cell.samples;
+    if (weight < 0.08F || budget == 0) {
+        return 0;
     }
 
     struct Candidate {
@@ -920,77 +1021,137 @@ void draw_action_activity_field(
         Action action = Action::Rest;
         float score = 0.0F;
         float dominance = 0.0F;
+        Vector2 direction{};
+        float direction_coherence = 0.0F;
+        Vector2 center{};
     };
     std::vector<Candidate> candidates;
-    candidates.reserve(count);
+    candidates.reserve(kActionFieldCellCount);
 
-    for (int index = 0; index < count; ++index) {
+    const float world_width = std::max(layout.world_width, 1.0F);
+    const float world_height = std::max(layout.world_height, 1.0F);
+    const float cell_width = world_width / static_cast<float>(kActionFieldColumns);
+    const float cell_height = world_height / static_cast<float>(kActionFieldRows);
+
+    for (int index = 0; index < kActionFieldCellCount; ++index) {
         const ActionActivityCell& cell = cells[static_cast<std::size_t>(index)];
-        if (cell.total < 3.0F || cell.samples < 3U) {
-            continue;
-        }
-        int dominant_index = 0;
-        for (int action = 1; action < 8; ++action) {
-            if (cell.weights[static_cast<std::size_t>(action)] >
-                cell.weights[static_cast<std::size_t>(dominant_index)]) {
-                dominant_index = action;
+        float filtered_total = 0.0F;
+        float filtered_samples = 0.0F;
+        int dominant_index = -1;
+        float dominant_weight = 0.0F;
+        for (int action_index_value = 0; action_index_value < 8; ++action_index_value) {
+            const Action action = static_cast<Action>(action_index_value);
+            if (action == Action::Rest || !action_matches_filter(action, filter)) {
+                continue;
+            }
+            const float action_weight = cell.weights[static_cast<std::size_t>(action_index_value)];
+            filtered_total += action_weight;
+            filtered_samples += cell.samples[static_cast<std::size_t>(action_index_value)];
+            if (action_weight > dominant_weight) {
+                dominant_weight = action_weight;
+                dominant_index = action_index_value;
             }
         }
-        const float dominant_weight = cell.weights[static_cast<std::size_t>(dominant_index)];
-        const float dominance = dominant_weight / std::max(cell.total, 1.0e-5F);
-        if (dominance < 0.28F) {
+        if (dominant_index < 0 || filtered_total < 1.6F || filtered_samples < 1.2F) {
             continue;
         }
-        const float score = std::log1p(cell.total) * (0.55F + dominance);
+
+        const float dominance = dominant_weight / std::max(filtered_total, 1.0e-5F);
+        if (dominance < 0.30F) {
+            continue;
+        }
+        const Action dominant_action = static_cast<Action>(dominant_index);
+        const std::size_t slot = static_cast<std::size_t>(dominant_index);
+        Vector2 direction{};
+        float direction_coherence = 1.0F;
+        if (action_uses_direction(dominant_action)) {
+            const float resultant = std::sqrt(
+                cell.sum_vx[slot] * cell.sum_vx[slot] +
+                cell.sum_vy[slot] * cell.sum_vy[slot]
+            );
+            const float summed_speed = cell.sum_speed[slot];
+            direction_coherence = summed_speed > 1.0e-5F
+                ? clamp01(resultant / summed_speed)
+                : 0.0F;
+            if (resultant <= 1.0e-5F || direction_coherence < 0.24F) {
+                continue;
+            }
+            direction = Vector2{
+                cell.sum_vx[slot] / resultant,
+                cell.sum_vy[slot] / resultant
+            };
+        }
+
+        const int column = index % kActionFieldColumns;
+        const int row = index / kActionFieldColumns;
+        Vector2 center{
+            (static_cast<float>(column) + 0.5F) * cell_width,
+            (static_cast<float>(row) + 0.5F) * cell_height
+        };
+        if (dominant_weight > 1.0e-5F) {
+            center.x = cell.sum_x[slot] / dominant_weight;
+            center.y = cell.sum_y[slot] / dominant_weight;
+        }
+        const float score = std::log1p(filtered_total) * (0.58F + dominance) *
+            (action_uses_direction(dominant_action)
+                ? 0.42F + 0.58F * direction_coherence
+                : 1.0F);
         candidates.push_back(Candidate{
             index,
-            static_cast<Action>(dominant_index),
+            dominant_action,
             score,
-            dominance
+            dominance,
+            direction,
+            direction_coherence,
+            center
         });
     }
 
     std::sort(candidates.begin(), candidates.end(),
         [](const Candidate& left, const Candidate& right) {
-            return left.score > right.score;
+            if (left.score != right.score) {
+                return left.score > right.score;
+            }
+            return left.index < right.index;
         });
-    const std::size_t budget = static_cast<std::size_t>(
-        lerp_value(28.0F, 84.0F, weight)
-    );
     if (candidates.size() > budget) {
         candidates.resize(budget);
     }
 
     for (const Candidate& candidate : candidates) {
         const ActionActivityCell& cell = cells[static_cast<std::size_t>(candidate.index)];
-        const Vector2 center{
-            cell.sum_x / std::max(cell.total, 1.0e-5F),
-            cell.sum_y / std::max(cell.total, 1.0e-5F)
-        };
+        const std::size_t slot = static_cast<std::size_t>(action_index(candidate.action));
+        const float activity = cell.weights[slot];
         const float radius_pixels = std::clamp(
-            4.0F + 1.45F * std::log1p(cell.total), 5.0F, 11.5F);
+            4.0F + 1.35F * std::log1p(activity), 5.0F, 10.5F);
         draw_action_glyph(
             candidate.action,
-            center,
+            candidate.center,
             radius_pixels,
             camera,
-            weight * (0.30F + 0.62F * candidate.dominance)
+            weight * (0.28F + 0.60F * candidate.dominance),
+            candidate.direction
         );
     }
+    return candidates.size();
 }
 
-void draw_group_behavior_overlay(
+std::size_t draw_group_behavior_overlay(
     const std::vector<GroupBehaviorSummary>& groups,
     const Camera2D& camera,
-    float weight
+    std::size_t budget,
+    float weight,
+    ActionFilterMode filter
 ) {
     weight = clamp01(weight);
-    if (weight < 0.08F || groups.empty()) {
-        return;
+    if (weight < 0.08F || groups.empty() || budget == 0) {
+        return 0;
     }
 
     struct Candidate {
         const GroupBehaviorSummary* group = nullptr;
+        Action display_action = Action::Rest;
+        float display_fraction = 0.0F;
         float score = 0.0F;
     };
     std::vector<Candidate> candidates;
@@ -1000,26 +1161,48 @@ void draw_group_behavior_overlay(
         if (group.members < 8U) {
             continue;
         }
-        const float behavior_strength = std::max(
-            group.coherence,
-            group.dominant_action_fraction * group.active_fraction
-        );
-        if (behavior_strength < 0.055F) {
+
+        Action display_action = group.dominant_action;
+        float display_fraction = group.dominant_action_fraction;
+        if (filter != ActionFilterMode::All) {
+            display_action = Action::Rest;
+            display_fraction = 0.0F;
+            for (std::size_t index = 0; index < group.action_fractions.size(); ++index) {
+                const Action candidate_action = static_cast<Action>(index);
+                if (!action_matches_filter(candidate_action, filter)) {
+                    continue;
+                }
+                if (group.action_fractions[index] > display_fraction) {
+                    display_fraction = group.action_fractions[index];
+                    display_action = candidate_action;
+                }
+            }
+        }
+
+        const float filtered_activity = display_fraction * group.active_fraction;
+        const float movement_signal = filter == ActionFilterMode::All ||
+            filter == ActionFilterMode::Movement
+                ? group.coherence
+                : 0.0F;
+        const float behavior_strength = std::max(movement_signal, filtered_activity);
+        if (behavior_strength < 0.055F ||
+            (filter != ActionFilterMode::All && display_fraction < 0.025F)) {
             continue;
         }
         const float score = std::log1p(static_cast<float>(group.members)) *
-            (0.32F + group.coherence +
-             0.58F * group.dominant_action_fraction * group.active_fraction);
-        candidates.push_back(Candidate{&group, score});
+            (0.32F + movement_signal + 0.72F * filtered_activity);
+        candidates.push_back(Candidate{
+            &group,
+            display_action,
+            display_fraction,
+            score
+        });
     }
 
     std::sort(candidates.begin(), candidates.end(),
         [](const Candidate& left, const Candidate& right) {
             return left.score > right.score;
         });
-    const std::size_t budget = static_cast<std::size_t>(
-        lerp_value(8.0F, 24.0F, weight)
-    );
     if (candidates.size() > budget) {
         candidates.resize(budget);
     }
@@ -1040,11 +1223,11 @@ void draw_group_behavior_overlay(
             0.48F * group.coherence +
             0.20F * group.active_fraction);
         Color group_color = color_for_group_id(
-            group.group_id,
+            group.visual_key != 0 ? group.visual_key : group.group_id,
             static_cast<unsigned char>(std::clamp(opacity * 255.0F, 0.0F, 235.0F))
         );
 
-        if (finite_value(speed) && speed > 1.0e-5F && group.coherence > 0.045F) {
+        if (finite_value(speed) && speed > 0.012F && group.coherence > 0.12F) {
             const float direction_x = group.mean_vx / speed;
             const float direction_y = group.mean_vy / speed;
             const float length_pixels = std::clamp(
@@ -1083,18 +1266,19 @@ void draw_group_behavior_overlay(
                 group_color
             );
 
-            if (group.dominant_action != Action::Rest &&
-                group.dominant_action_fraction > 0.22F) {
+            if (candidate.display_action != Action::Rest &&
+                candidate.display_fraction > 0.22F) {
                 const Vector2 badge{
                     head.x + direction_x * 4.0F * inverse_zoom,
                     head.y + direction_y * 4.0F * inverse_zoom
                 };
                 draw_action_glyph(
-                    group.dominant_action,
+                    candidate.display_action,
                     badge,
-                    4.5F + 3.5F * group.dominant_action_fraction,
+                    4.5F + 3.5F * candidate.display_fraction,
                     camera,
-                    opacity * (0.58F + 0.42F * group.dominant_action_fraction)
+                    opacity * (0.58F + 0.42F * candidate.display_fraction),
+                    Vector2{group.mean_vx, group.mean_vy}
                 );
             }
         } else {
@@ -1114,18 +1298,20 @@ void draw_group_behavior_overlay(
                 width,
                 group_color
             );
-            if (group.dominant_action != Action::Rest &&
-                group.dominant_action_fraction > 0.26F) {
+            if (candidate.display_action != Action::Rest &&
+                candidate.display_fraction > 0.26F) {
                 draw_action_glyph(
-                    group.dominant_action,
+                    candidate.display_action,
                     center,
-                    4.5F + 2.8F * group.dominant_action_fraction,
+                    4.5F + 2.8F * candidate.display_fraction,
                     camera,
-                    opacity
+                    opacity,
+                    Vector2{group.mean_vx, group.mean_vy}
                 );
             }
         }
     }
+    return candidates.size();
 }
 
 }  // namespace eco::render_internal

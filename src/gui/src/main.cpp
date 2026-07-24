@@ -243,6 +243,119 @@ std::optional<LaunchRequest> show_launcher(
     return std::nullopt;
 }
 
+enum class ObservationPreset : std::uint8_t {
+    Custom,
+    Overview,
+    Ecology,
+    Migration,
+    Social,
+    Survival,
+    Reproduction,
+};
+
+const char* observation_preset_name(ObservationPreset preset) {
+    switch (preset) {
+    case ObservationPreset::Custom:
+        return "custom";
+    case ObservationPreset::Overview:
+        return "overview";
+    case ObservationPreset::Ecology:
+        return "ecology";
+    case ObservationPreset::Migration:
+        return "migration";
+    case ObservationPreset::Social:
+        return "social";
+    case ObservationPreset::Survival:
+        return "survival";
+    case ObservationPreset::Reproduction:
+        return "reproduction";
+    }
+    return "custom";
+}
+
+void apply_observation_preset(
+    ObservationPreset preset,
+    eco::RenderOptions& options
+) {
+    options.lod_mode = eco::LodMode::Auto;
+    options.environment_filter = eco::EnvironmentFilterMode::Stable;
+    options.show_environment_change = false;
+    options.show_grid = false;
+    options.focus_selected_group = false;
+    options.show_group_landmarks = false;
+    options.overlay_temporal = eco::OverlayTemporalMode::Stable;
+
+    switch (preset) {
+    case ObservationPreset::Overview:
+        options.environment_view = eco::EnvironmentViewMode::Composite;
+        options.show_hazard = true;
+        options.show_population_density = true;
+        options.show_event_markers = true;
+        options.show_group_trails = true;
+        options.show_velocity = false;
+        options.show_group_landmarks = true;
+        options.behavior_overlay = eco::BehaviorOverlayMode::Combined;
+        options.action_filter = eco::ActionFilterMode::All;
+        break;
+    case ObservationPreset::Ecology:
+        options.environment_view = eco::EnvironmentViewMode::ResourceAbsolute;
+        options.show_hazard = false;
+        options.show_population_density = false;
+        options.show_event_markers = false;
+        options.show_group_trails = false;
+        options.show_velocity = false;
+        options.behavior_overlay = eco::BehaviorOverlayMode::Off;
+        options.action_filter = eco::ActionFilterMode::All;
+        break;
+    case ObservationPreset::Migration:
+        options.environment_view = eco::EnvironmentViewMode::Composite;
+        options.show_hazard = false;
+        options.show_population_density = true;
+        options.show_event_markers = false;
+        options.show_group_trails = true;
+        options.show_velocity = false;
+        options.show_group_landmarks = true;
+        options.behavior_overlay = eco::BehaviorOverlayMode::Groups;
+        options.action_filter = eco::ActionFilterMode::Movement;
+        break;
+    case ObservationPreset::Social:
+        options.environment_view = eco::EnvironmentViewMode::PopulationDensity;
+        options.show_hazard = false;
+        options.show_population_density = true;
+        options.show_event_markers = false;
+        options.show_group_trails = true;
+        options.show_velocity = false;
+        options.show_group_landmarks = true;
+        options.behavior_overlay = eco::BehaviorOverlayMode::Combined;
+        options.action_filter = eco::ActionFilterMode::Social;
+        break;
+    case ObservationPreset::Survival:
+        options.environment_view = eco::EnvironmentViewMode::Hazard;
+        options.show_hazard = true;
+        options.show_population_density = true;
+        options.show_event_markers = true;
+        options.show_group_trails = true;
+        options.show_velocity = false;
+        options.show_group_landmarks = true;
+        options.behavior_overlay = eco::BehaviorOverlayMode::Combined;
+        options.action_filter = eco::ActionFilterMode::Survival;
+        break;
+    case ObservationPreset::Reproduction:
+        options.environment_view = eco::EnvironmentViewMode::PopulationDensity;
+        options.show_hazard = false;
+        options.show_population_density = true;
+        options.show_event_markers = true;
+        options.show_group_trails = false;
+        options.show_velocity = false;
+        options.behavior_overlay = eco::BehaviorOverlayMode::Actions;
+        options.action_filter = eco::ActionFilterMode::Reproduction;
+        options.overlay_temporal = eco::OverlayTemporalMode::Responsive;
+        break;
+    case ObservationPreset::Custom:
+        break;
+    }
+}
+
 constexpr float kSidebarWidth = 510.0F;
 constexpr float kPanelMargin = 12.0F;
 
@@ -556,6 +669,39 @@ eco::BehaviorOverlayMode next_behavior_overlay(
     return eco::BehaviorOverlayMode::Auto;
 }
 
+eco::ActionFilterMode next_action_filter(eco::ActionFilterMode mode) {
+    switch (mode) {
+    case eco::ActionFilterMode::All:
+        return eco::ActionFilterMode::Movement;
+    case eco::ActionFilterMode::Movement:
+        return eco::ActionFilterMode::Resource;
+    case eco::ActionFilterMode::Resource:
+        return eco::ActionFilterMode::Social;
+    case eco::ActionFilterMode::Social:
+        return eco::ActionFilterMode::Reproduction;
+    case eco::ActionFilterMode::Reproduction:
+        return eco::ActionFilterMode::Survival;
+    case eco::ActionFilterMode::Survival:
+        return eco::ActionFilterMode::All;
+    }
+    return eco::ActionFilterMode::All;
+}
+
+eco::OverlayTemporalMode next_overlay_temporal(
+    eco::OverlayTemporalMode mode
+) {
+    switch (mode) {
+    case eco::OverlayTemporalMode::Instant:
+        return eco::OverlayTemporalMode::Responsive;
+    case eco::OverlayTemporalMode::Responsive:
+        return eco::OverlayTemporalMode::Stable;
+    case eco::OverlayTemporalMode::Stable:
+        return eco::OverlayTemporalMode::Instant;
+    }
+    return eco::OverlayTemporalMode::Stable;
+}
+
+
 void draw_sparkline(
     const char* label,
     const MetricHistory& history,
@@ -654,6 +800,7 @@ void draw_event_legend(float x, float y) {
 void draw_panel(
     const eco::Frame& frame,
     const eco::RenderOptions& options,
+    ObservationPreset preset,
     const eco::RenderDetail& detail,
     const eco::WorldRenderer& renderer,
     const eco::SocialLoop& social,
@@ -680,6 +827,8 @@ void draw_panel(
 
     const eco::FrameDiagnostics& diagnostics = renderer.diagnostics();
     const eco::SocialStats& stats = social.stats();
+    const eco::RenderPerformance& performance = renderer.performance();
+    const eco::OverlayUsage& overlay_usage = renderer.overlay_usage();
 
     DrawText(
         TextFormat("Tick: %llu", static_cast<unsigned long long>(frame.tick)),
@@ -715,14 +864,17 @@ void draw_panel(
     );
     DrawText(
         TextFormat(
-            "B behavior %s | Q group-focus %s | [ ] group | F follow",
+            "Preset %s | B %s | A %s | Y %s | Q %s",
+            observation_preset_name(preset),
             eco::behavior_overlay_name(options.behavior_overlay),
-            options.focus_selected_group ? "on" : "off"
+            eco::action_filter_name(options.action_filter),
+            eco::overlay_temporal_name(options.overlay_temporal),
+            options.focus_selected_group ? "focus" : "all"
         ),
         26, 119, 13, GRAY
     );
     DrawText(
-        "1-4 resource | E view | H hazard | T filter | L LOD | M events | V flow",
+        "F1-6 presets | A action | Y time | E view | T env | [ ] group",
         26, 139, 13, GRAY
     );
 
@@ -739,12 +891,12 @@ void draw_panel(
         effective_group_id = selected->group_id;
     }
     const eco::GroupBehaviorSummary* selected_group =
-        renderer.group_behavior(effective_group_id);
+        renderer.group_behavior(effective_group_id, options.overlay_temporal);
 
     DrawText("Inspector", 26, 184, 17, YELLOW);
 
     if (selected == nullptr && selected_group == nullptr) {
-        const auto& groups = renderer.group_behaviors();
+        const auto& groups = renderer.group_behaviors(options.overlay_temporal);
         if (options.selected_entity_id != 0) {
             DrawText("Selected agent is no longer alive in this frame.",
                 26, 207, 14, RED);
@@ -987,60 +1139,72 @@ void draw_panel(
         ),
         26, 508, 13, RAYWHITE
     );
+    DrawText(
+        TextFormat(
+            "render O/H/D %.2f/%.2f/%.2fms  overlays A%u G%u X%u",
+            performance.observe_ema_ms,
+            performance.heatmap_ema_ms,
+            performance.draw_ema_ms,
+            static_cast<unsigned int>(overlay_usage.agent_markers),
+            static_cast<unsigned int>(overlay_usage.group_markers),
+            static_cast<unsigned int>(overlay_usage.action_glyphs)
+        ),
+        26, 527, 12, Color{150, 190, 210, 255}
+    );
 
     draw_sparkline(
         "population",
         history,
         history.population,
-        Rectangle{26.0F, 532.0F, 464.0F, 52.0F},
+        Rectangle{26.0F, 550.0F, 464.0F, 52.0F},
         Color{102, 226, 255, 255}
     );
     draw_sparkline(
         "births",
         history,
         history.births,
-        Rectangle{26.0F, 591.0F, 225.0F, 49.0F},
+        Rectangle{26.0F, 609.0F, 225.0F, 49.0F},
         Color{83, 240, 255, 255}
     );
     draw_sparkline(
         "deaths",
         history,
         history.deaths,
-        Rectangle{265.0F, 591.0F, 225.0F, 49.0F},
+        Rectangle{265.0F, 609.0F, 225.0F, 49.0F},
         Color{255, 78, 82, 255}
     );
     draw_sparkline(
         "resource",
         history,
         history.resource,
-        Rectangle{26.0F, 647.0F, 225.0F, 49.0F},
+        Rectangle{26.0F, 665.0F, 225.0F, 49.0F},
         Color{117, 242, 120, 255}
     );
     draw_sparkline(
         "mean speed",
         history,
         history.speed,
-        Rectangle{265.0F, 647.0F, 225.0F, 49.0F},
+        Rectangle{265.0F, 665.0F, 225.0F, 49.0F},
         Color{100, 205, 255, 255}
     );
     draw_sparkline(
         "trust",
         history,
         history.trust,
-        Rectangle{26.0F, 703.0F, 225.0F, 49.0F},
+        Rectangle{26.0F, 721.0F, 225.0F, 49.0F},
         Color{117, 232, 154, 255}
     );
     draw_sparkline(
         "stress",
         history,
         history.stress,
-        Rectangle{265.0F, 703.0F, 225.0F, 49.0F},
+        Rectangle{265.0F, 721.0F, 225.0F, 49.0F},
         Color{255, 120, 108, 255}
     );
 
-    DrawText("Emergent events", 26, 763, 16, LIGHTGRAY);
+    DrawText("Emergent events", 26, 781, 16, LIGHTGRAY);
 
-    int y = 785;
+    int y = 803;
     int shown = 0;
     for (const eco::SocialEvent& event : social.recent_events()) {
         DrawText(
@@ -1155,8 +1319,11 @@ int main(int argc, char** argv) {
     eco::Frame current;
     eco::WorldRenderer renderer;
     eco::SocialLoop social;
+    std::uint64_t observed_stream_epoch = renderer.stream_epoch();
 
     eco::RenderOptions options{};
+    ObservationPreset observation_preset = ObservationPreset::Overview;
+    apply_observation_preset(observation_preset, options);
     bool show_social = true;
     bool follow_selected = false;
     bool camera_initialized = false;
@@ -1185,6 +1352,23 @@ int main(int argc, char** argv) {
         if (received) {
             renderer.observe_frame(current);
             heatmap_dirty = true;
+
+            if (renderer.stream_epoch() != observed_stream_epoch) {
+                observed_stream_epoch = renderer.stream_epoch();
+                options.selected_entity_id = 0;
+                options.selected_group_id = 0;
+                options.focus_selected_group = false;
+                selected_neighbors.clear();
+                follow_selected = false;
+                social = eco::SocialLoop{};
+                history = MetricHistory{};
+                history_due = false;
+                last_social_tick = 0;
+                camera_initialized = false;
+                has_last_lod = false;
+                last_environment_detail = -1.0F;
+                last_density_weight = -1.0F;
+            }
 
             const std::uint64_t social_period =
                 current.entities.size() > 100000
@@ -1228,14 +1412,14 @@ int main(int argc, char** argv) {
                     options.selected_entity_id = 0;
                     selected_neighbors.clear();
                     if (options.selected_group_id == 0 ||
-                        renderer.group_behavior(options.selected_group_id) == nullptr) {
+                        renderer.group_behavior(options.selected_group_id, options.overlay_temporal) == nullptr) {
                         options.selected_group_id = 0;
                         options.focus_selected_group = false;
                         follow_selected = false;
                     }
                 }
             } else if (options.selected_group_id != 0 &&
-                       renderer.group_behavior(options.selected_group_id) == nullptr) {
+                       renderer.group_behavior(options.selected_group_id, options.overlay_temporal) == nullptr) {
                 options.selected_group_id = 0;
                 options.focus_selected_group = false;
                 follow_selected = false;
@@ -1249,7 +1433,7 @@ int main(int argc, char** argv) {
                     camera.target = Vector2{selected->x, selected->y};
                 } else if (options.selected_group_id != 0) {
                     const eco::GroupBehaviorSummary* group =
-                        renderer.group_behavior(options.selected_group_id);
+                        renderer.group_behavior(options.selected_group_id, options.overlay_temporal);
                     if (group != nullptr) {
                         camera.target = Vector2{group->x, group->y};
                     }
@@ -1321,49 +1505,100 @@ int main(int argc, char** argv) {
             follow_selected = false;
         }
 
+        if (IsKeyPressed(KEY_F1)) {
+            observation_preset = ObservationPreset::Overview;
+            apply_observation_preset(observation_preset, options);
+            heatmap_dirty = true;
+        }
+        if (IsKeyPressed(KEY_F2)) {
+            observation_preset = ObservationPreset::Ecology;
+            apply_observation_preset(observation_preset, options);
+            heatmap_dirty = true;
+        }
+        if (IsKeyPressed(KEY_F3)) {
+            observation_preset = ObservationPreset::Migration;
+            apply_observation_preset(observation_preset, options);
+            heatmap_dirty = true;
+        }
+        if (IsKeyPressed(KEY_F4)) {
+            observation_preset = ObservationPreset::Social;
+            apply_observation_preset(observation_preset, options);
+            heatmap_dirty = true;
+        }
+        if (IsKeyPressed(KEY_F5)) {
+            observation_preset = ObservationPreset::Survival;
+            apply_observation_preset(observation_preset, options);
+            heatmap_dirty = true;
+        }
+        if (IsKeyPressed(KEY_F6)) {
+            observation_preset = ObservationPreset::Reproduction;
+            apply_observation_preset(observation_preset, options);
+            heatmap_dirty = true;
+        }
+        if (IsKeyPressed(KEY_A)) {
+            options.action_filter = next_action_filter(options.action_filter);
+            observation_preset = ObservationPreset::Custom;
+        }
+        if (IsKeyPressed(KEY_Y)) {
+            options.overlay_temporal = next_overlay_temporal(
+                options.overlay_temporal
+            );
+            observation_preset = ObservationPreset::Custom;
+        }
+
         if (IsKeyPressed(KEY_ONE)) {
+            observation_preset = ObservationPreset::Custom;
             options.resource_channel = 0;
             heatmap_dirty = true;
         }
         if (IsKeyPressed(KEY_TWO)) {
+            observation_preset = ObservationPreset::Custom;
             options.resource_channel = 1;
             heatmap_dirty = true;
         }
         if (IsKeyPressed(KEY_THREE)) {
+            observation_preset = ObservationPreset::Custom;
             options.resource_channel = 2;
             heatmap_dirty = true;
         }
         if (IsKeyPressed(KEY_FOUR)) {
+            observation_preset = ObservationPreset::Custom;
             options.resource_channel = 3;
             heatmap_dirty = true;
         }
         if (IsKeyPressed(KEY_E)) {
+            observation_preset = ObservationPreset::Custom;
             options.environment_view = next_environment_view(
                 options.environment_view
             );
             heatmap_dirty = true;
         }
         if (IsKeyPressed(KEY_H)) {
+            observation_preset = ObservationPreset::Custom;
             options.show_hazard = !options.show_hazard;
             heatmap_dirty = true;
         }
         if (IsKeyPressed(KEY_T)) {
+            observation_preset = ObservationPreset::Custom;
             options.environment_filter = next_environment_filter(
                 options.environment_filter
             );
             heatmap_dirty = true;
         }
         if (IsKeyPressed(KEY_P)) {
+            observation_preset = ObservationPreset::Custom;
             options.show_population_density =
                 !options.show_population_density;
             heatmap_dirty = true;
         }
         if (IsKeyPressed(KEY_C)) {
+            observation_preset = ObservationPreset::Custom;
             options.show_environment_change =
                 !options.show_environment_change;
             heatmap_dirty = true;
         }
         if (IsKeyPressed(KEY_B)) {
+            observation_preset = ObservationPreset::Custom;
             options.behavior_overlay = next_behavior_overlay(
                 options.behavior_overlay
             );
@@ -1375,7 +1610,7 @@ int main(int argc, char** argv) {
         if (IsKeyPressed(KEY_LEFT_BRACKET)) {
             options.selected_entity_id = 0;
             options.selected_group_id = cycle_group_selection(
-                renderer.group_behaviors(), options.selected_group_id, -1
+                renderer.group_behaviors(options.overlay_temporal), options.selected_group_id, -1
             );
             selected_neighbors.clear();
             follow_selected = false;
@@ -1383,22 +1618,26 @@ int main(int argc, char** argv) {
         if (IsKeyPressed(KEY_RIGHT_BRACKET)) {
             options.selected_entity_id = 0;
             options.selected_group_id = cycle_group_selection(
-                renderer.group_behaviors(), options.selected_group_id, 1
+                renderer.group_behaviors(options.overlay_temporal), options.selected_group_id, 1
             );
             selected_neighbors.clear();
             follow_selected = false;
         }
         if (IsKeyPressed(KEY_M)) {
+            observation_preset = ObservationPreset::Custom;
             options.show_event_markers =
                 !options.show_event_markers;
         }
         if (IsKeyPressed(KEY_G)) {
+            observation_preset = ObservationPreset::Custom;
             options.show_grid = !options.show_grid;
         }
         if (IsKeyPressed(KEY_V)) {
+            observation_preset = ObservationPreset::Custom;
             options.show_velocity = !options.show_velocity;
         }
         if (IsKeyPressed(KEY_L)) {
+            observation_preset = ObservationPreset::Custom;
             options.lod_mode = next_lod_mode(options.lod_mode);
             heatmap_dirty = true;
         }
@@ -1484,6 +1723,7 @@ int main(int argc, char** argv) {
         draw_panel(
             current,
             options,
+            observation_preset,
             detail,
             renderer,
             social,

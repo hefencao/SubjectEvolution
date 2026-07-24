@@ -1,11 +1,13 @@
 #include "eco/renderer.hpp"
 #include "render/renderer_internal.hpp"
+#include "render/renderer_state.hpp"
 
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <chrono>
 #include <vector>
 
 namespace eco {
@@ -75,43 +77,43 @@ EnvironmentProbe WorldRenderer::probe_environment(
 }
 
 void WorldRenderer::ensure_texture(std::uint32_t grid_x, std::uint32_t grid_y) {
-    if (heatmap_.id != 0 && grid_x_ == grid_x && grid_y_ == grid_y) {
+    if (state_->environment.heatmap.id != 0 && state_->environment.grid_x == grid_x && state_->environment.grid_y == grid_y) {
         return;
     }
 
-    if (heatmap_.id != 0) {
-        UnloadTexture(heatmap_);
-        heatmap_ = Texture2D{};
+    if (state_->environment.heatmap.id != 0) {
+        UnloadTexture(state_->environment.heatmap);
+        state_->environment.heatmap = Texture2D{};
     }
 
-    grid_x_ = grid_x;
-    grid_y_ = grid_y;
-    pixels_.assign(
-        static_cast<std::size_t>(grid_x_) * static_cast<std::size_t>(grid_y_),
+    state_->environment.grid_x = grid_x;
+    state_->environment.grid_y = grid_y;
+    state_->environment.pixels.assign(
+        static_cast<std::size_t>(state_->environment.grid_x) * static_cast<std::size_t>(state_->environment.grid_y),
         BLACK
     );
 
-    for (auto& resource : filtered_resources_) {
+    for (auto& resource : state_->environment.filtered_resources) {
         resource.clear();
     }
-    filtered_hazard_.clear();
-    for (auto& resource : previous_resources_) {
+    state_->environment.filtered_hazard.clear();
+    for (auto& resource : state_->environment.previous_resources) {
         resource.clear();
     }
-    previous_hazard_.clear();
-    resource_scale_initialized_.fill(false);
-    resource_adaptive_initialized_.fill(false);
-    last_heatmap_tick_ = 0;
+    state_->environment.previous_hazard.clear();
+    state_->environment.resource_scale_initialized.fill(false);
+    state_->environment.resource_adaptive_initialized.fill(false);
+    state_->environment.last_heatmap_tick = 0;
 
     Image image = GenImageColor(
-        static_cast<int>(grid_x_),
-        static_cast<int>(grid_y_),
+        static_cast<int>(state_->environment.grid_x),
+        static_cast<int>(state_->environment.grid_y),
         BLACK
     );
-    heatmap_ = LoadTextureFromImage(image);
+    state_->environment.heatmap = LoadTextureFromImage(image);
     UnloadImage(image);
-    SetTextureFilter(heatmap_, TEXTURE_FILTER_POINT);
-    texture_filter_ = TEXTURE_FILTER_POINT;
+    SetTextureFilter(state_->environment.heatmap, TEXTURE_FILTER_POINT);
+    state_->environment.texture_filter = TEXTURE_FILTER_POINT;
 }
 
 void WorldRenderer::update_heatmap(
@@ -119,18 +121,32 @@ void WorldRenderer::update_heatmap(
     const RenderDetail& detail,
     const RenderOptions& options
 ) {
+    const auto timing_start = std::chrono::steady_clock::now();
+    const auto finish_timing = [this, &frame, timing_start]() {
+        state_->performance.tick = frame.tick;
+        const double elapsed_ms = std::chrono::duration<double, std::milli>(
+            std::chrono::steady_clock::now() - timing_start
+        ).count();
+        record_timing(
+            elapsed_ms,
+            state_->performance.heatmap_ms,
+            state_->performance.heatmap_ema_ms
+        );
+    };
+
     ensure_texture(frame.layout.grid_x, frame.layout.grid_y);
 
     const std::size_t cell_count = frame.cell_count();
     if (frame.resources.size() < cell_count * 4U ||
         frame.hazard.size() < cell_count) {
+        finish_timing();
         return;
     }
 
     const int channel = std::clamp(options.resource_channel, 0, 3);
     const std::size_t offset = static_cast<std::size_t>(channel) * cell_count;
 
-    if (!resource_scale_initialized_[channel]) {
+    if (!state_->environment.resource_scale_initialized[channel]) {
         std::vector<float> scratch;
         scratch.reserve(cell_count);
         for (std::size_t index = 0; index < cell_count; ++index) {
@@ -140,23 +156,23 @@ void WorldRenderer::update_heatmap(
             }
         }
         std::vector<float> low_scratch = scratch;
-        resource_low_[channel] = quantile(low_scratch, 0.02F);
-        resource_high_[channel] = quantile(scratch, 0.98F);
-        if (resource_high_[channel] - resource_low_[channel] < 1.0e-5F) {
-            resource_high_[channel] = resource_low_[channel] + 1.0F;
+        state_->environment.resource_low[channel] = quantile(low_scratch, 0.02F);
+        state_->environment.resource_high[channel] = quantile(scratch, 0.98F);
+        if (state_->environment.resource_high[channel] - state_->environment.resource_low[channel] < 1.0e-5F) {
+            state_->environment.resource_high[channel] = state_->environment.resource_low[channel] + 1.0F;
         }
-        resource_scale_initialized_[channel] = true;
+        state_->environment.resource_scale_initialized[channel] = true;
     }
 
-    const float scale_low = resource_low_[channel];
+    const float scale_low = state_->environment.resource_low[channel];
     const float scale_span = std::max(
-        resource_high_[channel] - resource_low_[channel],
+        state_->environment.resource_high[channel] - state_->environment.resource_low[channel],
         1.0e-5F
     );
     const std::uint64_t elapsed_ticks =
-        last_heatmap_tick_ == 0 || frame.tick <= last_heatmap_tick_
+        state_->environment.last_heatmap_tick == 0 || frame.tick <= state_->environment.last_heatmap_tick
             ? 1
-            : frame.tick - last_heatmap_tick_;
+            : frame.tick - state_->environment.last_heatmap_tick;
     const FilterParameters parameters = filter_parameters(options.environment_filter);
     const float resource_alpha = effective_alpha(
         parameters.resource_alpha_per_tick,
@@ -174,14 +190,14 @@ void WorldRenderer::update_heatmap(
     const float hazard_max_step = parameters.hazard_max_step *
         static_cast<float>(std::clamp<std::uint64_t>(elapsed_ticks, 1, 16));
 
-    std::vector<float>& filtered_resource = filtered_resources_[channel];
+    std::vector<float>& filtered_resource = state_->environment.filtered_resources[channel];
     const bool resource_filter_initialized = filtered_resource.size() == cell_count;
-    const bool hazard_filter_initialized = filtered_hazard_.size() == cell_count;
+    const bool hazard_filter_initialized = state_->environment.filtered_hazard.size() == cell_count;
     if (!resource_filter_initialized) {
         filtered_resource.resize(cell_count);
     }
     if (!hazard_filter_initialized) {
-        filtered_hazard_.resize(cell_count);
+        state_->environment.filtered_hazard.resize(cell_count);
     }
 
     for (std::size_t index = 0; index < cell_count; ++index) {
@@ -206,10 +222,10 @@ void WorldRenderer::update_heatmap(
 
         if (!hazard_filter_initialized ||
             options.environment_filter == EnvironmentFilterMode::Instant) {
-            filtered_hazard_[index] = raw_hazard;
+            state_->environment.filtered_hazard[index] = raw_hazard;
         } else {
-            filtered_hazard_[index] = filtered_step(
-                filtered_hazard_[index],
+            state_->environment.filtered_hazard[index] = filtered_step(
+                state_->environment.filtered_hazard[index],
                 raw_hazard,
                 hazard_alpha,
                 hazard_max_step
@@ -252,22 +268,22 @@ void WorldRenderer::update_heatmap(
         current_adaptive_span * 0.55F,
         std::max(scale_span * 1.0e-5F, 1.0e-8F)
     );
-    if (!resource_adaptive_initialized_[channel]) {
-        resource_adaptive_low_[channel] = current_adaptive_low;
-        resource_adaptive_high_[channel] = std::max(
+    if (!state_->environment.resource_adaptive_initialized[channel]) {
+        state_->environment.resource_adaptive_low[channel] = current_adaptive_low;
+        state_->environment.resource_adaptive_high[channel] = std::max(
             current_adaptive_high,
             current_adaptive_low + minimum_adaptive_span
         );
-        resource_adaptive_initialized_[channel] = true;
+        state_->environment.resource_adaptive_initialized[channel] = true;
     } else {
         const float adaptive_alpha = effective_alpha(0.012F, elapsed_ticks);
-        resource_adaptive_low_[channel] = lerp_value(
-            resource_adaptive_low_[channel],
+        state_->environment.resource_adaptive_low[channel] = lerp_value(
+            state_->environment.resource_adaptive_low[channel],
             current_adaptive_low,
             adaptive_alpha
         );
-        resource_adaptive_high_[channel] = lerp_value(
-            resource_adaptive_high_[channel],
+        state_->environment.resource_adaptive_high[channel] = lerp_value(
+            state_->environment.resource_adaptive_high[channel],
             std::max(current_adaptive_high, current_adaptive_low + minimum_adaptive_span),
             adaptive_alpha
         );
@@ -347,7 +363,7 @@ void WorldRenderer::update_heatmap(
         1
     );
     blur_grid(
-        filtered_hazard_,
+        state_->environment.filtered_hazard,
         hazard_coarse,
         scratch,
         frame.layout.grid_x,
@@ -355,7 +371,7 @@ void WorldRenderer::update_heatmap(
         2
     );
     blur_grid(
-        filtered_hazard_,
+        state_->environment.filtered_hazard,
         hazard_medium,
         scratch,
         frame.layout.grid_x,
@@ -393,14 +409,14 @@ void WorldRenderer::update_heatmap(
         );
         display_hazard[index] = lerp_value(
             medium_hazard,
-            filtered_hazard_[index],
+            state_->environment.filtered_hazard[index],
             fine_weight
         );
     }
 
-    const float adaptive_low = resource_adaptive_low_[channel];
+    const float adaptive_low = state_->environment.resource_adaptive_low[channel];
     const float adaptive_span = std::max(
-        resource_adaptive_high_[channel] - resource_adaptive_low_[channel],
+        state_->environment.resource_adaptive_high[channel] - state_->environment.resource_adaptive_low[channel],
         minimum_adaptive_span
     );
     double absolute_presence_sum = 0.0;
@@ -423,8 +439,8 @@ void WorldRenderer::update_heatmap(
     const float density_divisor = std::log1p(density_max);
 
     const bool has_previous_resource =
-        previous_resources_[channel].size() == cell_count;
-    const bool has_previous_hazard = previous_hazard_.size() == cell_count;
+        state_->environment.previous_resources[channel].size() == cell_count;
+    const bool has_previous_hazard = state_->environment.previous_hazard.size() == cell_count;
 
     double resource_sum = 0.0;
     double hazard_sum = 0.0;
@@ -473,7 +489,7 @@ void WorldRenderer::update_heatmap(
             float hazard_change = 0.0F;
             if (has_previous_resource) {
                 const float difference = filtered_resource[index] -
-                    previous_resources_[channel][index];
+                    state_->environment.previous_resources[channel][index];
                 const float deadzone = scale_span * 0.0015F;
                 if (std::abs(difference) > deadzone) {
                     resource_change = difference /
@@ -481,8 +497,8 @@ void WorldRenderer::update_heatmap(
                 }
             }
             if (has_previous_hazard) {
-                const float difference = clamp01(filtered_hazard_[index]) -
-                    previous_hazard_[index];
+                const float difference = clamp01(state_->environment.filtered_hazard[index]) -
+                    state_->environment.previous_hazard[index];
                 if (std::abs(difference) > 0.0015F) {
                     hazard_change = difference / 0.035F;
                 }
@@ -502,7 +518,7 @@ void WorldRenderer::update_heatmap(
                 std::pow(display_hazard[down_index] - display_hazard[up_index], 2.0F)
             ) * 2.5F;
 
-            pixels_[index] = heat_color(
+            state_->environment.pixels[index] = heat_color(
                 channel,
                 normalized_resource,
                 hazard_value,
@@ -512,6 +528,7 @@ void WorldRenderer::update_heatmap(
                 gradient_x,
                 gradient_y,
                 hazard_edge,
+                depletion,
                 detail,
                 options
             );
@@ -524,22 +541,22 @@ void WorldRenderer::update_heatmap(
     }
 
     if (cell_count > 0) {
-        diagnostics_.mean_resource = static_cast<float>(
+        state_->observation.diagnostics.mean_resource = static_cast<float>(
             resource_sum / static_cast<double>(cell_count)
         );
-        diagnostics_.mean_hazard = static_cast<float>(
+        state_->observation.diagnostics.mean_hazard = static_cast<float>(
             hazard_sum / static_cast<double>(cell_count)
         );
-        diagnostics_.mean_environment_change = static_cast<float>(
+        state_->observation.diagnostics.mean_environment_change = static_cast<float>(
             change_sum / static_cast<double>(cell_count)
         );
     }
 
-    previous_resources_[channel] = filtered_resource;
-    previous_hazard_ = filtered_hazard_;
-    last_heatmap_tick_ = frame.tick;
+    state_->environment.previous_resources[channel] = filtered_resource;
+    state_->environment.previous_hazard = state_->environment.filtered_hazard;
+    state_->environment.last_heatmap_tick = frame.tick;
 
-    UpdateTexture(heatmap_, pixels_.data());
+    UpdateTexture(state_->environment.heatmap, state_->environment.pixels.data());
     const bool analytical_view =
         options.environment_view == EnvironmentViewMode::ResourceGradient ||
         options.environment_view == EnvironmentViewMode::Hazard ||
@@ -548,10 +565,11 @@ void WorldRenderer::update_heatmap(
     const int requested_filter = !analytical_view && detail.environment_detail >= 0.92F
         ? TEXTURE_FILTER_POINT
         : TEXTURE_FILTER_BILINEAR;
-    if (texture_filter_ != requested_filter) {
-        SetTextureFilter(heatmap_, requested_filter);
-        texture_filter_ = requested_filter;
+    if (state_->environment.texture_filter != requested_filter) {
+        SetTextureFilter(state_->environment.heatmap, requested_filter);
+        state_->environment.texture_filter = requested_filter;
     }
+    finish_timing();
 }
 
 void WorldRenderer::draw_selected_environment_probe(
