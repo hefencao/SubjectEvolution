@@ -1,5 +1,0 @@
-condition,alive,births_total,deaths_total,mean_energy,groups,lineages,knowledge_content_count,knowledge_copy_count,knowledge_holder_count,knowledge_maintenance_energy_total,knowledge_sender_energy_total,knowledge_receiver_energy_total,knowledge_transfer_attempts_total,knowledge_transfer_committed_total,knowledge_attention_rejected_total
-none,4779,8517,8738,1.5887545347213745,96,1527,0,0,0,0,0,0,0,0,0
-private,4766,8535,8769,1.5891804695129395,85,1549,16,204,204,34.33459199999969,0.0,0.0,0,0,0
-costly,4698,8629,8931,1.6009387969970703,98,1445,2471,12320,3764,630.0826560000174,250.86295999999953,24.205440000000042,84795,50428,2445
-zero_cost,4779,8517,8738,1.5887545347213745,96,1527,2614,13054,3896,0.0,0.0,0.0,87612,52433,2471

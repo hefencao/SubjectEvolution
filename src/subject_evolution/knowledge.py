@@ -827,6 +827,28 @@ class KnowledgeSystem:
                 acquisition_kind=ACQUISITION_SEED,
             )
 
+    def snapshot_state(self) -> dict[str, Any]:
+        """Return all semantic knowledge state without open output handles."""
+        return {
+            "catalog": copy.deepcopy(self.catalog),
+            "arena": copy.deepcopy(self.arena),
+            "last_transfer_plan": copy.deepcopy(self.last_transfer_plan),
+            "last_outcome_plan": copy.deepcopy(self.last_outcome_plan),
+            "observation": copy.deepcopy(self.observation),
+            "totals": copy.deepcopy(self.totals),
+            "candidates": self.candidates.snapshot_state(),
+        }
+
+    def restore_state(self, state: dict[str, Any]) -> None:
+        """Restore semantic state while retaining this run's output writers."""
+        self.catalog = copy.deepcopy(state["catalog"])
+        self.arena = copy.deepcopy(state["arena"])
+        self.last_transfer_plan = copy.deepcopy(state["last_transfer_plan"])
+        self.last_outcome_plan = copy.deepcopy(state["last_outcome_plan"])
+        self.observation = copy.deepcopy(state["observation"])
+        self.totals = copy.deepcopy(state["totals"])
+        self.candidates.restore_state(state["candidates"])
+
     def clone(self, output_dir: str | Path) -> "KnowledgeSystem":
         result = object.__new__(KnowledgeSystem)
         result.cfg = self.cfg

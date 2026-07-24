@@ -1,4 +1,0 @@
-condition,runtime_a_s,runtime_b_s,alive,births,deaths,mean_energy,copies,outcome_updates,influenced_entity_ticks,influenced_action_cells,changed_actions,residual_abs_sum,transfers
-k2_control,1.9,1.92,608,108,0,1.9267023801803589,2315,8026,0,0,0,0.0,228
-k3_private,2.09,1.98,609,109,0,1.9357316493988037,2325,8162,10041,15493,31,95.22633888213254,0
-k3_exchange,1.93,2.02,608,108,0,1.9369333982467651,2323,8059,10362,15855,29,95.04590196155216,224

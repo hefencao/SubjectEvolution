@@ -32,6 +32,9 @@ class RunConfig:
     # legacy hybrid accelerator remains available only as an explicit
     # experimental mode for parity diagnostics and profiling.
     gpu_semantics_mode: str = "strict-reference"
+    # Full-world bundles are opt-in because they are larger than the legacy
+    # analysis-only NPZ snapshots.  When enabled they use checkpoint_period.
+    full_checkpoint_enabled: bool = False
 
 
 @dataclass(frozen=True)
@@ -294,6 +297,8 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("run.experiment_mode must be 'scientific' or 'entertainment'")
     if cfg.run.evolution_evaluation_period <= 0:
         raise ValueError("run.evolution_evaluation_period must be positive")
+    if not isinstance(cfg.run.full_checkpoint_enabled, bool):
+        raise ValueError("run.full_checkpoint_enabled must be a boolean")
     if not isinstance(cfg.run.validation_mode, bool):
         raise ValueError("run.validation_mode must be a boolean")
     if cfg.run.gpu_semantics_mode not in {"strict-reference", "hybrid-accelerated"}:

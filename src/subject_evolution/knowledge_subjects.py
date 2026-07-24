@@ -175,6 +175,24 @@ class KnowledgeCandidateTracker:
             result._open_streams()
         return result
 
+    def snapshot_state(self) -> dict[str, Any]:
+        """Return writer-free K4 state suitable for a trusted checkpoint."""
+        excluded = {
+            "output_dir", "_candidate_file", "_candidate_writer",
+            "_boundary_file", "_boundary_writer",
+        }
+        return {
+            name: copy.deepcopy(value)
+            for name, value in self.__dict__.items()
+            if name not in excluded
+        }
+
+    def restore_state(self, state: dict[str, Any]) -> None:
+        """Replace diagnostic state while retaining this run's output streams."""
+        for name, value in state.items():
+            setattr(self, name, copy.deepcopy(value))
+
+
     def _ensure_capacity(self, required: int) -> None:
         if required <= self._capacity:
             self._size = max(self._size, required)

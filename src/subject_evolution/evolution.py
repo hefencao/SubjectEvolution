@@ -448,6 +448,20 @@ class EvolutionProgressTracker:
         self.records: list[dict[str, Any]] = []
         self._file = None
 
+    def snapshot_state(self) -> dict[str, Any]:
+        """Return writer-free progress state for exact continuation."""
+        return {
+            name: copy.deepcopy(value)
+            for name, value in self.__dict__.items()
+            if name not in {"path", "_file"}
+        }
+
+    def restore_state(self, state: dict[str, Any]) -> None:
+        """Restore progress counters while retaining this run's output path."""
+        for name, value in state.items():
+            setattr(self, name, copy.deepcopy(value))
+        self._file = None
+
     def clone(self, output_dir: str | Path) -> "EvolutionProgressTracker":
         branch = copy.copy(self)
         branch.path = Path(output_dir) / "evolution_progress.jsonl"

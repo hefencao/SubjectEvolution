@@ -1,4 +1,4 @@
-"""Paired counterfactual execution over an in-memory simulation snapshot."""
+"""Paired counterfactual execution from an in-memory or restored snapshot."""
 
 from __future__ import annotations
 

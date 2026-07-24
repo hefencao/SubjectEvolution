@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 import copy
 import hashlib
 import json
@@ -12,6 +12,7 @@ import numpy as np
 
 from . import __version__
 from .backend import BackendUnavailableError, resolve_backend
+from .checkpointing import read_checkpoint_bundle, write_checkpoint_bundle
 from .config import SimulationConfig
 from .control import (
     AutonomyRecoveryArbiter,
@@ -628,6 +629,7 @@ class Simulation:
         self.direct_messages_enabled = True
         self.freeze_genotype = False
         self.intervention_history: list[dict[str, object]] = []
+        self.checkpoint_lineage: list[dict[str, object]] = []
         # Interactive ``step()`` calls keep host field mirrors current.  A
         # monolithic ``run()`` can defer that costly device->host copy until
         # completion because every intervening field consumer is device-side.
@@ -686,6 +688,10 @@ class Simulation:
             ),
             "knowledge_candidate_diagnostic_only": True,
             "validation_mode": self.cfg.run.validation_mode,
+            "checkpoint_lineage": copy.deepcopy(self.checkpoint_lineage),
+            "event_log_scope": (
+                "post-checkpoint" if self.checkpoint_lineage else "full-run"
+            ),
         }
         (self.output_dir / "run_manifest.json").write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
@@ -754,6 +760,308 @@ class Simulation:
     @property
     def benefit_unbounded_energy_total(self) -> float:
         return float(self.benefit_flow_energy_total[BenefitFlowKind.UNBOUNDED])
+
+    def _full_checkpoint_state(self) -> dict[str, object]:
+        """Capture all semantic state required for exact continuation.
+
+        Output writers and accelerator runtime objects are deliberately
+        excluded.  A restored run creates fresh writers and reconstructs the
+        requested backend before this host-authoritative state is installed.
+        """
+        if self.gpu_runtime is not None:
+            self.gpu_runtime.sync_to_host(self.environment, self.information)
+        return {
+            "tick": int(self.tick),
+            "entities": copy.deepcopy(self.entities),
+            "entity_device_version": int(self.entity_device_version),
+            "environment": copy.deepcopy(self.environment),
+            "information": copy.deepcopy(self.information),
+            "signal_scheduler": copy.deepcopy(self.signal_scheduler),
+            "spatial": {
+                "grid_x": int(self.spatial.grid_x),
+                "grid_y": int(self.spatial.grid_y),
+                "width": float(self.spatial.width),
+                "height": float(self.spatial.height),
+                "periodic": bool(self.spatial.periodic),
+                "sorted_entity_indices": self.spatial.backend.to_numpy(
+                    self.spatial.sorted_entity_indices
+                ).copy(),
+                "cell_starts": self.spatial.backend.to_numpy(
+                    self.spatial.cell_starts
+                ).copy(),
+                "cell_sizes": self.spatial.backend.to_numpy(
+                    self.spatial.cell_sizes
+                ).copy(),
+                "entity_cells": self.spatial.backend.to_numpy(
+                    self.spatial.entity_cells
+                ).copy(),
+            },
+            "social": copy.deepcopy(self.social),
+            "subjects": self.subjects.clone(),
+            "knowledge": self.knowledge.snapshot_state(),
+            "last_group_summary": copy.deepcopy(self.last_group_summary),
+            "last_group_plan": copy.deepcopy(self.last_group_plan),
+            "total_births": int(self.total_births),
+            "total_deaths": int(self.total_deaths),
+            "total_shared_energy": float(self.total_shared_energy),
+            "action_counts": self.action_counts.copy(),
+            "benefit_flow_energy_total": self.benefit_flow_energy_total.copy(),
+            "lagged_benefit_boundary": self.lagged_benefit_boundary.clone(),
+            "total_reproduction_eligible": int(self.total_reproduction_eligible),
+            "total_reproduction_proposals": int(self.total_reproduction_proposals),
+            "total_reproduction_rejected_capacity": int(
+                self.total_reproduction_rejected_capacity
+            ),
+            "total_reproduction_rejected_resource": int(
+                self.total_reproduction_rejected_resource
+            ),
+            "total_reproduction_rejected_other": int(
+                self.total_reproduction_rejected_other
+            ),
+            "evolution_progress": self.evolution_progress.snapshot_state(),
+            "last_active": self.last_active.copy(),
+            "last_cells": self.last_cells.copy(),
+            "last_local_resources": self.last_local_resources.copy(),
+            "last_information": copy.deepcopy(self.last_information),
+            "last_policy_decision": copy.deepcopy(self.last_policy_decision),
+            "last_intents": copy.deepcopy(self.last_intents),
+            "last_resolutions": copy.deepcopy(self.last_resolutions),
+            "last_birth_allocation": copy.deepcopy(self.last_birth_allocation),
+            "last_death_events": copy.deepcopy(self.last_death_events),
+            "last_entity_device_commit": copy.deepcopy(
+                self.last_entity_device_commit
+            ),
+            "control_arbiter": copy.deepcopy(self.control_arbiter),
+            "group_label_planner": copy.deepcopy(self.group_label_planner),
+            "conflict_resolver_kind": type(self.conflict_resolver).__name__,
+            "heuristic_guidance_actions": int(self.heuristic_guidance_actions),
+            "autonomy_recovery_enabled": bool(self.autonomy_recovery_enabled),
+            "autonomy_restored": self.autonomy_restored.copy(),
+            "autonomy_observation_cohort": self.autonomy_observation_cohort.copy(),
+            "autonomy_recovery_tick": self.autonomy_recovery_tick,
+            "autonomy_cohort_tick": self.autonomy_cohort_tick,
+            "autonomy_recovery_cohort_ids": self.autonomy_recovery_cohort_ids.copy(),
+            "autonomy_module_actions": int(self.autonomy_module_actions),
+            "autonomy_harvest_attempts": int(self.autonomy_harvest_attempts),
+            "autonomy_harvest_successes": int(self.autonomy_harvest_successes),
+            "social_control_enabled": bool(self.social_control_enabled),
+            "social_connections_enabled": bool(self.social_connections_enabled),
+            "direct_messages_enabled": bool(self.direct_messages_enabled),
+            "freeze_genotype": bool(self.freeze_genotype),
+            "intervention_history": copy.deepcopy(self.intervention_history),
+        }
+
+    def save_full_checkpoint(self, path: str | Path | None = None) -> Path:
+        """Write a trusted full-world checkpoint suitable for exact replay."""
+        if not isinstance(
+            self.conflict_resolver,
+            (DeterministicActionConflictResolver, GpuActionConflictResolver),
+        ):
+            raise ValueError(
+                "full checkpoints currently support only the built-in deterministic "
+                "CPU/GPU conflict resolvers"
+            )
+        destination = (
+            self.output_dir / f"checkpoint_{self.tick:08d}.sechk"
+            if path is None
+            else Path(path)
+        )
+        state = {
+            "config": self.cfg,
+            "simulation": self._full_checkpoint_state(),
+            "checkpoint_lineage": copy.deepcopy(self.checkpoint_lineage),
+        }
+        result = write_checkpoint_bundle(
+            destination,
+            config=self.cfg,
+            tick=self.tick,
+            state=state,
+            execution_backend=self.execution_backend,
+            requested_backend=self.requested_backend,
+        )
+        return result
+
+    def _restore_full_checkpoint_state(self, state: dict[str, object]) -> None:
+        """Install host-authoritative semantic state into a fresh Simulation."""
+        self.entities = copy.deepcopy(state["entities"])
+        self.entities.cfg = self.cfg
+        self.entity_device_version = int(state["entity_device_version"])
+        self.environment = copy.deepcopy(state["environment"])
+        self.environment.cfg = self.cfg
+        self.information = copy.deepcopy(state["information"])
+        self.information.cfg = self.cfg
+        self.signal_scheduler = copy.deepcopy(state["signal_scheduler"])
+        spatial_state = state["spatial"]
+        if (
+            int(spatial_state["grid_x"]) != self.spatial.grid_x
+            or int(spatial_state["grid_y"]) != self.spatial.grid_y
+            or float(spatial_state["width"]) != self.spatial.width
+            or float(spatial_state["height"]) != self.spatial.height
+            or bool(spatial_state["periodic"]) != self.spatial.periodic
+        ):
+            raise ValueError("checkpoint spatial schema does not match configuration")
+        xp = self.spatial.backend.xp
+        self.spatial.sorted_entity_indices = self.spatial.backend.asarray(
+            spatial_state["sorted_entity_indices"], dtype=xp.int32, copy=True
+        )
+        self.spatial.cell_starts = self.spatial.backend.asarray(
+            spatial_state["cell_starts"], dtype=xp.int64, copy=True
+        )
+        self.spatial.cell_sizes = self.spatial.backend.asarray(
+            spatial_state["cell_sizes"], dtype=xp.int32, copy=True
+        )
+        self.spatial.entity_cells = self.spatial.backend.asarray(
+            spatial_state["entity_cells"], dtype=xp.int32, copy=True
+        )
+        self.social = copy.deepcopy(state["social"])
+        self.social.cfg = self.cfg
+        self.subjects = copy.deepcopy(state["subjects"])
+        self.knowledge.restore_state(state["knowledge"])
+        self.knowledge.cfg = self.cfg
+        self.knowledge.kcfg = self.cfg.knowledge
+        self.policy = ParametricPolicy(self.cfg)
+        self.tick = int(state["tick"])
+        self.last_group_summary = copy.deepcopy(state["last_group_summary"])
+        self.last_group_plan = copy.deepcopy(state["last_group_plan"])
+        self.total_births = int(state["total_births"])
+        self.total_deaths = int(state["total_deaths"])
+        self.total_shared_energy = float(state["total_shared_energy"])
+        self.action_counts = np.asarray(state["action_counts"], dtype=np.int64).copy()
+        self.benefit_flow_energy_total = np.asarray(
+            state["benefit_flow_energy_total"], dtype=np.float64
+        ).copy()
+        self.lagged_benefit_boundary = copy.deepcopy(
+            state["lagged_benefit_boundary"]
+        )
+        self.total_reproduction_eligible = int(state["total_reproduction_eligible"])
+        self.total_reproduction_proposals = int(state["total_reproduction_proposals"])
+        self.total_reproduction_rejected_capacity = int(
+            state["total_reproduction_rejected_capacity"]
+        )
+        self.total_reproduction_rejected_resource = int(
+            state["total_reproduction_rejected_resource"]
+        )
+        self.total_reproduction_rejected_other = int(
+            state["total_reproduction_rejected_other"]
+        )
+        self.evolution_progress.restore_state(state["evolution_progress"])
+        self.last_active = np.asarray(state["last_active"], dtype=np.int32).copy()
+        self.last_cells = np.asarray(state["last_cells"], dtype=np.int32).copy()
+        self.last_local_resources = np.asarray(
+            state["last_local_resources"], dtype=np.float32
+        ).copy()
+        self.last_information = copy.deepcopy(state["last_information"])
+        self.last_policy_decision = copy.deepcopy(state["last_policy_decision"])
+        self.last_intents = copy.deepcopy(state["last_intents"])
+        self.last_resolutions = copy.deepcopy(state["last_resolutions"])
+        self.last_birth_allocation = copy.deepcopy(state["last_birth_allocation"])
+        self.last_death_events = copy.deepcopy(state["last_death_events"])
+        self.last_entity_device_commit = copy.deepcopy(
+            state["last_entity_device_commit"]
+        )
+        self.control_arbiter = copy.deepcopy(state["control_arbiter"])
+        self.group_label_planner = copy.deepcopy(state["group_label_planner"])
+        checkpoint_resolver_kind = str(state["conflict_resolver_kind"])
+        if checkpoint_resolver_kind not in {
+            "DeterministicActionConflictResolver",
+            "GpuActionConflictResolver",
+        }:
+            raise ValueError(
+                f"unsupported checkpoint conflict resolver {checkpoint_resolver_kind!r}"
+            )
+        self.heuristic_guidance_actions = int(state["heuristic_guidance_actions"])
+        self.autonomy_recovery_enabled = bool(state["autonomy_recovery_enabled"])
+        self.autonomy_restored = np.asarray(
+            state["autonomy_restored"], dtype=bool
+        ).copy()
+        self.autonomy_observation_cohort = np.asarray(
+            state["autonomy_observation_cohort"], dtype=bool
+        ).copy()
+        self.autonomy_recovery_tick = state["autonomy_recovery_tick"]
+        self.autonomy_cohort_tick = state["autonomy_cohort_tick"]
+        self.autonomy_recovery_cohort_ids = np.asarray(
+            state["autonomy_recovery_cohort_ids"], dtype=np.uint64
+        ).copy()
+        self.autonomy_module_actions = int(state["autonomy_module_actions"])
+        self.autonomy_harvest_attempts = int(state["autonomy_harvest_attempts"])
+        self.autonomy_harvest_successes = int(state["autonomy_harvest_successes"])
+        self.social_control_enabled = bool(state["social_control_enabled"])
+        self.social_connections_enabled = bool(state["social_connections_enabled"])
+        self.direct_messages_enabled = bool(state["direct_messages_enabled"])
+        self.freeze_genotype = bool(state["freeze_genotype"])
+        self.intervention_history = copy.deepcopy(state["intervention_history"])
+        self._defer_gpu_field_sync = False
+        if self.gpu_runtime is not None:
+            self.gpu_runtime.sync_from_host(self.environment, self.information)
+            self.gpu_runtime.sync_entity_from_host(
+                self.entities,
+                self.social,
+                self.entity_device_version,
+            )
+        if isinstance(self.conflict_resolver, GpuActionConflictResolver):
+            if self.gpu_runtime is None:
+                raise ValueError("restored GPU conflict resolver requires a GPU runtime")
+            self.conflict_resolver.bind_harvest_planner(self.gpu_runtime)
+        if self.cfg.run.validation_mode:
+            self._validate_invariants()
+
+    @classmethod
+    def from_checkpoint(
+        cls,
+        checkpoint: str | Path,
+        output_dir: str | Path,
+        *,
+        backend: str = "cpu",
+        until_tick: int | None = None,
+        gpu_semantics_mode: str | None = None,
+    ) -> "Simulation":
+        """Create a fresh run from a trusted full-world checkpoint bundle."""
+        metadata, record = read_checkpoint_bundle(checkpoint)
+        cfg = record["config"]
+        checkpoint_tick = int(record["simulation"]["tick"])
+        run_overrides: dict[str, object] = {}
+        if until_tick is not None:
+            target = int(until_tick)
+            if target < checkpoint_tick:
+                raise ValueError(
+                    f"until_tick {target} precedes checkpoint tick {checkpoint_tick}"
+                )
+            run_overrides["ticks"] = target
+        if gpu_semantics_mode is not None:
+            if gpu_semantics_mode not in {"strict-reference", "hybrid-accelerated"}:
+                raise ValueError("invalid gpu_semantics_mode for restored run")
+            run_overrides["gpu_semantics_mode"] = gpu_semantics_mode
+        if run_overrides:
+            cfg = replace(cfg, run=replace(cfg.run, **run_overrides))
+        simulation = cls(cfg, output_dir, backend=backend)
+        simulation._restore_full_checkpoint_state(record["simulation"])
+        simulation.checkpoint_lineage = copy.deepcopy(
+            record.get("checkpoint_lineage", [])
+        )
+        replay_record = {
+            "checkpoint": str(Path(checkpoint).resolve()),
+            "checkpoint_schema": metadata["schema"],
+            "checkpoint_project_version": metadata["project_version"],
+            "checkpoint_tick": checkpoint_tick,
+            "checkpoint_state_sha256": metadata["state_sha256"],
+            "offline_replay": True,
+        }
+        simulation.checkpoint_lineage.append(replay_record)
+        simulation._write_run_manifest(simulation.requested_backend)
+        (simulation.output_dir / "replay_provenance.json").write_text(
+            json.dumps(
+                {
+                    "schema": "offline-replay-provenance-v1",
+                    "checkpoint_lineage": simulation.checkpoint_lineage,
+                    "event_log_scope": "post-checkpoint",
+                    "cumulative_world_counters_restored": True,
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        return simulation
 
     def clone(self, output_dir: str | Path) -> "Simulation":
         """Clone a snapshot for paired counterfactual runs.
@@ -830,6 +1138,8 @@ class Simulation:
         branch.direct_messages_enabled = self.direct_messages_enabled
         branch.freeze_genotype = self.freeze_genotype
         branch.intervention_history = copy.deepcopy(self.intervention_history)
+        branch.checkpoint_lineage = copy.deepcopy(self.checkpoint_lineage)
+        branch._write_run_manifest(branch.requested_backend)
         if branch.gpu_runtime is not None:
             branch.gpu_runtime.sync_from_host(branch.environment, branch.information)
             branch.gpu_runtime.sync_entity_from_host(
@@ -1372,6 +1682,8 @@ class Simulation:
                 else {}
             ),
         )
+        if self.cfg.run.full_checkpoint_enabled:
+            self.save_full_checkpoint()
 
     def _record_evolution_progress(
         self,
@@ -2788,6 +3100,8 @@ class Simulation:
             "experiment_mode": self.experiment_mode.value,
             "scientific_validity": self.scientific_validity(),
             "ticks_completed": self.tick,
+            "checkpoint_lineage": copy.deepcopy(self.checkpoint_lineage),
+            "event_log_scope": ("post-checkpoint" if self.checkpoint_lineage else "full-run"),
             "wall_seconds": time.perf_counter() - started,
             "final": final_row,
             "action_counts": {action.name: int(self.action_counts[action]) for action in Action},

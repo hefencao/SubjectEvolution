@@ -1,4 +1,4 @@
-# Subject Evolution 项目状态（v0.8.0）
+# Subject Evolution 项目状态（v0.9.0）
 
 ## 当前完成阶段
 
@@ -8,52 +8,55 @@
 | 有代价知识交换与传播谱系 | K1 已完成 |
 | 局部五维后果记录与经验更新 | K2 已完成 |
 | 知识稀疏残差进入策略 | K3 已完成 |
-| 知识内容谱系与候选主体图诊断 | **K4 已完成** |
+| 知识内容谱系与候选主体图诊断 | K4 已完成 |
+| checkpoint 全世界恢复 | **v0.9.0 已完成** |
+| 离线反事实分支重放 | **v0.9.0 已完成** |
 | 完整设备驻留世界循环 | 未实现 |
 | 完整主体图数据库及任意嵌套主体 | 未实现 |
-| checkpoint 全世界恢复与离线反事实重放 | 未实现 |
 | 信息模板寄生主体 | 未实现 |
 | 完整主体性评分 | 未实现 |
 | Hero 强化学习 | 未实现 |
 | 任意信息通道 schema | 未实现 |
 
-## K4 概要
+## v0.9.0 概要
 
-v0.8.0 实现 `dynamic-knowledge-k4-v1`、`knowledge-subject-candidate-v1` 与 `candidate-subject-graph-v1`。知识内容与损坏变体被记录为候选知识主体节点，并追踪父子谱系、根内容、变体深度、当前/历史副本、唯一宿主、群组/谱系/空间区域分布、传播边界、宿主成本以及 K3 策略影响。
+新增 `subject-evolution-full-checkpoint-v1`。`.sechk` 保存完整实体容量状态、环境/信息场、延迟队列、关系、主体图、K1–K4 知识状态、累计统计、干预历史和演化进度，可在新进程中精确继续。
 
-K4 是低频、只读的宿主诊断层。它在世界动作、知识更新、关系和生命周期提交完成后读取已提交状态，不向 observation、policy、intent、resolution 或 commit 回写。候选节点没有独立执行器，因此输出明确设置：
+新增：
 
-- `diagnostic_only = true`；
-- `subjecthood_truth_claimed = false`；
-- `host_outcome_association_causal = false`；
-- `autonomy_caution = true`。
+- `Simulation.save_full_checkpoint()`；
+- `Simulation.from_checkpoint()`；
+- `python -m subject_evolution.replay`；
+- 通用 CLI 的 `--resume-checkpoint` 与 `--until-tick`；
+- checkpoint SHA-256 与 replay lineage provenance；
+- 从磁盘共同历史执行 paired counterfactual。
 
-K4 不生成未经验证的单一主体性真值。持续性、复制、分布、成本、宿主五维状态关联、策略影响和边界内聚均作为独立分量输出，并附带样本量或有效性标志。
+旧 `.npz` 仍为分析快照，不能恢复。完整 `.sechk` 使用可信 pickle，只能加载本项目自己生成的文件。完整 checkpoint 默认关闭，避免对大规模正式运行产生隐式存储成本。
 
 ## 短周期验证
 
-本轮没有运行 500 ticks。主要对照使用 CPU、seed 10001、30 ticks、初始 500 个实体、最大 768 个实体，并在 tick 15/30 保存检查点。
+本轮未运行 500 ticks。
 
-- K3 private、K3 costed exchange、K4 candidate tracking 三条件均独立复跑两次；
-- 非计时 metrics、知识日志、策略贡献日志和检查点均满足固定种子确定性；
-- K3 exchange 与 K4 tracking 的 32 个共同 checkpoint 数组、全部共同非计时指标和事件日志完全一致；
-- K4 只增加 20 个候选诊断 checkpoint 数组；
-- 36 项测试通过，1 项真实 CUDA/CuPy 测试因当前容器无 GPU 跳过。
-
-短运行只证明数据结构、确定性、成本归因和纯观察边界，不构成长期选择优势、因果宿主收益或主体性结论。
+- CPU、seed 10001、256 初始实体、20 ticks；
+- tick 10 保存 checkpoint，恢复后继续到 tick 20；
+- 连续与恢复的完整语义状态 0 差异；
+- 共同非计时 metrics 完全一致；
+- 磁盘恢复 baseline/intervention 与同 tick 内存 clone 分支完全一致；
+- 离线 `reverse-environment` 分支最终 alive 279 vs 277，证明分支独立生效；
+- 39 tests passed，1 个真实 CUDA 测试跳过。
 
 ## CPU/GPU 状态
 
-K1–K3 已保留 reference-order signal/harvest 归约与周期位置规范化修复。K4 在 CPU authority/host diagnostic 层运行，不改变 GPU 行动路径，只消费已经回到宿主侧的稀疏知识、事件和已提交世界状态。
+v0.6.4 的 reference-order signal/harvest 归约和 v0.6.5 周期位置规范化继续保留。完整 checkpoint 在 hybrid runtime 存在时先把环境和信息同步回 host，恢复后再重建 runtime 并同步实体/社会/字段状态。
 
-当前容器没有 CUDA，因此本轮没有执行真实 GPU 上的 K4 诊断路径。由于 K4 不反馈到世界，启用与关闭 K4 的世界状态兼容性已在 CPU 上逐数组验证；真实 GPU 的剩余风险主要是诊断传回与性能开销，而非动作语义。
+当前容器没有 CUDA，因此真实 hybrid GPU 的 checkpoint 保存、跨进程恢复与后续 parity 仍需在 GPU 主机验证。CPU reference 的完整恢复已经逐状态证明。
 
 ## 下一阶段建议
 
-K1–K4 的知识路线已经形成首个闭环。下一步不应直接宣称“完整主体性评分”，而应优先推进以下基础能力之一：
+基础设施下一优先级可选：
 
-1. checkpoint 全世界恢复与离线反事实分支重放；
-2. 将现有候选节点扩展为通用、可持久化的主体图数据库，并支持任意嵌套但不改变控制边界；
-3. 建立多 seed、环境梯度和预注册指标的长期实验，检验知识谱系的复制、宿主成本与行为影响是否形成稳定选择信号。
+1. 将现有 body/lineage/social/knowledge 候选节点统一为可持久化、可查询的通用主体图数据库；
+2. 支持任意嵌套主体，但保持 proposal → intent → resolution → commit 控制边界；
+3. 建立多 seed、预注册环境梯度和 checkpoint 分支实验，开始验证候选知识主体指标的因果稳定性。
 
-Hero 强化学习、信息模板寄生主体和任意信息通道 schema 仍应保持独立阶段，避免与 K4 诊断语义混合。
+信息模板寄生主体、Hero 强化学习、任意信息通道 schema 和完整设备驻留循环仍应作为独立阶段。
