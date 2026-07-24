@@ -387,6 +387,109 @@ const char* action_name(std::uint8_t action) {
     }
 }
 
+Color action_color(eco::Action action) {
+    switch (action) {
+    case eco::Action::Rest:
+        return Color{120, 132, 145, 255};
+    case eco::Action::MoveResource:
+        return Color{210, 226, 62, 255};
+    case eco::Action::MoveSocial:
+        return Color{93, 214, 255, 255};
+    case eco::Action::Harvest:
+        return Color{255, 184, 56, 255};
+    case eco::Action::Share:
+        return Color{70, 230, 197, 255};
+    case eco::Action::Signal:
+        return Color{139, 154, 255, 255};
+    case eco::Action::Reproduce:
+        return Color{232, 91, 244, 255};
+    case eco::Action::Flee:
+        return Color{255, 92, 78, 255};
+    default:
+        return GRAY;
+    }
+}
+
+std::uint64_t cycle_group_selection(
+    const std::vector<eco::GroupBehaviorSummary>& groups,
+    std::uint64_t current,
+    int direction
+) {
+    if (groups.empty()) {
+        return 0;
+    }
+    const auto iterator = std::find_if(
+        groups.begin(), groups.end(),
+        [current](const eco::GroupBehaviorSummary& group) {
+            return group.group_id == current;
+        }
+    );
+    if (iterator == groups.end()) {
+        return direction < 0
+            ? groups.back().group_id
+            : groups.front().group_id;
+    }
+    std::size_t index = static_cast<std::size_t>(iterator - groups.begin());
+    if (direction > 0) {
+        index = (index + 1U) % groups.size();
+    } else if (direction < 0) {
+        index = index == 0U ? groups.size() - 1U : index - 1U;
+    }
+    return groups[index].group_id;
+}
+
+void draw_group_action_mix(
+    const eco::GroupBehaviorSummary& group,
+    Rectangle bounds
+) {
+    DrawRectangleRec(bounds, Fade(BLACK, 0.42F));
+    DrawRectangleLinesEx(bounds, 1.0F, Fade(GRAY, 0.34F));
+
+    float x = bounds.x;
+    for (std::size_t index = 0; index < group.action_fractions.size(); ++index) {
+        const float fraction = std::clamp(group.action_fractions[index], 0.0F, 1.0F);
+        if (fraction <= 0.002F) {
+            continue;
+        }
+        const float width = bounds.width * fraction;
+        DrawRectangleRec(
+            Rectangle{x, bounds.y, width, bounds.height},
+            action_color(static_cast<eco::Action>(index))
+        );
+        x += width;
+    }
+
+    std::array<std::pair<float, std::size_t>, 8> ranked{};
+    for (std::size_t index = 0; index < ranked.size(); ++index) {
+        ranked[index] = {group.action_fractions[index], index};
+    }
+    std::sort(ranked.begin(), ranked.end(),
+        [](const auto& left, const auto& right) {
+            return left.first > right.first;
+        });
+
+    int label_y = static_cast<int>(bounds.y + bounds.height + 4.0F);
+    int label_x = static_cast<int>(bounds.x);
+    for (std::size_t rank = 0; rank < 3U; ++rank) {
+        const auto [fraction, index] = ranked[rank];
+        if (fraction < 0.015F) {
+            continue;
+        }
+        DrawText(
+            TextFormat(
+                "%s %.0f%%",
+                action_name(static_cast<std::uint8_t>(index)),
+                fraction * 100.0F
+            ),
+            label_x,
+            label_y,
+            12,
+            action_color(static_cast<eco::Action>(index))
+        );
+        label_x += 142;
+    }
+}
+
 eco::LodMode next_lod_mode(eco::LodMode mode) {
     switch (mode) {
     case eco::LodMode::Auto:
@@ -612,14 +715,14 @@ void draw_panel(
     );
     DrawText(
         TextFormat(
-            "B behavior %s | Q group-focus %s | E view | H hazard",
+            "B behavior %s | Q group-focus %s | [ ] group | F follow",
             eco::behavior_overlay_name(options.behavior_overlay),
             options.focus_selected_group ? "on" : "off"
         ),
         26, 119, 13, GRAY
     );
     DrawText(
-        "1-4 resource | T filter | P density | C change | L LOD | M events | V flow",
+        "1-4 resource | E view | H hazard | T filter | L LOD | M events | V flow",
         26, 139, 13, GRAY
     );
 
@@ -631,22 +734,28 @@ void draw_panel(
         options.selected_entity_id == 0
             ? nullptr
             : find_entity(frame, options.selected_entity_id);
+    std::uint64_t effective_group_id = options.selected_group_id;
+    if (selected != nullptr && selected->group_id != 0) {
+        effective_group_id = selected->group_id;
+    }
+    const eco::GroupBehaviorSummary* selected_group =
+        renderer.group_behavior(effective_group_id);
 
     DrawText("Inspector", 26, 184, 17, YELLOW);
 
-    if (selected == nullptr) {
+    if (selected == nullptr && selected_group == nullptr) {
         const auto& groups = renderer.group_behaviors();
         if (options.selected_entity_id != 0) {
             DrawText("Selected agent is no longer alive in this frame.",
                 26, 207, 14, RED);
         } else if (groups.empty()) {
-            DrawText("Click a visible agent in the world viewport.",
+            DrawText("Click a visible agent or group marker.",
                 26, 207, 14, GRAY);
         } else {
-            DrawText("Top active groups (click an agent, Q focuses its group):",
+            DrawText("Top groups: click a center, or use [ and ] to cycle",
                 26, 207, 13, GRAY);
             int y = 227;
-            for (std::size_t index = 0; index < std::min<std::size_t>(groups.size(), 4U); ++index) {
+            for (std::size_t index = 0; index < std::min<std::size_t>(groups.size(), 5U); ++index) {
                 const auto& group = groups[index];
                 DrawText(
                     TextFormat(
@@ -661,6 +770,69 @@ void draw_panel(
                 );
                 y += 20;
             }
+        }
+    } else if (selected == nullptr && selected_group != nullptr) {
+        const float group_speed = std::sqrt(
+            selected_group->mean_vx * selected_group->mean_vx +
+            selected_group->mean_vy * selected_group->mean_vy
+        );
+        DrawText(
+            TextFormat(
+                "GROUP %llu  members %u",
+                static_cast<unsigned long long>(selected_group->group_id),
+                static_cast<unsigned int>(selected_group->members)
+            ),
+            26, 207, 15, Color{255, 204, 91, 255}
+        );
+        DrawText(
+            TextFormat(
+                "center %.2f,%.2f  spread %.2f / %.2f",
+                selected_group->x, selected_group->y,
+                selected_group->spread_major, selected_group->spread_minor
+            ),
+            26, 229, 13, RAYWHITE
+        );
+        DrawText(
+            TextFormat(
+                "coherence %.2f  active %.0f%%  speed %.3f",
+                selected_group->coherence,
+                selected_group->active_fraction * 100.0F,
+                group_speed
+            ),
+            26, 249, 13, RAYWHITE
+        );
+        DrawText(
+            TextFormat(
+                "dominant %s %.0f%%  focus %s  follow %s",
+                action_name(static_cast<std::uint8_t>(selected_group->dominant_action)),
+                selected_group->dominant_action_fraction * 100.0F,
+                options.focus_selected_group ? "on" : "off",
+                follow_selected ? "on" : "off"
+            ),
+            26, 269, 13, LIGHTGRAY
+        );
+        draw_group_action_mix(
+            *selected_group,
+            Rectangle{28.0F, 291.0F, panel_width - 28.0F, 10.0F}
+        );
+        const eco::EnvironmentProbe probe = renderer.probe_environment(
+            frame, selected_group->x, selected_group->y, options.resource_channel
+        );
+        if (probe.valid) {
+            DrawText(
+                TextFormat(
+                    "center cell %u,%u  R%d %.3g  hazard %.3f",
+                    probe.cell_x, probe.cell_y,
+                    options.resource_channel + 1,
+                    probe.resources[static_cast<std::size_t>(options.resource_channel)],
+                    probe.hazard
+                ),
+                26, 331, 12, Color{102, 220, 255, 255}
+            );
+            DrawText(
+                TextFormat("resource gradient %.3g", probe.gradient_magnitude),
+                26, 347, 12, LIGHTGRAY
+            );
         }
     } else {
         const float speed = std::sqrt(
@@ -715,16 +887,14 @@ void draw_panel(
             26, 287, 14, LIGHTGRAY
         );
 
-        const eco::GroupBehaviorSummary* group =
-            renderer.group_behavior(selected->group_id);
-        if (group != nullptr) {
+        if (selected_group != nullptr) {
             DrawText(
                 TextFormat(
                     "group n %u  coherence %.2f  %s %.0f%%",
-                    static_cast<unsigned int>(group->members),
-                    group->coherence,
-                    action_name(static_cast<std::uint8_t>(group->dominant_action)),
-                    group->dominant_action_fraction * 100.0F
+                    static_cast<unsigned int>(selected_group->members),
+                    selected_group->coherence,
+                    action_name(static_cast<std::uint8_t>(selected_group->dominant_action)),
+                    selected_group->dominant_action_fraction * 100.0F
                 ),
                 26, 307, 13, Color{255, 204, 91, 255}
             );
@@ -1042,13 +1212,47 @@ int main(int argc, char** argv) {
                 camera_initialized = true;
             }
 
-            if (follow_selected && options.selected_entity_id != 0) {
+            if (options.selected_entity_id != 0) {
                 const eco::EntitySample* selected = find_entity(
-                    current,
-                    options.selected_entity_id
+                    current, options.selected_entity_id
                 );
                 if (selected != nullptr) {
+                    if (selected->group_id != 0) {
+                        options.selected_group_id = selected->group_id;
+                    }
+                } else {
+                    // The individual died or left the frame. Preserve the
+                    // social context when its group still exists; otherwise
+                    // clear the complete selection instead of leaving a stale
+                    // inspector warning indefinitely.
+                    options.selected_entity_id = 0;
+                    selected_neighbors.clear();
+                    if (options.selected_group_id == 0 ||
+                        renderer.group_behavior(options.selected_group_id) == nullptr) {
+                        options.selected_group_id = 0;
+                        options.focus_selected_group = false;
+                        follow_selected = false;
+                    }
+                }
+            } else if (options.selected_group_id != 0 &&
+                       renderer.group_behavior(options.selected_group_id) == nullptr) {
+                options.selected_group_id = 0;
+                options.focus_selected_group = false;
+                follow_selected = false;
+            }
+
+            if (follow_selected) {
+                const eco::EntitySample* selected = options.selected_entity_id == 0
+                    ? nullptr
+                    : find_entity(current, options.selected_entity_id);
+                if (selected != nullptr) {
                     camera.target = Vector2{selected->x, selected->y};
+                } else if (options.selected_group_id != 0) {
+                    const eco::GroupBehaviorSummary* group =
+                        renderer.group_behavior(options.selected_group_id);
+                    if (group != nullptr) {
+                        camera.target = Vector2{group->x, group->y};
+                    }
                 }
             }
         }
@@ -1090,19 +1294,31 @@ int main(int argc, char** argv) {
         }
 
         if (mouse_in_world && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            options.selected_entity_id = renderer.pick_entity(
+            const std::uint64_t entity_id = renderer.pick_entity(
                 current,
                 camera,
                 mouse
             );
-            if (options.selected_entity_id == 0) {
-                options.focus_selected_group = false;
-                follow_selected = false;
+            if (entity_id != 0) {
+                options.selected_entity_id = entity_id;
+                const eco::EntitySample* selected = find_entity(current, entity_id);
+                options.selected_group_id = selected == nullptr
+                    ? 0
+                    : selected->group_id;
+                selected_neighbors = social.strongest_neighbors(entity_id, 24);
+            } else {
+                options.selected_entity_id = 0;
+                options.selected_group_id = renderer.pick_group(
+                    current,
+                    camera,
+                    mouse
+                );
+                selected_neighbors.clear();
+                if (options.selected_group_id == 0) {
+                    options.focus_selected_group = false;
+                }
             }
-            selected_neighbors = social.strongest_neighbors(
-                options.selected_entity_id,
-                24
-            );
+            follow_selected = false;
         }
 
         if (IsKeyPressed(KEY_ONE)) {
@@ -1154,7 +1370,23 @@ int main(int argc, char** argv) {
         }
         if (IsKeyPressed(KEY_Q)) {
             options.focus_selected_group =
-                options.selected_entity_id != 0 && !options.focus_selected_group;
+                options.selected_group_id != 0 && !options.focus_selected_group;
+        }
+        if (IsKeyPressed(KEY_LEFT_BRACKET)) {
+            options.selected_entity_id = 0;
+            options.selected_group_id = cycle_group_selection(
+                renderer.group_behaviors(), options.selected_group_id, -1
+            );
+            selected_neighbors.clear();
+            follow_selected = false;
+        }
+        if (IsKeyPressed(KEY_RIGHT_BRACKET)) {
+            options.selected_entity_id = 0;
+            options.selected_group_id = cycle_group_selection(
+                renderer.group_behaviors(), options.selected_group_id, 1
+            );
+            selected_neighbors.clear();
+            follow_selected = false;
         }
         if (IsKeyPressed(KEY_M)) {
             options.show_event_markers =
@@ -1172,7 +1404,8 @@ int main(int argc, char** argv) {
         }
         if (IsKeyPressed(KEY_F)) {
             follow_selected =
-                options.selected_entity_id != 0 && !follow_selected;
+                (options.selected_entity_id != 0 || options.selected_group_id != 0) &&
+                !follow_selected;
         }
         if (IsKeyPressed(KEY_S)) {
             show_social = !show_social;

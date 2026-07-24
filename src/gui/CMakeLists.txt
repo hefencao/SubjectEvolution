@@ -44,6 +44,15 @@ add_executable(eco_game_runtime
     src/renderer.cpp
 )
 
+target_sources(eco_game_runtime PRIVATE
+    src/renderer_internal.cpp
+    src/renderer_core.cpp
+    src/renderer_environment.cpp
+    src/renderer_observation.cpp
+    src/renderer_groups.cpp
+    src/renderer_draw.cpp
+)
+
 target_include_directories(eco_game_runtime PRIVATE include)
 target_link_libraries(
     eco_game_runtime

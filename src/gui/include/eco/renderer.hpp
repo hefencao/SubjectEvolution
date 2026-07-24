@@ -75,6 +75,7 @@ struct RenderOptions {
     EnvironmentViewMode environment_view = EnvironmentViewMode::Composite;
     BehaviorOverlayMode behavior_overlay = BehaviorOverlayMode::Auto;
     std::uint64_t selected_entity_id = 0;
+    std::uint64_t selected_group_id = 0;
 };
 
 struct FrameDiagnostics {
@@ -111,6 +112,7 @@ struct GroupBehaviorSummary {
     float active_fraction = 0.0F;
     Action dominant_action = Action::Rest;
     float dominant_action_fraction = 0.0F;
+    std::array<float, 8> action_fractions{};
 };
 
 struct EnvironmentProbe {
@@ -180,6 +182,13 @@ public:
         const Camera2D& camera,
         Vector2 screen_position,
         float radius_pixels = 16.0F
+    ) const;
+
+    [[nodiscard]] std::uint64_t pick_group(
+        const Frame& frame,
+        const Camera2D& camera,
+        Vector2 screen_position,
+        float radius_pixels = 24.0F
     ) const;
 
     [[nodiscard]] const FrameDiagnostics& diagnostics() const noexcept {
@@ -258,6 +267,7 @@ private:
     void draw_group_history_overlay(
         const Frame& frame,
         const Camera2D& camera,
+        Rectangle viewport,
         const RenderDetail& detail,
         const RenderOptions& options,
         std::uint64_t selected_group_id,
