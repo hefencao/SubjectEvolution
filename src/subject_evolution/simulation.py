@@ -66,6 +66,13 @@ from .knowledge_policy import (
 )
 from .routing_cost import RoutingCostBudgetResult, apply_routing_cost_budget
 from .latent_knowledge import latent_router_state_features
+from .working_memory import (
+    WorkingMemoryUpdateResult,
+    build_working_memory_update,
+    expected_outcomes_for_actions,
+    memory_float_view,
+    quantize_memory_observation,
+)
 from .lifecycle import (
     BirthAllocationPlan,
     DeathCause,
@@ -208,6 +215,12 @@ class EntityState:
         self.genotype_size = ParametricPolicy.genome_size_for_config(cfg)
         self.genotype = np.zeros((cap, self.genotype_size), dtype=np.float32)
         self.memory = np.zeros((cap, self.MEMORY_SIZE), dtype=np.float32)
+        self.working_memory_q = np.zeros(
+            (cap, int(cfg.knowledge.working_memory_width)), dtype=np.int16
+        )
+        self.working_memory_previous_observation_q = np.zeros(
+            (cap, 4), dtype=np.int16
+        )
         self.harvested_energy_total = np.zeros(cap, dtype=np.float32)
         self.shared_energy_received_total = np.zeros(cap, dtype=np.float32)
         self.next_entity_id = np.uint64(initial + 1)
@@ -315,6 +328,8 @@ class EntityState:
         self.information_store[slots] = 0.0
         self.fertility[slots] = 0.05
         self.memory[slots] = 0.0
+        self.working_memory_q[slots] = 0
+        self.working_memory_previous_observation_q[slots] = 0
         self.harvested_energy_total[slots] = 0.0
         self.shared_energy_received_total[slots] = 0.0
         self.primary_subject_id[slots] = 0
@@ -405,6 +420,9 @@ class EntityState:
         ):
             raise ValueError("death event final state is stale")
         self.alive[indices] = False
+        self.memory[indices] = 0.0
+        self.working_memory_q[indices] = 0
+        self.working_memory_previous_observation_q[indices] = 0
         self.free_slots.extend(indices.tolist())
         self.free_slot_version += 1
         self.entity_id[indices] = 0
@@ -586,6 +604,7 @@ class Simulation:
         self.last_local_resources = np.empty((0, 4), dtype=np.float32)
         self.last_information = None
         self.last_policy_decision: PolicyDecision | None = None
+        self.last_knowledge_policy_plan = KnowledgePolicyPlan.empty(0)
         self.last_intents: ActionIntentBatch | None = None
         self.last_resolutions: ActionResolutionBatch | None = None
         self.last_birth_allocation = empty_birth_allocation_plan(0)
@@ -726,6 +745,38 @@ class Simulation:
                 if self.cfg.knowledge.routing_cost_enabled
                 else None
             ),
+            "knowledge_working_memory_enabled": (
+                self.cfg.knowledge.working_memory_enabled
+            ),
+            "knowledge_working_memory_schema": (
+                self.cfg.knowledge.working_memory_schema
+                if self.cfg.knowledge.working_memory_enabled else None
+            ),
+            "knowledge_working_memory_width": (
+                self.cfg.knowledge.working_memory_width
+                if self.cfg.knowledge.working_memory_enabled else None
+            ),
+            "knowledge_working_memory_numeric_semantics": (
+                "int16-state-integer-hard-clip-v1"
+                if self.cfg.knowledge.working_memory_enabled else None
+            ),
+            "knowledge_sparse_selection_enabled": (
+                self.cfg.knowledge.sparse_selection_enabled
+            ),
+            "knowledge_sparse_selection_schema": (
+                self.cfg.knowledge.sparse_selection_schema
+                if self.cfg.knowledge.sparse_selection_enabled else None
+            ),
+            "knowledge_sparse_selection_top_k": (
+                self.cfg.knowledge.sparse_selection_top_k
+                if self.cfg.knowledge.sparse_selection_enabled else None
+            ),
+            "knowledge_sparse_selection_authority": (
+                "ephemeral-workset-only"
+                if self.cfg.knowledge.sparse_selection_enabled else None
+            ),
+            "knowledge_global_category_embedding": False,
+            "knowledge_attention_softmax": False,
             "knowledge_latent_external_optimizer": False,
             "knowledge_candidate_tracking": self.cfg.knowledge.candidate_tracking_enabled,
             "knowledge_candidate_schema": (
@@ -795,6 +846,33 @@ class Simulation:
                 )
         if np.any(self.social.group_id[~ent.alive] != 0):
             raise AssertionError("dead entities must not retain group membership")
+        if self.cfg.knowledge.working_memory_enabled:
+            width = int(self.cfg.knowledge.working_memory_width)
+            if ent.working_memory_q.shape != (ent.alive.size, width):
+                raise AssertionError("working-memory state shape invariant failed")
+            clip_q = max(
+                1,
+                int(round(
+                    float(self.cfg.knowledge.working_memory_activation_clip)
+                    * int(self.cfg.knowledge.working_memory_quantization_scale)
+                )),
+            )
+            if active.size and np.any(
+                np.abs(ent.working_memory_q[active].astype(np.int32)) > clip_q
+            ):
+                raise AssertionError("working-memory quantized range invariant failed")
+            expected_memory = memory_float_view(
+                ent.working_memory_q[active], self.cfg.knowledge
+            )
+            if active.size and not np.array_equal(
+                ent.memory[active], expected_memory, equal_nan=True
+            ):
+                raise AssertionError("working-memory float-view invariant failed")
+            if inactive.size and (
+                np.any(ent.working_memory_q[inactive] != 0)
+                or np.any(ent.working_memory_previous_observation_q[inactive] != 0)
+            ):
+                raise AssertionError("inactive slots retain working-memory state")
         self.knowledge.validate(ent.alive, ent.primary_subject_id)
 
     @property
@@ -876,6 +954,9 @@ class Simulation:
             "last_local_resources": self.last_local_resources.copy(),
             "last_information": copy.deepcopy(self.last_information),
             "last_policy_decision": copy.deepcopy(self.last_policy_decision),
+            "last_knowledge_policy_plan": copy.deepcopy(
+                self.last_knowledge_policy_plan
+            ),
             "last_intents": copy.deepcopy(self.last_intents),
             "last_resolutions": copy.deepcopy(self.last_resolutions),
             "last_birth_allocation": copy.deepcopy(self.last_birth_allocation),
@@ -937,6 +1018,16 @@ class Simulation:
         """Install host-authoritative semantic state into a fresh Simulation."""
         self.entities = copy.deepcopy(state["entities"])
         self.entities.cfg = self.cfg
+        entity_capacity = int(np.asarray(self.entities.alive).size)
+        memory_width = int(self.cfg.knowledge.working_memory_width)
+        if not hasattr(self.entities, "working_memory_q"):
+            self.entities.working_memory_q = np.zeros(
+                (entity_capacity, memory_width), dtype=np.int16
+            )
+        if not hasattr(self.entities, "working_memory_previous_observation_q"):
+            self.entities.working_memory_previous_observation_q = np.zeros(
+                (entity_capacity, 4), dtype=np.int16
+            )
         self.entity_device_version = int(state["entity_device_version"])
         self.environment = copy.deepcopy(state["environment"])
         self.environment.cfg = self.cfg
@@ -1004,6 +1095,9 @@ class Simulation:
         ).copy()
         self.last_information = copy.deepcopy(state["last_information"])
         self.last_policy_decision = copy.deepcopy(state["last_policy_decision"])
+        self.last_knowledge_policy_plan = copy.deepcopy(
+            state.get("last_knowledge_policy_plan", KnowledgePolicyPlan.empty(self.tick))
+        )
         self.last_intents = copy.deepcopy(state["last_intents"])
         self.last_resolutions = copy.deepcopy(state["last_resolutions"])
         self.last_birth_allocation = copy.deepcopy(state["last_birth_allocation"])
@@ -1418,6 +1512,31 @@ class Simulation:
                     if self.cfg.knowledge.routing_cost_enabled
                     else None
                 ),
+                "knowledge_working_memory_enabled": (
+                    self.cfg.knowledge.working_memory_enabled
+                ),
+                "knowledge_working_memory_schema": (
+                    self.cfg.knowledge.working_memory_schema
+                    if self.cfg.knowledge.working_memory_enabled else None
+                ),
+                "knowledge_working_memory_update_boundary": (
+                    "post-outcome local state commit for next tick"
+                    if self.cfg.knowledge.working_memory_enabled else None
+                ),
+                "knowledge_sparse_selection_enabled": (
+                    self.cfg.knowledge.sparse_selection_enabled
+                ),
+                "knowledge_sparse_selection_schema": (
+                    self.cfg.knowledge.sparse_selection_schema
+                    if self.cfg.knowledge.sparse_selection_enabled else None
+                ),
+                "knowledge_sparse_selection_top_k": (
+                    self.cfg.knowledge.sparse_selection_top_k
+                    if self.cfg.knowledge.sparse_selection_enabled else None
+                ),
+                "knowledge_sparse_selection_authoritative_storage": False,
+                "knowledge_sparse_selection_global_category_embedding": False,
+                "knowledge_sparse_selection_softmax": False,
                 "feature_constraints": list(ParametricPolicy.FEATURE_NAMES),
                 "action_preferences_hardcoded": False,
                 "strategy_gene_count": ParametricPolicy.STRATEGY_GENES,
@@ -1823,6 +1942,15 @@ class Simulation:
             group_id=self.social.group_id[active],
             genotype=self.entities.genotype[active],
             generation=self.entities.generation[active],
+            **(
+                {
+                    "working_memory_q": self.entities.working_memory_q[active],
+                    "working_memory_previous_observation_q": (
+                        self.entities.working_memory_previous_observation_q[active]
+                    ),
+                }
+                if self.cfg.knowledge.working_memory_enabled else {}
+            ),
             **(self.knowledge.checkpoint_arrays() if self.cfg.knowledge.enabled else {}),
             **(
                 {
@@ -1888,6 +2016,9 @@ class Simulation:
         knowledge_policy_plan = KnowledgePolicyPlan.empty(self.tick)
         cost_free_knowledge_policy_plan = KnowledgePolicyPlan.empty(self.tick)
         routing_cost_result: RoutingCostBudgetResult | None = None
+        working_memory_state_features: np.ndarray | None = None
+        working_memory_actual_outcomes: np.ndarray | None = None
+        working_memory_update_result: WorkingMemoryUpdateResult | None = None
         policy_energy = ent.energy
         if self.gpu_runtime is None:
             phase_started = time.perf_counter()
@@ -1948,6 +2079,9 @@ class Simulation:
                             max_energy=cfg.entities.max_energy,
                             resource_capacity=cfg.environment.resource_capacity[0],
                         )
+                        working_memory_state_features = np.asarray(
+                            router_state, dtype=np.float32
+                        ).copy()
                         knowledge_policy_plan = build_latent_knowledge_policy_plan(
                             self.knowledge.observation,
                             self.knowledge.latent_store,
@@ -1957,6 +2091,11 @@ class Simulation:
                             context_keys=knowledge_context_keys,
                             genotype=active_genotype,
                             router_gene_start=ParametricPolicy.latent_router_gene_start(cfg),
+                            selection_gene_start=(
+                                ParametricPolicy.sparse_selection_gene_start(cfg)
+                                if cfg.knowledge.sparse_selection_enabled else None
+                            ),
+                            working_memory_q=ent.working_memory_q[active],
                             use_strength=ParametricPolicy.knowledge_use_strength_from_genotype(
                                 active_genotype
                             ),
@@ -1981,7 +2120,10 @@ class Simulation:
                             action_count=len(Action),
                         )
                 cost_free_knowledge_policy_plan = knowledge_policy_plan
-                if cfg.knowledge.routing_cost_enabled and knowledge_policy_plan.size:
+                if cfg.knowledge.routing_cost_enabled and (
+                    knowledge_policy_plan.size
+                    or knowledge_policy_plan.work_active_rows.size
+                ):
                     policy_energy = ent.energy.copy()
                     routing_cost_result = apply_routing_cost_budget(
                         knowledge_policy_plan,
@@ -2028,6 +2170,26 @@ class Simulation:
                     tick=self.tick,
                     knowledge_plan=cost_free_knowledge_policy_plan,
                 )
+            memory_free_decision = None
+            if cfg.knowledge.working_memory_enabled:
+                memory_free_decision = self.policy.decide(
+                    active=active,
+                    stable_ids=ent.entity_id,
+                    energy=policy_energy,
+                    integrity=ent.integrity,
+                    fertility=ent.fertility,
+                    genotype=ent.genotype,
+                    memory=np.zeros_like(ent.memory),
+                    local_resources=local_resources,
+                    resource_gradient=resource_gradient,
+                    danger_gradient=danger_gradient,
+                    group_direction=group_direction,
+                    partners=partners,
+                    info=info,
+                    run_seed=cfg.run.seed,
+                    tick=self.tick,
+                    knowledge_plan=knowledge_policy_plan,
+                )
             decision = self.policy.decide(
                 active=active,
                 stable_ids=ent.entity_id,
@@ -2048,6 +2210,8 @@ class Simulation:
             )
             if cost_free_decision is not None:
                 decision.cost_free_knowledge_action = cost_free_decision.action
+            if memory_free_decision is not None:
+                decision.memory_free_knowledge_action = memory_free_decision.action
             stats.policy_seconds = time.perf_counter() - phase_started
         else:
             self.gpu_runtime.begin_step_transfer_measurement()
@@ -2098,6 +2262,18 @@ class Simulation:
             knowledge_context_keys = prepared.knowledge_context_keys
             knowledge_policy_plan = prepared.knowledge_policy_plan
             routing_cost_result = prepared.routing_cost_result
+            if cfg.knowledge.working_memory_enabled:
+                working_memory_state_features = np.asarray(
+                    latent_router_state_features(
+                        energy=ent.energy[active],
+                        integrity=ent.integrity[active],
+                        fertility=ent.fertility[active],
+                        local_resource=local_resources[:, 0],
+                        max_energy=cfg.entities.max_energy,
+                        resource_capacity=cfg.environment.resource_capacity[0],
+                    ),
+                    dtype=np.float32,
+                )
             stats.spatial_seconds = prepared.spatial_seconds
             stats.observation_seconds = prepared.observation_seconds
             stats.policy_seconds = prepared.policy_seconds
@@ -2164,6 +2340,7 @@ class Simulation:
         ).copy()
         self.last_information = info
         self.last_policy_decision = decision
+        self.last_knowledge_policy_plan = copy.deepcopy(knowledge_policy_plan)
         if evaluation_due:
             evaluation_started = time.perf_counter()
             if decision.features is None or decision.action_mask is None:
@@ -2529,6 +2706,7 @@ class Simulation:
                     post_reproduction - knowledge_pre_reproduction,
                 )
             ).astype(np.float32, copy=False)
+            working_memory_actual_outcomes = outcome_vectors.copy()
             statuses = np.where(
                 resolutions.success,
                 OUTCOME_STATUS_SUCCESS,
@@ -2578,6 +2756,63 @@ class Simulation:
                     + getattr(outcome_stats, field_name),
                 )
 
+        if cfg.knowledge.working_memory_enabled:
+            if working_memory_state_features is None or working_memory_actual_outcomes is None:
+                raise RuntimeError("working memory requires latent state and committed outcomes")
+            selected_actions = np.asarray(decision.action, dtype=np.int16)
+            expected_outcomes = expected_outcomes_for_actions(
+                knowledge_policy_plan,
+                active_count=active.size,
+                actions=selected_actions,
+            )
+            working_memory_update_result = build_working_memory_update(
+                tick=self.tick,
+                active_rows=active,
+                entity_ids=ent.entity_id[active],
+                previous_q=ent.working_memory_q[active],
+                previous_observation_q=ent.working_memory_previous_observation_q[active],
+                current_state_features=working_memory_state_features,
+                actual_outcomes=working_memory_actual_outcomes,
+                expected_outcomes=expected_outcomes,
+                genotype=ent.genotype[active],
+                gene_start=ParametricPolicy.working_memory_gene_start(cfg),
+                available_energy=ent.energy[active],
+                config=cfg.knowledge,
+            )
+            accepted_memory = working_memory_update_result.accepted
+            ent.working_memory_q[active] = working_memory_update_result.committed_q
+            ent.working_memory_previous_observation_q[active] = np.where(
+                accepted_memory[:, None],
+                working_memory_update_result.observation_q,
+                ent.working_memory_previous_observation_q[active],
+            ).astype(np.int16)
+            ent.memory[active] = memory_float_view(
+                ent.working_memory_q[active], cfg.knowledge
+            )
+            ent.energy[active] = np.maximum(
+                ent.energy[active].astype(np.float64)
+                - working_memory_update_result.committed_energy,
+                0.0,
+            ).astype(np.float32)
+            memory_stats = self.knowledge.record_working_memory(
+                working_memory_update_result,
+                holder_subject_ids=ent.primary_subject_id[active],
+                action_changes=(
+                    int(np.count_nonzero(
+                        np.asarray(decision.action)
+                        != np.asarray(decision.memory_free_knowledge_action)
+                    ))
+                    if decision.memory_free_knowledge_action is not None else 0
+                ),
+            )
+            for field_name in KnowledgeStepStats.__dataclass_fields__:
+                setattr(
+                    knowledge_stats,
+                    field_name,
+                    getattr(knowledge_stats, field_name)
+                    + getattr(memory_stats, field_name),
+                )
+
         # Existence costs and environmental damage.
         current_active = np.flatnonzero(ent.alive).astype(np.int32)
         current_cells = self.spatial.cell_ids(ent.x[current_active], ent.y[current_active])
@@ -2612,7 +2847,8 @@ class Simulation:
         ent.information_store[current_active] *= 0.999
         ent.fertility[current_active] = np.maximum(ent.fertility[current_active] - 0.0005, 0.0)
 
-        self.policy.update_memory(active, ent.memory, local_resources, info)
+        if not cfg.knowledge.working_memory_enabled:
+            self.policy.update_memory(active, ent.memory, local_resources, info)
         death_events = plan_death_events(
             active=current_active,
             entity_ids=ent.entity_id,
@@ -3162,6 +3398,45 @@ class Simulation:
                     "knowledge_routing_cost_induced_action_changes_step": (
                         stats.knowledge.routing_cost_induced_action_changes
                     ),
+                    "knowledge_selection_candidate_copies_step": (
+                        stats.knowledge.selection_candidate_copies
+                    ),
+                    "knowledge_selection_selected_copies_step": (
+                        stats.knowledge.selection_selected_copies
+                    ),
+                    "knowledge_selection_tie_count_step": (
+                        stats.knowledge.selection_tie_count
+                    ),
+                    "knowledge_selection_committed_energy_step": (
+                        stats.knowledge.selection_committed_energy
+                    ),
+                    "knowledge_working_memory_requested_energy_step": (
+                        stats.knowledge.working_memory_requested_energy
+                    ),
+                    "knowledge_working_memory_committed_energy_step": (
+                        stats.knowledge.working_memory_committed_energy
+                    ),
+                    "knowledge_working_memory_rejected_energy_step": (
+                        stats.knowledge.working_memory_rejected_energy
+                    ),
+                    "knowledge_working_memory_requested_entities_step": (
+                        stats.knowledge.working_memory_requested_entities
+                    ),
+                    "knowledge_working_memory_committed_entities_step": (
+                        stats.knowledge.working_memory_committed_entities
+                    ),
+                    "knowledge_working_memory_rejected_entities_step": (
+                        stats.knowledge.working_memory_rejected_entities
+                    ),
+                    "knowledge_working_memory_saturation_units_step": (
+                        stats.knowledge.working_memory_saturation_units
+                    ),
+                    "knowledge_working_memory_active_dimensions_step": (
+                        stats.knowledge.working_memory_active_dimensions
+                    ),
+                    "knowledge_working_memory_induced_action_changes_step": (
+                        stats.knowledge.working_memory_induced_action_changes
+                    ),
                     "knowledge_maintenance_energy_total": float(knowledge_summary["maintenance_energy_total"]),
                     "knowledge_sender_energy_total": float(knowledge_summary["sender_energy_total"]),
                     "knowledge_receiver_energy_total": float(knowledge_summary["receiver_energy_total"]),
@@ -3256,6 +3531,45 @@ class Simulation:
                     "knowledge_routing_cost_induced_action_changes_total": int(
                         knowledge_summary["routing_cost_induced_action_changes_total"]
                     ),
+                    "knowledge_selection_candidate_copies_total": int(
+                        knowledge_summary["selection_candidate_copies_total"]
+                    ),
+                    "knowledge_selection_selected_copies_total": int(
+                        knowledge_summary["selection_selected_copies_total"]
+                    ),
+                    "knowledge_selection_tie_count_total": int(
+                        knowledge_summary["selection_tie_count_total"]
+                    ),
+                    "knowledge_selection_committed_energy_total": float(
+                        knowledge_summary["selection_committed_energy_total"]
+                    ),
+                    "knowledge_working_memory_requested_energy_total": float(
+                        knowledge_summary["working_memory_requested_energy_total"]
+                    ),
+                    "knowledge_working_memory_committed_energy_total": float(
+                        knowledge_summary["working_memory_committed_energy_total"]
+                    ),
+                    "knowledge_working_memory_rejected_energy_total": float(
+                        knowledge_summary["working_memory_rejected_energy_total"]
+                    ),
+                    "knowledge_working_memory_requested_entities_total": int(
+                        knowledge_summary["working_memory_requested_entities_total"]
+                    ),
+                    "knowledge_working_memory_committed_entities_total": int(
+                        knowledge_summary["working_memory_committed_entities_total"]
+                    ),
+                    "knowledge_working_memory_rejected_entities_total": int(
+                        knowledge_summary["working_memory_rejected_entities_total"]
+                    ),
+                    "knowledge_working_memory_saturation_units_total": int(
+                        knowledge_summary["working_memory_saturation_units_total"]
+                    ),
+                    "knowledge_working_memory_active_dimensions_total": int(
+                        knowledge_summary["working_memory_active_dimensions_total"]
+                    ),
+                    "knowledge_working_memory_induced_action_changes_total": int(
+                        knowledge_summary["working_memory_induced_action_changes_total"]
+                    ),
                     "validation_seconds": stats.validation_seconds,
                 }
             )
@@ -3308,6 +3622,17 @@ class Simulation:
                         ),
                         "knowledge_candidate_routing_cost_total": float(
                             knowledge_summary["knowledge_candidate_routing_cost_total"]
+                        ),
+                        "knowledge_candidate_selection_cost_total": float(
+                            knowledge_summary["knowledge_candidate_selection_cost_total"]
+                        ),
+                        "knowledge_candidate_working_memory_cost_total": float(
+                            knowledge_summary["knowledge_candidate_working_memory_cost_total"]
+                        ),
+                        "knowledge_candidate_unattributed_working_memory_cost_total": float(
+                            knowledge_summary[
+                                "knowledge_candidate_unattributed_working_memory_cost_total"
+                            ]
                         ),
                         "knowledge_boundary_group_internal_commits": int(
                             knowledge_summary["knowledge_boundary_group_internal_commits"]

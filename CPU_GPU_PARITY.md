@@ -169,3 +169,12 @@ K4 候选主体图实现为 CPU authority/host diagnostic 层，只读取已经�
 L2 不调用 `tanh`、`exp` 或其他 CPU/CUDA 实现可能不同的激活。第一层 pre-activation、integer hard-tanh、第二层输出、副本可靠性聚合和最终 residual 均为有界整数运算；输入语义在 CPU reference 边界量化。
 
 L2 保留完整 L1 路由前缀并在同一 batch 上同时计算 L1 shadow，parity 报告可同时比较 genetic logits、L1 shadow logits/action、L2 knowledge logits/action 与最终 action。当前容器无 CUDA，真实 CuPy 多 tick L2 world parity 尚未验证；不能仅依据 NumPy 后端中立测试声称硬件 parity 已完成。
+
+
+## v0.13.0 工作记忆与稀疏选择 parity 边界
+
+工作记忆状态、prediction error、观察差、遗传增益和 hard clip 均在 CPU-reference 定点边界计算并保存为 `int16`。该状态在后果提交后更新，只影响下一 tick。
+
+稀疏选择不使用全局类别 embedding、Softmax 或浮点 Top-k。Query、Key、可靠性缩放和分数均为整数；稳定排序键为 `(-score_q, copy_id, content_id)`。首版 hybrid 路径由 host authority 构造临时 workset，再允许设备批量执行选中副本的 L1/L2 整数路由。
+
+Parity 报告现包含 working-memory entity state、knowledge-policy-plan、selection IDs/scores、genetic/L1/L2/memory-free actions。当前容器无 CUDA，因此只完成 CPU 与模拟设备测试；真实 GPU 上仍须验证 host/device 同步、选中 workset、路由成本扣费和多 tick world state。

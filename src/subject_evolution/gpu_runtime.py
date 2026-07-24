@@ -501,6 +501,11 @@ class HybridGpuRuntime:
                         context_keys=knowledge_context_keys,
                         genotype=active_genotype_device,
                         router_gene_start=ParametricPolicy.latent_router_gene_start(self.cfg),
+                        selection_gene_start=(
+                            ParametricPolicy.sparse_selection_gene_start(self.cfg)
+                            if knowledge.kcfg.sparse_selection_enabled else None
+                        ),
+                        working_memory_q=entity.working_memory_q[active_host],
                         use_strength=ParametricPolicy.knowledge_use_strength_from_genotype(
                             active_genotype_host
                         ),
@@ -526,7 +531,10 @@ class HybridGpuRuntime:
                         action_count=len(Action),
                     )
                 cost_free_plan = knowledge_policy_plan
-                if knowledge.kcfg.routing_cost_enabled and knowledge_policy_plan.size:
+                if knowledge.kcfg.routing_cost_enabled and (
+                    knowledge_policy_plan.size
+                    or knowledge_policy_plan.work_active_rows.size
+                ):
                     routing_cost_result = apply_routing_cost_budget(
                         knowledge_policy_plan,
                         active_energy=entity.energy[active_host],
@@ -575,6 +583,26 @@ class HybridGpuRuntime:
                 run_seed=run_seed,
                 tick=tick,
                 knowledge_plan=cost_free_plan,
+            )
+        memory_free_device_decision = None
+        if self.cfg.knowledge.working_memory_enabled:
+            memory_free_device_decision = policy.decide(
+                active=active,
+                stable_ids=stable_ids,
+                energy=energy,
+                integrity=integrity,
+                fertility=fertility,
+                genotype=genotype,
+                memory=xp.zeros_like(memory),
+                local_resources=local_resources,
+                resource_gradient=resource_gradient,
+                danger_gradient=danger_gradient,
+                group_direction=group_direction,
+                partners=partners,
+                info=device_info,
+                run_seed=run_seed,
+                tick=tick,
+                knowledge_plan=knowledge_policy_plan,
             )
         device_decision = policy.decide(
             active=active,
@@ -698,6 +726,13 @@ class HybridGpuRuntime:
                     np.int16, copy=False
                 )
                 if cost_free_device_decision is not None
+                else None
+            ),
+            memory_free_knowledge_action=(
+                self._download(memory_free_device_decision.action).astype(
+                    np.int16, copy=False
+                )
+                if memory_free_device_decision is not None
                 else None
             ),
         )

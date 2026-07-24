@@ -39,6 +39,7 @@ LATENT_POLICY_RESIDUAL_SCHEMA = "quantized-variable-latent-residual-v1"
 LATENT_MLP_POLICY_RESIDUAL_SCHEMA = "quantized-variable-latent-mlp-residual-v1"
 LATENT_STATE_WIDTH = 4
 LATENT_ROUTER_METADATA_WIDTH = 3
+SPARSE_SELECTION_SCHEMA = "sparse-query-key-topk-router-v1"
 
 
 def _mix_scalar(value: int) -> int:
@@ -493,6 +494,212 @@ class LatentRouterBatch:
             merged = np.concatenate(covered) if covered else np.empty(0, dtype=np.int32)
             if not np.array_equal(np.sort(merged), np.arange(count, dtype=np.int32)):
                 raise ValueError("latent buckets must cover each matched copy once")
+
+
+@dataclass(frozen=True)
+class SparseSelectionResult:
+    """Ephemeral stable Top-k workset; it never mutates authoritative knowledge."""
+
+    batch: LatentRouterBatch
+    candidate_count: np.ndarray
+    selected_count: np.ndarray
+    tie_count: np.ndarray
+    threshold_q: np.ndarray
+    selected_original_rows: np.ndarray
+    selected_scores_q: np.ndarray
+
+    @classmethod
+    def passthrough(cls, batch: LatentRouterBatch) -> "SparseSelectionResult":
+        counts = np.bincount(
+            batch.copy_active_rows, minlength=batch.active_count
+        ).astype(np.uint16)
+        return cls(
+            batch=batch,
+            candidate_count=counts.copy(),
+            selected_count=counts.copy(),
+            tie_count=np.zeros(batch.active_count, dtype=np.uint16),
+            threshold_q=np.zeros(batch.active_count, dtype=np.int64),
+            selected_original_rows=np.arange(batch.size, dtype=np.int32),
+            selected_scores_q=np.zeros(batch.size, dtype=np.int64),
+        )
+
+
+def sparse_selection_gene_count(config: KnowledgeConfig) -> int:
+    if not config.sparse_selection_enabled:
+        return 0
+    query_width = int(config.latent_router_hidden_width)
+    input_width = LATENT_STATE_WIDTH + int(config.working_memory_width)
+    return query_width * input_width + query_width
+
+
+def _subset_latent_router_batch(
+    batch: LatentRouterBatch, selected_rows: np.ndarray
+) -> LatentRouterBatch:
+    selected = np.asarray(selected_rows, dtype=np.int32)
+    if selected.size == batch.size and np.array_equal(
+        selected, np.arange(batch.size, dtype=np.int32)
+    ):
+        return batch
+    if selected.size == 0:
+        return LatentRouterBatch.empty(batch.tick, batch.active_count)
+    selected = np.sort(selected, kind="stable")
+    remap = np.full(batch.size, -1, dtype=np.int32)
+    remap[selected] = np.arange(selected.size, dtype=np.int32)
+    buckets: list[LatentBucket] = []
+    selected_set = np.zeros(batch.size, dtype=bool)
+    selected_set[selected] = True
+    for bucket in batch.buckets:
+        keep = selected_set[bucket.batch_rows]
+        if not np.any(keep):
+            continue
+        old_rows = bucket.batch_rows[keep]
+        buckets.append(
+            LatentBucket(
+                width=bucket.width,
+                batch_rows=remap[old_rows].astype(np.int32, copy=True),
+                values=bucket.values[keep].copy(),
+            )
+        )
+    result = LatentRouterBatch(
+        tick=batch.tick,
+        active_count=batch.active_count,
+        copy_active_rows=batch.copy_active_rows[selected].copy(),
+        copy_ids=batch.copy_ids[selected].copy(),
+        content_ids=batch.content_ids[selected].copy(),
+        entity_ids=batch.entity_ids[selected].copy(),
+        holder_subject_ids=batch.holder_subject_ids[selected].copy(),
+        context_keys=batch.context_keys[selected].copy(),
+        acquisition_kinds=batch.acquisition_kinds[selected].copy(),
+        unverified_transfer=batch.unverified_transfer[selected].copy(),
+        reliability_q=batch.reliability_q[selected].copy(),
+        outcome_vectors=batch.outcome_vectors[selected].copy(),
+        outcome_q=batch.outcome_q[selected].copy(),
+        latent_lengths=batch.latent_lengths[selected].copy(),
+        buckets=tuple(buckets),
+    )
+    result.validate(tuple(bucket.width for bucket in result.buckets) or (1,))
+    return result
+
+
+def select_latent_router_batch(
+    batch: LatentRouterBatch,
+    *,
+    genotype: Any,
+    selection_gene_start: int,
+    state_features: Any,
+    working_memory_q: np.ndarray,
+    config: KnowledgeConfig,
+) -> SparseSelectionResult:
+    """Select a stable Top-k per carrier using inherited integer Query-Key scores."""
+    if not config.sparse_selection_enabled or batch.size == 0:
+        return SparseSelectionResult.passthrough(batch)
+    top_k = int(config.sparse_selection_top_k)
+    candidate_count = np.bincount(
+        batch.copy_active_rows, minlength=batch.active_count
+    ).astype(np.uint16)
+    if top_k == 0:
+        return SparseSelectionResult(
+            batch=LatentRouterBatch.empty(batch.tick, batch.active_count),
+            candidate_count=candidate_count,
+            selected_count=np.zeros(batch.active_count, dtype=np.uint16),
+            tie_count=np.zeros(batch.active_count, dtype=np.uint16),
+            threshold_q=np.zeros(batch.active_count, dtype=np.int64),
+            selected_original_rows=np.empty(0, dtype=np.int32),
+            selected_scores_q=np.empty(0, dtype=np.int64),
+        )
+
+    hidden_q, state_q, _ = _build_common_router_inputs(
+        batch, state_features=state_features, config=config, xp=np
+    )
+    query_width = int(config.latent_router_hidden_width)
+    memory = np.asarray(working_memory_q, dtype=np.int32)
+    if memory.shape != (batch.active_count, int(config.working_memory_width)):
+        raise ValueError("sparse selection working memory shape is invalid")
+    latent_q = int(config.latent_value_quantization_scale)
+    memory_scale = int(config.working_memory_quantization_scale)
+    memory_rescaled = _round_divide_signed_numpy(
+        memory.astype(np.int64) * latent_q, max(memory_scale, 1)
+    ).astype(np.int32)
+    query_input = np.concatenate((state_q.astype(np.int32), memory_rescaled), axis=1)
+    genes = np.asarray(to_numpy(genotype), dtype=np.float32)
+    input_width = query_input.shape[1]
+    weight_count = query_width * input_width
+    required = int(selection_gene_start) + weight_count + query_width
+    if genes.ndim != 2 or genes.shape[1] < required:
+        raise ValueError("genotype does not contain sparse-selection genes")
+    weight_scale = int(config.latent_router_weight_quantization_scale)
+    cursor = int(selection_gene_start)
+    weights = np.rint(
+        np.clip(genes[:, cursor : cursor + weight_count], -1.0, 1.0) * weight_scale
+    ).astype(np.int16).reshape(batch.active_count, query_width, input_width)
+    cursor += weight_count
+    bias = np.rint(
+        np.clip(genes[:, cursor : cursor + query_width], -1.0, 1.0) * weight_scale
+    ).astype(np.int16)
+    accumulator = bias.astype(np.int64) * np.int64(latent_q)
+    for input_index in range(input_width):
+        accumulator += (
+            query_input[:, input_index, None].astype(np.int64)
+            * weights[:, :, input_index].astype(np.int64)
+        )
+    query_q = _round_divide_signed_numpy(accumulator, weight_scale)
+    copy_query = query_q[batch.copy_active_rows]
+    score = (copy_query * hidden_q.astype(np.int64)).sum(axis=1)
+    score = _round_divide_signed_numpy(score, max(query_width, 1))
+    # Reliability is evidence, not a hand-authored category.  It modulates the
+    # score without assigning fixed semantic meaning to any latent coordinate.
+    score = _round_divide_signed_numpy(
+        score * batch.reliability_q.astype(np.int64), max(latent_q, 1)
+    )
+    score = np.clip(
+        score, -int(config.sparse_selection_score_clip),
+        int(config.sparse_selection_score_clip)
+    ).astype(np.int64)
+
+    selected_parts: list[np.ndarray] = []
+    score_parts: list[np.ndarray] = []
+    selected_count = np.zeros(batch.active_count, dtype=np.uint16)
+    tie_count = np.zeros(batch.active_count, dtype=np.uint16)
+    threshold_q = np.zeros(batch.active_count, dtype=np.int64)
+    for active_row in range(batch.active_count):
+        candidates = np.flatnonzero(batch.copy_active_rows == active_row).astype(np.int32)
+        if candidates.size == 0:
+            continue
+        order = np.lexsort((
+            batch.content_ids[candidates],
+            batch.copy_ids[candidates],
+            -score[candidates],
+        ))
+        take = candidates[order[: min(top_k, candidates.size)]]
+        selected_parts.append(take)
+        score_parts.append(score[take])
+        selected_count[active_row] = np.uint16(take.size)
+        cutoff = int(score[take[-1]])
+        threshold_q[active_row] = np.int64(cutoff)
+        tie_count[active_row] = np.uint16(
+            max(int(np.count_nonzero(score[candidates] == cutoff)) - 1, 0)
+        )
+    selected = (
+        np.concatenate(selected_parts).astype(np.int32, copy=False)
+        if selected_parts else np.empty(0, dtype=np.int32)
+    )
+    selected_scores = (
+        np.concatenate(score_parts).astype(np.int64, copy=False)
+        if score_parts else np.empty(0, dtype=np.int64)
+    )
+    if selected.size:
+        canonical_order = np.argsort(selected, kind="stable")
+        selected = selected[canonical_order]
+        selected_scores = selected_scores[canonical_order]
+    return SparseSelectionResult(
+        batch=_subset_latent_router_batch(batch, selected),
+        candidate_count=candidate_count,
+        selected_count=selected_count,
+        tie_count=tie_count,
+        threshold_q=threshold_q,
+        selected_original_rows=selected.copy(),
+        selected_scores_q=selected_scores.copy(),
+    )
 
 
 def _copy_reliability(
@@ -1116,10 +1323,12 @@ __all__ = [
     "LATENT_POLICY_RESIDUAL_SCHEMA",
     "LATENT_ROUTER_METADATA_WIDTH",
     "LATENT_ROUTER_SCHEMA",
+    "SPARSE_SELECTION_SCHEMA",
     "LATENT_SCHEMA",
     "LATENT_STATE_WIDTH",
     "LatentBucket",
     "LatentRouterBatch",
+    "SparseSelectionResult",
     "VariableLatentContentStore",
     "build_latent_router_batch",
     "latent_mlp_gene_start",
@@ -1128,4 +1337,6 @@ __all__ = [
     "linear_latent_router_gene_count",
     "mlp_latent_router_gene_count",
     "route_latent_router_batch",
+    "select_latent_router_batch",
+    "sparse_selection_gene_count",
 ]

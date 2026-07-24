@@ -27,6 +27,7 @@ from .latent_knowledge import (
     VariableLatentContentStore,
     build_latent_router_batch,
     route_latent_router_batch,
+    select_latent_router_batch,
 )
 
 
@@ -82,7 +83,77 @@ class KnowledgePolicyPlan:
     router_hidden_active_counts: np.ndarray = field(
         default_factory=lambda: np.empty(0, dtype=np.uint32)
     )
+    selection_candidate_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint16)
+    )
+    selection_selected_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint16)
+    )
+    selection_tie_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint16)
+    )
+    selection_score_thresholds_q: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.int64)
+    )
+    selection_active_rows: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.int32)
+    )
+    selection_copy_ids: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint64)
+    )
+    selection_content_ids: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint64)
+    )
+    selection_scores_q: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.int64)
+    )
+    # Per-entity work diagnostics are independent of nonzero published action
+    # cells.  They preserve selection and compute costs even when Top-k is zero
+    # or the selected router happens to emit an all-zero residual.
+    work_active_rows: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.int32)
+    )
+    work_entity_ids: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint64)
+    )
+    work_holder_subject_ids: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint64)
+    )
+    work_context_keys: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint64)
+    )
+    work_support_copy_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint16)
+    )
+    work_latent_dimension_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint32)
+    )
+    work_latent_max_widths: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint16)
+    )
+    work_router_saturation_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint32)
+    )
+    work_router_clipping_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint32)
+    )
+    work_router_hidden_active_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint32)
+    )
+    work_selection_candidate_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint16)
+    )
+    work_selection_selected_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint16)
+    )
+    work_selection_tie_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint16)
+    )
+    work_selection_score_thresholds_q: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.int64)
+    )
     router_schema: str | None = None
+    selection_schema: str | None = None
 
     @classmethod
     def empty(cls, tick: int = 0) -> "KnowledgePolicyPlan":
@@ -111,7 +182,30 @@ class KnowledgePolicyPlan:
             router_clipping_counts=np.empty(0, dtype=np.uint32),
             router_hidden_abs_sums=np.empty(0, dtype=np.uint64),
             router_hidden_active_counts=np.empty(0, dtype=np.uint32),
+            selection_candidate_counts=np.empty(0, dtype=np.uint16),
+            selection_selected_counts=np.empty(0, dtype=np.uint16),
+            selection_tie_counts=np.empty(0, dtype=np.uint16),
+            selection_score_thresholds_q=np.empty(0, dtype=np.int64),
+            selection_active_rows=np.empty(0, dtype=np.int32),
+            selection_copy_ids=np.empty(0, dtype=np.uint64),
+            selection_content_ids=np.empty(0, dtype=np.uint64),
+            selection_scores_q=np.empty(0, dtype=np.int64),
+            work_active_rows=np.empty(0, dtype=np.int32),
+            work_entity_ids=np.empty(0, dtype=np.uint64),
+            work_holder_subject_ids=np.empty(0, dtype=np.uint64),
+            work_context_keys=np.empty(0, dtype=np.uint64),
+            work_support_copy_counts=np.empty(0, dtype=np.uint16),
+            work_latent_dimension_counts=np.empty(0, dtype=np.uint32),
+            work_latent_max_widths=np.empty(0, dtype=np.uint16),
+            work_router_saturation_counts=np.empty(0, dtype=np.uint32),
+            work_router_clipping_counts=np.empty(0, dtype=np.uint32),
+            work_router_hidden_active_counts=np.empty(0, dtype=np.uint32),
+            work_selection_candidate_counts=np.empty(0, dtype=np.uint16),
+            work_selection_selected_counts=np.empty(0, dtype=np.uint16),
+            work_selection_tie_counts=np.empty(0, dtype=np.uint16),
+            work_selection_score_thresholds_q=np.empty(0, dtype=np.int64),
             router_schema=None,
+            selection_schema=None,
         )
 
     @property
@@ -143,6 +237,28 @@ class KnowledgePolicyPlan:
             + self.router_clipping_counts.nbytes
             + self.router_hidden_abs_sums.nbytes
             + self.router_hidden_active_counts.nbytes
+            + self.selection_candidate_counts.nbytes
+            + self.selection_selected_counts.nbytes
+            + self.selection_tie_counts.nbytes
+            + self.selection_score_thresholds_q.nbytes
+            + self.selection_active_rows.nbytes
+            + self.selection_copy_ids.nbytes
+            + self.selection_content_ids.nbytes
+            + self.selection_scores_q.nbytes
+            + self.work_active_rows.nbytes
+            + self.work_entity_ids.nbytes
+            + self.work_holder_subject_ids.nbytes
+            + self.work_context_keys.nbytes
+            + self.work_support_copy_counts.nbytes
+            + self.work_latent_dimension_counts.nbytes
+            + self.work_latent_max_widths.nbytes
+            + self.work_router_saturation_counts.nbytes
+            + self.work_router_clipping_counts.nbytes
+            + self.work_router_hidden_active_counts.nbytes
+            + self.work_selection_candidate_counts.nbytes
+            + self.work_selection_selected_counts.nbytes
+            + self.work_selection_tie_counts.nbytes
+            + self.work_selection_score_thresholds_q.nbytes
         )
 
     def validate(self, active_count: int, action_count: int) -> None:
@@ -172,9 +288,56 @@ class KnowledgePolicyPlan:
             ("router_clipping_counts", self.router_clipping_counts),
             ("router_hidden_abs_sums", self.router_hidden_abs_sums),
             ("router_hidden_active_counts", self.router_hidden_active_counts),
+            ("selection_candidate_counts", self.selection_candidate_counts),
+            ("selection_selected_counts", self.selection_selected_counts),
+            ("selection_tie_counts", self.selection_tie_counts),
+            ("selection_score_thresholds_q", self.selection_score_thresholds_q),
         ):
             if np.asarray(value).size not in {0, count}:
                 raise ValueError(f"knowledge policy {name} must be empty or align with residuals")
+        selection_count = int(self.selection_copy_ids.size)
+        for name, value in (
+            ("selection_active_rows", self.selection_active_rows),
+            ("selection_content_ids", self.selection_content_ids),
+            ("selection_scores_q", self.selection_scores_q),
+        ):
+            if np.asarray(value).shape != (selection_count,):
+                raise ValueError(f"knowledge policy {name} must align with selected copies")
+        if selection_count and (
+            np.any(self.selection_active_rows < 0)
+            or np.any(self.selection_active_rows >= active_count)
+            or np.any(self.selection_copy_ids == 0)
+            or np.any(self.selection_content_ids == 0)
+        ):
+            raise ValueError("knowledge policy selection diagnostics are invalid")
+        work_count = int(self.work_active_rows.size)
+        for name, value in (
+            ("work_entity_ids", self.work_entity_ids),
+            ("work_holder_subject_ids", self.work_holder_subject_ids),
+            ("work_context_keys", self.work_context_keys),
+            ("work_support_copy_counts", self.work_support_copy_counts),
+            ("work_latent_dimension_counts", self.work_latent_dimension_counts),
+            ("work_latent_max_widths", self.work_latent_max_widths),
+            ("work_router_saturation_counts", self.work_router_saturation_counts),
+            ("work_router_clipping_counts", self.work_router_clipping_counts),
+            ("work_router_hidden_active_counts", self.work_router_hidden_active_counts),
+            ("work_selection_candidate_counts", self.work_selection_candidate_counts),
+            ("work_selection_selected_counts", self.work_selection_selected_counts),
+            ("work_selection_tie_counts", self.work_selection_tie_counts),
+            ("work_selection_score_thresholds_q", self.work_selection_score_thresholds_q),
+        ):
+            if np.asarray(value).shape != (work_count,):
+                raise ValueError(f"knowledge policy {name} must align with work rows")
+        if work_count and (
+            np.any(self.work_active_rows < 0)
+            or np.any(self.work_active_rows >= active_count)
+            or np.any(self.work_entity_ids == 0)
+            or np.any(self.work_holder_subject_ids == 0)
+            or np.any(self.work_context_keys == 0)
+            or np.any(self.work_active_rows[1:] <= self.work_active_rows[:-1])
+            or np.any(self.work_selection_selected_counts > self.work_selection_candidate_counts)
+        ):
+            raise ValueError("knowledge policy per-entity work diagnostics are invalid")
         comparison_count = self.comparison_size
         for name, value in (
             ("comparison_active_rows", self.comparison_active_rows),
@@ -422,8 +585,10 @@ def build_latent_knowledge_policy_plan(
     context_keys: np.ndarray,
     genotype: Any,
     router_gene_start: int,
-    use_strength: Any,
-    state_features: Any,
+    selection_gene_start: int | None = None,
+    working_memory_q: np.ndarray | None = None,
+    use_strength: Any = None,
+    state_features: Any = None,
     config: KnowledgeConfig,
     action_count: int,
 ) -> KnowledgePolicyPlan:
@@ -450,15 +615,44 @@ def build_latent_knowledge_policy_plan(
     )
     if batch.size == 0:
         return KnowledgePolicyPlan.empty(tick)
-    published_q, diagnostics = route_latent_router_batch(
-        batch,
-        genotype=genotype,
-        router_gene_start=router_gene_start,
-        use_strength=use_strength,
-        state_features=state_features,
-        config=config,
-        action_count=action_count,
-    )
+    if config.sparse_selection_enabled:
+        if selection_gene_start is None or working_memory_q is None:
+            raise ValueError("sparse selection requires genes and working memory")
+        selection = select_latent_router_batch(
+            batch,
+            genotype=genotype,
+            selection_gene_start=int(selection_gene_start),
+            state_features=state_features,
+            working_memory_q=np.asarray(working_memory_q, dtype=np.int16),
+            config=config,
+        )
+        batch = selection.batch
+    else:
+        from .latent_knowledge import SparseSelectionResult
+        selection = SparseSelectionResult.passthrough(batch)
+    if batch.size:
+        published_q, diagnostics = route_latent_router_batch(
+            batch,
+            genotype=genotype,
+            router_gene_start=router_gene_start,
+            use_strength=use_strength,
+            state_features=state_features,
+            config=config,
+            action_count=action_count,
+        )
+    else:
+        published_q = np.zeros((active_count, action_count), dtype=np.int32)
+        diagnostics = {
+            "linear_shadow_published_q": np.zeros(
+                (active_count, action_count), dtype=np.int32
+            ),
+            "copy_mlp_saturation_count": np.empty(0, dtype=np.uint32),
+            "copy_mlp_hidden_abs_sum": np.empty(0, dtype=np.uint64),
+            "copy_mlp_hidden_active_count": np.empty(0, dtype=np.uint32),
+            "copy_mlp_output_clip_mask": np.empty(
+                (0, action_count), dtype=bool
+            ),
+        }
     rows, actions = np.nonzero(published_q)
     rows = rows.astype(np.int32, copy=False)
     actions = actions.astype(np.int16, copy=False)
@@ -472,9 +666,6 @@ def build_latent_knowledge_policy_plan(
     comparison_rows, comparison_actions = np.nonzero(shadow_q)
     comparison_rows = comparison_rows.astype(np.int32, copy=False)
     comparison_actions = comparison_actions.astype(np.int16, copy=False)
-    if rows.size == 0 and comparison_rows.size == 0:
-        return KnowledgePolicyPlan.empty(tick)
-
     q = float(config.latent_value_quantization_scale)
     reliability = batch.reliability_q.astype(np.float64) / q
     row_count = np.bincount(batch.copy_active_rows, minlength=active_count).astype(np.uint16)
@@ -561,6 +752,15 @@ def build_latent_knowledge_policy_plan(
             copy_clip[:, action_index].astype(np.uint32),
         )
 
+    selection_candidate_count = selection.candidate_count
+    selection_selected_count = selection.selected_count
+    selection_tie_count = selection.tie_count
+    selection_threshold = selection.threshold_q
+    # Work rows include every entity for which selection inspected at least one
+    # candidate.  This is deliberately independent of emitted residual cells.
+    work_rows = np.flatnonzero(selection_candidate_count > 0).astype(
+        np.int32, copy=False
+    )
     residual_q = published_q[rows, actions].astype(np.int32, copy=False)
     residuals = (residual_q.astype(np.float64) / q).astype(np.float32)
     comparison_q = shadow_q[comparison_rows, comparison_actions].astype(
@@ -594,7 +794,32 @@ def build_latent_knowledge_policy_plan(
         router_clipping_counts=clipping_by_cell[rows, actions],
         router_hidden_abs_sums=hidden_abs_by_row[rows],
         router_hidden_active_counts=hidden_active_by_row[rows],
+        selection_candidate_counts=selection_candidate_count[rows],
+        selection_selected_counts=selection_selected_count[rows],
+        selection_tie_counts=selection_tie_count[rows],
+        selection_score_thresholds_q=selection_threshold[rows],
+        selection_active_rows=batch.copy_active_rows.copy(),
+        selection_copy_ids=batch.copy_ids.copy(),
+        selection_content_ids=batch.content_ids.copy(),
+        selection_scores_q=selection.selected_scores_q.copy(),
+        work_active_rows=work_rows.copy(),
+        work_entity_ids=ids[work_rows].copy(),
+        work_holder_subject_ids=holders[work_rows].copy(),
+        work_context_keys=contexts[work_rows].copy(),
+        work_support_copy_counts=row_count[work_rows],
+        work_latent_dimension_counts=dimension_sum[work_rows],
+        work_latent_max_widths=max_width[work_rows],
+        work_router_saturation_counts=saturation_by_row[work_rows],
+        work_router_clipping_counts=clipping_by_cell[work_rows].sum(
+            axis=1, dtype=np.uint64
+        ).astype(np.uint32),
+        work_router_hidden_active_counts=hidden_active_by_row[work_rows],
+        work_selection_candidate_counts=selection_candidate_count[work_rows],
+        work_selection_selected_counts=selection_selected_count[work_rows],
+        work_selection_tie_counts=selection_tie_count[work_rows],
+        work_selection_score_thresholds_q=selection_threshold[work_rows],
         router_schema=config.latent_router_schema,
+        selection_schema=(config.sparse_selection_schema if config.sparse_selection_enabled else None),
     )
     plan.validate(active_count, action_count)
     return plan

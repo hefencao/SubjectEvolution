@@ -673,6 +673,7 @@ def _simulation_stages(cpu: Simulation, gpu: Simulation) -> list[tuple[str, Any,
             "action_mask",
             "genetic_action",
             "linear_knowledge_action",
+            "memory_free_knowledge_action",
             "action",
             "probability",
             "entropy",
@@ -695,6 +696,11 @@ def _simulation_stages(cpu: Simulation, gpu: Simulation) -> list[tuple[str, Any,
                 ),
             )
         )
+    stages.append((
+        "knowledge-policy-plan",
+        cpu.last_knowledge_policy_plan,
+        gpu.last_knowledge_policy_plan,
+    ))
     if cpu.last_intents is not None or gpu.last_intents is not None:
         stages.append(("intents", cpu.last_intents, gpu.last_intents))
     if cpu.last_resolutions is not None or gpu.last_resolutions is not None:
@@ -721,6 +727,8 @@ def _simulation_stages(cpu: Simulation, gpu: Simulation) -> list[tuple[str, Any,
         "lineage_subject_id",
         "genotype",
         "memory",
+        "working_memory_q",
+        "working_memory_previous_observation_q",
     )
     stages.append(
         (
@@ -793,6 +801,7 @@ def _failure_entity_context(
         "prepared-local-resources",
         "policy-observation",
         "policy-decision",
+        "knowledge-policy-plan",
         "intents",
         "resolutions",
     }

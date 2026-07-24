@@ -1,0 +1,50 @@
+{
+  "metrics_common_non_timing_fields": 204,
+  "metrics_equal": true,
+  "logs": {
+    "knowledge_outcome_updates.csv": {
+      "common_columns": 19,
+      "row_count_old": 13978,
+      "row_count_new": 13978,
+      "equal": true
+    },
+    "knowledge_policy_contributions.csv": {
+      "common_columns": 26,
+      "row_count_old": 116839,
+      "row_count_new": 116839,
+      "equal": true
+    },
+    "knowledge_routing_costs.csv": {
+      "common_columns": 12,
+      "row_count_old": 14615,
+      "row_count_new": 14615,
+      "equal": true
+    },
+    "knowledge_transfers.csv": {
+      "common_columns": 10,
+      "row_count_old": 0,
+      "row_count_new": 0,
+      "equal": true
+    },
+    "knowledge_events.jsonl": {
+      "byte_equal": true
+    },
+    "evolution_progress.jsonl": {
+      "byte_equal": true
+    }
+  },
+  "checkpoints": {
+    "15": {
+      "common_arrays": 35,
+      "equal": true,
+      "old_only": [],
+      "new_only": []
+    },
+    "30": {
+      "common_arrays": 35,
+      "equal": true,
+      "old_only": [],
+      "new_only": []
+    }
+  }
+}

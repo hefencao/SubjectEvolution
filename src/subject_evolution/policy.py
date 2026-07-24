@@ -10,7 +10,8 @@ from .config import SimulationConfig
 from .information import InformationObservation
 from .knowledge import OUTCOME_WIDTH
 from .knowledge_policy import KnowledgePolicyPlan
-from .latent_knowledge import latent_router_gene_count
+from .latent_knowledge import latent_router_gene_count, sparse_selection_gene_count
+from .working_memory import working_memory_gene_count
 from .random_api import RandomContext, Stream, categorical_from_logits, normal
 
 
@@ -48,6 +49,8 @@ class PolicyDecision:
     # Diagnostic action from the same plan before routing-budget rejection.
     # It never controls the world and uses the same counter-based random draw.
     cost_free_knowledge_action: Any | None = None
+    # Same knowledge plan and random draw with working-memory coordinates zeroed.
+    memory_free_knowledge_action: Any | None = None
 
 
 class ParametricPolicy:
@@ -123,10 +126,27 @@ class ParametricPolicy:
         return cls.LATENT_ROUTER_START
 
     @classmethod
+    def working_memory_gene_start(cls, cfg: SimulationConfig) -> int:
+        if not cls.uses_latent_router(cfg):
+            raise ValueError("working memory requires the latent router schema")
+        return cls.LATENT_ROUTER_START + latent_router_gene_count(
+            cfg.knowledge, len(Action)
+        )
+
+    @classmethod
+    def sparse_selection_gene_start(cls, cfg: SimulationConfig) -> int:
+        return cls.working_memory_gene_start(cfg) + working_memory_gene_count(
+            cfg.knowledge
+        )
+
+    @classmethod
     def genome_size_for_config(cls, cfg: SimulationConfig) -> int:
         if cls.uses_latent_router(cfg):
-            return cls.LATENT_ROUTER_START + latent_router_gene_count(
-                cfg.knowledge, len(Action)
+            return (
+                cls.LATENT_ROUTER_START
+                + latent_router_gene_count(cfg.knowledge, len(Action))
+                + working_memory_gene_count(cfg.knowledge)
+                + sparse_selection_gene_count(cfg.knowledge)
             )
         return cls.K3_GENOME_SIZE if cls.uses_knowledge_residual(cfg) else cls.BASE_GENOME_SIZE
 

@@ -364,6 +364,19 @@ class KnowledgeStepStats:
     routing_saturation_count: int = 0
     routing_clipped_output_count: int = 0
     routing_cost_induced_action_changes: int = 0
+    selection_candidate_copies: int = 0
+    selection_selected_copies: int = 0
+    selection_tie_count: int = 0
+    selection_committed_energy: float = 0.0
+    working_memory_requested_energy: float = 0.0
+    working_memory_committed_energy: float = 0.0
+    working_memory_rejected_energy: float = 0.0
+    working_memory_requested_entities: int = 0
+    working_memory_committed_entities: int = 0
+    working_memory_rejected_entities: int = 0
+    working_memory_saturation_units: int = 0
+    working_memory_active_dimensions: int = 0
+    working_memory_induced_action_changes: int = 0
 
     @property
     def total_energy_cost(self) -> float:
@@ -373,6 +386,7 @@ class KnowledgeStepStats:
             + self.receiver_energy
             + self.learning_energy
             + self.routing_committed_energy
+            + self.working_memory_committed_energy
         )
 
 
@@ -761,6 +775,10 @@ class KnowledgeSystem:
         self._policy_writer = None
         self._routing_cost_file = None
         self._routing_cost_writer = None
+        self._working_memory_file = None
+        self._working_memory_writer = None
+        self._selection_file = None
+        self._selection_writer = None
         if self.kcfg.enabled:
             self._event_file = (self.output_dir / "knowledge_events.jsonl").open(
                 "w", encoding="utf-8"
@@ -814,6 +832,9 @@ class KnowledgeSystem:
                         "linear_shadow_quantized_residual",
                         "router_saturation_count", "router_clipping_count",
                         "router_hidden_abs_sum", "router_hidden_active_count",
+                        "selection_schema", "selection_candidate_count",
+                        "selection_selected_count", "selection_tie_count",
+                        "selection_score_threshold_q",
                     ],
                 )
                 self._policy_writer.writeheader()
@@ -829,9 +850,38 @@ class KnowledgeSystem:
                         "latent_dimensions", "mac_count",
                         "active_hidden_units", "saturation_count",
                         "clipped_output_count", "emitted_action_count",
+                        "selection_candidate_count", "selection_selected_count",
+                        "selection_energy",
                     ],
                 )
                 self._routing_cost_writer.writeheader()
+            if self.kcfg.working_memory_enabled:
+                self._working_memory_file = (
+                    self.output_dir / "knowledge_working_memory.csv"
+                ).open("w", newline="", encoding="utf-8")
+                self._working_memory_writer = csv.DictWriter(
+                    self._working_memory_file,
+                    fieldnames=[
+                        "tick", "entity_id", "accepted", "requested_energy",
+                        "committed_energy", "saturation_count",
+                        "active_dimension_count", "previous_q", "proposed_q",
+                        "committed_q", "observation_delta_q",
+                        "prediction_error_q",
+                    ],
+                )
+                self._working_memory_writer.writeheader()
+            if self.kcfg.sparse_selection_enabled:
+                self._selection_file = (
+                    self.output_dir / "knowledge_selection_events.csv"
+                ).open("w", newline="", encoding="utf-8")
+                self._selection_writer = csv.DictWriter(
+                    self._selection_file,
+                    fieldnames=[
+                        "tick", "active_row", "entity_id", "holder_subject_id",
+                        "copy_id", "content_id", "score_q", "rank_within_entity",
+                    ],
+                )
+                self._selection_writer.writeheader()
             self._seed(initial_entity_ids, initial_subject_ids)
             self.candidates.ensure_catalog(self.catalog)
             self.observation = self.arena.publish(self.catalog, tick=0)
@@ -930,6 +980,13 @@ class KnowledgeSystem:
         self.last_outcome_plan = copy.deepcopy(state["last_outcome_plan"])
         self.observation = copy.deepcopy(state["observation"])
         self.totals = copy.deepcopy(state["totals"])
+        # Trusted checkpoints from earlier schemas unpickle the historical
+        # dataclass without fields introduced later.  Initialize only missing
+        # cumulative diagnostics; existing values remain untouched.
+        defaults = KnowledgeStepStats()
+        for name in KnowledgeStepStats.__dataclass_fields__:
+            if not hasattr(self.totals, name):
+                setattr(self.totals, name, copy.deepcopy(getattr(defaults, name)))
         self.candidates.restore_state(state["candidates"])
 
     def clone(self, output_dir: str | Path) -> "KnowledgeSystem":
@@ -955,6 +1012,10 @@ class KnowledgeSystem:
         result._policy_writer = None
         result._routing_cost_file = None
         result._routing_cost_writer = None
+        result._working_memory_file = None
+        result._working_memory_writer = None
+        result._selection_file = None
+        result._selection_writer = None
         if self.kcfg.enabled:
             result._event_file = (result.output_dir / "knowledge_events.jsonl").open(
                 "w", encoding="utf-8"
@@ -1008,6 +1069,9 @@ class KnowledgeSystem:
                         "linear_shadow_quantized_residual",
                         "router_saturation_count", "router_clipping_count",
                         "router_hidden_abs_sum", "router_hidden_active_count",
+                        "selection_schema", "selection_candidate_count",
+                        "selection_selected_count", "selection_tie_count",
+                        "selection_score_threshold_q",
                     ],
                 )
                 result._policy_writer.writeheader()
@@ -1023,9 +1087,38 @@ class KnowledgeSystem:
                         "latent_dimensions", "mac_count",
                         "active_hidden_units", "saturation_count",
                         "clipped_output_count", "emitted_action_count",
+                        "selection_candidate_count", "selection_selected_count",
+                        "selection_energy",
                     ],
                 )
                 result._routing_cost_writer.writeheader()
+            if self.kcfg.working_memory_enabled:
+                result._working_memory_file = (
+                    result.output_dir / "knowledge_working_memory.csv"
+                ).open("w", newline="", encoding="utf-8")
+                result._working_memory_writer = csv.DictWriter(
+                    result._working_memory_file,
+                    fieldnames=[
+                        "tick", "entity_id", "accepted", "requested_energy",
+                        "committed_energy", "saturation_count",
+                        "active_dimension_count", "previous_q", "proposed_q",
+                        "committed_q", "observation_delta_q",
+                        "prediction_error_q",
+                    ],
+                )
+                result._working_memory_writer.writeheader()
+            if self.kcfg.sparse_selection_enabled:
+                result._selection_file = (
+                    result.output_dir / "knowledge_selection_events.csv"
+                ).open("w", newline="", encoding="utf-8")
+                result._selection_writer = csv.DictWriter(
+                    result._selection_file,
+                    fieldnames=[
+                        "tick", "active_row", "entity_id", "holder_subject_id",
+                        "copy_id", "content_id", "score_q", "rank_within_entity",
+                    ],
+                )
+                result._selection_writer.writeheader()
         return result
 
     def _write_event(self, event: dict[str, object]) -> None:
@@ -1044,6 +1137,10 @@ class KnowledgeSystem:
             self._policy_file.flush()
         if self._routing_cost_file is not None and not self._routing_cost_file.closed:
             self._routing_cost_file.flush()
+        if self._working_memory_file is not None and not self._working_memory_file.closed:
+            self._working_memory_file.flush()
+        if self._selection_file is not None and not self._selection_file.closed:
+            self._selection_file.flush()
         self.candidates.flush()
 
     def close(self) -> None:
@@ -1057,6 +1154,10 @@ class KnowledgeSystem:
             self._policy_file.close()
         if self._routing_cost_file is not None and not self._routing_cost_file.closed:
             self._routing_cost_file.close()
+        if self._working_memory_file is not None and not self._working_memory_file.closed:
+            self._working_memory_file.close()
+        if self._selection_file is not None and not self._selection_file.closed:
+            self._selection_file.close()
         self.candidates.close(self.catalog)
 
     def _forget(self, tick: int) -> int:
@@ -1838,6 +1939,16 @@ class KnowledgeSystem:
         stats.routing_saturation_count = int(np.asarray(result.saturation_count, dtype=np.uint64).sum())
         stats.routing_clipped_output_count = int(np.asarray(result.clipped_output_count, dtype=np.uint64).sum())
         stats.routing_cost_induced_action_changes = int(cost_induced_action_changes)
+        if self.kcfg.sparse_selection_enabled:
+            stats.selection_candidate_copies = int(
+                np.asarray(result.selection_candidate_count, dtype=np.uint64).sum()
+            )
+            stats.selection_selected_copies = int(
+                np.asarray(result.selection_selected_count, dtype=np.uint64).sum()
+            )
+            stats.selection_committed_energy = float(
+                np.asarray(result.selection_energy, dtype=np.float64)[result.accepted].sum()
+            )
         if self.kcfg.candidate_tracking_enabled:
             self.candidates.record_routing_cost(
                 observation=self.observation,
@@ -1858,7 +1969,73 @@ class KnowledgeSystem:
                     "saturation_count": int(result.saturation_count[row]),
                     "clipped_output_count": int(result.clipped_output_count[row]),
                     "emitted_action_count": int(result.emitted_action_count[row]),
+                    "selection_candidate_count": int(result.selection_candidate_count[row]),
+                    "selection_selected_count": int(result.selection_selected_count[row]),
+                    "selection_energy": float(result.selection_energy[row]),
                 })
+        return stats
+
+    def record_working_memory(
+        self,
+        result: Any,
+        *,
+        holder_subject_ids: np.ndarray | None = None,
+        action_changes: int = 0,
+    ) -> KnowledgeStepStats:
+        stats = KnowledgeStepStats()
+        if result is None or np.asarray(result.active_rows).size == 0:
+            return stats
+        stats.working_memory_requested_energy = float(result.requested_total)
+        stats.working_memory_committed_energy = float(result.committed_total)
+        stats.working_memory_rejected_energy = float(result.rejected_total)
+        stats.working_memory_requested_entities = int(result.active_rows.size)
+        stats.working_memory_committed_entities = int(np.count_nonzero(result.accepted))
+        stats.working_memory_rejected_entities = int(
+            result.active_rows.size - stats.working_memory_committed_entities
+        )
+        stats.working_memory_saturation_units = int(
+            np.asarray(result.saturation_count, dtype=np.uint64).sum()
+        )
+        stats.working_memory_active_dimensions = int(
+            np.asarray(result.active_dimension_count, dtype=np.uint64).sum()
+        )
+        stats.working_memory_induced_action_changes = int(action_changes)
+        if self.kcfg.candidate_tracking_enabled and holder_subject_ids is not None:
+            self.candidates.record_working_memory_cost(
+                observation=self.observation,
+                result=result,
+                holder_subject_ids=np.asarray(holder_subject_ids, dtype=np.uint64),
+            )
+        if self._working_memory_writer is not None:
+            for row in range(result.active_rows.size):
+                self._working_memory_writer.writerow({
+                    "tick": int(result.tick),
+                    "entity_id": int(result.entity_ids[row]),
+                    "accepted": int(bool(result.accepted[row])),
+                    "requested_energy": float(result.requested_energy[row]),
+                    "committed_energy": float(result.committed_energy[row]),
+                    "saturation_count": int(result.saturation_count[row]),
+                    "active_dimension_count": int(result.active_dimension_count[row]),
+                    "previous_q": " ".join(map(str, result.previous_q[row].tolist())),
+                    "proposed_q": " ".join(map(str, result.proposed_q[row].tolist())),
+                    "committed_q": " ".join(map(str, result.committed_q[row].tolist())),
+                    "observation_delta_q": " ".join(
+                        map(str, result.observation_delta_q[row].tolist())
+                    ),
+                    "prediction_error_q": " ".join(
+                        map(str, result.prediction_error_q[row].tolist())
+                    ),
+                })
+        self._write_event({
+            "tick": int(result.tick),
+            "type": "working-memory-summary",
+            "schema": self.kcfg.working_memory_schema,
+            "requested_energy": stats.working_memory_requested_energy,
+            "committed_energy": stats.working_memory_committed_energy,
+            "rejected_entities": stats.working_memory_rejected_entities,
+            "saturation_units": stats.working_memory_saturation_units,
+            "action_changes": stats.working_memory_induced_action_changes,
+        })
         return stats
 
     def record_policy_plan(
@@ -1910,6 +2087,62 @@ class KnowledgeSystem:
             stats.policy_router_hidden_active_units = int(
                 np.asarray(plan.router_hidden_active_counts, dtype=np.uint64).sum()
             )
+        if (
+            self.kcfg.sparse_selection_enabled
+            and getattr(plan, "selection_candidate_counts", np.empty(0)).size
+        ):
+            # Selection diagnostics are repeated for each nonzero action cell.
+            # Count each active entity once rather than inflating totals by the
+            # number of emitted residual actions.
+            _, first_rows = np.unique(
+                np.asarray(plan.active_rows, dtype=np.int32), return_index=True
+            )
+            stats.selection_candidate_copies = int(
+                np.asarray(plan.selection_candidate_counts, dtype=np.uint64)[first_rows].sum()
+            )
+            stats.selection_selected_copies = int(
+                np.asarray(plan.selection_selected_counts, dtype=np.uint64)[first_rows].sum()
+            )
+            stats.selection_tie_count = int(
+                np.asarray(plan.selection_tie_counts, dtype=np.uint64)[first_rows].sum()
+            )
+        if self._selection_writer is not None and getattr(
+            plan, "selection_copy_ids", np.empty(0)
+        ).size:
+            work_map = {
+                int(active_row): (int(entity_id), int(holder_id))
+                for active_row, entity_id, holder_id in zip(
+                    np.asarray(plan.work_active_rows, dtype=np.int32).tolist(),
+                    np.asarray(plan.work_entity_ids, dtype=np.uint64).tolist(),
+                    np.asarray(plan.work_holder_subject_ids, dtype=np.uint64).tolist(),
+                    strict=True,
+                )
+            }
+            selection_rows = np.asarray(plan.selection_active_rows, dtype=np.int32)
+            copy_ids = np.asarray(plan.selection_copy_ids, dtype=np.uint64)
+            content_ids = np.asarray(plan.selection_content_ids, dtype=np.uint64)
+            scores = np.asarray(plan.selection_scores_q, dtype=np.int64)
+            order = np.lexsort((content_ids, copy_ids, -scores, selection_rows))
+            previous_row = -1
+            rank = 0
+            for index in order.tolist():
+                active_row = int(selection_rows[index])
+                if active_row != previous_row:
+                    previous_row = active_row
+                    rank = 1
+                else:
+                    rank += 1
+                entity_id, holder_id = work_map.get(active_row, (0, 0))
+                self._selection_writer.writerow({
+                    "tick": int(plan.tick),
+                    "active_row": active_row,
+                    "entity_id": entity_id,
+                    "holder_subject_id": holder_id,
+                    "copy_id": int(copy_ids[index]),
+                    "content_id": int(content_ids[index]),
+                    "score_q": int(scores[index]),
+                    "rank_within_entity": rank,
+                })
         if self.kcfg.candidate_tracking_enabled:
             self.candidates.record_policy_plan(
                 observation=self.observation,
@@ -1996,6 +2229,23 @@ class KnowledgeSystem:
                             int(plan.router_hidden_active_counts[row])
                             if getattr(plan, "router_hidden_active_counts", np.empty(0)).size
                             else 0
+                        ),
+                        "selection_schema": getattr(plan, "selection_schema", None),
+                        "selection_candidate_count": (
+                            int(plan.selection_candidate_counts[row])
+                            if getattr(plan, "selection_candidate_counts", np.empty(0)).size else 0
+                        ),
+                        "selection_selected_count": (
+                            int(plan.selection_selected_counts[row])
+                            if getattr(plan, "selection_selected_counts", np.empty(0)).size else 0
+                        ),
+                        "selection_tie_count": (
+                            int(plan.selection_tie_counts[row])
+                            if getattr(plan, "selection_tie_counts", np.empty(0)).size else 0
+                        ),
+                        "selection_score_threshold_q": (
+                            int(plan.selection_score_thresholds_q[row])
+                            if getattr(plan, "selection_score_thresholds_q", np.empty(0)).size else 0
                         ),
                     }
                 )
@@ -2174,6 +2424,45 @@ class KnowledgeSystem:
             "routing_clipped_output_count_total": self.totals.routing_clipped_output_count,
             "routing_cost_induced_action_changes_total": (
                 self.totals.routing_cost_induced_action_changes
+            ),
+            "selection_schema": (
+                self.kcfg.sparse_selection_schema
+                if self.kcfg.sparse_selection_enabled else None
+            ),
+            "selection_candidate_copies_total": self.totals.selection_candidate_copies,
+            "selection_selected_copies_total": self.totals.selection_selected_copies,
+            "selection_tie_count_total": self.totals.selection_tie_count,
+            "selection_committed_energy_total": self.totals.selection_committed_energy,
+            "working_memory_schema": (
+                self.kcfg.working_memory_schema
+                if self.kcfg.working_memory_enabled else None
+            ),
+            "working_memory_requested_energy_total": (
+                self.totals.working_memory_requested_energy
+            ),
+            "working_memory_committed_energy_total": (
+                self.totals.working_memory_committed_energy
+            ),
+            "working_memory_rejected_energy_total": (
+                self.totals.working_memory_rejected_energy
+            ),
+            "working_memory_requested_entities_total": (
+                self.totals.working_memory_requested_entities
+            ),
+            "working_memory_committed_entities_total": (
+                self.totals.working_memory_committed_entities
+            ),
+            "working_memory_rejected_entities_total": (
+                self.totals.working_memory_rejected_entities
+            ),
+            "working_memory_saturation_units_total": (
+                self.totals.working_memory_saturation_units
+            ),
+            "working_memory_active_dimensions_total": (
+                self.totals.working_memory_active_dimensions
+            ),
+            "working_memory_induced_action_changes_total": (
+                self.totals.working_memory_induced_action_changes
             ),
         }
         if self.latent_store is not None:

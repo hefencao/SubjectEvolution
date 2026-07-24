@@ -179,6 +179,27 @@ class KnowledgeConfig:
     routing_energy_per_saturation: float = 0.0
     routing_energy_per_clipped_output: float = 0.0
 
+    # Optional quantized recurrent working memory.  The legacy float32 EMA
+    # remains the default when this separately versioned schema is disabled.
+    working_memory_enabled: bool = False
+    working_memory_schema: str = "quantized-working-memory-v1"
+    working_memory_width: int = 4
+    working_memory_quantization_scale: int = 4096
+    working_memory_activation_clip: float = 1.0
+    working_memory_base_energy_cost: float = 0.0
+    working_memory_energy_per_dimension: float = 0.0
+    working_memory_energy_per_saturation: float = 0.0
+
+    # Optional sparse Query-Key selection.  Full dynamic knowledge remains in
+    # the variable-length SoA; Top-k is an ephemeral per-tick device workset.
+    sparse_selection_enabled: bool = False
+    sparse_selection_schema: str = "sparse-query-key-topk-router-v1"
+    sparse_selection_top_k: int = 4
+    sparse_selection_score_clip: int = 1_000_000_000
+    sparse_selection_base_energy_cost: float = 0.0
+    sparse_selection_energy_per_candidate: float = 0.0
+    sparse_selection_energy_per_selected_copy: float = 0.0
+
     # K4 candidate knowledge-subject diagnostics.  This layer is observational
     # and is inert unless explicitly enabled.
     candidate_tracking_enabled: bool = False
@@ -547,6 +568,42 @@ def validate_config(cfg: SimulationConfig) -> None:
             raise ValueError(f"knowledge.{name} must be finite and non-negative")
     if cfg.knowledge.routing_cost_enabled and not cfg.knowledge.latent_policy_enabled:
         raise ValueError("knowledge.routing_cost_enabled requires latent policy")
+    if not isinstance(cfg.knowledge.working_memory_enabled, bool):
+        raise ValueError("knowledge.working_memory_enabled must be a boolean")
+    if cfg.knowledge.working_memory_schema != "quantized-working-memory-v1":
+        raise ValueError("unknown knowledge.working_memory_schema")
+    if cfg.knowledge.working_memory_width != 4:
+        raise ValueError("knowledge.working_memory_width must currently be exactly 4")
+    if cfg.knowledge.working_memory_quantization_scale <= 0:
+        raise ValueError("knowledge.working_memory_quantization_scale must be positive")
+    if (
+        not math.isfinite(cfg.knowledge.working_memory_activation_clip)
+        or cfg.knowledge.working_memory_activation_clip <= 0.0
+        or cfg.knowledge.working_memory_activation_clip > 8.0
+    ):
+        raise ValueError("knowledge.working_memory_activation_clip must be in (0, 8]")
+    for name, value in (
+        ("working_memory_base_energy_cost", cfg.knowledge.working_memory_base_energy_cost),
+        ("working_memory_energy_per_dimension", cfg.knowledge.working_memory_energy_per_dimension),
+        ("working_memory_energy_per_saturation", cfg.knowledge.working_memory_energy_per_saturation),
+        ("sparse_selection_base_energy_cost", cfg.knowledge.sparse_selection_base_energy_cost),
+        ("sparse_selection_energy_per_candidate", cfg.knowledge.sparse_selection_energy_per_candidate),
+        ("sparse_selection_energy_per_selected_copy", cfg.knowledge.sparse_selection_energy_per_selected_copy),
+    ):
+        if not math.isfinite(value) or value < 0.0:
+            raise ValueError(f"knowledge.{name} must be finite and non-negative")
+    if not isinstance(cfg.knowledge.sparse_selection_enabled, bool):
+        raise ValueError("knowledge.sparse_selection_enabled must be a boolean")
+    if cfg.knowledge.sparse_selection_schema != "sparse-query-key-topk-router-v1":
+        raise ValueError("unknown knowledge.sparse_selection_schema")
+    if cfg.knowledge.sparse_selection_top_k < 0 or cfg.knowledge.sparse_selection_top_k > 64:
+        raise ValueError("knowledge.sparse_selection_top_k must be in [0, 64]")
+    if cfg.knowledge.sparse_selection_score_clip <= 0:
+        raise ValueError("knowledge.sparse_selection_score_clip must be positive")
+    if cfg.knowledge.working_memory_enabled and not cfg.knowledge.latent_policy_enabled:
+        raise ValueError("working memory requires latent policy")
+    if cfg.knowledge.sparse_selection_enabled and not cfg.knowledge.latent_policy_enabled:
+        raise ValueError("sparse selection requires latent policy")
 
     if not isinstance(cfg.knowledge.candidate_tracking_enabled, bool):
         raise ValueError("knowledge.candidate_tracking_enabled must be a boolean")

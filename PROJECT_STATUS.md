@@ -1,65 +1,54 @@
-# Subject Evolution 项目状态（v0.12.0）
+# Subject Evolution 项目状态（v0.13.0）
 
-## 当前完成阶段
+## 已完成阶段
 
 | 功能 | 状态 |
 |---|---|
-| 动态知识副本、容量、维持与损坏 | K1 已完成 |
-| 有代价知识交换与传播谱系 | K1 已完成 |
-| 局部五维后果记录与经验更新 | K2 已完成 |
-| 固定五维知识 residual 接入策略 | K3 已完成 |
-| 知识内容谱系与候选主体图诊断 | K4 已完成 |
-| checkpoint 全世界恢复与离线分支重放 | v0.9.0 已完成 |
-| 可变长度潜知识 + 遗传量化线性路由器 | v0.10.0 L1 已完成 |
-| 可变长度潜知识 + 遗传量化两层 MLP | v0.11.0 L2 已完成 |
-| 潜知识路由计算成本与预算仲裁 | **v0.12.0 已完成** |
+| K1 动态知识副本、容量、成本、交换与损坏 | 完成 |
+| K2 局部五维后果学习 | 完成 |
+| K3 知识 residual 接入公开策略 | 完成 |
+| K4 内容谱系与候选主体图诊断 | 完成 |
+| v0.9 全世界 checkpoint 恢复与离线反事实分支 | 完成 |
+| v0.10 L1 可变长度潜知识与量化线性路由 | 完成 |
+| v0.11 L2 遗传量化两层 MLP 路由 | 完成 |
+| v0.12 路由计算成本与能量预算仲裁 | 完成 |
+| v0.13 量化短期工作记忆 | **完成** |
+| v0.13 稀疏 Query-Key stable Top-k 临时工作集 | **完成** |
+| 真实 CUDA v0.13 world parity | 未完成 |
+| K 的实体级遗传/可塑调节 | 未实现 |
 | 潜坐标/路由器局部学习 | 未实现 |
-| 持久设备驻留 latent arena | 未实现 |
-| 完整设备驻留世界循环 | 未实现 |
-| 完整主体图数据库及任意嵌套主体 | 未实现 |
-| 信息模板寄生主体 | 未实现 |
+| 持久 device-resident latent arena | 未实现 |
+| 完整主体图数据库与任意嵌套主体 | 未实现 |
 | 完整主体性评分 | 未实现 |
-| Hero 强化学习 | 未实现 |
-| 任意信息通道 schema | 未实现 |
 
-## v0.12.0 概要
+## v0.13.0 设计边界
 
-新增独立的 `latent-routing-compute-cost-v1` 成本 schema。潜路由先生成不可变策略提案，再按实体执行 `all-or-none-per-entity-v1` 能量预算审核。只有支付成功的 residual 才进入最终 action logits。
+本版本吸收“工作记忆”和“状态相关知识选择”，但没有采用固定 `K_max` 权威槽位、全局 Category Embedding 或 float Softmax Attention。
 
-成本按实际潜维度、整数 MAC、活跃隐藏单元、发布 action、hard-tanh 饱和和输出裁剪分解。提交成本在 intent resolution 前从真实实体能量中扣除；策略观察仍使用扣费前状态，避免本 tick 的观察语义被隐藏改变。
+权威知识仍是可变长度动态 SoA。Top-k 只产生每 tick 可重建的临时工作集，不改变宿主容量、复制、损坏或内容谱系。Query/Key 来自宿主状态、量化工作记忆、内容自身 latent、局部五维后果与可靠性，参数来自遗传基因。
 
-## 验证摘要
+Working Memory 是每实体 4D `int16` 状态，使用上 tick 的 prediction error 与公开观察变化进行定点更新。更新发生在本 tick 后果提交后，仅影响下一 tick。
 
-- 55 tests：54 passed，1 个真实 CUDA 测试因无 GPU 跳过；
-- 成本公式、L1/L2工作量差异、低能量拒绝、稳定仲裁、K4成本归因和完整 checkpoint 恢复均有专项测试；
-- 5个主要条件各同 seed 双重复；204个非计时指标、全部核心日志及 tick 15/30 的35个 checkpoint数组一致；
-- L1 costed 总路由能耗：0.86161672；
-- L2 same-unit 总路由能耗：1.10032021；
-- L2 budget-matched 总路由能耗：0.86154087；
-- L1/L2匹配误差约0.0088%；
-- 高成本压力场景产生451次实体级拒绝和68次同随机数动作变化。
+## 兼容性
 
-## 向后兼容
+模块关闭时，v0.12 与 v0.13：
 
-v0.11.0与v0.12.0在成本关闭时：
+- 204 个共同非计时 metrics 字段一致；
+- outcome、policy contribution、routing cost 共同列逐行一致；
+- knowledge/evolution JSONL byte-identical；
+- tick 15/30 的 35 个共同 checkpoint 数组一致。
 
-- 176个共同非计时 metrics 字段一致；
-- 原知识、后果、策略贡献与演化日志一致；
-- tick 15/30的35个共同 checkpoint数组一致；
-- L1与L2均通过独立兼容对照。
+## 验证
 
-因此旧配置默认不会产生新的能量扣费或轨迹变化。
-
-## CPU/GPU 状态
-
-预算请求由CPU reference侧的不可变计划诊断计算，接受后的稀疏计划可进入CPU或设备策略。hybrid路径保持扣费前设备观察，并在策略计算后同步已提交能量。
-
-当前容器无CUDA，因此真实GPU多tick成本路径尚未验证。正式scientific GPU运行继续建议使用`strict-reference`。
+- 62 tests：61 passed，1 个真实 CUDA 测试因无设备跳过；
+- 五条件各同 seed 双重复；
+- 230 个非计时字段、核心日志及 checkpoint 全部复现；
+- Top-k=2 在短场景相对 memory-only 降低约 52.74% L2 MAC；Top-k=4 降低约 17.62%；Top-k=8 选中全部候选，无计算收益。
 
 ## 下一步建议
 
-1. 在真实GPU上完成L2 + routing cost world parity；
-2. 做多seed、成本系数和预算强度sweep；
-3. 使用`.sechk`对潜长度、L1 prefix、MLP隐藏单元和成本项做离线消融；
-4. 再实现潜坐标或路由参数的局部学习，并要求学习本身有物理成本；
-5. 评估持久device-resident latent buckets，避免每tick重复构建设备视图。
+1. 在真实 GPU 上验证 memory、selection plan、L2 residual、cost budget 与完整世界状态；
+2. 将 K 从配置常量升级为有成本的实体级遗传性状，但必须保持稳定 tie 和容量独立；
+3. 使用 full checkpoint 做 memory-only、selection-only、单内容删除和 K sweep 反事实；
+4. 多 seed、预算匹配后再判断时间记忆和稀疏选择是否产生长期适应价值；
+5. 暂不引入全局类别 embedding 或普通 Softmax Attention。

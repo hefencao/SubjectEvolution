@@ -88,6 +88,9 @@ class KnowledgeCandidateTracker:
         self.maintenance_cost = np.zeros(self._capacity, dtype=np.float64)
         self.verification_cost = np.zeros(self._capacity, dtype=np.float64)
         self.routing_cost = np.zeros(self._capacity, dtype=np.float64)
+        self.selection_cost = np.zeros(self._capacity, dtype=np.float64)
+        self.working_memory_cost = np.zeros(self._capacity, dtype=np.float64)
+        self.unattributed_working_memory_cost = 0.0
         self.policy_influence_events = np.zeros(self._capacity, dtype=np.uint64)
         self.policy_changed_action_events = np.zeros(self._capacity, dtype=np.uint64)
         self.policy_residual_abs_sum = np.zeros(self._capacity, dtype=np.float64)
@@ -131,7 +134,8 @@ class KnowledgeCandidateTracker:
             "descendant_variant_count", "current_unique_group_count",
             "current_unique_lineage_count", "current_unique_region_count",
             "sender_cost", "receiver_cost", "maintenance_cost", "verification_cost",
-            "routing_cost", "host_cost_total", "holder_state_count", "nonholder_state_count",
+            "routing_cost", "selection_cost", "working_memory_cost",
+            "host_cost_total", "holder_state_count", "nonholder_state_count",
             "holder_energy_mean", "nonholder_energy_mean", "energy_association",
             "holder_integrity_mean", "nonholder_integrity_mean", "integrity_association",
             "holder_material_mean", "nonholder_material_mean", "material_association",
@@ -192,6 +196,17 @@ class KnowledgeCandidateTracker:
         """Replace diagnostic state while retaining this run's output streams."""
         for name, value in state.items():
             setattr(self, name, copy.deepcopy(value))
+        capacity = int(self._capacity)
+        for name in ("selection_cost", "working_memory_cost"):
+            value = getattr(self, name, None)
+            if value is None or np.asarray(value).shape != (capacity,):
+                restored = np.zeros(capacity, dtype=np.float64)
+                if value is not None:
+                    old = np.asarray(value, dtype=np.float64)
+                    restored[: min(old.size, capacity)] = old[:capacity]
+                setattr(self, name, restored)
+        if not hasattr(self, "unattributed_working_memory_cost"):
+            self.unattributed_working_memory_cost = 0.0
 
 
     def _ensure_capacity(self, required: int) -> None:
@@ -209,7 +224,8 @@ class KnowledgeCandidateTracker:
             "current_unique_lineage_count", "current_unique_region_count",
             "descendant_variant_count", "transfer_attempt_count", "transfer_commit_count",
             "transfer_verified_count", "sender_cost", "receiver_cost", "maintenance_cost",
-            "verification_cost", "routing_cost", "policy_influence_events", "policy_changed_action_events",
+            "verification_cost", "routing_cost", "selection_cost", "working_memory_cost",
+            "policy_influence_events", "policy_changed_action_events",
             "policy_residual_abs_sum", "holder_state_count", "nonholder_state_count",
         )
         for name in vector_names:
@@ -375,6 +391,43 @@ class KnowledgeCandidateTracker:
                 int(holder_subject_id), float(cost), int(tick),
             )
 
+    def _attribute_computation_cost(
+        self,
+        *,
+        target: np.ndarray,
+        edge_type: str,
+        content_ids: np.ndarray,
+        weights: np.ndarray,
+        holder_subject_id: int,
+        charged: float,
+        tick: int,
+    ) -> float:
+        if charged <= 0.0 or np.asarray(content_ids).size == 0:
+            return 0.0
+        ids = np.asarray(content_ids, dtype=np.uint64)
+        raw_weights = np.asarray(weights, dtype=np.float64)
+        unique, inverse = np.unique(ids, return_inverse=True)
+        content_weights = np.bincount(
+            inverse, weights=raw_weights, minlength=unique.size
+        ).astype(np.float64)
+        total = float(content_weights.sum())
+        if total <= 0.0:
+            content_weights = np.ones(unique.size, dtype=np.float64)
+            total = float(unique.size)
+        attributed = 0.0
+        for content_id, weight in zip(
+            unique.tolist(), content_weights.tolist(), strict=True
+        ):
+            row = int(content_id) - 1
+            amount = charged * float(weight) / total
+            target[row] += amount
+            attributed += amount
+            self._add_edge(
+                edge_type, int(content_id), self.subject_id(int(content_id)),
+                int(holder_subject_id), amount, int(tick),
+            )
+        return float(attributed)
+
     def record_routing_cost(self, *, observation: Any, result: Any) -> None:
         if not self.enabled or np.asarray(result.active_rows).size == 0:
             return
@@ -382,39 +435,97 @@ class KnowledgeCandidateTracker:
             observation.holder_subject_ids,
             observation.holder_counts.astype(np.int64, copy=False),
         )
+        work_context = {
+            int(active_row): int(context_key)
+            for active_row, context_key in zip(
+                np.asarray(result.plan.work_active_rows, dtype=np.int32).tolist(),
+                np.asarray(result.plan.work_context_keys, dtype=np.uint64).tolist(),
+                strict=True,
+            )
+        }
         for result_row in range(result.active_rows.size):
+            if not bool(result.accepted[result_row]):
+                continue
             charged = float(result.committed_energy[result_row])
+            selection_charged = min(
+                float(result.selection_energy[result_row]), charged
+            )
+            routing_charged = max(charged - selection_charged, 0.0)
+            holder = int(result.holder_subject_ids[result_row])
+            active_row = int(result.active_rows[result_row])
+            context = work_context.get(active_row, 0)
+            candidate_mask = copy_holders == holder
+            if context:
+                candidate_mask &= observation.context_keys == np.uint64(context)
+            candidate_rows = np.flatnonzero(candidate_mask)
+            if candidate_rows.size:
+                self._attribute_computation_cost(
+                    target=self.selection_cost,
+                    edge_type="selection_cost_attributed_to",
+                    content_ids=observation.content_ids[candidate_rows],
+                    weights=observation.encoded_bytes[candidate_rows],
+                    holder_subject_id=holder,
+                    charged=selection_charged,
+                    tick=int(result.plan.tick),
+                )
+            selected_mask = np.asarray(
+                result.plan.selection_active_rows, dtype=np.int32
+            ) == active_row
+            selected_ids = np.asarray(
+                result.plan.selection_content_ids, dtype=np.uint64
+            )[selected_mask]
+            if selected_ids.size:
+                selected_rows = np.flatnonzero(
+                    candidate_mask & np.isin(observation.content_ids, selected_ids)
+                )
+            else:
+                selected_rows = candidate_rows
+            if selected_rows.size:
+                self._attribute_computation_cost(
+                    target=self.routing_cost,
+                    edge_type="routing_cost_attributed_to",
+                    content_ids=observation.content_ids[selected_rows],
+                    weights=observation.encoded_bytes[selected_rows],
+                    holder_subject_id=holder,
+                    charged=routing_charged,
+                    tick=int(result.plan.tick),
+                )
+
+    def record_working_memory_cost(
+        self,
+        *,
+        observation: Any,
+        result: Any,
+        holder_subject_ids: np.ndarray,
+    ) -> None:
+        if not self.enabled or np.asarray(result.active_rows).size == 0:
+            return
+        holders = np.asarray(holder_subject_ids, dtype=np.uint64)
+        if holders.shape != np.asarray(result.active_rows).shape:
+            raise ValueError("working-memory holder IDs must align with active rows")
+        copy_holders = np.repeat(
+            observation.holder_subject_ids,
+            observation.holder_counts.astype(np.int64, copy=False),
+        )
+        for index, holder_value in enumerate(holders.tolist()):
+            charged = float(result.committed_energy[index])
             if charged <= 0.0:
                 continue
-            holder = int(result.holder_subject_ids[result_row])
-            # Routing considers copies matching the current holder/context.
-            # Allocate the host computation cost by encoded bytes so the
-            # content-level attribution sums exactly to the world charge.
-            plan_mask = result.plan.holder_subject_ids == holder
-            contexts = np.unique(result.plan.context_keys[plan_mask])
-            mask = copy_holders == holder
-            if contexts.size:
-                mask &= np.isin(observation.context_keys, contexts)
-            rows = np.flatnonzero(mask)
+            holder = int(holder_value)
+            rows = np.flatnonzero(copy_holders == holder)
             if rows.size == 0:
+                self.unattributed_working_memory_cost += charged
                 continue
-            content_ids = observation.content_ids[rows].astype(np.uint64)
-            weights = observation.encoded_bytes[rows].astype(np.float64)
-            unique, inverse = np.unique(content_ids, return_inverse=True)
-            content_weights = np.bincount(inverse, weights=weights, minlength=unique.size)
-            total = float(content_weights.sum())
-            if total <= 0.0:
-                content_weights = np.ones(unique.size, dtype=np.float64)
-                total = float(unique.size)
-            for content_id, weight in zip(unique.tolist(), content_weights.tolist(), strict=True):
-                row = int(content_id) - 1
-                amount = charged * float(weight) / total
-                self.routing_cost[row] += amount
-                self._add_edge(
-                    "routing_cost_attributed_to", int(content_id),
-                    self.subject_id(int(content_id)), holder, amount,
-                    int(result.plan.tick),
-                )
+            attributed = self._attribute_computation_cost(
+                target=self.working_memory_cost,
+                edge_type="working_memory_cost_attributed_to",
+                content_ids=observation.content_ids[rows],
+                weights=observation.encoded_bytes[rows],
+                holder_subject_id=holder,
+                charged=charged,
+                tick=int(result.tick),
+            )
+            self.unattributed_working_memory_cost += max(charged - attributed, 0.0)
 
     def record_policy_plan(
         self,
@@ -681,7 +792,8 @@ class KnowledgeCandidateTracker:
             costs = (
                 self.sender_cost[row] + self.receiver_cost[row]
                 + self.maintenance_cost[row] + self.verification_cost[row]
-                + self.routing_cost[row]
+                + self.routing_cost[row] + self.selection_cost[row]
+                + self.working_memory_cost[row]
             )
             self._candidate_writer.writerow(
                 {
@@ -711,6 +823,8 @@ class KnowledgeCandidateTracker:
                     "maintenance_cost": float(self.maintenance_cost[row]),
                     "verification_cost": float(self.verification_cost[row]),
                     "routing_cost": float(self.routing_cost[row]),
+                    "selection_cost": float(self.selection_cost[row]),
+                    "working_memory_cost": float(self.working_memory_cost[row]),
                     "host_cost_total": float(costs),
                     "holder_state_count": int(self.holder_state_count[row]),
                     "nonholder_state_count": int(self.nonholder_state_count[row]),
@@ -759,9 +873,17 @@ class KnowledgeCandidateTracker:
             "knowledge_candidate_host_cost_total": float(
                 self.sender_cost[:size].sum() + self.receiver_cost[:size].sum()
                 + self.maintenance_cost[:size].sum() + self.verification_cost[:size].sum()
-                + self.routing_cost[:size].sum()
+                + self.routing_cost[:size].sum() + self.selection_cost[:size].sum()
+                + self.working_memory_cost[:size].sum()
             ),
             "knowledge_candidate_routing_cost_total": float(self.routing_cost[:size].sum()),
+            "knowledge_candidate_selection_cost_total": float(self.selection_cost[:size].sum()),
+            "knowledge_candidate_working_memory_cost_total": float(
+                self.working_memory_cost[:size].sum()
+            ),
+            "knowledge_candidate_unattributed_working_memory_cost_total": float(
+                self.unattributed_working_memory_cost
+            ),
             "knowledge_boundary_group_internal_commits": int(group_commits[:, 0].sum()) if size else 0,
             "knowledge_boundary_group_cross_commits": int(group_commits[:, 1].sum()) if size else 0,
             "knowledge_boundary_group_unknown_commits": int(group_commits[:, 2].sum()) if size else 0,
@@ -786,6 +908,9 @@ class KnowledgeCandidateTracker:
             or np.any(~np.isfinite(self.maintenance_cost[: self._size]))
             or np.any(~np.isfinite(self.verification_cost[: self._size]))
             or np.any(~np.isfinite(self.routing_cost[: self._size]))
+            or np.any(~np.isfinite(self.selection_cost[: self._size]))
+            or np.any(~np.isfinite(self.working_memory_cost[: self._size]))
+            or not np.isfinite(self.unattributed_working_memory_cost)
         ):
             raise AssertionError("knowledge candidate diagnostic invariant failed")
         active_counts = np.bincount(
@@ -814,6 +939,11 @@ class KnowledgeCandidateTracker:
             "knowledge_candidate_maintenance_cost": self.maintenance_cost[:size].copy(),
             "knowledge_candidate_verification_cost": self.verification_cost[:size].copy(),
             "knowledge_candidate_routing_cost": self.routing_cost[:size].copy(),
+            "knowledge_candidate_selection_cost": self.selection_cost[:size].copy(),
+            "knowledge_candidate_working_memory_cost": self.working_memory_cost[:size].copy(),
+            "knowledge_candidate_unattributed_working_memory_cost": np.asarray(
+                [self.unattributed_working_memory_cost], dtype=np.float64
+            ),
             "knowledge_candidate_policy_influence_events": self.policy_influence_events[:size].copy(),
             "knowledge_candidate_policy_changed_action_events": self.policy_changed_action_events[:size].copy(),
             "knowledge_candidate_policy_residual_abs_sum": self.policy_residual_abs_sum[:size].copy(),
