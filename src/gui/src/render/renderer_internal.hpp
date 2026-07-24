@@ -199,4 +199,22 @@ std::size_t draw_group_behavior_overlay(
     ActionFilterMode filter
 );
 
+// Optional OpenGL 3.3/4.3 instanced agent-marker backend. It accepts the
+// already culled/sampled entity set, so GPU acceleration does not change LOD
+// semantics or selection behavior.
+bool draw_gpu_agent_markers(
+    RendererState& state,
+    const Frame& frame,
+    const Camera2D& camera,
+    const RenderDetail& detail,
+    const RenderOptions& options,
+    std::uint64_t selected_group_id,
+    const std::vector<const EntitySample*>& entities,
+    float body_radius_pixels,
+    float outline_radius_pixels,
+    float core_radius_pixels,
+    unsigned char body_alpha
+);
+void unload_gpu_agent_renderer(GpuAgentCache& gpu) noexcept;
+
 }  // namespace eco::render_internal

@@ -73,6 +73,14 @@ enum class OverlayTemporalMode : std::uint8_t {
     Stable,
 };
 
+// Entity marker rendering backend. Auto selects GPU instancing on desktop
+// OpenGL 3.3/4.3 when available and falls back to the existing rlgl batch.
+enum class EntityRenderBackend : std::uint8_t {
+    Auto,
+    CpuBatch,
+    GpuInstanced,
+};
+
 struct RenderDetail {
     double estimated_visible = 0.0;
     float projected_spacing = 0.0F;
@@ -101,6 +109,7 @@ struct RenderOptions {
     BehaviorOverlayMode behavior_overlay = BehaviorOverlayMode::Auto;
     ActionFilterMode action_filter = ActionFilterMode::All;
     OverlayTemporalMode overlay_temporal = OverlayTemporalMode::Stable;
+    EntityRenderBackend entity_backend = EntityRenderBackend::Auto;
     std::uint64_t selected_entity_id = 0;
     std::uint64_t selected_group_id = 0;
 };
@@ -183,11 +192,26 @@ struct OverlayUsage {
 struct RenderPerformance {
     std::uint64_t tick = 0;
     double observe_ms = 0.0;
+    double observe_scan_ms = 0.0;
+    double observe_groups_ms = 0.0;
     double heatmap_ms = 0.0;
     double draw_ms = 0.0;
     double observe_ema_ms = 0.0;
+    double observe_scan_ema_ms = 0.0;
+    double observe_groups_ema_ms = 0.0;
     double heatmap_ema_ms = 0.0;
     double draw_ema_ms = 0.0;
+
+    // Agent marker submission timings. gpu_agent_draw_ms measures CPU-side
+    // submission, not asynchronous GPU execution time.
+    double agent_upload_ms = 0.0;
+    double agent_draw_ms = 0.0;
+    double agent_upload_ema_ms = 0.0;
+    double agent_draw_ema_ms = 0.0;
+    std::size_t agent_instances = 0;
+    std::size_t agent_gpu_capacity = 0;
+    bool agent_gpu_available = false;
+    bool agent_gpu_active = false;
 };
 
 [[nodiscard]] RenderDetail resolve_render_detail(
@@ -211,6 +235,7 @@ struct RenderPerformance {
 [[nodiscard]] const char* behavior_overlay_name(BehaviorOverlayMode mode) noexcept;
 [[nodiscard]] const char* action_filter_name(ActionFilterMode mode) noexcept;
 [[nodiscard]] const char* overlay_temporal_name(OverlayTemporalMode mode) noexcept;
+[[nodiscard]] const char* entity_render_backend_name(EntityRenderBackend mode) noexcept;
 [[nodiscard]] bool action_matches_filter(Action action, ActionFilterMode mode) noexcept;
 
 class WorldRenderer {

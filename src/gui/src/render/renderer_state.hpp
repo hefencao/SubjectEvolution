@@ -123,6 +123,32 @@ struct GroupCache {
     std::uint64_t last_trail_tick = 0;
 };
 
+
+struct GpuAgentInstance {
+    float screen_x = 0.0F;
+    float screen_y = 0.0F;
+    float red = 1.0F;
+    float green = 1.0F;
+    float blue = 1.0F;
+    float alpha = 1.0F;
+};
+
+struct GpuAgentCache {
+    bool initialization_attempted = false;
+    bool available = false;
+    Shader shader{};
+    int screen_size_location = -1;
+    int half_size_location = -1;
+    int body_scale_location = -1;
+    int core_scale_location = -1;
+    int core_weight_location = -1;
+    unsigned int vertex_array = 0;
+    unsigned int quad_vertex_buffer = 0;
+    unsigned int instance_vertex_buffer = 0;
+    std::size_t capacity = 0;
+    std::vector<GpuAgentInstance> instances;
+};
+
 struct StreamSignature {
     bool initialized = false;
     std::uint64_t last_tick = 0;
@@ -138,6 +164,7 @@ struct RendererState {
     ObservationCache observation;
     GroupCache groups;
     ActionFieldCache action_field;
+    GpuAgentCache gpu_agents;
     StreamSignature stream;
     OverlayBudget overlay_budget{};
     OverlayUsage overlay_usage{};

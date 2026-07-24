@@ -12,6 +12,7 @@
 #include <limits>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace eco {
@@ -198,10 +199,14 @@ void WorldRenderer::observe_frame(const Frame& frame) {
 
     struct GroupAccumulator {
         std::size_t members = 0;
-        double sum_cos_x = 0.0;
-        double sum_sin_x = 0.0;
-        double sum_cos_y = 0.0;
-        double sum_sin_y = 0.0;
+        bool anchored = false;
+        double anchor_x = 0.0;
+        double anchor_y = 0.0;
+        double sum_dx = 0.0;
+        double sum_dy = 0.0;
+        double sum_dx2 = 0.0;
+        double sum_dy2 = 0.0;
+        double sum_dxdy = 0.0;
         double sum_vx = 0.0;
         double sum_vy = 0.0;
         double sum_speed = 0.0;
@@ -214,10 +219,10 @@ void WorldRenderer::observe_frame(const Frame& frame) {
     group_accumulators.reserve(frame.entities.size() / 32U + 1U);
     std::array<ActionActivityCell, kActionFieldCellCount> raw_action_cells{};
 
-    const double two_pi = 6.28318530717958647692;
     const double world_width = std::max<double>(frame.layout.world_width, 1.0);
     const double world_height = std::max<double>(frame.layout.world_height, 1.0);
     double speed_sum = 0.0;
+    const auto scan_start = std::chrono::steady_clock::now();
 
     for (const EntitySample& entity : frame.entities) {
         if (!valid_entity_sample(entity)) {
@@ -291,13 +296,25 @@ void WorldRenderer::observe_frame(const Frame& frame) {
 
         if (entity.group_id != 0) {
             GroupAccumulator& group = group_accumulators[entity.group_id];
+            if (!group.anchored) {
+                group.anchored = true;
+                group.anchor_x = entity.x;
+                group.anchor_y = entity.y;
+            }
+            const double dx = static_cast<double>(wrapped_delta(
+                entity.x - static_cast<float>(group.anchor_x),
+                static_cast<float>(world_width)
+            ));
+            const double dy = static_cast<double>(wrapped_delta(
+                entity.y - static_cast<float>(group.anchor_y),
+                static_cast<float>(world_height)
+            ));
             ++group.members;
-            const double angle_x = two_pi * static_cast<double>(entity.x) / world_width;
-            const double angle_y = two_pi * static_cast<double>(entity.y) / world_height;
-            group.sum_cos_x += std::cos(angle_x);
-            group.sum_sin_x += std::sin(angle_x);
-            group.sum_cos_y += std::cos(angle_y);
-            group.sum_sin_y += std::sin(angle_y);
+            group.sum_dx += dx;
+            group.sum_dy += dy;
+            group.sum_dx2 += dx * dx;
+            group.sum_dy2 += dy * dy;
+            group.sum_dxdy += dx * dy;
             group.sum_vx += entity.vx;
             group.sum_vy += entity.vy;
             group.sum_speed += speed;
@@ -342,6 +359,11 @@ void WorldRenderer::observe_frame(const Frame& frame) {
         }
     }
 
+    const double scan_ms = std::chrono::duration<double, std::milli>(
+        std::chrono::steady_clock::now() - scan_start
+    ).count();
+    const auto groups_start = std::chrono::steady_clock::now();
+
     state_->action_field.raw = raw_action_cells;
     const std::uint64_t action_elapsed = state_->action_field.last_tick == 0 ||
         frame.tick <= state_->action_field.last_tick
@@ -381,14 +403,6 @@ void WorldRenderer::observe_frame(const Frame& frame) {
         if (aggregate.members == 0) {
             continue;
         }
-        auto circular_position = [two_pi](double sine, double cosine, double extent) {
-            double angle = std::atan2(sine, cosine);
-            if (angle < 0.0) {
-                angle += two_pi;
-            }
-            return static_cast<float>(angle / two_pi * extent);
-        };
-
         int dominant_index = 0;
         for (int index = 1; index < 8; ++index) {
             if (aggregate.action_weights[static_cast<std::size_t>(index)] >
@@ -410,22 +424,37 @@ void WorldRenderer::observe_frame(const Frame& frame) {
             )
             : 0.0F;
 
+        const double members = static_cast<double>(aggregate.members);
+        const double mean_dx = aggregate.sum_dx / members;
+        const double mean_dy = aggregate.sum_dy / members;
+        const double xx = std::max(0.0, aggregate.sum_dx2 / members - mean_dx * mean_dx);
+        const double yy = std::max(0.0, aggregate.sum_dy2 / members - mean_dy * mean_dy);
+        const double xy = aggregate.sum_dxdy / members - mean_dx * mean_dy;
+        const double trace = xx + yy;
+        const double discriminant = std::sqrt(
+            std::max(0.0, (xx - yy) * (xx - yy) + 4.0 * xy * xy)
+        );
+        const double lambda_major = std::max(0.0, 0.5 * (trace + discriminant));
+        const double lambda_minor = std::max(0.0, 0.5 * (trace - discriminant));
+
         GroupBehaviorSummary summary{};
         summary.group_id = group_id;
         summary.members = aggregate.members;
-        summary.x = circular_position(
-            aggregate.sum_sin_x, aggregate.sum_cos_x, world_width
+        summary.x = wrap_coordinate(
+            static_cast<float>(aggregate.anchor_x + mean_dx),
+            static_cast<float>(world_width)
         );
-        summary.y = circular_position(
-            aggregate.sum_sin_y, aggregate.sum_cos_y, world_height
+        summary.y = wrap_coordinate(
+            static_cast<float>(aggregate.anchor_y + mean_dy),
+            static_cast<float>(world_height)
         );
-        summary.mean_vx = static_cast<float>(
-            aggregate.sum_vx / static_cast<double>(aggregate.members)
-        );
-        summary.mean_vy = static_cast<float>(
-            aggregate.sum_vy / static_cast<double>(aggregate.members)
-        );
+        summary.mean_vx = static_cast<float>(aggregate.sum_vx / members);
+        summary.mean_vy = static_cast<float>(aggregate.sum_vy / members);
         summary.coherence = clamp01(coherence);
+        summary.spread = static_cast<float>(std::sqrt(trace));
+        summary.spread_major = static_cast<float>(std::sqrt(lambda_major));
+        summary.spread_minor = static_cast<float>(std::sqrt(lambda_minor));
+        summary.orientation = static_cast<float>(0.5 * std::atan2(2.0 * xy, xx - yy));
         summary.active_fraction = static_cast<float>(aggregate.active) /
             static_cast<float>(aggregate.members);
         summary.dominant_action = static_cast<Action>(dominant_index);
@@ -453,62 +482,48 @@ void WorldRenderer::observe_frame(const Frame& frame) {
             return left.group_id < right.group_id;
         });
 
-    std::unordered_map<std::uint64_t, std::size_t> group_indices;
-    group_indices.reserve(state_->groups.behaviors.size() * 5U / 4U + 1U);
-    std::vector<double> covariance_xx(state_->groups.behaviors.size(), 0.0);
-    std::vector<double> covariance_yy(state_->groups.behaviors.size(), 0.0);
-    std::vector<double> covariance_xy(state_->groups.behaviors.size(), 0.0);
-    for (std::size_t index = 0; index < state_->groups.behaviors.size(); ++index) {
-        group_indices.emplace(state_->groups.behaviors[index].group_id, index);
-    }
-    for (const EntitySample& entity : frame.entities) {
-        if (!valid_entity_sample(entity) || entity.group_id == 0) {
-            continue;
-        }
-        const auto iterator = group_indices.find(entity.group_id);
-        if (iterator == group_indices.end()) {
-            continue;
-        }
-        const GroupBehaviorSummary& group = state_->groups.behaviors[iterator->second];
-        const double dx = wrapped_delta(entity.x - group.x, frame.layout.world_width);
-        const double dy = wrapped_delta(entity.y - group.y, frame.layout.world_height);
-        covariance_xx[iterator->second] += dx * dx;
-        covariance_yy[iterator->second] += dy * dy;
-        covariance_xy[iterator->second] += dx * dy;
-    }
-    for (std::size_t index = 0; index < state_->groups.behaviors.size(); ++index) {
-        GroupBehaviorSummary& group = state_->groups.behaviors[index];
-        const double members = static_cast<double>(
-            std::max<std::size_t>(group.members, 1U)
-        );
-        const double xx = covariance_xx[index] / members;
-        const double yy = covariance_yy[index] / members;
-        const double xy = covariance_xy[index] / members;
-        const double trace = xx + yy;
-        const double discriminant = std::sqrt(
-            std::max(0.0, (xx - yy) * (xx - yy) + 4.0 * xy * xy)
-        );
-        const double lambda_major = std::max(0.0, 0.5 * (trace + discriminant));
-        const double lambda_minor = std::max(0.0, 0.5 * (trace - discriminant));
-        group.spread = static_cast<float>(std::sqrt(std::max(trace, 0.0)));
-        group.spread_major = static_cast<float>(std::sqrt(lambda_major));
-        group.spread_minor = static_cast<float>(std::sqrt(lambda_minor));
-        group.orientation = static_cast<float>(0.5 * std::atan2(2.0 * xy, xx - yy));
-    }
-
-
     // Preserve visual identity independently from transient simulation group ids.
     // Exact id matches win. Remaining groups are matched to the previous frame
     // by wrapped spatial distance, member count, velocity and dominant action.
     // This prevents large color jumps when a clustering pass replaces a group
     // id while the same spatial cohort continues to exist.
-    const std::vector<GroupVisualAnchor> previous_visuals =
-        state_->groups.previous_visuals;
+    std::vector<GroupVisualAnchor> previous_visuals =
+        std::move(state_->groups.previous_visuals);
     std::vector<bool> previous_used(previous_visuals.size(), false);
     std::unordered_map<std::uint64_t, std::size_t> previous_by_id;
     previous_by_id.reserve(previous_visuals.size() * 5U / 4U + 1U);
     for (std::size_t index = 0; index < previous_visuals.size(); ++index) {
         previous_by_id.emplace(previous_visuals[index].group_id, index);
+    }
+
+    const int visual_grid_columns = std::clamp(
+        static_cast<int>(std::sqrt(std::max<std::size_t>(previous_visuals.size(), 1U) / 2.0)),
+        8,
+        48
+    );
+    const int visual_grid_rows = visual_grid_columns;
+    const float visual_cell_width = frame.layout.world_width /
+        static_cast<float>(visual_grid_columns);
+    const float visual_cell_height = frame.layout.world_height /
+        static_cast<float>(visual_grid_rows);
+    std::vector<std::vector<std::size_t>> visual_grid(
+        static_cast<std::size_t>(visual_grid_columns * visual_grid_rows)
+    );
+    float maximum_previous_spread = 0.0F;
+    for (std::size_t index = 0; index < previous_visuals.size(); ++index) {
+        const GroupVisualAnchor& previous = previous_visuals[index];
+        maximum_previous_spread = std::max(maximum_previous_spread, previous.spread);
+        const int column = std::clamp(
+            static_cast<int>(previous.x / std::max(visual_cell_width, 1.0e-6F)),
+            0,
+            visual_grid_columns - 1
+        );
+        const int row = std::clamp(
+            static_cast<int>(previous.y / std::max(visual_cell_height, 1.0e-6F)),
+            0,
+            visual_grid_rows - 1
+        );
+        visual_grid[static_cast<std::size_t>(row * visual_grid_columns + column)].push_back(index);
     }
 
     state_->groups.visual_keys.clear();
@@ -536,9 +551,9 @@ void WorldRenderer::observe_frame(const Frame& frame) {
 
         std::size_t best_index = previous_visuals.size();
         double best_score = std::numeric_limits<double>::infinity();
-        for (std::size_t index = 0; index < previous_visuals.size(); ++index) {
+        const auto consider_previous = [&](std::size_t index) {
             if (previous_used[index]) {
-                continue;
+                return;
             }
             const GroupVisualAnchor& previous = previous_visuals[index];
             const double dx = wrapped_delta(
@@ -552,25 +567,21 @@ void WorldRenderer::observe_frame(const Frame& frame) {
             const double distance = std::sqrt(dx * dx + dy * dy);
             const double distance_limit = std::max(
                 14.0,
-                7.0 + 1.65 * static_cast<double>(
-                    group.spread + previous.spread
-                )
+                7.0 + 1.65 * static_cast<double>(group.spread + previous.spread)
             );
             if (distance > distance_limit) {
-                continue;
+                return;
             }
-
             const double member_ratio = std::abs(std::log(
                 (static_cast<double>(group.members) + 1.0) /
                 (static_cast<double>(previous.members) + 1.0)
             ));
             if (member_ratio > 1.10) {
-                continue;
+                return;
             }
-
-            const double velocity_delta = std::sqrt(
-                std::pow(static_cast<double>(group.mean_vx - previous.mean_vx), 2.0) +
-                std::pow(static_cast<double>(group.mean_vy - previous.mean_vy), 2.0)
+            const double velocity_delta = std::hypot(
+                static_cast<double>(group.mean_vx - previous.mean_vx),
+                static_cast<double>(group.mean_vy - previous.mean_vy)
             );
             const double action_penalty =
                 group.dominant_action == previous.dominant_action ? 0.0 : 0.22;
@@ -581,6 +592,57 @@ void WorldRenderer::observe_frame(const Frame& frame) {
             if (score < best_score) {
                 best_score = score;
                 best_index = index;
+            }
+        };
+
+        const float search_spread_cap = std::max(
+            12.0F,
+            0.08F * std::min(frame.layout.world_width, frame.layout.world_height)
+        );
+        const float conservative_distance = std::max(
+            14.0F,
+            7.0F + 1.65F * (
+                std::min(group.spread, search_spread_cap) +
+                std::min(maximum_previous_spread, search_spread_cap)
+            )
+        );
+        const int center_column = std::clamp(
+            static_cast<int>(group.x / std::max(visual_cell_width, 1.0e-6F)),
+            0,
+            visual_grid_columns - 1
+        );
+        const int center_row = std::clamp(
+            static_cast<int>(group.y / std::max(visual_cell_height, 1.0e-6F)),
+            0,
+            visual_grid_rows - 1
+        );
+        const int radius_x = std::min(
+            4,
+            std::max(1, static_cast<int>(std::ceil(
+                conservative_distance / std::max(visual_cell_width, 1.0e-6F)
+            )))
+        );
+        const int radius_y = std::min(
+            4,
+            std::max(1, static_cast<int>(std::ceil(
+                conservative_distance / std::max(visual_cell_height, 1.0e-6F)
+            )))
+        );
+        for (int row_offset = -radius_y; row_offset <= radius_y; ++row_offset) {
+            const int row = (center_row + row_offset + visual_grid_rows) % visual_grid_rows;
+            for (int column_offset = -radius_x; column_offset <= radius_x; ++column_offset) {
+                const int column = (center_column + column_offset + visual_grid_columns) % visual_grid_columns;
+                const auto& cell = visual_grid[
+                    static_cast<std::size_t>(row * visual_grid_columns + column)
+                ];
+                for (const std::size_t index : cell) {
+                    consider_previous(index);
+                }
+            }
+        }
+        if (best_index == previous_visuals.size() && previous_visuals.size() <= 256U) {
+            for (std::size_t index = 0; index < previous_visuals.size(); ++index) {
+                consider_previous(index);
             }
         }
 
@@ -710,6 +772,10 @@ void WorldRenderer::observe_frame(const Frame& frame) {
         state_->groups.last_trail_tick = frame.tick;
     }
 
+    const double groups_ms = std::chrono::duration<double, std::milli>(
+        std::chrono::steady_clock::now() - groups_start
+    ).count();
+
     if (!first_observation) {
         for (const auto& [entity_id, position] : state_->observation.previous_positions) {
             if (state_->observation.current_positions.find(entity_id) == state_->observation.current_positions.end()) {
@@ -778,6 +844,16 @@ void WorldRenderer::observe_frame(const Frame& frame) {
     const double elapsed_ms = std::chrono::duration<double, std::milli>(
         std::chrono::steady_clock::now() - timing_start
     ).count();
+    record_timing(
+        scan_ms,
+        state_->performance.observe_scan_ms,
+        state_->performance.observe_scan_ema_ms
+    );
+    record_timing(
+        groups_ms,
+        state_->performance.observe_groups_ms,
+        state_->performance.observe_groups_ema_ms
+    );
     record_timing(
         elapsed_ms,
         state_->performance.observe_ms,

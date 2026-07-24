@@ -171,6 +171,18 @@ const char* overlay_temporal_name(OverlayTemporalMode mode) noexcept {
     return "stable";
 }
 
+const char* entity_render_backend_name(EntityRenderBackend mode) noexcept {
+    switch (mode) {
+    case EntityRenderBackend::Auto:
+        return "auto";
+    case EntityRenderBackend::CpuBatch:
+        return "cpu";
+    case EntityRenderBackend::GpuInstanced:
+        return "gpu";
+    }
+    return "auto";
+}
+
 const char* action_filter_name(ActionFilterMode mode) noexcept {
     switch (mode) {
     case ActionFilterMode::All:
@@ -252,8 +264,11 @@ WorldRenderer::WorldRenderer()
     : state_(std::make_unique<RendererState>()) {}
 
 WorldRenderer::~WorldRenderer() {
-    if (state_ != nullptr && state_->environment.heatmap.id != 0) {
-        UnloadTexture(state_->environment.heatmap);
+    if (state_ != nullptr) {
+        unload_gpu_agent_renderer(state_->gpu_agents);
+        if (state_->environment.heatmap.id != 0 && IsWindowReady()) {
+            UnloadTexture(state_->environment.heatmap);
+        }
     }
 }
 
@@ -264,7 +279,8 @@ void WorldRenderer::reset_stream_state() {
     std::uint64_t next_epoch = 1;
     if (state_ != nullptr) {
         next_epoch = state_->stream_epoch + 1;
-        if (state_->environment.heatmap.id != 0) {
+        unload_gpu_agent_renderer(state_->gpu_agents);
+        if (state_->environment.heatmap.id != 0 && IsWindowReady()) {
             UnloadTexture(state_->environment.heatmap);
         }
     }

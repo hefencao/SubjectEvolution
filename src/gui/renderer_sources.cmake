@@ -1,4 +1,4 @@
-# v14 renderer implementation modules.
+# Current renderer implementation modules (v19).
 # Include this file after the eco_game_runtime target is created:
 #   include("${CMAKE_CURRENT_LIST_DIR}/renderer_sources.cmake")
 #   target_sources(eco_game_runtime PRIVATE ${ECO_RENDERER_MODULE_SOURCES})
@@ -10,4 +10,5 @@ set(ECO_RENDERER_MODULE_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/src/renderer_observation.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/renderer_groups.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/renderer_draw.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/src/renderer_gpu.cpp"
 )

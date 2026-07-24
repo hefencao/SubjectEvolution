@@ -33,6 +33,7 @@ public:
     void publish(eco::Frame& working) {
         std::lock_guard lock(mutex_);
         std::swap(pending_, working);
+        latest_tick_.store(pending_.tick, std::memory_order_relaxed);
         has_pending_ = true;
     }
 
@@ -48,10 +49,15 @@ public:
         return true;
     }
 
+    [[nodiscard]] std::uint64_t latest_tick() const noexcept {
+        return latest_tick_.load(std::memory_order_relaxed);
+    }
+
 private:
     std::mutex mutex_;
     eco::Frame pending_;
     bool has_pending_ = false;
+    std::atomic<std::uint64_t> latest_tick_{0};
 };
 
 struct LaunchRequest {
@@ -701,6 +707,20 @@ eco::OverlayTemporalMode next_overlay_temporal(
     return eco::OverlayTemporalMode::Stable;
 }
 
+eco::EntityRenderBackend next_entity_backend(
+    eco::EntityRenderBackend backend
+) {
+    switch (backend) {
+    case eco::EntityRenderBackend::Auto:
+        return eco::EntityRenderBackend::GpuInstanced;
+    case eco::EntityRenderBackend::GpuInstanced:
+        return eco::EntityRenderBackend::CpuBatch;
+    case eco::EntityRenderBackend::CpuBatch:
+        return eco::EntityRenderBackend::Auto;
+    }
+    return eco::EntityRenderBackend::Auto;
+}
+
 
 void draw_sparkline(
     const char* label,
@@ -808,6 +828,8 @@ void draw_panel(
     const Camera2D& camera,
     bool show_social,
     bool follow_selected,
+    bool view_paused,
+    std::uint64_t live_tick,
     const std::vector<eco::SocialNeighbor>& selected_neighbors,
     const std::string& reader_error
 ) {
@@ -828,7 +850,6 @@ void draw_panel(
     const eco::FrameDiagnostics& diagnostics = renderer.diagnostics();
     const eco::SocialStats& stats = social.stats();
     const eco::RenderPerformance& performance = renderer.performance();
-    const eco::OverlayUsage& overlay_usage = renderer.overlay_usage();
 
     DrawText(
         TextFormat("Tick: %llu", static_cast<unsigned long long>(frame.tick)),
@@ -836,12 +857,17 @@ void draw_panel(
     );
     DrawText(
         TextFormat(
-            "Entities: %u  FPS: %d  Zoom: %.2f",
+            view_paused
+                ? "Entities: %u  FPS: %d  Zoom: %.2f  HOLD +%llu"
+                : "Entities: %u  FPS: %d  Zoom: %.2f",
             static_cast<unsigned int>(frame.entities.size()),
             GetFPS(),
-            camera.zoom
+            camera.zoom,
+            static_cast<unsigned long long>(
+                live_tick > frame.tick ? live_tick - frame.tick : 0U
+            )
         ),
-        26, 49, 17, RAYWHITE
+        26, 49, 17, view_paused ? ORANGE : RAYWHITE
     );
     DrawText(
         TextFormat(
@@ -864,17 +890,17 @@ void draw_panel(
     );
     DrawText(
         TextFormat(
-            "Preset %s | B %s | A %s | Y %s | Q %s",
+            "Preset %s | B %s | A %s | Y %s | U %s",
             observation_preset_name(preset),
             eco::behavior_overlay_name(options.behavior_overlay),
             eco::action_filter_name(options.action_filter),
             eco::overlay_temporal_name(options.overlay_temporal),
-            options.focus_selected_group ? "focus" : "all"
+            eco::entity_render_backend_name(options.entity_backend)
         ),
         26, 119, 13, GRAY
     );
     DrawText(
-        "F1-6 presets | A action | Y time | E view | T env | [ ] group",
+        "F1-6 presets | Space hold | N sample | U render | Q focus",
         26, 139, 13, GRAY
     );
 
@@ -1141,13 +1167,14 @@ void draw_panel(
     );
     DrawText(
         TextFormat(
-            "render O/H/D %.2f/%.2f/%.2fms  overlays A%u G%u X%u",
+            "render O %.1f H%.1f D%.1f | %s %u U%.2f S%.2f",
             performance.observe_ema_ms,
             performance.heatmap_ema_ms,
             performance.draw_ema_ms,
-            static_cast<unsigned int>(overlay_usage.agent_markers),
-            static_cast<unsigned int>(overlay_usage.group_markers),
-            static_cast<unsigned int>(overlay_usage.action_glyphs)
+            performance.agent_gpu_active ? "GPU" : "CPU",
+            static_cast<unsigned int>(performance.agent_instances),
+            performance.agent_upload_ema_ms,
+            performance.agent_draw_ema_ms
         ),
         26, 527, 12, Color{150, 190, 210, 255}
     );
@@ -1326,6 +1353,7 @@ int main(int argc, char** argv) {
     apply_observation_preset(observation_preset, options);
     bool show_social = true;
     bool follow_selected = false;
+    bool view_paused = false;
     bool camera_initialized = false;
     bool heatmap_dirty = false;
 
@@ -1347,7 +1375,12 @@ int main(int argc, char** argv) {
             update_camera_offset(camera, viewport);
         }
 
-        const bool received = exchange.consume(current);
+        if (IsKeyPressed(KEY_SPACE)) {
+            view_paused = !view_paused;
+        }
+        const bool sample_latest = view_paused && IsKeyPressed(KEY_N);
+        const bool received = (!view_paused || sample_latest) &&
+            exchange.consume(current);
 
         if (received) {
             renderer.observe_frame(current);
@@ -1546,6 +1579,11 @@ int main(int argc, char** argv) {
             observation_preset = ObservationPreset::Custom;
         }
 
+        if (IsKeyPressed(KEY_U)) {
+            options.entity_backend = next_entity_backend(options.entity_backend);
+            observation_preset = ObservationPreset::Custom;
+        }
+
         if (IsKeyPressed(KEY_ONE)) {
             observation_preset = ObservationPreset::Custom;
             options.resource_channel = 0;
@@ -1705,6 +1743,29 @@ int main(int argc, char** argv) {
         EndMode2D();
         EndScissorMode();
 
+        if (view_paused) {
+            const std::uint64_t live_tick = exchange.latest_tick();
+            DrawRectangle(
+                static_cast<int>(viewport.x + viewport.width - 194.0F),
+                static_cast<int>(viewport.y + 12.0F),
+                178,
+                30,
+                Color{35, 20, 8, 228}
+            );
+            DrawText(
+                TextFormat(
+                    "VIEW HOLD  +%llu  [N sample]",
+                    static_cast<unsigned long long>(
+                        live_tick > current.tick ? live_tick - current.tick : 0U
+                    )
+                ),
+                static_cast<int>(viewport.x + viewport.width - 186.0F),
+                static_cast<int>(viewport.y + 20.0F),
+                12,
+                ORANGE
+            );
+        }
+
         DrawRectangle(
             0,
             0,
@@ -1731,6 +1792,8 @@ int main(int argc, char** argv) {
             camera,
             show_social,
             follow_selected,
+            view_paused,
+            exchange.latest_tick(),
             selected_neighbors,
             error_copy
         );

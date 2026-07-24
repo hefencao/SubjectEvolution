@@ -26,6 +26,12 @@ void WorldRenderer::draw(
 ) const {
     const auto timing_start = std::chrono::steady_clock::now();
     state_->overlay_usage = OverlayUsage{};
+    state_->performance.agent_instances = 0;
+    state_->performance.agent_gpu_active = false;
+    state_->performance.agent_gpu_available = state_->gpu_agents.available;
+    state_->performance.agent_gpu_capacity = state_->gpu_agents.capacity;
+    state_->performance.agent_upload_ms = 0.0;
+    state_->performance.agent_draw_ms = 0.0;
 
     if (state_->environment.heatmap.id == 0) {
         record_timing(
@@ -619,96 +625,145 @@ void WorldRenderer::draw(
             std::clamp(54.0F + 191.0F * detail.agent_weight, 0.0F, 245.0F)
         );
 
-        const SolidQuadBatch outline_batch = begin_solid_quad_batch();
-        for (const EntitySample* entity : render_entities) {
-            emit_solid_quad(
-                outline_batch,
-                entity->x - outline_radius,
-                entity->y - outline_radius,
-                entity->x + outline_radius,
-                entity->y + outline_radius,
-                Color{1, 5, 7, outline_alpha}
-            );
-        }
-        end_solid_quad_batch();
+        const float core_radius_pixels = detail.micro_weight > 0.16F
+            ? lerp_value(0.28F, 0.82F, detail.micro_weight)
+            : 0.0F;
 
-        const SolidQuadBatch body_batch = begin_solid_quad_batch();
-        for (const EntitySample* entity : render_entities) {
-            const auto visual_key_iterator =
-                state_->groups.visual_keys.find(entity->group_id);
-            const std::uint64_t visual_key = visual_key_iterator !=
-                state_->groups.visual_keys.end()
-                    ? visual_key_iterator->second
-                    : entity->group_id;
-            Color color = color_for_entity_visual(
-                *entity,
-                frame.layout.max_energy,
-                visual_key
-            );
-            color.a = static_cast<unsigned char>(std::min<int>(color.a, body_alpha));
-            if (options.focus_selected_group && selected_group_id != 0 &&
-                entity->group_id != selected_group_id &&
-                entity->entity_id != options.selected_entity_id) {
-                color.a = static_cast<unsigned char>(
-                    std::min<int>(color.a, 10 + static_cast<int>(28.0F * detail.micro_weight))
-                );
-            }
-            if (options.action_filter != ActionFilterMode::All &&
-                entity->entity_id != options.selected_entity_id &&
-                !action_matches_filter(static_cast<Action>(entity->action), options.action_filter)) {
-                color.a = static_cast<unsigned char>(
-                    std::min<int>(color.a, 10 + static_cast<int>(24.0F * detail.agent_weight))
-                );
-            }
+        const bool gpu_markers_drawn = draw_gpu_agent_markers(
+            *state_,
+            frame,
+            camera,
+            detail,
+            options,
+            selected_group_id,
+            render_entities,
+            body_radius_pixels,
+            outline_radius_pixels,
+            core_radius_pixels,
+            body_alpha
+        );
 
-            // Body color always represents group identity. Actions use
-            // shape-coded overlays, so harvest no longer disappears into the
-            // green resource palette and group patterns remain readable.
-            emit_solid_quad(
-                body_batch,
-                entity->x - body_radius,
-                entity->y - body_radius,
-                entity->x + body_radius,
-                entity->y + body_radius,
-                color
+        if (!gpu_markers_drawn) {
+            const auto agent_draw_start = std::chrono::steady_clock::now();
+            state_->performance.agent_gpu_active = false;
+            state_->performance.agent_instances = render_entities.size();
+            state_->performance.agent_gpu_capacity = state_->gpu_agents.capacity;
+            state_->performance.agent_gpu_available = state_->gpu_agents.available;
+            record_timing(
+                0.0,
+                state_->performance.agent_upload_ms,
+                state_->performance.agent_upload_ema_ms
             );
-        }
-        end_solid_quad_batch();
 
-        if (detail.micro_weight > 0.16F) {
-            const float core_radius = lerp_value(
-                0.28F,
-                0.82F,
-                detail.micro_weight
-            ) * inverse_zoom;
-            const unsigned char core_alpha = static_cast<unsigned char>(
-                210.0F * detail.micro_weight
-            );
-            const SolidQuadBatch core_batch = begin_solid_quad_batch();
+            const SolidQuadBatch outline_batch = begin_solid_quad_batch();
             for (const EntitySample* entity : render_entities) {
-                unsigned char alpha = core_alpha;
+                emit_solid_quad(
+                    outline_batch,
+                    entity->x - outline_radius,
+                    entity->y - outline_radius,
+                    entity->x + outline_radius,
+                    entity->y + outline_radius,
+                    Color{1, 5, 7, outline_alpha}
+                );
+            }
+            end_solid_quad_batch();
+
+            const SolidQuadBatch body_batch = begin_solid_quad_batch();
+            for (const EntitySample* entity : render_entities) {
+                const auto visual_key_iterator =
+                    state_->groups.visual_keys.find(entity->group_id);
+                const std::uint64_t visual_key = visual_key_iterator !=
+                    state_->groups.visual_keys.end()
+                        ? visual_key_iterator->second
+                        : entity->group_id;
+                Color color = color_for_entity_visual(
+                    *entity,
+                    frame.layout.max_energy,
+                    visual_key
+                );
+                color.a = static_cast<unsigned char>(std::min<int>(color.a, body_alpha));
                 if (options.focus_selected_group && selected_group_id != 0 &&
                     entity->group_id != selected_group_id &&
                     entity->entity_id != options.selected_entity_id) {
-                    alpha = static_cast<unsigned char>(
-                        std::min<int>(alpha, 6 + static_cast<int>(12.0F * detail.micro_weight))
+                    color.a = static_cast<unsigned char>(
+                        std::min<int>(
+                            color.a,
+                            10 + static_cast<int>(28.0F * detail.micro_weight)
+                        )
                     );
                 }
                 if (options.action_filter != ActionFilterMode::All &&
                     entity->entity_id != options.selected_entity_id &&
-                    !action_matches_filter(static_cast<Action>(entity->action), options.action_filter)) {
-                    alpha = static_cast<unsigned char>(std::min<int>(alpha, 8));
+                    !action_matches_filter(
+                        static_cast<Action>(entity->action),
+                        options.action_filter
+                    )) {
+                    color.a = static_cast<unsigned char>(
+                        std::min<int>(
+                            color.a,
+                            10 + static_cast<int>(24.0F * detail.agent_weight)
+                        )
+                    );
                 }
+
                 emit_solid_quad(
-                    core_batch,
-                    entity->x - core_radius,
-                    entity->y - core_radius,
-                    entity->x + core_radius,
-                    entity->y + core_radius,
-                    Color{242, 250, 255, alpha}
+                    body_batch,
+                    entity->x - body_radius,
+                    entity->y - body_radius,
+                    entity->x + body_radius,
+                    entity->y + body_radius,
+                    color
                 );
             }
             end_solid_quad_batch();
+
+            if (detail.micro_weight > 0.16F) {
+                const float core_radius = core_radius_pixels * inverse_zoom;
+                const unsigned char core_alpha = static_cast<unsigned char>(
+                    210.0F * detail.micro_weight
+                );
+                const SolidQuadBatch core_batch = begin_solid_quad_batch();
+                for (const EntitySample* entity : render_entities) {
+                    unsigned char alpha = core_alpha;
+                    if (options.focus_selected_group && selected_group_id != 0 &&
+                        entity->group_id != selected_group_id &&
+                        entity->entity_id != options.selected_entity_id) {
+                        alpha = static_cast<unsigned char>(
+                            std::min<int>(
+                                alpha,
+                                6 + static_cast<int>(12.0F * detail.micro_weight)
+                            )
+                        );
+                    }
+                    if (options.action_filter != ActionFilterMode::All &&
+                        entity->entity_id != options.selected_entity_id &&
+                        !action_matches_filter(
+                            static_cast<Action>(entity->action),
+                            options.action_filter
+                        )) {
+                        alpha = static_cast<unsigned char>(std::min<int>(alpha, 8));
+                    }
+                    emit_solid_quad(
+                        core_batch,
+                        entity->x - core_radius,
+                        entity->y - core_radius,
+                        entity->x + core_radius,
+                        entity->y + core_radius,
+                        Color{242, 250, 255, alpha}
+                    );
+                }
+                end_solid_quad_batch();
+            }
+
+            const auto agent_draw_end = std::chrono::steady_clock::now();
+            const double agent_draw_ms = std::chrono::duration<double, std::milli>(
+                agent_draw_end - agent_draw_start
+            ).count();
+            record_timing(
+                agent_draw_ms,
+                state_->performance.agent_draw_ms,
+                state_->performance.agent_draw_ema_ms
+            );
         }
 
         const float individual_action_weight = behavior.actions *
