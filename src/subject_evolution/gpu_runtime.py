@@ -24,6 +24,7 @@ from .gpu_environment import DeviceEnvironment, DeviceInformationField
 from .information import InformationObservation, InformationSystem, SignalEmissionPlan
 from .intents import ActionIntentBatch
 from .policy import Action, ParametricPolicy, PolicyDecision
+from .reductions import stable_segmented_sum
 from .spatial import SpatialIndex
 
 
@@ -474,15 +475,27 @@ class HybridGpuRuntime:
         host_info = InformationObservation(
             signals=self._download(device_info.signals).astype(np.float32, copy=False),
             signal_mask=self._download(device_info.signal_mask).astype(bool, copy=False),
-            signal_age=np.empty((active_result.size, 3), dtype=np.float32),
+            signal_age=(
+                self._download(device_info.signal_age).astype(np.float32, copy=False)
+                if retain_policy_diagnostics
+                else np.empty((active_result.size, 3), dtype=np.float32)
+            ),
             messages=np.empty((active_result.size, 0, 3), dtype=np.float32),
             message_mask=np.empty((active_result.size, 0), dtype=bool),
             message_age=np.empty((active_result.size, 0), dtype=np.uint32),
             message_confidence=np.empty((active_result.size, 0), dtype=np.float32),
             message_source_id=np.empty((active_result.size, 0), dtype=np.uint64),
             message_corruption=np.empty((active_result.size, 0), dtype=np.uint8),
-            partner_energy=np.empty((active_result.size, 0), dtype=np.float32),
-            partner_group_match=np.empty((active_result.size, 0), dtype=np.float32),
+            partner_energy=(
+                self._download(device_info.partner_energy).astype(np.float32, copy=False)
+                if retain_policy_diagnostics
+                else np.empty((active_result.size, 0), dtype=np.float32)
+            ),
+            partner_group_match=(
+                self._download(device_info.partner_group_match).astype(np.float32, copy=False)
+                if retain_policy_diagnostics
+                else np.empty((active_result.size, 0), dtype=np.float32)
+            ),
             partner_mask=self._download(device_info.partner_mask).astype(bool, copy=False),
             uncertainty=self._download(device_info.uncertainty).astype(np.float32, copy=False),
         )
@@ -582,26 +595,84 @@ class HybridGpuRuntime:
         )
 
     def commit_harvest(self, cell_ids: np.ndarray, gathered: np.ndarray) -> None:
-        self.environment.commit_harvest(
-            self._upload(cell_ids, dtype=self.backend.xp.int32),
-            self._upload(gathered, dtype=self.backend.xp.float32),
+        """Commit harvested resources with CPU-reference segment totals.
+
+        Harvest amounts are produced on the host-side resolution boundary.
+        Reducing them again with CuPy ``reduceat`` can use a different FP32
+        tree than NumPy and make persistent resource state diverge before any
+        action differs.  Reduce each channel with the CPU reference and upload
+        only the unique affected cells.
+        """
+        cells = np.asarray(cell_ids)
+        amounts = np.asarray(gathered, dtype=np.float32)
+        if amounts.ndim != 2 or amounts.shape != (cells.size, self.environment.RESOURCE_CHANNELS):
+            raise ValueError(
+                "gathered must have shape (len(cell_ids), RESOURCE_CHANNELS)"
+            )
+        if cells.size == 0:
+            return
+        cell_count = self.cfg.world.grid_x * self.cfg.world.grid_y
+        xp = self.backend.xp
+        flat = self.environment.resources.reshape(
+            self.environment.RESOURCE_CHANNELS, -1
         )
+        for channel in range(self.environment.RESOURCE_CHANNELS):
+            total_taken = stable_segmented_sum(
+                cells, amounts[:, channel], cell_count, dtype=np.float32
+            )
+            occupied = np.flatnonzero(total_taken != 0.0).astype(
+                np.int32, copy=False
+            )
+            if occupied.size == 0:
+                continue
+            device_cells = self._upload(occupied, dtype=xp.int32)
+            device_totals = self._upload(
+                total_taken[occupied], dtype=xp.float32
+            )
+            flat[channel, device_cells] = xp.maximum(
+                flat[channel, device_cells] - device_totals, xp.float32(0.0)
+            ).astype(xp.float32)
+
+    def _emit_reference_batch(
+        self, channel: int, cell_ids: np.ndarray, strengths: np.ndarray
+    ) -> None:
+        """Commit one sparse signal batch with CPU-reference FP32 reduction.
+
+        NumPy and CuPy ``ufunc.reduceat`` are deterministic within each
+        backend, but they do not promise the same FP32 reduction tree.  Signal
+        source values are persistent world state, so a few ulps here compound
+        through propagation and can eventually change categorical actions,
+        births, or deaths.  The plan already resides on the host; reduce it
+        with the authoritative NumPy implementation, then upload only the
+        unique non-zero cell totals.  Device indices are unique, so the final
+        assignment has no scatter race.
+        """
+        if not 0 <= channel < self.information_field.CHANNELS:
+            raise ValueError(f"invalid signal channel {channel}")
+        cells = np.asarray(cell_ids)
+        values = np.asarray(strengths, dtype=np.float32)
+        cell_count = self.cfg.world.grid_x * self.cfg.world.grid_y
+        contribution = stable_segmented_sum(
+            cells, values, cell_count, dtype=np.float32
+        )
+        occupied = np.flatnonzero(contribution != 0.0).astype(np.int32, copy=False)
+        if occupied.size == 0:
+            return
+        xp = self.backend.xp
+        device_cells = self._upload(occupied, dtype=xp.int32)
+        device_values = self._upload(contribution[occupied], dtype=xp.float32)
+        flat = self.information_field.source[channel].reshape(-1)
+        # Explicit read/add/write mirrors NumPy's ``flat += contribution`` for
+        # the only cells whose value can change.  ``device_cells`` is unique.
+        flat[device_cells] = (flat[device_cells] + device_values).astype(xp.float32)
 
     def emit(self, channel: int, cell_ids: np.ndarray, strengths: np.ndarray) -> None:
-        self.information_field.emit(
-            channel,
-            self._upload(cell_ids, dtype=self.backend.xp.int32),
-            self._upload(strengths, dtype=self.backend.xp.float32),
-        )
+        self._emit_reference_batch(channel, cell_ids, strengths)
 
     def emit_plan(self, plan: SignalEmissionPlan) -> None:
-        """Transfer only due channel batches across the explicit GPU boundary."""
+        """Commit due signal batches using the CPU-reference reduction order."""
         for batch in plan.batches:
-            self.information_field.emit(
-                batch.channel,
-                self._upload(batch.cell_ids, dtype=self.backend.xp.int32),
-                self._upload(batch.strengths, dtype=self.backend.xp.float32),
-            )
+            self._emit_reference_batch(batch.channel, batch.cell_ids, batch.strengths)
 
     def hazard_for_cells(self, cell_ids: np.ndarray) -> np.ndarray:
         cells = self._upload(cell_ids, dtype=self.backend.xp.int32)

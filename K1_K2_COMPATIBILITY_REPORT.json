@@ -1,0 +1,30 @@
+{
+  "old_version": "0.5.0",
+  "new_version": "0.6.0",
+  "metrics_common_non_timing_equal": true,
+  "common_metric_count": 104,
+  "checkpoints": {
+    "25": {
+      "common_array_count": 29,
+      "common_arrays_equal": true,
+      "old_only": [],
+      "new_only": [
+        "knowledge_copy_acquisition_kind",
+        "knowledge_copy_outcome_m2",
+        "knowledge_copy_outcome_mean"
+      ]
+    },
+    "50": {
+      "common_array_count": 29,
+      "common_arrays_equal": true,
+      "old_only": [],
+      "new_only": [
+        "knowledge_copy_acquisition_kind",
+        "knowledge_copy_outcome_m2",
+        "knowledge_copy_outcome_mean"
+      ]
+    }
+  },
+  "knowledge_events_equal": true,
+  "knowledge_transfers_equal": true
+}

@@ -1,15 +1,15 @@
-"""Dynamic, costly knowledge copies for the K1 architecture stage.
+"""Dynamic, costly knowledge copies and local consequence learning.
 
-K1 deliberately does not feed knowledge into policy logits.  It establishes
-immutable content records, independently degradable holder copies, explicit
-transfer plans, capacity arbitration, and auditable physical costs.  Later
-stages may consume the published observation plan through a new policy schema;
-this module does not alter ``inherited-linear-policy-v1``.
+K1 establishes immutable content records, independently degradable holder
+copies, explicit transfer plans, capacity arbitration, and auditable physical
+costs.  K2 adds current-tick local context-action-outcome statistics and local
+verification.  Neither stage feeds knowledge into policy logits or alters
+``inherited-linear-policy-v1``.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import copy
 import csv
 import json
@@ -23,6 +23,58 @@ from .random_api import RandomContext, Stream, bernoulli, uniform01
 
 
 OUTCOME_WIDTH = 5
+OUTCOME_ENERGY = 0
+OUTCOME_INTEGRITY = 1
+OUTCOME_MATERIAL = 2
+OUTCOME_INFORMATION = 3
+OUTCOME_REPRODUCTION_OPPORTUNITY = 4
+
+OUTCOME_STATUS_FAILED = 0
+OUTCOME_STATUS_SUCCESS = 1
+OUTCOME_STATUS_PARTIAL = 2
+
+ACQUISITION_SEED = 0
+ACQUISITION_PRIVATE_EXPERIENCE = 1
+ACQUISITION_TRANSFER = 2
+
+
+def encode_local_context(
+    resource: np.ndarray,
+    hazard: np.ndarray,
+    energy: np.ndarray,
+    integrity: np.ndarray,
+    grouped: np.ndarray,
+    *,
+    max_energy: float,
+) -> np.ndarray:
+    """Encode a small local observation into ``local-context-v1`` keys.
+
+    The bins are deliberately coarse and use only the carrier's current local
+    observation.  No future state, global fitness, or population statistic is
+    available to this encoder.
+    """
+    resource = np.asarray(resource, dtype=np.float32)
+    hazard = np.asarray(hazard, dtype=np.float32)
+    energy = np.asarray(energy, dtype=np.float32)
+    integrity = np.asarray(integrity, dtype=np.float32)
+    grouped = np.asarray(grouped, dtype=bool)
+    shape = resource.shape
+    if any(value.shape != shape for value in (hazard, energy, integrity, grouped)):
+        raise ValueError("local knowledge context inputs must align")
+    resource_bin = np.where(resource < 0.05, 0, np.where(resource < 0.5, 1, 2))
+    hazard_bin = np.where(hazard < 0.25, 0, np.where(hazard < 0.6, 1, 2))
+    energy_fraction = energy / max(float(max_energy), 1e-12)
+    energy_bin = np.where(energy_fraction < 0.35, 0, np.where(energy_fraction < 0.7, 1, 2))
+    integrity_bin = np.where(integrity < 0.5, 0, np.where(integrity < 0.85, 1, 2))
+    keys = (
+        1
+        + resource_bin
+        + 3 * hazard_bin
+        + 9 * energy_bin
+        + 27 * integrity_bin
+        + 81 * grouped.astype(np.int16)
+    )
+    return keys.astype(np.uint64, copy=False)
 
 
 def _readonly(value: np.ndarray, dtype: Any | None = None) -> np.ndarray:
@@ -71,6 +123,74 @@ class KnowledgeObservationPlan:
 
 
 @dataclass(frozen=True)
+class KnowledgeOutcomePlan:
+    """Immutable local action consequence records for one completed commit.
+
+    Outcome coordinates are ordered as energy, integrity, material/resource,
+    information, and reproduction opportunity.  The plan contains no scalar
+    reward and is generated only from the current tick's observation and
+    committed physical state.
+    """
+
+    tick: int
+    carrier_indices: np.ndarray
+    entity_ids: np.ndarray
+    holder_subject_ids: np.ndarray
+    context_keys: np.ndarray
+    action_ids: np.ndarray
+    statuses: np.ndarray
+    failure_reasons: np.ndarray
+    outcome_vectors: np.ndarray
+
+    @classmethod
+    def empty(cls, tick: int = 0) -> "KnowledgeOutcomePlan":
+        return cls(
+            tick=int(tick),
+            carrier_indices=np.empty(0, dtype=np.int32),
+            entity_ids=np.empty(0, dtype=np.uint64),
+            holder_subject_ids=np.empty(0, dtype=np.uint64),
+            context_keys=np.empty(0, dtype=np.uint64),
+            action_ids=np.empty(0, dtype=np.int16),
+            statuses=np.empty(0, dtype=np.uint8),
+            failure_reasons=np.empty(0, dtype=np.uint8),
+            outcome_vectors=np.empty((0, OUTCOME_WIDTH), dtype=np.float32),
+        )
+
+    @property
+    def size(self) -> int:
+        return int(self.entity_ids.size)
+
+    def validate(self, entity_capacity: int) -> None:
+        count = self.size
+        vectors = (
+            self.carrier_indices,
+            self.entity_ids,
+            self.holder_subject_ids,
+            self.context_keys,
+            self.action_ids,
+            self.statuses,
+            self.failure_reasons,
+        )
+        if any(np.asarray(value).shape != (count,) for value in vectors):
+            raise ValueError("knowledge outcome plan vectors must align")
+        if np.asarray(self.outcome_vectors).shape != (count, OUTCOME_WIDTH):
+            raise ValueError("knowledge outcome vectors must have width five")
+        if self.tick < 0:
+            raise ValueError("knowledge outcome tick must be non-negative")
+        if count and (
+            np.any(self.carrier_indices < 0)
+            or np.any(self.carrier_indices >= entity_capacity)
+            or np.any(self.entity_ids == 0)
+            or np.any(self.holder_subject_ids == 0)
+            or np.any(self.context_keys == 0)
+            or np.any(self.action_ids < 0)
+            or np.any(self.statuses > OUTCOME_STATUS_PARTIAL)
+            or np.any(~np.isfinite(self.outcome_vectors))
+        ):
+            raise ValueError("knowledge outcome plan contains invalid values")
+
+
+@dataclass(frozen=True)
 class KnowledgeTransferPlan:
     """Explicit transfer attempts produced before any knowledge state mutation."""
 
@@ -85,6 +205,15 @@ class KnowledgeTransferPlan:
     encoded_bytes: np.ndarray
     delivered: np.ndarray
     corrupted: np.ndarray
+    source_outcome_vectors: np.ndarray = field(
+        default_factory=lambda: np.empty((0, OUTCOME_WIDTH), dtype=np.float32)
+    )
+    source_confidences: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.float32)
+    )
+    source_sample_counts: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=np.uint32)
+    )
     attention_rejected: int = 0
 
     @classmethod
@@ -100,6 +229,9 @@ class KnowledgeTransferPlan:
             source_subject_ids=np.empty(0, dtype=np.uint64),
             source_copy_ids=np.empty(0, dtype=np.uint64),
             content_ids=np.empty(0, dtype=np.uint64),
+            source_outcome_vectors=np.empty((0, OUTCOME_WIDTH), dtype=np.float32),
+            source_confidences=np.empty(0, dtype=np.float32),
+            source_sample_counts=np.empty(0, dtype=np.uint32),
             encoded_bytes=np.empty(0, dtype=np.uint32),
             delivered=np.empty(0, dtype=bool),
             corrupted=np.empty(0, dtype=bool),
@@ -126,6 +258,17 @@ class KnowledgeTransferPlan:
         )
         if any(np.asarray(value).shape != (count,) for value in vectors):
             raise ValueError("knowledge transfer plan vectors must align")
+        legacy_source_state = (
+            np.asarray(self.source_outcome_vectors).size == 0
+            and np.asarray(self.source_confidences).size == 0
+            and np.asarray(self.source_sample_counts).size == 0
+        )
+        if not legacy_source_state and (
+            np.asarray(self.source_outcome_vectors).shape != (count, OUTCOME_WIDTH)
+            or np.asarray(self.source_confidences).shape != (count,)
+            or np.asarray(self.source_sample_counts).shape != (count,)
+        ):
+            raise ValueError("knowledge transfer source-state vectors must align")
         if self.tick < 0 or self.attention_rejected < 0:
             raise ValueError("knowledge transfer tick/attention count is invalid")
         if count and (
@@ -139,6 +282,17 @@ class KnowledgeTransferPlan:
             or np.any(self.content_ids == 0)
             or np.any(self.encoded_bytes == 0)
             or np.any(self.corrupted & ~self.delivered)
+            or (
+                not legacy_source_state
+                and (
+                    np.any(~np.isfinite(self.source_outcome_vectors))
+                    or np.any(~np.isfinite(self.source_confidences))
+                    or np.any(
+                        (self.source_confidences < 0.0)
+                        | (self.source_confidences > 1.0)
+                    )
+                )
+            )
         ):
             raise ValueError("knowledge transfer plan contains invalid values")
 
@@ -161,10 +315,29 @@ class KnowledgeStepStats:
     evicted_capacity: int = 0
     evicted_maintenance: int = 0
     removed_dead_holder: int = 0
+    learning_energy: float = 0.0
+    outcome_records: int = 0
+    outcome_success: int = 0
+    outcome_failed: int = 0
+    outcome_partial: int = 0
+    outcome_updates: int = 0
+    private_experiences_created: int = 0
+    private_experience_updates: int = 0
+    transferred_copies_verified: int = 0
+    outcome_unmatched: int = 0
+    learning_energy_rejected: int = 0
+    learning_capacity_rejected: int = 0
+    learning_match_limit_skipped: int = 0
+    confidence_decayed: int = 0
 
     @property
     def total_energy_cost(self) -> float:
-        return self.maintenance_energy + self.sender_energy + self.receiver_energy
+        return (
+            self.maintenance_energy
+            + self.sender_energy
+            + self.receiver_energy
+            + self.learning_energy
+        )
 
 
 class KnowledgeCatalog:
@@ -249,17 +422,29 @@ class KnowledgeCatalog:
         return row
 
     def create_corrupted_variant(
-        self, content_id: int, *, tick: int, source_subject_id: int, run_seed: int
+        self,
+        content_id: int,
+        *,
+        tick: int,
+        source_subject_id: int,
+        run_seed: int,
+        outcome_vector: np.ndarray | None = None,
     ) -> int:
         row = self.row(content_id)
         # Damage is explicit but does not invent a scalar utility.  One outcome
         # coordinate receives a bounded perturbation and context/action may be
-        # misclassified.  K1 still never consumes these fields in policy.
+        # misclassified.  K1/K2 still never consume these fields in policy.
         key = np.asarray([np.uint64(content_id)], dtype=np.uint64)
         ctx = RandomContext(run_seed, tick, phase=93, stream=Stream.KNOWLEDGE_DAMAGE)
         coordinate = int(uniform01(ctx, key, 0)[0] * OUTCOME_WIDTH) % OUTCOME_WIDTH
         delta = float(uniform01(ctx, key, 1)[0] * 0.5 - 0.25)
-        outcome = self.outcome_vector[row].copy()
+        outcome = (
+            self.outcome_vector[row].copy()
+            if outcome_vector is None
+            else np.asarray(outcome_vector, dtype=np.float32).copy()
+        )
+        if outcome.shape != (OUTCOME_WIDTH,) or np.any(~np.isfinite(outcome)):
+            raise ValueError("corrupted knowledge source outcome must have width five")
         outcome[coordinate] = np.float32(outcome[coordinate] + delta)
         context_key = int(self.context_key[row])
         if bool(bernoulli(ctx, key, 0.5, 2)[0]):
@@ -303,6 +488,9 @@ class KnowledgeArena:
         self.source_subject_id = np.zeros(self._capacity, dtype=np.uint64)
         self.confidence = np.zeros(self._capacity, dtype=np.float32)
         self.sample_count = np.zeros(self._capacity, dtype=np.uint32)
+        self.outcome_mean = np.zeros((self._capacity, OUTCOME_WIDTH), dtype=np.float32)
+        self.outcome_m2 = np.zeros((self._capacity, OUTCOME_WIDTH), dtype=np.float32)
+        self.acquisition_kind = np.zeros(self._capacity, dtype=np.uint8)
         self.created_tick = np.zeros(self._capacity, dtype=np.uint64)
         self.last_verified_tick = np.zeros(self._capacity, dtype=np.uint64)
         self.encoded_bytes = np.zeros(self._capacity, dtype=np.uint32)
@@ -337,6 +525,7 @@ class KnowledgeArena:
             "source_subject_id",
             "confidence",
             "sample_count",
+            "acquisition_kind",
             "created_tick",
             "last_verified_tick",
             "encoded_bytes",
@@ -344,6 +533,11 @@ class KnowledgeArena:
         ):
             value = getattr(self, name)
             expanded = np.zeros(new_capacity, dtype=value.dtype)
+            expanded[: self._size] = value[: self._size]
+            setattr(self, name, expanded)
+        for name in ("outcome_mean", "outcome_m2"):
+            value = getattr(self, name)
+            expanded = np.zeros((new_capacity, OUTCOME_WIDTH), dtype=value.dtype)
             expanded[: self._size] = value[: self._size]
             setattr(self, name, expanded)
         self._capacity = new_capacity
@@ -379,11 +573,34 @@ class KnowledgeArena:
         created_tick: int,
         last_verified_tick: int,
         encoded_bytes: int,
+        outcome_mean: np.ndarray | None = None,
+        outcome_m2: np.ndarray | None = None,
+        acquisition_kind: int = ACQUISITION_SEED,
     ) -> int:
         if holder_subject_id <= 0 or content_id <= 0 or source_subject_id <= 0:
             raise ValueError("knowledge copy subject/content IDs must be positive")
         if not 0.0 <= confidence <= 1.0 or encoded_bytes <= 0:
             raise ValueError("knowledge copy confidence/size is invalid")
+        mean = (
+            np.zeros(OUTCOME_WIDTH, dtype=np.float32)
+            if outcome_mean is None
+            else np.asarray(outcome_mean, dtype=np.float32)
+        )
+        m2 = (
+            np.zeros(OUTCOME_WIDTH, dtype=np.float32)
+            if outcome_m2 is None
+            else np.asarray(outcome_m2, dtype=np.float32)
+        )
+        if mean.shape != (OUTCOME_WIDTH,) or m2.shape != (OUTCOME_WIDTH,):
+            raise ValueError("knowledge copy outcome statistics must have width five")
+        if np.any(~np.isfinite(mean)) or np.any(~np.isfinite(m2)) or np.any(m2 < 0.0):
+            raise ValueError("knowledge copy outcome statistics are invalid")
+        if acquisition_kind not in {
+            ACQUISITION_SEED,
+            ACQUISITION_PRIVATE_EXPERIENCE,
+            ACQUISITION_TRANSFER,
+        }:
+            raise ValueError("unknown knowledge acquisition kind")
         self._ensure_capacity(self._size + 1)
         row = self._size
         copy_id = int(self.next_copy_id)
@@ -394,6 +611,9 @@ class KnowledgeArena:
         self.source_subject_id[row] = np.uint64(source_subject_id)
         self.confidence[row] = np.float32(confidence)
         self.sample_count[row] = np.uint32(sample_count)
+        self.outcome_mean[row] = mean
+        self.outcome_m2[row] = m2
+        self.acquisition_kind[row] = np.uint8(acquisition_kind)
         self.created_tick[row] = np.uint64(created_tick)
         self.last_verified_tick[row] = np.uint64(last_verified_tick)
         self.encoded_bytes[row] = np.uint32(encoded_bytes)
@@ -460,14 +680,14 @@ class KnowledgeArena:
             content_ids=_readonly(self.content_id[rows], np.uint64),
             context_keys=_readonly(catalog.context_key[catalog_rows], np.uint64),
             action_ids=_readonly(catalog.action_id[catalog_rows], np.int16),
-            outcome_vectors=_readonly(catalog.outcome_vector[catalog_rows], np.float32),
+            outcome_vectors=_readonly(self.outcome_mean[rows], np.float32),
             confidences=_readonly(self.confidence[rows], np.float32),
             sample_counts=_readonly(self.sample_count[rows], np.uint32),
             encoded_bytes=_readonly(self.encoded_bytes[rows], np.uint32),
         )
 
 class KnowledgeSystem:
-    """K1 knowledge lifecycle, transfer planning, costs, and metrics."""
+    """K1/K2 knowledge lifecycle, local learning, costs, and metrics."""
 
     def __init__(
         self,
@@ -482,12 +702,16 @@ class KnowledgeSystem:
         self.catalog = KnowledgeCatalog()
         self.arena = KnowledgeArena()
         self.last_transfer_plan = KnowledgeTransferPlan.empty(0)
+        self.last_outcome_plan = KnowledgeOutcomePlan.empty(0)
         self.observation = KnowledgeObservationPlan.empty(0)
         self.totals = KnowledgeStepStats()
         self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
         self._event_file = None
         self._transfer_file = None
         self._transfer_writer = None
+        self._outcome_file = None
+        self._outcome_writer = None
         if self.kcfg.enabled:
             self._event_file = (self.output_dir / "knowledge_events.jsonl").open(
                 "w", encoding="utf-8"
@@ -505,6 +729,23 @@ class KnowledgeSystem:
                     ],
                 )
                 self._transfer_writer.writeheader()
+            if self.kcfg.log_outcome_updates:
+                self._outcome_file = (
+                    self.output_dir / "knowledge_outcome_updates.csv"
+                ).open("w", newline="", encoding="utf-8")
+                self._outcome_writer = csv.DictWriter(
+                    self._outcome_file,
+                    fieldnames=[
+                        "tick", "entity_id", "holder_subject_id", "context_key",
+                        "action_id", "status", "failure_reason", "update_kind",
+                        "copy_id", "content_id", "sample_count_before",
+                        "sample_count_after", "confidence_before",
+                        "confidence_after", "energy_delta", "integrity_delta",
+                        "material_delta", "information_delta",
+                        "reproduction_opportunity_delta",
+                    ],
+                )
+                self._outcome_writer.writeheader()
             self._seed(initial_entity_ids, initial_subject_ids)
             self.observation = self.arena.publish(self.catalog, tick=0)
 
@@ -548,6 +789,8 @@ class KnowledgeSystem:
                 created_tick=0,
                 last_verified_tick=0,
                 encoded_bytes=self.kcfg.encoded_bytes_per_copy,
+                outcome_mean=self.catalog.outcome_vector[content_id - 1],
+                acquisition_kind=ACQUISITION_SEED,
             )
 
     def clone(self, output_dir: str | Path) -> "KnowledgeSystem":
@@ -557,12 +800,16 @@ class KnowledgeSystem:
         result.catalog = copy.deepcopy(self.catalog)
         result.arena = copy.deepcopy(self.arena)
         result.last_transfer_plan = copy.deepcopy(self.last_transfer_plan)
+        result.last_outcome_plan = copy.deepcopy(self.last_outcome_plan)
         result.observation = copy.deepcopy(self.observation)
         result.totals = copy.deepcopy(self.totals)
         result.output_dir = Path(output_dir)
+        result.output_dir.mkdir(parents=True, exist_ok=True)
         result._event_file = None
         result._transfer_file = None
         result._transfer_writer = None
+        result._outcome_file = None
+        result._outcome_writer = None
         if self.kcfg.enabled:
             result._event_file = (result.output_dir / "knowledge_events.jsonl").open(
                 "w", encoding="utf-8"
@@ -580,6 +827,23 @@ class KnowledgeSystem:
                     ],
                 )
                 result._transfer_writer.writeheader()
+            if self.kcfg.log_outcome_updates:
+                result._outcome_file = (
+                    result.output_dir / "knowledge_outcome_updates.csv"
+                ).open("w", newline="", encoding="utf-8")
+                result._outcome_writer = csv.DictWriter(
+                    result._outcome_file,
+                    fieldnames=[
+                        "tick", "entity_id", "holder_subject_id", "context_key",
+                        "action_id", "status", "failure_reason", "update_kind",
+                        "copy_id", "content_id", "sample_count_before",
+                        "sample_count_after", "confidence_before",
+                        "confidence_after", "energy_delta", "integrity_delta",
+                        "material_delta", "information_delta",
+                        "reproduction_opportunity_delta",
+                    ],
+                )
+                result._outcome_writer.writeheader()
         return result
 
     def _write_event(self, event: dict[str, object]) -> None:
@@ -592,12 +856,16 @@ class KnowledgeSystem:
             self._event_file.flush()
         if self._transfer_file is not None and not self._transfer_file.closed:
             self._transfer_file.flush()
+        if self._outcome_file is not None and not self._outcome_file.closed:
+            self._outcome_file.flush()
 
     def close(self) -> None:
         if self._event_file is not None and not self._event_file.closed:
             self._event_file.close()
         if self._transfer_file is not None and not self._transfer_file.closed:
             self._transfer_file.close()
+        if self._outcome_file is not None and not self._outcome_file.closed:
+            self._outcome_file.close()
 
     def _forget(self, tick: int) -> int:
         if self.kcfg.forget_probability <= 0.0 or self.arena.active_count == 0:
@@ -629,6 +897,19 @@ class KnowledgeSystem:
         if not self.kcfg.enabled:
             return stats
         stats.forgotten = self._forget(tick)
+        if (
+            self.kcfg.learning_enabled
+            and self.kcfg.confidence_decay_per_tick > 0.0
+            and self.arena.active_count
+        ):
+            rows = np.flatnonzero(self.arena.active[: self.arena.size])
+            before = self.arena.confidence[rows].copy()
+            self.arena.confidence[rows] *= np.float32(
+                1.0 - self.kcfg.confidence_decay_per_tick
+            )
+            stats.confidence_decayed = int(
+                np.count_nonzero(self.arena.confidence[rows] != before)
+            )
         active_entities = np.flatnonzero(alive)
         subject_to_entity = {
             int(primary_subject_id[index]): int(index) for index in active_entities
@@ -780,6 +1061,15 @@ class KnowledgeSystem:
             source_subject_ids=self.arena.source_subject_id[rows].astype(np.uint64, copy=True),
             source_copy_ids=self.arena.copy_id[rows].astype(np.uint64, copy=True),
             content_ids=self.arena.content_id[rows].astype(np.uint64, copy=True),
+            source_outcome_vectors=self.arena.outcome_mean[rows].astype(
+                np.float32, copy=True
+            ),
+            source_confidences=self.arena.confidence[rows].astype(
+                np.float32, copy=True
+            ),
+            source_sample_counts=self.arena.sample_count[rows].astype(
+                np.uint32, copy=True
+            ),
             encoded_bytes=self.arena.encoded_bytes[rows].astype(np.uint32, copy=True),
             delivered=delivered.astype(bool, copy=True),
             corrupted=corrupted.astype(bool, copy=True),
@@ -875,19 +1165,28 @@ class KnowledgeSystem:
             energy[receiver] = np.float32(float(energy[receiver]) - receive_cost)
             stats.receiver_energy += receive_cost
             if bool(plan.corrupted[row]):
+                transmitted_outcome = (
+                    plan.source_outcome_vectors[row]
+                    if plan.source_outcome_vectors.shape == (plan.size, OUTCOME_WIDTH)
+                    else None
+                )
                 content_id = self.catalog.create_corrupted_variant(
                     content_id,
                     tick=plan.tick,
                     source_subject_id=int(plan.sender_subject_ids[row]),
                     run_seed=self.cfg.run.seed,
+                    outcome_vector=transmitted_outcome,
                 )
                 stats.transfer_corrupted += 1
-            source_row = int(plan.source_copy_ids[row]) - 1
-            source_confidence = (
-                float(self.arena.confidence[source_row])
-                if 0 <= source_row < self.arena.confidence.size
-                else 0.5
-            )
+            if plan.source_confidences.size == plan.size:
+                source_confidence = float(plan.source_confidences[row])
+            else:
+                source_row = int(plan.source_copy_ids[row]) - 1
+                source_confidence = (
+                    float(self.arena.confidence[source_row])
+                    if 0 <= source_row < self.arena.size
+                    else 0.5
+                )
             confidence = float(
                 np.clip(
                     source_confidence * (1.0 - self.cfg.information.receiver_noise),
@@ -895,6 +1194,17 @@ class KnowledgeSystem:
                     1.0,
                 )
             )
+            if bool(plan.corrupted[row]):
+                local_outcome = self.catalog.outcome_vector[content_id - 1].copy()
+            elif plan.source_outcome_vectors.shape == (plan.size, OUTCOME_WIDTH):
+                local_outcome = plan.source_outcome_vectors[row].copy()
+            else:
+                source_row = int(plan.source_copy_ids[row]) - 1
+                local_outcome = (
+                    self.arena.outcome_mean[source_row].copy()
+                    if 0 <= source_row < self.arena.size
+                    else self.catalog.outcome_vector[content_id - 1].copy()
+                )
             self.arena.append(
                 holder_subject_id=receiver_subject,
                 content_id=content_id,
@@ -902,8 +1212,10 @@ class KnowledgeSystem:
                 confidence=confidence,
                 sample_count=0,
                 created_tick=plan.tick,
-                last_verified_tick=plan.tick,
+                last_verified_tick=(0 if self.kcfg.learning_enabled else plan.tick),
                 encoded_bytes=encoded_bytes,
+                outcome_mean=local_outcome,
+                acquisition_kind=ACQUISITION_TRANSFER,
             )
             stats.transfer_committed += 1
             record(row, "committed-corrupted" if bool(plan.corrupted[row]) else "committed")
@@ -926,6 +1238,256 @@ class KnowledgeSystem:
                     "receiver_energy": stats.receiver_energy,
                 }
             )
+        return stats
+
+    def commit_outcomes(
+        self,
+        plan: KnowledgeOutcomePlan,
+        *,
+        energy: np.ndarray,
+        alive: np.ndarray,
+    ) -> KnowledgeStepStats:
+        """Update local copy statistics from committed current-tick outcomes.
+
+        Matching and capacity rules are content-neutral.  The method never
+        chooses actions and never exposes a scalar reward; it only updates the
+        holder's local multi-dimensional consequence statistics.
+        """
+        stats = KnowledgeStepStats(
+            outcome_records=plan.size,
+            outcome_success=int(
+                np.count_nonzero(plan.statuses == OUTCOME_STATUS_SUCCESS)
+            ),
+            outcome_failed=int(
+                np.count_nonzero(plan.statuses == OUTCOME_STATUS_FAILED)
+            ),
+            outcome_partial=int(
+                np.count_nonzero(plan.statuses == OUTCOME_STATUS_PARTIAL)
+            ),
+        )
+        self.last_outcome_plan = plan
+        if not self.kcfg.enabled or not self.kcfg.learning_enabled or plan.size == 0:
+            return stats
+        plan.validate(alive.size)
+
+        # Build one canonical index for this tick.  The hot path remains SoA;
+        # no per-copy Python object graph is stored between ticks.
+        match_index: dict[tuple[int, int, int], list[int]] = {}
+        active_rows = np.flatnonzero(self.arena.active[: self.arena.size])
+        if active_rows.size:
+            content_rows = self.arena.content_id[active_rows].astype(np.int64) - 1
+            order = np.argsort(self.arena.copy_id[active_rows], kind="stable")
+            for row, content_row in zip(
+                active_rows[order], content_rows[order], strict=True
+            ):
+                if (
+                    int(self.arena.acquisition_kind[row]) == ACQUISITION_TRANSFER
+                    and int(self.arena.created_tick[row]) >= plan.tick
+                ):
+                    # A copy received during this same commit cannot validate
+                    # itself using the action that caused its receipt.
+                    continue
+                key = (
+                    int(self.arena.holder_subject_id[row]),
+                    int(self.catalog.context_key[content_row]),
+                    int(self.catalog.action_id[content_row]),
+                )
+                match_index.setdefault(key, []).append(int(row))
+
+        def record(
+            plan_row: int,
+            *,
+            update_kind: str,
+            copy_row: int,
+            sample_before: int,
+            confidence_before: float,
+        ) -> None:
+            if self._outcome_writer is None:
+                return
+            outcome = plan.outcome_vectors[plan_row]
+            self._outcome_writer.writerow(
+                {
+                    "tick": plan.tick,
+                    "entity_id": int(plan.entity_ids[plan_row]),
+                    "holder_subject_id": int(plan.holder_subject_ids[plan_row]),
+                    "context_key": int(plan.context_keys[plan_row]),
+                    "action_id": int(plan.action_ids[plan_row]),
+                    "status": int(plan.statuses[plan_row]),
+                    "failure_reason": int(plan.failure_reasons[plan_row]),
+                    "update_kind": update_kind,
+                    "copy_id": int(self.arena.copy_id[copy_row]),
+                    "content_id": int(self.arena.content_id[copy_row]),
+                    "sample_count_before": sample_before,
+                    "sample_count_after": int(self.arena.sample_count[copy_row]),
+                    "confidence_before": confidence_before,
+                    "confidence_after": float(self.arena.confidence[copy_row]),
+                    "energy_delta": float(outcome[OUTCOME_ENERGY]),
+                    "integrity_delta": float(outcome[OUTCOME_INTEGRITY]),
+                    "material_delta": float(outcome[OUTCOME_MATERIAL]),
+                    "information_delta": float(outcome[OUTCOME_INFORMATION]),
+                    "reproduction_opportunity_delta": float(
+                        outcome[OUTCOME_REPRODUCTION_OPPORTUNITY]
+                    ),
+                }
+            )
+
+        canonical = np.lexsort((plan.entity_ids, plan.holder_subject_ids))
+        encoded_bytes = int(self.kcfg.encoded_bytes_per_copy)
+        verification_cost = float(self.kcfg.verification_energy_cost)
+        for plan_row in canonical:
+            carrier = int(plan.carrier_indices[plan_row])
+            if not bool(alive[carrier]):
+                continue
+            holder = int(plan.holder_subject_ids[plan_row])
+            context = int(plan.context_keys[plan_row])
+            action = int(plan.action_ids[plan_row])
+            outcome = np.asarray(plan.outcome_vectors[plan_row], dtype=np.float32)
+            key = (holder, context, action)
+            matches = match_index.get(key, ())
+            if matches:
+                selected = list(matches[: self.kcfg.max_updates_per_outcome])
+                stats.learning_match_limit_skipped += max(
+                    len(matches) - len(selected), 0
+                )
+                for copy_row in selected:
+                    if float(energy[carrier]) + 1e-12 < verification_cost:
+                        stats.learning_energy_rejected += 1
+                        continue
+                    if verification_cost:
+                        energy[carrier] = np.float32(
+                            float(energy[carrier]) - verification_cost
+                        )
+                        stats.learning_energy += verification_cost
+                    sample_before = int(self.arena.sample_count[copy_row])
+                    confidence_before = float(self.arena.confidence[copy_row])
+                    mean_before = self.arena.outcome_mean[copy_row].copy()
+                    next_sample = sample_before + 1
+                    delta = outcome - mean_before
+                    mean_after = mean_before + delta / np.float32(next_sample)
+                    m2_after = (
+                        self.arena.outcome_m2[copy_row]
+                        + delta * (outcome - mean_after)
+                    )
+                    self.arena.outcome_mean[copy_row] = mean_after.astype(
+                        np.float32, copy=False
+                    )
+                    self.arena.outcome_m2[copy_row] = np.maximum(
+                        m2_after, 0.0
+                    ).astype(np.float32, copy=False)
+                    self.arena.sample_count[copy_row] = np.uint32(next_sample)
+                    self.arena.confidence[copy_row] = np.float32(
+                        confidence_before
+                        + self.kcfg.confidence_learning_rate
+                        * (1.0 - confidence_before)
+                    )
+                    was_unverified_transfer = (
+                        int(self.arena.acquisition_kind[copy_row])
+                        == ACQUISITION_TRANSFER
+                        and int(self.arena.last_verified_tick[copy_row]) == 0
+                    )
+                    self.arena.last_verified_tick[copy_row] = np.uint64(plan.tick)
+                    stats.outcome_updates += 1
+                    if (
+                        int(self.arena.acquisition_kind[copy_row])
+                        == ACQUISITION_PRIVATE_EXPERIENCE
+                    ):
+                        stats.private_experience_updates += 1
+                    if was_unverified_transfer:
+                        stats.transferred_copies_verified += 1
+                    record(
+                        int(plan_row),
+                        update_kind=(
+                            "verify-transfer"
+                            if was_unverified_transfer
+                            else "update-copy"
+                        ),
+                        copy_row=copy_row,
+                        sample_before=sample_before,
+                        confidence_before=confidence_before,
+                    )
+                continue
+
+            stats.outcome_unmatched += 1
+            if not self.kcfg.experience_creation_enabled:
+                continue
+            if encoded_bytes > self.kcfg.holder_capacity_bytes:
+                stats.learning_capacity_rejected += 1
+                continue
+            held_bytes = self.arena.holder_bytes(holder)
+            required = max(
+                held_bytes + encoded_bytes - self.kcfg.holder_capacity_bytes, 0
+            )
+            if required and self.kcfg.experience_creation_requires_free_capacity:
+                stats.learning_capacity_rejected += 1
+                continue
+            if required:
+                stats.evicted_capacity += self.arena.evict_oldest(holder, required)
+            if self.arena.holder_bytes(holder) + encoded_bytes > self.kcfg.holder_capacity_bytes:
+                stats.learning_capacity_rejected += 1
+                continue
+            if float(energy[carrier]) + 1e-12 < verification_cost:
+                stats.learning_energy_rejected += 1
+                continue
+            if verification_cost:
+                energy[carrier] = np.float32(
+                    float(energy[carrier]) - verification_cost
+                )
+                stats.learning_energy += verification_cost
+            content_id = self.catalog.append(
+                parent_content_id=0,
+                context_key=context,
+                action_id=action,
+                outcome_vector=outcome,
+                encoded_bytes=encoded_bytes,
+                created_tick=plan.tick,
+                source_subject_id=holder,
+            )
+            copy_id = self.arena.append(
+                holder_subject_id=holder,
+                content_id=content_id,
+                source_subject_id=holder,
+                confidence=self.kcfg.initial_experience_confidence,
+                sample_count=1,
+                created_tick=plan.tick,
+                last_verified_tick=plan.tick,
+                encoded_bytes=encoded_bytes,
+                outcome_mean=outcome,
+                acquisition_kind=ACQUISITION_PRIVATE_EXPERIENCE,
+            )
+            copy_row = copy_id - 1
+            match_index.setdefault(key, []).append(copy_row)
+            stats.outcome_updates += 1
+            stats.private_experiences_created += 1
+            record(
+                int(plan_row),
+                update_kind="create-private",
+                copy_row=copy_row,
+                sample_before=0,
+                confidence_before=0.0,
+            )
+
+        self._write_event(
+            {
+                "tick": plan.tick,
+                "type": "outcome-summary",
+                "schema": self.kcfg.outcome_schema,
+                "records": stats.outcome_records,
+                "success": stats.outcome_success,
+                "failed": stats.outcome_failed,
+                "partial": stats.outcome_partial,
+                "updates": stats.outcome_updates,
+                "private_created": stats.private_experiences_created,
+                "private_updates": stats.private_experience_updates,
+                "transferred_verified": stats.transferred_copies_verified,
+                "unmatched": stats.outcome_unmatched,
+                "energy_rejected": stats.learning_energy_rejected,
+                "capacity_rejected": stats.learning_capacity_rejected,
+                "verification_energy": stats.learning_energy,
+                "outcome_sum": np.asarray(
+                    plan.outcome_vectors, dtype=np.float64
+                ).sum(axis=0).tolist(),
+            }
+        )
         return stats
 
     def remove_dead_holders(
@@ -961,6 +1523,10 @@ class KnowledgeSystem:
         return {
             "enabled": self.kcfg.enabled,
             "schema": self.kcfg.schema,
+            "outcome_schema": (
+                self.kcfg.outcome_schema if self.kcfg.learning_enabled else None
+            ),
+            "learning_enabled": self.kcfg.learning_enabled,
             "policy_influence": False,
             "content_count": self.catalog.size,
             "variant_content_count": variants,
@@ -983,6 +1549,32 @@ class KnowledgeSystem:
             "evicted_capacity_total": self.totals.evicted_capacity,
             "evicted_maintenance_total": self.totals.evicted_maintenance,
             "removed_dead_holder_total": self.totals.removed_dead_holder,
+            "learning_energy_total": self.totals.learning_energy,
+            "outcome_records_total": self.totals.outcome_records,
+            "outcome_success_total": self.totals.outcome_success,
+            "outcome_failed_total": self.totals.outcome_failed,
+            "outcome_partial_total": self.totals.outcome_partial,
+            "outcome_updates_total": self.totals.outcome_updates,
+            "private_experiences_created_total": (
+                self.totals.private_experiences_created
+            ),
+            "private_experience_updates_total": (
+                self.totals.private_experience_updates
+            ),
+            "transferred_copies_verified_total": (
+                self.totals.transferred_copies_verified
+            ),
+            "outcome_unmatched_total": self.totals.outcome_unmatched,
+            "learning_energy_rejected_total": (
+                self.totals.learning_energy_rejected
+            ),
+            "learning_capacity_rejected_total": (
+                self.totals.learning_capacity_rejected
+            ),
+            "learning_match_limit_skipped_total": (
+                self.totals.learning_match_limit_skipped
+            ),
+            "confidence_decayed_total": self.totals.confidence_decayed,
         }
 
     def validate(self, alive: np.ndarray, primary_subject_ids: np.ndarray) -> None:
@@ -1000,6 +1592,13 @@ class KnowledgeSystem:
                 for holder in self.arena.holder_subject_id[active]
             ):
                 raise AssertionError("knowledge copy belongs to a dead holder")
+            if (
+                np.any(~np.isfinite(self.arena.outcome_mean[active]))
+                or np.any(~np.isfinite(self.arena.outcome_m2[active]))
+                or np.any(self.arena.outcome_m2[active] < 0.0)
+                or np.any((self.arena.confidence[active] < 0.0) | (self.arena.confidence[active] > 1.0))
+            ):
+                raise AssertionError("knowledge local outcome-state invariant failed")
             for holder in np.unique(self.arena.holder_subject_id[active]):
                 if self.arena.holder_bytes(int(holder)) > self.kcfg.holder_capacity_bytes:
                     raise AssertionError("knowledge holder exceeds byte capacity")
@@ -1031,6 +1630,9 @@ class KnowledgeSystem:
             "knowledge_copy_created_tick": self.arena.created_tick[active],
             "knowledge_last_verified_tick": self.arena.last_verified_tick[active],
             "knowledge_copy_encoded_bytes": self.arena.encoded_bytes[active],
+            "knowledge_copy_outcome_mean": self.arena.outcome_mean[active],
+            "knowledge_copy_outcome_m2": self.arena.outcome_m2[active],
+            "knowledge_copy_acquisition_kind": self.arena.acquisition_kind[active],
         }
 
 
@@ -1038,8 +1640,16 @@ __all__ = [
     "KnowledgeArena",
     "KnowledgeCatalog",
     "KnowledgeObservationPlan",
+    "KnowledgeOutcomePlan",
     "KnowledgeStepStats",
     "KnowledgeSystem",
     "KnowledgeTransferPlan",
+    "encode_local_context",
     "OUTCOME_WIDTH",
+    "OUTCOME_STATUS_FAILED",
+    "OUTCOME_STATUS_SUCCESS",
+    "OUTCOME_STATUS_PARTIAL",
+    "ACQUISITION_SEED",
+    "ACQUISITION_PRIVATE_EXPERIENCE",
+    "ACQUISITION_TRANSFER",
 ]

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +27,11 @@ class RunConfig:
     experiment_mode: str = "scientific"
     evolution_evaluation_period: int = 500
     validation_mode: bool = False
+    # Until accelerated multi-tick CPU/GPU parity is proven on real CUDA,
+    # scientific GPU requests use the CPU reference world semantics.  The
+    # legacy hybrid accelerator remains available only as an explicit
+    # experimental mode for parity diagnostics and profiling.
+    gpu_semantics_mode: str = "strict-reference"
 
 
 @dataclass(frozen=True)
@@ -87,7 +93,11 @@ class InformationConfig:
 
 @dataclass(frozen=True)
 class KnowledgeConfig:
-    """K1 dynamic knowledge-copy settings; disabled preserves legacy runs."""
+    """Dynamic knowledge-copy settings for K1/K2; disabled preserves legacy runs.
+
+    K2 adds local context-action-outcome statistics without changing the
+    inherited policy schema or feeding knowledge into action logits.
+    """
 
     enabled: bool = False
     schema: str = "dynamic-knowledge-k1-v1"
@@ -105,6 +115,18 @@ class KnowledgeConfig:
     forget_probability: float = 0.0
     capacity_eviction: str = "oldest-copy-v1"
     log_transfer_events: bool = False
+
+    # K2 local consequence learning.  These fields are inert when disabled.
+    learning_enabled: bool = False
+    outcome_schema: str = "local-outcome-v1"
+    experience_creation_enabled: bool = True
+    experience_creation_requires_free_capacity: bool = True
+    verification_energy_cost: float = 0.0
+    confidence_learning_rate: float = 0.25
+    confidence_decay_per_tick: float = 0.0
+    initial_experience_confidence: float = 0.25
+    max_updates_per_outcome: int = 1
+    log_outcome_updates: bool = False
 
 
 @dataclass(frozen=True)
@@ -224,6 +246,13 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("max_entities must be >= initial_entities")
     if cfg.world.grid_x <= 0 or cfg.world.grid_y <= 0:
         raise ValueError("grid dimensions must be positive")
+    if (
+        not math.isfinite(cfg.world.width)
+        or not math.isfinite(cfg.world.height)
+        or cfg.world.width <= 0.0
+        or cfg.world.height <= 0.0
+    ):
+        raise ValueError("world width and height must be finite and positive")
     if cfg.run.ticks <= 0:
         raise ValueError("ticks must be positive")
     if not isinstance(cfg.run.gpu_harvest_conflict_planner, bool):
@@ -234,6 +263,11 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("run.evolution_evaluation_period must be positive")
     if not isinstance(cfg.run.validation_mode, bool):
         raise ValueError("run.validation_mode must be a boolean")
+    if cfg.run.gpu_semantics_mode not in {"strict-reference", "hybrid-accelerated"}:
+        raise ValueError(
+            "run.gpu_semantics_mode must be one of: "
+            "'strict-reference', 'hybrid-accelerated'"
+        )
     if len(cfg.environment.resource_regeneration) != 4 or len(cfg.environment.resource_capacity) != 4:
         raise ValueError("MVP requires exactly four resource channels")
     if any(v < 0 for v in cfg.environment.resource_regeneration):
@@ -258,8 +292,14 @@ def validate_config(cfg: SimulationConfig) -> None:
 
     if not isinstance(cfg.knowledge.enabled, bool):
         raise ValueError("knowledge.enabled must be a boolean")
-    if cfg.knowledge.schema != "dynamic-knowledge-k1-v1":
-        raise ValueError("knowledge.schema must be 'dynamic-knowledge-k1-v1' for K1")
+    if cfg.knowledge.schema not in {
+        "dynamic-knowledge-k1-v1",
+        "dynamic-knowledge-k2-v1",
+    }:
+        raise ValueError(
+            "knowledge.schema must be 'dynamic-knowledge-k1-v1' or "
+            "'dynamic-knowledge-k2-v1'"
+        )
     if cfg.knowledge.initial_content_count < 0:
         raise ValueError("knowledge.initial_content_count cannot be negative")
     _probability("knowledge.initial_holders_fraction", cfg.knowledge.initial_holders_fraction)
@@ -287,6 +327,40 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("knowledge.capacity_eviction must be 'oldest-copy-v1'")
     if not isinstance(cfg.knowledge.log_transfer_events, bool):
         raise ValueError("knowledge.log_transfer_events must be a boolean")
+    if not isinstance(cfg.knowledge.learning_enabled, bool):
+        raise ValueError("knowledge.learning_enabled must be a boolean")
+    if cfg.knowledge.outcome_schema != "local-outcome-v1":
+        raise ValueError("knowledge.outcome_schema must be 'local-outcome-v1'")
+    if not isinstance(cfg.knowledge.experience_creation_enabled, bool):
+        raise ValueError("knowledge.experience_creation_enabled must be a boolean")
+    if not isinstance(cfg.knowledge.experience_creation_requires_free_capacity, bool):
+        raise ValueError(
+            "knowledge.experience_creation_requires_free_capacity must be a boolean"
+        )
+    if cfg.knowledge.verification_energy_cost < 0.0:
+        raise ValueError("knowledge.verification_energy_cost cannot be negative")
+    _probability(
+        "knowledge.confidence_learning_rate",
+        cfg.knowledge.confidence_learning_rate,
+    )
+    _probability(
+        "knowledge.confidence_decay_per_tick",
+        cfg.knowledge.confidence_decay_per_tick,
+    )
+    _probability(
+        "knowledge.initial_experience_confidence",
+        cfg.knowledge.initial_experience_confidence,
+    )
+    if cfg.knowledge.max_updates_per_outcome <= 0:
+        raise ValueError("knowledge.max_updates_per_outcome must be positive")
+    if not isinstance(cfg.knowledge.log_outcome_updates, bool):
+        raise ValueError("knowledge.log_outcome_updates must be a boolean")
+    if cfg.knowledge.learning_enabled and cfg.knowledge.schema != "dynamic-knowledge-k2-v1":
+        raise ValueError(
+            "knowledge.learning_enabled requires schema 'dynamic-knowledge-k2-v1'"
+        )
+    if cfg.knowledge.learning_enabled and not cfg.knowledge.enabled:
+        raise ValueError("knowledge.learning_enabled requires knowledge.enabled")
     if cfg.knowledge.enabled and cfg.knowledge.holder_capacity_bytes <= 0:
         raise ValueError("enabled knowledge requires a positive holder_capacity_bytes")
     _probability("trust_group_threshold", cfg.social.trust_group_threshold)

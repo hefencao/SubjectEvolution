@@ -253,7 +253,11 @@ class DeviceInformationField:
         energies = xp.asarray(energy, dtype=xp.float32)
         groups = xp.asarray(group_id, dtype=xp.uint64)
         own_groups = xp.asarray(own_group_id, dtype=xp.uint64)
-        quality = xp.clip(xp.asarray(sensor_quality, dtype=xp.float64), 0.05, 2.0)
+        # Match the CPU reference dtype exactly.  Promoting sensor quality to
+        # float64 here changes receiver-noise division before the shared
+        # stateless draws are applied; the resulting few ulps can cross a
+        # categorical decision boundary later in the policy.
+        quality = xp.clip(xp.asarray(sensor_quality, dtype=xp.float32), 0.05, 2.0)
         raw, raw_age = self.sample(cells)
         raw = raw.astype(xp.float64)
         raw_age = raw_age.astype(xp.float32)

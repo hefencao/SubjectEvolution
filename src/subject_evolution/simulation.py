@@ -11,7 +11,7 @@ import time
 import numpy as np
 
 from . import __version__
-from .backend import BackendUnavailableError
+from .backend import BackendUnavailableError, resolve_backend
 from .config import SimulationConfig
 from .control import (
     AutonomyRecoveryArbiter,
@@ -49,7 +49,15 @@ from .intents import (
     FailureReason,
     build_intents,
 )
-from .knowledge import KnowledgeStepStats, KnowledgeSystem
+from .knowledge import (
+    KnowledgeOutcomePlan,
+    KnowledgeStepStats,
+    KnowledgeSystem,
+    OUTCOME_STATUS_FAILED,
+    OUTCOME_STATUS_PARTIAL,
+    OUTCOME_STATUS_SUCCESS,
+    encode_local_context,
+)
 from .lifecycle import (
     BirthAllocationPlan,
     DeathCause,
@@ -73,6 +81,32 @@ from .social import (
 )
 from .spatial import SpatialIndex
 from .subjects import CandidateSubjectGraph
+
+
+def _wrap_periodic_float32(values: np.ndarray, extent: float) -> np.ndarray:
+    """Canonicalize float32 coordinates to the half-open interval ``[0, extent)``.
+
+    ``numpy.remainder`` can round a tiny negative float32 coordinate to exactly
+    ``extent`` (for example ``-1e-7 % 256 == 256.0``).  That value is
+    topologically equivalent to zero in a periodic world but violates the
+    world's half-open coordinate invariant and can produce an invalid spatial
+    cell before the next repair.  Perform the ordinary remainder first, then
+    map the rounded upper endpoint back to zero.  NaNs are deliberately left
+    untouched so validation still reports them.
+    """
+
+    array = np.asarray(values)
+    if array.dtype != np.float32:
+        raise TypeError("periodic position buffers must use float32")
+    extent32 = np.float32(extent)
+    if not np.isfinite(extent32) or extent32 <= 0.0:
+        raise ValueError("periodic extent must be finite and positive")
+    wrapped = np.remainder(array, extent32).astype(np.float32, copy=False)
+    rounded_upper = wrapped >= extent32
+    if np.any(rounded_upper):
+        wrapped = wrapped.copy()
+        wrapped[rounded_upper] = np.float32(0.0)
+    return wrapped
 
 
 @dataclass
@@ -179,6 +213,9 @@ class EntityState:
         init_ctx = RandomContext(cfg.run.seed, 0, phase=0, stream=Stream.ENV_RESOURCE)
         self.x[idx] = (uniform01(init_ctx, ids, 0) * cfg.world.width).astype(np.float32)
         self.y[idx] = (uniform01(init_ctx, ids, 1) * cfg.world.height).astype(np.float32)
+        if cfg.world.periodic:
+            self.x[idx] = _wrap_periodic_float32(self.x[idx], cfg.world.width)
+            self.y[idx] = _wrap_periodic_float32(self.y[idx], cfg.world.height)
         self.energy[idx] = np.clip(
             cfg.entities.initial_energy + normal(init_ctx, ids, 0.0, 0.15, 2),
             0.5,
@@ -279,8 +316,8 @@ class EntityState:
         self.x[slots] = self.x[parents] + normal(ctx, ids, 0.0, 0.35, 0).astype(np.float32)
         self.y[slots] = self.y[parents] + normal(ctx, ids, 0.0, 0.35, 2).astype(np.float32)
         if self.cfg.world.periodic:
-            self.x[slots] %= self.cfg.world.width
-            self.y[slots] %= self.cfg.world.height
+            self.x[slots] = _wrap_periodic_float32(self.x[slots], self.cfg.world.width)
+            self.y[slots] = _wrap_periodic_float32(self.y[slots], self.cfg.world.height)
         else:
             self.x[slots] = np.clip(self.x[slots], 0.0, self.cfg.world.width)
             self.y[slots] = np.clip(self.y[slots], 0.0, self.cfg.world.height)
@@ -431,17 +468,45 @@ class Simulation:
             cfg.world.periodic,
         )
         requested_backend = backend.strip().lower()
+        self.requested_backend = requested_backend
+        self.gpu_semantics_mode = cfg.run.gpu_semantics_mode
+        self.gpu_device_validated = False
+        self.gpu_acceleration_enabled = False
         if requested_backend == "cpu":
             self.gpu_runtime: HybridGpuRuntime | None = None
             self.execution_backend = "cpu"
         elif requested_backend in {"gpu", "auto"}:
-            try:
-                self.gpu_runtime = HybridGpuRuntime(cfg, backend="gpu")
-            except BackendUnavailableError:
-                if requested_backend == "gpu":
-                    raise
-                self.gpu_runtime = None
-            self.execution_backend = "gpu" if self.gpu_runtime is not None else "cpu"
+            if self.gpu_semantics_mode == "strict-reference":
+                # Correctness gate: require a real usable GPU for an explicit
+                # GPU request, but keep the CPU reference path authoritative
+                # until the accelerated multi-tick world passes exact discrete
+                # parity on real CUDA.  This prevents a scientific run from
+                # silently producing a backend-dependent evolutionary history.
+                try:
+                    resolve_backend("gpu")
+                except BackendUnavailableError:
+                    if requested_backend == "gpu":
+                        raise
+                    self.gpu_runtime = None
+                    self.execution_backend = "cpu"
+                else:
+                    self.gpu_runtime = None
+                    self.gpu_device_validated = True
+                    self.execution_backend = "gpu-strict-reference"
+            else:
+                try:
+                    self.gpu_runtime = HybridGpuRuntime(cfg, backend="gpu")
+                except BackendUnavailableError:
+                    if requested_backend == "gpu":
+                        raise
+                    self.gpu_runtime = None
+                self.gpu_acceleration_enabled = self.gpu_runtime is not None
+                self.gpu_device_validated = self.gpu_runtime is not None
+                self.execution_backend = (
+                    "gpu-hybrid-accelerated"
+                    if self.gpu_runtime is not None
+                    else "cpu"
+                )
         else:
             raise ValueError("backend must be one of: 'cpu', 'gpu', or 'auto'")
         if self.gpu_runtime is not None:
@@ -507,6 +572,11 @@ class Simulation:
             stable_ids=self.entities.entity_id,
             genotype=self.entities.genotype,
         )
+        self.last_active = np.empty(0, dtype=np.int32)
+        self.last_cells = np.empty(0, dtype=np.int32)
+        self.last_local_resources = np.empty((0, 4), dtype=np.float32)
+        self.last_information = None
+        self.last_policy_decision: PolicyDecision | None = None
         self.last_intents: ActionIntentBatch | None = None
         self.last_resolutions: ActionResolutionBatch | None = None
         self.last_birth_allocation = empty_birth_allocation_plan(0)
@@ -574,6 +644,9 @@ class Simulation:
             "seed": self.cfg.run.seed,
             "requested_backend": requested_backend,
             "execution_backend": self.execution_backend,
+            "gpu_semantics_mode": self.gpu_semantics_mode,
+            "gpu_device_validated": self.gpu_device_validated,
+            "gpu_acceleration_enabled": self.gpu_acceleration_enabled,
             "python": sys.version,
             "platform": platform.platform(),
             "numpy": np.__version__,
@@ -581,6 +654,16 @@ class Simulation:
             "strategy_schema": "inherited-linear-policy-v1",
             "knowledge_schema": (
                 self.cfg.knowledge.schema if self.cfg.knowledge.enabled else None
+            ),
+            "knowledge_learning_enabled": (
+                self.cfg.knowledge.learning_enabled
+                if self.cfg.knowledge.enabled
+                else False
+            ),
+            "knowledge_outcome_schema": (
+                self.cfg.knowledge.outcome_schema
+                if self.cfg.knowledge.learning_enabled
+                else None
             ),
             "validation_mode": self.cfg.run.validation_mode,
         }
@@ -612,13 +695,26 @@ class Simulation:
             or np.any(ent.fertility[active] < 0.0)
         ):
             raise AssertionError("living entity dynamic-state invariant failed")
-        if self.cfg.world.periodic and active.size and (
-            np.any(ent.x[active] < 0.0)
-            or np.any(ent.x[active] >= self.cfg.world.width)
-            or np.any(ent.y[active] < 0.0)
-            or np.any(ent.y[active] >= self.cfg.world.height)
-        ):
-            raise AssertionError("periodic position invariant failed")
+        if self.cfg.world.periodic and active.size:
+            active_x = ent.x[active]
+            active_y = ent.y[active]
+            invalid_position = (
+                ~np.isfinite(active_x)
+                | ~np.isfinite(active_y)
+                | (active_x < 0.0)
+                | (active_x >= self.cfg.world.width)
+                | (active_y < 0.0)
+                | (active_y >= self.cfg.world.height)
+            )
+            if np.any(invalid_position):
+                local = int(np.flatnonzero(invalid_position)[0])
+                slot = int(active[local])
+                raise AssertionError(
+                    "periodic position invariant failed: "
+                    f"slot={slot} entity_id={int(ent.entity_id[slot])} "
+                    f"x={float(ent.x[slot])!r} y={float(ent.y[slot])!r} "
+                    f"width={self.cfg.world.width!r} height={self.cfg.world.height!r}"
+                )
         if np.any(self.social.group_id[~ent.alive] != 0):
             raise AssertionError("dead entities must not retain group membership")
         self.knowledge.validate(ent.alive, ent.primary_subject_id)
@@ -651,7 +747,7 @@ class Simulation:
         branch = Simulation(
             self.cfg,
             output_dir,
-            backend=self.execution_backend,
+            backend=self.requested_backend,
             conflict_resolver=copy.deepcopy(self.conflict_resolver),
             control_arbiter=copy.deepcopy(self.control_arbiter),
             group_label_planner=copy.deepcopy(self.group_label_planner),
@@ -692,6 +788,13 @@ class Simulation:
         branch.last_entity_device_commit = copy.deepcopy(
             self.last_entity_device_commit
         )
+        branch.last_active = self.last_active.copy()
+        branch.last_cells = self.last_cells.copy()
+        branch.last_local_resources = self.last_local_resources.copy()
+        branch.last_information = copy.deepcopy(self.last_information)
+        branch.last_policy_decision = copy.deepcopy(self.last_policy_decision)
+        branch.last_intents = copy.deepcopy(self.last_intents)
+        branch.last_resolutions = copy.deepcopy(self.last_resolutions)
         branch.heuristic_guidance_actions = self.heuristic_guidance_actions
         branch.autonomy_recovery_enabled = self.autonomy_recovery_enabled
         branch.autonomy_restored = self.autonomy_restored.copy()
@@ -831,14 +934,39 @@ class Simulation:
             violations.append(
                 "direct action replacement: " + ", ".join(direct_interventions)
             )
+        if (
+            self.gpu_semantics_mode == "hybrid-accelerated"
+            and self.gpu_acceleration_enabled
+        ):
+            violations.append(
+                "accelerated GPU multi-tick parity is not proven; "
+                "use strict-reference for scientific results"
+            )
         valid = not violations
         return {
             "structural_evolution_provenance_valid": valid,
             "strict_unintervened_baseline": valid and not self.intervention_history,
             "violations": violations,
+            "backend_semantics": {
+                "requested_backend": self.requested_backend,
+                "execution_backend": self.execution_backend,
+                "gpu_semantics_mode": self.gpu_semantics_mode,
+                "gpu_device_validated": self.gpu_device_validated,
+                "gpu_acceleration_enabled": self.gpu_acceleration_enabled,
+                "cpu_reference_world_authoritative": (
+                    self.gpu_runtime is None
+                ),
+                "hybrid_acceleration_parity_proven": False,
+            },
             "strategy": {
                 "architecture": "inherited-linear-policy-v1",
                 "knowledge_schema": self.cfg.knowledge.schema if self.cfg.knowledge.enabled else None,
+                "knowledge_outcome_schema": (
+                    self.cfg.knowledge.outcome_schema
+                    if self.cfg.knowledge.learning_enabled
+                    else None
+                ),
+                "knowledge_learning_enabled": self.cfg.knowledge.learning_enabled,
                 "knowledge_policy_influence": False,
                 "feature_constraints": list(ParametricPolicy.FEATURE_NAMES),
                 "action_preferences_hardcoded": False,
@@ -859,9 +987,17 @@ class Simulation:
                 "generation": "parent generation plus one at committed birth",
                 "candidate_subjects": "derived from bodies, lineages, and relation structure",
                 "knowledge": (
-                    "dynamic costly holder copies; excluded from policy logits in K1"
-                    if self.cfg.knowledge.enabled
-                    else "disabled"
+                    (
+                        "dynamic costly holder copies with local current-tick "
+                        "context-action-outcome statistics; excluded from policy "
+                        "logits in K2"
+                    )
+                    if self.cfg.knowledge.learning_enabled
+                    else (
+                        "dynamic costly holder copies; excluded from policy logits in K1"
+                        if self.cfg.knowledge.enabled
+                        else "disabled"
+                    )
                 ),
                 "subject_shift": "measured from candidate/control provenance; never assigned as a state label",
             },
@@ -1288,8 +1424,10 @@ class Simulation:
                 social_control_enabled=self.social_control_enabled,
                 run_seed=cfg.run.seed,
                 tick=self.tick,
-                retain_logits=self._trajectory_file is not None,
-                retain_policy_diagnostics=evaluation_due,
+                retain_logits=(
+                    self._trajectory_file is not None or cfg.run.validation_mode
+                ),
+                retain_policy_diagnostics=(evaluation_due or cfg.run.validation_mode),
                 need_host_resource_gradient=(
                     self.autonomy_recovery_enabled
                     or (
@@ -1320,6 +1458,17 @@ class Simulation:
             stats.spatial_seconds = prepared.spatial_seconds
             stats.observation_seconds = prepared.observation_seconds
             stats.policy_seconds = prepared.policy_seconds
+
+        # Keep one immutable host-side diagnostic snapshot.  It is overwritten
+        # each tick and is used only by validation/parity tooling to locate the
+        # first backend divergence before it reaches births or deaths.
+        self.last_active = np.asarray(active, dtype=np.int32).copy()
+        self.last_cells = np.asarray(cells, dtype=np.int32).copy()
+        self.last_local_resources = np.asarray(
+            local_resources, dtype=np.float32
+        ).copy()
+        self.last_information = info
+        self.last_policy_decision = decision
         if evaluation_due:
             evaluation_started = time.perf_counter()
             if decision.features is None or decision.action_mask is None:
@@ -1496,6 +1645,42 @@ class Simulation:
         self.last_intents = intents
         self.last_resolutions = resolutions
 
+        knowledge_context_keys: np.ndarray | None = None
+        knowledge_pre_energy: np.ndarray | None = None
+        knowledge_pre_integrity: np.ndarray | None = None
+        knowledge_pre_information: np.ndarray | None = None
+        knowledge_pre_reproduction: np.ndarray | None = None
+        if self.cfg.knowledge.enabled and self.cfg.knowledge.learning_enabled:
+            local_hazard = (
+                self.gpu_runtime.hazard_for_cells(cells)
+                if self.gpu_runtime is not None
+                else self.environment.hazard.reshape(-1)[cells]
+            )
+            knowledge_context_keys = encode_local_context(
+                local_resources[:, 0],
+                local_hazard,
+                ent.energy[active],
+                ent.integrity[active],
+                self.social.group_id[active] != 0,
+                max_energy=cfg.entities.max_energy,
+            )
+            knowledge_pre_energy = ent.energy[active].astype(np.float32, copy=True)
+            knowledge_pre_integrity = ent.integrity[active].astype(
+                np.float32, copy=True
+            )
+            knowledge_pre_information = ent.information_store[active].astype(
+                np.float32, copy=True
+            )
+            knowledge_pre_reproduction = np.minimum(
+                np.clip(
+                    knowledge_pre_energy
+                    / max(cfg.entities.reproduction_threshold, 1e-12),
+                    0.0,
+                    1.0,
+                ),
+                np.clip(ent.fertility[active] / 0.5, 0.0, 1.0),
+            ).astype(np.float32, copy=False)
+
         # ----- World commit phase: only resolved intents may mutate state. -----
         movable_actions = np.isin(intents.action, [Action.MOVE_RESOURCE, Action.MOVE_SOCIAL, Action.FLEE])
         movable_rows = np.flatnonzero(movable_actions & resolutions.success)
@@ -1506,8 +1691,8 @@ class Simulation:
         ent.x[movers] += ent.vx[movers]
         ent.y[movers] += ent.vy[movers]
         if cfg.world.periodic:
-            ent.x[movers] %= cfg.world.width
-            ent.y[movers] %= cfg.world.height
+            ent.x[movers] = _wrap_periodic_float32(ent.x[movers], cfg.world.width)
+            ent.y[movers] = _wrap_periodic_float32(ent.y[movers], cfg.world.height)
         else:
             ent.x[movers] = np.clip(ent.x[movers], 0.0, cfg.world.width)
             ent.y[movers] = np.clip(ent.y[movers], 0.0, cfg.world.height)
@@ -1619,6 +1804,88 @@ class Simulation:
             stats.reproduction_rejected_resource
         )
         self.total_reproduction_rejected_other += stats.reproduction_rejected_other
+
+        if (
+            self.cfg.knowledge.enabled
+            and self.cfg.knowledge.learning_enabled
+            and knowledge_context_keys is not None
+            and knowledge_pre_energy is not None
+            and knowledge_pre_integrity is not None
+            and knowledge_pre_information is not None
+            and knowledge_pre_reproduction is not None
+        ):
+            carriers = intents.carrier_index
+            material_delta = np.zeros(intents.action.size, dtype=np.float32)
+            if harvest_rows.size:
+                material_delta[harvest_rows] = np.asarray(
+                    gathered, dtype=np.float32
+                ).sum(axis=1)
+            post_reproduction = np.minimum(
+                np.clip(
+                    ent.energy[carriers]
+                    / max(cfg.entities.reproduction_threshold, 1e-12),
+                    0.0,
+                    1.0,
+                ),
+                np.clip(ent.fertility[carriers] / 0.5, 0.0, 1.0),
+            ).astype(np.float32, copy=False)
+            outcome_vectors = np.column_stack(
+                (
+                    ent.energy[carriers] - knowledge_pre_energy,
+                    ent.integrity[carriers] - knowledge_pre_integrity,
+                    material_delta,
+                    ent.information_store[carriers] - knowledge_pre_information,
+                    post_reproduction - knowledge_pre_reproduction,
+                )
+            ).astype(np.float32, copy=False)
+            statuses = np.where(
+                resolutions.success,
+                OUTCOME_STATUS_SUCCESS,
+                OUTCOME_STATUS_FAILED,
+            ).astype(np.uint8)
+            if harvest_rows.size:
+                partial_harvest = (
+                    resolutions.success[harvest_rows]
+                    & (gathered[:, 0] > 1e-8)
+                    & (gathered[:, 0] < cfg.entities.harvest_rate - 1e-8)
+                )
+                statuses[harvest_rows[partial_harvest]] = OUTCOME_STATUS_PARTIAL
+            if share.rows.size:
+                proposed_share = np.minimum(
+                    cfg.entities.share_amount,
+                    np.maximum(knowledge_pre_energy[share.rows] - 0.5, 0.0),
+                )
+                partial_share = (
+                    share.success
+                    & (share.amounts > 1e-8)
+                    & (share.amounts < proposed_share - 1e-8)
+                )
+                statuses[share.rows[partial_share]] = OUTCOME_STATUS_PARTIAL
+            outcome_plan = KnowledgeOutcomePlan(
+                tick=int(self.tick),
+                carrier_indices=carriers.astype(np.int32, copy=True),
+                entity_ids=ent.entity_id[carriers].astype(np.uint64, copy=True),
+                holder_subject_ids=ent.primary_subject_id[carriers].astype(
+                    np.uint64, copy=True
+                ),
+                context_keys=knowledge_context_keys.astype(np.uint64, copy=True),
+                action_ids=intents.action.astype(np.int16, copy=True),
+                statuses=statuses,
+                failure_reasons=resolutions.failure_reason.astype(
+                    np.uint8, copy=True
+                ),
+                outcome_vectors=outcome_vectors.copy(),
+            )
+            outcome_stats = self.knowledge.commit_outcomes(
+                outcome_plan, energy=ent.energy, alive=ent.alive
+            )
+            for field_name in KnowledgeStepStats.__dataclass_fields__:
+                setattr(
+                    knowledge_stats,
+                    field_name,
+                    getattr(knowledge_stats, field_name)
+                    + getattr(outcome_stats, field_name),
+                )
 
         # Existence costs and environmental damage.
         current_active = np.flatnonzero(ent.alive).astype(np.int32)
@@ -2077,6 +2344,20 @@ class Simulation:
                     "knowledge_evicted_capacity_step": stats.knowledge.evicted_capacity,
                     "knowledge_evicted_maintenance_step": stats.knowledge.evicted_maintenance,
                     "knowledge_removed_dead_holder_step": stats.knowledge.removed_dead_holder,
+                    "knowledge_learning_energy_step": stats.knowledge.learning_energy,
+                    "knowledge_outcome_records_step": stats.knowledge.outcome_records,
+                    "knowledge_outcome_success_step": stats.knowledge.outcome_success,
+                    "knowledge_outcome_failed_step": stats.knowledge.outcome_failed,
+                    "knowledge_outcome_partial_step": stats.knowledge.outcome_partial,
+                    "knowledge_outcome_updates_step": stats.knowledge.outcome_updates,
+                    "knowledge_private_experiences_created_step": stats.knowledge.private_experiences_created,
+                    "knowledge_private_experience_updates_step": stats.knowledge.private_experience_updates,
+                    "knowledge_transferred_copies_verified_step": stats.knowledge.transferred_copies_verified,
+                    "knowledge_outcome_unmatched_step": stats.knowledge.outcome_unmatched,
+                    "knowledge_learning_energy_rejected_step": stats.knowledge.learning_energy_rejected,
+                    "knowledge_learning_capacity_rejected_step": stats.knowledge.learning_capacity_rejected,
+                    "knowledge_learning_match_limit_skipped_step": stats.knowledge.learning_match_limit_skipped,
+                    "knowledge_confidence_decayed_step": stats.knowledge.confidence_decayed,
                     "knowledge_maintenance_energy_total": float(knowledge_summary["maintenance_energy_total"]),
                     "knowledge_sender_energy_total": float(knowledge_summary["sender_energy_total"]),
                     "knowledge_receiver_energy_total": float(knowledge_summary["receiver_energy_total"]),
@@ -2086,6 +2367,15 @@ class Simulation:
                     "knowledge_transfer_capacity_rejected_total": int(knowledge_summary["transfer_capacity_rejected_total"]),
                     "knowledge_transfer_energy_rejected_total": int(knowledge_summary["transfer_energy_rejected_total"]),
                     "knowledge_attention_rejected_total": int(knowledge_summary["attention_rejected_total"]),
+                    "knowledge_learning_energy_total": float(knowledge_summary["learning_energy_total"]),
+                    "knowledge_outcome_records_total": int(knowledge_summary["outcome_records_total"]),
+                    "knowledge_outcome_updates_total": int(knowledge_summary["outcome_updates_total"]),
+                    "knowledge_private_experiences_created_total": int(knowledge_summary["private_experiences_created_total"]),
+                    "knowledge_private_experience_updates_total": int(knowledge_summary["private_experience_updates_total"]),
+                    "knowledge_transferred_copies_verified_total": int(knowledge_summary["transferred_copies_verified_total"]),
+                    "knowledge_outcome_unmatched_total": int(knowledge_summary["outcome_unmatched_total"]),
+                    "knowledge_learning_energy_rejected_total": int(knowledge_summary["learning_energy_rejected_total"]),
+                    "knowledge_learning_capacity_rejected_total": int(knowledge_summary["learning_capacity_rejected_total"]),
                     "validation_seconds": stats.validation_seconds,
                 }
             )
@@ -2230,6 +2520,9 @@ class Simulation:
         metadata = {
             "version": __version__,
             "execution_backend": self.execution_backend,
+            "gpu_semantics_mode": self.gpu_semantics_mode,
+            "gpu_device_validated": self.gpu_device_validated,
+            "gpu_acceleration_enabled": self.gpu_acceleration_enabled,
             "experiment_mode": self.experiment_mode.value,
             "scientific_validity": self.scientific_validity(),
             "ticks_completed": self.tick,

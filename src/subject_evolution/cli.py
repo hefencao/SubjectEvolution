@@ -19,7 +19,19 @@ def build_parser() -> argparse.ArgumentParser:
         "--backend",
         choices=("cpu", "gpu", "auto"),
         default="cpu",
-        help="Execution backend. GPU accelerates fields, observations and policy batches; default: cpu.",
+        help=(
+            "Execution backend. A GPU request defaults to strict CPU-reference "
+            "world semantics until accelerated parity is proven; default: cpu."
+        ),
+    )
+    parser.add_argument(
+        "--gpu-semantics-mode",
+        choices=("strict-reference", "hybrid-accelerated"),
+        help=(
+            "Override run.gpu_semantics_mode. strict-reference guarantees the "
+            "CPU semantic trajectory while requiring a usable GPU; "
+            "hybrid-accelerated enables the experimental device world path."
+        ),
     )
     parser.add_argument(
         "--counterfactual",
@@ -73,8 +85,13 @@ def main() -> None:
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
     cfg = load_config(config_path)
+    run_overrides = {}
     if args.experiment_mode is not None:
-        cfg = replace(cfg, run=replace(cfg.run, experiment_mode=args.experiment_mode))
+        run_overrides["experiment_mode"] = args.experiment_mode
+    if args.gpu_semantics_mode is not None:
+        run_overrides["gpu_semantics_mode"] = args.gpu_semantics_mode
+    if run_overrides:
+        cfg = replace(cfg, run=replace(cfg.run, **run_overrides))
     resolved = json.dumps(asdict(cfg), ensure_ascii=False, indent=2)
     (output / "config.json").write_text(resolved, encoding="utf-8")
     (output / "resolved_config.json").write_text(resolved, encoding="utf-8")
