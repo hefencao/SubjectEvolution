@@ -1,4 +1,4 @@
-# Subject Evolution 项目状态（v0.7.0）
+# Subject Evolution 项目状态（v0.8.0）
 
 ## 当前完成阶段
 
@@ -7,8 +7,8 @@
 | 动态知识副本、容量、维持与损坏 | K1 已完成 |
 | 有代价知识交换与传播谱系 | K1 已完成 |
 | 局部五维后果记录与经验更新 | K2 已完成 |
-| 知识稀疏残差进入策略 | **K3 已完成** |
-| 知识内容进入候选主体图 | 未实现，K4 |
+| 知识稀疏残差进入策略 | K3 已完成 |
+| 知识内容谱系与候选主体图诊断 | **K4 已完成** |
 | 完整设备驻留世界循环 | 未实现 |
 | 完整主体图数据库及任意嵌套主体 | 未实现 |
 | checkpoint 全世界恢复与离线反事实重放 | 未实现 |
@@ -17,24 +17,43 @@
 | Hero 强化学习 | 未实现 |
 | 任意信息通道 schema | 未实现 |
 
-## K3 概要
+## K4 概要
 
-v0.7.0 实现 `dynamic-knowledge-k3-v1` 和 `inherited-linear-policy-knowledge-residual-v1`。策略关系为遗传先验 logits 加本地知识副本形成的稀疏 residual。K3 新增五个 outcome preference 性状和一个 knowledge-use-strength 性状，但旧 128 个遗传策略权重的含义与位置保持不变。
+v0.8.0 实现 `dynamic-knowledge-k4-v1`、`knowledge-subject-candidate-v1` 与 `candidate-subject-graph-v1`。知识内容与损坏变体被记录为候选知识主体节点，并追踪父子谱系、根内容、变体深度、当前/历史副本、唯一宿主、群组/谱系/空间区域分布、传播边界、宿主成本以及 K3 策略影响。
 
-K1/K2 配置仍使用 136 维基因组；K3 配置使用 142 维。K2 模式与 v0.6.5 的 141 个共同非计时指标、tick 10/20 的 32 个共同 checkpoint 数组及知识日志完全一致。
+K4 是低频、只读的宿主诊断层。它在世界动作、知识更新、关系和生命周期提交完成后读取已提交状态，不向 observation、policy、intent、resolution 或 commit 回写。候选节点没有独立执行器，因此输出明确设置：
 
-K3 输出分别记录 genetic logits、knowledge residual、genetic-only action 和 combined action。知识不绕过既有控制/结算边界，也不使用全局奖励、未来信息或反向传播。
+- `diagnostic_only = true`；
+- `subjecthood_truth_claimed = false`；
+- `host_outcome_association_causal = false`；
+- `autonomy_caution = true`。
+
+K4 不生成未经验证的单一主体性真值。持续性、复制、分布、成本、宿主五维状态关联、策略影响和边界内聚均作为独立分量输出，并附带样本量或有效性标志。
 
 ## 短周期验证
 
-本轮遵循短迭代策略，仅运行 30 ticks 三条件双重复：K2 control、K3 private、K3 costed exchange。全部非计时 metrics、日志和 checkpoint 确定性检查通过。完整测试为 31 passed、1 skipped；skip 项是当前容器无 CUDA 的真实 GPU 测试。
+本轮没有运行 500 ticks。主要对照使用 CPU、seed 10001、30 ticks、初始 500 个实体、最大 768 个实体，并在 tick 15/30 保存检查点。
 
-短运行只证明实现和确定性，不构成长期适应、选择效应或主体性结论。
+- K3 private、K3 costed exchange、K4 candidate tracking 三条件均独立复跑两次；
+- 非计时 metrics、知识日志、策略贡献日志和检查点均满足固定种子确定性；
+- K3 exchange 与 K4 tracking 的 32 个共同 checkpoint 数组、全部共同非计时指标和事件日志完全一致；
+- K4 只增加 20 个候选诊断 checkpoint 数组；
+- 36 项测试通过，1 项真实 CUDA/CuPy 测试因当前容器无 GPU 跳过。
+
+短运行只证明数据结构、确定性、成本归因和纯观察边界，不构成长期选择优势、因果宿主收益或主体性结论。
 
 ## CPU/GPU 状态
 
-用户已确认 v0.6.4/v0.6.5 的 K2 hybrid 路径在 `mvp_short_k2_exchange` 运行至 tick 1000 未发现 CPU/GPU 偏差，并确认周期位置修复后无问题。K3 GPU 路径采用稀疏 residual 上传，但当前容器无 CUDA，尚需在真实 GPU 上做新的 K3 逐阶段 parity 验证；在完成前不能把 K3 hybrid 结果视为硬件一致性已证明。
+K1–K3 已保留 reference-order signal/harvest 归约与周期位置规范化修复。K4 在 CPU authority/host diagnostic 层运行，不改变 GPU 行动路径，只消费已经回到宿主侧的稀疏知识、事件和已提交世界状态。
+
+当前容器没有 CUDA，因此本轮没有执行真实 GPU 上的 K4 诊断路径。由于 K4 不反馈到世界，启用与关闭 K4 的世界状态兼容性已在 CPU 上逐数组验证；真实 GPU 的剩余风险主要是诊断传回与性能开销，而非动作语义。
 
 ## 下一阶段建议
 
-下一阶段是 K4：将具有复制谱系、变体和承载体分布的知识内容作为候选主体图节点，评估持续性、宿主成本、复制优势和利益边界。K4 不应扩展为 Hero RL 或任意嵌套主体数据库的全部实现，应继续采用短周期、小世界和对照实验推进。
+K1–K4 的知识路线已经形成首个闭环。下一步不应直接宣称“完整主体性评分”，而应优先推进以下基础能力之一：
+
+1. checkpoint 全世界恢复与离线反事实分支重放；
+2. 将现有候选节点扩展为通用、可持久化的主体图数据库，并支持任意嵌套但不改变控制边界；
+3. 建立多 seed、环境梯度和预注册指标的长期实验，检验知识谱系的复制、宿主成本与行为影响是否形成稳定选择信号。
+
+Hero 强化学习、信息模板寄生主体和任意信息通道 schema 仍应保持独立阶段，避免与 K4 诊断语义混合。

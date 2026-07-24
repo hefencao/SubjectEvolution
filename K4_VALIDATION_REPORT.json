@@ -1,0 +1,352 @@
+{
+  "schema": "k4-validation-v1",
+  "version": "0.8.0",
+  "test_result": {
+    "passed": 36,
+    "skipped": 1,
+    "skip_reason": "real CUDA/CuPy unavailable in this container"
+  },
+  "scope": {
+    "backend": "cpu",
+    "seed": 10001,
+    "ticks": 30,
+    "initial_entities": 500,
+    "max_entities": 768,
+    "checkpoints": [
+      15,
+      30
+    ]
+  },
+  "conditions": {
+    "k3_private_a": {
+      "tick": 30,
+      "alive": 609,
+      "births_total": 109,
+      "deaths_total": 0,
+      "knowledge_content_count": 2245,
+      "knowledge_variant_content_count": 0,
+      "knowledge_copy_count": 2325,
+      "knowledge_holder_count": 602,
+      "knowledge_policy_influenced_entities_total": 10041,
+      "knowledge_policy_influenced_actions_total": 15493,
+      "knowledge_policy_changed_actions_total": 31,
+      "knowledge_transfer_attempts_total": 0,
+      "knowledge_transfer_committed_total": 0,
+      "runtime_seconds": 1.94
+    },
+    "k3_exchange_a": {
+      "tick": 30,
+      "alive": 608,
+      "births_total": 108,
+      "deaths_total": 0,
+      "knowledge_content_count": 2225,
+      "knowledge_variant_content_count": 6,
+      "knowledge_copy_count": 2323,
+      "knowledge_holder_count": 601,
+      "knowledge_policy_influenced_entities_total": 10362,
+      "knowledge_policy_influenced_actions_total": 15855,
+      "knowledge_policy_changed_actions_total": 29,
+      "knowledge_transfer_attempts_total": 266,
+      "knowledge_transfer_committed_total": 224,
+      "runtime_seconds": 1.95
+    },
+    "k4_candidates_a": {
+      "tick": 30,
+      "alive": 608,
+      "births_total": 108,
+      "deaths_total": 0,
+      "knowledge_content_count": 2225,
+      "knowledge_variant_content_count": 6,
+      "knowledge_copy_count": 2323,
+      "knowledge_holder_count": 601,
+      "knowledge_policy_influenced_entities_total": 10362,
+      "knowledge_policy_influenced_actions_total": 15855,
+      "knowledge_policy_changed_actions_total": 29,
+      "knowledge_transfer_attempts_total": 266,
+      "knowledge_transfer_committed_total": 224,
+      "runtime_seconds": 3.38,
+      "candidate_summary": {
+        "candidate_tracking_enabled": true,
+        "candidate_schema": "knowledge-subject-candidate-v1",
+        "candidate_graph_schema": "candidate-subject-graph-v1",
+        "knowledge_candidate_count": 2225,
+        "knowledge_candidate_active_count": 2060,
+        "knowledge_candidate_inactive_count": 165,
+        "knowledge_candidate_root_count": 2219,
+        "knowledge_candidate_variant_count": 6,
+        "knowledge_candidate_multi_holder_count": 189,
+        "knowledge_candidate_policy_influence_events": 16061,
+        "knowledge_candidate_policy_changed_actions": 51,
+        "knowledge_candidate_host_cost_total": 8.157048000000001,
+        "knowledge_boundary_group_internal_commits": 0,
+        "knowledge_boundary_group_cross_commits": 0,
+        "knowledge_boundary_group_unknown_commits": 224,
+        "knowledge_boundary_group_cohesion": null,
+        "knowledge_boundary_group_cohesion_valid": false,
+        "knowledge_candidate_autonomy_caution": true,
+        "knowledge_candidate_last_update_tick": 30,
+        "schema": "knowledge-subject-candidate-v1",
+        "graph_schema": "candidate-subject-graph-v1",
+        "diagnostic_only": true,
+        "subjecthood_truth_claimed": false,
+        "host_outcome_association_causal": false,
+        "autonomy_caution": "Knowledge contents have no independent actuator and remain dependent on host copies."
+      }
+    }
+  },
+  "determinism": {
+    "k3_private": {
+      "metrics": {
+        "equal": true,
+        "row_count": 7,
+        "differences": []
+      },
+      "files": {
+        "knowledge_events.jsonl": true,
+        "knowledge_outcome_updates.csv": true,
+        "knowledge_policy_contributions.csv": true,
+        "knowledge_transfers.csv": true,
+        "evolution_progress.jsonl": true
+      },
+      "checkpoints": {
+        "15": {
+          "common_array_count": 32,
+          "different_arrays": [],
+          "extra_a": [],
+          "extra_b": []
+        },
+        "30": {
+          "common_array_count": 32,
+          "different_arrays": [],
+          "extra_a": [],
+          "extra_b": []
+        }
+      }
+    },
+    "k3_exchange": {
+      "metrics": {
+        "equal": true,
+        "row_count": 7,
+        "differences": []
+      },
+      "files": {
+        "knowledge_events.jsonl": true,
+        "knowledge_outcome_updates.csv": true,
+        "knowledge_policy_contributions.csv": true,
+        "knowledge_transfers.csv": true,
+        "evolution_progress.jsonl": true
+      },
+      "checkpoints": {
+        "15": {
+          "common_array_count": 32,
+          "different_arrays": [],
+          "extra_a": [],
+          "extra_b": []
+        },
+        "30": {
+          "common_array_count": 32,
+          "different_arrays": [],
+          "extra_a": [],
+          "extra_b": []
+        }
+      }
+    },
+    "k4_candidates": {
+      "metrics": {
+        "equal": true,
+        "row_count": 7,
+        "differences": []
+      },
+      "files": {
+        "knowledge_events.jsonl": true,
+        "knowledge_outcome_updates.csv": true,
+        "knowledge_policy_contributions.csv": true,
+        "knowledge_transfers.csv": true,
+        "evolution_progress.jsonl": true
+      },
+      "checkpoints": {
+        "15": {
+          "common_array_count": 52,
+          "different_arrays": [],
+          "extra_a": [],
+          "extra_b": []
+        },
+        "30": {
+          "common_array_count": 52,
+          "different_arrays": [],
+          "extra_a": [],
+          "extra_b": []
+        }
+      }
+    }
+  },
+  "observational_compatibility": {
+    "metrics": {
+      "equal": true,
+      "row_count": 7,
+      "differences": []
+    },
+    "files": {
+      "knowledge_events.jsonl": true,
+      "knowledge_outcome_updates.csv": true,
+      "knowledge_policy_contributions.csv": true,
+      "knowledge_transfers.csv": true,
+      "evolution_progress.jsonl": true
+    },
+    "checkpoints": {
+      "15": {
+        "common_array_count": 32,
+        "different_arrays": [],
+        "extra_a": [],
+        "extra_b": [
+          "knowledge_candidate_first_seen_tick",
+          "knowledge_candidate_group_commit_flow",
+          "knowledge_candidate_group_flow",
+          "knowledge_candidate_last_seen_tick",
+          "knowledge_candidate_lineage_commit_flow",
+          "knowledge_candidate_lineage_flow",
+          "knowledge_candidate_maintenance_cost",
+          "knowledge_candidate_policy_changed_action_events",
+          "knowledge_candidate_policy_influence_events",
+          "knowledge_candidate_policy_residual_abs_sum",
+          "knowledge_candidate_receiver_cost",
+          "knowledge_candidate_region_commit_flow",
+          "knowledge_candidate_region_flow",
+          "knowledge_candidate_root_content_id",
+          "knowledge_candidate_sender_cost",
+          "knowledge_candidate_transfer_attempt_count",
+          "knowledge_candidate_transfer_commit_count",
+          "knowledge_candidate_transfer_verified_count",
+          "knowledge_candidate_variant_depth",
+          "knowledge_candidate_verification_cost"
+        ]
+      },
+      "30": {
+        "common_array_count": 32,
+        "different_arrays": [],
+        "extra_a": [],
+        "extra_b": [
+          "knowledge_candidate_first_seen_tick",
+          "knowledge_candidate_group_commit_flow",
+          "knowledge_candidate_group_flow",
+          "knowledge_candidate_last_seen_tick",
+          "knowledge_candidate_lineage_commit_flow",
+          "knowledge_candidate_lineage_flow",
+          "knowledge_candidate_maintenance_cost",
+          "knowledge_candidate_policy_changed_action_events",
+          "knowledge_candidate_policy_influence_events",
+          "knowledge_candidate_policy_residual_abs_sum",
+          "knowledge_candidate_receiver_cost",
+          "knowledge_candidate_region_commit_flow",
+          "knowledge_candidate_region_flow",
+          "knowledge_candidate_root_content_id",
+          "knowledge_candidate_sender_cost",
+          "knowledge_candidate_transfer_attempt_count",
+          "knowledge_candidate_transfer_commit_count",
+          "knowledge_candidate_transfer_verified_count",
+          "knowledge_candidate_variant_depth",
+          "knowledge_candidate_verification_cost"
+        ]
+      }
+    }
+  },
+  "cost_attribution_conservation": {
+    "components": {
+      "knowledge_maintenance_energy_total": 5.650367999999964,
+      "knowledge_sender_energy_total": 0.78736,
+      "knowledge_receiver_energy_total": 0.10752000000000002,
+      "knowledge_learning_energy_total": 1.6117999999999983
+    },
+    "knowledge_total": 8.157047999999962,
+    "candidate_attributed_total": 8.157048000000001,
+    "absolute_error": 3.907985046680551e-14,
+    "passed": true
+  },
+  "high_damage_variant_scenario": {
+    "candidate_tracking_enabled": true,
+    "candidate_schema": "knowledge-subject-candidate-v1",
+    "candidate_graph_schema": "candidate-subject-graph-v1",
+    "knowledge_candidate_count": 556,
+    "knowledge_candidate_active_count": 490,
+    "knowledge_candidate_inactive_count": 66,
+    "knowledge_candidate_root_count": 495,
+    "knowledge_candidate_variant_count": 61,
+    "knowledge_candidate_multi_holder_count": 14,
+    "knowledge_candidate_policy_influence_events": 2521,
+    "knowledge_candidate_policy_changed_actions": 7,
+    "knowledge_candidate_host_cost_total": 1.425008,
+    "knowledge_boundary_group_internal_commits": 0,
+    "knowledge_boundary_group_cross_commits": 0,
+    "knowledge_boundary_group_unknown_commits": 80,
+    "knowledge_boundary_group_cohesion": null,
+    "knowledge_boundary_group_cohesion_valid": false,
+    "knowledge_candidate_autonomy_caution": true,
+    "knowledge_candidate_last_update_tick": 20,
+    "schema": "knowledge-subject-candidate-v1",
+    "graph_schema": "candidate-subject-graph-v1",
+    "diagnostic_only": true,
+    "subjecthood_truth_claimed": false,
+    "host_outcome_association_causal": false,
+    "autonomy_caution": "Knowledge contents have no independent actuator and remain dependent on host copies."
+  },
+  "boundary_scenario": {
+    "candidate_tracking_enabled": true,
+    "candidate_schema": "knowledge-subject-candidate-v1",
+    "candidate_graph_schema": "candidate-subject-graph-v1",
+    "knowledge_candidate_count": 813,
+    "knowledge_candidate_active_count": 653,
+    "knowledge_candidate_inactive_count": 160,
+    "knowledge_candidate_root_count": 798,
+    "knowledge_candidate_variant_count": 15,
+    "knowledge_candidate_multi_holder_count": 145,
+    "knowledge_candidate_policy_influence_events": 2556,
+    "knowledge_candidate_policy_changed_actions": 15,
+    "knowledge_candidate_host_cost_total": 3.4655920000000004,
+    "knowledge_boundary_group_internal_commits": 118,
+    "knowledge_boundary_group_cross_commits": 58,
+    "knowledge_boundary_group_unknown_commits": 74,
+    "knowledge_boundary_group_cohesion": 0.6704545454545454,
+    "knowledge_boundary_group_cohesion_valid": true,
+    "knowledge_candidate_autonomy_caution": true,
+    "knowledge_candidate_last_update_tick": 30,
+    "schema": "knowledge-subject-candidate-v1",
+    "graph_schema": "candidate-subject-graph-v1",
+    "diagnostic_only": true,
+    "subjecthood_truth_claimed": false,
+    "host_outcome_association_causal": false,
+    "autonomy_caution": "Knowledge contents have no independent actuator and remain dependent on host copies."
+  },
+  "limitations": [
+    "30 ticks and one seed establish implementation and determinism only",
+    "candidate host-outcome associations are observational, not causal",
+    "knowledge candidates have no independent actuator",
+    "real GPU K4 diagnostic-path integration was not executed in this container"
+  ],
+  "high_damage_determinism": {
+    "files": {
+      "knowledge_events.jsonl": true,
+      "knowledge_outcome_updates.csv": true,
+      "knowledge_policy_contributions.csv": true,
+      "knowledge_transfers.csv": true,
+      "knowledge_subject_candidates.csv": true,
+      "knowledge_boundary_flows.csv": true,
+      "knowledge_content_lineage.csv": true,
+      "knowledge_subject_edges.csv": true,
+      "knowledge_candidate_summary.json": true
+    },
+    "checkpoints": {
+      "10": {
+        "common_array_count": 52,
+        "different_arrays": [],
+        "extra_a": [],
+        "extra_b": []
+      },
+      "20": {
+        "common_array_count": 52,
+        "different_arrays": [],
+        "extra_a": [],
+        "extra_b": []
+      }
+    }
+  }
+}

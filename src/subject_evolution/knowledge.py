@@ -21,6 +21,7 @@ import numpy as np
 from .backend import backend_from_array
 from .config import KnowledgeConfig, SimulationConfig
 from .random_api import RandomContext, Stream, bernoulli, uniform01
+from .knowledge_subjects import KnowledgeCandidateTracker
 
 
 OUTCOME_WIDTH = 5
@@ -720,6 +721,7 @@ class KnowledgeSystem:
         self.totals = KnowledgeStepStats()
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.candidates = KnowledgeCandidateTracker(self.kcfg, self.output_dir)
         self._event_file = None
         self._transfer_file = None
         self._transfer_writer = None
@@ -778,6 +780,7 @@ class KnowledgeSystem:
                 )
                 self._policy_writer.writeheader()
             self._seed(initial_entity_ids, initial_subject_ids)
+            self.candidates.ensure_catalog(self.catalog)
             self.observation = self.arena.publish(self.catalog, tick=0)
 
     def _seed(self, entity_ids: np.ndarray, subject_ids: np.ndarray) -> None:
@@ -836,6 +839,7 @@ class KnowledgeSystem:
         result.totals = copy.deepcopy(self.totals)
         result.output_dir = Path(output_dir)
         result.output_dir.mkdir(parents=True, exist_ok=True)
+        result.candidates = self.candidates.clone(result.output_dir)
         result._event_file = None
         result._transfer_file = None
         result._transfer_writer = None
@@ -909,6 +913,7 @@ class KnowledgeSystem:
             self._outcome_file.flush()
         if self._policy_file is not None and not self._policy_file.closed:
             self._policy_file.flush()
+        self.candidates.flush()
 
     def close(self) -> None:
         if self._event_file is not None and not self._event_file.closed:
@@ -919,6 +924,7 @@ class KnowledgeSystem:
             self._outcome_file.close()
         if self._policy_file is not None and not self._policy_file.closed:
             self._policy_file.close()
+        self.candidates.close(self.catalog)
 
     def _forget(self, tick: int) -> int:
         if self.kcfg.forget_probability <= 0.0 or self.arena.active_count == 0:
@@ -991,6 +997,16 @@ class KnowledgeSystem:
             charged = min(float(energy[entity_index]), cost)
             energy[entity_index] = np.float32(float(energy[entity_index]) - charged)
             stats.maintenance_energy += charged
+            if charged and self.kcfg.candidate_tracking_enabled:
+                rows = np.asarray(self.arena.rows_for_holder(holder_id), dtype=np.int64)
+                if rows.size:
+                    self.candidates.record_maintenance(
+                        content_ids=self.arena.content_id[rows],
+                        holder_subject_id=holder_id,
+                        encoded_bytes=self.arena.encoded_bytes[rows],
+                        charged=charged,
+                        tick=tick,
+                    )
         return stats
 
     def plan_transfers(
@@ -1137,6 +1153,12 @@ class KnowledgeSystem:
         *,
         energy: np.ndarray,
         alive: np.ndarray,
+        group_ids: np.ndarray | None = None,
+        lineage_subject_ids: np.ndarray | None = None,
+        x: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+        world_width: float | None = None,
+        world_height: float | None = None,
     ) -> KnowledgeStepStats:
         stats = KnowledgeStepStats(
             transfer_attempts=plan.size, attention_rejected=plan.attention_rejected
@@ -1146,23 +1168,75 @@ class KnowledgeSystem:
             return stats
         plan.validate(alive.size)
 
-        def record(row: int, status: str) -> None:
-            if self._transfer_writer is None:
-                return
-            self._transfer_writer.writerow(
-                {
-                    "tick": plan.tick,
-                    "sender_subject_id": int(plan.sender_subject_ids[row]),
-                    "receiver_subject_id": int(plan.receiver_subject_ids[row]),
-                    "source_subject_id": int(plan.source_subject_ids[row]),
-                    "source_copy_id": int(plan.source_copy_ids[row]),
-                    "content_id": int(plan.content_ids[row]),
-                    "encoded_bytes": int(plan.encoded_bytes[row]),
-                    "delivered": int(bool(plan.delivered[row])),
-                    "corrupted": int(bool(plan.corrupted[row])),
-                    "status": status,
-                }
-            )
+        def region_for(entity_index: int) -> int:
+            if (
+                x is None
+                or y is None
+                or world_width is None
+                or world_height is None
+            ):
+                return 0
+            gx = max(int(self.kcfg.candidate_region_grid_x), 1)
+            gy = max(int(self.kcfg.candidate_region_grid_y), 1)
+            rx = min(max(int(float(x[entity_index]) / float(world_width) * gx), 0), gx - 1)
+            ry = min(max(int(float(y[entity_index]) / float(world_height) * gy), 0), gy - 1)
+            return 1 + rx + gx * ry
+
+        def record(
+            row: int,
+            status: str,
+            *,
+            committed_content_id: int | None = None,
+            sender_cost_charged: float = 0.0,
+            receiver_cost_charged: float = 0.0,
+        ) -> None:
+            if self._transfer_writer is not None:
+                self._transfer_writer.writerow(
+                    {
+                        "tick": plan.tick,
+                        "sender_subject_id": int(plan.sender_subject_ids[row]),
+                        "receiver_subject_id": int(plan.receiver_subject_ids[row]),
+                        "source_subject_id": int(plan.source_subject_ids[row]),
+                        "source_copy_id": int(plan.source_copy_ids[row]),
+                        "content_id": int(plan.content_ids[row]),
+                        "encoded_bytes": int(plan.encoded_bytes[row]),
+                        "delivered": int(bool(plan.delivered[row])),
+                        "corrupted": int(bool(plan.corrupted[row])),
+                        "status": status,
+                    }
+                )
+            if self.kcfg.candidate_tracking_enabled:
+                sender = int(plan.sender_entity_indices[row])
+                receiver = int(plan.receiver_entity_indices[row])
+                self.candidates.record_transfer(
+                    catalog=self.catalog,
+                    tick=plan.tick,
+                    source_content_id=int(plan.content_ids[row]),
+                    committed_content_id=(
+                        int(plan.content_ids[row])
+                        if committed_content_id is None
+                        else int(committed_content_id)
+                    ),
+                    sender_subject_id=int(plan.sender_subject_ids[row]),
+                    receiver_subject_id=int(plan.receiver_subject_ids[row]),
+                    status=status,
+                    sender_cost=sender_cost_charged,
+                    receiver_cost=receiver_cost_charged,
+                    sender_group=(int(group_ids[sender]) if group_ids is not None else 0),
+                    receiver_group=(int(group_ids[receiver]) if group_ids is not None else 0),
+                    sender_lineage=(
+                        int(lineage_subject_ids[sender])
+                        if lineage_subject_ids is not None
+                        else 0
+                    ),
+                    receiver_lineage=(
+                        int(lineage_subject_ids[receiver])
+                        if lineage_subject_ids is not None
+                        else 0
+                    ),
+                    sender_region=region_for(sender),
+                    receiver_region=region_for(receiver),
+                )
 
         for row in range(plan.size):
             sender = int(plan.sender_entity_indices[row])
@@ -1180,26 +1254,26 @@ class KnowledgeSystem:
             stats.sender_energy += send_cost
             if not bool(plan.delivered[row]):
                 stats.transfer_lost += 1
-                record(row, "lost")
+                record(row, "lost", sender_cost_charged=send_cost)
                 continue
             stats.transfer_delivered += 1
             if not alive[receiver]:
-                record(row, "receiver-dead")
+                record(row, "receiver-dead", sender_cost_charged=send_cost)
                 continue
             receive_cost = encoded_bytes * self.kcfg.receive_energy_per_byte
             if float(energy[receiver]) + 1e-12 < receive_cost:
                 stats.transfer_energy_rejected += 1
-                record(row, "receiver-energy-rejected")
+                record(row, "receiver-energy-rejected", sender_cost_charged=send_cost)
                 continue
             receiver_subject = int(plan.receiver_subject_ids[row])
             content_id = int(plan.content_ids[row])
             if self.arena.has_content(receiver_subject, content_id):
                 stats.transfer_duplicate_rejected += 1
-                record(row, "duplicate-rejected")
+                record(row, "duplicate-rejected", sender_cost_charged=send_cost)
                 continue
             if encoded_bytes > self.kcfg.holder_capacity_bytes:
                 stats.transfer_capacity_rejected += 1
-                record(row, "oversize-rejected")
+                record(row, "oversize-rejected", sender_cost_charged=send_cost)
                 continue
             required = max(
                 self.arena.holder_bytes(receiver_subject)
@@ -1213,7 +1287,7 @@ class KnowledgeSystem:
                 )
             if self.arena.holder_bytes(receiver_subject) + encoded_bytes > self.kcfg.holder_capacity_bytes:
                 stats.transfer_capacity_rejected += 1
-                record(row, "capacity-rejected")
+                record(row, "capacity-rejected", sender_cost_charged=send_cost)
                 continue
             energy[receiver] = np.float32(float(energy[receiver]) - receive_cost)
             stats.receiver_energy += receive_cost
@@ -1271,7 +1345,13 @@ class KnowledgeSystem:
                 acquisition_kind=ACQUISITION_TRANSFER,
             )
             stats.transfer_committed += 1
-            record(row, "committed-corrupted" if bool(plan.corrupted[row]) else "committed")
+            record(
+                row,
+                "committed-corrupted" if bool(plan.corrupted[row]) else "committed",
+                committed_content_id=content_id,
+                sender_cost_charged=send_cost,
+                receiver_cost_charged=receive_cost,
+            )
         self.last_transfer_plan = plan
         if plan.size:
             self._write_event(
@@ -1447,6 +1527,14 @@ class KnowledgeSystem:
                         stats.private_experience_updates += 1
                     if was_unverified_transfer:
                         stats.transferred_copies_verified += 1
+                    if self.kcfg.candidate_tracking_enabled:
+                        self.candidates.record_verification(
+                            content_id=int(self.arena.content_id[copy_row]),
+                            holder_subject_id=holder,
+                            cost=verification_cost,
+                            transferred_copy_verified=was_unverified_transfer,
+                            tick=plan.tick,
+                        )
                     record(
                         int(plan_row),
                         update_kind=(
@@ -1495,6 +1583,8 @@ class KnowledgeSystem:
                 created_tick=plan.tick,
                 source_subject_id=holder,
             )
+            if self.kcfg.candidate_tracking_enabled:
+                self.candidates.ensure_catalog(self.catalog)
             copy_id = self.arena.append(
                 holder_subject_id=holder,
                 content_id=content_id,
@@ -1511,6 +1601,14 @@ class KnowledgeSystem:
             match_index.setdefault(key, []).append(copy_row)
             stats.outcome_updates += 1
             stats.private_experiences_created += 1
+            if self.kcfg.candidate_tracking_enabled:
+                self.candidates.record_verification(
+                    content_id=content_id,
+                    holder_subject_id=holder,
+                    cost=verification_cost,
+                    transferred_copy_verified=False,
+                    tick=plan.tick,
+                )
             record(
                 int(plan_row),
                 update_kind="create-private",
@@ -1557,7 +1655,13 @@ class KnowledgeSystem:
         ]
         return self.arena.deactivate(remove)
 
-    def record_policy_plan(self, plan: Any, *, changed_actions: int = 0) -> KnowledgeStepStats:
+    def record_policy_plan(
+        self,
+        plan: Any,
+        *,
+        changed_actions: int = 0,
+        changed_active_rows: np.ndarray | None = None,
+    ) -> KnowledgeStepStats:
         """Record one K3 sparse residual plan without mutating knowledge state."""
         stats = KnowledgeStepStats()
         if not self.kcfg.policy_influence_enabled:
@@ -1574,6 +1678,17 @@ class KnowledgeSystem:
         stats.policy_residual_abs_sum = float(
             np.abs(plan.residuals).sum(dtype=np.float64)
         )
+        if self.kcfg.candidate_tracking_enabled:
+            self.candidates.record_policy_plan(
+                observation=self.observation,
+                plan=plan,
+                changed_active_rows=(
+                    np.empty(0, dtype=np.int32)
+                    if changed_active_rows is None
+                    else np.asarray(changed_active_rows, dtype=np.int32)
+                ),
+                acquisition_transfer=ACQUISITION_TRANSFER,
+            )
         if self._policy_writer is not None:
             for row in range(plan.size):
                 outcome = plan.weighted_outcome_vectors[row]
@@ -1605,6 +1720,46 @@ class KnowledgeSystem:
         self.observation = self.arena.publish(self.catalog, tick)
         return self.observation
 
+    def update_candidates(
+        self,
+        *,
+        tick: int,
+        alive: np.ndarray,
+        primary_subject_ids: np.ndarray,
+        lineage_subject_ids: np.ndarray,
+        group_ids: np.ndarray,
+        x: np.ndarray,
+        y: np.ndarray,
+        world_width: float,
+        world_height: float,
+        energy: np.ndarray,
+        integrity: np.ndarray,
+        harvested_material: np.ndarray,
+        information_store: np.ndarray,
+        fertility: np.ndarray,
+        reproduction_threshold: float,
+    ) -> Any:
+        """Publish one K4 diagnostic snapshot after all world commits."""
+        return self.candidates.observe(
+            catalog=self.catalog,
+            arena=self.arena,
+            tick=tick,
+            alive=alive,
+            primary_subject_ids=primary_subject_ids,
+            lineage_subject_ids=lineage_subject_ids,
+            group_ids=group_ids,
+            x=x,
+            y=y,
+            world_width=world_width,
+            world_height=world_height,
+            energy=energy,
+            integrity=integrity,
+            harvested_material=harvested_material,
+            information_store=information_store,
+            fertility=fertility,
+            reproduction_threshold=reproduction_threshold,
+        )
+
     def accumulate(self, step: KnowledgeStepStats) -> None:
         for name in KnowledgeStepStats.__dataclass_fields__:
             setattr(self.totals, name, getattr(self.totals, name) + getattr(step, name))
@@ -1617,7 +1772,7 @@ class KnowledgeSystem:
             else 0
         )
         variants = int(np.count_nonzero(self.catalog.parent_content_id[: self.catalog.size]))
-        return {
+        summary = {
             "enabled": self.kcfg.enabled,
             "schema": self.kcfg.schema,
             "outcome_schema": (
@@ -1688,6 +1843,8 @@ class KnowledgeSystem:
             "policy_changed_actions_total": self.totals.policy_changed_actions,
             "policy_residual_abs_sum_total": self.totals.policy_residual_abs_sum,
         }
+        summary.update(self.candidates.summary())
+        return summary
 
     def validate(self, alive: np.ndarray, primary_subject_ids: np.ndarray) -> None:
         if not self.kcfg.enabled:
@@ -1720,11 +1877,12 @@ class KnowledgeSystem:
             or np.any(~np.isfinite(self.catalog.outcome_vector[: self.catalog.size]))
         ):
             raise AssertionError("knowledge catalog invariant failed")
+        self.candidates.validate(self.catalog, self.arena)
 
     def checkpoint_arrays(self) -> dict[str, np.ndarray]:
         active = np.flatnonzero(self.arena.active[: self.arena.size])
         catalog = self.catalog.arrays()
-        return {
+        arrays = {
             "knowledge_content_id": catalog["content_id"],
             "knowledge_parent_content_id": catalog["parent_content_id"],
             "knowledge_context_key": catalog["context_key"],
@@ -1746,6 +1904,8 @@ class KnowledgeSystem:
             "knowledge_copy_outcome_m2": self.arena.outcome_m2[active],
             "knowledge_copy_acquisition_kind": self.arena.acquisition_kind[active],
         }
+        arrays.update(self.candidates.checkpoint_arrays())
+        return arrays
 
 
 __all__ = [

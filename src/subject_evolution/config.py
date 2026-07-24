@@ -93,10 +93,11 @@ class InformationConfig:
 
 @dataclass(frozen=True)
 class KnowledgeConfig:
-    """Dynamic knowledge-copy settings for K1/K2/K3.
+    """Dynamic knowledge-copy settings for K1/K2/K3/K4.
 
     K3 is separately gated and never changes the meaning of the legacy 128
-    inherited linear-policy genes.
+    inherited linear-policy genes.  K4 is a diagnostic-only candidate-subject
+    graph and cannot affect policy or world commits.
     """
 
     enabled: bool = False
@@ -140,6 +141,15 @@ class KnowledgeConfig:
     policy_outcome_clip: float = 1.0
     policy_max_abs_logit_residual: float = 1.0
     log_policy_contributions: bool = False
+
+    # K4 candidate knowledge-subject diagnostics.  This layer is observational
+    # and is inert unless explicitly enabled.
+    candidate_tracking_enabled: bool = False
+    candidate_schema: str = "knowledge-subject-candidate-v1"
+    candidate_graph_schema: str = "candidate-subject-graph-v1"
+    candidate_update_period: int = 10
+    candidate_region_grid_x: int = 8
+    candidate_region_grid_y: int = 8
 
 
 @dataclass(frozen=True)
@@ -319,10 +329,12 @@ def validate_config(cfg: SimulationConfig) -> None:
         "dynamic-knowledge-k1-v1",
         "dynamic-knowledge-k2-v1",
         "dynamic-knowledge-k3-v1",
+        "dynamic-knowledge-k4-v1",
     }:
         raise ValueError(
             "knowledge.schema must be one of: 'dynamic-knowledge-k1-v1', "
-            "'dynamic-knowledge-k2-v1', 'dynamic-knowledge-k3-v1'"
+            "'dynamic-knowledge-k2-v1', 'dynamic-knowledge-k3-v1', "
+            "'dynamic-knowledge-k4-v1'"
         )
     if cfg.knowledge.initial_content_count < 0:
         raise ValueError("knowledge.initial_content_count cannot be negative")
@@ -382,6 +394,7 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.knowledge.learning_enabled and cfg.knowledge.schema not in {
         "dynamic-knowledge-k2-v1",
         "dynamic-knowledge-k3-v1",
+        "dynamic-knowledge-k4-v1",
     }:
         raise ValueError(
             "knowledge.learning_enabled requires K2 or K3 knowledge schema"
@@ -420,6 +433,23 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("knowledge.policy_max_abs_logit_residual must be positive and finite")
     if not isinstance(cfg.knowledge.log_policy_contributions, bool):
         raise ValueError("knowledge.log_policy_contributions must be a boolean")
+    if not isinstance(cfg.knowledge.candidate_tracking_enabled, bool):
+        raise ValueError("knowledge.candidate_tracking_enabled must be a boolean")
+    if cfg.knowledge.candidate_schema != "knowledge-subject-candidate-v1":
+        raise ValueError("knowledge.candidate_schema must be 'knowledge-subject-candidate-v1'")
+    if cfg.knowledge.candidate_graph_schema != "candidate-subject-graph-v1":
+        raise ValueError("knowledge.candidate_graph_schema must be 'candidate-subject-graph-v1'")
+    if cfg.knowledge.candidate_update_period <= 0:
+        raise ValueError("knowledge.candidate_update_period must be positive")
+    if cfg.knowledge.candidate_region_grid_x <= 0 or cfg.knowledge.candidate_region_grid_y <= 0:
+        raise ValueError("knowledge candidate region grid dimensions must be positive")
+    if cfg.knowledge.candidate_tracking_enabled:
+        if not cfg.knowledge.enabled or not cfg.knowledge.learning_enabled:
+            raise ValueError("K4 candidate tracking requires enabled K2 learning")
+        if cfg.knowledge.schema != "dynamic-knowledge-k4-v1":
+            raise ValueError("K4 candidate tracking requires dynamic-knowledge-k4-v1")
+        if not cfg.knowledge.policy_influence_enabled:
+            raise ValueError("K4 candidate tracking requires K3 policy influence")
     if cfg.policy.schema not in {
         "inherited-linear-policy-v1",
         "inherited-linear-policy-knowledge-residual-v1",
@@ -428,8 +458,8 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.knowledge.policy_influence_enabled:
         if not cfg.knowledge.enabled or not cfg.knowledge.learning_enabled:
             raise ValueError("K3 policy influence requires enabled K2 learning")
-        if cfg.knowledge.schema != "dynamic-knowledge-k3-v1":
-            raise ValueError("K3 policy influence requires dynamic-knowledge-k3-v1")
+        if cfg.knowledge.schema not in {"dynamic-knowledge-k3-v1", "dynamic-knowledge-k4-v1"}:
+            raise ValueError("K3 policy influence requires dynamic-knowledge-k3-v1 or dynamic-knowledge-k4-v1")
         if cfg.policy.schema != "inherited-linear-policy-knowledge-residual-v1":
             raise ValueError("K3 policy influence requires the K3 policy schema")
     elif cfg.policy.schema != "inherited-linear-policy-v1":

@@ -673,6 +673,18 @@ class Simulation:
                 if self.cfg.knowledge.policy_influence_enabled
                 else None
             ),
+            "knowledge_candidate_tracking": self.cfg.knowledge.candidate_tracking_enabled,
+            "knowledge_candidate_schema": (
+                self.cfg.knowledge.candidate_schema
+                if self.cfg.knowledge.candidate_tracking_enabled
+                else None
+            ),
+            "knowledge_candidate_graph_schema": (
+                self.cfg.knowledge.candidate_graph_schema
+                if self.cfg.knowledge.candidate_tracking_enabled
+                else None
+            ),
+            "knowledge_candidate_diagnostic_only": True,
             "validation_mode": self.cfg.run.validation_mode,
         }
         (self.output_dir / "run_manifest.json").write_text(
@@ -981,6 +993,19 @@ class Simulation:
                     if self.cfg.knowledge.policy_influence_enabled
                     else None
                 ),
+                "knowledge_candidate_tracking": self.cfg.knowledge.candidate_tracking_enabled,
+                "knowledge_candidate_schema": (
+                    self.cfg.knowledge.candidate_schema
+                    if self.cfg.knowledge.candidate_tracking_enabled
+                    else None
+                ),
+                "knowledge_candidate_graph_schema": (
+                    self.cfg.knowledge.candidate_graph_schema
+                    if self.cfg.knowledge.candidate_tracking_enabled
+                    else None
+                ),
+                "knowledge_candidate_diagnostic_only": True,
+                "knowledge_candidate_subjecthood_truth_claimed": False,
                 "feature_constraints": list(ParametricPolicy.FEATURE_NAMES),
                 "action_preferences_hardcoded": False,
                 "strategy_gene_count": ParametricPolicy.STRATEGY_GENES,
@@ -1023,6 +1048,12 @@ class Simulation:
                 "memory": "observation-driven finite-memory dynamics",
                 "generation": "parent generation plus one at committed birth",
                 "candidate_subjects": "derived from bodies, lineages, and relation structure",
+                "knowledge_candidate_subjects": (
+                    "diagnostic-only content lineage, host distribution, cost, policy influence, "
+                    "and boundary-flow observations; no independent actuator or control path"
+                    if self.cfg.knowledge.candidate_tracking_enabled
+                    else "disabled"
+                ),
                 "knowledge": (
                     (
                         "dynamic costly holder copies with local current-tick "
@@ -1531,13 +1562,18 @@ class Simulation:
             stats.policy_seconds = prepared.policy_seconds
 
         if cfg.knowledge.enabled and cfg.knowledge.policy_influence_enabled:
-            changed_actions = (
-                int(np.count_nonzero(decision.action != decision.genetic_action))
+            changed_active_rows = (
+                np.flatnonzero(decision.action != decision.genetic_action).astype(
+                    np.int32, copy=False
+                )
                 if decision.genetic_action is not None
-                else 0
+                else np.empty(0, dtype=np.int32)
             )
+            changed_actions = int(changed_active_rows.size)
             policy_stats = self.knowledge.record_policy_plan(
-                knowledge_policy_plan, changed_actions=changed_actions
+                knowledge_policy_plan,
+                changed_actions=changed_actions,
+                changed_active_rows=changed_active_rows,
             )
             for field_name in KnowledgeStepStats.__dataclass_fields__:
                 setattr(
@@ -1829,7 +1865,15 @@ class Simulation:
                 tick=self.tick,
             )
             transfer_stats = self.knowledge.commit_transfers(
-                transfer_plan, energy=ent.energy, alive=ent.alive
+                transfer_plan,
+                energy=ent.energy,
+                alive=ent.alive,
+                group_ids=self.social.group_id,
+                lineage_subject_ids=ent.lineage_subject_id,
+                x=ent.x,
+                y=ent.y,
+                world_width=cfg.world.width,
+                world_height=cfg.world.height,
             )
             for field_name in KnowledgeStepStats.__dataclass_fields__:
                 setattr(
@@ -2071,6 +2115,33 @@ class Simulation:
                 self.tick,
             )
         stats.graph_seconds = time.perf_counter() - phase_started
+        if (
+            self.cfg.knowledge.enabled
+            and self.cfg.knowledge.candidate_tracking_enabled
+            and (
+                (self.tick + 1) % self.cfg.knowledge.candidate_update_period == 0
+                or self.tick == 0
+            )
+        ):
+            candidate_started = time.perf_counter()
+            self.knowledge.update_candidates(
+                tick=self.tick + 1,
+                alive=ent.alive,
+                primary_subject_ids=ent.primary_subject_id,
+                lineage_subject_ids=ent.lineage_subject_id,
+                group_ids=self.social.group_id,
+                x=ent.x,
+                y=ent.y,
+                world_width=cfg.world.width,
+                world_height=cfg.world.height,
+                energy=ent.energy,
+                integrity=ent.integrity,
+                harvested_material=ent.harvested_energy_total,
+                information_store=ent.information_store,
+                fertility=ent.fertility,
+                reproduction_threshold=cfg.entities.reproduction_threshold,
+            )
+            stats.graph_seconds += time.perf_counter() - candidate_started
         if self.gpu_runtime is not None:
             phase_started = time.perf_counter()
             lifecycle_changed = np.zeros(ent.alive.size, dtype=bool)
@@ -2520,6 +2591,56 @@ class Simulation:
                     "validation_seconds": stats.validation_seconds,
                 }
             )
+            if self.cfg.knowledge.candidate_tracking_enabled:
+                row.update(
+                    {
+                        "knowledge_candidate_count": int(
+                            knowledge_summary["knowledge_candidate_count"]
+                        ),
+                        "knowledge_candidate_active_count": int(
+                            knowledge_summary["knowledge_candidate_active_count"]
+                        ),
+                        "knowledge_candidate_inactive_count": int(
+                            knowledge_summary["knowledge_candidate_inactive_count"]
+                        ),
+                        "knowledge_candidate_root_count": int(
+                            knowledge_summary["knowledge_candidate_root_count"]
+                        ),
+                        "knowledge_candidate_variant_count": int(
+                            knowledge_summary["knowledge_candidate_variant_count"]
+                        ),
+                        "knowledge_candidate_multi_holder_count": int(
+                            knowledge_summary["knowledge_candidate_multi_holder_count"]
+                        ),
+                        "knowledge_candidate_policy_influence_events": int(
+                            knowledge_summary["knowledge_candidate_policy_influence_events"]
+                        ),
+                        "knowledge_candidate_policy_changed_actions": int(
+                            knowledge_summary["knowledge_candidate_policy_changed_actions"]
+                        ),
+                        "knowledge_candidate_host_cost_total": float(
+                            knowledge_summary["knowledge_candidate_host_cost_total"]
+                        ),
+                        "knowledge_boundary_group_internal_commits": int(
+                            knowledge_summary["knowledge_boundary_group_internal_commits"]
+                        ),
+                        "knowledge_boundary_group_cross_commits": int(
+                            knowledge_summary["knowledge_boundary_group_cross_commits"]
+                        ),
+                        "knowledge_boundary_group_unknown_commits": int(
+                            knowledge_summary["knowledge_boundary_group_unknown_commits"]
+                        ),
+                        "knowledge_boundary_group_cohesion": float(
+                            knowledge_summary["knowledge_boundary_group_cohesion"]
+                        ),
+                        "knowledge_boundary_group_cohesion_valid": int(
+                            bool(knowledge_summary["knowledge_boundary_group_cohesion_valid"])
+                        ),
+                        "knowledge_candidate_last_update_tick": int(
+                            knowledge_summary["knowledge_candidate_last_update_tick"]
+                        ),
+                    }
+                )
         row.update(self.subjects.summary())
         return row
 
