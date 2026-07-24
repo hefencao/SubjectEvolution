@@ -7,8 +7,11 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <cctype>
 #include <cstdint>
 #include <filesystem>
+#include <fstream>
+#include <iostream>
 #include <optional>
 #include <mutex>
 #include <sstream>
@@ -87,22 +90,275 @@ std::filesystem::path find_project_root(
     return std::filesystem::current_path();
 }
 
-std::vector<std::filesystem::path> find_configs(
+struct ConfigScanResult {
+    std::vector<std::filesystem::path> configs;
+    std::string error;
+};
+
+struct ConfigFileStatus {
+    bool launchable = false;
+    std::uintmax_t size_bytes = 0;
+    std::string message;
+};
+
+ConfigScanResult find_configs(
     const std::filesystem::path& config_dir
 ) {
-    std::vector<std::filesystem::path> configs;
+    ConfigScanResult result;
     std::error_code error;
-    for (const auto& entry : std::filesystem::directory_iterator(
-             config_dir,
-             std::filesystem::directory_options::skip_permission_denied,
-             error
-         )) {
-        if (entry.is_regular_file() && entry.path().extension() == ".json") {
-            configs.push_back(entry.path());
+
+    if (!std::filesystem::is_directory(config_dir, error)) {
+        result.error = "Configuration directory is not available: " +
+            config_dir.string();
+        return result;
+    }
+
+    std::filesystem::directory_iterator iterator(
+        config_dir,
+        std::filesystem::directory_options::skip_permission_denied,
+        error
+    );
+    if (error) {
+        result.error = "Could not read configuration directory: " +
+            error.message();
+        return result;
+    }
+
+    for (const auto& entry : iterator) {
+        std::error_code entry_error;
+        const bool regular = entry.is_regular_file(entry_error);
+        if (!entry_error && regular && entry.path().extension() == ".json") {
+            result.configs.push_back(std::filesystem::absolute(entry.path()));
         }
     }
-    std::sort(configs.begin(), configs.end());
-    return configs;
+
+    std::sort(
+        result.configs.begin(),
+        result.configs.end(),
+        [](const auto& left, const auto& right) {
+            std::string a = left.filename().string();
+            std::string b = right.filename().string();
+            std::transform(a.begin(), a.end(), a.begin(), [](unsigned char c) {
+                return static_cast<char>(std::tolower(c));
+            });
+            std::transform(b.begin(), b.end(), b.begin(), [](unsigned char c) {
+                return static_cast<char>(std::tolower(c));
+            });
+            return a == b ? left.string() < right.string() : a < b;
+        }
+    );
+    return result;
+}
+
+ConfigFileStatus inspect_config_file(const std::filesystem::path& path) {
+    ConfigFileStatus status;
+    std::error_code error;
+    if (!std::filesystem::is_regular_file(path, error)) {
+        status.message = "The selected file no longer exists or is not regular.";
+        return status;
+    }
+
+    status.size_bytes = std::filesystem::file_size(path, error);
+    if (error) {
+        status.message = "The selected file size could not be read.";
+        return status;
+    }
+    if (status.size_bytes == 0) {
+        status.message = "The selected JSON file is empty.";
+        return status;
+    }
+
+    std::ifstream input(path, std::ios::binary);
+    if (!input) {
+        status.message = "The selected JSON file is not readable.";
+        return status;
+    }
+
+    char first = '\0';
+    while (input.get(first)) {
+        if (!std::isspace(static_cast<unsigned char>(first))) {
+            break;
+        }
+    }
+    if (first != '{' && first != '[') {
+        status.message = "The file does not begin with a JSON object or array.";
+        return status;
+    }
+
+    status.launchable = true;
+    status.message = "Readable JSON configuration.";
+    return status;
+}
+
+std::string compact_bytes(std::uintmax_t bytes) {
+    const double value = static_cast<double>(bytes);
+    if (bytes >= 1024U * 1024U) {
+        return TextFormat("%.2f MiB", value / (1024.0 * 1024.0));
+    }
+    if (bytes >= 1024U) {
+        return TextFormat("%.1f KiB", value / 1024.0);
+    }
+    return std::to_string(bytes) + " B";
+}
+
+std::string elide_text(
+    const std::string& text,
+    int max_width,
+    int font_size
+) {
+    if (max_width <= 0 || MeasureText(text.c_str(), font_size) <= max_width) {
+        return text;
+    }
+
+    constexpr const char* ellipsis = "...";
+    const int ellipsis_width = MeasureText(ellipsis, font_size);
+    if (ellipsis_width >= max_width) {
+        return ellipsis;
+    }
+
+    std::size_t left_count = text.size() / 2U;
+    std::size_t right_start = left_count;
+    while (left_count > 0U && right_start < text.size()) {
+        const std::string candidate = text.substr(0, left_count) + ellipsis +
+            text.substr(right_start);
+        if (MeasureText(candidate.c_str(), font_size) <= max_width) {
+            return candidate;
+        }
+        if (left_count >= text.size() - right_start) {
+            --left_count;
+        } else {
+            ++right_start;
+        }
+    }
+    return ellipsis;
+}
+
+int draw_wrapped_text(
+    const std::string& text,
+    int x,
+    int y,
+    int max_width,
+    int font_size,
+    int line_height,
+    int max_lines,
+    Color color
+) {
+    std::istringstream words(text);
+    std::string line;
+    std::string word;
+    int lines = 0;
+
+    while (words >> word && lines < max_lines) {
+        const std::string candidate = line.empty() ? word : line + " " + word;
+        if (!line.empty() && MeasureText(candidate.c_str(), font_size) > max_width) {
+            DrawText(elide_text(line, max_width, font_size).c_str(), x, y, font_size, color);
+            y += line_height;
+            ++lines;
+            line = word;
+        } else {
+            line = candidate;
+        }
+    }
+    if (!line.empty() && lines < max_lines) {
+        DrawText(elide_text(line, max_width, font_size).c_str(), x, y, font_size, color);
+        y += line_height;
+        ++lines;
+    }
+    return y;
+}
+
+struct LauncherLayout {
+    Rectangle config_panel{};
+    Rectangle list_view{};
+    Rectangle details_panel{};
+    Rectangle refresh_button{};
+    Rectangle start_button{};
+    Rectangle close_button{};
+};
+
+LauncherLayout make_launcher_layout(int width, int height) {
+    const float margin = std::clamp(width * 0.035F, 28.0F, 52.0F);
+    const float header_bottom = 150.0F;
+    const float footer_height = 88.0F;
+    const float gap = 22.0F;
+    const float content_height = std::max(
+        360.0F,
+        static_cast<float>(height) - header_bottom - footer_height - margin
+    );
+    const float available_width = static_cast<float>(width) - margin * 2.0F - gap;
+    const float left_width = std::clamp(available_width * 0.57F, 460.0F, 790.0F);
+    const float right_width = std::max(300.0F, available_width - left_width);
+
+    LauncherLayout layout;
+    layout.config_panel = Rectangle{margin, header_bottom, left_width, content_height};
+    layout.list_view = Rectangle{
+        margin + 12.0F,
+        header_bottom + 56.0F,
+        left_width - 24.0F,
+        content_height - 70.0F
+    };
+    layout.details_panel = Rectangle{
+        margin + left_width + gap,
+        header_bottom,
+        right_width,
+        content_height
+    };
+    layout.refresh_button = Rectangle{
+        layout.config_panel.x + layout.config_panel.width - 128.0F,
+        layout.config_panel.y + 12.0F,
+        112.0F,
+        32.0F
+    };
+    layout.start_button = Rectangle{
+        static_cast<float>(width) - margin - 242.0F,
+        static_cast<float>(height) - footer_height + 20.0F,
+        242.0F,
+        48.0F
+    };
+    layout.close_button = Rectangle{
+        layout.start_button.x - 126.0F,
+        layout.start_button.y,
+        110.0F,
+        48.0F
+    };
+    return layout;
+}
+
+std::size_t clamp_launcher_scroll(
+    std::size_t selected,
+    std::size_t item_count,
+    std::size_t visible_rows,
+    std::size_t scroll_start
+) {
+    if (item_count == 0U || visible_rows == 0U) {
+        return 0U;
+    }
+    selected = std::min(selected, item_count - 1U);
+    visible_rows = std::min(visible_rows, item_count);
+    if (selected < scroll_start) {
+        scroll_start = selected;
+    } else if (selected >= scroll_start + visible_rows) {
+        scroll_start = selected - visible_rows + 1U;
+    }
+    const std::size_t max_scroll = item_count - visible_rows;
+    return std::min(scroll_start, max_scroll);
+}
+
+std::string command_preview(
+    const std::string& python,
+    const std::filesystem::path& config,
+    const std::filesystem::path& project_root,
+    const std::string& backend
+) {
+    const std::string stem = config.empty() ? "<config>" : config.stem().string();
+    const std::string output = (
+        project_root / "runs" / ("gui_" + stem + "_<timestamp>")
+    ).string();
+    return python +
+        " -m subject_evolution.gui_interface.run_simulation --config \"" +
+        config.string() + "\" --output \"" + output +
+        "\" --stream \"" + output +
+        "/eco_live.bin\" --backend " + backend;
 }
 
 std::string timestamp_suffix() {
@@ -163,87 +419,492 @@ std::optional<LaunchRequest> show_launcher(
     const std::filesystem::path& config_dir,
     const std::string& python
 ) {
-    const std::vector<std::filesystem::path> configs = find_configs(config_dir);
+    ConfigScanResult scan = find_configs(config_dir);
+    std::vector<std::filesystem::path> configs = std::move(scan.configs);
     const std::array<std::string, 3> backends{"cpu", "gpu", "auto"};
-    std::size_t selected = 0;
-    std::size_t backend = 0;
-    std::string message = configs.empty()
-        ? "No JSON configurations found in " + config_dir.string()
-        : "Choose a configuration, then start the simulation.";
+    const std::array<std::string, 3> backend_descriptions{
+        "CPU: conservative and reproducible; preferred for parity checks.",
+        "GPU: request the CUDA simulation backend; fails if unavailable.",
+        "Auto: let the Python launcher choose the available backend.",
+    };
 
-    while (!WindowShouldClose()) {
-        if (!configs.empty()) {
-            if (IsKeyPressed(KEY_DOWN)) {
-                selected = std::min(selected + 1, configs.size() - 1);
-            }
-            if (IsKeyPressed(KEY_UP) && selected > 0) {
-                --selected;
-            }
-            if (IsKeyPressed(KEY_LEFT) && backend > 0) {
-                --backend;
-            }
-            if (IsKeyPressed(KEY_RIGHT) && backend + 1 < backends.size()) {
-                ++backend;
+    std::size_t selected = 0;
+    std::size_t scroll_start = 0;
+    std::size_t backend = 0;
+    std::string message = scan.error.empty()
+        ? (configs.empty()
+            ? "No JSON configurations were found."
+            : "Choose a configuration and verify the launch summary.")
+        : scan.error;
+    Color message_color = scan.error.empty() ? GRAY : ORANGE;
+    std::string last_title;
+
+    auto refresh = [&]() {
+        const std::filesystem::path previous =
+            configs.empty() ? std::filesystem::path{} : configs[selected];
+        ConfigScanResult refreshed = find_configs(config_dir);
+        configs = std::move(refreshed.configs);
+        selected = 0;
+        if (!previous.empty()) {
+            const auto found = std::find(configs.begin(), configs.end(), previous);
+            if (found != configs.end()) {
+                selected = static_cast<std::size_t>(found - configs.begin());
             }
         }
+        if (!configs.empty()) {
+            selected = std::min(selected, configs.size() - 1U);
+        }
+        scroll_start = 0;
+        message = refreshed.error.empty()
+            ? (configs.empty()
+                ? "No JSON configurations were found."
+                : "Configuration list refreshed.")
+            : refreshed.error;
+        message_color = refreshed.error.empty() ? GRAY : ORANGE;
+    };
 
-        const Rectangle start_button{48.0F, 500.0F, 240.0F, 48.0F};
-        const bool start = IsKeyPressed(KEY_ENTER) ||
+    while (!WindowShouldClose()) {
+        const LauncherLayout layout = make_launcher_layout(
+            GetScreenWidth(),
+            GetScreenHeight()
+        );
+        constexpr float row_height = 42.0F;
+        const std::size_t visible_rows = std::max<std::size_t>(
+            1U,
+            static_cast<std::size_t>(layout.list_view.height / row_height)
+        );
+
+        if (IsKeyPressed(KEY_ESCAPE)) {
+            return std::nullopt;
+        }
+        if (IsKeyPressed(KEY_R) ||
             (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) &&
-             CheckCollisionPointRec(GetMousePosition(), start_button));
-        if (start && !configs.empty()) {
-            const std::string stem = configs[selected].stem().string();
-            const std::filesystem::path output = project_root / "runs" /
-                ("gui_" + stem + "_" + timestamp_suffix());
-            return LaunchRequest{
-                project_root,
-                configs[selected],
-                output,
-                output / "eco_live.bin",
-                python,
-                backends[backend],
+             CheckCollisionPointRec(GetMousePosition(), layout.refresh_button))) {
+            refresh();
+        }
+
+        if (!configs.empty()) {
+            const auto move_selection = [&](long long delta) {
+                const long long maximum = static_cast<long long>(configs.size() - 1U);
+                const long long next = std::clamp(
+                    static_cast<long long>(selected) + delta,
+                    0LL,
+                    maximum
+                );
+                selected = static_cast<std::size_t>(next);
             };
+
+            if (IsKeyPressed(KEY_DOWN)) {
+                move_selection(1);
+            }
+            if (IsKeyPressed(KEY_UP)) {
+                move_selection(-1);
+            }
+            if (IsKeyPressed(KEY_PAGE_DOWN)) {
+                move_selection(static_cast<long long>(visible_rows));
+            }
+            if (IsKeyPressed(KEY_PAGE_UP)) {
+                move_selection(-static_cast<long long>(visible_rows));
+            }
+            if (IsKeyPressed(KEY_HOME)) {
+                selected = 0;
+            }
+            if (IsKeyPressed(KEY_END)) {
+                selected = configs.size() - 1U;
+            }
+
+            if (CheckCollisionPointRec(GetMousePosition(), layout.list_view)) {
+                const float wheel = GetMouseWheelMove();
+                if (wheel != 0.0F) {
+                    const long long direction = wheel > 0.0F ? -1LL : 1LL;
+                    const long long steps = std::max(
+                        1LL,
+                        static_cast<long long>(std::ceil(std::abs(wheel) * 3.0F))
+                    );
+                    move_selection(direction * steps);
+                }
+            }
+
+            if (IsKeyPressed(KEY_LEFT) && backend > 0U) {
+                --backend;
+            }
+            if (IsKeyPressed(KEY_RIGHT) && backend + 1U < backends.size()) {
+                ++backend;
+            }
+
+            scroll_start = clamp_launcher_scroll(
+                selected,
+                configs.size(),
+                visible_rows,
+                scroll_start
+            );
+        } else {
+            selected = 0;
+            scroll_start = 0;
+        }
+
+        const std::filesystem::path selected_path = configs.empty()
+            ? std::filesystem::path{}
+            : configs[selected];
+        const ConfigFileStatus file_status = selected_path.empty()
+            ? ConfigFileStatus{}
+            : inspect_config_file(selected_path);
+
+        const std::string title = selected_path.empty()
+            ? "Subject Evolution Launcher — no configuration"
+            : "Subject Evolution Launcher — " +
+                selected_path.filename().string() + " [" + backends[backend] + "]";
+        if (title != last_title) {
+            SetWindowTitle(title.c_str());
+            last_title = title;
+        }
+
+        const bool mouse_start = IsMouseButtonPressed(MOUSE_BUTTON_LEFT) &&
+            CheckCollisionPointRec(GetMousePosition(), layout.start_button);
+        const bool start = IsKeyPressed(KEY_ENTER) || mouse_start;
+        if (start) {
+            if (configs.empty()) {
+                message = "A configuration must be selected before launch.";
+                message_color = ORANGE;
+            } else if (!file_status.launchable) {
+                message = file_status.message;
+                message_color = ORANGE;
+            } else {
+                const std::string stem = selected_path.stem().string();
+                const std::filesystem::path output = project_root / "runs" /
+                    ("gui_" + stem + "_" + timestamp_suffix());
+                return LaunchRequest{
+                    project_root,
+                    selected_path,
+                    output,
+                    output / "eco_live.bin",
+                    python,
+                    backends[backend],
+                };
+            }
+        }
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) &&
+            CheckCollisionPointRec(GetMousePosition(), layout.close_button)) {
+            return std::nullopt;
         }
 
         BeginDrawing();
         ClearBackground(Color{14, 17, 22, 255});
-        DrawText("Subject Evolution", 48, 44, 34, RAYWHITE);
-        DrawText("Simulation configuration", 48, 104, 21, LIGHTGRAY);
-        DrawText(message.c_str(), 48, 136, 17, GRAY);
 
-        int y = 180;
-        for (std::size_t index = 0; index < configs.size(); ++index) {
+        const int margin_x = static_cast<int>(layout.config_panel.x);
+        DrawText("Subject Evolution", margin_x, 38, 34, RAYWHITE);
+        DrawText("Simulation launcher", margin_x, 82, 21, LIGHTGRAY);
+        DrawText(
+            "Select one configuration, choose the execution backend, then review the exact launch context.",
+            margin_x,
+            112,
+            16,
+            GRAY
+        );
+
+        DrawRectangleRec(layout.config_panel, Color{7, 12, 17, 238});
+        DrawRectangleLinesEx(layout.config_panel, 1.0F, Fade(SKYBLUE, 0.22F));
+        DrawText(
+            TextFormat("Configurations  %u", static_cast<unsigned int>(configs.size())),
+            static_cast<int>(layout.config_panel.x + 16.0F),
+            static_cast<int>(layout.config_panel.y + 17.0F),
+            18,
+            LIGHTGRAY
+        );
+
+        const Vector2 mouse = GetMousePosition();
+        const bool refresh_hover = CheckCollisionPointRec(mouse, layout.refresh_button);
+        DrawRectangleRec(
+            layout.refresh_button,
+            refresh_hover ? Color{55, 65, 76, 255} : Color{39, 45, 53, 255}
+        );
+        DrawText(
+            "Refresh [R]",
+            static_cast<int>(layout.refresh_button.x + 12.0F),
+            static_cast<int>(layout.refresh_button.y + 8.0F),
+            15,
+            RAYWHITE
+        );
+
+        DrawRectangleRec(layout.list_view, Color{10, 15, 20, 255});
+        BeginScissorMode(
+            static_cast<int>(layout.list_view.x),
+            static_cast<int>(layout.list_view.y),
+            static_cast<int>(layout.list_view.width),
+            static_cast<int>(layout.list_view.height)
+        );
+        const std::size_t row_end = std::min(
+            configs.size(),
+            scroll_start + visible_rows
+        );
+        for (std::size_t index = scroll_start; index < row_end; ++index) {
+            const float row_y = layout.list_view.y +
+                static_cast<float>(index - scroll_start) * row_height;
+            const Rectangle item{
+                layout.list_view.x,
+                row_y,
+                layout.list_view.width,
+                row_height - 2.0F
+            };
             const bool active = index == selected;
-            const Rectangle item{48.0F, static_cast<float>(y), 530.0F, 44.0F};
+            const bool hovered = CheckCollisionPointRec(mouse, item);
             if (active) {
                 DrawRectangleRec(item, Color{42, 91, 117, 255});
+                DrawRectangle(
+                    static_cast<int>(item.x),
+                    static_cast<int>(item.y),
+                    4,
+                    static_cast<int>(item.height),
+                    Color{103, 210, 255, 255}
+                );
+            } else if (hovered) {
+                DrawRectangleRec(item, Color{24, 34, 43, 255});
             }
-            DrawText(configs[index].filename().string().c_str(), 64, y + 11, 20,
-                active ? RAYWHITE : LIGHTGRAY);
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) &&
-                CheckCollisionPointRec(GetMousePosition(), item)) {
+
+            const std::string filename = elide_text(
+                configs[index].filename().string(),
+                static_cast<int>(item.width - 78.0F),
+                18
+            );
+            DrawText(
+                filename.c_str(),
+                static_cast<int>(item.x + 16.0F),
+                static_cast<int>(item.y + 10.0F),
+                18,
+                active ? RAYWHITE : LIGHTGRAY
+            );
+            DrawText(
+                TextFormat("%u", static_cast<unsigned int>(index + 1U)),
+                static_cast<int>(item.x + item.width - 50.0F),
+                static_cast<int>(item.y + 12.0F),
+                14,
+                active ? Color{185, 231, 255, 255} : DARKGRAY
+            );
+
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && hovered) {
                 selected = index;
             }
-            y += 52;
+        }
+        EndScissorMode();
+
+        if (configs.empty()) {
+            DrawText(
+                "No .json files are available in this directory.",
+                static_cast<int>(layout.list_view.x + 20.0F),
+                static_cast<int>(layout.list_view.y + 24.0F),
+                16,
+                ORANGE
+            );
+        } else if (configs.size() > visible_rows) {
+            const Rectangle track{
+                layout.list_view.x + layout.list_view.width - 7.0F,
+                layout.list_view.y + 4.0F,
+                3.0F,
+                layout.list_view.height - 8.0F
+            };
+            const float fraction = static_cast<float>(visible_rows) /
+                static_cast<float>(configs.size());
+            const float thumb_height = std::max(28.0F, track.height * fraction);
+            const std::size_t max_scroll = configs.size() - visible_rows;
+            const float progress = max_scroll == 0U
+                ? 0.0F
+                : static_cast<float>(scroll_start) / static_cast<float>(max_scroll);
+            const Rectangle thumb{
+                track.x - 2.0F,
+                track.y + (track.height - thumb_height) * progress,
+                7.0F,
+                thumb_height
+            };
+            DrawRectangleRec(track, Color{34, 40, 47, 255});
+            DrawRectangleRec(thumb, Color{91, 136, 157, 255});
         }
 
-        DrawText("Backend", 48, 390, 20, LIGHTGRAY);
+        DrawRectangleRec(layout.details_panel, Color{7, 12, 17, 238});
+        DrawRectangleLinesEx(layout.details_panel, 1.0F, Fade(SKYBLUE, 0.22F));
+        const int details_x = static_cast<int>(layout.details_panel.x + 20.0F);
+        const int details_width = static_cast<int>(layout.details_panel.width - 40.0F);
+        int y = static_cast<int>(layout.details_panel.y + 18.0F);
+        DrawText("Selected configuration", details_x, y, 18, LIGHTGRAY);
+        y += 32;
+        if (selected_path.empty()) {
+            DrawText("None", details_x, y, 22, ORANGE);
+            y += 38;
+        } else {
+            DrawText(
+                elide_text(selected_path.filename().string(), details_width, 22).c_str(),
+                details_x,
+                y,
+                22,
+                RAYWHITE
+            );
+            y += 31;
+            DrawText(
+                elide_text(selected_path.string(), details_width, 14).c_str(),
+                details_x,
+                y,
+                14,
+                GRAY
+            );
+            y += 25;
+            DrawText(
+                (file_status.message +
+                 (file_status.size_bytes > 0U
+                    ? "  Size " + compact_bytes(file_status.size_bytes)
+                    : "")).c_str(),
+                details_x,
+                y,
+                14,
+                file_status.launchable ? Color{103, 225, 151, 255} : ORANGE
+            );
+            y += 36;
+        }
+
+        DrawText("Backend", details_x, y, 18, LIGHTGRAY);
+        y += 30;
+        const float backend_gap = 10.0F;
+        const float backend_width = (
+            layout.details_panel.width - 40.0F - backend_gap * 2.0F
+        ) / 3.0F;
         for (std::size_t index = 0; index < backends.size(); ++index) {
-            const int x = 148 + static_cast<int>(index) * 96;
+            const Rectangle item{
+                layout.details_panel.x + 20.0F +
+                    static_cast<float>(index) * (backend_width + backend_gap),
+                static_cast<float>(y),
+                backend_width,
+                38.0F
+            };
             const bool active = index == backend;
-            const Rectangle item{static_cast<float>(x), 382.0F, 82.0F, 34.0F};
-            DrawRectangleRec(item, active ? Color{42, 91, 117, 255} : Color{43, 47, 54, 255});
-            DrawText(backends[index].c_str(), x + 14, 391, 17, RAYWHITE);
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) &&
-                CheckCollisionPointRec(GetMousePosition(), item)) {
+            const bool hovered = CheckCollisionPointRec(mouse, item);
+            DrawRectangleRec(
+                item,
+                active
+                    ? Color{42, 91, 117, 255}
+                    : (hovered ? Color{55, 65, 76, 255} : Color{39, 45, 53, 255})
+            );
+            DrawText(
+                backends[index].c_str(),
+                static_cast<int>(item.x + item.width * 0.5F -
+                    MeasureText(backends[index].c_str(), 17) * 0.5F),
+                static_cast<int>(item.y + 10.0F),
+                17,
+                RAYWHITE
+            );
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && hovered) {
                 backend = index;
             }
         }
+        y += 50;
+        y = draw_wrapped_text(
+            backend_descriptions[backend],
+            details_x,
+            y,
+            details_width,
+            14,
+            19,
+            2,
+            GRAY
+        );
+        y += 18;
 
-        DrawRectangleRec(start_button, Color{48, 130, 91, 255});
-        DrawText("Start simulation", 69, 514, 20, RAYWHITE);
-        DrawText("Up/Down: configuration   Left/Right: backend   Enter: start",
-            48, 574, 16, GRAY);
+        DrawText("Launch context", details_x, y, 18, LIGHTGRAY);
+        y += 29;
+        const std::string output_template = selected_path.empty()
+            ? "runs/gui_<config>_<timestamp>/"
+            : "runs/gui_" + selected_path.stem().string() + "_<timestamp>/";
+        DrawText("Project", details_x, y, 13, GRAY);
+        DrawText(
+            elide_text(project_root.string(), details_width - 72, 14).c_str(),
+            details_x + 72,
+            y,
+            14,
+            LIGHTGRAY
+        );
+        y += 22;
+        DrawText("Config dir", details_x, y, 13, GRAY);
+        DrawText(
+            elide_text(config_dir.string(), details_width - 72, 14).c_str(),
+            details_x + 72,
+            y,
+            14,
+            LIGHTGRAY
+        );
+        y += 22;
+        DrawText("Python", details_x, y, 13, GRAY);
+        DrawText(
+            elide_text(python, details_width - 72, 14).c_str(),
+            details_x + 72,
+            y,
+            14,
+            LIGHTGRAY
+        );
+        y += 22;
+        DrawText("Output", details_x, y, 13, GRAY);
+        DrawText(
+            elide_text(output_template, details_width - 72, 14).c_str(),
+            details_x + 72,
+            y,
+            14,
+            LIGHTGRAY
+        );
+        y += 34;
+
+        DrawText("Command preview", details_x, y, 18, LIGHTGRAY);
+        y += 28;
+        draw_wrapped_text(
+            command_preview(python, selected_path, project_root, backends[backend]),
+            details_x,
+            y,
+            details_width,
+            13,
+            18,
+            5,
+            Color{149, 184, 200, 255}
+        );
+
+        DrawText(
+            message.c_str(),
+            margin_x,
+            GetScreenHeight() - 64,
+            15,
+            message_color
+        );
+        DrawText(
+            "Up/Down or wheel: select   PgUp/PgDn/Home/End: navigate   Left/Right: backend",
+            margin_x,
+            GetScreenHeight() - 39,
+            13,
+            GRAY
+        );
+
+        const bool close_hover = CheckCollisionPointRec(mouse, layout.close_button);
+        DrawRectangleRec(
+            layout.close_button,
+            close_hover ? Color{62, 68, 77, 255} : Color{43, 47, 54, 255}
+        );
+        DrawText(
+            "Close [Esc]",
+            static_cast<int>(layout.close_button.x + 12.0F),
+            static_cast<int>(layout.close_button.y + 15.0F),
+            16,
+            RAYWHITE
+        );
+
+        const bool start_enabled = !selected_path.empty() && file_status.launchable;
+        const bool start_hover = CheckCollisionPointRec(mouse, layout.start_button);
+        DrawRectangleRec(
+            layout.start_button,
+            !start_enabled
+                ? Color{39, 48, 49, 255}
+                : (start_hover ? Color{57, 151, 106, 255} : Color{48, 130, 91, 255})
+        );
+        DrawText(
+            start_enabled ? "Start simulation [Enter]" : "Select a valid configuration",
+            static_cast<int>(layout.start_button.x + 16.0F),
+            static_cast<int>(layout.start_button.y + 15.0F),
+            start_enabled ? 17 : 14,
+            start_enabled ? RAYWHITE : GRAY
+        );
+
         EndDrawing();
     }
     return std::nullopt;
@@ -1287,12 +1948,14 @@ int main(int argc, char** argv) {
     );
 
     InitWindow(1440, 900, "Eco Game Runtime");
+    SetWindowMinSize(1024, 700);
     SetTargetFPS(144);
 
     #if defined(__unix__) || defined(__APPLE__)
     pid_t simulation_process = -1;
     #endif
 
+    std::string session_label;
     if (!viewer_only) {
         const auto request = show_launcher(project_root, config_dir, python);
         if (!request.has_value()) {
@@ -1300,18 +1963,37 @@ int main(int argc, char** argv) {
             return 0;
         }
         shared_path = request->stream_path;
+        session_label = request->config_path.filename().string();
+
+        std::cout
+            << "[eco-gui] selected config: " << request->config_path << '\n'
+            << "[eco-gui] backend: " << request->backend << '\n'
+            << "[eco-gui] output: " << request->output_path << '\n'
+            << "[eco-gui] stream: " << request->stream_path << std::endl;
+
         #if defined(__unix__) || defined(__APPLE__)
         std::string launch_error;
         simulation_process = launch_simulation(*request, launch_error);
         if (simulation_process < 0) {
+            std::cerr << "[eco-gui] launch failed: " << launch_error << std::endl;
             CloseWindow();
             return 1;
         }
         #else
+        std::cerr << "[eco-gui] automatic simulation launch is not implemented "
+                     "for this platform build." << std::endl;
         CloseWindow();
         return 1;
         #endif
+    } else {
+        session_label = shared_path.filename().string();
+        std::cout << "[eco-gui] viewer stream: " << shared_path << std::endl;
     }
+
+    const std::string runtime_title = viewer_only
+        ? "Eco Game Runtime — stream " + session_label
+        : "Eco Game Runtime — " + session_label;
+    SetWindowTitle(runtime_title.c_str());
 
     FrameExchange exchange;
     std::atomic_bool running{true};
