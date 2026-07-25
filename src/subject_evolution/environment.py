@@ -33,6 +33,7 @@ class Environment:
             cfg.environment.resource_regeneration, dtype=np.float32
         )[:, None, None]
         self.hazard = self._hazard_pattern(0)
+        self.mortality_trace = np.zeros((gy, gx), dtype=np.float32)
 
     def _normalized_grid(self, xx: np.ndarray, yy: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         xnorm = xx.astype(np.float64) / max(self.cfg.world.grid_x - 1, 1)
@@ -114,7 +115,82 @@ class Environment:
         """Rotate resource and hazard geography by 180 degrees persistently."""
         self.resources = self.resources[:, ::-1, ::-1].copy()
         self.hazard = self.hazard[::-1, ::-1].copy()
+        self.mortality_trace = self.mortality_trace[::-1, ::-1].copy()
         self.spatial_reversed = not self.spatial_reversed
+
+    @property
+    def mortality_trace_enabled(self) -> bool:
+        return (
+            self.cfg.environment.mortality_trace_schema
+            == "local-decaying-mortality-trace-v1"
+        )
+
+    def public_danger_field(self) -> np.ndarray:
+        if not self.mortality_trace_enabled:
+            return self.hazard
+        return (
+            self.hazard
+            + np.float32(self.cfg.environment.mortality_trace_observation_weight)
+            * self.mortality_trace
+        ).astype(np.float32)
+
+    def danger_for_cells(self, cell_ids: np.ndarray) -> np.ndarray:
+        cells = validate_cell_ids(
+            cell_ids, self.cfg.world.grid_x * self.cfg.world.grid_y
+        )
+        return self.public_danger_field().reshape(-1)[cells].astype(np.float32)
+
+    def deposit_mortality_trace(
+        self, cell_ids: np.ndarray, weights: np.ndarray | None = None
+    ) -> None:
+        if not self.mortality_trace_enabled:
+            return
+        cells = validate_cell_ids(
+            cell_ids, self.cfg.world.grid_x * self.cfg.world.grid_y
+        )
+        if cells.size == 0:
+            return
+        values = (
+            np.ones(cells.size, dtype=np.float32)
+            if weights is None
+            else np.asarray(weights, dtype=np.float32)
+        )
+        if values.ndim != 1 or values.size != cells.size:
+            raise ValueError("mortality trace weights must align with cell IDs")
+        contribution = stable_segmented_sum(
+            cells,
+            values * np.float32(self.cfg.environment.mortality_trace_deposit),
+            self.cfg.world.grid_x * self.cfg.world.grid_y,
+            dtype=np.float32,
+        )
+        flat = self.mortality_trace.reshape(-1)
+        flat[:] = np.minimum(
+            flat + contribution,
+            np.float32(self.cfg.environment.mortality_trace_max),
+        )
+
+    def _update_mortality_trace(self) -> None:
+        if not self.mortality_trace_enabled:
+            if np.any(self.mortality_trace):
+                self.mortality_trace.fill(0.0)
+            return
+        decay = np.float32(1.0 - self.cfg.environment.mortality_trace_decay)
+        trace = self.mortality_trace * decay
+        diffusion = np.float32(self.cfg.environment.mortality_trace_diffusion)
+        if diffusion > 0.0:
+            trace = (
+                (np.float32(1.0) - np.float32(4.0) * diffusion) * trace
+                + diffusion
+                * (
+                    np.roll(trace, 1, axis=0)
+                    + np.roll(trace, -1, axis=0)
+                    + np.roll(trace, 1, axis=1)
+                    + np.roll(trace, -1, axis=1)
+                )
+            )
+        self.mortality_trace = np.clip(
+            trace, 0.0, self.cfg.environment.mortality_trace_max
+        ).astype(np.float32)
 
     def update(self, tick: int) -> None:
         seasonal = self._seasonal_multiplier(tick)
@@ -125,6 +201,7 @@ class Environment:
             self.resources + growth, 0.0, self.capacity
         ).astype(np.float32)
         self.hazard = self._hazard_pattern(tick)
+        self._update_mortality_trace()
 
     def cell_values(self, cell_ids: np.ndarray) -> np.ndarray:
         cells = validate_cell_ids(
@@ -197,11 +274,14 @@ class Environment:
             rgx = rgx64.astype(np.float32)
             rgy = rgy64.astype(np.float32)
 
+        public_danger = self.public_danger_field()
         hazard_x = 0.5 * (
-            np.roll(self.hazard, -1, axis=1) - np.roll(self.hazard, 1, axis=1)
+            np.roll(public_danger, -1, axis=1)
+            - np.roll(public_danger, 1, axis=1)
         )
         hazard_y = 0.5 * (
-            np.roll(self.hazard, -1, axis=0) - np.roll(self.hazard, 1, axis=0)
+            np.roll(public_danger, -1, axis=0)
+            - np.roll(public_danger, 1, axis=0)
         )
         return (rgx, rgy), (gather(hazard_x), gather(hazard_y))
 

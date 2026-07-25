@@ -98,6 +98,15 @@ class EnvironmentConfig:
     hazard_spatial_phase_y: float = 0.0
     hazard_temporal_multiplier: float = 1.0
     hazard_secondary_amplitude: float = 0.0
+    # Optional local, decaying physical trace deposited by death events.  It
+    # is not a global death oracle: only the local field and its gradient can
+    # enter the existing danger observation boundary.
+    mortality_trace_schema: str = "disabled"
+    mortality_trace_decay: float = 0.0
+    mortality_trace_diffusion: float = 0.0
+    mortality_trace_deposit: float = 0.0
+    mortality_trace_max: float = 1.0
+    mortality_trace_observation_weight: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -284,6 +293,12 @@ class SocialConfig:
     relation_decay: float
     trust_gain_share: float
     trust_loss_failed: float
+    # Legacy configs keep fixed periodic recomputation.  The adaptive schema
+    # refreshes only after a topology-relevant relation change, a predicted
+    # trust-threshold decay crossing, or a bounded maximum staleness interval.
+    group_update_mode: str = "periodic-v1"
+    group_update_min_period: int = 1
+    group_update_max_period: int = 0
 
 
 @dataclass(frozen=True)
@@ -404,6 +419,26 @@ def load_config(path: str | Path) -> SimulationConfig:
             ),
             hazard_secondary_amplitude=float(
                 _require(raw, "environment").get("hazard_secondary_amplitude", 0.0)
+            ),
+            mortality_trace_schema=str(
+                _require(raw, "environment").get("mortality_trace_schema", "disabled")
+            ),
+            mortality_trace_decay=float(
+                _require(raw, "environment").get("mortality_trace_decay", 0.0)
+            ),
+            mortality_trace_diffusion=float(
+                _require(raw, "environment").get("mortality_trace_diffusion", 0.0)
+            ),
+            mortality_trace_deposit=float(
+                _require(raw, "environment").get("mortality_trace_deposit", 0.0)
+            ),
+            mortality_trace_max=float(
+                _require(raw, "environment").get("mortality_trace_max", 1.0)
+            ),
+            mortality_trace_observation_weight=float(
+                _require(raw, "environment").get(
+                    "mortality_trace_observation_weight", 0.0
+                )
             ),
         ),
         entities=EntityConfig(**_require(raw, "entities")),
@@ -560,6 +595,48 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("environment.hazard_temporal_multiplier must be positive")
     if not 0.0 <= cfg.environment.hazard_secondary_amplitude <= 0.5:
         raise ValueError("environment.hazard_secondary_amplitude must be in [0, 0.5]")
+    if cfg.environment.mortality_trace_schema not in {
+        "disabled",
+        "local-decaying-mortality-trace-v1",
+    }:
+        raise ValueError(
+            "environment.mortality_trace_schema must be 'disabled' or "
+            "'local-decaying-mortality-trace-v1'"
+        )
+    for name, value in (
+        ("mortality_trace_decay", cfg.environment.mortality_trace_decay),
+        ("mortality_trace_diffusion", cfg.environment.mortality_trace_diffusion),
+        ("mortality_trace_deposit", cfg.environment.mortality_trace_deposit),
+        ("mortality_trace_max", cfg.environment.mortality_trace_max),
+        (
+            "mortality_trace_observation_weight",
+            cfg.environment.mortality_trace_observation_weight,
+        ),
+    ):
+        if not math.isfinite(float(value)):
+            raise ValueError(f"environment.{name} must be finite")
+    if not 0.0 <= cfg.environment.mortality_trace_decay <= 1.0:
+        raise ValueError("environment.mortality_trace_decay must be in [0, 1]")
+    if not 0.0 <= cfg.environment.mortality_trace_diffusion <= 0.25:
+        raise ValueError("environment.mortality_trace_diffusion must be in [0, 0.25]")
+    if cfg.environment.mortality_trace_deposit < 0.0:
+        raise ValueError("environment.mortality_trace_deposit cannot be negative")
+    if cfg.environment.mortality_trace_max <= 0.0:
+        raise ValueError("environment.mortality_trace_max must be positive")
+    if cfg.environment.mortality_trace_observation_weight < 0.0:
+        raise ValueError(
+            "environment.mortality_trace_observation_weight cannot be negative"
+        )
+    if (
+        cfg.environment.mortality_trace_schema != "disabled"
+        and (
+            cfg.environment.mortality_trace_deposit <= 0.0
+            or cfg.environment.mortality_trace_observation_weight <= 0.0
+        )
+    ):
+        raise ValueError(
+            "enabled mortality trace requires positive deposit and observation weight"
+        )
     if cfg.entities.resource_affinity_schema not in {
         "disabled",
         "normalized-four-resource-affinity-v1",
@@ -596,6 +673,30 @@ def validate_config(cfg: SimulationConfig) -> None:
         for period in cfg.information.signal_flush_periods
     ):
         raise ValueError("information.signal_flush_periods must contain three positive integers")
+
+    if cfg.social.group_update_period <= 0:
+        raise ValueError("social.group_update_period must be positive")
+    if cfg.social.group_update_mode not in {
+        "periodic-v1",
+        "adaptive-topology-v1",
+    }:
+        raise ValueError(
+            "social.group_update_mode must be 'periodic-v1' or "
+            "'adaptive-topology-v1'"
+        )
+    if cfg.social.group_update_min_period <= 0:
+        raise ValueError("social.group_update_min_period must be positive")
+    if cfg.social.group_update_max_period < 0:
+        raise ValueError("social.group_update_max_period cannot be negative")
+    if (
+        cfg.social.group_update_mode == "adaptive-topology-v1"
+        and cfg.social.group_update_max_period
+        and cfg.social.group_update_max_period
+        < cfg.social.group_update_min_period
+    ):
+        raise ValueError(
+            "social.group_update_max_period cannot be below the minimum period"
+        )
 
     if not isinstance(cfg.knowledge.enabled, bool):
         raise ValueError("knowledge.enabled must be a boolean")

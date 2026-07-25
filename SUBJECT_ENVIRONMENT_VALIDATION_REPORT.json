@@ -1,0 +1,431 @@
+{
+  "schema": "subject-environment-v021-validation-v1",
+  "version": "0.21.0",
+  "scope": [
+    "local decaying mortality trace observation",
+    "adaptive topology group refresh",
+    "legacy checkpoint hash compatibility"
+  ],
+  "user_three_seed_analysis": {
+    "runs": 3,
+    "endpoint_rows": [
+      {
+        "run": "seed_10001",
+        "alive": 1386,
+        "strategy_effective_dimensions": 13.956679268000995,
+        "cohesion": 0.3495616175599552,
+        "transfer_committed": 12208,
+        "effective_transferred_roots": 2066.5467775467773
+      },
+      {
+        "run": "seed_10002",
+        "alive": 1350,
+        "strategy_effective_dimensions": 17.523894049851698,
+        "cohesion": 0.39364364138785257,
+        "transfer_committed": 12710,
+        "effective_transferred_roots": 2143.2494623655916
+      },
+      {
+        "run": "seed_10003",
+        "alive": 1334,
+        "strategy_effective_dimensions": 21.220526231139722,
+        "cohesion": 0.4470324072590996,
+        "transfer_committed": 14428,
+        "effective_transferred_roots": 2243.77242112726
+      }
+    ],
+    "selected_local_culture_patterns": {
+      "local_scarcity_vs_local_new_transferred_roots_within_region": {
+        "values": [
+          0.3598655461304724,
+          0.3805872051460443,
+          0.40029032249455176
+        ],
+        "mean": 0.3802476912570228,
+        "min": 0.3598655461304724,
+        "max": 0.40029032249455176
+      },
+      "local_scarcity_vs_local_new_transferred_roots_next_window": {
+        "values": [
+          0.25442186915070897,
+          0.2656979182936636,
+          0.29039435675323727
+        ],
+        "mean": 0.27017138139920327,
+        "min": 0.25442186915070897,
+        "max": 0.29039435675323727
+      },
+      "local_scarcity_vs_local_net_transferred_root_establishment_within_region": {
+        "values": [
+          -0.18546767344300732,
+          -0.17645114419993596,
+          -0.1746186433029255
+        ],
+        "mean": -0.17884582031528962,
+        "min": -0.18546767344300732,
+        "max": -0.1746186433029255
+      },
+      "local_scarcity_vs_local_net_transferred_root_establishment_next_window": {
+        "values": [
+          -0.22987161548379367,
+          -0.2267575261290292,
+          -0.2214467710115347
+        ],
+        "mean": -0.2260253042081192,
+        "min": -0.22987161548379367,
+        "max": -0.2214467710115347
+      },
+      "local_crowding_vs_local_outgoing_transfer_rate_within_region": {
+        "values": [
+          0.463345490790616,
+          0.374760639106312,
+          0.4043505134094419
+        ],
+        "mean": 0.41415221443545663,
+        "min": 0.374760639106312,
+        "max": 0.463345490790616
+      },
+      "local_crowding_vs_local_outgoing_transfer_rate_next_window": {
+        "values": [
+          0.4058440453828112,
+          0.3338156615145608,
+          0.3767263587756353
+        ],
+        "mean": 0.3721286885576691,
+        "min": 0.3338156615145608,
+        "max": 0.4058440453828112
+      },
+      "local_mortality_vs_local_incoming_transfer_rate_within_region": {
+        "values": [
+          0.18414916242294752,
+          0.19231192803588695,
+          0.2332469021249394
+        ],
+        "mean": 0.20323599752792462,
+        "min": 0.18414916242294752,
+        "max": 0.2332469021249394
+      },
+      "local_mortality_vs_local_incoming_transfer_rate_next_window": {
+        "values": [
+          0.0668201419984197,
+          0.13323171563333824,
+          0.08791049546233701
+        ],
+        "mean": 0.09598745103136497,
+        "min": 0.0668201419984197,
+        "max": 0.13323171563333824
+      },
+      "local_cohesion_vs_local_same_region_transfer_retention_within_region": {
+        "values": [
+          0.08397218052105936,
+          -3.686339034122918e-05,
+          -0.0002518522297134114
+        ],
+        "mean": 0.027894488300334905,
+        "min": -0.0002518522297134114,
+        "max": 0.08397218052105936
+      }
+    }
+  },
+  "control_summaries": {
+    "periodic_no_trace": {
+      "tick": 120,
+      "alive": 430,
+      "births_total": 237,
+      "deaths_total": 7,
+      "groups": 5,
+      "mean_energy": 2.1260998249053955,
+      "mean_integrity": 0.9741033315658569,
+      "action_entropy": 1.7185264825820923,
+      "group_update_count_total": 3,
+      "group_update_skipped_total": 117,
+      "group_last_update_tick": 100,
+      "group_last_update_reason": "periodic",
+      "group_last_dirty_reason": "lifecycle-reset",
+      "environment_mortality_trace_mean": 0,
+      "environment_mortality_trace_std": 0,
+      "environment_mortality_trace_max": 0,
+      "knowledge_working_memory_induced_action_changes_total": 7620,
+      "knowledge_policy_changed_actions_total": 3319
+    },
+    "periodic_trace": {
+      "tick": 120,
+      "alive": 428,
+      "births_total": 237,
+      "deaths_total": 9,
+      "groups": 5,
+      "mean_energy": 2.1205060482025146,
+      "mean_integrity": 0.9741508960723877,
+      "action_entropy": 1.721685767173767,
+      "group_update_count_total": 3,
+      "group_update_skipped_total": 117,
+      "group_last_update_tick": 100,
+      "group_last_update_reason": "periodic",
+      "group_last_dirty_reason": "lifecycle-reset",
+      "environment_mortality_trace_mean": 0.0011980334054259557,
+      "environment_mortality_trace_std": 0.004464404166822785,
+      "environment_mortality_trace_max": 0.08149021863937378,
+      "knowledge_working_memory_induced_action_changes_total": 7571,
+      "knowledge_policy_changed_actions_total": 3343
+    },
+    "adaptive_no_trace": {
+      "tick": 120,
+      "alive": 423,
+      "births_total": 232,
+      "deaths_total": 9,
+      "groups": 4,
+      "mean_energy": 2.1678531169891357,
+      "mean_integrity": 0.9740688800811768,
+      "action_entropy": 1.7219264507293701,
+      "group_update_count_total": 2,
+      "group_update_skipped_total": 118,
+      "group_last_update_tick": 100,
+      "group_last_update_reason": "topology-dirty",
+      "group_last_dirty_reason": "lifecycle-reset",
+      "environment_mortality_trace_mean": 0,
+      "environment_mortality_trace_std": 0,
+      "environment_mortality_trace_max": 0,
+      "knowledge_working_memory_induced_action_changes_total": 7626,
+      "knowledge_policy_changed_actions_total": 3363
+    },
+    "adaptive_trace_a": {
+      "tick": 120,
+      "alive": 429,
+      "births_total": 238,
+      "deaths_total": 9,
+      "groups": 5,
+      "mean_energy": 2.1428756713867188,
+      "mean_integrity": 0.9743986129760742,
+      "action_entropy": 1.7185453176498413,
+      "group_update_count_total": 2,
+      "group_update_skipped_total": 118,
+      "group_last_update_tick": 100,
+      "group_last_update_reason": "topology-dirty",
+      "group_last_dirty_reason": "lifecycle-reset",
+      "environment_mortality_trace_mean": 0.0010918974523728298,
+      "environment_mortality_trace_std": 0.004341949715618916,
+      "environment_mortality_trace_max": 0.08149018883705139,
+      "knowledge_working_memory_induced_action_changes_total": 7561,
+      "knowledge_policy_changed_actions_total": 3340
+    }
+  },
+  "control_deltas": {
+    "mortality_trace_under_periodic": {
+      "alive": -2,
+      "births_total": 0,
+      "deaths_total": 2,
+      "mean_energy": -0.005593776702880859,
+      "action_entropy": 0.0031592845916748047
+    },
+    "adaptive_refresh_without_trace": {
+      "alive": -7,
+      "births_total": -5,
+      "deaths_total": 2,
+      "groups": -1,
+      "mean_energy": 0.041753292083740234,
+      "group_update_count_total": -1
+    },
+    "mortality_trace_under_adaptive": {
+      "alive": 6,
+      "births_total": 6,
+      "deaths_total": 0,
+      "groups": 1,
+      "mean_energy": -0.024977445602416992,
+      "action_entropy": -0.0033811330795288086
+    }
+  },
+  "determinism": {
+    "metrics": {
+      "rows_left": 7,
+      "rows_right": 7,
+      "common_non_timing_fields": 300,
+      "difference_count": 0,
+      "differences": []
+    },
+    "core_logs": {
+      "evolution_progress.jsonl": {
+        "equal": true,
+        "left_sha256": "305886e6fe1fc2f1466d2adbe2ec8c5a8e949d2307f3c931f2eace5f72a80c12",
+        "right_sha256": "305886e6fe1fc2f1466d2adbe2ec8c5a8e949d2307f3c931f2eace5f72a80c12"
+      },
+      "knowledge_events.jsonl": {
+        "equal": true,
+        "left_sha256": "0634db15f43e76cdff021b8edbe01805b3266c34a75d1925af77015cadc4bc16",
+        "right_sha256": "0634db15f43e76cdff021b8edbe01805b3266c34a75d1925af77015cadc4bc16"
+      },
+      "knowledge_outcome_updates.csv": {
+        "equal": true,
+        "left_sha256": "cf478c6d369dd0266aa6c4c752ba051dc17d9face96c9c07042d58a2fe14d4a6",
+        "right_sha256": "cf478c6d369dd0266aa6c4c752ba051dc17d9face96c9c07042d58a2fe14d4a6"
+      },
+      "knowledge_policy_contributions.csv": {
+        "equal": true,
+        "left_sha256": "d90f0f1a0cc2abfb20ef415cbeec4953f714466f24c13afc1160d3fa409322d8",
+        "right_sha256": "d90f0f1a0cc2abfb20ef415cbeec4953f714466f24c13afc1160d3fa409322d8"
+      },
+      "knowledge_routing_costs.csv": {
+        "equal": true,
+        "left_sha256": "685cd325bf06023f920cff28620c570d2db74f2e9796ed1b1e713e19897517b3",
+        "right_sha256": "685cd325bf06023f920cff28620c570d2db74f2e9796ed1b1e713e19897517b3"
+      },
+      "knowledge_selection_events.csv": {
+        "equal": true,
+        "left_sha256": "fa5d9785629f2d09a8b76edf9093e2e2b4b841837b38eece62c5159c26cf39de",
+        "right_sha256": "fa5d9785629f2d09a8b76edf9093e2e2b4b841837b38eece62c5159c26cf39de"
+      },
+      "knowledge_transfers.csv": {
+        "equal": true,
+        "left_sha256": "7783d7fc482c48328080ecf0d34c52becf7817a585576a15062031656cfa91a2",
+        "right_sha256": "7783d7fc482c48328080ecf0d34c52becf7817a585576a15062031656cfa91a2"
+      },
+      "knowledge_working_memory.csv": {
+        "equal": true,
+        "left_sha256": "9597cbb0b6a05c47e038fbc3f984b43cd5f0250bae16b37876ba93ea75d6b9ee",
+        "right_sha256": "9597cbb0b6a05c47e038fbc3f984b43cd5f0250bae16b37876ba93ea75d6b9ee"
+      }
+    },
+    "public_checkpoints": {
+      "60": {
+        "common_arrays": 38,
+        "differences": [],
+        "only_left": [],
+        "only_right": []
+      },
+      "120": {
+        "common_arrays": 38,
+        "differences": [],
+        "only_left": [],
+        "only_right": []
+      }
+    },
+    "full_tick120": {
+      "arrays": 332,
+      "scalars": 27051,
+      "only_left": 0,
+      "only_right": 0,
+      "differences": []
+    },
+    "resume_tick60_to_120": {
+      "arrays": 332,
+      "scalars": 27051,
+      "only_left": 0,
+      "only_right": 0,
+      "differences": []
+    }
+  },
+  "v020_v021_compatibility": {
+    "metrics": {
+      "rows_left": 7,
+      "rows_right": 7,
+      "common_non_timing_fields": 289,
+      "difference_count": 0,
+      "differences": []
+    },
+    "evolution_progress": {
+      "rows": 3,
+      "common_fields": 220,
+      "difference_count": 0,
+      "differences": [],
+      "only_v021_fields": [
+        "environment_mortality_trace_max",
+        "environment_mortality_trace_mean",
+        "environment_mortality_trace_std",
+        "group_labels_dirty",
+        "group_last_dirty_reason",
+        "group_last_update_reason",
+        "group_last_update_tick",
+        "group_update_count_total",
+        "group_update_mode",
+        "group_update_skipped_total",
+        "mortality_trace_schema"
+      ]
+    },
+    "core_logs": {
+      "evolution_progress.jsonl": {
+        "equal": false,
+        "left_sha256": "45b877322c0fb860363dc754857ce8135841d4b86cf66fd2b8d479092e15c6ef",
+        "right_sha256": "18de7cab910cb356da9505e3514c458c94d86be85be0dab3936fcffb8c685676"
+      },
+      "knowledge_events.jsonl": {
+        "equal": true,
+        "left_sha256": "f5c6c3e163f7f61f526c55fb46ab2cc9bb5daaaf76c2aeea5d47e7b7e6c81ceb",
+        "right_sha256": "f5c6c3e163f7f61f526c55fb46ab2cc9bb5daaaf76c2aeea5d47e7b7e6c81ceb"
+      },
+      "knowledge_outcome_updates.csv": {
+        "equal": true,
+        "left_sha256": "6c85082b737e051dd3fba81bf13566e5adcde14750a3fdfa12a628087d607372",
+        "right_sha256": "6c85082b737e051dd3fba81bf13566e5adcde14750a3fdfa12a628087d607372"
+      },
+      "knowledge_policy_contributions.csv": {
+        "equal": true,
+        "left_sha256": "b455726286c1129e9d31213d9c9d05ee0fa808631d5709a7213ef22e37b17b48",
+        "right_sha256": "b455726286c1129e9d31213d9c9d05ee0fa808631d5709a7213ef22e37b17b48"
+      },
+      "knowledge_routing_costs.csv": {
+        "equal": true,
+        "left_sha256": "a3cf74a226e9c62e62a270d210e1513dab643d05e3a754b213450298d8ab2ecf",
+        "right_sha256": "a3cf74a226e9c62e62a270d210e1513dab643d05e3a754b213450298d8ab2ecf"
+      },
+      "knowledge_selection_events.csv": {
+        "equal": true,
+        "left_sha256": "670297109f8f97189816e2ce763cfc7ed8892787ae36112905088840e25ad360",
+        "right_sha256": "670297109f8f97189816e2ce763cfc7ed8892787ae36112905088840e25ad360"
+      },
+      "knowledge_transfers.csv": {
+        "equal": true,
+        "left_sha256": "f950e9b4286765f3266798221f24a8dcc592402781bcb6432de188aa86b18bd0",
+        "right_sha256": "f950e9b4286765f3266798221f24a8dcc592402781bcb6432de188aa86b18bd0"
+      },
+      "knowledge_working_memory.csv": {
+        "equal": true,
+        "left_sha256": "8a172d4f1aa2af885689a0ad408e9a2104dca1e8cfa70c5ea68e0fad3aa0b117",
+        "right_sha256": "8a172d4f1aa2af885689a0ad408e9a2104dca1e8cfa70c5ea68e0fad3aa0b117"
+      }
+    },
+    "public_checkpoints": {
+      "30": {
+        "common_arrays": 38,
+        "differences": [],
+        "only_left": [],
+        "only_right": []
+      },
+      "60": {
+        "common_arrays": 38,
+        "differences": [],
+        "only_left": [],
+        "only_right": []
+      }
+    },
+    "full_checkpoints": {
+      "30": {
+        "arrays": 323,
+        "scalars": 11562,
+        "only_left": 0,
+        "only_right": 64,
+        "differences": []
+      },
+      "60": {
+        "arrays": 331,
+        "scalars": 14935,
+        "only_left": 0,
+        "only_right": 86,
+        "differences": []
+      }
+    },
+    "legacy_checkpoint_loaded_under_v021": true
+  },
+  "test_summary": {
+    "passed": 105,
+    "skipped": 1,
+    "failed": 0,
+    "cuda_note": "real CUDA test skipped in build environment"
+  },
+  "scientific_boundaries": [
+    "mortality trace is an optional local environmental cue, not a global death oracle or direct reward",
+    "base physical hazard damage is unchanged; the trace affects only public danger observation/gradient",
+    "adaptive group refresh is an explicit new schema; periodic-v1 remains the compatibility default",
+    "group labels are not disabled because they enter partner observations, social signals, policy direction, knowledge context and transfer audit",
+    "120-tick controls demonstrate mechanism activation and determinism, not long-run fitness advantage",
+    "real CUDA hybrid-accelerated multi-tick parity remains unverified"
+  ]
+}

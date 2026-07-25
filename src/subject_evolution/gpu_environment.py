@@ -45,6 +45,7 @@ class DeviceEnvironment:
         self.capacity = capacities.astype(xp.float32)
         self.regeneration = xp.asarray(cfg.environment.resource_regeneration, dtype=xp.float32)[:, None, None]
         self.hazard = self._hazard_pattern(0)
+        self.mortality_trace = xp.zeros((gy, gx), dtype=xp.float32)
 
     def _normalized_grid(self, xx: Any, yy: Any) -> tuple[Any, Any]:
         return (
@@ -120,7 +121,88 @@ class DeviceEnvironment:
         """Rotate resource and hazard geography by 180 degrees persistently."""
         self.resources = self.resources[:, ::-1, ::-1].copy()
         self.hazard = self.hazard[::-1, ::-1].copy()
+        self.mortality_trace = self.mortality_trace[::-1, ::-1].copy()
         self.spatial_reversed = not self.spatial_reversed
+
+    @property
+    def mortality_trace_enabled(self) -> bool:
+        return (
+            self.cfg.environment.mortality_trace_schema
+            == "local-decaying-mortality-trace-v1"
+        )
+
+    def public_danger_field(self) -> Any:
+        xp = self.backend.xp
+        if not self.mortality_trace_enabled:
+            return self.hazard
+        return (
+            self.hazard
+            + xp.float32(self.cfg.environment.mortality_trace_observation_weight)
+            * self.mortality_trace
+        ).astype(xp.float32)
+
+    def danger_for_cells(self, cell_ids: Any) -> Any:
+        xp = self.backend.xp
+        cells = validate_cell_ids(
+            cell_ids,
+            self.cfg.world.grid_x * self.cfg.world.grid_y,
+            backend=self.backend,
+        )
+        return self.public_danger_field().reshape(-1)[cells].astype(xp.float32)
+
+    def deposit_mortality_trace(self, cell_ids: Any, weights: Any | None = None) -> None:
+        if not self.mortality_trace_enabled:
+            return
+        xp = self.backend.xp
+        cells = validate_cell_ids(
+            cell_ids,
+            self.cfg.world.grid_x * self.cfg.world.grid_y,
+            backend=self.backend,
+        )
+        if int(cells.size) == 0:
+            return
+        values = (
+            xp.ones(cells.size, dtype=xp.float32)
+            if weights is None
+            else xp.asarray(weights, dtype=xp.float32)
+        )
+        if values.ndim != 1 or int(values.size) != int(cells.size):
+            raise ValueError("mortality trace weights must align with cell IDs")
+        contribution = stable_segmented_sum(
+            cells,
+            values * xp.float32(self.cfg.environment.mortality_trace_deposit),
+            self.cfg.world.grid_x * self.cfg.world.grid_y,
+            backend=self.backend,
+            dtype=xp.float32,
+        )
+        flat = self.mortality_trace.reshape(-1)
+        flat[:] = xp.minimum(
+            flat + contribution,
+            xp.float32(self.cfg.environment.mortality_trace_max),
+        )
+
+    def _update_mortality_trace(self) -> None:
+        xp = self.backend.xp
+        if not self.mortality_trace_enabled:
+            self.mortality_trace.fill(0.0)
+            return
+        decay = xp.float32(1.0 - self.cfg.environment.mortality_trace_decay)
+        trace = self.mortality_trace * decay
+        diffusion = xp.float32(self.cfg.environment.mortality_trace_diffusion)
+        if float(self.cfg.environment.mortality_trace_diffusion) > 0.0:
+            trace = (
+                (xp.float32(1.0) - xp.float32(4.0) * diffusion) * trace
+                + diffusion
+                * (
+                    xp.roll(trace, 1, axis=0)
+                    + xp.roll(trace, -1, axis=0)
+                    + xp.roll(trace, 1, axis=1)
+                    + xp.roll(trace, -1, axis=1)
+                )
+            )
+        self.mortality_trace = xp.clip(
+            trace, 0.0, self.cfg.environment.mortality_trace_max
+        ).astype(xp.float32)
 
     def update(self, tick: int) -> None:
         xp = self.backend.xp
@@ -128,6 +210,7 @@ class DeviceEnvironment:
         growth = self.regeneration * seasonal * (1.0 - self.resources / xp.maximum(self.capacity, 1e-6))
         self.resources = xp.clip(self.resources + growth, 0.0, self.capacity).astype(xp.float32)
         self.hazard = self._hazard_pattern(tick)
+        self._update_mortality_trace()
 
     def cell_values(self, cell_ids: Any) -> Any:
         xp = self.backend.xp
@@ -183,8 +266,9 @@ class DeviceEnvironment:
             rgx = rgx.astype(xp.float32)
             rgy = rgy.astype(xp.float32)
 
-        hazard_x = 0.5 * (xp.roll(self.hazard, -1, axis=1) - xp.roll(self.hazard, 1, axis=1))
-        hazard_y = 0.5 * (xp.roll(self.hazard, -1, axis=0) - xp.roll(self.hazard, 1, axis=0))
+        public_danger = self.public_danger_field()
+        hazard_x = 0.5 * (xp.roll(public_danger, -1, axis=1) - xp.roll(public_danger, 1, axis=1))
+        hazard_y = 0.5 * (xp.roll(public_danger, -1, axis=0) - xp.roll(public_danger, 1, axis=0))
         return (rgx, rgy), (gather(hazard_x), gather(hazard_y))
 
     def resolve_harvest(self, cell_ids: Any, rates: Any) -> Any:

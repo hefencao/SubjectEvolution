@@ -8,7 +8,7 @@ supported as a secure interchange format.
 
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, fields, is_dataclass
 from datetime import datetime, timezone
 import hashlib
 import io
@@ -36,6 +36,38 @@ class CheckpointError(RuntimeError):
 
 def _config_sha256(config: Any) -> str:
     payload = json.dumps(asdict(config), ensure_ascii=False, sort_keys=True).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _stored_dataclass_payload(value: Any) -> Any:
+    """Reconstruct the dataclass payload that was physically stored in pickle.
+
+    When an older checkpoint is unpickled against a newer dataclass, newly
+    added fields are visible through class-level defaults even though they were
+    not present when the checkpoint hash was created.  Walking ``__dict__``
+    membership lets us reproduce the older ``asdict`` payload without
+    weakening the state-payload checksum.
+    """
+    if is_dataclass(value) and not isinstance(value, type):
+        stored = vars(value)
+        return {
+            field.name: _stored_dataclass_payload(stored[field.name])
+            for field in fields(value)
+            if field.name in stored
+        }
+    if isinstance(value, dict):
+        return {key: _stored_dataclass_payload(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return tuple(_stored_dataclass_payload(item) for item in value)
+    if isinstance(value, list):
+        return [_stored_dataclass_payload(item) for item in value]
+    return value
+
+
+def _stored_config_sha256(config: Any) -> str:
+    payload = json.dumps(
+        _stored_dataclass_payload(config), ensure_ascii=False, sort_keys=True
+    ).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 
 
@@ -101,8 +133,12 @@ def read_checkpoint_bundle(path: str | Path) -> tuple[dict[str, Any], dict[str, 
         raise CheckpointError("checkpoint state payload could not be loaded") from exc
     if not isinstance(state, dict) or "config" not in state or "simulation" not in state:
         raise CheckpointError("checkpoint state payload is missing required sections")
-    if _config_sha256(state["config"]) != metadata.get("config_sha256"):
-        raise CheckpointError("checkpoint embedded configuration checksum mismatch")
+    expected_config_hash = metadata.get("config_sha256")
+    current_config_hash = _config_sha256(state["config"])
+    if current_config_hash != expected_config_hash:
+        stored_config_hash = _stored_config_sha256(state["config"])
+        if stored_config_hash != expected_config_hash:
+            raise CheckpointError("checkpoint embedded configuration checksum mismatch")
     if int(state["simulation"].get("tick", -1)) != int(metadata.get("tick", -2)):
         raise CheckpointError("checkpoint tick metadata does not match state payload")
     return metadata, state

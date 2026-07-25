@@ -286,6 +286,9 @@ class HybridGpuRuntime:
         self.environment.capacity = self._upload(environment.capacity, dtype=xp.float32, copy=True)
         self.environment.regeneration = self._upload(environment.regeneration, dtype=xp.float32, copy=True)
         self.environment.hazard = self._upload(environment.hazard, dtype=xp.float32, copy=True)
+        self.environment.mortality_trace = self._upload(
+            environment.mortality_trace, dtype=xp.float32, copy=True
+        )
         self.information_field.field = self._upload(information.field, dtype=xp.float32, copy=True)
         self.information_field.source = self._upload(information.source, dtype=xp.float32, copy=True)
         self.information_field.age = self._upload(information.age, dtype=xp.uint16, copy=True)
@@ -297,6 +300,9 @@ class HybridGpuRuntime:
         environment.capacity = self._download(self.environment.capacity).astype(np.float32, copy=False)
         environment.regeneration = self._download(self.environment.regeneration).astype(np.float32, copy=False)
         environment.hazard = self._download(self.environment.hazard).astype(np.float32, copy=False)
+        environment.mortality_trace = self._download(
+            self.environment.mortality_trace
+        ).astype(np.float32, copy=False)
         information.field = self._download(self.information_field.field).astype(np.float32, copy=False)
         information.source = self._download(self.information_field.source).astype(np.float32, copy=False)
         information.age = self._download(self.information_field.age).astype(np.uint16, copy=False)
@@ -491,7 +497,7 @@ class HybridGpuRuntime:
         if knowledge is not None and knowledge.kcfg.learning_enabled:
             device_context_keys = encode_local_context(
                 policy_local_resources[:, 0],
-                self.environment.hazard.reshape(-1)[cells],
+                self.environment.public_danger_field().reshape(-1)[cells],
                 energy[active],
                 integrity[active],
                 groups[active] != 0,
@@ -929,6 +935,22 @@ class HybridGpuRuntime:
         cells = self._upload(cell_ids, dtype=self.backend.xp.int32)
         values = self.environment.hazard.reshape(-1)[cells]
         return self._download(values).astype(np.float32, copy=False)
+
+    def danger_for_cells(self, cell_ids: np.ndarray) -> np.ndarray:
+        cells = self._upload(cell_ids, dtype=self.backend.xp.int32)
+        values = self.environment.public_danger_field().reshape(-1)[cells]
+        return self._download(values).astype(np.float32, copy=False)
+
+    def deposit_mortality_trace(
+        self, cell_ids: np.ndarray, weights: np.ndarray | None = None
+    ) -> None:
+        cells = self._upload(cell_ids, dtype=self.backend.xp.int32)
+        device_weights = (
+            None
+            if weights is None
+            else self._upload(weights, dtype=self.backend.xp.float32)
+        )
+        self.environment.deposit_mortality_trace(cells, device_weights)
 
 
 __all__ = [

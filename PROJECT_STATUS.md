@@ -1,4 +1,4 @@
-# Subject Evolution 项目状态（v0.20.0）
+# Subject Evolution 项目状态（v0.21.0）
 
 ## 已完成阶段
 
@@ -14,12 +14,29 @@
 | v0.17 去趋势分析与生态相位反事实 | 完成 |
 | v0.18 有代价传播审计和 transfer-only 文化谱系 | 完成 |
 | v0.19 局部空间压力与局部凝聚 panel | 完成 |
-| v0.20 局部文化传播、区域文化根和局部压力事件反事实 | **完成** |
+| v0.20 局部文化传播、区域文化根和局部压力事件反事实 | 完成 |
+| v0.21 局部死亡痕迹感知、自适应群组刷新、旧 checkpoint 哈希兼容 | **完成** |
 | 真实 CUDA v0.20 hybrid world parity | 未完成 |
 | 三 seed 局部事件正式 checkpoint 因果矩阵 | 未运行 |
 | 潜坐标/路由器局部学习 | 未实现 |
 | 持久 device-resident latent arena | 未实现 |
 | 通用主体图数据库和任意嵌套主体 | 未实现 |
+
+## v0.21 方向调整
+
+三 seed 局部文化分析显示：稀缺与新文化根出现正相关，但与净文化根建立负相关；拥挤稳定提高知识外流；死亡与 incoming transfer 只有弱关系。这支持暂停继续扩展相关分析，转向主体可感知结构和环境多元化。
+
+v0.21 新增：
+
+- `local-decaying-mortality-trace-v1`：死亡位置沉积无身份局部痕迹，衰减和扩散后只进入公开 danger observation，不增加物理伤害或直接奖励；
+- `adaptive-topology-v1`：根据关系拓扑变更、trust 阈值衰减和最大陈旧期限刷新群组标签；
+- 新旗舰长跑配置使用最小刷新间隔 100、最大陈旧 300；
+- 旧配置继续使用 `periodic-v1`，没有改变兼容默认；
+- 修复新版 dataclass 默认字段导致 v0.20 `.sechk` 配置哈希误判的问题。
+
+120-tick 对照中，自适应刷新将群组重算从 3 次降至 2 次；死亡痕迹在首次死亡后进入策略轨迹。两者都会改变世界结果，当前只验证机制和确定性，不宣称长期适应优势。
+
+最终验证：105 passed，1 个真实 CUDA 测试跳过。
 
 ## 用户三 seed、1500-tick 局部压力结果
 
@@ -111,12 +128,11 @@ seed 10001、200 初始实体、16 区域：
 
 ## 下一步优先级
 
-1. 用 v0.20 local-culture 配置运行 3 seeds × 600–1500 ticks；
-2. 从每个 seed 选取区域稀缺和拥挤事件，运行 paired checkpoint 分支；
-3. 比较停止传播和关闭知识 residual 对局部凝聚、区域存活、文化根建立/灭绝的影响；
-4. 检验文化根是否跨区域持续，并区分同区域留存与跨区域扩散；
-5. 在真实 CUDA 主机读取 run manifest，验证 strict-reference 运行身份；
-6. 单独推进 hybrid-accelerated parity，不与科学结论混合；
-7. 完成局部因果矩阵后，再决定是否增加移动危险源或新的主体控制结构。
+1. 用 v0.21 mortality-trace + adaptive-group 配置运行 3 seeds × 600–1500 ticks；
+2. 检查死亡痕迹是否形成可遗传的空间响应，而不是只看死亡率相关；
+3. 比较 adaptive 与 periodic 群组刷新下的长期标签稳定、策略维度和文化传播；
+4. 扩展真实环境轴：移动危险源、伤害类型、遮蔽/通行成本或资源转换链；
+5. 主体结构优先推进遗传性危险证据混合、可配置任意信息通道 schema 和局部后果预测；
+6. 单独完成真实 CUDA hybrid parity，不与科学结论混合。
 
-暂不采用：人为合成加权总压力、按群组/谱系奖励、提高跨组惩罚、简单提高 mutation rate、全局类别 embedding、普通 Softmax Attention 或更深网络。
+暂不采用：直接暴露全局死亡计数、按群组/谱系奖励、全局类别 embedding、普通 Softmax Attention、提高跨组惩罚或单纯提高 mutation rate。

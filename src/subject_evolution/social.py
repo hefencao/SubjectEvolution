@@ -357,11 +357,28 @@ class SocialSystem:
         self.group_age = np.zeros(capacity, dtype=np.uint32)
         self.group_dir_x = np.zeros(capacity, dtype=np.float32)
         self.group_dir_y = np.zeros(capacity, dtype=np.float32)
+        self.group_labels_dirty = True
+        self.last_group_update_tick = -1
+        self.next_group_decay_due_tick = np.iinfo(np.int64).max
+        self.group_update_count = 0
+        self.group_update_skipped_count = 0
+        self.last_group_update_reason = "initial"
+        self.last_group_dirty_reason = "initial"
 
+    def _mark_group_labels_dirty(self, reason: str) -> None:
+        self.group_labels_dirty = True
+        self.last_group_dirty_reason = str(reason)
+
+    def mark_group_labels_dirty(self, reason: str) -> None:
+        self._mark_group_labels_dirty(reason)
 
     def reset_entities(self, indices: np.ndarray) -> None:
         if indices.size == 0:
             return
+        had_group_or_relation = bool(
+            np.any(self.group_id[indices] != 0)
+            or np.any(self.target[indices] >= 0)
+        )
         self.target[indices] = -1
         self.trust[indices] = 0.0
         self.familiarity[indices] = 0.0
@@ -371,6 +388,8 @@ class SocialSystem:
         self.group_age[indices] = 0
         self.group_dir_x[indices] = 0.0
         self.group_dir_y[indices] = 0.0
+        if had_group_or_relation:
+            self._mark_group_labels_dirty("lifecycle-reset")
 
     def _materialize_decay(
         self,
@@ -548,6 +567,12 @@ class SocialSystem:
             int(plan.tick) - 1,
             assume_unique=True,
         )
+        threshold = np.float32(self.cfg.social.trust_group_threshold)
+        topology_before = np.where(
+            self.trust[unique_owners] >= threshold,
+            self.target[unique_owners],
+            -1,
+        )
         # Each pass contains exactly one event per owner.  Processing the
         # passes in rank order retains the scalar replacement semantics even
         # when several events target one owner in the same tick.
@@ -581,10 +606,54 @@ class SocialSystem:
     def clear_dead_targets(self, alive: np.ndarray) -> None:
         valid_target = self.target >= 0
         dead_link = valid_target & ~alive[np.where(valid_target, self.target, 0)]
-        self.target[dead_link] = -1
-        self.trust[dead_link] = 0.0
-        self.familiarity[dead_link] = 0.0
-        self.last_decay_tick[dead_link] = self._UNTRACKED_DECAY_TICK
+        if np.any(dead_link):
+            self.target[dead_link] = -1
+            self.trust[dead_link] = 0.0
+            self.familiarity[dead_link] = 0.0
+            self.last_decay_tick[dead_link] = self._UNTRACKED_DECAY_TICK
+            self._mark_group_labels_dirty("dead-relation-target")
+
+    def _predict_next_decay_crossing_tick(self, tick: int) -> int:
+        threshold = float(self.cfg.social.trust_group_threshold)
+        factor = float(max(0.0, 1.0 - self.cfg.social.relation_decay))
+        valid = (self.target >= 0) & (self.trust >= np.float32(threshold))
+        if not np.any(valid) or factor >= 1.0:
+            return int(np.iinfo(np.int64).max)
+        if factor <= 0.0:
+            return int(tick) + 1
+        values = self.trust[valid].astype(np.float64)
+        # First integer n >= 1 for which value * factor**n < threshold.
+        ratio = np.maximum(threshold / np.maximum(values, 1e-30), 1e-30)
+        crossing = np.floor(np.log(ratio) / np.log(factor)).astype(np.int64) + 1
+        crossing = np.maximum(crossing, 1)
+        return int(tick) + int(crossing.min())
+
+    def group_update_due(self, tick: int) -> tuple[bool, str]:
+        cfg = self.cfg.social
+        if cfg.group_update_mode == "periodic-v1":
+            due = int(tick) % int(cfg.group_update_period) == 0
+            return due, ("periodic" if due else "periodic-skip")
+        if self.last_group_update_tick < 0:
+            return True, "initial"
+        elapsed = int(tick) - int(self.last_group_update_tick)
+        min_period = int(cfg.group_update_min_period)
+        # Adaptive refresh is intentionally rate-limited.  Topology changes and
+        # predicted trust-threshold crossings make a refresh eligible, but do
+        # not bypass the configured minimum period.  This preserves the goal
+        # of avoiding frequent label churn while still bounding staleness.
+        if elapsed < min_period:
+            return False, "adaptive-skip"
+        if self.group_labels_dirty:
+            return True, "topology-dirty"
+        if int(tick) >= int(self.next_group_decay_due_tick):
+            return True, "trust-decay-threshold"
+        max_period = int(cfg.group_update_max_period)
+        if max_period > 0 and elapsed >= max_period:
+            return True, "max-staleness"
+        return False, "adaptive-skip"
+
+    def note_group_update_skipped(self) -> None:
+        self.group_update_skipped_count += 1
 
     def update_groups(
         self,
@@ -747,4 +816,10 @@ class SocialSystem:
                 group_rows = np.repeat(np.arange(tokens.size, dtype=np.int32), counts)
                 self.group_dir_x[members] = direction_x[group_rows]
                 self.group_dir_y[members] = direction_y[group_rows]
+        self.group_labels_dirty = False
+        self.last_group_update_tick = int(plan.tick)
+        self.next_group_decay_due_tick = self._predict_next_decay_crossing_tick(
+            int(plan.tick)
+        )
+        self.group_update_count += 1
         return GroupSummary(tokens.copy(), counts.copy(), mean_energy.copy())

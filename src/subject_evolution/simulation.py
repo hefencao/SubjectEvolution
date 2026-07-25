@@ -159,6 +159,7 @@ class StepStats:
     signals: int = 0
     group_count: int = 0
     mean_group_size: float = 0.0
+    group_updated: int = 0
     action_entropy: float = 0.0
     signal_detection_rate: float = 0.0
     partner_detection_rate: float = 0.0
@@ -1160,6 +1161,10 @@ class Simulation:
         self.entity_device_version = int(state["entity_device_version"])
         self.environment = copy.deepcopy(state["environment"])
         self.environment.cfg = self.cfg
+        if not hasattr(self.environment, "mortality_trace"):
+            self.environment.mortality_trace = np.zeros(
+                (self.cfg.world.grid_y, self.cfg.world.grid_x), dtype=np.float32
+            )
         self.information = copy.deepcopy(state["information"])
         self.information.cfg = self.cfg
         self.signal_scheduler = copy.deepcopy(state["signal_scheduler"])
@@ -1187,6 +1192,16 @@ class Simulation:
         )
         self.social = copy.deepcopy(state["social"])
         self.social.cfg = self.cfg
+        if not hasattr(self.social, "group_labels_dirty"):
+            self.social.group_labels_dirty = False
+            self.social.last_group_update_tick = int(state["tick"])
+            self.social.next_group_decay_due_tick = np.iinfo(np.int64).max
+            self.social.group_update_count = 0
+            self.social.group_update_skipped_count = 0
+            self.social.last_group_update_reason = "legacy-checkpoint"
+            self.social.last_group_dirty_reason = "legacy-checkpoint"
+        elif not hasattr(self.social, "last_group_dirty_reason"):
+            self.social.last_group_dirty_reason = "legacy-checkpoint"
         self.subjects = copy.deepcopy(state["subjects"])
         self.knowledge.restore_state(state["knowledge"])
         self.knowledge.cfg = self.cfg
@@ -1915,6 +1930,11 @@ class Simulation:
                         else "disabled"
                     )
                 ),
+                "mortality_trace": (
+                    "local death-event deposits with public decay/diffusion; observed only through the existing danger boundary"
+                    if self.cfg.environment.mortality_trace_schema != "disabled"
+                    else "disabled"
+                ),
                 "subject_shift": "measured from candidate/control provenance; never assigned as a state label",
             },
             "evolution_evaluation": {
@@ -1947,6 +1967,10 @@ class Simulation:
                 "group_label_planner_scientific_safe": bool(
                     getattr(self.group_label_planner, "scientific_safe", False)
                 ),
+                "group_update_mode": self.cfg.social.group_update_mode,
+                "group_update_period": self.cfg.social.group_update_period,
+                "group_update_min_period": self.cfg.social.group_update_min_period,
+                "group_update_max_period": self.cfg.social.group_update_max_period,
                 "reproduction_capacity_arbitration": (
                     self.cfg.entities.reproduction_capacity_arbitration
                 ),
@@ -2159,9 +2183,9 @@ class Simulation:
         resource_signal = public_resource_signal(local_resources, self.cfg)
         strengths_resource = np.clip(resource_signal, 0.0, 2.0) * 0.15
         hazard = (
-            self.gpu_runtime.hazard_for_cells(actor_cells)
+            self.gpu_runtime.danger_for_cells(actor_cells)
             if self.gpu_runtime is not None
-            else self.environment.hazard.reshape(-1)[actor_cells]
+            else self.environment.danger_for_cells(actor_cells)
         )
         strengths_danger = hazard * 0.15
         group_member = self.social.group_id[actors] != 0
@@ -2261,8 +2285,35 @@ class Simulation:
             hazard_field = self.gpu_runtime.environment.to_numpy(
                 self.gpu_runtime.environment.hazard
             ).astype(np.float32, copy=False)
+        if self.gpu_runtime is None:
+            mortality_trace_field = np.asarray(
+                self.environment.mortality_trace, dtype=np.float32
+            )
+        else:
+            mortality_trace_field = self.gpu_runtime.environment.to_numpy(
+                self.gpu_runtime.environment.mortality_trace
+            ).astype(np.float32, copy=False)
         environment_metrics: dict[str, object] = {
             "environment_schema": self.cfg.environment.schema,
+            "mortality_trace_schema": self.cfg.environment.mortality_trace_schema,
+            "environment_mortality_trace_mean": float(
+                mortality_trace_field.mean(dtype=np.float64)
+            ),
+            "environment_mortality_trace_std": float(
+                mortality_trace_field.std(dtype=np.float64)
+            ),
+            "environment_mortality_trace_max": float(
+                mortality_trace_field.max(initial=0.0)
+            ),
+            "group_update_mode": self.cfg.social.group_update_mode,
+            "group_update_count_total": int(self.social.group_update_count),
+            "group_update_skipped_total": int(
+                self.social.group_update_skipped_count
+            ),
+            "group_last_update_tick": int(self.social.last_group_update_tick),
+            "group_labels_dirty": int(bool(self.social.group_labels_dirty)),
+            "group_last_update_reason": self.social.last_group_update_reason,
+            "group_last_dirty_reason": self.social.last_group_dirty_reason,
             "environment_resource_channel_mean": resource_fields.mean(
                 axis=(1, 2), dtype=np.float64
             ).tolist(),
@@ -2425,7 +2476,7 @@ class Simulation:
             if cfg.knowledge.enabled and cfg.knowledge.learning_enabled:
                 knowledge_context_keys = encode_local_context(
                     policy_local_resources[:, 0],
-                    self.environment.hazard.reshape(-1)[cells],
+                    self.environment.danger_for_cells(cells),
                     ent.energy[active],
                     ent.integrity[active],
                     self.social.group_id[active] != 0,
@@ -2623,7 +2674,7 @@ class Simulation:
                     self.autonomy_recovery_enabled
                     or (
                         self.social_connections_enabled
-                        and self.tick % cfg.social.group_update_period == 0
+                        and self.social.group_update_due(self.tick)[0]
                     )
                 ),
                 entity_state_version=self.entity_device_version,
@@ -3377,12 +3428,21 @@ class Simulation:
         if dead.size:
             if self.local_stress_diagnostics is not None:
                 self.local_stress_diagnostics.observe_deaths(dead, ent.x, ent.y)
+            death_cells = np.asarray(
+                self.spatial.cell_ids(ent.x[dead], ent.y[dead]),
+                dtype=np.int32,
+            )
+            if self.gpu_runtime is None:
+                self.environment.deposit_mortality_trace(death_cells)
+            else:
+                self.gpu_runtime.deposit_mortality_trace(death_cells)
             self.subjects.mark_dead(dead, self.tick)
             ent.commit_deaths(death_events)
             self.autonomy_restored[dead] = False
             self.autonomy_observation_cohort[dead] = False
             self.social.group_id[dead] = 0
             self.social.group_age[dead] = 0
+            self.social.mark_group_labels_dirty("entity-death")
             stats.deaths = int(dead.size)
             self.total_deaths += stats.deaths
         # With no death this tick no new stale relation target can exist, so
@@ -3396,8 +3456,11 @@ class Simulation:
 
         # Candidate social subjects are updated at a slower timescale.
         phase_started = time.perf_counter()
-        group_updated = self.tick % cfg.social.group_update_period == 0
+        group_updated, group_update_reason = self.social.group_update_due(
+            self.tick
+        )
         if group_updated:
+            self.social.last_group_update_reason = group_update_reason
             group_active = np.flatnonzero(ent.alive).astype(np.int32)
             if self.social_connections_enabled:
                 if resource_gradient is None:
@@ -3431,6 +3494,9 @@ class Simulation:
                 self.last_group_plan.member_indices,
                 self.tick,
             )
+            stats.group_updated = 1
+        else:
+            self.social.note_group_update_skipped()
         stats.graph_seconds = time.perf_counter() - phase_started
         if (
             self.cfg.knowledge.enabled
@@ -3599,12 +3665,18 @@ class Simulation:
             metric_hazard_field = np.asarray(
                 self.environment.hazard, dtype=np.float32
             )
+            metric_mortality_trace = np.asarray(
+                self.environment.mortality_trace, dtype=np.float32
+            )
         else:
             metric_resource_fields = self.gpu_runtime.environment.to_numpy(
                 self.gpu_runtime.environment.resources
             ).astype(np.float32, copy=False)
             metric_hazard_field = self.gpu_runtime.environment.to_numpy(
                 self.gpu_runtime.environment.hazard
+            ).astype(np.float32, copy=False)
+            metric_mortality_trace = self.gpu_runtime.environment.to_numpy(
+                self.gpu_runtime.environment.mortality_trace
             ).astype(np.float32, copy=False)
         resource_field_mean = metric_resource_fields.mean(
             axis=(1, 2), dtype=np.float64
@@ -3702,6 +3774,16 @@ class Simulation:
             "lineages": lineage_count,
             "groups": stats.group_count,
             "mean_group_size": stats.mean_group_size,
+            "group_updated": stats.group_updated,
+            "group_update_count_total": int(self.social.group_update_count),
+            "group_update_skipped_total": int(
+                self.social.group_update_skipped_count
+            ),
+            "group_labels_dirty": int(bool(self.social.group_labels_dirty)),
+            "group_last_update_tick": int(self.social.last_group_update_tick),
+            "group_update_mode": self.cfg.social.group_update_mode,
+            "group_last_update_reason": self.social.last_group_update_reason,
+            "group_last_dirty_reason": self.social.last_group_dirty_reason,
             "grouped_fraction": grouped_fraction,
             "social_dependency_proxy": social_dependency,
             "strategy_mean_abs_weight": strategy_mean_abs_weight,
@@ -3772,6 +3854,15 @@ class Simulation:
             "environment_resource_3_std": float(resource_field_std[3]),
             "environment_hazard_mean": float(metric_hazard_field.mean(dtype=np.float64)),
             "environment_hazard_std": float(metric_hazard_field.std(dtype=np.float64)),
+            "environment_mortality_trace_mean": float(
+                metric_mortality_trace.mean(dtype=np.float64)
+            ),
+            "environment_mortality_trace_std": float(
+                metric_mortality_trace.std(dtype=np.float64)
+            ),
+            "environment_mortality_trace_max": float(
+                metric_mortality_trace.max(initial=0.0)
+            ),
             "harvested_energy_step": stats.harvested_energy,
             "harvested_resource_0_step": float(stats.harvested_resources[0]),
             "harvested_resource_1_step": float(stats.harvested_resources[1]),
@@ -4380,6 +4471,7 @@ class Simulation:
             "direct_messages_enabled": self.direct_messages_enabled,
             "freeze_genotype": self.freeze_genotype,
             "environment_spatial_reversed": self.environment.spatial_reversed,
+            "mortality_trace_schema": self.cfg.environment.mortality_trace_schema,
             "history": self.intervention_history,
         }
         control_metadata: dict[str, object] = {
