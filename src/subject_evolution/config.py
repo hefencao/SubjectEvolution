@@ -107,6 +107,20 @@ class EnvironmentConfig:
     mortality_trace_deposit: float = 0.0
     mortality_trace_max: float = 1.0
     mortality_trace_observation_weight: float = 0.0
+    # Optional low-coupling additive field process. The core passes only a
+    # normalized grid and tick and accepts only a scalar hazard contribution;
+    # no entity, policy, relation, lineage or knowledge state crosses this
+    # boundary. External implementations are registered as trusted plugins.
+    environment_process_schema: str = "disabled"
+    environment_process_parameters: dict[str, Any] | None = None
+    # v0.22 compatibility adapter for the former in-core synthetic moving
+    # Gaussian field. New configurations should use environment_process_*.
+    moving_hazard_schema: str = "disabled"
+    moving_hazard_source_count: int = 0
+    moving_hazard_amplitude: float = 0.0
+    moving_hazard_radius: float = 0.12
+    moving_hazard_speed: float = 0.0
+    moving_hazard_phase_offset: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -134,6 +148,13 @@ class EntityConfig:
     resource_affinity_strength: float = 0.0
     resource_affinity_min_efficiency: float = 0.25
     resource_affinity_max_efficiency: float = 1.75
+    # Morphology gene 6 can allocate a fixed evidence budget between direct
+    # physical hazard and the delayed mortality trace.  It is inert unless the
+    # explicit schema is enabled.
+    danger_evidence_schema: str = "disabled"
+    danger_evidence_strength: float = 0.0
+    danger_evidence_min_efficiency: float = 0.25
+    danger_evidence_max_efficiency: float = 1.75
 
 
 @dataclass(frozen=True)
@@ -440,6 +461,34 @@ def load_config(path: str | Path) -> SimulationConfig:
                     "mortality_trace_observation_weight", 0.0
                 )
             ),
+            environment_process_schema=str(
+                _require(raw, "environment").get(
+                    "environment_process_schema", "disabled"
+                )
+            ),
+            environment_process_parameters=dict(
+                _require(raw, "environment").get(
+                    "environment_process_parameters", {}
+                )
+            ),
+            moving_hazard_schema=str(
+                _require(raw, "environment").get("moving_hazard_schema", "disabled")
+            ),
+            moving_hazard_source_count=int(
+                _require(raw, "environment").get("moving_hazard_source_count", 0)
+            ),
+            moving_hazard_amplitude=float(
+                _require(raw, "environment").get("moving_hazard_amplitude", 0.0)
+            ),
+            moving_hazard_radius=float(
+                _require(raw, "environment").get("moving_hazard_radius", 0.12)
+            ),
+            moving_hazard_speed=float(
+                _require(raw, "environment").get("moving_hazard_speed", 0.0)
+            ),
+            moving_hazard_phase_offset=float(
+                _require(raw, "environment").get("moving_hazard_phase_offset", 0.0)
+            ),
         ),
         entities=EntityConfig(**_require(raw, "entities")),
         information=InformationConfig(
@@ -637,6 +686,43 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError(
             "enabled mortality trace requires positive deposit and observation weight"
         )
+    if cfg.environment.moving_hazard_schema not in {
+        "disabled",
+        "moving-gaussian-hazard-sources-v1",
+    }:
+        raise ValueError(
+            "environment.moving_hazard_schema must be 'disabled' or "
+            "'moving-gaussian-hazard-sources-v1'"
+        )
+    if cfg.environment.moving_hazard_source_count < 0:
+        raise ValueError("environment.moving_hazard_source_count cannot be negative")
+    for name, value in (
+        ("moving_hazard_amplitude", cfg.environment.moving_hazard_amplitude),
+        ("moving_hazard_radius", cfg.environment.moving_hazard_radius),
+        ("moving_hazard_speed", cfg.environment.moving_hazard_speed),
+        ("moving_hazard_phase_offset", cfg.environment.moving_hazard_phase_offset),
+    ):
+        if not math.isfinite(float(value)):
+            raise ValueError(f"environment.{name} must be finite")
+    if cfg.environment.moving_hazard_amplitude < 0.0:
+        raise ValueError("environment.moving_hazard_amplitude cannot be negative")
+    if cfg.environment.moving_hazard_radius <= 0.0 or cfg.environment.moving_hazard_radius > 0.5:
+        raise ValueError("environment.moving_hazard_radius must be in (0, 0.5]")
+    if cfg.environment.moving_hazard_speed < 0.0:
+        raise ValueError("environment.moving_hazard_speed cannot be negative")
+    if cfg.environment.moving_hazard_schema != "disabled" and (
+        cfg.environment.moving_hazard_source_count <= 0
+        or cfg.environment.moving_hazard_amplitude <= 0.0
+    ):
+        raise ValueError(
+            "enabled moving hazards require positive source count and amplitude"
+        )
+    # Generic extension validation is registry-backed and intentionally lives
+    # behind a local import so configuration types do not depend on concrete
+    # plugin implementations.
+    from .environment_process import validate_environment_process_config
+
+    validate_environment_process_config(cfg.environment)
     if cfg.entities.resource_affinity_schema not in {
         "disabled",
         "normalized-four-resource-affinity-v1",
@@ -658,6 +744,28 @@ def validate_config(cfg: SimulationConfig) -> None:
         and cfg.environment.schema != "spatially-asynchronous-multiniche-v1"
     ):
         raise ValueError("resource affinity requires the heterogeneous environment schema")
+    if cfg.entities.danger_evidence_schema not in {
+        "disabled",
+        "inherited-direct-trace-mixture-v1",
+    }:
+        raise ValueError(
+            "entities.danger_evidence_schema must be 'disabled' or "
+            "'inherited-direct-trace-mixture-v1'"
+        )
+    if not math.isfinite(float(cfg.entities.danger_evidence_strength)) or not 0.0 <= cfg.entities.danger_evidence_strength <= 1.0:
+        raise ValueError("entities.danger_evidence_strength must be in [0, 1]")
+    if (
+        cfg.entities.danger_evidence_min_efficiency <= 0.0
+        or cfg.entities.danger_evidence_max_efficiency
+        < cfg.entities.danger_evidence_min_efficiency
+        or cfg.entities.danger_evidence_max_efficiency >= 2.0
+    ):
+        raise ValueError("danger evidence efficiency bounds are invalid")
+    if (
+        cfg.entities.danger_evidence_schema != "disabled"
+        and cfg.environment.mortality_trace_schema == "disabled"
+    ):
+        raise ValueError("inherited danger evidence mixing requires mortality trace")
     _probability("channel_loss", cfg.information.channel_loss)
     _probability("classification_error", cfg.information.classification_error)
     if cfg.information.receiver_noise < 0:

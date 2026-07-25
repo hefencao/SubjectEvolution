@@ -25,6 +25,7 @@ from .simulation import Simulation
 CHECKPOINT_RE = re.compile(r"checkpoint_(\d{8})\.sechk$")
 DEFAULT_INTERVENTIONS = (
     "neutralize-resource-affinity",
+    "neutralize-danger-evidence",
     "ablate-working-memory",
     "bypass-sparse-selection",
     "disable-knowledge-policy",

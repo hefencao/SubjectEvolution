@@ -1,0 +1,51 @@
+{
+  "schema": "environment-process-v023-validation-v1",
+  "version": "0.23.0",
+  "design_boundary": {
+    "api_schema": "additive-environment-field-process-v1",
+    "inputs": ["tick", "normalized_x_grid", "normalized_y_grid", "array_namespace"],
+    "output": "finite non-negative hazard-grid delta",
+    "excluded_state": [
+      "entities",
+      "actions",
+      "controllers",
+      "relations",
+      "groups",
+      "lineages",
+      "knowledge",
+      "working_memory",
+      "births",
+      "deaths"
+    ]
+  },
+  "scientific_baseline": {
+    "environment_process_schema": "disabled",
+    "structural_evolution_provenance_valid": true
+  },
+  "compatibility_plugin": {
+    "schema": "moving-gaussian-hazard-sources-v1",
+    "mechanism_class": "abiotic-additive-scalar-field",
+    "interpretation": "synthetic-observation-or-entertainment-extension",
+    "default_enabled": false,
+    "scientific_baseline_valid_when_enabled": false
+  },
+  "tests": {
+    "passed": 117,
+    "skipped": 1,
+    "failed": 0,
+    "skipped_reason": "real CUDA/CuPy device unavailable"
+  },
+  "smoke_runs": {
+    "scientific_disabled_process": {
+      "ticks": 3,
+      "process_origin": "core-disabled",
+      "scientific_valid": true
+    },
+    "synthetic_plugin": {
+      "ticks": 3,
+      "process_origin": "generic-plugin-config",
+      "scientific_valid": false
+    }
+  },
+  "real_cuda_hybrid_world_verified": false
+}

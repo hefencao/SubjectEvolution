@@ -12,6 +12,8 @@ from typing import Any
 
 from .backend import Backend, resolve_backend
 from .config import SimulationConfig
+from .danger_evidence import DANGER_EVIDENCE_SCALE
+from .environment_process import build_environment_process, environment_process_metadata
 from .information import (
     DirectMessageObservationPlan,
     InformationObservation,
@@ -30,6 +32,8 @@ class DeviceEnvironment:
         self.cfg = cfg
         self.backend = resolve_backend(backend) if isinstance(backend, str) else backend
         self.spatial_reversed = False
+        self.environment_process = build_environment_process(cfg.environment)
+        self.environment_process_metadata = environment_process_metadata(cfg.environment)
         xp = self.backend.xp
         gx, gy = cfg.world.grid_x, cfg.world.grid_y
         yy, xx = xp.mgrid[0:gy, 0:gx]
@@ -114,6 +118,24 @@ class DeviceEnvironment:
                 + self.cfg.environment.hazard_secondary_amplitude
                 * xp.sin((xx + yy) * 0.025 + 1.7 * phase)
             )
+        if self.environment_process is not None:
+            xnorm, ynorm = self._normalized_grid(xx, yy)
+            extension = self.environment_process.hazard_delta(
+                tick=tick,
+                xnorm=xnorm,
+                ynorm=ynorm,
+                xp=xp,
+            )
+            extension = xp.asarray(extension, dtype=xp.float64)
+            if extension.shape != hazard.shape:
+                raise ValueError(
+                    "environment process hazard_delta must match the hazard grid shape"
+                )
+            if bool(xp.any(~xp.isfinite(extension))) or bool(xp.any(extension < 0.0)):
+                raise ValueError(
+                    "environment process hazard_delta must be finite and non-negative"
+                )
+            hazard = hazard + extension
         result = xp.clip(hazard, 0.0, 1.0).astype(xp.float32)
         return result[::-1, ::-1].copy() if self.spatial_reversed else result
 
@@ -131,24 +153,45 @@ class DeviceEnvironment:
             == "local-decaying-mortality-trace-v1"
         )
 
-    def public_danger_field(self) -> Any:
+    def weighted_mortality_trace_field(self) -> Any:
         xp = self.backend.xp
         if not self.mortality_trace_enabled:
-            return self.hazard
+            return xp.zeros_like(self.hazard, dtype=xp.float32)
         return (
-            self.hazard
-            + xp.float32(self.cfg.environment.mortality_trace_observation_weight)
+            xp.float32(self.cfg.environment.mortality_trace_observation_weight)
             * self.mortality_trace
         ).astype(xp.float32)
 
-    def danger_for_cells(self, cell_ids: Any) -> Any:
+    def public_danger_field(self) -> Any:
+        return (self.hazard + self.weighted_mortality_trace_field()).astype(
+            self.backend.xp.float32
+        )
+
+    def danger_components_for_cells(self, cell_ids: Any) -> tuple[Any, Any]:
         xp = self.backend.xp
         cells = validate_cell_ids(
             cell_ids,
             self.cfg.world.grid_x * self.cfg.world.grid_y,
             backend=self.backend,
         )
-        return self.public_danger_field().reshape(-1)[cells].astype(xp.float32)
+        return (
+            self.hazard.reshape(-1)[cells].astype(xp.float32),
+            self.weighted_mortality_trace_field().reshape(-1)[cells].astype(xp.float32),
+        )
+
+    def danger_for_cells(self, cell_ids: Any, evidence_q: Any | None = None) -> Any:
+        xp = self.backend.xp
+        direct, trace = self.danger_components_for_cells(cell_ids)
+        if evidence_q is None:
+            return (direct + trace).astype(xp.float32)
+        weights = xp.asarray(evidence_q, dtype=xp.int32)
+        if weights.shape != (int(direct.size), 2):
+            raise ValueError("danger evidence weights must be shaped [N, 2]")
+        return (
+            (direct.astype(xp.float64) * weights[:, 0]
+             + trace.astype(xp.float64) * weights[:, 1])
+            / DANGER_EVIDENCE_SCALE
+        ).astype(xp.float32)
 
     def deposit_mortality_trace(self, cell_ids: Any, weights: Any | None = None) -> None:
         if not self.mortality_trace_enabled:
@@ -226,6 +269,7 @@ class DeviceEnvironment:
         entity_cells: Any,
         capacity: int,
         resource_affinity_q: Any | None = None,
+        danger_evidence_q: Any | None = None,
     ) -> tuple[tuple[Any, Any], tuple[Any, Any]]:
         xp = self.backend.xp
         cells = validate_cell_ids(
@@ -266,10 +310,47 @@ class DeviceEnvironment:
             rgx = rgx.astype(xp.float32)
             rgy = rgy.astype(xp.float32)
 
-        public_danger = self.public_danger_field()
-        hazard_x = 0.5 * (xp.roll(public_danger, -1, axis=1) - xp.roll(public_danger, 1, axis=1))
-        hazard_y = 0.5 * (xp.roll(public_danger, -1, axis=0) - xp.roll(public_danger, 1, axis=0))
-        return (rgx, rgy), (gather(hazard_x), gather(hazard_y))
+        if danger_evidence_q is None:
+            public_danger = self.public_danger_field()
+            hazard_x = 0.5 * (
+                xp.roll(public_danger, -1, axis=1)
+                - xp.roll(public_danger, 1, axis=1)
+            )
+            hazard_y = 0.5 * (
+                xp.roll(public_danger, -1, axis=0)
+                - xp.roll(public_danger, 1, axis=0)
+            )
+            return (rgx, rgy), (gather(hazard_x), gather(hazard_y))
+
+        direct_x = 0.5 * (
+            xp.roll(self.hazard, -1, axis=1) - xp.roll(self.hazard, 1, axis=1)
+        )
+        direct_y = 0.5 * (
+            xp.roll(self.hazard, -1, axis=0) - xp.roll(self.hazard, 1, axis=0)
+        )
+        trace_field = self.weighted_mortality_trace_field()
+        trace_x = 0.5 * (
+            xp.roll(trace_field, -1, axis=1) - xp.roll(trace_field, 1, axis=1)
+        )
+        trace_y = 0.5 * (
+            xp.roll(trace_field, -1, axis=0) - xp.roll(trace_field, 1, axis=0)
+        )
+        gathered_direct_x = gather(direct_x)
+        gathered_direct_y = gather(direct_y)
+        gathered_trace_x = gather(trace_x)
+        gathered_trace_y = gather(trace_y)
+        weights = xp.asarray(danger_evidence_q, dtype=xp.int32)
+        if weights.shape != (capacity, 2):
+            raise ValueError("danger evidence must match world capacity and two sources")
+        dgx = (
+            gathered_direct_x.astype(xp.float64) * weights[:, 0]
+            + gathered_trace_x.astype(xp.float64) * weights[:, 1]
+        ) / DANGER_EVIDENCE_SCALE
+        dgy = (
+            gathered_direct_y.astype(xp.float64) * weights[:, 0]
+            + gathered_trace_y.astype(xp.float64) * weights[:, 1]
+        ) / DANGER_EVIDENCE_SCALE
+        return (rgx, rgy), (dgx.astype(xp.float32), dgy.astype(xp.float32))
 
     def resolve_harvest(self, cell_ids: Any, rates: Any) -> Any:
         xp = self.backend.xp

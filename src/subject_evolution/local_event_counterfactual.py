@@ -22,6 +22,7 @@ from .simulation import Simulation
 
 
 DEFAULT_INTERVENTIONS = (
+    "neutralize-danger-evidence",
     "disable-knowledge-transfer",
     "disable-knowledge-policy",
     "ablate-working-memory",

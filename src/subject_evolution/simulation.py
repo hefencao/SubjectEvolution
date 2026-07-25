@@ -25,7 +25,14 @@ from .control import (
     social_guidance_control_proposal,
 )
 from .device_state import EntityDeviceCommitPlan, build_entity_device_commit_plan
+from .danger_evidence import (
+    DANGER_EVIDENCE_SCALE,
+    danger_evidence_diagnostics,
+    danger_evidence_enabled,
+    danger_evidence_quantized,
+)
 from .environment import Environment
+from .environment_process import build_environment_process, environment_process_metadata
 from .evolution import (
     BENEFIT_FLOW_COUNT,
     BenefitFlowKind,
@@ -689,6 +696,7 @@ class Simulation:
         self.direct_messages_enabled = True
         self.freeze_genotype = False
         self.resource_affinity_ablation_enabled = False
+        self.danger_evidence_ablation_enabled = False
         self.knowledge_policy_ablation_enabled = False
         self.knowledge_transfer_ablation_enabled = False
         self.intervention_history: list[dict[str, object]] = []
@@ -723,6 +731,9 @@ class Simulation:
             "environment_spatially_asynchronous": (
                 self.cfg.environment.schema
                 == "spatially-asynchronous-multiniche-v1"
+            ),
+            "environment_process": dict(
+                self.environment.environment_process_metadata
             ),
             "resource_affinity_enabled": (
                 self.cfg.entities.resource_affinity_schema
@@ -1105,6 +1116,9 @@ class Simulation:
             "resource_affinity_ablation_enabled": bool(
                 self.resource_affinity_ablation_enabled
             ),
+            "danger_evidence_ablation_enabled": bool(
+                self.danger_evidence_ablation_enabled
+            ),
             "knowledge_policy_ablation_enabled": bool(
                 self.knowledge_policy_ablation_enabled
             ),
@@ -1161,6 +1175,15 @@ class Simulation:
         self.entity_device_version = int(state["entity_device_version"])
         self.environment = copy.deepcopy(state["environment"])
         self.environment.cfg = self.cfg
+        # v0.22 checkpoints predate the extension boundary. Rebuild the
+        # process from the authoritative embedded config rather than trusting
+        # a pickled implementation object.
+        self.environment.environment_process = build_environment_process(
+            self.cfg.environment
+        )
+        self.environment.environment_process_metadata = environment_process_metadata(
+            self.cfg.environment
+        )
         if not hasattr(self.environment, "mortality_trace"):
             self.environment.mortality_trace = np.zeros(
                 (self.cfg.world.grid_y, self.cfg.world.grid_x), dtype=np.float32
@@ -1297,6 +1320,9 @@ class Simulation:
         self.freeze_genotype = bool(state["freeze_genotype"])
         self.resource_affinity_ablation_enabled = bool(
             state.get("resource_affinity_ablation_enabled", False)
+        )
+        self.danger_evidence_ablation_enabled = bool(
+            state.get("danger_evidence_ablation_enabled", False)
         )
         self.knowledge_policy_ablation_enabled = bool(
             state.get("knowledge_policy_ablation_enabled", False)
@@ -1461,6 +1487,9 @@ class Simulation:
         branch.resource_affinity_ablation_enabled = (
             self.resource_affinity_ablation_enabled
         )
+        branch.danger_evidence_ablation_enabled = (
+            self.danger_evidence_ablation_enabled
+        )
         branch.knowledge_policy_ablation_enabled = (
             self.knowledge_policy_ablation_enabled
         )
@@ -1534,6 +1563,18 @@ class Simulation:
             self.resource_affinity_ablation_enabled = True
             details = {
                 "effective_affinity_q": [AFFINITY_SCALE] * RESOURCE_CHANNELS,
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+            }
+        elif normalized == "neutralize-danger-evidence":
+            if not danger_evidence_enabled(self.cfg):
+                raise ValueError(
+                    "neutralize-danger-evidence requires inherited danger evidence"
+                )
+            canonical = "neutralize-danger-evidence"
+            self.danger_evidence_ablation_enabled = True
+            details = {
+                "effective_evidence_q": [DANGER_EVIDENCE_SCALE, DANGER_EVIDENCE_SCALE],
                 "genotype_coordinates_modified": 0,
                 "inheritance_modified": False,
             }
@@ -1632,6 +1673,16 @@ class Simulation:
         violations: list[str] = []
         if self.experiment_mode is not ExperimentMode.SCIENTIFIC:
             violations.append("experiment mode is entertainment")
+        process_metadata = self.environment.environment_process_metadata
+        if (
+            process_metadata.get("schema") != "disabled"
+            and process_metadata.get("interpretation")
+            == "synthetic-observation-or-entertainment-extension"
+        ):
+            violations.append(
+                "synthetic environment process is enabled; treat the run as an "
+                "observation/game extension rather than a scientific ecology baseline"
+            )
         if self.cfg.control.heuristic_social_guidance:
             violations.append("heuristic social guidance alters action direction")
         if not bool(getattr(self.control_arbiter, "scientific_safe", False)):
@@ -1823,7 +1874,13 @@ class Simulation:
                 "morphology_gene_semantics": {
                     "sensor_quality": 0,
                     "movement_speed": 5,
-                    "reserved_neutral": [1, 2, 3, 4, 6, 7],
+                    "danger_direct_trace_mixture": (
+                        6
+                        if self.cfg.entities.danger_evidence_schema
+                        == "inherited-direct-trace-mixture-v1"
+                        else None
+                    ),
+                    "reserved_neutral": [7],
                 },
                 "knowledge_preference_gene_semantics": (
                     {
@@ -1935,6 +1992,15 @@ class Simulation:
                     if self.cfg.environment.mortality_trace_schema != "disabled"
                     else "disabled"
                 ),
+                "environment_process": dict(
+                    self.environment.environment_process_metadata
+                ),
+                "moving_hazard_schema": self.cfg.environment.moving_hazard_schema,
+                "moving_hazard_sources": int(
+                    self.cfg.environment.moving_hazard_source_count
+                ),
+                "danger_evidence_schema": self.cfg.entities.danger_evidence_schema,
+                "danger_evidence_fixed_budget": True,
                 "subject_shift": "measured from candidate/control provenance; never assigned as a state label",
             },
             "evolution_evaluation": {
@@ -2182,10 +2248,23 @@ class Simulation:
         actor_cells = cells
         resource_signal = public_resource_signal(local_resources, self.cfg)
         strengths_resource = np.clip(resource_signal, 0.0, 2.0) * 0.15
+        actor_evidence_q = (
+            (
+                np.full(
+                    (actors.size, 2),
+                    DANGER_EVIDENCE_SCALE,
+                    dtype=np.int32,
+                )
+                if self.danger_evidence_ablation_enabled
+                else danger_evidence_quantized(ent.genotype[actors], self.cfg)
+            )
+            if danger_evidence_enabled(self.cfg)
+            else None
+        )
         hazard = (
-            self.gpu_runtime.danger_for_cells(actor_cells)
+            self.gpu_runtime.danger_for_cells(actor_cells, actor_evidence_q)
             if self.gpu_runtime is not None
-            else self.environment.danger_for_cells(actor_cells)
+            else self.environment.danger_for_cells(actor_cells, actor_evidence_q)
         )
         strengths_danger = hazard * 0.15
         group_member = self.social.group_id[actors] != 0
@@ -2335,6 +2414,9 @@ class Simulation:
             **resource_affinity_diagnostics(
                 self.entities.alive, self.entities.genotype, self.cfg
             ),
+            **danger_evidence_diagnostics(
+                self.entities.alive, self.entities.genotype, self.cfg
+            ),
         }
         if (
             self.local_stress_diagnostics is not None
@@ -2419,6 +2501,7 @@ class Simulation:
         working_memory_actual_outcomes: np.ndarray | None = None
         working_memory_update_result: WorkingMemoryUpdateResult | None = None
         effective_resource_affinity_q: np.ndarray | None = None
+        effective_danger_evidence_q: np.ndarray | None = None
         policy_energy = ent.energy
         if self.gpu_runtime is None:
             phase_started = time.perf_counter()
@@ -2468,15 +2551,36 @@ class Simulation:
                 run_seed=cfg.run.seed,
                 tick=self.tick,
             )
+            effective_danger_evidence_q = (
+                (
+                    np.full(
+                        (ent.alive.size, 2),
+                        DANGER_EVIDENCE_SCALE,
+                        dtype=np.int32,
+                    )
+                    if self.danger_evidence_ablation_enabled
+                    else danger_evidence_quantized(ent.genotype, cfg)
+                )
+                if danger_evidence_enabled(cfg)
+                else None
+            )
             resource_gradient, danger_gradient = self.environment.gradients_for_entities(
                 self.spatial.entity_cells,
                 ent.alive.size,
                 effective_resource_affinity_q,
+                effective_danger_evidence_q,
             )
             if cfg.knowledge.enabled and cfg.knowledge.learning_enabled:
                 knowledge_context_keys = encode_local_context(
                     policy_local_resources[:, 0],
-                    self.environment.danger_for_cells(cells),
+                    self.environment.danger_for_cells(
+                        cells,
+                        (
+                            effective_danger_evidence_q[active]
+                            if effective_danger_evidence_q is not None
+                            else None
+                        ),
+                    ),
                     ent.energy[active],
                     ent.integrity[active],
                     self.social.group_id[active] != 0,
@@ -2681,6 +2785,9 @@ class Simulation:
                 knowledge=self.knowledge if cfg.knowledge.enabled else None,
                 resource_affinity_ablation_enabled=(
                     self.resource_affinity_ablation_enabled
+                ),
+                danger_evidence_ablation_enabled=(
+                    self.danger_evidence_ablation_enabled
                 ),
                 knowledge_policy_ablation_enabled=(
                     self.knowledge_policy_ablation_enabled
@@ -3658,6 +3765,9 @@ class Simulation:
         affinity_metrics = resource_affinity_diagnostics(
             ent.alive, ent.genotype, self.cfg
         )
+        danger_evidence_metrics = danger_evidence_diagnostics(
+            ent.alive, ent.genotype, self.cfg
+        )
         if self.gpu_runtime is None:
             metric_resource_fields = np.asarray(
                 self.environment.resources, dtype=np.float32
@@ -3805,6 +3915,9 @@ class Simulation:
             "resource_affinity_ablation_enabled": int(
                 self.resource_affinity_ablation_enabled
             ),
+            "danger_evidence_ablation_enabled": int(
+                self.danger_evidence_ablation_enabled
+            ),
             "resource_affinity_effective_schema": (
                 "uniform-four-resource-affinity-ablation-v1"
                 if self.resource_affinity_ablation_enabled
@@ -3844,6 +3957,26 @@ class Simulation:
             "resource_affinity_1_diversity": float(affinity_metrics["resource_affinity_std"][1]),
             "resource_affinity_2_diversity": float(affinity_metrics["resource_affinity_std"][2]),
             "resource_affinity_3_diversity": float(affinity_metrics["resource_affinity_std"][3]),
+            "danger_evidence_schema": danger_evidence_metrics["danger_evidence_schema"],
+            "danger_direct_weight_mean": float(danger_evidence_metrics["danger_direct_weight_mean"]),
+            "danger_direct_weight_std": float(danger_evidence_metrics["danger_direct_weight_std"]),
+            "danger_trace_weight_mean": float(danger_evidence_metrics["danger_trace_weight_mean"]),
+            "danger_trace_weight_std": float(danger_evidence_metrics["danger_trace_weight_std"]),
+            "danger_evidence_effective_dimensions": float(danger_evidence_metrics["danger_evidence_effective_dimensions"]),
+            "environment_process_schema": str(
+                self.environment.environment_process_metadata["schema"]
+            ),
+            "environment_process_origin": str(
+                self.environment.environment_process_metadata["origin"]
+            ),
+            "environment_process_mechanism_class": str(
+                self.environment.environment_process_metadata["mechanism_class"]
+            ),
+            "environment_process_interpretation": str(
+                self.environment.environment_process_metadata["interpretation"]
+            ),
+            "moving_hazard_schema": self.cfg.environment.moving_hazard_schema,
+            "moving_hazard_source_count": int(self.cfg.environment.moving_hazard_source_count),
             "environment_resource_0_mean": float(resource_field_mean[0]),
             "environment_resource_1_mean": float(resource_field_mean[1]),
             "environment_resource_2_mean": float(resource_field_mean[2]),
@@ -4472,6 +4605,9 @@ class Simulation:
             "freeze_genotype": self.freeze_genotype,
             "environment_spatial_reversed": self.environment.spatial_reversed,
             "mortality_trace_schema": self.cfg.environment.mortality_trace_schema,
+            "environment_process": dict(
+                self.environment.environment_process_metadata
+            ),
             "history": self.intervention_history,
         }
         control_metadata: dict[str, object] = {

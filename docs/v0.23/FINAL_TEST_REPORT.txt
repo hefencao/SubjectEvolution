@@ -1,0 +1,24 @@
+Subject Evolution v0.23.0 final validation
+==========================================
+
+pytest: 117 passed, 1 skipped, 0 failed
+Skipped: real CUDA/CuPy device test unavailable in the build environment.
+
+Validated:
+- generic additive environment-process registry and configuration;
+- strict scalar-field boundary: finite, non-negative, grid-shaped output;
+- no entity/policy/relation/lineage/knowledge hooks in the process protocol;
+- v0.22 moving Gaussian compatibility adapter;
+- generic/legacy numeric equivalence;
+- NumPy / simulated-device environment parity;
+- disabled scientific-baseline semantics;
+- synthetic extension scientific-validity labeling;
+- v0.22 trusted checkpoint configuration compatibility;
+- complete existing K1–K4, latent L1/L2, routing-cost, memory, Top-k,
+  environmental, transfer, mortality-trace, adaptive-group and local-culture
+  regressions.
+
+Additional compatibility run:
+- 10 ticks, disabled baseline: 308 common non-timing metrics exact;
+- 10 ticks, v0.22 moving field adapter: 308 common non-timing metrics exact;
+- seven knowledge/event logs byte-identical in both conditions.

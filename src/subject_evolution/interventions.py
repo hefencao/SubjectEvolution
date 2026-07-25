@@ -78,6 +78,12 @@ INTERVENTIONS = (
         aliases=("resource-affinity-off", "affinity-off"),
     ),
     InterventionSpec(
+        "neutralize-danger-evidence",
+        InterventionKind.MODIFY_RULES,
+        "inherited-direct-vs-mortality-trace-evidence-expression",
+        aliases=("danger-evidence-off", "danger-mix-off"),
+    ),
+    InterventionSpec(
         "disable-knowledge-policy",
         InterventionKind.MODIFY_RULES,
         "knowledge-policy-residual-publication",

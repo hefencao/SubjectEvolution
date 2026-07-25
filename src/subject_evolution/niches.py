@@ -17,16 +17,17 @@ def resource_affinity_enabled(cfg: SimulationConfig) -> bool:
 
 
 def active_morphology_traits(cfg: SimulationConfig) -> tuple[tuple[int, ...], tuple[str, ...]]:
-    affinity_names = tuple(
-        f"resource_affinity_{index}" for index in range(RESOURCE_CHANNELS)
-    )
+    indices: list[int] = [0]
+    names: list[str] = ["sensor_quality"]
     if resource_affinity_enabled(cfg):
-        return (0, 1, 2, 3, 4, 5), (
-            "sensor_quality",
-            *affinity_names,
-            "movement_speed",
-        )
-    return (0, 5), ("sensor_quality", "movement_speed")
+        indices.extend((1, 2, 3, 4))
+        names.extend(f"resource_affinity_{index}" for index in range(RESOURCE_CHANNELS))
+    indices.append(5)
+    names.append("movement_speed")
+    if cfg.entities.danger_evidence_schema == "inherited-direct-trace-mixture-v1":
+        indices.append(6)
+        names.append("danger_direct_trace_mixture")
+    return tuple(indices), tuple(names)
 
 
 def resource_affinity_quantized(genotype: Any, cfg: SimulationConfig) -> np.ndarray:

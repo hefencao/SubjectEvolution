@@ -1,0 +1,104 @@
+{
+  "schema": "v022-v023-compatibility-v1",
+  "ticks": 10,
+  "conditions": [
+    {
+      "condition": "disabled-scientific-baseline",
+      "tabular": {
+        "metrics.csv": {
+          "rows": 2,
+          "common_non_timing_fields": 308,
+          "mismatch_count": 0,
+          "max_abs_error": 0.0,
+          "first_mismatches": []
+        }
+      },
+      "byte_identical_logs": {
+        "knowledge_events.jsonl": {
+          "identical": true,
+          "sha256_v22": "0abf54ec355ad230b14e9e9ba01ee8f1fde653ce2646855ccfbd3713cb324da0",
+          "sha256_v23": "0abf54ec355ad230b14e9e9ba01ee8f1fde653ce2646855ccfbd3713cb324da0"
+        },
+        "knowledge_outcome_updates.csv": {
+          "identical": true,
+          "sha256_v22": "05b47284d5c5662c92b49d718ae2396037e3e0195d5dea164a1d5d39dbee9aca",
+          "sha256_v23": "05b47284d5c5662c92b49d718ae2396037e3e0195d5dea164a1d5d39dbee9aca"
+        },
+        "knowledge_policy_contributions.csv": {
+          "identical": true,
+          "sha256_v22": "62979719baadedee1c341d5fa38928103118649d4d87d888dac35e1d7283fcd3",
+          "sha256_v23": "62979719baadedee1c341d5fa38928103118649d4d87d888dac35e1d7283fcd3"
+        },
+        "knowledge_routing_costs.csv": {
+          "identical": true,
+          "sha256_v22": "34d03457ab0ff6b26207f3380dd16c39f0307594777198203ae1b7c3f667fc83",
+          "sha256_v23": "34d03457ab0ff6b26207f3380dd16c39f0307594777198203ae1b7c3f667fc83"
+        },
+        "knowledge_working_memory.csv": {
+          "identical": true,
+          "sha256_v22": "0111c72ff7b0f84dda76c217f9320a9db74bd8030919c266e251f796463ab266",
+          "sha256_v23": "0111c72ff7b0f84dda76c217f9320a9db74bd8030919c266e251f796463ab266"
+        },
+        "knowledge_selection_events.csv": {
+          "identical": true,
+          "sha256_v22": "970c750f06e585637495718d71b3dc9853e0c1b2948837edb07f3e68f9d01d9a",
+          "sha256_v23": "970c750f06e585637495718d71b3dc9853e0c1b2948837edb07f3e68f9d01d9a"
+        },
+        "knowledge_transfers.csv": {
+          "identical": true,
+          "sha256_v22": "57fe863748db6f336e616ed68b4b14275529859bc4027143b2a692f6b6fd2002",
+          "sha256_v23": "57fe863748db6f336e616ed68b4b14275529859bc4027143b2a692f6b6fd2002"
+        }
+      }
+    },
+    {
+      "condition": "v022-moving-legacy-adapter",
+      "tabular": {
+        "metrics.csv": {
+          "rows": 2,
+          "common_non_timing_fields": 308,
+          "mismatch_count": 0,
+          "max_abs_error": 0.0,
+          "first_mismatches": []
+        }
+      },
+      "byte_identical_logs": {
+        "knowledge_events.jsonl": {
+          "identical": true,
+          "sha256_v22": "c33bc26ee8eda40f346775b48741c673b52477798c4baec23b25c00497c1c693",
+          "sha256_v23": "c33bc26ee8eda40f346775b48741c673b52477798c4baec23b25c00497c1c693"
+        },
+        "knowledge_outcome_updates.csv": {
+          "identical": true,
+          "sha256_v22": "2ce7d672c1ef59460a557a60eddfdd68bcbbf3bd9cf7da0824ea6d9aa05bcdb3",
+          "sha256_v23": "2ce7d672c1ef59460a557a60eddfdd68bcbbf3bd9cf7da0824ea6d9aa05bcdb3"
+        },
+        "knowledge_policy_contributions.csv": {
+          "identical": true,
+          "sha256_v22": "2ad5fef9b3129a5dec8dd7f22a2b39356c217a5329fed494346d0c8e4d15ddb9",
+          "sha256_v23": "2ad5fef9b3129a5dec8dd7f22a2b39356c217a5329fed494346d0c8e4d15ddb9"
+        },
+        "knowledge_routing_costs.csv": {
+          "identical": true,
+          "sha256_v22": "e7ebedeb661d8829d78d3b3bd8920079a917e03c74082ad6c8e5bc4b0fcaf2ab",
+          "sha256_v23": "e7ebedeb661d8829d78d3b3bd8920079a917e03c74082ad6c8e5bc4b0fcaf2ab"
+        },
+        "knowledge_working_memory.csv": {
+          "identical": true,
+          "sha256_v22": "1df9d16e5062f54c22bd102665868e212baf05eecedef73a2acea51554bb6e6a",
+          "sha256_v23": "1df9d16e5062f54c22bd102665868e212baf05eecedef73a2acea51554bb6e6a"
+        },
+        "knowledge_selection_events.csv": {
+          "identical": true,
+          "sha256_v22": "ee87cb62aa7f784ee432fef6a7624af0a1050ce037da9e947f6b4fbcdd6fa785",
+          "sha256_v23": "ee87cb62aa7f784ee432fef6a7624af0a1050ce037da9e947f6b4fbcdd6fa785"
+        },
+        "knowledge_transfers.csv": {
+          "identical": true,
+          "sha256_v22": "2d544efa2f7a8f9bc5d5adb76cf32984a08a647a0b0b272d33be00e57c49cade",
+          "sha256_v23": "2d544efa2f7a8f9bc5d5adb76cf32984a08a647a0b0b272d33be00e57c49cade"
+        }
+      }
+    }
+  ]
+}

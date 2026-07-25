@@ -195,9 +195,25 @@ def test_v020_checkpoint_config_hash_accepts_physically_stored_fields(tmp_path: 
         "mortality_trace_deposit",
         "mortality_trace_max",
         "mortality_trace_observation_weight",
+        "environment_process_schema",
+        "environment_process_parameters",
+        "moving_hazard_schema",
+        "moving_hazard_source_count",
+        "moving_hazard_amplitude",
+        "moving_hazard_radius",
+        "moving_hazard_speed",
+        "moving_hazard_phase_offset",
     ):
         legacy_payload["environment"].pop(name)
         vars(cfg.environment).pop(name)
+    for name in (
+        "danger_evidence_schema",
+        "danger_evidence_strength",
+        "danger_evidence_min_efficiency",
+        "danger_evidence_max_efficiency",
+    ):
+        legacy_payload["entities"].pop(name)
+        vars(cfg.entities).pop(name)
     for name in (
         "group_update_mode",
         "group_update_min_period",

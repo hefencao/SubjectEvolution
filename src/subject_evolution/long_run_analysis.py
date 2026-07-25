@@ -138,11 +138,57 @@ def _resolved_config_context(path: str | Path) -> dict[str, Any]:
             manifest = loaded if isinstance(loaded, dict) else {}
         except (OSError, json.JSONDecodeError):
             manifest = {}
+    configured_process_schema = environment.get(
+        "environment_process_schema", "disabled"
+    )
+    legacy_moving_schema = environment.get("moving_hazard_schema", "disabled")
+    if configured_process_schema != "disabled":
+        resolved_process_schema = configured_process_schema
+        resolved_process_origin = "generic-plugin-config"
+        process_parameters = environment.get("environment_process_parameters", {})
+    elif legacy_moving_schema != "disabled":
+        resolved_process_schema = legacy_moving_schema
+        resolved_process_origin = "v0.22-moving-hazard-adapter"
+        process_parameters = {
+            "source_count": environment.get("moving_hazard_source_count", 0),
+            "amplitude": environment.get("moving_hazard_amplitude", 0.0),
+            "radius": environment.get("moving_hazard_radius", 0.12),
+            "speed": environment.get("moving_hazard_speed", 0.0),
+            "phase_offset": environment.get("moving_hazard_phase_offset", 0.0),
+        }
+    else:
+        resolved_process_schema = "disabled"
+        resolved_process_origin = "core-disabled"
+        process_parameters = {}
+    manifest_process = manifest.get("environment_process", {})
+    if not isinstance(manifest_process, dict):
+        manifest_process = {}
     return {
         "knowledge_transfer_probability": knowledge.get("transfer_probability"),
         "knowledge_transfer_period": knowledge.get("transfer_period"),
         "environment_schema": environment.get("schema"),
+        "environment_process_schema": manifest_process.get(
+            "schema", resolved_process_schema
+        ),
+        "environment_process_origin": manifest_process.get(
+            "origin", resolved_process_origin
+        ),
+        "environment_process_mechanism_class": manifest_process.get(
+            "mechanism_class", "unknown" if resolved_process_schema != "disabled" else "none"
+        ),
+        "environment_process_interpretation": manifest_process.get(
+            "interpretation",
+            "unknown-extension" if resolved_process_schema != "disabled" else "scientific-core-only",
+        ),
+        "environment_process_parameter_names": sorted(process_parameters)
+        if isinstance(process_parameters, dict)
+        else [],
+        "moving_hazard_schema": environment.get("moving_hazard_schema", "disabled"),
+        "moving_hazard_source_count": environment.get("moving_hazard_source_count", 0),
+        "mortality_trace_schema": environment.get("mortality_trace_schema", "disabled"),
         "resource_affinity_schema": entities.get("resource_affinity_schema"),
+        "danger_evidence_schema": entities.get("danger_evidence_schema", "disabled"),
+        "group_update_mode": config.get("social", {}).get("group_update_mode", "periodic-v1"),
         "spatial_stress_diagnostics_schema": run.get(
             "spatial_stress_diagnostics_schema"
         ),
@@ -692,6 +738,37 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
             if "resource_affinity_effective_dimensions" in final
             else None
         ),
+        "danger_direct_weight_mean_final": (
+            float(final["danger_direct_weight_mean"])
+            if "danger_direct_weight_mean" in final else None
+        ),
+        "danger_direct_weight_std_final": (
+            float(final["danger_direct_weight_std"])
+            if "danger_direct_weight_std" in final else None
+        ),
+        "danger_trace_weight_mean_final": (
+            float(final["danger_trace_weight_mean"])
+            if "danger_trace_weight_mean" in final else None
+        ),
+        "danger_trace_weight_std_final": (
+            float(final["danger_trace_weight_std"])
+            if "danger_trace_weight_std" in final else None
+        ),
+        "danger_evidence_effective_dimensions_final": (
+            float(final["danger_evidence_effective_dimensions"])
+            if "danger_evidence_effective_dimensions" in final else None
+        ),
+        "environment_mortality_trace_mean_final": (
+            float(final["environment_mortality_trace_mean"])
+            if "environment_mortality_trace_mean" in final else None
+        ),
+        "environment_mortality_trace_max_final": (
+            float(final["environment_mortality_trace_max"])
+            if "environment_mortality_trace_max" in final else None
+        ),
+        "group_update_count_final": int(final.get("group_update_count_total", 0)),
+        "group_update_skipped_final": int(final.get("group_update_skipped_total", 0)),
+        "group_last_update_tick_final": int(final.get("group_last_update_tick", -1)),
         "lineage_group_nmi_final": (
             float(final["lineage_group_nmi"]) if "lineage_group_nmi" in final else None
         ),
@@ -882,7 +959,7 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         if value["available_runs"] >= 3 and value["same_nonzero_sign"]
     ]
     return {
-        "schema": "multi-seed-long-run-analysis-v5",
+        "schema": "multi-seed-long-run-analysis-v7",
         "run_count": len(runs),
         "runs": runs,
         "endpoint_aggregate": aggregate,
@@ -984,6 +1061,55 @@ def render_markdown(report: dict[str, Any]) -> str:
         for warning in run["analysis_warnings"]:
             lines.append(f"- warning: {warning}")
         lines.append("")
+    lines.extend([
+        "## Environment process, danger evidence, mortality trace and group refresh",
+        "",
+    ])
+    for run in report["runs"]:
+        context = run.get("config_context", {})
+        lines.append(f"### {run['run_name']}")
+        lines.append(
+            f"- environment process: {context.get('environment_process_schema')} "
+            f"({context.get('environment_process_origin')})"
+        )
+        lines.append(
+            f"- mechanism / interpretation: "
+            f"{context.get('environment_process_mechanism_class')} / "
+            f"{context.get('environment_process_interpretation')}"
+        )
+        lines.append(
+            f"- process parameter names: "
+            f"{context.get('environment_process_parameter_names')}"
+        )
+        lines.append(
+            f"- v0.22 moving-hazard compatibility fields / sources: "
+            f"{context.get('moving_hazard_schema')} / "
+            f"{context.get('moving_hazard_source_count')}"
+        )
+        lines.append(
+            f"- danger evidence schema: {context.get('danger_evidence_schema')}"
+        )
+        lines.append(
+            f"- direct mean/std: {_format(run.get('danger_direct_weight_mean_final'))} / "
+            f"{_format(run.get('danger_direct_weight_std_final'))}"
+        )
+        lines.append(
+            f"- trace mean/std: {_format(run.get('danger_trace_weight_mean_final'))} / "
+            f"{_format(run.get('danger_trace_weight_std_final'))}"
+        )
+        lines.append(
+            f"- mortality trace mean/max: "
+            f"{_format(run.get('environment_mortality_trace_mean_final'), 6)} / "
+            f"{_format(run.get('environment_mortality_trace_max_final'), 6)}"
+        )
+        lines.append(
+            f"- group refresh mode / updates / skipped: "
+            f"{context.get('group_update_mode')} / "
+            f"{run.get('group_update_count_final')} / "
+            f"{run.get('group_update_skipped_final')}"
+        )
+        lines.append("")
+
     lines.extend(["## Execution backend context", ""])
     for run in report["runs"]:
         context = run.get("config_context", {})

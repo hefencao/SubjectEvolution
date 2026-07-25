@@ -3,6 +3,8 @@ from __future__ import annotations
 import numpy as np
 
 from .config import SimulationConfig
+from .danger_evidence import DANGER_EVIDENCE_SCALE
+from .environment_process import build_environment_process, environment_process_metadata
 from .niches import AFFINITY_SCALE, RESOURCE_CHANNELS
 from .reductions import stable_segmented_sum, validate_cell_ids
 
@@ -13,6 +15,8 @@ class Environment:
     def __init__(self, cfg: SimulationConfig) -> None:
         self.cfg = cfg
         self.spatial_reversed = False
+        self.environment_process = build_environment_process(cfg.environment)
+        self.environment_process_metadata = environment_process_metadata(cfg.environment)
         gx, gy = cfg.world.grid_x, cfg.world.grid_y
         yy, xx = np.mgrid[0:gy, 0:gx]
         capacities = np.asarray(cfg.environment.resource_capacity, dtype=np.float32)[:, None, None]
@@ -108,6 +112,24 @@ class Environment:
                 + self.cfg.environment.hazard_secondary_amplitude
                 * np.sin((xx + yy) * 0.025 + 1.7 * phase)
             )
+        if self.environment_process is not None:
+            xnorm, ynorm = self._normalized_grid(xx, yy)
+            extension = self.environment_process.hazard_delta(
+                tick=tick,
+                xnorm=xnorm,
+                ynorm=ynorm,
+                xp=np,
+            )
+            extension = np.asarray(extension, dtype=np.float64)
+            if extension.shape != h.shape:
+                raise ValueError(
+                    "environment process hazard_delta must match the hazard grid shape"
+                )
+            if not np.all(np.isfinite(extension)) or np.any(extension < 0.0):
+                raise ValueError(
+                    "environment process hazard_delta must be finite and non-negative"
+                )
+            h = h + extension
         result = np.clip(h, 0.0, 1.0).astype(np.float32)
         return result[::-1, ::-1].copy() if self.spatial_reversed else result
 
@@ -125,20 +147,42 @@ class Environment:
             == "local-decaying-mortality-trace-v1"
         )
 
-    def public_danger_field(self) -> np.ndarray:
+    def weighted_mortality_trace_field(self) -> np.ndarray:
         if not self.mortality_trace_enabled:
-            return self.hazard
+            return np.zeros_like(self.hazard, dtype=np.float32)
         return (
-            self.hazard
-            + np.float32(self.cfg.environment.mortality_trace_observation_weight)
+            np.float32(self.cfg.environment.mortality_trace_observation_weight)
             * self.mortality_trace
         ).astype(np.float32)
 
-    def danger_for_cells(self, cell_ids: np.ndarray) -> np.ndarray:
+    def public_danger_field(self) -> np.ndarray:
+        return (self.hazard + self.weighted_mortality_trace_field()).astype(np.float32)
+
+    def danger_components_for_cells(
+        self, cell_ids: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray]:
         cells = validate_cell_ids(
             cell_ids, self.cfg.world.grid_x * self.cfg.world.grid_y
         )
-        return self.public_danger_field().reshape(-1)[cells].astype(np.float32)
+        return (
+            self.hazard.reshape(-1)[cells].astype(np.float32),
+            self.weighted_mortality_trace_field().reshape(-1)[cells].astype(np.float32),
+        )
+
+    def danger_for_cells(
+        self, cell_ids: np.ndarray, evidence_q: np.ndarray | None = None
+    ) -> np.ndarray:
+        direct, trace = self.danger_components_for_cells(cell_ids)
+        if evidence_q is None:
+            return (direct + trace).astype(np.float32)
+        weights = np.asarray(evidence_q, dtype=np.int32)
+        if weights.shape != (direct.size, 2):
+            raise ValueError("danger evidence weights must be shaped [N, 2]")
+        return (
+            (direct.astype(np.float64) * weights[:, 0]
+             + trace.astype(np.float64) * weights[:, 1])
+            / DANGER_EVIDENCE_SCALE
+        ).astype(np.float32)
 
     def deposit_mortality_trace(
         self, cell_ids: np.ndarray, weights: np.ndarray | None = None
@@ -216,6 +260,7 @@ class Environment:
         entity_cells: np.ndarray,
         capacity: int,
         resource_affinity_q: np.ndarray | None = None,
+        danger_evidence_q: np.ndarray | None = None,
     ) -> tuple[tuple[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray]]:
         """Return per-entity resource-utility and hazard gradients.
 
@@ -274,16 +319,47 @@ class Environment:
             rgx = rgx64.astype(np.float32)
             rgy = rgy64.astype(np.float32)
 
-        public_danger = self.public_danger_field()
-        hazard_x = 0.5 * (
-            np.roll(public_danger, -1, axis=1)
-            - np.roll(public_danger, 1, axis=1)
+        if danger_evidence_q is None:
+            public_danger = self.public_danger_field()
+            hazard_x = 0.5 * (
+                np.roll(public_danger, -1, axis=1)
+                - np.roll(public_danger, 1, axis=1)
+            )
+            hazard_y = 0.5 * (
+                np.roll(public_danger, -1, axis=0)
+                - np.roll(public_danger, 1, axis=0)
+            )
+            return (rgx, rgy), (gather(hazard_x), gather(hazard_y))
+
+        direct_x = 0.5 * (
+            np.roll(self.hazard, -1, axis=1) - np.roll(self.hazard, 1, axis=1)
         )
-        hazard_y = 0.5 * (
-            np.roll(public_danger, -1, axis=0)
-            - np.roll(public_danger, 1, axis=0)
+        direct_y = 0.5 * (
+            np.roll(self.hazard, -1, axis=0) - np.roll(self.hazard, 1, axis=0)
         )
-        return (rgx, rgy), (gather(hazard_x), gather(hazard_y))
+        trace_field = self.weighted_mortality_trace_field()
+        trace_x = 0.5 * (
+            np.roll(trace_field, -1, axis=1) - np.roll(trace_field, 1, axis=1)
+        )
+        trace_y = 0.5 * (
+            np.roll(trace_field, -1, axis=0) - np.roll(trace_field, 1, axis=0)
+        )
+        gathered_direct_x = gather(direct_x)
+        gathered_direct_y = gather(direct_y)
+        gathered_trace_x = gather(trace_x)
+        gathered_trace_y = gather(trace_y)
+        weights = np.asarray(danger_evidence_q, dtype=np.int32)
+        if weights.shape != (capacity, 2):
+            raise ValueError("danger evidence must match world capacity and two sources")
+        dgx = (
+            gathered_direct_x.astype(np.float64) * weights[:, 0]
+            + gathered_trace_x.astype(np.float64) * weights[:, 1]
+        ) / DANGER_EVIDENCE_SCALE
+        dgy = (
+            gathered_direct_y.astype(np.float64) * weights[:, 0]
+            + gathered_trace_y.astype(np.float64) * weights[:, 1]
+        ) / DANGER_EVIDENCE_SCALE
+        return (rgx, rgy), (dgx.astype(np.float32), dgy.astype(np.float32))
 
     def resolve_harvest(self, cell_ids: np.ndarray, rates: np.ndarray) -> np.ndarray:
         """Compute a fair harvest allocation without mutating world state."""

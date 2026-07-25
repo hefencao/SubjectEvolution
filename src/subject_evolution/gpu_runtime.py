@@ -19,6 +19,7 @@ import numpy as np
 from .backend import Backend, resolve_backend
 from .config import SimulationConfig
 from .device_state import EntityDeviceCommitPlan
+from .danger_evidence import DANGER_EVIDENCE_SCALE, danger_evidence_enabled, danger_evidence_quantized
 from .execution import ActionResolutionSnapshot, HarvestResolution
 from .gpu_environment import DeviceEnvironment, DeviceInformationField
 from .information import InformationObservation, InformationSystem, SignalEmissionPlan
@@ -331,6 +332,7 @@ class HybridGpuRuntime:
         entity_state_version: int,
         knowledge: KnowledgeSystem | None = None,
         resource_affinity_ablation_enabled: bool = False,
+        danger_evidence_ablation_enabled: bool = False,
         knowledge_policy_ablation_enabled: bool = False,
     ) -> GpuPreparedStep:
         """Construct observations and actions, returning the CPU commit view."""
@@ -470,6 +472,24 @@ class HybridGpuRuntime:
             policy_local_resources_host, dtype=xp.float32
         )
         affinity_device = xp.asarray(affinity_host, dtype=xp.int32)
+        danger_evidence_host = (
+            (
+                np.full(
+                    (entity.alive.size, 2),
+                    DANGER_EVIDENCE_SCALE,
+                    dtype=np.int32,
+                )
+                if danger_evidence_ablation_enabled
+                else danger_evidence_quantized(entity.genotype, self.cfg)
+            )
+            if danger_evidence_enabled(self.cfg)
+            else None
+        )
+        danger_evidence_device = (
+            None
+            if danger_evidence_host is None
+            else xp.asarray(danger_evidence_host, dtype=xp.int32)
+        )
         device_info = self.information_field.observe(
             stable_ids=stable_ids[active],
             cell_ids=cells,
@@ -486,6 +506,7 @@ class HybridGpuRuntime:
             self.spatial.entity_cells,
             entity.alive.size,
             affinity_device,
+            danger_evidence_device,
         )
         self.backend.synchronize()
         observation_seconds = time.perf_counter() - timer
@@ -497,7 +518,14 @@ class HybridGpuRuntime:
         if knowledge is not None and knowledge.kcfg.learning_enabled:
             device_context_keys = encode_local_context(
                 policy_local_resources[:, 0],
-                self.environment.public_danger_field().reshape(-1)[cells],
+                self.environment.danger_for_cells(
+                    cells,
+                    (
+                        danger_evidence_device[active]
+                        if danger_evidence_device is not None
+                        else None
+                    ),
+                ),
                 energy[active],
                 integrity[active],
                 groups[active] != 0,
@@ -936,9 +964,16 @@ class HybridGpuRuntime:
         values = self.environment.hazard.reshape(-1)[cells]
         return self._download(values).astype(np.float32, copy=False)
 
-    def danger_for_cells(self, cell_ids: np.ndarray) -> np.ndarray:
+    def danger_for_cells(
+        self, cell_ids: np.ndarray, evidence_q: np.ndarray | None = None
+    ) -> np.ndarray:
         cells = self._upload(cell_ids, dtype=self.backend.xp.int32)
-        values = self.environment.public_danger_field().reshape(-1)[cells]
+        device_evidence = (
+            None
+            if evidence_q is None
+            else self._upload(evidence_q, dtype=self.backend.xp.int32)
+        )
+        values = self.environment.danger_for_cells(cells, device_evidence)
         return self._download(values).astype(np.float32, copy=False)
 
     def deposit_mortality_trace(
