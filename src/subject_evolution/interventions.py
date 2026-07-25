@@ -96,6 +96,12 @@ INTERVENTIONS = (
         aliases=("knowledge-transfer-off", "transfer-off"),
     ),
     InterventionSpec(
+        "freeze-group-refresh",
+        InterventionKind.MODIFY_RULES,
+        "social-group-label-refresh",
+        aliases=("group-refresh-off", "freeze-groups"),
+    ),
+    InterventionSpec(
         "freeze-genotype",
         InterventionKind.MODIFY_RULES,
         "inheritance-mutation-rule",

@@ -1,0 +1,31 @@
+{
+  "schema": "natural-event-matrix-v024-validation-v1",
+  "version": "0.24.0",
+  "full_test_suite": {
+    "passed": 120,
+    "skipped": 1,
+    "failed": 0,
+    "skipped_reason": "real CUDA/CuPy device unavailable"
+  },
+  "validated": [
+    "exposure-only event selection ignores post-event outcome validity and values",
+    "multi-event multi-seed manifest structure and canonical SHA-256 validation",
+    "resolved-config intervention eligibility and disabled danger-evidence handling",
+    "freeze-group-refresh runtime semantics, metrics, checkpoint and restore",
+    "v0.23 checkpoint compatibility",
+    "CLI manifest generation without branch execution"
+  ],
+  "synthetic_cli_smoke": {
+    "schema": "natural-event-paired-intervention-matrix-v1",
+    "anchor_count": 3,
+    "plan_sha256": "5aa4078190fb17663720a6358a211977681bd710af4d64c207d8d4db53fbf1b4",
+    "event_kinds": [
+      "crowding",
+      "mortality",
+      "scarcity"
+    ],
+    "danger_evidence_ineligible_for_all_anchors": true
+  },
+  "user_input_limitation": "Only aggregate long_run_analysis.md/json were attached. Actual source run directories and .sechk files were not available, so no real three-seed anchor manifest was fabricated in the package.",
+  "real_cuda_hybrid_world_verified": false
+}

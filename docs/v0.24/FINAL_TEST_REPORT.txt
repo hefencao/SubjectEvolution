@@ -1,0 +1,26 @@
+Subject Evolution v0.24.0 final validation
+==========================================
+
+pytest: 120 passed, 1 skipped, 0 failed
+Skipped: real CUDA/CuPy device test unavailable in the build environment.
+
+Validated:
+- exposure-only scarcity/crowding/mortality anchor selection;
+- multi-seed manifest hashes and tamper detection;
+- analysis JSON retained for rationale only, never anchor selection;
+- per-intervention eligibility, including disabled danger evidence;
+- freeze-group-refresh runtime, metrics, checkpoint, restore and clone state;
+- v0.23 default-path compatibility and v0.23 full-checkpoint restore;
+- existing K1-K4, latent L1/L2, routing cost, working memory, inherited Top-k,
+  environmental heterogeneity, costed transfer, local stress/culture,
+  mortality trace, adaptive groups and environment-process regressions.
+
+Compatibility smoke:
+- 20 ticks, CPU reference, configs/mvp_short_replay.json;
+- 341 common metrics fields; 13 timing fields excluded; 0 mismatches;
+- knowledge_events.jsonl byte-identical;
+- v0.23 tick-10 .sechk resumed by v0.24 to tick 20 with 0 common non-timing
+  summary mismatches.
+
+Not verified:
+- real CUDA hybrid-accelerated multi-tick world parity.

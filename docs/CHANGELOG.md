@@ -1,75 +1,57 @@
 # Changelog
 
-## 0.4.0
+## 0.24.0
 
-- 重排后续实施阶段为 E1 测量正确性、E2 中性容量仲裁、E3 生态选择可识别性和 K1 知识成本守恒；性能迁移继续暂停。
-- E1 增加繁殖 eligible/proposed/accepted/capacity-rejected/resource-rejected/other-rejected 闭环及条件提案率，避免把容量等待误判为遗传策略。
-- E1 将分享利益无损拆为内部、群体间、群体到未分组、未分组到群体、未分组内部，并增加边界覆盖率和群体输出留存率；该诊断不改变世界轨迹。
-- E1 增加按稳定实体 ID 冻结一个评估窗口的滞后利益边界；槽位复用的新生体不会继承旧群体身份，即时与滞后五类流分别保留守恒残差。
-- E1 直接复用评估 tick 的真实策略特征、行动 mask 和 logits，报告个体实际上下文响应；另在最多 1024 种遗传策略 × 32 个真实上下文的共同面板上重放。GPU 仅在低频评估点下载诊断数据，结果不反馈世界。
-- E2 将当前配置的繁殖容量冲突从低稳定 ID 优先改为 `stateless-random-v1`：专用无状态随机流按 seed、tick 和稳定实体 ID 生成可复现顺序；候选重排不改变接受者。缺少新字段的旧配置保持 `stable-id-v1`，两种规则写入出生计划、配置副本、科学审计和运行元数据。
-- 将突变发生率与条件幅度分离，默认每基因 1%，避免每次出生同时扰动全部 128 个策略权重；实体状态与检查点新增世代。
-- 新增每 500 tick 的 `evolution_progress.jsonl`：联合报告世代、有效谱系、去 softmax 共同偏移的规范策略、有效维度、固定探针行为差异和窗口行动分布；不再用原始权重方差单独判断策略坍缩。
-- 将实际分享能量显化为主体边界内部、跨边界和未形成边界的利益流；社会候选主体增量累计内部利益、外流/流入及边界内聚。
-- 完成知识分层架构评估：采用容量受限的动态知识副本、局部后果学习和有成本传输计划，拒绝集中式全局奖励训练；知识接入将使用新的策略 schema。
-- 将普通策略从固定行动偏好公式改为可遗传演化矩阵：8 种行动对 16 类约束特征的 128 个权重均由初代受限随机生成、亲代继承和突变产生；移除全局 `policy.group_influence` 行为系数，新增原始策略权重诊断。
-- 增加默认 `scientific` 与显式 `entertainment` 实验协议。科学协议拒绝采样后的行动/方向覆盖；运行元数据输出结构来源、固定约束和违规项审计。干预注册记录 `modify-existence`、`modify-environment`、`modify-rules`、预留 `introduce-existence` 以及娱乐专用 `direct-action` 的类别与目标范围。
-- 保留共享干预与 `independent-foraging-v1`，但纠正其定位：该模块直接替换行动，只允许娱乐协议，不再称为自主性或主体偏移科学实验。队列、控制来源和指标继续用于玩法、演示与管线压力测试。
-- 反事实运行支持 `--intervention-tick`：在指定绝对 tick 前只演进一份共享前史，再从同一内存快照分出基线与干预；摘要记录干预前锚点和规范干预历史。新增持久 `reverse-environment`，以 180° 空间旋转实例化 M4 环境反转并保持后续季节更新朝向，CPU/GPU 使用相同语义。
-- 修正“CPU 永久唯一世界写者”的过强架构约束：策略、观察与解析仍只读，但消费已解析、版本化计划的受控提交器可位于 CPU、GPU 或未来分布式分区。环境/信息场在 GPU 模式下已经由设备权威提交；连续多轮无端到端收益后，暂停 `HostCommitView` 等纯性能迁移，转入 M4 功能阶段。
-- 增加 CLI `--backend cpu|gpu|auto`；`gpu` 显式启用字段、空间、观察和策略的混合设备执行；
-- 增加 `gpu_runtime.py`，以可审计的主机/设备边界衔接 GPU 观察/策略与 CPU 行动提交；
-- 将直接消息接收改为稳定排序、批量随机键和向量化容量裁决，消除逐消息 NumPy 调用；
-- 直接消息队列改为数组批次，避免发送端为每条消息构造 Python 对象；分享关系事件按拥有者局部顺序分轮向量化，同时保留满槽替换语义；
-- 直接消息按接收 tick 在发送端分桶，避免延迟消息在后续观察中反复拆分复制；意图 ID 改为 `uint64` 批量计算；
-- GPU 运行时不再回传未被 CPU 提交使用的伙伴/危险梯度；稳定 ID、基因型和低频群体状态缓存于设备，批量运行延迟完整字段镜像同步；
-- 修复总 tick 不整除指标周期时缺少最终 `metrics.csv`/`summary.json` 条目的问题；
-- 增加后端无关的 `ActionResolutionSnapshot`、`ActionResolutionPlan` 和可注入冲突解析器；默认 CPU 严格解析与未来 GPU/分布式/回放解析共享同一提交合约。
-- 增加带主体来源的 `ControlProposalBatch`、可注入控制仲裁器和意图来源审计；默认单身体提案路径保持原有随机与世界提交语义。
-- 增加默认关闭的 `control.heuristic_social_guidance` 社会方向控制规则：身体和稳定社会主体的贡献可随意图/轨迹记录；该规则仅混合既有资源移动方向，不重采样动作，并在配置、运行元数据和文档中明确记录其建模启发式。
-- 将关系信任/熟悉度改为在分享写入和群体检测边界按累计 tick 物化的几何衰减；无死亡 tick 跳过整表死链接扫描，保持关系状态在 CPU 的语义权威和行动提交边界。
-- 将 GPU SplitMix64 上下文混合、draw index 和最终器融合为单个元素核；随机键与 CPU 参考逐位一致，设备内部已验证的采样参数不再触发重复主机同步。
-- 增加后端无关的 `SignalEmissionPlan`、单通道有序 `SignalEmissionBatch` 和 `SignalEmissionScheduler`；`information.signal_flush_periods` 显式定义资源/危险/社会字段的交付 cadence，高频事件可进入低频目标通道的待发队列，未到期通道不会产生零填充传输。到期通道按到达顺序合并并严格归约；默认 `[1,1,1]` 为无队列直通。撤回未带来 300 tick 端到端收益的稠密多通道默认路径。
-- 增加 `HarvestResolution`、`GpuHarvestPlanner` 和 `GpuActionConflictResolver`：GPU 从只读快照构建采集行/单元稳定排序与公平分配计划，随后由设备字段提交器扣减资源；分享、繁殖和位置提交继续复用严格 CPU 规则。`run.gpu_harvest_conflict_planner` 默认开启，可用于回退到 CPU 键构建做剖析。
-- 增加 GPU 采集计划对照：逐项固定稳定行/单元排序、分配、失败码，并断言计划阶段不修改设备资源；WSL RTX 4070 的 100k、300 tick 成对测量为 `31.12秒`（设备计划）对 `31.77秒`（CPU 键构建），仅作为约 `2%` 的环境相关收益记录。
-- 增加自包含 `ShareResolution` 与规范 `RelationUpdatePlan`：关系事件携带来源意图行、正反向标记、稳定序号和 tick，世界提交不再通过 `last_intents/last_resolutions` 恢复输入；无效、越界、死亡及自分享目标不再污染关系，混合失败批次会保留准确失败原因。
-- 优化 CPU 固定关系槽应用：复用规范 owner 分段、以线性检查代替重复排序，并只在槽满且无现有关系时计算最弱槽；43,750 事件微基准由约 `10.95ms` 降至 `5.94ms`，100k/300 tick 从计划初版 `32.39秒` 回到 `31.34秒`。
-- 增加后端无关的 `BirthRequestPlan`、版本化 `BirthAllocationPlan` 和 `DeathEventPlan`：繁殖请求保留父实体/主体来源，槽位与稳定 ID 确定分配，死亡在主体图更新和槽位回收前记录组合死因及最终状态；CPU 世界提交会拒绝陈旧计划。空闲槽池规划只复制本次所需尾段，避免成本随完整池容量增长；100k/300 tick 多次墙钟未显示可宣称的端到端提速。
-- 增加后端无关的 `DirectMessageObservationPlan`：CPU 队列继续负责稳定排序、检测、噪声、分类和容量裁决，固定注意力槽仅按需物化；GPU 上传实际 receiver/slot/payload，并仅为实际接收者构造原容量宽度的紧凑槽，以保持旧浮点归约和长期离散轨迹。GPU step 新增显式 H2D/D2H 与稠密字节规避指标；100k/300 tick 两次由阶段 8 最快 `30.95秒` 降至 `25.55/27.14秒`，action counts 和最终离散状态一致。
-- 增加后端无关的 `GroupDetectionSnapshot`、可插拔 `GroupLabelPlanner` 和规范 `GroupLabelPlan`：固定轮标签传播与世界写入解耦，计划同时携带实体标签、群体聚合和一次分段的成员表；社会状态和候选主体图作为独立单写者验证后提交，运行元数据记录规划器与最后计划规模。
-- 候选主体图直接消费群体成员分段，消除按每个群体重复扫描全部 active slots；活跃身体/谱系/社会节点计数改为增量维护，使周期指标不再遍历全部历史节点。100k active、45,016 成员、2,648 群体的隔离提交约 `14.1×`，但 100k/300 tick 两次 `27.72/29.14秒` 相对阶段 8.5 无可宣称的端到端提升；动作计数和最终离散状态完全一致。
-- 增加版本化 `DeviceEntityState` 与后端无关的 `EntityDeviceCommitPlan`：实体域当前由 CPU 权威提交，提交后的动态、位置、生命周期静态值和社会观察字段以 `base_version → next_version` 补丁更新持久设备镜像；重复或陈旧计划会被拒绝，克隆和外部干预可显式完整修复镜像。
-- 实体镜像提交按 50% 变更密度选择等价执行形式：高密度字段连续复制到持久缓冲，低密度字段按严格升序索引散射。淘汰了使 100k/300 tick 恶化到 `34.84秒` 的全稀疏初版，并复用上游规范索引/布尔掩码消除重复排序。最终严格运行 `27.62秒`，tick 300 H2D 由 `16,788,152` 降至 `9,345,128 bytes`（44.3%），动作和最终离散状态完全一致；D2H 未下降，故不宣称端到端提速。
-- 策略、字段感知、伙伴感知、噪声和方向选择支持 NumPy/CuPy 相同接口；
-- 指标增加窗口墙钟平均，避免单个采样 step 时间掩盖日志与检查点开销；
-- 增加端到端 CPU/GPU 小场景对照和 WSL RTX 4070 十万实体连续运行验证。
+### Scientific workflow
 
-## 0.3.0
+- 新增 `subject_evolution.natural_event_matrix`，支持跨 seed 的 scarcity、crowding、mortality 自然事件锚点规划与可选执行。
+- 新增 `exposure-only-local-peak-selection-v1`：锚点选择只读取暴露、区域 alive、tick 和 checkpoint 可用性；明确排除凝聚度、传播、文化根、谱系和动作结果字段。
+- manifest 记录 progress、resolved config、checkpoint 和完整计划 SHA-256；可检测执行前静默修改。
+- 可选 long-run analysis JSON 只保存为 rationale/audit，`used_for_anchor_selection=false`。
+- 每个 anchor 逐项记录 intervention eligibility；当前旗舰配置会正确将 danger-evidence neutralization 标记为不可识别。
 
-- 增加可选 CuPy 后端；`cpu`、`gpu` 和 `auto` 的选择与回退行为显式可见；
-- 迁移无状态随机键、Uniform、Bernoulli、Normal 和类别采样到设备数组；
-- 增加设备版资源/危险场、信息场及规则网格伙伴采样；
-- 用稳定排序和分段归约统一 CPU/GPU 的场发射与资源提交，避免浮点原子竞争；
-- 增加 CPU/GPU 对照、设备边界校验与 GPU 基础阶段验证脚本。
-- 在 WSL2 + CUDA 13.3 环境使用 `cupy-cuda13x` 验证 GPU 基础阶段。
+### Interventions
 
-## 0.2.0
+- 新增 `freeze-group-refresh`（aliases: `group-refresh-off`, `freeze-groups`）。
+- 干预保持已有群组标签，不再执行周期或 adaptive refresh；死亡成员正常清除，新生体保持未分组。
+- 新状态进入完整 checkpoint、恢复、内存 clone、metrics、evolution progress 和 intervention history。
 
-- 将策略选择、行动意图、冲突结算和世界提交拆为显式阶段；
-- 加入按稳定 ID 排序的采集、分享与出生冲突结算记录；
-- 实现固定容量、带延迟和接收误差的点对点消息队列；
-- 增加身体、谱系与社会候选主体图，主体 ID 与实体 ID 分离；
-- 增加可追踪主体的 JSONL 轨迹，以及成对随机的反事实分支 CLI；
-- 输出阶段耗时、直接消息和主体图指标，作为 GPU 迁移对照基线。
+### Documentation
 
-## 0.1.0
+- 重写根 `README.md`，移除 v0.4 实现状态叙述。
+- 将旧 `IMPLEMENTATION_STATUS.md` 与后续状态文档整合为 `docs/PROJECT_STATUS.md`。
+- 重写 `docs/SCIENTIFIC_ISSUES.md`，按当前知识层、局部文化、mortality trace、adaptive groups、环境插件和 GPU 边界更新。
+- 根目录的历史报告和旧文档原样移入 `docs/archive/pre-v0.24/`。
+- v0.24 的输入分析、实现说明、兼容报告和测试报告集中于 `docs/v0.24/`。
 
-- 建立首个可运行CPU参考内核；
-- 实现无状态统一采样；
-- 实现四资源环境、季节和危险；
-- 实现信息传播场及接收误差；
-- 实现局部伙伴采样和参数化策略；
-- 实现采集、分享、信号、繁殖和死亡；
-- 实现固定容量关系和候选社会群体；
-- 实现谱系继承和变异；
-- 增加指标、检查点、CLI和自动测试。
+### Validation
+
+- `120 passed, 1 skipped`；跳过真实 CUDA/CuPy 设备测试。
+- v0.23→v0.24 默认路径 20 tick：341 个共同 metrics 字段中，排除 13 个计时字段后零差异；knowledge event log byte-identical。
+- v0.24 成功恢复 v0.23 `.sechk`，共同非计时终点与连续 v0.24 一致。
+
+## 0.23.0
+
+- 增加 `additive-environment-field-process-v1` 的低耦合标量场插件边界。
+- 将 moving Gaussian hazard 从核心逻辑降级为默认关闭的 synthetic observation/entertainment 兼容插件。
+- 长期分析升级为 v7，记录环境过程 provenance。
+
+## 0.22.0
+
+- 增加 moving-hazard 兼容机制、遗传 direct/trace danger evidence mixture 与中和干预。
+- 长期分析 v6 增加证据权重、mortality trace 和 group refresh audit。
+
+## 0.21.0
+
+- 增加 local decaying mortality trace 与 adaptive topology group refresh。
+- 完成 checkpoint/replay 与 NumPy/simulated-device 验证。
+
+## 0.20 及更早
+
+详细历史变更、实现报告和兼容矩阵保存在：
+
+```text
+docs/archive/pre-v0.24/
+```
+
+这些文件按原文件名保存，可能包含当时有效、现在已经过时的状态描述。

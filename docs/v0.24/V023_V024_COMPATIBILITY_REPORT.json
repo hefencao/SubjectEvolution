@@ -1,0 +1,29 @@
+{
+  "schema": "v023-v024-compatibility-v1",
+  "versions": {
+    "baseline": "0.23.0",
+    "candidate": "0.24.0"
+  },
+  "config": "configs/mvp_short_replay.json",
+  "backend": "cpu",
+  "until_tick": 20,
+  "default_path_comparison": {
+    "metrics_rows": 5,
+    "common_metrics_fields": 341,
+    "excluded_timing_fields": 13,
+    "non_timing_mismatch_count": 0,
+    "mismatches": [],
+    "knowledge_events_byte_identical": true,
+    "knowledge_events_sha256": "2c15429edd30f80cf8ed076c3a3a2d829c452c063a0eb4502c1c7553d91023b9"
+  },
+  "legacy_checkpoint_restore": {
+    "checkpoint": "v0.23 checkpoint_00000010.sechk",
+    "loaded_by_v024": true,
+    "continued_until_tick": 20,
+    "common_non_timing_summary_mismatch_count": 0,
+    "mismatches": [],
+    "missing_group_refresh_ablation_defaults_to_false": true
+  },
+  "real_cuda_hybrid_world_verified": false,
+  "interpretation": "Default v0.24 behavior is compatible with v0.23 for the tested CPU reference trajectory. This does not prove real-CUDA hybrid parity."
+}

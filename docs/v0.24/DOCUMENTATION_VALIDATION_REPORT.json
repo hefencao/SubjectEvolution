@@ -1,0 +1,18 @@
+{
+  "schema": "documentation-layout-v024-validation-v1",
+  "stable_root_files": [
+    "README.md"
+  ],
+  "stable_docs": [
+    "docs/PROJECT_STATUS.md",
+    "docs/SCIENTIFIC_ISSUES.md",
+    "docs/CHANGELOG.md",
+    "docs/ARCHITECTURE.md"
+  ],
+  "version_folder": "docs/v0.24",
+  "archive_folder": "docs/archive/pre-v0.24",
+  "archived_root_file_count": 125,
+  "archived_legacy_docs_entry_count": 4,
+  "implementation_status_integrated_into": "docs/PROJECT_STATUS.md",
+  "root_report_files_remaining": []
+}

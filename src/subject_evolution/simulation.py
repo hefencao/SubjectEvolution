@@ -699,6 +699,7 @@ class Simulation:
         self.danger_evidence_ablation_enabled = False
         self.knowledge_policy_ablation_enabled = False
         self.knowledge_transfer_ablation_enabled = False
+        self.group_refresh_ablation_enabled = False
         self.intervention_history: list[dict[str, object]] = []
         self.checkpoint_lineage: list[dict[str, object]] = []
         # Interactive ``step()`` calls keep host field mirrors current.  A
@@ -1125,6 +1126,9 @@ class Simulation:
             "knowledge_transfer_ablation_enabled": bool(
                 self.knowledge_transfer_ablation_enabled
             ),
+            "group_refresh_ablation_enabled": bool(
+                self.group_refresh_ablation_enabled
+            ),
             "intervention_history": copy.deepcopy(self.intervention_history),
         }
 
@@ -1330,6 +1334,9 @@ class Simulation:
         self.knowledge_transfer_ablation_enabled = bool(
             state.get("knowledge_transfer_ablation_enabled", False)
         )
+        self.group_refresh_ablation_enabled = bool(
+            state.get("group_refresh_ablation_enabled", False)
+        )
         self.intervention_history = copy.deepcopy(state["intervention_history"])
         self._defer_gpu_field_sync = False
         if self.gpu_runtime is not None:
@@ -1496,6 +1503,9 @@ class Simulation:
         branch.knowledge_transfer_ablation_enabled = (
             self.knowledge_transfer_ablation_enabled
         )
+        branch.group_refresh_ablation_enabled = (
+            self.group_refresh_ablation_enabled
+        )
         branch.intervention_history = copy.deepcopy(self.intervention_history)
         branch.checkpoint_lineage = copy.deepcopy(self.checkpoint_lineage)
         branch._write_run_manifest(branch.requested_backend)
@@ -1601,6 +1611,19 @@ class Simulation:
             details = {
                 "existing_knowledge_copies_removed": 0,
                 "future_transfer_disabled": True,
+            }
+        elif normalized == "freeze-group-refresh":
+            canonical = "freeze-group-refresh"
+            self.group_refresh_ablation_enabled = True
+            details = {
+                "group_update_mode": self.cfg.social.group_update_mode,
+                "group_labels_dirty_at_freeze": bool(
+                    self.social.group_labels_dirty
+                ),
+                "last_group_update_tick": int(
+                    self.social.last_group_update_tick
+                ),
+                "existing_group_labels_modified": False,
             }
         elif normalized == "freeze-genotype":
             canonical = "freeze-genotype"
@@ -2385,6 +2408,9 @@ class Simulation:
                 mortality_trace_field.max(initial=0.0)
             ),
             "group_update_mode": self.cfg.social.group_update_mode,
+            "group_refresh_ablation_enabled": int(
+                self.group_refresh_ablation_enabled
+            ),
             "group_update_count_total": int(self.social.group_update_count),
             "group_update_skipped_total": int(
                 self.social.group_update_skipped_count
@@ -2778,6 +2804,7 @@ class Simulation:
                     self.autonomy_recovery_enabled
                     or (
                         self.social_connections_enabled
+                        and not self.group_refresh_ablation_enabled
                         and self.social.group_update_due(self.tick)[0]
                     )
                 ),
@@ -3563,9 +3590,14 @@ class Simulation:
 
         # Candidate social subjects are updated at a slower timescale.
         phase_started = time.perf_counter()
-        group_updated, group_update_reason = self.social.group_update_due(
-            self.tick
-        )
+        if self.group_refresh_ablation_enabled:
+            group_updated = False
+            group_update_reason = "intervention-frozen"
+            self.social.last_group_update_reason = group_update_reason
+        else:
+            group_updated, group_update_reason = self.social.group_update_due(
+                self.tick
+            )
         if group_updated:
             self.social.last_group_update_reason = group_update_reason
             group_active = np.flatnonzero(ent.alive).astype(np.int32)
@@ -3892,6 +3924,9 @@ class Simulation:
             "group_labels_dirty": int(bool(self.social.group_labels_dirty)),
             "group_last_update_tick": int(self.social.last_group_update_tick),
             "group_update_mode": self.cfg.social.group_update_mode,
+            "group_refresh_ablation_enabled": int(
+                self.group_refresh_ablation_enabled
+            ),
             "group_last_update_reason": self.social.last_group_update_reason,
             "group_last_dirty_reason": self.social.last_group_dirty_reason,
             "grouped_fraction": grouped_fraction,
