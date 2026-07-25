@@ -90,3 +90,10 @@ target_sources(eco_game_runtime PRIVATE
     "src/renderer_gpu.cpp"
 )
 # END ECO_RENDERER_V19_GPU
+
+# BEGIN ECO_GUI_V21_LAUNCHER
+target_sources(eco_game_runtime PRIVATE
+    "src/launcher.cpp"
+    "src/ui_font.cpp"
+)
+# END ECO_GUI_V21_LAUNCHER
