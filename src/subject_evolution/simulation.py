@@ -84,6 +84,7 @@ from .lifecycle import (
 )
 from .metrics import MetricsWriter
 from .niches import (
+    active_morphology_traits,
     apply_harvest_effects,
     policy_resource_view,
     public_resource_signal,
@@ -601,6 +602,7 @@ class Simulation:
         self.total_reproduction_rejected_capacity = 0
         self.total_reproduction_rejected_resource = 0
         self.total_reproduction_rejected_other = 0
+        morphology_indices, morphology_names = active_morphology_traits(cfg)
         self.evolution_progress = EvolutionProgressTracker(
             self.output_dir,
             period=cfg.run.evolution_evaluation_period,
@@ -609,6 +611,10 @@ class Simulation:
             alive=self.entities.alive,
             stable_ids=self.entities.entity_id,
             genotype=self.entities.genotype,
+            long_run_diagnostics_enabled=cfg.run.long_run_diagnostics_enabled,
+            long_run_diagnostics_schema=cfg.run.long_run_diagnostics_schema,
+            morphology_trait_indices=morphology_indices,
+            morphology_trait_names=morphology_names,
         )
         self.last_active = np.empty(0, dtype=np.int32)
         self.last_cells = np.empty(0, dtype=np.int32)
@@ -714,6 +720,12 @@ class Simulation:
                 if self.cfg.entities.resource_affinity_schema
                 == "normalized-four-resource-affinity-v1"
                 else None
+            ),
+            "long_run_diagnostics_enabled": (
+                self.cfg.run.long_run_diagnostics_enabled
+            ),
+            "long_run_diagnostics_schema": (
+                self.cfg.run.long_run_diagnostics_schema
             ),
             "strategy_schema": self.cfg.policy.schema,
             "knowledge_schema": (
@@ -1749,6 +1761,12 @@ class Simulation:
             "evolution_evaluation": {
                 "period_ticks": self.cfg.run.evolution_evaluation_period,
                 "feedback_to_world": False,
+                "long_run_diagnostics_schema": (
+                    self.cfg.run.long_run_diagnostics_schema
+                    if self.cfg.run.long_run_diagnostics_enabled
+                    else None
+                ),
+                "long_run_diagnostics_feedback_to_world": False,
                 "strategy_sample_capacity": 4096,
                 "actual_context_sample_capacity": 4096,
                 "common_panel_strategy_capacity": 1024,
@@ -2105,6 +2123,7 @@ class Simulation:
             alive=self.entities.alive,
             stable_ids=self.entities.entity_id,
             lineage_ids=self.entities.lineage_id,
+            group_ids=self.social.group_id,
             generation=self.entities.generation,
             genotype=self.entities.genotype,
             births_total=self.total_births,
@@ -2134,6 +2153,16 @@ class Simulation:
             mutation_std=self.cfg.policy.mutation_std,
             actual_context_metrics=actual_context_metrics,
             environment_metrics=environment_metrics,
+            knowledge_metrics=(
+                self.knowledge.long_run_diagnostics(
+                    alive=self.entities.alive,
+                    primary_subject_ids=self.entities.primary_subject_id,
+                    lineage_ids=self.entities.lineage_id,
+                    group_ids=self.social.group_id,
+                )
+                if self.cfg.run.long_run_diagnostics_enabled
+                else None
+            ),
         )
 
     def step(self) -> StepStats:
@@ -2582,12 +2611,12 @@ class Simulation:
             self.autonomy_module_actions += stats.autonomy_module_actions
         step_action_counts = np.bincount(decision.action, minlength=len(Action))
         self.action_counts += step_action_counts
-        stats.reproduction_eligible = int(
-            np.count_nonzero(
-                (ent.energy[active] >= cfg.entities.reproduction_threshold)
-                & (ent.fertility[active] >= 0.5)
-            )
+        reproduction_eligible_mask = (
+            (ent.energy[active] >= cfg.entities.reproduction_threshold)
+            & (ent.fertility[active] >= 0.5)
         )
+        reproduction_eligible_indices = active[reproduction_eligible_mask]
+        stats.reproduction_eligible = int(reproduction_eligible_indices.size)
         stats.reproduction_proposals = int(step_action_counts[Action.REPRODUCE])
         stats.action_entropy = float(decision.entropy.mean())
         stats.signal_detection_rate = float(info.signal_mask.mean())
@@ -2811,6 +2840,7 @@ class Simulation:
                     + getattr(transfer_stats, field_name),
                 )
 
+        accepted_parents = np.empty(0, dtype=np.int32)
         newborns = np.empty(0, dtype=np.int32)
         birth_allocation = plan_birth_allocations(
             birth_requests,
@@ -2839,6 +2869,13 @@ class Simulation:
                 ent.fertility[accepted_parents] -= 0.5
                 stats.births = int(newborns.size)
                 self.total_births += stats.births
+
+        self.evolution_progress.observe_reproduction_traits(
+            ent.genotype,
+            eligible_indices=reproduction_eligible_indices,
+            accepted_parent_indices=accepted_parents,
+            newborn_indices=newborns,
+        )
 
         stats.reproduction_accepted = stats.births
         stats.reproduction_rejected_other = max(

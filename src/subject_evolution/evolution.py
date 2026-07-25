@@ -33,6 +33,145 @@ class BenefitFlowKind(IntEnum):
 BENEFIT_FLOW_COUNT = len(BenefitFlowKind)
 
 
+def _categorical_alignment(
+    left: np.ndarray,
+    right: np.ndarray,
+) -> dict[str, float | int]:
+    """Return deterministic contingency diagnostics for two labels.
+
+    The result is observational only.  In particular, a high NMI does not
+    imply that either label causes the other; it merely reports how strongly
+    the two current partitions overlap.
+    """
+
+    a = np.asarray(left)
+    b = np.asarray(right)
+    if a.ndim != 1 or b.ndim != 1 or a.size != b.size:
+        raise ValueError("categorical alignment inputs must be aligned vectors")
+    if a.size == 0:
+        return {
+            "sample_size": 0,
+            "left_count": 0,
+            "right_count": 0,
+            "mutual_information": 0.0,
+            "normalized_mutual_information": 0.0,
+            "left_given_right_purity": 0.0,
+            "right_given_left_purity": 0.0,
+        }
+    _, ai = np.unique(a, return_inverse=True)
+    _, bi = np.unique(b, return_inverse=True)
+    left_count = int(ai.max()) + 1
+    right_count = int(bi.max()) + 1
+    joint = np.zeros((left_count, right_count), dtype=np.int64)
+    np.add.at(joint, (ai, bi), 1)
+    total = float(a.size)
+    pxy = joint.astype(np.float64) / total
+    px = pxy.sum(axis=1)
+    py = pxy.sum(axis=0)
+    expected = px[:, None] * py[None, :]
+    valid = pxy > 0.0
+    mutual_information = float(
+        np.sum(pxy[valid] * np.log(pxy[valid] / expected[valid]))
+    )
+    hx = float(-np.sum(px[px > 0.0] * np.log(px[px > 0.0])))
+    hy = float(-np.sum(py[py > 0.0] * np.log(py[py > 0.0])))
+    denominator = max((hx * hy) ** 0.5, 1e-30)
+    pair_total = int(a.size * (a.size - 1) // 2)
+    left_pairs = int(np.sum(joint.sum(axis=1) * (joint.sum(axis=1) - 1) // 2))
+    right_pairs = int(np.sum(joint.sum(axis=0) * (joint.sum(axis=0) - 1) // 2))
+    joint_pairs = int(np.sum(joint * (joint - 1) // 2))
+    same_left_given_same_right = (
+        joint_pairs / right_pairs if right_pairs else 0.0
+    )
+    same_right_given_same_left = (
+        joint_pairs / left_pairs if left_pairs else 0.0
+    )
+    baseline_same_left = left_pairs / pair_total if pair_total else 0.0
+    baseline_same_right = right_pairs / pair_total if pair_total else 0.0
+    pair_enrichment = (
+        (joint_pairs / pair_total) / (baseline_same_left * baseline_same_right)
+        if pair_total and baseline_same_left > 0.0 and baseline_same_right > 0.0
+        else 0.0
+    )
+    return {
+        "sample_size": int(a.size),
+        "left_count": left_count,
+        "right_count": right_count,
+        "mutual_information": mutual_information,
+        "normalized_mutual_information": float(mutual_information / denominator),
+        # Weighted dominant-left share within each right category.
+        "left_given_right_purity": float(joint.max(axis=0).sum() / total),
+        # Weighted dominant-right share within each left category.
+        "right_given_left_purity": float(joint.max(axis=1).sum() / total),
+        "pair_total": pair_total,
+        "same_left_pair_count": left_pairs,
+        "same_right_pair_count": right_pairs,
+        "same_both_pair_count": joint_pairs,
+        "same_left_given_same_right": float(same_left_given_same_right),
+        "same_right_given_same_left": float(same_right_given_same_left),
+        "pair_enrichment_over_independence": float(pair_enrichment),
+    }
+
+
+def lineage_group_diagnostics(
+    alive: np.ndarray,
+    lineage_ids: np.ndarray,
+    group_ids: np.ndarray,
+) -> dict[str, float | int | str]:
+    active = np.flatnonzero(np.asarray(alive, dtype=bool)).astype(np.int32)
+    if active.size == 0:
+        return {
+            "lineage_group_alignment_schema": "lineage-group-alignment-v1",
+            "grouped_entity_count": 0,
+            "grouped_entity_fraction": 0.0,
+            "group_count": 0,
+            "lineage_group_nmi": 0.0,
+            "group_lineage_purity": 0.0,
+            "lineage_group_purity": 0.0,
+            "lineage_group_alignment_sample_size": 0,
+            "same_lineage_given_same_group": 0.0,
+            "same_group_given_same_lineage": 0.0,
+            "lineage_group_pair_enrichment": 0.0,
+        }
+    groups = np.asarray(group_ids, dtype=np.uint64)[active]
+    lineages = np.asarray(lineage_ids, dtype=np.uint64)[active]
+    grouped = groups != 0
+    if not np.any(grouped):
+        return {
+            "lineage_group_alignment_schema": "lineage-group-alignment-v1",
+            "grouped_entity_count": 0,
+            "grouped_entity_fraction": 0.0,
+            "group_count": 0,
+            "lineage_group_nmi": 0.0,
+            "group_lineage_purity": 0.0,
+            "lineage_group_purity": 0.0,
+            "lineage_group_alignment_sample_size": 0,
+            "same_lineage_given_same_group": 0.0,
+            "same_group_given_same_lineage": 0.0,
+            "lineage_group_pair_enrichment": 0.0,
+        }
+    alignment = _categorical_alignment(lineages[grouped], groups[grouped])
+    return {
+        "lineage_group_alignment_schema": "lineage-group-alignment-v1",
+        "grouped_entity_count": int(np.count_nonzero(grouped)),
+        "grouped_entity_fraction": float(np.mean(grouped)),
+        "group_count": int(alignment["right_count"]),
+        "lineage_group_nmi": float(alignment["normalized_mutual_information"]),
+        "group_lineage_purity": float(alignment["left_given_right_purity"]),
+        "lineage_group_purity": float(alignment["right_given_left_purity"]),
+        "lineage_group_alignment_sample_size": int(alignment["sample_size"]),
+        "same_lineage_given_same_group": float(
+            alignment["same_left_given_same_right"]
+        ),
+        "same_group_given_same_lineage": float(
+            alignment["same_right_given_same_left"]
+        ),
+        "lineage_group_pair_enrichment": float(
+            alignment["pair_enrichment_over_independence"]
+        ),
+    }
+
+
 def benefit_flow_totals(
     owner_group_tokens: np.ndarray,
     target_group_tokens: np.ndarray,
@@ -403,11 +542,21 @@ class EvolutionProgressTracker:
         alive: np.ndarray,
         stable_ids: np.ndarray,
         genotype: np.ndarray,
+        long_run_diagnostics_enabled: bool = False,
+        long_run_diagnostics_schema: str = "disabled",
+        morphology_trait_indices: tuple[int, ...] = (),
+        morphology_trait_names: tuple[str, ...] = (),
     ) -> None:
         self.path = Path(output_dir) / "evolution_progress.jsonl"
         self.period = int(period)
         self.run_seed = int(run_seed)
         self.temperature = float(temperature)
+        self.long_run_diagnostics_enabled = bool(long_run_diagnostics_enabled)
+        self.long_run_diagnostics_schema = str(long_run_diagnostics_schema)
+        self.morphology_trait_indices = tuple(int(value) for value in morphology_trait_indices)
+        self.morphology_trait_names = tuple(str(value) for value in morphology_trait_names)
+        if len(self.morphology_trait_indices) != len(self.morphology_trait_names):
+            raise ValueError("morphology trait indices and names must be aligned")
         active = np.flatnonzero(np.asarray(alive, dtype=bool)).astype(np.int32)
         sampled = _deterministic_sample(active, stable_ids, self.run_seed, 4096)
         self.initial_stable_ids = np.asarray(stable_ids[sampled], dtype=np.uint64).copy()
@@ -446,6 +595,19 @@ class EvolutionProgressTracker:
         self.previous_reproduction_rejected_capacity = 0
         self.previous_reproduction_rejected_resource = 0
         self.previous_reproduction_rejected_other = 0
+        width = len(self.morphology_trait_indices)
+        self.reproduction_eligible_trait_sum = np.zeros(width, dtype=np.float64)
+        self.reproduction_parent_trait_sum = np.zeros(width, dtype=np.float64)
+        self.reproduction_offspring_trait_sum = np.zeros(width, dtype=np.float64)
+        self.reproduction_eligible_trait_count = 0
+        self.reproduction_parent_trait_count = 0
+        self.reproduction_offspring_trait_count = 0
+        self.previous_reproduction_eligible_trait_sum = np.zeros(width, dtype=np.float64)
+        self.previous_reproduction_parent_trait_sum = np.zeros(width, dtype=np.float64)
+        self.previous_reproduction_offspring_trait_sum = np.zeros(width, dtype=np.float64)
+        self.previous_reproduction_eligible_trait_count = 0
+        self.previous_reproduction_parent_trait_count = 0
+        self.previous_reproduction_offspring_trait_count = 0
         self.records: list[dict[str, Any]] = []
         self._file = None
 
@@ -478,12 +640,59 @@ class EvolutionProgressTracker:
         branch.previous_harvested_resources = (
             self.previous_harvested_resources.copy()
         )
+        for name in (
+            "reproduction_eligible_trait_sum",
+            "reproduction_parent_trait_sum",
+            "reproduction_offspring_trait_sum",
+            "previous_reproduction_eligible_trait_sum",
+            "previous_reproduction_parent_trait_sum",
+            "previous_reproduction_offspring_trait_sum",
+        ):
+            setattr(branch, name, getattr(self, name).copy())
         branch.initial_stable_ids = self.initial_stable_ids.copy()
         branch.initial_genotype = self.initial_genotype.copy()
         branch.baseline = copy.deepcopy(self.baseline)
         branch.records = copy.deepcopy(self.records)
         branch._file = None
         return branch
+
+    def observe_reproduction_traits(
+        self,
+        genotype: np.ndarray,
+        *,
+        eligible_indices: np.ndarray,
+        accepted_parent_indices: np.ndarray,
+        newborn_indices: np.ndarray,
+    ) -> None:
+        """Accumulate observational trait cohorts for the next report window."""
+        if not self.long_run_diagnostics_enabled or not self.morphology_trait_indices:
+            return
+        values = np.asarray(genotype, dtype=np.float32)
+        columns = np.asarray(self.morphology_trait_indices, dtype=np.int32)
+
+        def accumulate(indices: np.ndarray, sum_name: str, count_name: str) -> None:
+            rows = np.asarray(indices, dtype=np.int32)
+            if rows.size == 0:
+                return
+            cohort = values[np.ix_(rows, columns)].astype(np.float64, copy=False)
+            setattr(self, sum_name, getattr(self, sum_name) + cohort.sum(axis=0))
+            setattr(self, count_name, int(getattr(self, count_name)) + int(rows.size))
+
+        accumulate(
+            eligible_indices,
+            "reproduction_eligible_trait_sum",
+            "reproduction_eligible_trait_count",
+        )
+        accumulate(
+            accepted_parent_indices,
+            "reproduction_parent_trait_sum",
+            "reproduction_parent_trait_count",
+        )
+        accumulate(
+            newborn_indices,
+            "reproduction_offspring_trait_sum",
+            "reproduction_offspring_trait_count",
+        )
 
     def _writer(self):
         if self._file is None:
@@ -504,6 +713,7 @@ class EvolutionProgressTracker:
         alive: np.ndarray,
         stable_ids: np.ndarray,
         lineage_ids: np.ndarray,
+        group_ids: np.ndarray | None,
         generation: np.ndarray,
         genotype: np.ndarray,
         births_total: int,
@@ -523,6 +733,7 @@ class EvolutionProgressTracker:
         mutation_std: float,
         actual_context_metrics: dict[str, Any] | None = None,
         environment_metrics: dict[str, Any] | None = None,
+        knowledge_metrics: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         if self.records and int(self.records[-1]["tick"]) == int(tick):
             return self.records[-1]
@@ -669,6 +880,76 @@ class EvolutionProgressTracker:
         cumulative_policy_shift = float(
             np.linalg.norm(strategy_mean - self.initial_strategy_mean)
         )
+        long_run_metrics: dict[str, Any] = {}
+        if self.long_run_diagnostics_enabled:
+            if group_ids is None:
+                raise ValueError("long-run diagnostics require group IDs")
+            long_run_metrics.update(
+                {
+                    "long_run_diagnostics_schema": self.long_run_diagnostics_schema,
+                    "mortality_pressure_window": (
+                        int(deaths_total - self.previous_deaths)
+                        / max(int(active.size) + int(deaths_total - self.previous_deaths), 1)
+                    ),
+                    "birth_pressure_window": (
+                        int(births_total - self.previous_births)
+                        / max(int(active.size), 1)
+                    ),
+                    **lineage_group_diagnostics(alive, lineage_ids, group_ids),
+                }
+            )
+
+            def cohort_window(
+                total_sum: np.ndarray,
+                previous_sum: np.ndarray,
+                total_count: int,
+                previous_count: int,
+            ) -> tuple[np.ndarray, int]:
+                count = int(total_count - previous_count)
+                delta = np.asarray(total_sum, dtype=np.float64) - np.asarray(
+                    previous_sum, dtype=np.float64
+                )
+                return (
+                    delta / count if count > 0 else np.zeros_like(delta),
+                    count,
+                )
+
+            eligible_mean, eligible_count = cohort_window(
+                self.reproduction_eligible_trait_sum,
+                self.previous_reproduction_eligible_trait_sum,
+                self.reproduction_eligible_trait_count,
+                self.previous_reproduction_eligible_trait_count,
+            )
+            parent_mean, parent_count = cohort_window(
+                self.reproduction_parent_trait_sum,
+                self.previous_reproduction_parent_trait_sum,
+                self.reproduction_parent_trait_count,
+                self.previous_reproduction_parent_trait_count,
+            )
+            offspring_mean, offspring_count = cohort_window(
+                self.reproduction_offspring_trait_sum,
+                self.previous_reproduction_offspring_trait_sum,
+                self.reproduction_offspring_trait_count,
+                self.previous_reproduction_offspring_trait_count,
+            )
+            long_run_metrics.update(
+                {
+                    "selection_trait_names": list(self.morphology_trait_names),
+                    "selection_eligible_carrier_samples_window": eligible_count,
+                    "selection_successful_parent_samples_window": parent_count,
+                    "selection_offspring_samples_window": offspring_count,
+                    "selection_eligible_trait_mean_window": eligible_mean.tolist(),
+                    "selection_successful_parent_trait_mean_window": parent_mean.tolist(),
+                    "selection_offspring_trait_mean_window": offspring_mean.tolist(),
+                    "selection_differential_parent_minus_eligible": (
+                        parent_mean - eligible_mean
+                    ).tolist(),
+                    "selection_transmission_offspring_minus_parent": (
+                        offspring_mean - parent_mean
+                    ).tolist(),
+                }
+            )
+            long_run_metrics.update(knowledge_metrics or {})
         record: dict[str, Any] = {
             "tick": int(tick),
             "scheduled": bool(scheduled),
@@ -790,6 +1071,7 @@ class EvolutionProgressTracker:
             **structure,
             **(actual_context_metrics or {}),
             **(environment_metrics or {}),
+            **long_run_metrics,
         }
         writer = self._writer()
         self.records.append(record)
@@ -814,6 +1096,25 @@ class EvolutionProgressTracker:
         self.previous_reproduction_rejected_other = int(
             reproduction_rejected_other_total
         )
+        if self.long_run_diagnostics_enabled:
+            self.previous_reproduction_eligible_trait_sum = (
+                self.reproduction_eligible_trait_sum.copy()
+            )
+            self.previous_reproduction_parent_trait_sum = (
+                self.reproduction_parent_trait_sum.copy()
+            )
+            self.previous_reproduction_offspring_trait_sum = (
+                self.reproduction_offspring_trait_sum.copy()
+            )
+            self.previous_reproduction_eligible_trait_count = int(
+                self.reproduction_eligible_trait_count
+            )
+            self.previous_reproduction_parent_trait_count = int(
+                self.reproduction_parent_trait_count
+            )
+            self.previous_reproduction_offspring_trait_count = int(
+                self.reproduction_offspring_trait_count
+            )
         self.previous_strategy_mean = strategy_mean
         return record
 

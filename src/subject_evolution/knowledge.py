@@ -2533,6 +2533,170 @@ class KnowledgeSystem:
         summary.update(self.candidates.summary())
         return summary
 
+    def long_run_diagnostics(
+        self,
+        *,
+        alive: np.ndarray,
+        primary_subject_ids: np.ndarray,
+        lineage_ids: np.ndarray,
+        group_ids: np.ndarray,
+    ) -> dict[str, int | float | str]:
+        """Return observational knowledge-lineage diagnostics.
+
+        Counts are based on active holder/root-content presences so a holder
+        carrying several variants of one root does not artificially multiply
+        that root's cultural prevalence.
+        """
+        base: dict[str, int | float | str] = {
+            "knowledge_lineage_diagnostics_schema": "knowledge-root-lineage-v1",
+            "knowledge_active_root_content_count": 0,
+            "knowledge_effective_root_contents": 0.0,
+            "knowledge_largest_root_holder_fraction": 0.0,
+            "knowledge_root_multi_genetic_lineage_fraction": 0.0,
+            "knowledge_root_multi_group_fraction": 0.0,
+            "knowledge_root_genetic_lineage_nmi": 0.0,
+            "knowledge_root_group_nmi": 0.0,
+            "knowledge_same_genetic_lineage_given_same_root": 0.0,
+            "knowledge_same_root_given_same_genetic_lineage": 0.0,
+            "knowledge_root_genetic_lineage_pair_enrichment": 0.0,
+            "knowledge_same_group_given_same_root": 0.0,
+            "knowledge_same_root_given_same_group": 0.0,
+            "knowledge_root_group_pair_enrichment": 0.0,
+            "knowledge_holder_root_presence_count": 0,
+        }
+        if not self.kcfg.enabled or self.catalog.size == 0 or self.arena.active_count == 0:
+            return base
+
+        root_by_content = np.zeros(self.catalog.size + 1, dtype=np.uint64)
+        for row in range(self.catalog.size):
+            content_id = int(self.catalog.content_id[row])
+            parent_id = int(self.catalog.parent_content_id[row])
+            root_by_content[content_id] = (
+                np.uint64(content_id) if parent_id == 0 else root_by_content[parent_id]
+            )
+
+        active_entities = np.flatnonzero(np.asarray(alive, dtype=bool)).astype(np.int32)
+        subject_to_entity = {
+            int(primary_subject_ids[index]): int(index) for index in active_entities
+        }
+        rows = np.flatnonzero(self.arena.active[: self.arena.size]).astype(np.int32)
+        holder_root: set[tuple[int, int]] = set()
+        for row in rows.tolist():
+            holder = int(self.arena.holder_subject_id[row])
+            if holder not in subject_to_entity:
+                continue
+            content = int(self.arena.content_id[row])
+            holder_root.add((holder, int(root_by_content[content])))
+        if not holder_root:
+            return base
+
+        ordered = sorted(holder_root)
+        holders = np.asarray([item[0] for item in ordered], dtype=np.uint64)
+        roots = np.asarray([item[1] for item in ordered], dtype=np.uint64)
+        entities = np.asarray([subject_to_entity[int(holder)] for holder in holders], dtype=np.int32)
+        genetic = np.asarray(lineage_ids, dtype=np.uint64)[entities]
+        groups = np.asarray(group_ids, dtype=np.uint64)[entities]
+        unique_roots, root_counts = np.unique(roots, return_counts=True)
+        shares = root_counts.astype(np.float64) / max(float(root_counts.sum()), 1.0)
+
+        def alignment(left: np.ndarray, right: np.ndarray) -> dict[str, float]:
+            if left.size == 0:
+                return {
+                    "nmi": 0.0,
+                    "same_left_given_same_right": 0.0,
+                    "same_right_given_same_left": 0.0,
+                    "pair_enrichment": 0.0,
+                }
+            _, li = np.unique(left, return_inverse=True)
+            _, ri = np.unique(right, return_inverse=True)
+            joint = np.zeros((int(li.max()) + 1, int(ri.max()) + 1), dtype=np.int64)
+            np.add.at(joint, (li, ri), 1)
+            pxy = joint.astype(np.float64) / float(left.size)
+            px = pxy.sum(axis=1)
+            py = pxy.sum(axis=0)
+            expected = px[:, None] * py[None, :]
+            valid = pxy > 0.0
+            mi = float(np.sum(pxy[valid] * np.log(pxy[valid] / expected[valid])))
+            hx = float(-np.sum(px[px > 0.0] * np.log(px[px > 0.0])))
+            hy = float(-np.sum(py[py > 0.0] * np.log(py[py > 0.0])))
+            pair_total = int(left.size * (left.size - 1) // 2)
+            left_sizes = joint.sum(axis=1)
+            right_sizes = joint.sum(axis=0)
+            left_pairs = int(np.sum(left_sizes * (left_sizes - 1) // 2))
+            right_pairs = int(np.sum(right_sizes * (right_sizes - 1) // 2))
+            both_pairs = int(np.sum(joint * (joint - 1) // 2))
+            baseline_left = left_pairs / pair_total if pair_total else 0.0
+            baseline_right = right_pairs / pair_total if pair_total else 0.0
+            return {
+                "nmi": float(mi / max((hx * hy) ** 0.5, 1e-30)),
+                "same_left_given_same_right": float(
+                    both_pairs / right_pairs if right_pairs else 0.0
+                ),
+                "same_right_given_same_left": float(
+                    both_pairs / left_pairs if left_pairs else 0.0
+                ),
+                "pair_enrichment": float(
+                    (both_pairs / pair_total) / (baseline_left * baseline_right)
+                    if pair_total and baseline_left > 0.0 and baseline_right > 0.0
+                    else 0.0
+                ),
+            }
+
+        multi_lineage = 0
+        multi_group = 0
+        for root in unique_roots.tolist():
+            mask = roots == np.uint64(root)
+            if np.unique(genetic[mask]).size > 1:
+                multi_lineage += 1
+            root_groups = groups[mask]
+            root_groups = root_groups[root_groups != 0]
+            if np.unique(root_groups).size > 1:
+                multi_group += 1
+        grouped = groups != 0
+        root_genetic = alignment(roots, genetic)
+        root_group = (
+            alignment(roots[grouped], groups[grouped])
+            if np.any(grouped)
+            else alignment(np.empty(0, dtype=np.uint64), np.empty(0, dtype=np.uint64))
+        )
+        base.update(
+            {
+                "knowledge_active_root_content_count": int(unique_roots.size),
+                "knowledge_effective_root_contents": float(
+                    1.0 / np.sum(shares * shares)
+                ),
+                "knowledge_largest_root_holder_fraction": float(shares.max()),
+                "knowledge_root_multi_genetic_lineage_fraction": float(
+                    multi_lineage / unique_roots.size
+                ),
+                "knowledge_root_multi_group_fraction": float(
+                    multi_group / unique_roots.size
+                ),
+                "knowledge_root_genetic_lineage_nmi": root_genetic["nmi"],
+                "knowledge_root_group_nmi": root_group["nmi"],
+                "knowledge_same_genetic_lineage_given_same_root": (
+                    root_genetic["same_right_given_same_left"]
+                ),
+                "knowledge_same_root_given_same_genetic_lineage": (
+                    root_genetic["same_left_given_same_right"]
+                ),
+                "knowledge_root_genetic_lineage_pair_enrichment": (
+                    root_genetic["pair_enrichment"]
+                ),
+                "knowledge_same_group_given_same_root": (
+                    root_group["same_right_given_same_left"]
+                ),
+                "knowledge_same_root_given_same_group": (
+                    root_group["same_left_given_same_right"]
+                ),
+                "knowledge_root_group_pair_enrichment": (
+                    root_group["pair_enrichment"]
+                ),
+                "knowledge_holder_root_presence_count": int(roots.size),
+            }
+        )
+        return base
+
     def validate(self, alive: np.ndarray, primary_subject_ids: np.ndarray) -> None:
         if not self.kcfg.enabled:
             return

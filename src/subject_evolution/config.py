@@ -35,6 +35,11 @@ class RunConfig:
     # Full-world bundles are opt-in because they are larger than the legacy
     # analysis-only NPZ snapshots.  When enabled they use checkpoint_period.
     full_checkpoint_enabled: bool = False
+    # Optional observational diagnostics for long multi-seed runs.  These
+    # fields never feed back into policy or world state and are disabled by
+    # default so archived evolution_progress JSONL remains unchanged.
+    long_run_diagnostics_enabled: bool = False
+    long_run_diagnostics_schema: str = "disabled"
 
 
 @dataclass(frozen=True)
@@ -452,6 +457,20 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("run.experiment_mode must be 'scientific' or 'entertainment'")
     if cfg.run.evolution_evaluation_period <= 0:
         raise ValueError("run.evolution_evaluation_period must be positive")
+    if cfg.run.long_run_diagnostics_schema not in {
+        "disabled",
+        "long-run-evolution-diagnostics-v1",
+    }:
+        raise ValueError(
+            "run.long_run_diagnostics_schema must be 'disabled' or "
+            "'long-run-evolution-diagnostics-v1'"
+        )
+    if cfg.run.long_run_diagnostics_enabled != (
+        cfg.run.long_run_diagnostics_schema == "long-run-evolution-diagnostics-v1"
+    ):
+        raise ValueError(
+            "long-run diagnostics enabled/schema fields must agree"
+        )
     if not isinstance(cfg.run.full_checkpoint_enabled, bool):
         raise ValueError("run.full_checkpoint_enabled must be a boolean")
     if not isinstance(cfg.run.validation_mode, bool):

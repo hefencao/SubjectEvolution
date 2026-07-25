@@ -16,6 +16,19 @@ def resource_affinity_enabled(cfg: SimulationConfig) -> bool:
     return cfg.entities.resource_affinity_schema == "normalized-four-resource-affinity-v1"
 
 
+def active_morphology_traits(cfg: SimulationConfig) -> tuple[tuple[int, ...], tuple[str, ...]]:
+    affinity_names = tuple(
+        f"resource_affinity_{index}" for index in range(RESOURCE_CHANNELS)
+    )
+    if resource_affinity_enabled(cfg):
+        return (0, 1, 2, 3, 4, 5), (
+            "sensor_quality",
+            *affinity_names,
+            "movement_speed",
+        )
+    return (0, 5), ("sensor_quality", "movement_speed")
+
+
 def resource_affinity_quantized(genotype: Any, cfg: SimulationConfig) -> np.ndarray:
     """Return a fixed-budget four-channel inherited affinity vector.
 
@@ -137,13 +150,8 @@ def resource_affinity_diagnostics(
     cfg: SimulationConfig,
 ) -> dict[str, Any]:
     active = np.flatnonzero(np.asarray(alive, dtype=bool)).astype(np.int32)
-    affinity_names = [f"resource_affinity_{index}" for index in range(RESOURCE_CHANNELS)]
-    active_trait_indices = (0, 5) if not resource_affinity_enabled(cfg) else (0, 1, 2, 3, 4, 5)
-    active_trait_names = (
-        ["sensor_quality", "movement_speed"]
-        if not resource_affinity_enabled(cfg)
-        else ["sensor_quality", *affinity_names, "movement_speed"]
-    )
+    active_trait_indices, active_trait_names_tuple = active_morphology_traits(cfg)
+    active_trait_names = list(active_trait_names_tuple)
     if active.size == 0:
         return {
             "resource_affinity_schema": cfg.entities.resource_affinity_schema,
@@ -201,6 +209,7 @@ __all__ = [
     "BODY_OUTCOME_WIDTH",
     "RESOURCE_CHANNELS",
     "apply_harvest_effects",
+    "active_morphology_traits",
     "policy_resource_view",
     "public_resource_signal",
     "resource_affinity_diagnostics",
