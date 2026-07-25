@@ -113,7 +113,7 @@ def test_offline_multi_seed_analysis_marks_correlations_observational(tmp_path: 
         paths.append(path)
     report = analyze(paths)
     assert report["run_count"] == 2
-    assert report["schema"] == "multi-seed-long-run-analysis-v2"
+    assert report["schema"] == "multi-seed-long-run-analysis-v3"
     assert "correlations_first_difference" in report["runs"][0]
     assert "correlations_partial" in report["runs"][0]
     assert "observational" in render_markdown(report).lower()
@@ -216,3 +216,66 @@ def test_multi_seed_completed_tick_uses_progress(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     assert _completed_tick(run_dir) == 20
+
+
+def test_analysis_requires_committed_transfer_for_cultural_interpretation(tmp_path: Path) -> None:
+    run_dir = tmp_path / "configured_but_uncommitted"
+    run_dir.mkdir()
+    rows = []
+    for index in range(8):
+        rows.append({
+            "tick": (index + 1) * 30,
+            "alive": 100,
+            "deaths_window": index + 1,
+            "effective_lineages": 20.0 - index,
+            "largest_lineage_fraction": 0.1 + index * 0.01,
+            "strategy_effective_dimensions": 30.0 - index,
+            "window_action_entropy": 1.8 - index * 0.01,
+            "benefit_boundary_cohesion": 0.2 + index * 0.01,
+            "knowledge_transfer_attempts_total": 0,
+            "knowledge_transfer_committed_total": 0,
+        })
+    progress = run_dir / "evolution_progress.jsonl"
+    progress.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
+    (run_dir / "resolved_config.json").write_text(
+        json.dumps({"knowledge": {"transfer_probability": 0.1, "transfer_period": 1}})
+    )
+    run = analyze([progress])["runs"][0]
+    assert run["knowledge_cultural_spread_interpretable"] is False
+    assert any("configured" in warning.lower() for warning in run["analysis_warnings"])
+
+
+def test_analysis_reports_committed_cultural_transfer(tmp_path: Path) -> None:
+    run_dir = tmp_path / "committed"
+    run_dir.mkdir()
+    rows = []
+    attempts = 0
+    committed = 0
+    for index in range(8):
+        attempts += 10
+        committed += 6
+        rows.append({
+            "tick": (index + 1) * 30,
+            "alive": 100 + index,
+            "births_window": 5,
+            "deaths_window": 3,
+            "effective_lineages": 20.0 - index,
+            "largest_lineage_fraction": 0.1 + index * 0.01,
+            "strategy_effective_dimensions": 30.0 - index,
+            "window_action_entropy": 1.8 - index * 0.01,
+            "benefit_boundary_cohesion": 0.2 + index * 0.01,
+            "knowledge_transfer_attempts_total": attempts,
+            "knowledge_transfer_committed_total": committed,
+            "knowledge_transfer_committed_bytes_total": committed * 64,
+            "knowledge_transfer_attempts_window": 10,
+            "knowledge_transfer_committed_window": 6,
+            "knowledge_transfer_cross_lineage_committed_window": 2,
+            "knowledge_effective_transferred_roots": 4.0 + index,
+        })
+    progress = run_dir / "evolution_progress.jsonl"
+    progress.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
+    run = analyze([progress])["runs"][0]
+    assert run["knowledge_cultural_spread_interpretable"] is True
+    assert run["knowledge_transfer_committed_final"] == 48
+    assert run["knowledge_transfer_commit_rate_after_attention_final"] == 0.6
+    assert run["knowledge_transfer_phase_summary"]["rise"]["committed"] > 0

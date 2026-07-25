@@ -312,6 +312,13 @@ class KnowledgeStepStats:
     transfer_lost: int = 0
     transfer_corrupted: int = 0
     transfer_committed: int = 0
+    transfer_committed_bytes: int = 0
+    transfer_same_lineage_committed: int = 0
+    transfer_cross_lineage_committed: int = 0
+    transfer_unknown_lineage_committed: int = 0
+    transfer_same_group_committed: int = 0
+    transfer_cross_group_committed: int = 0
+    transfer_unknown_group_committed: int = 0
     transfer_duplicate_rejected: int = 0
     transfer_capacity_rejected: int = 0
     transfer_energy_rejected: int = 0
@@ -796,9 +803,14 @@ class KnowledgeSystem:
                 self._transfer_writer = csv.DictWriter(
                     self._transfer_file,
                     fieldnames=[
-                        "tick", "sender_subject_id", "receiver_subject_id",
+                        "tick", "sender_entity_index", "receiver_entity_index",
+                        "sender_subject_id", "receiver_subject_id",
+                        "sender_lineage_id", "receiver_lineage_id",
+                        "sender_group_id", "receiver_group_id",
                         "source_subject_id", "source_copy_id", "content_id",
-                        "encoded_bytes", "delivered", "corrupted", "status",
+                        "committed_content_id", "encoded_bytes", "delivered",
+                        "corrupted", "status", "sender_cost_charged",
+                        "receiver_cost_charged",
                     ],
                 )
                 self._transfer_writer.writeheader()
@@ -1053,9 +1065,14 @@ class KnowledgeSystem:
                 result._transfer_writer = csv.DictWriter(
                     result._transfer_file,
                     fieldnames=[
-                        "tick", "sender_subject_id", "receiver_subject_id",
+                        "tick", "sender_entity_index", "receiver_entity_index",
+                        "sender_subject_id", "receiver_subject_id",
+                        "sender_lineage_id", "receiver_lineage_id",
+                        "sender_group_id", "receiver_group_id",
                         "source_subject_id", "source_copy_id", "content_id",
-                        "encoded_bytes", "delivered", "corrupted", "status",
+                        "committed_content_id", "encoded_bytes", "delivered",
+                        "corrupted", "status", "sender_cost_charged",
+                        "receiver_cost_charged",
                     ],
                 )
                 result._transfer_writer.writeheader()
@@ -1456,15 +1473,38 @@ class KnowledgeSystem:
                 self._transfer_writer.writerow(
                     {
                         "tick": plan.tick,
+                        "sender_entity_index": int(plan.sender_entity_indices[row]),
+                        "receiver_entity_index": int(plan.receiver_entity_indices[row]),
                         "sender_subject_id": int(plan.sender_subject_ids[row]),
                         "receiver_subject_id": int(plan.receiver_subject_ids[row]),
+                        "sender_lineage_id": (
+                            int(lineage_subject_ids[int(plan.sender_entity_indices[row])])
+                            if lineage_subject_ids is not None else 0
+                        ),
+                        "receiver_lineage_id": (
+                            int(lineage_subject_ids[int(plan.receiver_entity_indices[row])])
+                            if lineage_subject_ids is not None else 0
+                        ),
+                        "sender_group_id": (
+                            int(group_ids[int(plan.sender_entity_indices[row])])
+                            if group_ids is not None else 0
+                        ),
+                        "receiver_group_id": (
+                            int(group_ids[int(plan.receiver_entity_indices[row])])
+                            if group_ids is not None else 0
+                        ),
                         "source_subject_id": int(plan.source_subject_ids[row]),
                         "source_copy_id": int(plan.source_copy_ids[row]),
                         "content_id": int(plan.content_ids[row]),
+                        "committed_content_id": (
+                            int(committed_content_id) if committed_content_id is not None else 0
+                        ),
                         "encoded_bytes": int(plan.encoded_bytes[row]),
                         "delivered": int(bool(plan.delivered[row])),
                         "corrupted": int(bool(plan.corrupted[row])),
                         "status": status,
+                        "sender_cost_charged": float(sender_cost_charged),
+                        "receiver_cost_charged": float(receiver_cost_charged),
                     }
                 )
             if self.kcfg.candidate_tracking_enabled:
@@ -1626,6 +1666,29 @@ class KnowledgeSystem:
                 acquisition_kind=ACQUISITION_TRANSFER,
             )
             stats.transfer_committed += 1
+            stats.transfer_committed_bytes += int(storage_encoded_bytes)
+            sender_lineage = (
+                int(lineage_subject_ids[sender]) if lineage_subject_ids is not None else 0
+            )
+            receiver_lineage = (
+                int(lineage_subject_ids[receiver]) if lineage_subject_ids is not None else 0
+            )
+            if sender_lineage and receiver_lineage:
+                if sender_lineage == receiver_lineage:
+                    stats.transfer_same_lineage_committed += 1
+                else:
+                    stats.transfer_cross_lineage_committed += 1
+            else:
+                stats.transfer_unknown_lineage_committed += 1
+            sender_group = int(group_ids[sender]) if group_ids is not None else 0
+            receiver_group = int(group_ids[receiver]) if group_ids is not None else 0
+            if sender_group and receiver_group:
+                if sender_group == receiver_group:
+                    stats.transfer_same_group_committed += 1
+                else:
+                    stats.transfer_cross_group_committed += 1
+            else:
+                stats.transfer_unknown_group_committed += 1
             record(
                 row,
                 "committed-corrupted" if bool(plan.corrupted[row]) else "committed",
@@ -2398,6 +2461,13 @@ class KnowledgeSystem:
             "transfer_lost_total": self.totals.transfer_lost,
             "transfer_corrupted_total": self.totals.transfer_corrupted,
             "transfer_committed_total": self.totals.transfer_committed,
+            "transfer_committed_bytes_total": self.totals.transfer_committed_bytes,
+            "transfer_same_lineage_committed_total": self.totals.transfer_same_lineage_committed,
+            "transfer_cross_lineage_committed_total": self.totals.transfer_cross_lineage_committed,
+            "transfer_unknown_lineage_committed_total": self.totals.transfer_unknown_lineage_committed,
+            "transfer_same_group_committed_total": self.totals.transfer_same_group_committed,
+            "transfer_cross_group_committed_total": self.totals.transfer_cross_group_committed,
+            "transfer_unknown_group_committed_total": self.totals.transfer_unknown_group_committed,
             "transfer_duplicate_rejected_total": self.totals.transfer_duplicate_rejected,
             "transfer_capacity_rejected_total": self.totals.transfer_capacity_rejected,
             "transfer_energy_rejected_total": self.totals.transfer_energy_rejected,
@@ -2563,6 +2633,67 @@ class KnowledgeSystem:
             "knowledge_same_root_given_same_group": 0.0,
             "knowledge_root_group_pair_enrichment": 0.0,
             "knowledge_holder_root_presence_count": 0,
+            "knowledge_transfer_trigger_schema": "signal-action-partner-v1",
+            "knowledge_transfer_configured_probability": float(self.kcfg.transfer_probability),
+            "knowledge_transfer_configured_period": int(self.kcfg.transfer_period),
+            "knowledge_transfer_effective_enabled": int(
+                bool(self.kcfg.enabled and self.kcfg.transfer_probability > 0.0)
+            ),
+            "knowledge_transfer_proposals_total": int(
+                self.totals.transfer_attempts + self.totals.attention_rejected
+            ),
+            "knowledge_transfer_attempts_total": int(self.totals.transfer_attempts),
+            "knowledge_transfer_delivered_total": int(self.totals.transfer_delivered),
+            "knowledge_transfer_lost_total": int(self.totals.transfer_lost),
+            "knowledge_transfer_corrupted_total": int(self.totals.transfer_corrupted),
+            "knowledge_transfer_committed_total": int(self.totals.transfer_committed),
+            "knowledge_transfer_committed_bytes_total": int(
+                self.totals.transfer_committed_bytes
+            ),
+            "knowledge_transfer_duplicate_rejected_total": int(
+                self.totals.transfer_duplicate_rejected
+            ),
+            "knowledge_transfer_capacity_rejected_total": int(
+                self.totals.transfer_capacity_rejected
+            ),
+            "knowledge_transfer_energy_rejected_total": int(
+                self.totals.transfer_energy_rejected
+            ),
+            "knowledge_transfer_attention_rejected_total": int(
+                self.totals.attention_rejected
+            ),
+            "knowledge_transfer_same_lineage_committed_total": int(
+                self.totals.transfer_same_lineage_committed
+            ),
+            "knowledge_transfer_cross_lineage_committed_total": int(
+                self.totals.transfer_cross_lineage_committed
+            ),
+            "knowledge_transfer_unknown_lineage_committed_total": int(
+                self.totals.transfer_unknown_lineage_committed
+            ),
+            "knowledge_transfer_same_group_committed_total": int(
+                self.totals.transfer_same_group_committed
+            ),
+            "knowledge_transfer_cross_group_committed_total": int(
+                self.totals.transfer_cross_group_committed
+            ),
+            "knowledge_transfer_unknown_group_committed_total": int(
+                self.totals.transfer_unknown_group_committed
+            ),
+            "knowledge_transfer_sender_energy_total": float(self.totals.sender_energy),
+            "knowledge_transfer_receiver_energy_total": float(self.totals.receiver_energy),
+            "knowledge_cultural_spread_interpretable": int(
+                self.totals.transfer_committed > 0
+            ),
+            "knowledge_active_transferred_copy_count": 0,
+            "knowledge_active_transferred_root_count": 0,
+            "knowledge_effective_transferred_roots": 0.0,
+            "knowledge_largest_transferred_root_holder_fraction": 0.0,
+            "knowledge_transferred_root_multi_genetic_lineage_fraction": 0.0,
+            "knowledge_transferred_root_multi_group_fraction": 0.0,
+            "knowledge_transferred_root_genetic_lineage_pair_enrichment": 0.0,
+            "knowledge_transferred_root_group_pair_enrichment": 0.0,
+            "knowledge_transferred_holder_root_presence_count": 0,
         }
         if not self.kcfg.enabled or self.catalog.size == 0 or self.arena.active_count == 0:
             return base
@@ -2652,6 +2783,97 @@ class KnowledgeSystem:
             root_groups = root_groups[root_groups != 0]
             if np.unique(root_groups).size > 1:
                 multi_group += 1
+        transferred_holder_root: set[tuple[int, int]] = set()
+        transferred_active_copy_count = 0
+        for row in rows.tolist():
+            if int(self.arena.acquisition_kind[row]) != ACQUISITION_TRANSFER:
+                continue
+            holder = int(self.arena.holder_subject_id[row])
+            if holder not in subject_to_entity:
+                continue
+            content = int(self.arena.content_id[row])
+            transferred_holder_root.add((holder, int(root_by_content[content])))
+            transferred_active_copy_count += 1
+
+        transferred_metrics: dict[str, int | float] = {}
+        if transferred_holder_root:
+            transferred_ordered = sorted(transferred_holder_root)
+            transferred_holders = np.asarray(
+                [item[0] for item in transferred_ordered], dtype=np.uint64
+            )
+            transferred_roots = np.asarray(
+                [item[1] for item in transferred_ordered], dtype=np.uint64
+            )
+            transferred_entities = np.asarray(
+                [subject_to_entity[int(holder)] for holder in transferred_holders],
+                dtype=np.int32,
+            )
+            transferred_genetic = np.asarray(lineage_ids, dtype=np.uint64)[
+                transferred_entities
+            ]
+            transferred_groups = np.asarray(group_ids, dtype=np.uint64)[
+                transferred_entities
+            ]
+            unique_transferred_roots, transferred_counts = np.unique(
+                transferred_roots, return_counts=True
+            )
+            transferred_shares = transferred_counts.astype(np.float64) / max(
+                float(transferred_counts.sum()), 1.0
+            )
+            transferred_multi_lineage = 0
+            transferred_multi_group = 0
+            for root in unique_transferred_roots.tolist():
+                mask = transferred_roots == np.uint64(root)
+                if np.unique(transferred_genetic[mask]).size > 1:
+                    transferred_multi_lineage += 1
+                root_groups = transferred_groups[mask]
+                root_groups = root_groups[root_groups != 0]
+                if np.unique(root_groups).size > 1:
+                    transferred_multi_group += 1
+            transferred_genetic_alignment = alignment(
+                transferred_roots, transferred_genetic
+            )
+            transferred_grouped = transferred_groups != 0
+            transferred_group_alignment = (
+                alignment(
+                    transferred_roots[transferred_grouped],
+                    transferred_groups[transferred_grouped],
+                )
+                if np.any(transferred_grouped)
+                else alignment(
+                    np.empty(0, dtype=np.uint64), np.empty(0, dtype=np.uint64)
+                )
+            )
+            transferred_metrics = {
+                "knowledge_active_transferred_copy_count": int(
+                    transferred_active_copy_count
+                ),
+                "knowledge_active_transferred_root_count": int(
+                    unique_transferred_roots.size
+                ),
+                "knowledge_effective_transferred_roots": float(
+                    1.0 / np.sum(transferred_shares * transferred_shares)
+                ),
+                "knowledge_largest_transferred_root_holder_fraction": float(
+                    transferred_shares.max()
+                ),
+                "knowledge_transferred_root_multi_genetic_lineage_fraction": float(
+                    transferred_multi_lineage / unique_transferred_roots.size
+                ),
+                "knowledge_transferred_root_multi_group_fraction": float(
+                    transferred_multi_group / unique_transferred_roots.size
+                ),
+                "knowledge_transferred_root_genetic_lineage_pair_enrichment": float(
+                    transferred_genetic_alignment["pair_enrichment"]
+                ),
+                "knowledge_transferred_root_group_pair_enrichment": float(
+                    transferred_group_alignment["pair_enrichment"]
+                ),
+                "knowledge_transferred_holder_root_presence_count": int(
+                    transferred_roots.size
+                ),
+            }
+
         grouped = groups != 0
         root_genetic = alignment(roots, genetic)
         root_group = (
@@ -2693,6 +2915,7 @@ class KnowledgeSystem:
                     root_group["pair_enrichment"]
                 ),
                 "knowledge_holder_root_presence_count": int(roots.size),
+                **transferred_metrics,
             }
         )
         return base

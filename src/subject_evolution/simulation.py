@@ -746,6 +746,17 @@ class Simulation:
                 if self.cfg.knowledge.learning_enabled
                 else None
             ),
+            "knowledge_transfer_trigger_schema": (
+                "signal-action-partner-v1" if self.cfg.knowledge.enabled else None
+            ),
+            "knowledge_transfer_probability": (
+                self.cfg.knowledge.transfer_probability
+                if self.cfg.knowledge.enabled else 0.0
+            ),
+            "knowledge_transfer_period": (
+                self.cfg.knowledge.transfer_period if self.cfg.knowledge.enabled else None
+            ),
+            "knowledge_cultural_metrics_require_committed_transfer": True,
             "knowledge_policy_influence": self.cfg.knowledge.policy_influence_enabled,
             "knowledge_policy_residual_schema": (
                 self.cfg.knowledge.policy_residual_schema
@@ -1615,7 +1626,11 @@ class Simulation:
                 "knowledge_transfer_effective_enabled": (
                     self.cfg.knowledge.enabled
                     and not self.knowledge_transfer_ablation_enabled
+                    and self.cfg.knowledge.transfer_probability > 0.0
                 ),
+                "knowledge_transfer_trigger_schema": "signal-action-partner-v1",
+                "knowledge_transfer_probability": self.cfg.knowledge.transfer_probability,
+                "knowledge_cultural_metrics_require_committed_transfer": True,
                 "resource_affinity_ablation_enabled": (
                     self.resource_affinity_ablation_enabled
                 ),
@@ -3791,11 +3806,21 @@ class Simulation:
                     "knowledge_sender_energy_step": stats.knowledge.sender_energy,
                     "knowledge_receiver_energy_step": stats.knowledge.receiver_energy,
                     "knowledge_total_energy_cost_step": stats.knowledge.total_energy_cost,
+                    "knowledge_transfer_proposals_step": (
+                        stats.knowledge.transfer_attempts + stats.knowledge.attention_rejected
+                    ),
                     "knowledge_transfer_attempts_step": stats.knowledge.transfer_attempts,
                     "knowledge_transfer_delivered_step": stats.knowledge.transfer_delivered,
                     "knowledge_transfer_lost_step": stats.knowledge.transfer_lost,
                     "knowledge_transfer_corrupted_step": stats.knowledge.transfer_corrupted,
                     "knowledge_transfer_committed_step": stats.knowledge.transfer_committed,
+                    "knowledge_transfer_committed_bytes_step": stats.knowledge.transfer_committed_bytes,
+                    "knowledge_transfer_same_lineage_committed_step": stats.knowledge.transfer_same_lineage_committed,
+                    "knowledge_transfer_cross_lineage_committed_step": stats.knowledge.transfer_cross_lineage_committed,
+                    "knowledge_transfer_unknown_lineage_committed_step": stats.knowledge.transfer_unknown_lineage_committed,
+                    "knowledge_transfer_same_group_committed_step": stats.knowledge.transfer_same_group_committed,
+                    "knowledge_transfer_cross_group_committed_step": stats.knowledge.transfer_cross_group_committed,
+                    "knowledge_transfer_unknown_group_committed_step": stats.knowledge.transfer_unknown_group_committed,
                     "knowledge_transfer_duplicate_rejected_step": stats.knowledge.transfer_duplicate_rejected,
                     "knowledge_transfer_capacity_rejected_step": stats.knowledge.transfer_capacity_rejected,
                     "knowledge_transfer_energy_rejected_step": stats.knowledge.transfer_energy_rejected,
@@ -3919,8 +3944,19 @@ class Simulation:
                     "knowledge_maintenance_energy_total": float(knowledge_summary["maintenance_energy_total"]),
                     "knowledge_sender_energy_total": float(knowledge_summary["sender_energy_total"]),
                     "knowledge_receiver_energy_total": float(knowledge_summary["receiver_energy_total"]),
+                    "knowledge_transfer_proposals_total": int(
+                        knowledge_summary["transfer_attempts_total"]
+                        + knowledge_summary["attention_rejected_total"]
+                    ),
                     "knowledge_transfer_attempts_total": int(knowledge_summary["transfer_attempts_total"]),
                     "knowledge_transfer_committed_total": int(knowledge_summary["transfer_committed_total"]),
+                    "knowledge_transfer_committed_bytes_total": int(knowledge_summary["transfer_committed_bytes_total"]),
+                    "knowledge_transfer_same_lineage_committed_total": int(knowledge_summary["transfer_same_lineage_committed_total"]),
+                    "knowledge_transfer_cross_lineage_committed_total": int(knowledge_summary["transfer_cross_lineage_committed_total"]),
+                    "knowledge_transfer_unknown_lineage_committed_total": int(knowledge_summary["transfer_unknown_lineage_committed_total"]),
+                    "knowledge_transfer_same_group_committed_total": int(knowledge_summary["transfer_same_group_committed_total"]),
+                    "knowledge_transfer_cross_group_committed_total": int(knowledge_summary["transfer_cross_group_committed_total"]),
+                    "knowledge_transfer_unknown_group_committed_total": int(knowledge_summary["transfer_unknown_group_committed_total"]),
                     "knowledge_transfer_duplicate_rejected_total": int(knowledge_summary["transfer_duplicate_rejected_total"]),
                     "knowledge_transfer_capacity_rejected_total": int(knowledge_summary["transfer_capacity_rejected_total"]),
                     "knowledge_transfer_energy_rejected_total": int(knowledge_summary["transfer_energy_rejected_total"]),

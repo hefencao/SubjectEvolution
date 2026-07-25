@@ -137,6 +137,47 @@ def _resolved_config_context(path: str | Path) -> dict[str, Any]:
     }
 
 
+def _phase_stratified_transfer(records: list[dict[str, Any]]) -> dict[str, dict[str, float | int]]:
+    if not records:
+        return {}
+    alive = np.asarray([float(record.get("alive", 0.0)) for record in records])
+    net = np.asarray([
+        float(record.get("births_window", 0.0)) - float(record.get("deaths_window", 0.0))
+        for record in records
+    ])
+    committed = np.asarray([
+        float(record.get("knowledge_transfer_committed_window", math.nan))
+        for record in records
+    ])
+    attempts = np.asarray([
+        float(record.get("knowledge_transfer_attempts_window", math.nan))
+        for record in records
+    ])
+    low = float(np.nanquantile(alive, 0.25))
+    high = float(np.nanquantile(alive, 0.75))
+    masks = {
+        "rise": net > 0.0,
+        "decline": net < 0.0,
+        "peak": alive >= high,
+        "trough": alive <= low,
+    }
+    result: dict[str, dict[str, float | int]] = {}
+    for phase, mask in masks.items():
+        valid = mask & np.isfinite(committed) & np.isfinite(attempts)
+        if not np.any(valid):
+            result[phase] = {"windows": 0, "attempts": 0, "committed": 0, "commit_rate": 0.0}
+            continue
+        attempt_total = int(round(float(np.sum(attempts[valid]))))
+        committed_total = int(round(float(np.sum(committed[valid]))))
+        result[phase] = {
+            "windows": int(np.count_nonzero(valid)),
+            "attempts": attempt_total,
+            "committed": committed_total,
+            "commit_rate": float(committed_total / attempt_total if attempt_total else 0.0),
+        }
+    return result
+
+
 def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, Any]:
     if not records:
         raise ValueError(f"{path} contains no records")
@@ -179,6 +220,25 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
             knowledge_effective_roots, effective_lineages
         ),
     }
+    transfer_window = _array(records, "knowledge_transfer_committed_window")
+    transfer_cross_lineage_window = _array(
+        records, "knowledge_transfer_cross_lineage_committed_window"
+    )
+    transferred_roots = _array(records, "knowledge_effective_transferred_roots")
+    transfer_correlations = {
+        "committed_transfer_vs_effective_transferred_roots": (
+            _pearson(transfer_window, transferred_roots)
+            if np.count_nonzero(np.isfinite(transfer_window)) >= MIN_CORRELATION_SAMPLES
+            else None
+        ),
+        "cross_lineage_transfer_vs_lineage_group_cohesion": (
+            _pearson(transfer_cross_lineage_window, cohesion)
+            if np.count_nonzero(np.isfinite(transfer_cross_lineage_window))
+            >= MIN_CORRELATION_SAMPLES
+            else None
+        ),
+    }
+
     first_difference = {
         "delta_mortality_vs_delta_cohesion": _pearson(
             np.diff(mortality), np.diff(cohesion)
@@ -215,16 +275,30 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
     }
     lag_correlations = _cross_lag_correlations(mortality, cohesion, max_lag=3)
     config_context = _resolved_config_context(path)
+    transfer_proposals = int(final.get("knowledge_transfer_proposals_total", 0))
+    transfer_attempts = int(final.get("knowledge_transfer_attempts_total", 0))
     transfer_committed = int(final.get("knowledge_transfer_committed_total", 0))
+    transfer_bytes = int(final.get("knowledge_transfer_committed_bytes_total", 0))
     transfer_probability = config_context.get("knowledge_transfer_probability")
-    cultural_spread_interpretable = transfer_committed > 0 or (
-        isinstance(transfer_probability, (int, float)) and transfer_probability > 0.0
-    )
+    cultural_spread_interpretable = transfer_committed > 0
     warnings: list[str] = []
-    if not cultural_spread_interpretable:
+    if transfer_committed <= 0:
+        if isinstance(transfer_probability, (int, float)) and transfer_probability > 0.0:
+            warnings.append(
+                "Knowledge transfer was configured but no committed transfer is present in "
+                "evolution_progress. For v0.17 and earlier this can mean the progress schema "
+                "omitted cumulative transfer fields; cultural-spread metrics are not identifiable "
+                "from this file alone."
+            )
+        else:
+            warnings.append(
+                "No committed knowledge transfer was detected; root-content spread metrics "
+                "describe private experience creation, not cultural transmission."
+            )
+    if transfer_attempts > 0 and transfer_committed == 0:
         warnings.append(
-            "No committed or configured knowledge transfer was detected; root-content "
-            "spread metrics describe mostly private experience creation, not cultural transmission."
+            "Transfer attempts occurred but every proposal was rejected or lost; inspect the "
+            "window rejection counters and knowledge_transfers.csv."
         )
     path_obj = Path(path)
     return {
@@ -282,8 +356,42 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
             if "knowledge_root_genetic_lineage_pair_enrichment" in final
             else None
         ),
+        "knowledge_transfer_proposals_final": transfer_proposals,
+        "knowledge_transfer_attempts_final": transfer_attempts,
         "knowledge_transfer_committed_final": transfer_committed,
+        "knowledge_transfer_committed_bytes_final": transfer_bytes,
+        "knowledge_transfer_commit_rate_after_attention_final": float(
+            transfer_committed / transfer_attempts if transfer_attempts else 0.0
+        ),
+        "knowledge_transfer_commit_rate_per_proposal_final": float(
+            transfer_committed / transfer_proposals if transfer_proposals else 0.0
+        ),
+        "knowledge_transfer_same_lineage_committed_final": int(
+            final.get("knowledge_transfer_same_lineage_committed_total", 0)
+        ),
+        "knowledge_transfer_cross_lineage_committed_final": int(
+            final.get("knowledge_transfer_cross_lineage_committed_total", 0)
+        ),
+        "knowledge_transfer_same_group_committed_final": int(
+            final.get("knowledge_transfer_same_group_committed_total", 0)
+        ),
+        "knowledge_transfer_cross_group_committed_final": int(
+            final.get("knowledge_transfer_cross_group_committed_total", 0)
+        ),
+        "knowledge_active_transferred_root_count_final": int(
+            final.get("knowledge_active_transferred_root_count", 0)
+        ),
+        "knowledge_effective_transferred_roots_final": float(
+            final.get("knowledge_effective_transferred_roots", 0.0)
+        ),
+        "knowledge_largest_transferred_root_holder_fraction_final": float(
+            final.get("knowledge_largest_transferred_root_holder_fraction", 0.0)
+        ),
         "knowledge_cultural_spread_interpretable": cultural_spread_interpretable,
+        "knowledge_transfer_phase_summary": _phase_stratified_transfer(records),
+        "correlations_cultural_transfer": (
+            transfer_correlations if cultural_spread_interpretable else {}
+        ),
         "config_context": config_context,
         "trends_per_1000_ticks": {
             "alive": _slope_per_1000_ticks(ticks, alive),
@@ -356,6 +464,8 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         "strategy_effective_dimensions_final",
         "window_action_entropy_final",
         "benefit_boundary_cohesion_final",
+        "knowledge_transfer_committed_final",
+        "knowledge_effective_transferred_roots_final",
     )
     aggregate = {
         key: _aggregate_numeric([run[key] for run in runs]) for key in endpoint_keys
@@ -367,7 +477,7 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         if value["available_runs"] >= 3 and value["same_nonzero_sign"]
     ]
     return {
-        "schema": "multi-seed-long-run-analysis-v2",
+        "schema": "multi-seed-long-run-analysis-v3",
         "run_count": len(runs),
         "runs": runs,
         "endpoint_aggregate": aggregate,
@@ -394,13 +504,13 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "> This report is observational. Raw correlations, first differences and partial correlations do not identify an in-world causal mechanism.",
         "",
-        "| Run | Final tick | Alive | Effective lineages | Largest lineage | Strategy dims | Action entropy | Cohesion | Affinity dims | Pair enrichment |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Run | Final tick | Alive | Effective lineages | Largest lineage | Strategy dims | Action entropy | Cohesion | Affinity dims | Transfer commits | Transferred roots |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for run in report["runs"]:
         lines.append(
             "| {name} | {tick} | {alive} | {effective:.4f} | {largest:.4f} | "
-            "{dims:.4f} | {entropy:.4f} | {cohesion:.4f} | {affinity} | {enrichment} |".format(
+            "{dims:.4f} | {entropy:.4f} | {cohesion:.4f} | {affinity} | {commits} | {roots:.4f} |".format(
                 name=run["run_name"],
                 tick=run["final_tick"],
                 alive=run["alive_final"],
@@ -410,7 +520,8 @@ def render_markdown(report: dict[str, Any]) -> str:
                 entropy=run["window_action_entropy_final"],
                 cohesion=run["benefit_boundary_cohesion_final"],
                 affinity=_format(run["resource_affinity_effective_dimensions_final"]),
-                enrichment=_format(run["lineage_group_pair_enrichment_final"]),
+                commits=run["knowledge_transfer_committed_final"],
+                roots=run["knowledge_effective_transferred_roots_final"],
             )
         )
     lines.extend(["", "## Within-run raw observational correlations", ""])
@@ -436,6 +547,33 @@ def render_markdown(report: dict[str, Any]) -> str:
                 "- strongest mortality→cohesion cross-lag: "
                 f"lag `{best['lag_windows']}` windows, r={best['correlation']:.4f}"
             )
+        for warning in run["analysis_warnings"]:
+            lines.append(f"- warning: {warning}")
+        lines.append("")
+    lines.extend(["## Costed cultural transfer", ""])
+    for run in report["runs"]:
+        lines.append(f"### {run['run_name']}")
+        lines.append(
+            f"- proposals / admitted attempts / committed / bytes: "
+            f"{run['knowledge_transfer_proposals_final']} / "
+            f"{run['knowledge_transfer_attempts_final']} / "
+            f"{run['knowledge_transfer_committed_final']} / "
+            f"{run['knowledge_transfer_committed_bytes_final']}"
+        )
+        lines.append(
+            f"- committed cross-lineage / cross-group: "
+            f"{run['knowledge_transfer_cross_lineage_committed_final']} / "
+            f"{run['knowledge_transfer_cross_group_committed_final']}"
+        )
+        lines.append(
+            f"- active/effective transferred roots: "
+            f"{run['knowledge_active_transferred_root_count_final']} / "
+            f"{run['knowledge_effective_transferred_roots_final']:.4f}"
+        )
+        lines.append(
+            f"- cultural-spread interpretable: "
+            f"{run['knowledge_cultural_spread_interpretable']}"
+        )
         for warning in run["analysis_warnings"]:
             lines.append(f"- warning: {warning}")
         lines.append("")

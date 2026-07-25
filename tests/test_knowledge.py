@@ -77,8 +77,17 @@ class KnowledgeK1Tests(unittest.TestCase):
             self.assertTrue(bool(plan.delivered[0]))
             self.assertTrue(bool(plan.corrupted[0]))
             energy = np.asarray([2.0, 2.0], dtype=np.float32)
-            stats = system.commit_transfers(plan, energy=energy, alive=alive)
+            stats = system.commit_transfers(
+                plan,
+                energy=energy,
+                alive=alive,
+                lineage_subject_ids=np.asarray([1001, 2002], dtype=np.uint64),
+                group_ids=np.asarray([10, 20], dtype=np.uint64),
+            )
             self.assertEqual(stats.transfer_committed, 1)
+            self.assertEqual(stats.transfer_committed_bytes, 64)
+            self.assertEqual(stats.transfer_cross_lineage_committed, 1)
+            self.assertEqual(stats.transfer_cross_group_committed, 1)
             self.assertEqual(stats.transfer_corrupted, 1)
             self.assertEqual(system.catalog.size, 2)
             receiver_rows = system.arena.rows_for_holder(202)
@@ -87,6 +96,17 @@ class KnowledgeK1Tests(unittest.TestCase):
             self.assertEqual(int(system.catalog.parent_content_id[variant - 1]), content)
             self.assertAlmostEqual(float(energy[0]), 2.0 - (0.01 + 64 * 0.001), places=6)
             self.assertAlmostEqual(float(energy[1]), 2.0 - 64 * 0.0005, places=6)
+            system.accumulate(stats)
+            diagnostics = system.long_run_diagnostics(
+                alive=alive,
+                primary_subject_ids=subjects,
+                lineage_ids=np.asarray([1001, 2002], dtype=np.uint64),
+                group_ids=np.asarray([10, 20], dtype=np.uint64),
+            )
+            self.assertEqual(diagnostics["knowledge_transfer_committed_total"], 1)
+            self.assertEqual(diagnostics["knowledge_transfer_cross_lineage_committed_total"], 1)
+            self.assertEqual(diagnostics["knowledge_active_transferred_copy_count"], 1)
+            self.assertTrue(diagnostics["knowledge_cultural_spread_interpretable"])
             system.close()
 
     def test_capacity_eviction_uses_oldest_copy_only(self) -> None:

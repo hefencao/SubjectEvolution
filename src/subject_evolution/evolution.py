@@ -529,6 +529,29 @@ def actual_context_policy_diagnostics(
     }
 
 
+KNOWLEDGE_TRANSFER_TOTAL_KEYS = (
+    "knowledge_transfer_proposals_total",
+    "knowledge_transfer_attempts_total",
+    "knowledge_transfer_delivered_total",
+    "knowledge_transfer_lost_total",
+    "knowledge_transfer_corrupted_total",
+    "knowledge_transfer_committed_total",
+    "knowledge_transfer_committed_bytes_total",
+    "knowledge_transfer_duplicate_rejected_total",
+    "knowledge_transfer_capacity_rejected_total",
+    "knowledge_transfer_energy_rejected_total",
+    "knowledge_transfer_attention_rejected_total",
+    "knowledge_transfer_same_lineage_committed_total",
+    "knowledge_transfer_cross_lineage_committed_total",
+    "knowledge_transfer_unknown_lineage_committed_total",
+    "knowledge_transfer_same_group_committed_total",
+    "knowledge_transfer_cross_group_committed_total",
+    "knowledge_transfer_unknown_group_committed_total",
+    "knowledge_transfer_sender_energy_total",
+    "knowledge_transfer_receiver_energy_total",
+)
+
+
 class EvolutionProgressTracker:
     """Write independent, fixed-cadence evolution diagnostics as JSONL."""
 
@@ -595,6 +618,7 @@ class EvolutionProgressTracker:
         self.previous_reproduction_rejected_capacity = 0
         self.previous_reproduction_rejected_resource = 0
         self.previous_reproduction_rejected_other = 0
+        self.previous_knowledge_transfer_totals: dict[str, float] = {}
         width = len(self.morphology_trait_indices)
         self.reproduction_eligible_trait_sum = np.zeros(width, dtype=np.float64)
         self.reproduction_parent_trait_sum = np.zeros(width, dtype=np.float64)
@@ -623,6 +647,8 @@ class EvolutionProgressTracker:
         """Restore progress counters while retaining this run's output path."""
         for name, value in state.items():
             setattr(self, name, copy.deepcopy(value))
+        if not hasattr(self, "previous_knowledge_transfer_totals"):
+            self.previous_knowledge_transfer_totals = {}
         self._file = None
 
     def clone(self, output_dir: str | Path) -> "EvolutionProgressTracker":
@@ -639,6 +665,9 @@ class EvolutionProgressTracker:
         )
         branch.previous_harvested_resources = (
             self.previous_harvested_resources.copy()
+        )
+        branch.previous_knowledge_transfer_totals = dict(
+            self.previous_knowledge_transfer_totals
         )
         for name in (
             "reproduction_eligible_trait_sum",
@@ -949,7 +978,21 @@ class EvolutionProgressTracker:
                     ).tolist(),
                 }
             )
-            long_run_metrics.update(knowledge_metrics or {})
+            knowledge_payload = dict(knowledge_metrics or {})
+            for total_key in KNOWLEDGE_TRANSFER_TOTAL_KEYS:
+                if total_key not in knowledge_payload:
+                    continue
+                current = float(knowledge_payload[total_key])
+                previous = float(
+                    self.previous_knowledge_transfer_totals.get(total_key, 0.0)
+                )
+                window_key = total_key.removesuffix("_total") + "_window"
+                delta = current - previous
+                if total_key.endswith("_energy_total"):
+                    knowledge_payload[window_key] = float(delta)
+                else:
+                    knowledge_payload[window_key] = int(round(delta))
+            long_run_metrics.update(knowledge_payload)
         record: dict[str, Any] = {
             "tick": int(tick),
             "scheduled": bool(scheduled),
@@ -1097,6 +1140,12 @@ class EvolutionProgressTracker:
             reproduction_rejected_other_total
         )
         if self.long_run_diagnostics_enabled:
+            if knowledge_metrics:
+                for total_key in KNOWLEDGE_TRANSFER_TOTAL_KEYS:
+                    if total_key in knowledge_metrics:
+                        self.previous_knowledge_transfer_totals[total_key] = float(
+                            knowledge_metrics[total_key]
+                        )
             self.previous_reproduction_eligible_trait_sum = (
                 self.reproduction_eligible_trait_sum.copy()
             )

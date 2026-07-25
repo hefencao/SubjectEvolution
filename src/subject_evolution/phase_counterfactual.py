@@ -44,6 +44,8 @@ class PhaseCheckpoint:
     deaths_window: int
     net_growth_window: int
     mortality_pressure_window: float
+    knowledge_transfer_committed_total: int
+    disable_transfer_identifiable: bool
 
 
 @dataclass(frozen=True)
@@ -262,6 +264,12 @@ def build_phase_plan(
                 deaths_window=deaths,
                 net_growth_window=births - deaths,
                 mortality_pressure_window=mortality,
+                knowledge_transfer_committed_total=int(
+                    nearest_record.get("knowledge_transfer_committed_total", 0)
+                ),
+                disable_transfer_identifiable=(
+                    int(nearest_record.get("knowledge_transfer_committed_total", 0)) > 0
+                ),
             )
         )
     cutoff = (
@@ -297,15 +305,17 @@ def render_plan_markdown(plan: PhasePlan) -> str:
         lines.extend([f"> Warning: {plan.phase_selection_warning}", ""])
     lines.extend(
         [
-            "| Phase | Target tick | Checkpoint | Alive | Births | Deaths | Net growth | Mortality pressure |",
-            "|---|---:|---:|---:|---:|---:|---:|---:|",
+            "| Phase | Target tick | Checkpoint | Alive | Births | Deaths | Net growth | Mortality pressure | Prior transfer commits | Transfer-off identifiable |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---|",
         ]
     )
     for item in plan.phases:
         lines.append(
             f"| {item.phase} | {item.target_tick} | {item.checkpoint_tick} | "
             f"{item.alive} | {item.births_window} | {item.deaths_window} | "
-            f"{item.net_growth_window} | {item.mortality_pressure_window:.4f} |"
+            f"{item.net_growth_window} | {item.mortality_pressure_window:.4f} | "
+            f"{item.knowledge_transfer_committed_total} | "
+            f"{item.disable_transfer_identifiable} |"
         )
     lines.extend(["", "## Scientific interventions", ""])
     lines.extend(f"- `{name}`" for name in plan.interventions)
@@ -386,6 +396,25 @@ def execute_phase_plan(
         }
         interventions_payload: list[dict[str, Any]] = []
         for intervention in plan.interventions:
+            identifiable = not (
+                intervention == "disable-knowledge-transfer"
+                and not phase.disable_transfer_identifiable
+            )
+            if not identifiable:
+                interventions_payload.append(
+                    {
+                        "intervention": intervention,
+                        "identifiable": False,
+                        "identifiability_reason": (
+                            "No committed knowledge transfer existed before the selected "
+                            "checkpoint; disabling future transfer cannot identify the effect "
+                            "of accumulated cultural state at this phase."
+                        ),
+                        "result": None,
+                        "delta": {},
+                    }
+                )
+                continue
             branch = _run_branch(
                 phase.checkpoint_path,
                 phase_dir / intervention,
@@ -403,7 +432,13 @@ def execute_phase_plan(
                 key: branch_numeric[key] - baseline_numeric[key] for key in common
             }
             interventions_payload.append(
-                {"intervention": intervention, "result": branch, "delta": delta}
+                {
+                    "intervention": intervention,
+                    "identifiable": True,
+                    "identifiability_reason": None,
+                    "result": branch,
+                    "delta": delta,
+                }
             )
         phase_results.append(
             {
@@ -452,6 +487,12 @@ def render_results_markdown(report: dict[str, Any]) -> str:
     )
     for phase in report["phase_results"]:
         for branch in phase["interventions"]:
+            if not branch.get("identifiable", True):
+                lines.append(
+                    f"| {phase['phase']['phase']} | {branch['intervention']} | "
+                    "not identifiable | — | — | — | — |"
+                )
+                continue
             delta = branch["delta"]
             values = [delta.get(key) for key in keys]
             formatted = ["—" if value is None else f"{value:+.5f}" for value in values]
