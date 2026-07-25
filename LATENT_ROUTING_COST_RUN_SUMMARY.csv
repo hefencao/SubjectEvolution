@@ -1,7 +1,0 @@
-condition,run_dir,tick,alive,births_total,deaths_total,mean_energy,knowledge_policy_changed_actions_total,knowledge_routing_requested_energy_total,knowledge_routing_committed_energy_total,knowledge_routing_rejected_energy_total,knowledge_routing_requested_entities_total,knowledge_routing_committed_entities_total,knowledge_routing_rejected_entities_total,knowledge_routing_accepted_actions_total,knowledge_routing_rejected_actions_total,knowledge_routing_mac_count_total,knowledge_routing_latent_dimensions_total,knowledge_routing_active_hidden_units_total,knowledge_routing_cost_induced_action_changes_total
-L1 no-cost,l1_nocost_a,30,604,104,0,1.9950215816497803,2654,0.0,0.0,0.0,0,0,0,0,0,0,0,0,0
-L1 costed,l1_costed_a,30,604,104,0,1.9935989379882812,2653,0.8616167200000001,0.8616167200000001,0.0,14647,14647,0,117136,0,15261376,844484,0,0
-L2 no-cost,l2_nocost_a,30,605,105,0,1.9643828868865967,2545,0.0,0.0,0.0,0,0,0,0,0,0,0,0,0
-L2 same-unit costed,l2_costed_a,30,604,104,0,1.9671880006790161,2541,1.1003202099999998,1.1003202099999998,0.0,14616,14616,0,116848,0,21029896,881400,481907,0
-L2 budget-matched,l2_budget_matched_a,30,604,104,0,1.9675816297531128,2540,0.8615408695999998,0.8615408695999998,0.0,14615,14615,0,116839,0,21027504,881304,481850,0
-L2 rejection stress,l2_budget_rejection,10,57,0,7,1.0921411514282227,3,976.0,74.0,902.0,488,37,451,296,3606,412280,17460,9395,68

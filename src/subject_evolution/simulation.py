@@ -84,6 +84,8 @@ from .lifecycle import (
 )
 from .metrics import MetricsWriter
 from .niches import (
+    AFFINITY_SCALE,
+    RESOURCE_CHANNELS,
     active_morphology_traits,
     apply_harvest_effects,
     policy_resource_view,
@@ -670,6 +672,9 @@ class Simulation:
         self.social_connections_enabled = True
         self.direct_messages_enabled = True
         self.freeze_genotype = False
+        self.resource_affinity_ablation_enabled = False
+        self.knowledge_policy_ablation_enabled = False
+        self.knowledge_transfer_ablation_enabled = False
         self.intervention_history: list[dict[str, object]] = []
         self.checkpoint_lineage: list[dict[str, object]] = []
         # Interactive ``step()`` calls keep host field mirrors current.  A
@@ -1047,6 +1052,15 @@ class Simulation:
             "social_connections_enabled": bool(self.social_connections_enabled),
             "direct_messages_enabled": bool(self.direct_messages_enabled),
             "freeze_genotype": bool(self.freeze_genotype),
+            "resource_affinity_ablation_enabled": bool(
+                self.resource_affinity_ablation_enabled
+            ),
+            "knowledge_policy_ablation_enabled": bool(
+                self.knowledge_policy_ablation_enabled
+            ),
+            "knowledge_transfer_ablation_enabled": bool(
+                self.knowledge_transfer_ablation_enabled
+            ),
             "intervention_history": copy.deepcopy(self.intervention_history),
         }
 
@@ -1204,6 +1218,15 @@ class Simulation:
         self.social_connections_enabled = bool(state["social_connections_enabled"])
         self.direct_messages_enabled = bool(state["direct_messages_enabled"])
         self.freeze_genotype = bool(state["freeze_genotype"])
+        self.resource_affinity_ablation_enabled = bool(
+            state.get("resource_affinity_ablation_enabled", False)
+        )
+        self.knowledge_policy_ablation_enabled = bool(
+            state.get("knowledge_policy_ablation_enabled", False)
+        )
+        self.knowledge_transfer_ablation_enabled = bool(
+            state.get("knowledge_transfer_ablation_enabled", False)
+        )
         self.intervention_history = copy.deepcopy(state["intervention_history"])
         self._defer_gpu_field_sync = False
         if self.gpu_runtime is not None:
@@ -1353,6 +1376,15 @@ class Simulation:
         branch.social_connections_enabled = self.social_connections_enabled
         branch.direct_messages_enabled = self.direct_messages_enabled
         branch.freeze_genotype = self.freeze_genotype
+        branch.resource_affinity_ablation_enabled = (
+            self.resource_affinity_ablation_enabled
+        )
+        branch.knowledge_policy_ablation_enabled = (
+            self.knowledge_policy_ablation_enabled
+        )
+        branch.knowledge_transfer_ablation_enabled = (
+            self.knowledge_transfer_ablation_enabled
+        )
         branch.intervention_history = copy.deepcopy(self.intervention_history)
         branch.checkpoint_lineage = copy.deepcopy(self.checkpoint_lineage)
         branch._write_run_manifest(branch.requested_backend)
@@ -1408,6 +1440,45 @@ class Simulation:
             canonical = "bypass-sparse-selection"
             self.knowledge.sparse_selection_ablation_enabled = True
             details = {"authority": "ephemeral-selector-only", "knowledge_copies_removed": 0}
+        elif normalized == "neutralize-resource-affinity":
+            if (
+                self.cfg.entities.resource_affinity_schema
+                != "normalized-four-resource-affinity-v1"
+            ):
+                raise ValueError(
+                    "neutralize-resource-affinity requires inherited resource affinity"
+                )
+            canonical = "neutralize-resource-affinity"
+            self.resource_affinity_ablation_enabled = True
+            details = {
+                "effective_affinity_q": [AFFINITY_SCALE] * RESOURCE_CHANNELS,
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+            }
+        elif normalized == "disable-knowledge-policy":
+            if not self.cfg.knowledge.policy_influence_enabled:
+                raise ValueError(
+                    "disable-knowledge-policy requires knowledge policy influence"
+                )
+            canonical = "disable-knowledge-policy"
+            self.knowledge_policy_ablation_enabled = True
+            details = {
+                "knowledge_copies_removed": 0,
+                "knowledge_learning_enabled": bool(
+                    self.cfg.knowledge.learning_enabled
+                ),
+            }
+        elif normalized == "disable-knowledge-transfer":
+            if not self.cfg.knowledge.enabled:
+                raise ValueError(
+                    "disable-knowledge-transfer requires dynamic knowledge"
+                )
+            canonical = "disable-knowledge-transfer"
+            self.knowledge_transfer_ablation_enabled = True
+            details = {
+                "existing_knowledge_copies_removed": 0,
+                "future_transfer_disabled": True,
+            }
         elif normalized == "freeze-genotype":
             canonical = "freeze-genotype"
             self.freeze_genotype = True
@@ -1531,6 +1602,23 @@ class Simulation:
                 ),
                 "knowledge_learning_enabled": self.cfg.knowledge.learning_enabled,
                 "knowledge_policy_influence": self.cfg.knowledge.policy_influence_enabled,
+                "knowledge_policy_ablation_enabled": (
+                    self.knowledge_policy_ablation_enabled
+                ),
+                "knowledge_policy_effective_enabled": (
+                    self.cfg.knowledge.policy_influence_enabled
+                    and not self.knowledge_policy_ablation_enabled
+                ),
+                "knowledge_transfer_ablation_enabled": (
+                    self.knowledge_transfer_ablation_enabled
+                ),
+                "knowledge_transfer_effective_enabled": (
+                    self.cfg.knowledge.enabled
+                    and not self.knowledge_transfer_ablation_enabled
+                ),
+                "resource_affinity_ablation_enabled": (
+                    self.resource_affinity_ablation_enabled
+                ),
                 "knowledge_policy_residual_schema": (
                     self.cfg.knowledge.policy_residual_schema
                     if self.cfg.knowledge.policy_influence_enabled
@@ -2179,6 +2267,7 @@ class Simulation:
         working_memory_state_features: np.ndarray | None = None
         working_memory_actual_outcomes: np.ndarray | None = None
         working_memory_update_result: WorkingMemoryUpdateResult | None = None
+        effective_resource_affinity_q: np.ndarray | None = None
         policy_energy = ent.energy
         if self.gpu_runtime is None:
             phase_started = time.perf_counter()
@@ -2202,8 +2291,20 @@ class Simulation:
                 cfg.policy.partner_samples,
             )
             local_resources = self.environment.cell_values(cells)
+            effective_resource_affinity_q = (
+                np.full(
+                    (ent.alive.size, RESOURCE_CHANNELS),
+                    AFFINITY_SCALE,
+                    dtype=np.int32,
+                )
+                if self.resource_affinity_ablation_enabled
+                else resource_affinity_quantized(ent.genotype, cfg)
+            )
             policy_local_resources = policy_resource_view(
-                local_resources, ent.genotype[active], cfg
+                local_resources,
+                ent.genotype[active],
+                cfg,
+                resource_affinity_q=effective_resource_affinity_q[active],
             )
             info = self.information.observe(
                 active=active,
@@ -2219,7 +2320,7 @@ class Simulation:
             resource_gradient, danger_gradient = self.environment.gradients_for_entities(
                 self.spatial.entity_cells,
                 ent.alive.size,
-                resource_affinity_quantized(ent.genotype, cfg),
+                effective_resource_affinity_q,
             )
             if cfg.knowledge.enabled and cfg.knowledge.learning_enabled:
                 knowledge_context_keys = encode_local_context(
@@ -2230,23 +2331,37 @@ class Simulation:
                     self.social.group_id[active] != 0,
                     max_energy=cfg.entities.max_energy,
                 )
-                if cfg.knowledge.policy_influence_enabled:
+                router_state = None
+                if cfg.knowledge.working_memory_enabled:
+                    router_state = latent_router_state_features(
+                        energy=ent.energy[active],
+                        integrity=ent.integrity[active],
+                        fertility=ent.fertility[active],
+                        local_resource=policy_local_resources[:, 0],
+                        max_energy=cfg.entities.max_energy,
+                        resource_capacity=cfg.environment.resource_capacity[0],
+                    )
+                    working_memory_state_features = np.asarray(
+                        router_state, dtype=np.float32
+                    ).copy()
+                if (
+                    cfg.knowledge.policy_influence_enabled
+                    and not self.knowledge_policy_ablation_enabled
+                ):
                     active_genotype = ent.genotype[active]
                     if cfg.knowledge.latent_policy_enabled:
                         if self.knowledge.latent_store is None:
                             raise RuntimeError("latent policy is enabled without a latent content store")
                         self.knowledge.latent_store.ensure_catalog(self.knowledge.catalog)
-                        router_state = latent_router_state_features(
-                            energy=ent.energy[active],
-                            integrity=ent.integrity[active],
-                            fertility=ent.fertility[active],
-                            local_resource=policy_local_resources[:, 0],
-                            max_energy=cfg.entities.max_energy,
-                            resource_capacity=cfg.environment.resource_capacity[0],
-                        )
-                        working_memory_state_features = np.asarray(
-                            router_state, dtype=np.float32
-                        ).copy()
+                        if router_state is None:
+                            router_state = latent_router_state_features(
+                                energy=ent.energy[active],
+                                integrity=ent.integrity[active],
+                                fertility=ent.fertility[active],
+                                local_resource=policy_local_resources[:, 0],
+                                max_energy=cfg.entities.max_energy,
+                                resource_capacity=cfg.environment.resource_capacity[0],
+                            )
                         knowledge_policy_plan = build_latent_knowledge_policy_plan(
                             self.knowledge.observation,
                             self.knowledge.latent_store,
@@ -2413,6 +2528,12 @@ class Simulation:
                 ),
                 entity_state_version=self.entity_device_version,
                 knowledge=self.knowledge if cfg.knowledge.enabled else None,
+                resource_affinity_ablation_enabled=(
+                    self.resource_affinity_ablation_enabled
+                ),
+                knowledge_policy_ablation_enabled=(
+                    self.knowledge_policy_ablation_enabled
+                ),
             )
             active = prepared.active
             if active.size == 0:
@@ -2429,8 +2550,20 @@ class Simulation:
                 return stats
             cells = prepared.cells
             local_resources = prepared.local_resources
+            effective_resource_affinity_q = (
+                np.full(
+                    (ent.alive.size, RESOURCE_CHANNELS),
+                    AFFINITY_SCALE,
+                    dtype=np.int32,
+                )
+                if self.resource_affinity_ablation_enabled
+                else resource_affinity_quantized(ent.genotype, cfg)
+            )
             policy_local_resources = policy_resource_view(
-                local_resources, ent.genotype[active], cfg
+                local_resources,
+                ent.genotype[active],
+                cfg,
+                resource_affinity_q=effective_resource_affinity_q[active],
             )
             resource_gradient = prepared.resource_gradient
             info = prepared.information
@@ -2763,8 +2896,13 @@ class Simulation:
                 ent.harvested_energy_total[harvesters] += gathered[:, 0]
                 stats.harvested_energy = float(gathered[:, 0].sum())
             else:
+                if effective_resource_affinity_q is None:
+                    raise RuntimeError("effective resource affinity was not prepared")
                 _, harvest_body_delta = apply_harvest_effects(
-                    gathered, ent.genotype[harvesters], cfg
+                    gathered,
+                    ent.genotype[harvesters],
+                    cfg,
+                    resource_affinity_q=effective_resource_affinity_q[harvesters],
                 )
                 ent.energy[harvesters] = np.minimum(
                     ent.energy[harvesters] + harvest_body_delta[:, 0],
@@ -2804,7 +2942,10 @@ class Simulation:
             )
             stats.signals = int(signal_actors.size)
         self._flush_signal_emissions(signal_plan)
-        if self.cfg.knowledge.enabled:
+        if (
+            self.cfg.knowledge.enabled
+            and not self.knowledge_transfer_ablation_enabled
+        ):
             transfer_plan = self.knowledge.plan_transfers(
                 sender_entity_indices=(
                     intents.carrier_index[signal_rows]
@@ -3452,6 +3593,28 @@ class Simulation:
             "move_social_fraction": stats.move_social_fraction,
             "environment_schema": self.cfg.environment.schema,
             "resource_affinity_schema": self.cfg.entities.resource_affinity_schema,
+            "resource_affinity_ablation_enabled": int(
+                self.resource_affinity_ablation_enabled
+            ),
+            "resource_affinity_effective_schema": (
+                "uniform-four-resource-affinity-ablation-v1"
+                if self.resource_affinity_ablation_enabled
+                else self.cfg.entities.resource_affinity_schema
+            ),
+            "knowledge_policy_ablation_enabled": int(
+                self.knowledge_policy_ablation_enabled
+            ),
+            "knowledge_policy_effective_enabled": int(
+                self.cfg.knowledge.policy_influence_enabled
+                and not self.knowledge_policy_ablation_enabled
+            ),
+            "knowledge_transfer_ablation_enabled": int(
+                self.knowledge_transfer_ablation_enabled
+            ),
+            "knowledge_transfer_effective_enabled": int(
+                self.cfg.knowledge.enabled
+                and not self.knowledge_transfer_ablation_enabled
+            ),
             "active_morphology_gene_count": int(
                 affinity_metrics["active_morphology_gene_count"]
             ),

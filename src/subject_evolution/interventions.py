@@ -72,6 +72,24 @@ INTERVENTIONS = (
         aliases=("selection-off", "topk-off"),
     ),
     InterventionSpec(
+        "neutralize-resource-affinity",
+        InterventionKind.MODIFY_RULES,
+        "inherited-four-resource-affinity-expression",
+        aliases=("resource-affinity-off", "affinity-off"),
+    ),
+    InterventionSpec(
+        "disable-knowledge-policy",
+        InterventionKind.MODIFY_RULES,
+        "knowledge-policy-residual-publication",
+        aliases=("knowledge-residual-off", "knowledge-policy-off"),
+    ),
+    InterventionSpec(
+        "disable-knowledge-transfer",
+        InterventionKind.MODIFY_RULES,
+        "future-knowledge-copy-transfer",
+        aliases=("knowledge-transfer-off", "transfer-off"),
+    ),
+    InterventionSpec(
         "freeze-genotype",
         InterventionKind.MODIFY_RULES,
         "inheritance-mutation-rule",

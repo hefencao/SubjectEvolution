@@ -113,8 +113,84 @@ def test_offline_multi_seed_analysis_marks_correlations_observational(tmp_path: 
         paths.append(path)
     report = analyze(paths)
     assert report["run_count"] == 2
-    assert report["schema"] == "multi-seed-long-run-analysis-v1"
+    assert report["schema"] == "multi-seed-long-run-analysis-v2"
+    assert "correlations_first_difference" in report["runs"][0]
+    assert "correlations_partial" in report["runs"][0]
     assert "observational" in render_markdown(report).lower()
+
+
+def test_multi_seed_analysis_distinguishes_raw_trend_from_first_difference(
+    tmp_path: Path,
+) -> None:
+    paths = []
+    for seed in (1, 2, 3):
+        path = tmp_path / f"seed_{seed}" / "evolution_progress.jsonl"
+        path.parent.mkdir()
+        rows = []
+        for index in range(12):
+            tick = (index + 1) * 30
+            # Both series have a shared trend, while their step-to-step changes
+            # alternate independently enough that the raw correlation should be
+            # much stronger than the first-difference correlation.
+            rows.append(
+                {
+                    "tick": tick,
+                    "alive": 100 + index,
+                    "deaths_window": 5 + index + (index % 2),
+                    "mortality_pressure_window": 0.05 + 0.005 * index + 0.002 * (index % 2),
+                    "effective_lineages": 30.0 - index,
+                    "largest_lineage_fraction": 0.05 + index * 0.01,
+                    "strategy_effective_dimensions": 40.0 - index,
+                    "window_action_entropy": 1.9 - index * 0.01,
+                    "benefit_boundary_cohesion": 0.2 + index * 0.02 + 0.01 * ((index + seed) % 3),
+                    "lineage_group_pair_enrichment": 1.0 + index * 0.1,
+                }
+            )
+        path.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
+        paths.append(path)
+    report = analyze(paths)
+    raw = report["runs"][0]["correlations_observational"]
+    diff = report["runs"][0]["correlations_first_difference"]
+    assert abs(raw["mortality_vs_same_window_cohesion"]) > 0.8
+    assert abs(diff["delta_mortality_vs_delta_cohesion"]) < abs(
+        raw["mortality_vs_same_window_cohesion"]
+    )
+    consistency = report["cross_seed_sign_consistency"]
+    assert (
+        consistency[
+            "correlations_observational.strategy_dimensions_vs_action_entropy"
+        ]["available_runs"]
+        == 3
+    )
+
+
+def test_analysis_warns_when_knowledge_transfer_is_not_active(tmp_path: Path) -> None:
+    run_dir = tmp_path / "seed_1"
+    run_dir.mkdir()
+    rows = []
+    for index in range(8):
+        rows.append(
+            {
+                "tick": (index + 1) * 30,
+                "alive": 100,
+                "deaths_window": index + 1,
+                "effective_lineages": 20.0 - index,
+                "largest_lineage_fraction": 0.1 + index * 0.01,
+                "strategy_effective_dimensions": 30.0 - index,
+                "window_action_entropy": 1.8 - index * 0.01,
+                "benefit_boundary_cohesion": 0.2 + index * 0.01,
+                "knowledge_effective_root_contents": 100.0 + index,
+                "knowledge_transfer_committed_total": 0,
+            }
+        )
+    progress = run_dir / "evolution_progress.jsonl"
+    progress.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
+    (run_dir / "resolved_config.json").write_text(
+        json.dumps({"knowledge": {"transfer_probability": 0.0}})
+    )
+    run = analyze([progress])["runs"][0]
+    assert run["knowledge_cultural_spread_interpretable"] is False
+    assert run["analysis_warnings"]
 
 
 def test_multi_seed_parser_rejects_duplicates() -> None:

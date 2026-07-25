@@ -29,7 +29,12 @@ from .knowledge_policy import (
     build_latent_knowledge_policy_plan,
 )
 from .latent_knowledge import latent_router_state_features
-from .niches import policy_resource_view, resource_affinity_quantized
+from .niches import (
+    AFFINITY_SCALE,
+    RESOURCE_CHANNELS,
+    policy_resource_view,
+    resource_affinity_quantized,
+)
 from .routing_cost import RoutingCostBudgetResult, apply_routing_cost_budget
 from .intents import ActionIntentBatch
 from .policy import Action, ParametricPolicy, PolicyDecision
@@ -319,6 +324,8 @@ class HybridGpuRuntime:
         need_host_resource_gradient: bool,
         entity_state_version: int,
         knowledge: KnowledgeSystem | None = None,
+        resource_affinity_ablation_enabled: bool = False,
+        knowledge_policy_ablation_enabled: bool = False,
     ) -> GpuPreparedStep:
         """Construct observations and actions, returning the CPU commit view."""
         xp = self.backend.xp
@@ -438,15 +445,25 @@ class HybridGpuRuntime:
         local_resources_host = self._download(local_resources).astype(
             np.float32, copy=False
         )
+        affinity_host = (
+            np.full(
+                (entity.alive.size, RESOURCE_CHANNELS),
+                AFFINITY_SCALE,
+                dtype=np.int32,
+            )
+            if resource_affinity_ablation_enabled
+            else resource_affinity_quantized(entity.genotype, self.cfg)
+        )
         policy_local_resources_host = policy_resource_view(
-            local_resources_host, entity.genotype[active_host], self.cfg
+            local_resources_host,
+            entity.genotype[active_host],
+            self.cfg,
+            resource_affinity_q=affinity_host[active_host],
         )
         policy_local_resources = xp.asarray(
             policy_local_resources_host, dtype=xp.float32
         )
-        affinity_device = xp.asarray(
-            resource_affinity_quantized(entity.genotype, self.cfg), dtype=xp.int32
-        )
+        affinity_device = xp.asarray(affinity_host, dtype=xp.int32)
         device_info = self.information_field.observe(
             stable_ids=stable_ids[active],
             cell_ids=cells,
@@ -483,7 +500,10 @@ class HybridGpuRuntime:
             knowledge_context_keys = self._download(device_context_keys).astype(
                 np.uint64, copy=False
             )
-            if knowledge.kcfg.policy_influence_enabled:
+            if (
+                knowledge.kcfg.policy_influence_enabled
+                and not knowledge_policy_ablation_enabled
+            ):
                 if knowledge.kcfg.latent_policy_enabled:
                     if knowledge.latent_store is None:
                         raise RuntimeError("latent policy is enabled without a latent content store")

@@ -82,6 +82,8 @@ def policy_resource_view(
     local_resources: Any,
     genotype: Any,
     cfg: SimulationConfig,
+    *,
+    resource_affinity_q: Any | None = None,
 ) -> np.ndarray:
     """Return raw resources with column zero replaced by entity utility.
 
@@ -97,7 +99,13 @@ def policy_resource_view(
         raise ValueError("local resources must be shaped [N, 4]")
     if cfg.environment.schema == "legacy-four-channel-v1":
         return local
-    affinity = resource_affinity_quantized(genotype, cfg).astype(np.float64)
+    affinity = (
+        resource_affinity_quantized(genotype, cfg)
+        if resource_affinity_q is None
+        else np.asarray(resource_affinity_q, dtype=np.int32)
+    ).astype(np.float64)
+    if affinity.shape != (local.shape[0], RESOURCE_CHANNELS):
+        raise ValueError("resource affinity must be shaped [N, 4]")
     capacities = np.asarray(cfg.environment.resource_capacity, dtype=np.float64)
     fractions = np.clip(local.astype(np.float64) / capacities[None, :], 0.0, 1.5)
     utility = np.sum(fractions * affinity, axis=1) / (
@@ -123,6 +131,8 @@ def apply_harvest_effects(
     gathered: Any,
     genotype: Any,
     cfg: SimulationConfig,
+    *,
+    resource_affinity_q: Any | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Map raw resource extraction to assimilated channel and body outcomes.
 
@@ -135,7 +145,13 @@ def apply_harvest_effects(
     raw = np.asarray(gathered, dtype=np.float32)
     if raw.ndim != 2 or raw.shape[1] != RESOURCE_CHANNELS:
         raise ValueError("gathered resources must be shaped [N, 4]")
-    affinity = resource_affinity_quantized(genotype, cfg).astype(np.float64)
+    affinity = (
+        resource_affinity_quantized(genotype, cfg)
+        if resource_affinity_q is None
+        else np.asarray(resource_affinity_q, dtype=np.int32)
+    ).astype(np.float64)
+    if affinity.shape != raw.shape:
+        raise ValueError("resource affinity must match gathered resources")
     assimilated = raw.astype(np.float64) * affinity / AFFINITY_SCALE
     effects = np.asarray(cfg.environment.resource_effect_matrix, dtype=np.float64)
     if effects.shape != (RESOURCE_CHANNELS, BODY_OUTCOME_WIDTH):
