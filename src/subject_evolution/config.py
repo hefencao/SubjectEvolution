@@ -40,6 +40,12 @@ class RunConfig:
     # default so archived evolution_progress JSONL remains unchanged.
     long_run_diagnostics_enabled: bool = False
     long_run_diagnostics_schema: str = "disabled"
+    # Optional local analysis grid.  This remains purely observational and is
+    # disabled by default so archived long-run schemas remain byte-compatible.
+    spatial_stress_diagnostics_enabled: bool = False
+    spatial_stress_diagnostics_schema: str = "disabled"
+    spatial_stress_regions_x: int = 4
+    spatial_stress_regions_y: int = 4
 
 
 @dataclass(frozen=True)
@@ -470,6 +476,30 @@ def validate_config(cfg: SimulationConfig) -> None:
     ):
         raise ValueError(
             "long-run diagnostics enabled/schema fields must agree"
+        )
+    if cfg.run.spatial_stress_diagnostics_schema not in {
+        "disabled",
+        "spatial-local-stress-diagnostics-v1",
+    }:
+        raise ValueError(
+            "run.spatial_stress_diagnostics_schema must be 'disabled' or "
+            "'spatial-local-stress-diagnostics-v1'"
+        )
+    if cfg.run.spatial_stress_diagnostics_enabled != (
+        cfg.run.spatial_stress_diagnostics_schema
+        == "spatial-local-stress-diagnostics-v1"
+    ):
+        raise ValueError(
+            "spatial stress diagnostics enabled/schema fields must agree"
+        )
+    if cfg.run.spatial_stress_regions_x <= 0 or cfg.run.spatial_stress_regions_y <= 0:
+        raise ValueError("spatial stress diagnostic region dimensions must be positive")
+    if (
+        cfg.run.spatial_stress_regions_x > cfg.world.grid_x
+        or cfg.run.spatial_stress_regions_y > cfg.world.grid_y
+    ):
+        raise ValueError(
+            "spatial stress diagnostic grid cannot exceed the physical world grid"
         )
     if not isinstance(cfg.run.full_checkpoint_enabled, bool):
         raise ValueError("run.full_checkpoint_enabled must be a boolean")

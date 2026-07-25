@@ -2759,7 +2759,7 @@ class KnowledgeSystem:
             baseline_left = left_pairs / pair_total if pair_total else 0.0
             baseline_right = right_pairs / pair_total if pair_total else 0.0
             return {
-                "nmi": float(mi / max((hx * hy) ** 0.5, 1e-30)),
+                "nmi": float(mi / max((max(hx, 0.0) * max(hy, 0.0)) ** 0.5, 1e-30)),
                 "same_left_given_same_right": float(
                     both_pairs / right_pairs if right_pairs else 0.0
                 ),

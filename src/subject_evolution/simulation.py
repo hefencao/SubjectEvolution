@@ -83,6 +83,7 @@ from .lifecycle import (
     plan_death_events,
 )
 from .metrics import MetricsWriter
+from .local_stress import LocalStressDiagnostics
 from .niches import (
     AFFINITY_SCALE,
     RESOURCE_CHANNELS,
@@ -618,6 +619,19 @@ class Simulation:
             morphology_trait_indices=morphology_indices,
             morphology_trait_names=morphology_names,
         )
+        self.local_stress_diagnostics = (
+            LocalStressDiagnostics(
+                world_width=cfg.world.width,
+                world_height=cfg.world.height,
+                regions_x=cfg.run.spatial_stress_regions_x,
+                regions_y=cfg.run.spatial_stress_regions_y,
+                resource_capacity=cfg.environment.resource_capacity,
+                world_grid_x=cfg.world.grid_x,
+                world_grid_y=cfg.world.grid_y,
+            )
+            if cfg.run.spatial_stress_diagnostics_enabled
+            else None
+        )
         self.last_active = np.empty(0, dtype=np.int32)
         self.last_cells = np.empty(0, dtype=np.int32)
         self.last_local_resources = np.empty((0, 4), dtype=np.float32)
@@ -731,6 +745,20 @@ class Simulation:
             ),
             "long_run_diagnostics_schema": (
                 self.cfg.run.long_run_diagnostics_schema
+            ),
+            "spatial_stress_diagnostics_enabled": (
+                self.cfg.run.spatial_stress_diagnostics_enabled
+            ),
+            "spatial_stress_diagnostics_schema": (
+                self.cfg.run.spatial_stress_diagnostics_schema
+            ),
+            "spatial_stress_regions": (
+                [
+                    self.cfg.run.spatial_stress_regions_x,
+                    self.cfg.run.spatial_stress_regions_y,
+                ]
+                if self.cfg.run.spatial_stress_diagnostics_enabled
+                else None
             ),
             "strategy_schema": self.cfg.policy.schema,
             "knowledge_schema": (
@@ -1031,6 +1059,11 @@ class Simulation:
                 self.total_reproduction_rejected_other
             ),
             "evolution_progress": self.evolution_progress.snapshot_state(),
+            "local_stress_diagnostics": (
+                self.local_stress_diagnostics.snapshot_state()
+                if self.local_stress_diagnostics is not None
+                else None
+            ),
             "last_active": self.last_active.copy(),
             "last_cells": self.last_cells.copy(),
             "last_local_resources": self.last_local_resources.copy(),
@@ -1182,6 +1215,19 @@ class Simulation:
             state["total_reproduction_rejected_other"]
         )
         self.evolution_progress.restore_state(state["evolution_progress"])
+        local_state = state.get("local_stress_diagnostics")
+        if local_state is not None:
+            if self.local_stress_diagnostics is None:
+                self.local_stress_diagnostics = LocalStressDiagnostics(
+                    world_width=self.cfg.world.width,
+                    world_height=self.cfg.world.height,
+                    regions_x=self.cfg.run.spatial_stress_regions_x,
+                    regions_y=self.cfg.run.spatial_stress_regions_y,
+                    resource_capacity=self.cfg.environment.resource_capacity,
+                    world_grid_x=self.cfg.world.grid_x,
+                    world_grid_y=self.cfg.world.grid_y,
+                )
+            self.local_stress_diagnostics.restore_state(local_state)
         self.last_active = np.asarray(state["last_active"], dtype=np.int32).copy()
         self.last_cells = np.asarray(state["last_cells"], dtype=np.int32).copy()
         self.last_local_resources = np.asarray(
@@ -1361,6 +1407,11 @@ class Simulation:
             self.total_reproduction_rejected_other
         )
         branch.evolution_progress = self.evolution_progress.clone(branch.output_dir)
+        branch.local_stress_diagnostics = (
+            self.local_stress_diagnostics.clone()
+            if self.local_stress_diagnostics is not None
+            else None
+        )
         branch.last_birth_allocation = copy.deepcopy(self.last_birth_allocation)
         branch.last_death_events = copy.deepcopy(self.last_death_events)
         branch.last_entity_device_commit = copy.deepcopy(
@@ -2067,6 +2118,15 @@ class Simulation:
         flow_totals = benefit_flow_totals(owner_groups, target_groups, amounts)
         stats.benefit_flow_energy += flow_totals
         self.benefit_flow_energy_total += flow_totals
+        if self.local_stress_diagnostics is not None:
+            self.local_stress_diagnostics.observe_benefits(
+                owner_indices=owners,
+                target_indices=targets,
+                group_ids=self.social.group_id,
+                amounts=amounts,
+                x=self.entities.x,
+                y=self.entities.y,
+            )
         stats.lagged_benefit_flow_energy += self.lagged_benefit_boundary.record(
             owner_indices=owners,
             target_indices=targets,
@@ -2220,6 +2280,11 @@ class Simulation:
                 self.entities.alive, self.entities.genotype, self.cfg
             ),
         }
+        spatial_stress_metrics = (
+            self.local_stress_diagnostics.consume_window()
+            if self.local_stress_diagnostics is not None
+            else None
+        )
         self.evolution_progress.record(
             tick=self.tick,
             scheduled=True,
@@ -2256,6 +2321,7 @@ class Simulation:
             mutation_std=self.cfg.policy.mutation_std,
             actual_context_metrics=actual_context_metrics,
             environment_metrics=environment_metrics,
+            spatial_stress_metrics=spatial_stress_metrics,
             knowledge_metrics=(
                 self.knowledge.long_run_diagnostics(
                     alive=self.entities.alive,
@@ -2601,6 +2667,20 @@ class Simulation:
             stats.spatial_seconds = prepared.spatial_seconds
             stats.observation_seconds = prepared.observation_seconds
             stats.policy_seconds = prepared.policy_seconds
+
+        if self.local_stress_diagnostics is not None:
+            local_hazard = (
+                self.gpu_runtime.hazard_for_cells(cells)
+                if self.gpu_runtime is not None
+                else self.environment.hazard.reshape(-1)[cells]
+            )
+            self.local_stress_diagnostics.observe_population(
+                x=ent.x[active],
+                y=ent.y[active],
+                cell_ids=cells,
+                local_resources=local_resources,
+                local_hazard=local_hazard,
+            )
 
         if cfg.knowledge.enabled and cfg.knowledge.policy_influence_enabled:
             if routing_cost_result is not None:
@@ -3025,6 +3105,10 @@ class Simulation:
                 ent.fertility[accepted_parents] -= 0.5
                 stats.births = int(newborns.size)
                 self.total_births += stats.births
+                if self.local_stress_diagnostics is not None:
+                    self.local_stress_diagnostics.observe_births(
+                        newborns, ent.x, ent.y
+                    )
 
         self.evolution_progress.observe_reproduction_traits(
             ent.genotype,
@@ -3265,6 +3349,8 @@ class Simulation:
         self.last_death_events = death_events
         dead = death_events.entity_indices
         if dead.size:
+            if self.local_stress_diagnostics is not None:
+                self.local_stress_diagnostics.observe_deaths(dead, ent.x, ent.y)
             self.subjects.mark_dead(dead, self.tick)
             ent.commit_deaths(death_events)
             self.autonomy_restored[dead] = False

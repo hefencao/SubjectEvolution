@@ -1,0 +1,67 @@
+{
+  "schema": "local-spatial-stress-validation-v1",
+  "version": "0.19.0",
+  "tests": {
+    "total": 95,
+    "passed": 94,
+    "skipped": 1,
+    "skip_reason": "real CUDA/CuPy unavailable"
+  },
+  "compile_passed": true,
+  "determinism": {
+    "seed": 10001,
+    "ticks": 120,
+    "core_logs_byte_identical": true,
+    "non_timing_metrics_fields_compared": 289,
+    "non_timing_metrics_equal": true,
+    "checkpoint_60_full_state_equal": true,
+    "checkpoint_120_full_state_equal": true
+  },
+  "short_runs": [
+    {
+      "run_name": "v019_final_local_10001_a",
+      "final_tick": 120,
+      "alive": 430,
+      "effective_lineages": 154.08333333333334,
+      "strategy_effective_dimensions": 65.50857092757437,
+      "action_entropy": 1.9616209847101165,
+      "cohesion": 0.27446030249643755,
+      "transfer_commits": 89,
+      "effective_transferred_roots": 84.04545454545456,
+      "mean_local_population_cv": 0.3072054308825997,
+      "mean_local_mortality_pressure_cv": 1.4102674558547321,
+      "mean_local_scarcity_cv": 0.12541373906367284,
+      "mean_local_cohesion_cv": 0.37431043389517454,
+      "max_local_to_global_mortality_ratio": 20.555555555555554,
+      "within_window_mortality_vs_cohesion": 0.3640319962190868,
+      "within_region_mortality_vs_cohesion": 2.3365273633834542e-17,
+      "next_window_mortality_vs_cohesion": -0.06967761649518465
+    },
+    {
+      "run_name": "v019_final_local_10002",
+      "final_tick": 120,
+      "alive": 419,
+      "effective_lineages": 145.2117452440033,
+      "strategy_effective_dimensions": 62.44412161738372,
+      "action_entropy": 1.9571245356065874,
+      "cohesion": 0.3140104940750456,
+      "transfer_commits": 75,
+      "effective_transferred_roots": 69.20779220779224,
+      "mean_local_population_cv": 0.32055979383227123,
+      "mean_local_mortality_pressure_cv": 1.8281672294705729,
+      "mean_local_scarcity_cv": 0.10954334540804622,
+      "mean_local_cohesion_cv": 0.15904636848551915,
+      "max_local_to_global_mortality_ratio": 11.509054325955734,
+      "within_window_mortality_vs_cohesion": -0.015120655454371528,
+      "within_region_mortality_vs_cohesion": null,
+      "next_window_mortality_vs_cohesion": null
+    }
+  ],
+  "small_sample_nmi_roundoff_regression_passed": true,
+  "real_cuda_world_parity_verified": false,
+  "limitations": [
+    "two short seeds are mechanism validation, not a causal test",
+    "regions are observational bins, not world compartments",
+    "local transfer origin/destination panel is not yet recorded"
+  ]
+}

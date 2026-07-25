@@ -178,6 +178,143 @@ def _phase_stratified_transfer(records: list[dict[str, Any]]) -> dict[str, dict[
     return result
 
 
+def _panel_demean(values: np.ndarray, axis: int, valid: np.ndarray) -> np.ndarray:
+    array = np.asarray(values, dtype=np.float64)
+    mask = np.asarray(valid, dtype=bool) & np.isfinite(array)
+    out = np.full_like(array, np.nan)
+    if axis == 0:
+        for column in range(array.shape[1]):
+            keep = mask[:, column]
+            if np.any(keep):
+                out[keep, column] = array[keep, column] - np.mean(array[keep, column])
+    elif axis == 1:
+        for row in range(array.shape[0]):
+            keep = mask[row]
+            if np.any(keep):
+                out[row, keep] = array[row, keep] - np.mean(array[row, keep])
+    else:
+        raise ValueError("panel demean axis must be 0 or 1")
+    return out
+
+
+def _spatial_panel_analysis(records: list[dict[str, Any]]) -> dict[str, Any]:
+    usable = [
+        record for record in records
+        if record.get("spatial_local_stress_schema")
+        == "spatial-local-stress-diagnostics-v1"
+    ]
+    if len(usable) < MIN_CORRELATION_SAMPLES:
+        return {
+            "available": False,
+            "reason": "fewer than five spatial diagnostic windows",
+        }
+    keys = {
+        "mortality": "spatial_local_region_mortality_pressure",
+        "cohesion": "spatial_local_region_boundary_cohesion",
+        "cohesion_valid": "spatial_local_region_cohesion_valid",
+        "scarcity": "spatial_local_region_resource_scarcity",
+        "hazard": "spatial_local_region_hazard_exposure",
+        "crowding": "spatial_local_region_crowding",
+        "population_change": "spatial_local_region_alive_change_rate",
+        "entity_ticks": "spatial_local_region_entity_ticks",
+    }
+    arrays: dict[str, np.ndarray] = {}
+    region_count = None
+    for name, key in keys.items():
+        rows = [record.get(key) for record in usable]
+        if any(value is None for value in rows):
+            return {"available": False, "reason": f"missing {key}"}
+        array = np.asarray(rows, dtype=np.float64)
+        if array.ndim != 2:
+            return {"available": False, "reason": f"invalid shape for {key}"}
+        region_count = array.shape[1] if region_count is None else region_count
+        if array.shape[1] != region_count:
+            return {"available": False, "reason": "region count changed across windows"}
+        arrays[name] = array
+    occupied = arrays["entity_ticks"] > 0.0
+    valid = occupied & (arrays["cohesion_valid"] > 0.5)
+    cohesion = arrays["cohesion"]
+
+    raw: dict[str, float | None] = {}
+    within_region: dict[str, float | None] = {}
+    within_window: dict[str, float | None] = {}
+    first_difference: dict[str, float | None] = {}
+    next_window: dict[str, float | None] = {}
+    for name in ("mortality", "scarcity", "hazard", "crowding", "population_change"):
+        values = arrays[name]
+        raw[f"local_{name}_vs_local_cohesion"] = _pearson(
+            values[valid], cohesion[valid]
+        )
+        x_region = _panel_demean(values, 0, occupied)
+        y_region = _panel_demean(cohesion, 0, valid)
+        panel_valid = np.isfinite(x_region) & np.isfinite(y_region)
+        within_region[f"local_{name}_vs_cohesion_within_region"] = _pearson(
+            x_region[panel_valid], y_region[panel_valid]
+        )
+        x_window = _panel_demean(values, 1, occupied)
+        y_window = _panel_demean(cohesion, 1, valid)
+        panel_valid = np.isfinite(x_window) & np.isfinite(y_window)
+        within_window[f"local_{name}_vs_cohesion_within_window"] = _pearson(
+            x_window[panel_valid], y_window[panel_valid]
+        )
+        dx = np.diff(values, axis=0)
+        dy = np.diff(cohesion, axis=0)
+        diff_valid = valid[1:] & valid[:-1] & np.isfinite(dx) & np.isfinite(dy)
+        first_difference[f"delta_local_{name}_vs_delta_local_cohesion"] = _pearson(
+            dx[diff_valid], dy[diff_valid]
+        )
+        lead_valid = occupied[:-1] & valid[1:]
+        next_window[f"local_{name}_vs_next_window_local_cohesion"] = _pearson(
+            values[:-1][lead_valid], cohesion[1:][lead_valid]
+        )
+
+    global_mortality = np.asarray([
+        float(record.get("mortality_pressure_window", 0.0)) for record in usable
+    ])
+    local_mortality = arrays["mortality"]
+    ratio = np.divide(
+        local_mortality,
+        global_mortality[:, None],
+        out=np.zeros_like(local_mortality),
+        where=global_mortality[:, None] > 0.0,
+    )
+    ratio_valid = occupied & np.isfinite(ratio)
+    return {
+        "available": True,
+        "schema": "spatial-local-panel-analysis-v1",
+        "window_count": len(usable),
+        "region_count": int(region_count or 0),
+        "raw_panel_correlations": raw,
+        "within_region_correlations": within_region,
+        "within_window_correlations": within_window,
+        "first_difference_correlations": first_difference,
+        "next_window_correlations": next_window,
+        "mean_population_cv": float(np.mean([
+            float(record.get("spatial_local_population_cv", 0.0)) for record in usable
+        ])),
+        "mean_mortality_pressure_cv": float(np.mean([
+            float(record.get("spatial_local_mortality_pressure_cv", 0.0)) for record in usable
+        ])),
+        "mean_resource_scarcity_cv": float(np.mean([
+            float(record.get("spatial_local_resource_scarcity_cv", 0.0)) for record in usable
+        ])),
+        "mean_cohesion_cv": float(np.mean([
+            float(record.get("spatial_local_cohesion_cv", 0.0)) for record in usable
+        ])),
+        "max_local_to_global_mortality_ratio": (
+            float(np.max(ratio[ratio_valid])) if np.any(ratio_valid) else 0.0
+        ),
+        "fraction_region_windows_above_2x_global_mortality": (
+            float(np.mean(ratio[ratio_valid] >= 2.0)) if np.any(ratio_valid) else 0.0
+        ),
+        "causal_caution": (
+            "Spatial panel correlations are observational. Region fixed-effect, "
+            "window fixed-effect, first-difference and lagged checks reduce some "
+            "confounding but do not identify an in-world causal mechanism."
+        ),
+    }
+
+
 def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, Any]:
     if not records:
         raise ValueError(f"{path} contains no records")
@@ -392,6 +529,7 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
         "correlations_cultural_transfer": (
             transfer_correlations if cultural_spread_interpretable else {}
         ),
+        "spatial_local_analysis": _spatial_panel_analysis(records),
         "config_context": config_context,
         "trends_per_1000_ticks": {
             "alive": _slope_per_1000_ticks(ticks, alive),
@@ -477,7 +615,7 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         if value["available_runs"] >= 3 and value["same_nonzero_sign"]
     ]
     return {
-        "schema": "multi-seed-long-run-analysis-v3",
+        "schema": "multi-seed-long-run-analysis-v4",
         "run_count": len(runs),
         "runs": runs,
         "endpoint_aggregate": aggregate,
@@ -576,6 +714,38 @@ def render_markdown(report: dict[str, Any]) -> str:
         )
         for warning in run["analysis_warnings"]:
             lines.append(f"- warning: {warning}")
+        lines.append("")
+    lines.extend(["## Local spatial stress panel", ""])
+    for run in report["runs"]:
+        lines.append(f"### {run['run_name']}")
+        spatial = run.get("spatial_local_analysis", {})
+        if not spatial.get("available", False):
+            lines.append(f"- unavailable: {spatial.get('reason', 'no local diagnostics')}")
+            lines.append("")
+            continue
+        lines.append(
+            f"- windows / regions: {spatial['window_count']} / {spatial['region_count']}"
+        )
+        lines.append(
+            f"- mean population / mortality / scarcity / cohesion CV: "
+            f"{spatial['mean_population_cv']:.4f} / "
+            f"{spatial['mean_mortality_pressure_cv']:.4f} / "
+            f"{spatial['mean_resource_scarcity_cv']:.4f} / "
+            f"{spatial['mean_cohesion_cv']:.4f}"
+        )
+        lines.append(
+            f"- max local/global mortality ratio: "
+            f"{spatial['max_local_to_global_mortality_ratio']:.4f}"
+        )
+        for subsection in (
+            "within_region_correlations",
+            "within_window_correlations",
+            "first_difference_correlations",
+            "next_window_correlations",
+        ):
+            lines.append(f"- {subsection}:")
+            for key, value in spatial[subsection].items():
+                lines.append(f"  - `{key}`: {_format(value)}")
         lines.append("")
     lines.extend(["## Repeated directional patterns", ""])
     if report["repeated_directional_patterns"]:

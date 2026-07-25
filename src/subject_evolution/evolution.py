@@ -75,7 +75,7 @@ def _categorical_alignment(
     )
     hx = float(-np.sum(px[px > 0.0] * np.log(px[px > 0.0])))
     hy = float(-np.sum(py[py > 0.0] * np.log(py[py > 0.0])))
-    denominator = max((hx * hy) ** 0.5, 1e-30)
+    denominator = max((max(hx, 0.0) * max(hy, 0.0)) ** 0.5, 1e-30)
     pair_total = int(a.size * (a.size - 1) // 2)
     left_pairs = int(np.sum(joint.sum(axis=1) * (joint.sum(axis=1) - 1) // 2))
     right_pairs = int(np.sum(joint.sum(axis=0) * (joint.sum(axis=0) - 1) // 2))
@@ -762,6 +762,7 @@ class EvolutionProgressTracker:
         mutation_std: float,
         actual_context_metrics: dict[str, Any] | None = None,
         environment_metrics: dict[str, Any] | None = None,
+        spatial_stress_metrics: dict[str, Any] | None = None,
         knowledge_metrics: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         if self.records and int(self.records[-1]["tick"]) == int(tick):
@@ -1114,6 +1115,7 @@ class EvolutionProgressTracker:
             **structure,
             **(actual_context_metrics or {}),
             **(environment_metrics or {}),
+            **(spatial_stress_metrics or {}),
             **long_run_metrics,
         }
         writer = self._writer()
