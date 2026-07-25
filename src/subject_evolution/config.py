@@ -480,14 +480,18 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.run.spatial_stress_diagnostics_schema not in {
         "disabled",
         "spatial-local-stress-diagnostics-v1",
+        "spatial-local-stress-culture-diagnostics-v2",
     }:
         raise ValueError(
             "run.spatial_stress_diagnostics_schema must be 'disabled' or "
-            "'spatial-local-stress-diagnostics-v1'"
+            "'spatial-local-stress-diagnostics-v1' or 'spatial-local-stress-culture-diagnostics-v2'"
         )
     if cfg.run.spatial_stress_diagnostics_enabled != (
         cfg.run.spatial_stress_diagnostics_schema
-        == "spatial-local-stress-diagnostics-v1"
+        in {
+            "spatial-local-stress-diagnostics-v1",
+            "spatial-local-stress-culture-diagnostics-v2",
+        }
     ):
         raise ValueError(
             "spatial stress diagnostics enabled/schema fields must agree"

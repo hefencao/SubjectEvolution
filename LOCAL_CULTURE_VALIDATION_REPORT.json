@@ -1,0 +1,128 @@
+{
+  "schema": "local-culture-validation-v1",
+  "version": "0.20.0",
+  "tests": {
+    "total": 98,
+    "passed": 97,
+    "skipped": 1,
+    "report": "FINAL_TEST_REPORT.txt"
+  },
+  "formal_run": {
+    "seed": 10001,
+    "ticks": 120,
+    "initial_entities": 200,
+    "max_entities": 512,
+    "backend": "cpu",
+    "gpu_semantics_mode": "strict-reference",
+    "report_period": 20,
+    "regions": 16
+  },
+  "endpoint": {
+    "alive": 430,
+    "transfer_proposals": 111,
+    "transfer_attempts": 111,
+    "transfer_commits": 89,
+    "transfer_bytes": 5640,
+    "same_region_commits": 76,
+    "cross_region_commits": 13,
+    "active_transferred_roots": 85,
+    "effective_transferred_roots": 84.04545454545455,
+    "multi_region_transferred_roots": 0
+  },
+  "duplicate_run": {
+    "byte_identical_logs": {
+      "evolution_progress.jsonl": true,
+      "knowledge_events.jsonl": true,
+      "knowledge_transfers.csv": true,
+      "knowledge_outcome_updates.csv": true,
+      "knowledge_policy_contributions.csv": true,
+      "knowledge_routing_costs.csv": true,
+      "knowledge_selection_events.csv": true,
+      "knowledge_working_memory.csv": true
+    },
+    "metrics": {
+      "rows_a": 13,
+      "rows_b": 13,
+      "common_fields": 289,
+      "differences": []
+    },
+    "npz_checkpoints": {
+      "20": {
+        "common_arrays": 38,
+        "only_a": [],
+        "only_b": [],
+        "differences": []
+      },
+      "40": {
+        "common_arrays": 38,
+        "only_a": [],
+        "only_b": [],
+        "differences": []
+      },
+      "60": {
+        "common_arrays": 38,
+        "only_a": [],
+        "only_b": [],
+        "differences": []
+      },
+      "80": {
+        "common_arrays": 38,
+        "only_a": [],
+        "only_b": [],
+        "differences": []
+      },
+      "100": {
+        "common_arrays": 38,
+        "only_a": [],
+        "only_b": [],
+        "differences": []
+      },
+      "120": {
+        "common_arrays": 38,
+        "only_a": [],
+        "only_b": [],
+        "differences": []
+      }
+    },
+    "full_checkpoint_semantic": {
+      "common_array_leaves": 331,
+      "common_scalar_leaves": 26937,
+      "only_a_count": 0,
+      "only_b_count": 0,
+      "differences": []
+    }
+  },
+  "checkpoint_restore": {
+    "npz_tick120": {
+      "common_arrays": 38,
+      "only_a": [],
+      "only_b": [],
+      "differences": []
+    },
+    "full_checkpoint_semantic_excluding_lineage": {
+      "common_array_leaves": 331,
+      "common_scalar_leaves": 26936,
+      "only_a_count": 1,
+      "only_b_count": 6,
+      "differences": []
+    },
+    "expected_provenance_difference": "restored checkpoint lineage has one source entry; authoritative simulation state is exact."
+  },
+  "local_event_sample": {
+    "event": "validation-scarcity-r2-t80",
+    "checkpoint_tick": 60,
+    "horizon": 20,
+    "disable_transfer": {
+      "delta_regional_alive": 0.0,
+      "delta_cohesion": 3e-05,
+      "delta_incoming_commits": -1.0,
+      "delta_outgoing_commits": -1.0,
+      "delta_active_culture_roots": -1.0
+    },
+    "disable_knowledge_policy": {
+      "delta_regional_alive": 1.0,
+      "delta_cohesion": 0.06328
+    }
+  },
+  "scientific_boundary": "The 120-tick run and manual event are pipeline validation, not long-run causal evidence. The supplied three-seed v0.19 local panel remains observational."
+}

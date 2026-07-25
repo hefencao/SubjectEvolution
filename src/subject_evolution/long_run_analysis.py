@@ -129,11 +129,28 @@ def _resolved_config_context(path: str | Path) -> dict[str, Any]:
     knowledge = config.get("knowledge", {}) if isinstance(config, dict) else {}
     environment = config.get("environment", {}) if isinstance(config, dict) else {}
     entities = config.get("entities", {}) if isinstance(config, dict) else {}
+    run = config.get("run", {}) if isinstance(config, dict) else {}
+    manifest_path = progress.parent / "run_manifest.json"
+    manifest: dict[str, Any] = {}
+    if manifest_path.is_file():
+        try:
+            loaded = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest = loaded if isinstance(loaded, dict) else {}
+        except (OSError, json.JSONDecodeError):
+            manifest = {}
     return {
         "knowledge_transfer_probability": knowledge.get("transfer_probability"),
         "knowledge_transfer_period": knowledge.get("transfer_period"),
         "environment_schema": environment.get("schema"),
         "resource_affinity_schema": entities.get("resource_affinity_schema"),
+        "spatial_stress_diagnostics_schema": run.get(
+            "spatial_stress_diagnostics_schema"
+        ),
+        "requested_backend": manifest.get("requested_backend"),
+        "execution_backend": manifest.get("execution_backend"),
+        "gpu_semantics_mode": manifest.get("gpu_semantics_mode"),
+        "gpu_device_validated": manifest.get("gpu_device_validated"),
+        "gpu_acceleration_enabled": manifest.get("gpu_acceleration_enabled"),
     }
 
 
@@ -197,11 +214,109 @@ def _panel_demean(values: np.ndarray, axis: int, valid: np.ndarray) -> np.ndarra
     return out
 
 
+def _panel_correlation_bundle(
+    x: np.ndarray,
+    y: np.ndarray,
+    *,
+    x_valid: np.ndarray,
+    y_valid: np.ndarray,
+    label: str,
+) -> dict[str, float | None]:
+    valid = np.asarray(x_valid, dtype=bool) & np.asarray(y_valid, dtype=bool)
+    raw = _pearson(x[valid], y[valid])
+    x_region = _panel_demean(x, 0, x_valid)
+    y_region = _panel_demean(y, 0, y_valid)
+    region_valid = np.isfinite(x_region) & np.isfinite(y_region)
+    x_window = _panel_demean(x, 1, x_valid)
+    y_window = _panel_demean(y, 1, y_valid)
+    window_valid = np.isfinite(x_window) & np.isfinite(y_window)
+    dx = np.diff(x, axis=0)
+    dy = np.diff(y, axis=0)
+    diff_valid = valid[1:] & valid[:-1] & np.isfinite(dx) & np.isfinite(dy)
+    lead_valid = np.asarray(x_valid[:-1], dtype=bool) & np.asarray(y_valid[1:], dtype=bool)
+    return {
+        f"{label}_raw": raw,
+        f"{label}_within_region": _pearson(x_region[region_valid], y_region[region_valid]),
+        f"{label}_within_window": _pearson(x_window[window_valid], y_window[window_valid]),
+        f"{label}_first_difference": _pearson(dx[diff_valid], dy[diff_valid]),
+        f"{label}_next_window": _pearson(x[:-1][lead_valid], y[1:][lead_valid]),
+    }
+
+
+def _local_event_study(
+    exposure: np.ndarray,
+    outcomes: dict[str, np.ndarray],
+    *,
+    valid: np.ndarray,
+    quantile: float = 0.80,
+    min_gap_windows: int = 2,
+) -> dict[str, Any]:
+    """Observational within-region event study around high local exposure."""
+    x = np.asarray(exposure, dtype=np.float64)
+    mask = np.asarray(valid, dtype=bool) & np.isfinite(x)
+    events: list[tuple[int, int]] = []
+    for region in range(x.shape[1]):
+        keep = mask[:, region]
+        values = x[keep, region]
+        if values.size < 5 or float(np.std(values)) == 0.0:
+            continue
+        threshold = float(np.quantile(values, quantile))
+        candidates = [
+            tick
+            for tick in range(1, x.shape[0] - 2)
+            if keep[tick]
+            and x[tick, region] >= threshold
+            and x[tick, region] >= x[tick - 1, region]
+            and x[tick, region] > x[tick + 1, region]
+        ]
+        last = -10**9
+        for tick in candidates:
+            if tick - last >= min_gap_windows:
+                events.append((tick, region))
+                last = tick
+    result: dict[str, Any] = {
+        "event_count": len(events),
+        "quantile": float(quantile),
+        "min_gap_windows": int(min_gap_windows),
+        "outcomes": {},
+        "causal_caution": (
+            "Events are selected from observed local exposure peaks. Pre/post changes "
+            "remain descriptive because no environmental intervention was applied."
+        ),
+    }
+    for name, values in outcomes.items():
+        array = np.asarray(values, dtype=np.float64)
+        samples: dict[int, list[float]] = {-1: [], 0: [], 1: [], 2: []}
+        for tick, region in events:
+            for offset in samples:
+                value = float(array[tick + offset, region])
+                if np.isfinite(value):
+                    samples[offset].append(value)
+        means = {
+            str(offset): (float(np.mean(items)) if items else None)
+            for offset, items in samples.items()
+        }
+        pre = means["-1"]
+        result["outcomes"][name] = {
+            "mean_by_offset": means,
+            "post1_minus_pre1": (
+                None if pre is None or means["1"] is None else means["1"] - pre
+            ),
+            "post2_minus_pre1": (
+                None if pre is None or means["2"] is None else means["2"] - pre
+            ),
+        }
+    return result
+
+
 def _spatial_panel_analysis(records: list[dict[str, Any]]) -> dict[str, Any]:
+    accepted_schemas = {
+        "spatial-local-stress-diagnostics-v1",
+        "spatial-local-stress-culture-diagnostics-v2",
+    }
     usable = [
         record for record in records
-        if record.get("spatial_local_stress_schema")
-        == "spatial-local-stress-diagnostics-v1"
+        if record.get("spatial_local_stress_schema") in accepted_schemas
     ]
     if len(usable) < MIN_CORRELATION_SAMPLES:
         return {
@@ -279,9 +394,9 @@ def _spatial_panel_analysis(records: list[dict[str, Any]]) -> dict[str, Any]:
         where=global_mortality[:, None] > 0.0,
     )
     ratio_valid = occupied & np.isfinite(ratio)
-    return {
+    result: dict[str, Any] = {
         "available": True,
-        "schema": "spatial-local-panel-analysis-v1",
+        "schema": "spatial-local-panel-analysis-v2",
         "window_count": len(usable),
         "region_count": int(region_count or 0),
         "raw_panel_correlations": raw,
@@ -313,6 +428,118 @@ def _spatial_panel_analysis(records: list[dict[str, Any]]) -> dict[str, Any]:
             "confounding but do not identify an in-world causal mechanism."
         ),
     }
+
+    culture_keys = {
+        "attempts_out": "spatial_local_region_transfer_attempts_outgoing",
+        "attempts_in": "spatial_local_region_transfer_attempts_incoming",
+        "commits_out": "spatial_local_region_transfer_committed_outgoing",
+        "commits_in": "spatial_local_region_transfer_committed_incoming",
+        "new_roots": "spatial_local_region_new_transferred_roots",
+        "lost_roots": "spatial_local_region_lost_transferred_roots",
+        "active_roots": "spatial_local_region_active_transferred_roots",
+        "source_rate": "spatial_local_transfer_commit_rate_by_source",
+    }
+    culture_available = all(
+        all(record.get(key) is not None for record in usable)
+        for key in culture_keys.values()
+    )
+    if not culture_available:
+        result["local_cultural_transfer_analysis"] = {
+            "available": False,
+            "reason": "spatial cultural-transfer diagnostics were not enabled",
+        }
+        return result
+
+    culture: dict[str, np.ndarray] = {
+        name: np.asarray([record[key] for record in usable], dtype=np.float64)
+        for name, key in culture_keys.items()
+    }
+    flow = np.asarray(
+        [record["spatial_local_transfer_commit_flow"] for record in usable],
+        dtype=np.float64,
+    )
+    diagonal = np.diagonal(flow, axis1=1, axis2=2)
+    same_region_retention = np.divide(
+        diagonal,
+        culture["commits_out"],
+        out=np.zeros_like(diagonal),
+        where=culture["commits_out"] > 0.0,
+    )
+    incoming_per_entity_tick = np.divide(
+        culture["commits_in"],
+        arrays["entity_ticks"],
+        out=np.zeros_like(culture["commits_in"]),
+        where=arrays["entity_ticks"] > 0.0,
+    )
+    outgoing_per_entity_tick = np.divide(
+        culture["commits_out"],
+        arrays["entity_ticks"],
+        out=np.zeros_like(culture["commits_out"]),
+        where=arrays["entity_ticks"] > 0.0,
+    )
+    net_root_establishment = culture["new_roots"] - culture["lost_roots"]
+    culture_valid = occupied
+    correlation_bundle: dict[str, float | None] = {}
+    for xname, xvalues, yname, yvalues, yvalid in (
+        ("scarcity", arrays["scarcity"], "outgoing_transfer_rate", outgoing_per_entity_tick, culture_valid),
+        ("scarcity", arrays["scarcity"], "incoming_transfer_rate", incoming_per_entity_tick, culture_valid),
+        ("scarcity", arrays["scarcity"], "new_transferred_roots", culture["new_roots"], culture_valid),
+        ("scarcity", arrays["scarcity"], "net_transferred_root_establishment", net_root_establishment, culture_valid),
+        ("cohesion", cohesion, "same_region_transfer_retention", same_region_retention, valid),
+        ("crowding", arrays["crowding"], "outgoing_transfer_rate", outgoing_per_entity_tick, culture_valid),
+        ("mortality", arrays["mortality"], "incoming_transfer_rate", incoming_per_entity_tick, culture_valid),
+    ):
+        correlation_bundle.update(
+            _panel_correlation_bundle(
+                xvalues,
+                yvalues,
+                x_valid=(valid if xname == "cohesion" else occupied),
+                y_valid=yvalid,
+                label=f"local_{xname}_vs_local_{yname}",
+            )
+        )
+    event_outcomes = {
+        "cohesion": np.where(valid, cohesion, np.nan),
+        "outgoing_transfer_per_entity_tick": outgoing_per_entity_tick,
+        "incoming_transfer_per_entity_tick": incoming_per_entity_tick,
+        "new_transferred_roots": culture["new_roots"],
+        "net_transferred_root_establishment": net_root_establishment,
+        "active_transferred_roots": culture["active_roots"],
+        "same_region_transfer_retention": same_region_retention,
+    }
+    result["local_cultural_transfer_analysis"] = {
+        "available": True,
+        "schema": "spatial-local-cultural-panel-analysis-v1",
+        "correlations": correlation_bundle,
+        "high_scarcity_event_study": _local_event_study(
+            arrays["scarcity"], event_outcomes, valid=valid
+        ),
+        "high_crowding_event_study": _local_event_study(
+            arrays["crowding"], event_outcomes, valid=valid
+        ),
+        "high_mortality_event_study": _local_event_study(
+            arrays["mortality"], event_outcomes, valid=valid
+        ),
+        "total_cross_region_committed": int(sum(
+            int(record.get("spatial_local_transfer_cross_region_committed", 0))
+            for record in usable
+        )),
+        "total_same_region_committed": int(sum(
+            int(record.get("spatial_local_transfer_same_region_committed", 0))
+            for record in usable
+        )),
+        "final_active_transferred_root_count": int(
+            usable[-1].get("spatial_local_active_transferred_root_count", 0)
+        ),
+        "final_multi_region_transferred_root_count": int(
+            usable[-1].get("spatial_local_multi_region_transferred_root_count", 0)
+        ),
+        "causal_caution": (
+            "Local transfer and root event studies are observational. They identify "
+            "where to place paired checkpoint interventions, not causal effects."
+        ),
+    }
+    return result
 
 
 def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, Any]:
@@ -593,6 +820,40 @@ def _sign_consistency(runs: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     return result
 
 
+def _local_sign_consistency(runs: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    sections: dict[str, list[float]] = {}
+    for run in runs:
+        spatial = run.get("spatial_local_analysis", {})
+        for section_name in ("within_region_correlations", "next_window_correlations"):
+            for key, value in spatial.get(section_name, {}).items():
+                if value is not None:
+                    sections.setdefault(f"{section_name}.{key}", []).append(float(value))
+        cultural = spatial.get("local_cultural_transfer_analysis", {})
+        for key, value in cultural.get("correlations", {}).items():
+            if value is not None and (
+                key.endswith("_within_region") or key.endswith("_next_window")
+            ):
+                sections.setdefault(f"local_culture.{key}", []).append(float(value))
+    result: dict[str, dict[str, Any]] = {}
+    for key, values in sorted(sections.items()):
+        positive = sum(value > 0.0 for value in values)
+        negative = sum(value < 0.0 for value in values)
+        zero = sum(value == 0.0 for value in values)
+        result[key] = {
+            "available_runs": len(values),
+            "positive_runs": positive,
+            "negative_runs": negative,
+            "zero_runs": zero,
+            "same_nonzero_sign": bool(values) and (
+                positive == len(values) or negative == len(values)
+            ),
+            "mean": float(np.mean(values)) if values else None,
+            "min": float(np.min(values)) if values else None,
+            "max": float(np.max(values)) if values else None,
+        }
+    return result
+
+
 def analyze(paths: list[str | Path]) -> dict[str, Any]:
     runs = [summarize_run(path, load_progress(path)) for path in paths]
     endpoint_keys = (
@@ -609,18 +870,26 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         key: _aggregate_numeric([run[key] for run in runs]) for key in endpoint_keys
     }
     consistency = _sign_consistency(runs)
+    local_consistency = _local_sign_consistency(runs)
     robust = [
         key
         for key, value in consistency.items()
         if value["available_runs"] >= 3 and value["same_nonzero_sign"]
     ]
+    robust_local = [
+        key
+        for key, value in local_consistency.items()
+        if value["available_runs"] >= 3 and value["same_nonzero_sign"]
+    ]
     return {
-        "schema": "multi-seed-long-run-analysis-v4",
+        "schema": "multi-seed-long-run-analysis-v5",
         "run_count": len(runs),
         "runs": runs,
         "endpoint_aggregate": aggregate,
         "cross_seed_sign_consistency": consistency,
+        "cross_seed_local_sign_consistency": local_consistency,
         "repeated_directional_patterns": robust,
+        "repeated_local_directional_patterns": robust_local,
         "interpretation_boundary": (
             "Repeated signs across seeds support robustness, not necessity. Raw "
             "within-run correlations may reflect shared temporal drift. Controlled "
@@ -715,6 +984,17 @@ def render_markdown(report: dict[str, Any]) -> str:
         for warning in run["analysis_warnings"]:
             lines.append(f"- warning: {warning}")
         lines.append("")
+    lines.extend(["## Execution backend context", ""])
+    for run in report["runs"]:
+        context = run.get("config_context", {})
+        lines.append(
+            f"- `{run['run_name']}`: requested={context.get('requested_backend')}, "
+            f"execution={context.get('execution_backend')}, "
+            f"gpu_semantics={context.get('gpu_semantics_mode')}, "
+            f"device_validated={context.get('gpu_device_validated')}, "
+            f"acceleration={context.get('gpu_acceleration_enabled')}"
+        )
+    lines.append("")
     lines.extend(["## Local spatial stress panel", ""])
     for run in report["runs"]:
         lines.append(f"### {run['run_name']}")
@@ -747,6 +1027,53 @@ def render_markdown(report: dict[str, Any]) -> str:
             for key, value in spatial[subsection].items():
                 lines.append(f"  - `{key}`: {_format(value)}")
         lines.append("")
+    lines.extend(["## Local cultural transfer panel", ""])
+    for run in report["runs"]:
+        lines.append(f"### {run['run_name']}")
+        spatial = run.get("spatial_local_analysis", {})
+        cultural = spatial.get("local_cultural_transfer_analysis", {})
+        if not cultural.get("available", False):
+            lines.append(f"- unavailable: {cultural.get('reason', 'no local culture diagnostics')}")
+            lines.append("")
+            continue
+        lines.append(
+            f"- same/cross-region commits: "
+            f"{cultural['total_same_region_committed']} / "
+            f"{cultural['total_cross_region_committed']}"
+        )
+        lines.append(
+            f"- final active/multi-region transferred roots: "
+            f"{cultural['final_active_transferred_root_count']} / "
+            f"{cultural['final_multi_region_transferred_root_count']}"
+        )
+        lines.append("- selected correlations:")
+        for key, value in cultural["correlations"].items():
+            if key.endswith("_within_region") or key.endswith("_next_window"):
+                lines.append(f"  - `{key}`: {_format(value)}")
+        for event_name in (
+            "high_scarcity_event_study",
+            "high_crowding_event_study",
+            "high_mortality_event_study",
+        ):
+            event = cultural[event_name]
+            lines.append(f"- {event_name}: {event['event_count']} events")
+            cohesion_event = event["outcomes"].get("cohesion", {})
+            lines.append(
+                f"  - cohesion post1-pre1: "
+                f"{_format(cohesion_event.get('post1_minus_pre1'))}"
+            )
+        lines.append("")
+    lines.extend(["## Repeated local directional patterns", ""])
+    if report.get("repeated_local_directional_patterns"):
+        for key in report["repeated_local_directional_patterns"]:
+            value = report["cross_seed_local_sign_consistency"][key]
+            lines.append(
+                f"- `{key}`: mean={_format(value['mean'])}, "
+                f"range=[{_format(value['min'])}, {_format(value['max'])}]"
+            )
+    else:
+        lines.append("- No local metric had the same non-zero sign in at least three runs.")
+    lines.append("")
     lines.extend(["## Repeated directional patterns", ""])
     if report["repeated_directional_patterns"]:
         lines.extend(f"- `{key}`" for key in report["repeated_directional_patterns"])

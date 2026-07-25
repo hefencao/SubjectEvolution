@@ -628,6 +628,7 @@ class Simulation:
                 resource_capacity=cfg.environment.resource_capacity,
                 world_grid_x=cfg.world.grid_x,
                 world_grid_y=cfg.world.grid_y,
+                schema=cfg.run.spatial_stress_diagnostics_schema,
             )
             if cfg.run.spatial_stress_diagnostics_enabled
             else None
@@ -759,6 +760,10 @@ class Simulation:
                 ]
                 if self.cfg.run.spatial_stress_diagnostics_enabled
                 else None
+            ),
+            "spatial_cultural_transfer_diagnostics_enabled": (
+                self.cfg.run.spatial_stress_diagnostics_schema
+                == "spatial-local-stress-culture-diagnostics-v2"
             ),
             "strategy_schema": self.cfg.policy.schema,
             "knowledge_schema": (
@@ -2280,6 +2285,20 @@ class Simulation:
                 self.entities.alive, self.entities.genotype, self.cfg
             ),
         }
+        if (
+            self.local_stress_diagnostics is not None
+            and self.local_stress_diagnostics.culture_enabled
+        ):
+            root_entities, root_ids = self.knowledge.active_transferred_root_presence(
+                alive=self.entities.alive,
+                primary_subject_ids=self.entities.primary_subject_id,
+            )
+            self.local_stress_diagnostics.observe_transferred_roots(
+                entity_indices=root_entities,
+                root_ids=root_ids,
+                x=self.entities.x,
+                y=self.entities.y,
+            )
         spatial_stress_metrics = (
             self.local_stress_diagnostics.consume_window()
             if self.local_stress_diagnostics is not None
@@ -3068,6 +3087,13 @@ class Simulation:
                 world_width=cfg.world.width,
                 world_height=cfg.world.height,
             )
+            if self.local_stress_diagnostics is not None:
+                self.local_stress_diagnostics.observe_transfers(
+                    plan=transfer_plan,
+                    audit=self.knowledge.last_transfer_commit_audit,
+                    x=ent.x,
+                    y=ent.y,
+                )
             for field_name in KnowledgeStepStats.__dataclass_fields__:
                 setattr(
                     knowledge_stats,

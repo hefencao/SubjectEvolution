@@ -302,6 +302,33 @@ class KnowledgeTransferPlan:
             raise ValueError("knowledge transfer plan contains invalid values")
 
 
+@dataclass(frozen=True)
+class KnowledgeTransferCommitAudit:
+    """Successful transfer rows published for observational diagnostics only."""
+
+    tick: int
+    sender_entity_indices: np.ndarray
+    receiver_entity_indices: np.ndarray
+    committed_content_ids: np.ndarray
+    committed_root_ids: np.ndarray
+    committed_bytes: np.ndarray
+
+    @classmethod
+    def empty(cls, tick: int = 0) -> "KnowledgeTransferCommitAudit":
+        return cls(
+            tick=int(tick),
+            sender_entity_indices=np.empty(0, dtype=np.int32),
+            receiver_entity_indices=np.empty(0, dtype=np.int32),
+            committed_content_ids=np.empty(0, dtype=np.uint64),
+            committed_root_ids=np.empty(0, dtype=np.uint64),
+            committed_bytes=np.empty(0, dtype=np.uint32),
+        )
+
+    @property
+    def size(self) -> int:
+        return int(self.committed_content_ids.size)
+
+
 @dataclass
 class KnowledgeStepStats:
     maintenance_energy: float = 0.0
@@ -769,6 +796,7 @@ class KnowledgeSystem:
         )
         self.arena = KnowledgeArena()
         self.last_transfer_plan = KnowledgeTransferPlan.empty(0)
+        self.last_transfer_commit_audit = KnowledgeTransferCommitAudit.empty(0)
         self.last_outcome_plan = KnowledgeOutcomePlan.empty(0)
         self.observation = KnowledgeObservationPlan.empty(0)
         self.totals = KnowledgeStepStats()
@@ -1003,6 +1031,9 @@ class KnowledgeSystem:
         self.latent_store = copy.deepcopy(state.get("latent_store"))
         self.arena = copy.deepcopy(state["arena"])
         self.last_transfer_plan = copy.deepcopy(state["last_transfer_plan"])
+        self.last_transfer_commit_audit = KnowledgeTransferCommitAudit.empty(
+            int(self.last_transfer_plan.tick)
+        )
         self.last_outcome_plan = copy.deepcopy(state["last_outcome_plan"])
         self.observation = copy.deepcopy(state["observation"])
         self.totals = copy.deepcopy(state["totals"])
@@ -1029,6 +1060,9 @@ class KnowledgeSystem:
         result.latent_store = copy.deepcopy(self.latent_store)
         result.arena = copy.deepcopy(self.arena)
         result.last_transfer_plan = copy.deepcopy(self.last_transfer_plan)
+        result.last_transfer_commit_audit = copy.deepcopy(
+            self.last_transfer_commit_audit
+        )
         result.last_outcome_plan = copy.deepcopy(self.last_outcome_plan)
         result.observation = copy.deepcopy(self.observation)
         result.totals = copy.deepcopy(self.totals)
@@ -1444,6 +1478,7 @@ class KnowledgeSystem:
         )
         if not self.kcfg.enabled or plan.size == 0:
             self.last_transfer_plan = plan
+            self.last_transfer_commit_audit = KnowledgeTransferCommitAudit.empty(plan.tick)
             return stats
         plan.validate(alive.size)
 
@@ -1539,6 +1574,12 @@ class KnowledgeSystem:
                     sender_region=region_for(sender),
                     receiver_region=region_for(receiver),
                 )
+
+        committed_senders: list[int] = []
+        committed_receivers: list[int] = []
+        committed_contents: list[int] = []
+        committed_roots: list[int] = []
+        committed_bytes: list[int] = []
 
         for row in range(plan.size):
             sender = int(plan.sender_entity_indices[row])
@@ -1667,6 +1708,11 @@ class KnowledgeSystem:
             )
             stats.transfer_committed += 1
             stats.transfer_committed_bytes += int(storage_encoded_bytes)
+            committed_senders.append(sender)
+            committed_receivers.append(receiver)
+            committed_contents.append(int(content_id))
+            committed_roots.append(int(self.root_content_id(content_id)))
+            committed_bytes.append(int(storage_encoded_bytes))
             sender_lineage = (
                 int(lineage_subject_ids[sender]) if lineage_subject_ids is not None else 0
             )
@@ -1697,6 +1743,14 @@ class KnowledgeSystem:
                 receiver_cost_charged=receive_cost,
             )
         self.last_transfer_plan = plan
+        self.last_transfer_commit_audit = KnowledgeTransferCommitAudit(
+            tick=int(plan.tick),
+            sender_entity_indices=np.asarray(committed_senders, dtype=np.int32),
+            receiver_entity_indices=np.asarray(committed_receivers, dtype=np.int32),
+            committed_content_ids=np.asarray(committed_contents, dtype=np.uint64),
+            committed_root_ids=np.asarray(committed_roots, dtype=np.uint64),
+            committed_bytes=np.asarray(committed_bytes, dtype=np.uint32),
+        )
         if plan.size:
             self._write_event(
                 {
@@ -2602,6 +2656,51 @@ class KnowledgeSystem:
             summary.update(self.latent_store.summary())
         summary.update(self.candidates.summary())
         return summary
+
+    def root_content_id(self, content_id: int) -> int:
+        """Return the immutable root content for a content/variant id."""
+        current = int(content_id)
+        if current <= 0:
+            raise ValueError("content id must be positive")
+        while True:
+            row = self.catalog.row(current)
+            parent = int(self.catalog.parent_content_id[row])
+            if parent == 0:
+                return current
+            current = parent
+
+    def active_transferred_root_presence(
+        self,
+        *,
+        alive: np.ndarray,
+        primary_subject_ids: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Deduplicated ``(entity_index, root_id)`` for active transfer copies."""
+        subject_to_entity = {
+            int(subject): int(index)
+            for index, subject in enumerate(np.asarray(primary_subject_ids, dtype=np.uint64))
+            if bool(np.asarray(alive, dtype=bool)[index]) and int(subject) != 0
+        }
+        pairs: set[tuple[int, int]] = set()
+        rows = np.flatnonzero(self.arena.active[: self.arena.size])
+        for row in rows.tolist():
+            if int(self.arena.acquisition_kind[row]) != ACQUISITION_TRANSFER:
+                continue
+            holder = int(self.arena.holder_subject_id[row])
+            entity = subject_to_entity.get(holder)
+            if entity is None:
+                continue
+            pairs.add((entity, self.root_content_id(int(self.arena.content_id[row]))))
+        if not pairs:
+            return (
+                np.empty(0, dtype=np.int32),
+                np.empty(0, dtype=np.uint64),
+            )
+        ordered = sorted(pairs)
+        return (
+            np.asarray([item[0] for item in ordered], dtype=np.int32),
+            np.asarray([item[1] for item in ordered], dtype=np.uint64),
+        )
 
     def long_run_diagnostics(
         self,

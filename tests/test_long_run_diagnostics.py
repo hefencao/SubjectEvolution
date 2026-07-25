@@ -113,7 +113,7 @@ def test_offline_multi_seed_analysis_marks_correlations_observational(tmp_path: 
         paths.append(path)
     report = analyze(paths)
     assert report["run_count"] == 2
-    assert report["schema"] == "multi-seed-long-run-analysis-v4"
+    assert report["schema"] == "multi-seed-long-run-analysis-v5"
     assert "correlations_first_difference" in report["runs"][0]
     assert "correlations_partial" in report["runs"][0]
     assert "observational" in render_markdown(report).lower()
