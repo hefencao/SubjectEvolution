@@ -16,7 +16,7 @@
     ]
   },
   "conditions": {
-    "ticks": 30,
+    "ticks": 300,
     "seed": 10001,
     "initial_entities": 500,
     "capacity_levels": [

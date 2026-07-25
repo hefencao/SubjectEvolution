@@ -2,9 +2,9 @@
   "schema": "variable-latent-validation-v1",
   "version": "0.10.0",
   "test_scope": {
-    "ticks": 30,
+    "ticks": 300,
     "initial_entities": 500,
-    "max_entities": 768,
+    "max_entities": 7680,
     "seed": 10001,
     "backend": "cpu"
   },

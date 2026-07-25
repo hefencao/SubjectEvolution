@@ -2,10 +2,10 @@
   "schema": "variable-latent-control-matrix-v1",
   "version": "0.10.0",
   "common_settings": {
-    "ticks": 30,
+    "ticks": 300,
     "seed": 10001,
     "initial_entities": 500,
-    "max_entities": 768,
+    "max_entities": 7680,
     "holder_capacity_bytes": 512,
     "backend": "cpu"
   },
