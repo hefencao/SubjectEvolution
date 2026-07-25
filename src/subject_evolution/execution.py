@@ -260,10 +260,19 @@ class DeterministicActionConflictResolver:
         harvest_rows = harvest_rows[order]
         harvest_cells = harvest_cells[order]
         base = self.cfg.entities.harvest_rate
-        rates = np.tile(
-            np.asarray([base, base * 0.45, base * 0.25, base * 0.18], dtype=np.float32),
-            (harvest_rows.size, 1),
-        )
+        if self.cfg.environment.schema == "legacy-four-channel-v1":
+            rates = np.tile(
+                np.asarray(
+                    [base, base * 0.45, base * 0.25, base * 0.18],
+                    dtype=np.float32,
+                ),
+                (harvest_rows.size, 1),
+            )
+        else:
+            multipliers = np.asarray(
+                self.cfg.environment.harvest_channel_multipliers, dtype=np.float32
+            )
+            rates = np.tile(base * multipliers, (harvest_rows.size, 1))
         gathered = np.asarray(harvest_allocator(harvest_cells, rates), dtype=np.float32)
         return HarvestResolution(harvest_rows, harvest_cells, gathered)
 
@@ -281,7 +290,11 @@ class DeterministicActionConflictResolver:
         gathered = harvest.gathered
         if harvest_rows.size:
             resolutions.resource_delta[harvest_rows] = gathered
-            harvested = gathered[:, 0] > 1e-8
+            harvested = (
+                gathered[:, 0] > 1e-8
+                if self.cfg.environment.schema == "legacy-four-channel-v1"
+                else np.any(gathered > 1e-8, axis=1)
+            )
             resolutions.success[harvest_rows] = harvested
             resolutions.failure_reason[harvest_rows[~harvested]] = FailureReason.INSUFFICIENT_RESOURCE
 

@@ -83,6 +83,13 @@ from .lifecycle import (
     plan_death_events,
 )
 from .metrics import MetricsWriter
+from .niches import (
+    apply_harvest_effects,
+    policy_resource_view,
+    public_resource_signal,
+    resource_affinity_diagnostics,
+    resource_affinity_quantized,
+)
 from .policy import Action, ParametricPolicy
 from .random_api import RandomContext, Stream, bernoulli, normal, uniform01
 from .social import (
@@ -129,6 +136,9 @@ class StepStats:
     births: int = 0
     deaths: int = 0
     harvested_energy: float = 0.0
+    harvested_resources: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
     shared_energy: float = 0.0
     benefit_flow_energy: np.ndarray = field(
         default_factory=lambda: np.zeros(BENEFIT_FLOW_COUNT, dtype=np.float64)
@@ -572,6 +582,7 @@ class Simulation:
         self.total_births = 0
         self.total_deaths = 0
         self.total_shared_energy = 0.0
+        self.total_harvested_resources = np.zeros(4, dtype=np.float64)
         self.action_counts = np.zeros(len(Action), dtype=np.int64)
         self.benefit_flow_energy_total = np.zeros(
             BENEFIT_FLOW_COUNT, dtype=np.float64
@@ -680,6 +691,30 @@ class Simulation:
             "platform": platform.platform(),
             "numpy": np.__version__,
             "config_sha256": hashlib.sha256(config_payload).hexdigest(),
+            "environment_schema": self.cfg.environment.schema,
+            "environment_resource_channels": 4,
+            "environment_spatially_asynchronous": (
+                self.cfg.environment.schema
+                == "spatially-asynchronous-multiniche-v1"
+            ),
+            "resource_affinity_enabled": (
+                self.cfg.entities.resource_affinity_schema
+                == "normalized-four-resource-affinity-v1"
+            ),
+            "resource_affinity_schema": self.cfg.entities.resource_affinity_schema,
+            "resource_affinity_strength": self.cfg.entities.resource_affinity_strength,
+            "resource_affinity_gene_indices": (
+                [1, 2, 3, 4]
+                if self.cfg.entities.resource_affinity_schema
+                == "normalized-four-resource-affinity-v1"
+                else []
+            ),
+            "resource_affinity_fixed_budget_q": (
+                4 * 4096
+                if self.cfg.entities.resource_affinity_schema
+                == "normalized-four-resource-affinity-v1"
+                else None
+            ),
             "strategy_schema": self.cfg.policy.schema,
             "knowledge_schema": (
                 self.cfg.knowledge.schema if self.cfg.knowledge.enabled else None
@@ -952,6 +987,7 @@ class Simulation:
             "total_births": int(self.total_births),
             "total_deaths": int(self.total_deaths),
             "total_shared_energy": float(self.total_shared_energy),
+            "total_harvested_resources": self.total_harvested_resources.copy(),
             "action_counts": self.action_counts.copy(),
             "benefit_flow_energy_total": self.benefit_flow_energy_total.copy(),
             "lagged_benefit_boundary": self.lagged_benefit_boundary.clone(),
@@ -1087,6 +1123,9 @@ class Simulation:
         self.total_births = int(state["total_births"])
         self.total_deaths = int(state["total_deaths"])
         self.total_shared_energy = float(state["total_shared_energy"])
+        self.total_harvested_resources = np.asarray(
+            state.get("total_harvested_resources", np.zeros(4)), dtype=np.float64
+        ).copy()
         self.action_counts = np.asarray(state["action_counts"], dtype=np.int64).copy()
         self.benefit_flow_energy_total = np.asarray(
             state["benefit_flow_energy_total"], dtype=np.float64
@@ -1260,6 +1299,7 @@ class Simulation:
         branch.total_births = self.total_births
         branch.total_deaths = self.total_deaths
         branch.total_shared_energy = self.total_shared_energy
+        branch.total_harvested_resources = self.total_harvested_resources.copy()
         branch.action_counts = self.action_counts.copy()
         branch.benefit_flow_energy_total = self.benefit_flow_energy_total.copy()
         branch.lagged_benefit_boundary = self.lagged_benefit_boundary.clone()
@@ -1930,7 +1970,8 @@ class Simulation:
             return SignalEmissionPlan(()), 0
         ent = self.entities
         actor_cells = cells
-        strengths_resource = np.clip(local_resources[:, 0], 0.0, 2.0) * 0.15
+        resource_signal = public_resource_signal(local_resources, self.cfg)
+        strengths_resource = np.clip(resource_signal, 0.0, 2.0) * 0.15
         hazard = (
             self.gpu_runtime.hazard_for_cells(actor_cells)
             if self.gpu_runtime is not None
@@ -1950,7 +1991,7 @@ class Simulation:
         valid_target = (target_indices >= 0) & ent.alive[target_indices]
         safe_targets = np.where(valid_target, target_indices, 0)
         payloads = np.stack(
-            [local_resources[:, 0], hazard, group_member.astype(np.float32)], axis=1
+            [resource_signal, hazard, group_member.astype(np.float32)], axis=1
         ).astype(np.float32)
         direct_messages = 0
         if self.direct_messages_enabled:
@@ -1995,6 +2036,7 @@ class Simulation:
             group_id=self.social.group_id[active],
             genotype=self.entities.genotype[active],
             generation=self.entities.generation[active],
+            harvested_resources_total=self.total_harvested_resources,
             **(
                 {
                     "working_memory_q": self.entities.working_memory_q[active],
@@ -2023,6 +2065,40 @@ class Simulation:
         self,
         actual_context_metrics: dict[str, object] | None = None,
     ) -> None:
+        if self.gpu_runtime is None:
+            resource_fields = np.asarray(self.environment.resources, dtype=np.float32)
+            hazard_field = np.asarray(self.environment.hazard, dtype=np.float32)
+        else:
+            resource_fields = self.gpu_runtime.environment.to_numpy(
+                self.gpu_runtime.environment.resources
+            ).astype(np.float32, copy=False)
+            hazard_field = self.gpu_runtime.environment.to_numpy(
+                self.gpu_runtime.environment.hazard
+            ).astype(np.float32, copy=False)
+        environment_metrics: dict[str, object] = {
+            "environment_schema": self.cfg.environment.schema,
+            "environment_resource_channel_mean": resource_fields.mean(
+                axis=(1, 2), dtype=np.float64
+            ).tolist(),
+            "environment_resource_channel_std": resource_fields.std(
+                axis=(1, 2), dtype=np.float64
+            ).tolist(),
+            "environment_resource_channel_min": resource_fields.min(
+                axis=(1, 2)
+            ).astype(np.float64).tolist(),
+            "environment_resource_channel_max": resource_fields.max(
+                axis=(1, 2)
+            ).astype(np.float64).tolist(),
+            "environment_hazard_mean": float(
+                hazard_field.mean(dtype=np.float64)
+            ),
+            "environment_hazard_std": float(
+                hazard_field.std(dtype=np.float64)
+            ),
+            **resource_affinity_diagnostics(
+                self.entities.alive, self.entities.genotype, self.cfg
+            ),
+        }
         self.evolution_progress.record(
             tick=self.tick,
             scheduled=True,
@@ -2042,6 +2118,7 @@ class Simulation:
                 self.lagged_benefit_boundary.snapshot_tick
             ),
             shared_energy_total=self.total_shared_energy,
+            harvested_resources_total=self.total_harvested_resources,
             reproduction_eligible_total=self.total_reproduction_eligible,
             reproduction_proposals_total=self.total_reproduction_proposals,
             reproduction_rejected_capacity_total=(
@@ -2056,6 +2133,7 @@ class Simulation:
             mutation_probability=self.cfg.policy.mutation_probability,
             mutation_std=self.cfg.policy.mutation_std,
             actual_context_metrics=actual_context_metrics,
+            environment_metrics=environment_metrics,
         )
 
     def step(self) -> StepStats:
@@ -2095,6 +2173,9 @@ class Simulation:
                 cfg.policy.partner_samples,
             )
             local_resources = self.environment.cell_values(cells)
+            policy_local_resources = policy_resource_view(
+                local_resources, ent.genotype[active], cfg
+            )
             info = self.information.observe(
                 active=active,
                 stable_ids=ent.entity_id,
@@ -2107,11 +2188,13 @@ class Simulation:
                 tick=self.tick,
             )
             resource_gradient, danger_gradient = self.environment.gradients_for_entities(
-                self.spatial.entity_cells, ent.alive.size
+                self.spatial.entity_cells,
+                ent.alive.size,
+                resource_affinity_quantized(ent.genotype, cfg),
             )
             if cfg.knowledge.enabled and cfg.knowledge.learning_enabled:
                 knowledge_context_keys = encode_local_context(
-                    local_resources[:, 0],
+                    policy_local_resources[:, 0],
                     self.environment.hazard.reshape(-1)[cells],
                     ent.energy[active],
                     ent.integrity[active],
@@ -2128,7 +2211,7 @@ class Simulation:
                             energy=ent.energy[active],
                             integrity=ent.integrity[active],
                             fertility=ent.fertility[active],
-                            local_resource=local_resources[:, 0],
+                            local_resource=policy_local_resources[:, 0],
                             max_energy=cfg.entities.max_energy,
                             resource_capacity=cfg.environment.resource_capacity[0],
                         )
@@ -2221,7 +2304,7 @@ class Simulation:
                     fertility=ent.fertility,
                     genotype=ent.genotype,
                     memory=ent.memory,
-                    local_resources=local_resources,
+                    local_resources=policy_local_resources,
                     resource_gradient=resource_gradient,
                     danger_gradient=danger_gradient,
                     group_direction=group_direction,
@@ -2241,7 +2324,7 @@ class Simulation:
                     fertility=ent.fertility,
                     genotype=ent.genotype,
                     memory=np.zeros_like(ent.memory),
-                    local_resources=local_resources,
+                    local_resources=policy_local_resources,
                     resource_gradient=resource_gradient,
                     danger_gradient=danger_gradient,
                     group_direction=group_direction,
@@ -2259,7 +2342,7 @@ class Simulation:
                 fertility=ent.fertility,
                 genotype=ent.genotype,
                 memory=ent.memory,
-                local_resources=local_resources,
+                local_resources=policy_local_resources,
                 resource_gradient=resource_gradient,
                 danger_gradient=danger_gradient,
                 group_direction=group_direction,
@@ -2317,6 +2400,9 @@ class Simulation:
                 return stats
             cells = prepared.cells
             local_resources = prepared.local_resources
+            policy_local_resources = policy_resource_view(
+                local_resources, ent.genotype[active], cfg
+            )
             resource_gradient = prepared.resource_gradient
             info = prepared.information
             decision = prepared.decision
@@ -2329,7 +2415,7 @@ class Simulation:
                         energy=ent.energy[active],
                         integrity=ent.integrity[active],
                         fertility=ent.fertility[active],
-                        local_resource=local_resources[:, 0],
+                        local_resource=policy_local_resources[:, 0],
                         max_energy=cfg.entities.max_energy,
                         resource_capacity=cfg.environment.resource_capacity[0],
                     ),
@@ -2471,7 +2557,7 @@ class Simulation:
                     ent.entity_id[active],
                     self.autonomy_restored[active],
                     ent.energy[active],
-                    local_resources[:, 0],
+                    policy_local_resources[:, 0],
                     (
                         resource_gradient[0][active],
                         resource_gradient[1][active],
@@ -2621,18 +2707,56 @@ class Simulation:
         ent.vx[non_movers] = 0.0
         ent.vy[non_movers] = 0.0
 
+        harvest_body_delta: np.ndarray | None = None
         if harvest_rows.size:
             if self.gpu_runtime is not None:
                 self.gpu_runtime.commit_harvest(harvest_cells, gathered)
             else:
                 self.environment.commit_harvest(harvest_cells, gathered)
             harvesters = intents.carrier_index[harvest_rows]
-            ent.energy[harvesters] = np.minimum(ent.energy[harvesters] + gathered[:, 0], cfg.entities.max_energy)
-            ent.integrity[harvesters] = np.minimum(ent.integrity[harvesters] + gathered[:, 1] * 0.05, 1.0)
-            ent.information_store[harvesters] = np.minimum(ent.information_store[harvesters] + gathered[:, 2], 3.0)
-            ent.fertility[harvesters] = np.minimum(ent.fertility[harvesters] + gathered[:, 3], 3.0)
-            ent.harvested_energy_total[harvesters] += gathered[:, 0]
-            stats.harvested_energy = float(gathered[:, 0].sum())
+            stats.harvested_resources = np.asarray(
+                gathered, dtype=np.float64
+            ).sum(axis=0)
+            self.total_harvested_resources += stats.harvested_resources
+            if cfg.environment.schema == "legacy-four-channel-v1":
+                ent.energy[harvesters] = np.minimum(
+                    ent.energy[harvesters] + gathered[:, 0], cfg.entities.max_energy
+                )
+                ent.integrity[harvesters] = np.minimum(
+                    ent.integrity[harvesters] + gathered[:, 1] * 0.05, 1.0
+                )
+                ent.information_store[harvesters] = np.minimum(
+                    ent.information_store[harvesters] + gathered[:, 2], 3.0
+                )
+                ent.fertility[harvesters] = np.minimum(
+                    ent.fertility[harvesters] + gathered[:, 3], 3.0
+                )
+                ent.harvested_energy_total[harvesters] += gathered[:, 0]
+                stats.harvested_energy = float(gathered[:, 0].sum())
+            else:
+                _, harvest_body_delta = apply_harvest_effects(
+                    gathered, ent.genotype[harvesters], cfg
+                )
+                ent.energy[harvesters] = np.minimum(
+                    ent.energy[harvesters] + harvest_body_delta[:, 0],
+                    cfg.entities.max_energy,
+                )
+                ent.integrity[harvesters] = np.minimum(
+                    ent.integrity[harvesters] + harvest_body_delta[:, 1], 1.0
+                )
+                ent.material[harvesters] = np.maximum(
+                    ent.material[harvesters] + harvest_body_delta[:, 2], 0.0
+                )
+                ent.information_store[harvesters] = np.minimum(
+                    ent.information_store[harvesters] + harvest_body_delta[:, 3], 3.0
+                )
+                ent.fertility[harvesters] = np.minimum(
+                    ent.fertility[harvesters] + harvest_body_delta[:, 4], 3.0
+                )
+                ent.harvested_energy_total[harvesters] += harvest_body_delta[:, 0]
+                stats.harvested_energy = float(
+                    np.asarray(harvest_body_delta[:, 0], dtype=np.float64).sum()
+                )
 
         share = self._finalize_share_capacity(share, resolutions)
         stats.shared_energy = self._commit_shares(share)
@@ -2746,9 +2870,15 @@ class Simulation:
             carriers = intents.carrier_index
             material_delta = np.zeros(intents.action.size, dtype=np.float32)
             if harvest_rows.size:
-                material_delta[harvest_rows] = np.asarray(
-                    gathered, dtype=np.float32
-                ).sum(axis=1)
+                if (
+                    cfg.environment.schema != "legacy-four-channel-v1"
+                    and harvest_body_delta is not None
+                ):
+                    material_delta[harvest_rows] = harvest_body_delta[:, 2]
+                else:
+                    material_delta[harvest_rows] = np.asarray(
+                        gathered, dtype=np.float32
+                    ).sum(axis=1)
             post_reproduction = np.minimum(
                 np.clip(
                     ent.energy[carriers]
@@ -2774,11 +2904,25 @@ class Simulation:
                 OUTCOME_STATUS_FAILED,
             ).astype(np.uint8)
             if harvest_rows.size:
-                partial_harvest = (
-                    resolutions.success[harvest_rows]
-                    & (gathered[:, 0] > 1e-8)
-                    & (gathered[:, 0] < cfg.entities.harvest_rate - 1e-8)
-                )
+                if cfg.environment.schema == "legacy-four-channel-v1":
+                    partial_harvest = (
+                        resolutions.success[harvest_rows]
+                        & (gathered[:, 0] > 1e-8)
+                        & (gathered[:, 0] < cfg.entities.harvest_rate - 1e-8)
+                    )
+                else:
+                    requested_rates = (
+                        cfg.entities.harvest_rate
+                        * np.asarray(
+                            cfg.environment.harvest_channel_multipliers,
+                            dtype=np.float32,
+                        )
+                    )
+                    partial_harvest = (
+                        resolutions.success[harvest_rows]
+                        & np.any(gathered > 1e-8, axis=1)
+                        & np.any(gathered < requested_rates[None, :] - 1e-8, axis=1)
+                    )
                 statuses[harvest_rows[partial_harvest]] = OUTCOME_STATUS_PARTIAL
             if share.rows.size:
                 proposed_share = np.minimum(
@@ -2912,7 +3056,9 @@ class Simulation:
         ent.fertility[current_active] = np.maximum(ent.fertility[current_active] - 0.0005, 0.0)
 
         if not cfg.knowledge.working_memory_enabled:
-            self.policy.update_memory(active, ent.memory, local_resources, info)
+            self.policy.update_memory(
+                active, ent.memory, policy_local_resources, info
+            )
         death_events = plan_death_events(
             active=current_active,
             entity_ids=ent.entity_id,
@@ -3138,6 +3284,29 @@ class Simulation:
             knowledge_preference_mean = np.zeros(5, dtype=np.float64)
             knowledge_preference_diversity = np.zeros(5, dtype=np.float64)
             knowledge_use_strength_mean = 0.0
+        affinity_metrics = resource_affinity_diagnostics(
+            ent.alive, ent.genotype, self.cfg
+        )
+        if self.gpu_runtime is None:
+            metric_resource_fields = np.asarray(
+                self.environment.resources, dtype=np.float32
+            )
+            metric_hazard_field = np.asarray(
+                self.environment.hazard, dtype=np.float32
+            )
+        else:
+            metric_resource_fields = self.gpu_runtime.environment.to_numpy(
+                self.gpu_runtime.environment.resources
+            ).astype(np.float32, copy=False)
+            metric_hazard_field = self.gpu_runtime.environment.to_numpy(
+                self.gpu_runtime.environment.hazard
+            ).astype(np.float32, copy=False)
+        resource_field_mean = metric_resource_fields.mean(
+            axis=(1, 2), dtype=np.float64
+        )
+        resource_field_std = metric_resource_fields.std(
+            axis=(1, 2), dtype=np.float64
+        )
         autonomy_cohort_size = int(self.autonomy_recovery_cohort_ids.size)
         autonomy_restored_alive = int(
             np.count_nonzero(self.autonomy_restored & ent.alive)
@@ -3244,7 +3413,47 @@ class Simulation:
             "knowledge_outcome_preference_reproduction_diversity": float(knowledge_preference_diversity[4]),
             "knowledge_use_strength_mean": knowledge_use_strength_mean,
             "move_social_fraction": stats.move_social_fraction,
+            "environment_schema": self.cfg.environment.schema,
+            "resource_affinity_schema": self.cfg.entities.resource_affinity_schema,
+            "active_morphology_gene_count": int(
+                affinity_metrics["active_morphology_gene_count"]
+            ),
+            "active_morphology_effective_dimensions": float(
+                affinity_metrics["active_morphology_effective_dimensions"]
+            ),
+            "resource_affinity_specialization_mean": float(
+                affinity_metrics["resource_affinity_specialization_mean"]
+            ),
+            "resource_affinity_effective_dimensions": float(
+                affinity_metrics["resource_affinity_effective_dimensions"]
+            ),
+            "resource_affinity_0_mean": float(affinity_metrics["resource_affinity_mean"][0]),
+            "resource_affinity_1_mean": float(affinity_metrics["resource_affinity_mean"][1]),
+            "resource_affinity_2_mean": float(affinity_metrics["resource_affinity_mean"][2]),
+            "resource_affinity_3_mean": float(affinity_metrics["resource_affinity_mean"][3]),
+            "resource_affinity_0_diversity": float(affinity_metrics["resource_affinity_std"][0]),
+            "resource_affinity_1_diversity": float(affinity_metrics["resource_affinity_std"][1]),
+            "resource_affinity_2_diversity": float(affinity_metrics["resource_affinity_std"][2]),
+            "resource_affinity_3_diversity": float(affinity_metrics["resource_affinity_std"][3]),
+            "environment_resource_0_mean": float(resource_field_mean[0]),
+            "environment_resource_1_mean": float(resource_field_mean[1]),
+            "environment_resource_2_mean": float(resource_field_mean[2]),
+            "environment_resource_3_mean": float(resource_field_mean[3]),
+            "environment_resource_0_std": float(resource_field_std[0]),
+            "environment_resource_1_std": float(resource_field_std[1]),
+            "environment_resource_2_std": float(resource_field_std[2]),
+            "environment_resource_3_std": float(resource_field_std[3]),
+            "environment_hazard_mean": float(metric_hazard_field.mean(dtype=np.float64)),
+            "environment_hazard_std": float(metric_hazard_field.std(dtype=np.float64)),
             "harvested_energy_step": stats.harvested_energy,
+            "harvested_resource_0_step": float(stats.harvested_resources[0]),
+            "harvested_resource_1_step": float(stats.harvested_resources[1]),
+            "harvested_resource_2_step": float(stats.harvested_resources[2]),
+            "harvested_resource_3_step": float(stats.harvested_resources[3]),
+            "harvested_resource_0_total": float(self.total_harvested_resources[0]),
+            "harvested_resource_1_total": float(self.total_harvested_resources[1]),
+            "harvested_resource_2_total": float(self.total_harvested_resources[2]),
+            "harvested_resource_3_total": float(self.total_harvested_resources[3]),
             "shared_energy_step": stats.shared_energy,
             "shared_energy_total": self.total_shared_energy,
             "benefit_classification_residual_step": (

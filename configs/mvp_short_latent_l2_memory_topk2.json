@@ -1,7 +1,7 @@
 {
   "run": {
     "seed": 10001,
-    "ticks": 300,
+    "ticks": 30,
     "metrics_period": 5,
     "checkpoint_period": 15,
     "gpu_harvest_conflict_planner": true,
@@ -16,7 +16,7 @@
     "grid_x": 32,
     "grid_y": 32,
     "initial_entities": 500,
-    "max_entities": 7680,
+    "max_entities": 768,
     "periodic": true
   },
   "environment": {

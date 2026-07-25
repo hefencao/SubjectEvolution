@@ -56,6 +56,37 @@ class EnvironmentConfig:
     season_amplitude: float
     signal_decay: float
     signal_diffusion: float
+    # Legacy runs retain the original globally synchronized four-channel
+    # resource field.  The heterogeneous schema adds spatial phase offsets
+    # without changing the action vocabulary or hard-coding a preferred niche.
+    schema: str = "legacy-four-channel-v1"
+    resource_temporal_phase_offsets: tuple[float, float, float, float] = (
+        0.0, 1.3, 2.6, 3.9
+    )
+    # Number of additional seasonal cycles across the world in x/y.
+    resource_spatial_phase_x: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)
+    resource_spatial_phase_y: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)
+    harvest_channel_multipliers: tuple[float, float, float, float] = (
+        1.0, 0.45, 0.25, 0.18
+    )
+    # Per raw-resource channel effects on: energy, integrity, material,
+    # information, fertility.  The matrix is used only by the heterogeneous
+    # schema; the legacy branch preserves its historical direct mapping.
+    resource_effect_matrix: tuple[
+        tuple[float, float, float, float, float],
+        tuple[float, float, float, float, float],
+        tuple[float, float, float, float, float],
+        tuple[float, float, float, float, float],
+    ] = (
+        (1.0, 0.0, 0.0, 0.0, 0.0),
+        (0.0, 0.05, 0.0, 0.0, 0.0),
+        (0.0, 0.0, 0.0, 1.0, 0.0),
+        (0.0, 0.0, 0.0, 0.0, 1.0),
+    )
+    hazard_spatial_phase_x: float = 0.0
+    hazard_spatial_phase_y: float = 0.0
+    hazard_temporal_multiplier: float = 1.0
+    hazard_secondary_amplitude: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -76,6 +107,13 @@ class EntityConfig:
     # configs remain replayable; bundled current configs opt into the neutral
     # stateless rule explicitly.
     reproduction_capacity_arbitration: str = "stable-id-v1"
+    # Existing morphology genes 1..4 are activated only by this explicit
+    # schema.  Their normalized total budget prevents an all-positive free
+    # advantage and turns resource specialization into a genuine trade-off.
+    resource_affinity_schema: str = "disabled"
+    resource_affinity_strength: float = 0.0
+    resource_affinity_min_efficiency: float = 0.25
+    resource_affinity_max_efficiency: float = 1.75
 
 
 @dataclass(frozen=True)
@@ -309,6 +347,53 @@ def load_config(path: str | Path) -> SimulationConfig:
             season_amplitude=_require(raw, "environment")["season_amplitude"],
             signal_decay=_require(raw, "environment")["signal_decay"],
             signal_diffusion=_require(raw, "environment")["signal_diffusion"],
+            schema=_require(raw, "environment").get(
+                "schema", "legacy-four-channel-v1"
+            ),
+            resource_temporal_phase_offsets=tuple(
+                _require(raw, "environment").get(
+                    "resource_temporal_phase_offsets", (0.0, 1.3, 2.6, 3.9)
+                )
+            ),
+            resource_spatial_phase_x=tuple(
+                _require(raw, "environment").get(
+                    "resource_spatial_phase_x", (0.0, 0.0, 0.0, 0.0)
+                )
+            ),
+            resource_spatial_phase_y=tuple(
+                _require(raw, "environment").get(
+                    "resource_spatial_phase_y", (0.0, 0.0, 0.0, 0.0)
+                )
+            ),
+            harvest_channel_multipliers=tuple(
+                _require(raw, "environment").get(
+                    "harvest_channel_multipliers", (1.0, 0.45, 0.25, 0.18)
+                )
+            ),
+            resource_effect_matrix=tuple(
+                tuple(row)
+                for row in _require(raw, "environment").get(
+                    "resource_effect_matrix",
+                    (
+                        (1.0, 0.0, 0.0, 0.0, 0.0),
+                        (0.0, 0.05, 0.0, 0.0, 0.0),
+                        (0.0, 0.0, 0.0, 1.0, 0.0),
+                        (0.0, 0.0, 0.0, 0.0, 1.0),
+                    ),
+                )
+            ),
+            hazard_spatial_phase_x=float(
+                _require(raw, "environment").get("hazard_spatial_phase_x", 0.0)
+            ),
+            hazard_spatial_phase_y=float(
+                _require(raw, "environment").get("hazard_spatial_phase_y", 0.0)
+            ),
+            hazard_temporal_multiplier=float(
+                _require(raw, "environment").get("hazard_temporal_multiplier", 1.0)
+            ),
+            hazard_secondary_amplitude=float(
+                _require(raw, "environment").get("hazard_secondary_amplitude", 0.0)
+            ),
         ),
         entities=EntityConfig(**_require(raw, "entities")),
         information=InformationConfig(
@@ -382,6 +467,67 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("resource regeneration cannot be negative")
     if any(v <= 0 for v in cfg.environment.resource_capacity):
         raise ValueError("resource capacities must be positive")
+    if cfg.environment.schema not in {
+        "legacy-four-channel-v1",
+        "spatially-asynchronous-multiniche-v1",
+    }:
+        raise ValueError(
+            "environment.schema must be 'legacy-four-channel-v1' or "
+            "'spatially-asynchronous-multiniche-v1'"
+        )
+    for name, values in (
+        ("resource_temporal_phase_offsets", cfg.environment.resource_temporal_phase_offsets),
+        ("resource_spatial_phase_x", cfg.environment.resource_spatial_phase_x),
+        ("resource_spatial_phase_y", cfg.environment.resource_spatial_phase_y),
+        ("harvest_channel_multipliers", cfg.environment.harvest_channel_multipliers),
+    ):
+        if len(values) != 4 or any(not math.isfinite(float(value)) for value in values):
+            raise ValueError(f"environment.{name} must contain four finite values")
+    if any(value < 0.0 for value in cfg.environment.harvest_channel_multipliers):
+        raise ValueError("environment.harvest_channel_multipliers cannot be negative")
+    if len(cfg.environment.resource_effect_matrix) != 4 or any(
+        len(row) != 5 for row in cfg.environment.resource_effect_matrix
+    ):
+        raise ValueError("environment.resource_effect_matrix must be shaped [4, 5]")
+    if any(
+        not math.isfinite(float(value)) or value < 0.0
+        for row in cfg.environment.resource_effect_matrix
+        for value in row
+    ):
+        raise ValueError("environment.resource_effect_matrix must be finite and non-negative")
+    for name, value in (
+        ("hazard_spatial_phase_x", cfg.environment.hazard_spatial_phase_x),
+        ("hazard_spatial_phase_y", cfg.environment.hazard_spatial_phase_y),
+        ("hazard_temporal_multiplier", cfg.environment.hazard_temporal_multiplier),
+        ("hazard_secondary_amplitude", cfg.environment.hazard_secondary_amplitude),
+    ):
+        if not math.isfinite(float(value)):
+            raise ValueError(f"environment.{name} must be finite")
+    if cfg.environment.hazard_temporal_multiplier <= 0.0:
+        raise ValueError("environment.hazard_temporal_multiplier must be positive")
+    if not 0.0 <= cfg.environment.hazard_secondary_amplitude <= 0.5:
+        raise ValueError("environment.hazard_secondary_amplitude must be in [0, 0.5]")
+    if cfg.entities.resource_affinity_schema not in {
+        "disabled",
+        "normalized-four-resource-affinity-v1",
+    }:
+        raise ValueError(
+            "entities.resource_affinity_schema must be 'disabled' or "
+            "'normalized-four-resource-affinity-v1'"
+        )
+    if cfg.entities.resource_affinity_strength < 0.0:
+        raise ValueError("entities.resource_affinity_strength cannot be negative")
+    if (
+        cfg.entities.resource_affinity_min_efficiency <= 0.0
+        or cfg.entities.resource_affinity_max_efficiency
+        < cfg.entities.resource_affinity_min_efficiency
+    ):
+        raise ValueError("resource affinity efficiency bounds are invalid")
+    if (
+        cfg.entities.resource_affinity_schema != "disabled"
+        and cfg.environment.schema != "spatially-asynchronous-multiniche-v1"
+    ):
+        raise ValueError("resource affinity requires the heterogeneous environment schema")
     _probability("channel_loss", cfg.information.channel_loss)
     _probability("classification_error", cfg.information.classification_error)
     if cfg.information.receiver_noise < 0:

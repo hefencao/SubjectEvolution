@@ -29,6 +29,7 @@ from .knowledge_policy import (
     build_latent_knowledge_policy_plan,
 )
 from .latent_knowledge import latent_router_state_features
+from .niches import policy_resource_view, resource_affinity_quantized
 from .routing_cost import RoutingCostBudgetResult, apply_routing_cost_budget
 from .intents import ActionIntentBatch
 from .policy import Action, ParametricPolicy, PolicyDecision
@@ -434,6 +435,18 @@ class HybridGpuRuntime:
                 direct.dense_nbytes - direct.semantic_transfer_nbytes, 0
             )
         local_resources = self.environment.cell_values(cells)
+        local_resources_host = self._download(local_resources).astype(
+            np.float32, copy=False
+        )
+        policy_local_resources_host = policy_resource_view(
+            local_resources_host, entity.genotype[active_host], self.cfg
+        )
+        policy_local_resources = xp.asarray(
+            policy_local_resources_host, dtype=xp.float32
+        )
+        affinity_device = xp.asarray(
+            resource_affinity_quantized(entity.genotype, self.cfg), dtype=xp.int32
+        )
         device_info = self.information_field.observe(
             stable_ids=stable_ids[active],
             cell_ids=cells,
@@ -449,6 +462,7 @@ class HybridGpuRuntime:
         resource_gradient, danger_gradient = self.environment.gradients_for_entities(
             self.spatial.entity_cells,
             entity.alive.size,
+            affinity_device,
         )
         self.backend.synchronize()
         observation_seconds = time.perf_counter() - timer
@@ -459,7 +473,7 @@ class HybridGpuRuntime:
         cost_free_plan = KnowledgePolicyPlan.empty(tick)
         if knowledge is not None and knowledge.kcfg.learning_enabled:
             device_context_keys = encode_local_context(
-                local_resources[:, 0],
+                policy_local_resources[:, 0],
                 self.environment.hazard.reshape(-1)[cells],
                 energy[active],
                 integrity[active],
@@ -479,9 +493,7 @@ class HybridGpuRuntime:
                     # inherited routing still execute on the GPU, while a
                     # backend-specific division cannot move a quantized state
                     # coordinate across a later action boundary.
-                    local_resource_host = self._download(
-                        local_resources[:, 0]
-                    ).astype(np.float32, copy=False)
+                    local_resource_host = policy_local_resources_host[:, 0]
                     router_state = latent_router_state_features(
                         energy=entity.energy[active_host],
                         integrity=entity.integrity[active_host],
@@ -582,7 +594,7 @@ class HybridGpuRuntime:
                 fertility=fertility,
                 genotype=genotype,
                 memory=memory,
-                local_resources=local_resources,
+                local_resources=policy_local_resources,
                 resource_gradient=resource_gradient,
                 danger_gradient=danger_gradient,
                 group_direction=group_direction,
@@ -602,7 +614,7 @@ class HybridGpuRuntime:
                 fertility=fertility,
                 genotype=genotype,
                 memory=xp.zeros_like(memory),
-                local_resources=local_resources,
+                local_resources=policy_local_resources,
                 resource_gradient=resource_gradient,
                 danger_gradient=danger_gradient,
                 group_direction=group_direction,
@@ -620,7 +632,7 @@ class HybridGpuRuntime:
             fertility=fertility,
             genotype=genotype,
             memory=memory,
-            local_resources=local_resources,
+            local_resources=policy_local_resources,
             resource_gradient=resource_gradient,
             danger_gradient=danger_gradient,
             group_direction=group_direction,
@@ -638,7 +650,7 @@ class HybridGpuRuntime:
         # One synchronized host boundary for the CPU intent/commit stages.
         active_result = active_host
         cells_result = self._download(cells).astype(np.int32, copy=False)
-        local_result = self._download(local_resources).astype(np.float32, copy=False)
+        local_result = local_resources_host
         resource_result = (
             tuple(self._download(value).astype(np.float32, copy=False) for value in resource_gradient)
             if need_host_resource_gradient
