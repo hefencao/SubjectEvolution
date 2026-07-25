@@ -1,5 +1,6 @@
 #include "eco/launcher.hpp"
 #include "eco/ui_font.hpp"
+#include "eco/gui_preferences.hpp"
 
 #include <algorithm>
 #include <array>
@@ -25,6 +26,8 @@ namespace {
 
 using eco::ui::draw_text;
 using eco::ui::measure_text;
+
+bool g_launcher_input_blocked = false;
 
 struct JsonValue {
     using Object = std::vector<std::pair<std::string, JsonValue>>;
@@ -685,7 +688,7 @@ int draw_wrapped_text(
 
 bool button(Rectangle rect, const std::string& label, bool enabled = true, bool active = false) {
     const Vector2 mouse = GetMousePosition();
-    const bool hovered = enabled && CheckCollisionPointRec(mouse, rect);
+    const bool hovered = !g_launcher_input_blocked && enabled && CheckCollisionPointRec(mouse, rect);
     DrawRectangleRec(
         rect,
         !enabled ? Color{36, 42, 48, 255}
@@ -701,7 +704,7 @@ bool button(Rectangle rect, const std::string& label, bool enabled = true, bool 
         font_size,
         enabled ? RAYWHITE : GRAY
     );
-    return enabled && hovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+    return !g_launcher_input_blocked && enabled && hovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
 }
 
 struct TextEditState {
@@ -728,7 +731,7 @@ bool text_field(
     const std::string& placeholder = {}
 ) {
     const Vector2 mouse = GetMousePosition();
-    const bool hovered = CheckCollisionPointRec(mouse, rect);
+    const bool hovered = !g_launcher_input_blocked && CheckCollisionPointRec(mouse, rect);
     const bool clicked = hovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
     if (clicked) state.active = id;
     const bool active = state.active == id;
@@ -788,13 +791,13 @@ struct HistoryLine {
     std::string text;
 };
 
-std::vector<HistoryLine> recent_history(const std::filesystem::path& project_root) {
+std::vector<HistoryLine> recent_history(const std::filesystem::path& project_root, std::size_t limit) {
     std::vector<HistoryLine> lines;
     std::string error;
-    auto root = load_json(project_root / "runs/.experiment_history.json", error);
+    auto root = load_json(eco::preferences::history_path(project_root), error);
     if (!root || !root->is_array()) return lines;
     const auto& array = root->array();
-    for (auto it = array.rbegin(); it != array.rend() && lines.size() < 4U; ++it) {
+    for (auto it = array.rbegin(); it != array.rend() && lines.size() < limit; ++it) {
         if (!it->is_object()) continue;
         std::map<std::string, std::string> fields;
         for (const auto& [key, value] : it->object()) {
@@ -844,19 +847,17 @@ struct LauncherState {
     float detail_scroll = 0.0F;
     ExperimentMode mode = ExperimentMode::SingleRun;
     std::size_t backend = 0;
-    bool backend_open = false;
-    std::size_t resolution = 0;
-    bool resolution_open = false;
-    int custom_width = 1440;
-    int custom_height = 900;
-    std::string custom_width_text = "1440";
-    std::string custom_height_text = "900";
     std::string seed_text = "10001";
     std::string seeds_text = "10001,10002,10003";
     std::string tick_text = "1500";
     std::string output_text;
+    bool overwrite_partial = false;
     bool extended_open = false;
+    bool command_open = false;
+    bool permanent_open = false;
+    bool settings_open = false;
     std::string search;
+    std::string scalar_search;
     std::size_t extended_scroll = 0;
     std::size_t selected_scalar = 0;
     Rectangle extended_list_rect{};
@@ -916,7 +917,7 @@ std::vector<std::size_t> filtered_scalar_indices(
     const std::vector<ConfigScalar>& scalars,
     const LauncherState& state
 ) {
-    std::string search = state.search;
+    std::string search = state.scalar_search;
     std::transform(search.begin(), search.end(), search.begin(), [](unsigned char c) {
         return static_cast<char>(std::tolower(c));
     });
@@ -967,7 +968,7 @@ LaunchRequest request_template(
     const std::string& python,
     const LauncherState& state,
     const std::array<std::string, 3>& backends,
-    const std::vector<ResolutionChoice>& resolutions
+    const ResolutionChoice& resolution
 ) {
     LaunchRequest request;
     request.project_root = project_root;
@@ -976,12 +977,7 @@ LaunchRequest request_template(
     request.python = python;
     request.backend = backends[state.backend];
     request.mode = state.mode;
-    request.resolution = resolutions[state.resolution];
-    if (request.resolution.custom) {
-        request.resolution.width = state.custom_width;
-        request.resolution.height = state.custom_height;
-        request.resolution.label = std::to_string(state.custom_width) + "x" + std::to_string(state.custom_height);
-    }
+    request.resolution = resolution;
     request.until_tick = 0;
     try { request.until_tick = std::stoull(state.tick_text); } catch (...) {}
     std::string seed_error;
@@ -997,6 +993,7 @@ LaunchRequest request_template(
         ? project_root / "runs/<output>"
         : std::filesystem::path(state.output_text);
     request.stream_path = request.output_path / "eco_live.bin";
+    request.overwrite_partial = state.overwrite_partial;
     request.command = command_preview(request, true);
     (void)stem;
     return request;
@@ -1030,13 +1027,7 @@ ConfigScanResult find_configs(const std::filesystem::path& config_dir) {
             result.configs.push_back(std::filesystem::absolute(entry.path()));
         }
     }
-    std::sort(result.configs.begin(), result.configs.end(), [](const auto& left, const auto& right) {
-        std::string a = left.filename().string();
-        std::string b = right.filename().string();
-        std::transform(a.begin(), a.end(), a.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-        std::transform(b.begin(), b.end(), b.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-        return a == b ? left.string() < right.string() : a < b;
-    });
+    eco::preferences::sort_configs(result.configs, eco::preferences::ConfigSortMode::Latest);
     return result;
 }
 
@@ -1069,7 +1060,7 @@ LauncherLayout make_launcher_layout(int width, int height) {
     const float left = std::clamp(available * 0.36F, 370.0F, 600.0F);
     LauncherLayout layout;
     layout.config_panel = {margin, header_bottom, left, content_height};
-    layout.list_view = {margin + 12.0F, header_bottom + 54.0F, left - 24.0F, content_height - 68.0F};
+    layout.list_view = {margin + 12.0F, header_bottom + 104.0F, left - 24.0F, content_height - 118.0F};
     layout.details_panel = {margin + left + gap, header_bottom, available - left, content_height};
     layout.details_view = {layout.details_panel.x + 10.0F, layout.details_panel.y + 10.0F, layout.details_panel.width - 20.0F, layout.details_panel.height - 20.0F};
     layout.refresh_button = {layout.config_panel.x + layout.config_panel.width - 118.0F, layout.config_panel.y + 10.0F, 104.0F, 32.0F};
@@ -1232,6 +1223,7 @@ std::string command_preview(const LaunchRequest& request, bool template_paths) {
                 << " --output \"" << output << "\""
                 << " --backend " << request.backend;
         if (request.until_tick > 0U) command << " --until-tick " << request.until_tick;
+        if (request.overwrite_partial) command << " --overwrite-partial";
     } else {
         command << "subject_evolution.gui_interface.run_simulation"
                 << " --config \"" << config << "\""
@@ -1274,7 +1266,10 @@ bool append_history(
     int exit_code,
     std::string& error
 ) {
-    const std::filesystem::path path = request.project_root / "runs/.experiment_history.json";
+    const std::filesystem::path path = eco::preferences::history_path(request.project_root);
+    std::error_code directory_error;
+    std::filesystem::create_directories(path.parent_path(), directory_error);
+    if (directory_error) { error = "Could not create saves directory: " + directory_error.message(); return false; }
     JsonValue root;
     std::string load_error;
     auto existing = load_json(path, load_error);
@@ -1304,8 +1299,20 @@ std::optional<LaunchRequest> show_launcher(
     const std::filesystem::path& config_dir,
     const std::string& python
 ) {
+    std::string preference_warning;
+    eco::preferences::migrate_legacy_history(project_root, preference_warning);
+    eco::preferences::GuiSettings settings = eco::preferences::load_settings(project_root, preference_warning);
+    eco::preferences::GuiSettings draft_settings = settings;
+    std::string state_warning;
+    eco::preferences::GuiState persistent = eco::preferences::load_state(project_root, state_warning);
+
+    eco::ui::set_font_metrics(settings.body_font_size, settings.title_font_size, settings.ui_scale);
+    eco::ui::reload_font(project_root, settings.font_family);
+    SetWindowSize(settings.window_width, settings.window_height);
+
     ConfigScanResult scan = find_configs(config_dir);
     std::vector<std::filesystem::path> configs = std::move(scan.configs);
+    eco::preferences::sort_configs(configs, persistent.sort_mode);
     const std::array<std::string, 3> backends{"cpu", "gpu", "auto"};
     const std::array<std::string, 3> backend_help{
         "CPU: parity and reproducibility",
@@ -1313,420 +1320,555 @@ std::optional<LaunchRequest> show_launcher(
         "AUTO: resolve the available backend",
     };
     const std::vector<ResolutionChoice> resolutions = resolution_choices();
+
     LauncherState state;
+    state.search = persistent.config_search;
+    std::string settings_width_text = std::to_string(draft_settings.window_width);
+    std::string settings_height_text = std::to_string(draft_settings.window_height);
+    std::size_t settings_resolution = resolutions.size() - 1U;
+    for (std::size_t index = 0; index < resolutions.size(); ++index) {
+        if (!resolutions[index].custom &&
+            resolutions[index].width == settings.window_width &&
+            resolutions[index].height == settings.window_height) {
+            settings_resolution = index;
+            break;
+        }
+    }
+    std::size_t settings_scale = 1;
+    const std::array<float, 6> scales{0.90F, 1.00F, 1.10F, 1.20F, 1.30F, 1.40F};
+    for (std::size_t index = 0; index < scales.size(); ++index) {
+        if (std::abs(scales[index] - settings.ui_scale) < 0.02F) settings_scale = index;
+    }
+    const std::array<int, 7> body_sizes{14, 15, 16, 17, 18, 20, 22};
+    const std::array<int, 5> title_sizes{30, 31, 32, 33, 34};
+    const std::array<int, 5> row_heights{34, 38, 42, 46, 50};
+    const std::array<int, 5> recent_counts{4, 6, 8, 10, 12};
+    const std::array<std::string, 5> font_families{"auto", "dejavu", "noto", "liberation", "consolas"};
+    auto nearest_index = [](auto value, const auto& choices) {
+        std::size_t best = 0;
+        auto distance = std::abs(static_cast<double>(value) - static_cast<double>(choices[0]));
+        for (std::size_t index = 1; index < choices.size(); ++index) {
+            const auto candidate = std::abs(static_cast<double>(value) - static_cast<double>(choices[index]));
+            if (candidate < distance) { distance = candidate; best = index; }
+        }
+        return best;
+    };
+    std::size_t settings_body = nearest_index(settings.body_font_size, body_sizes);
+    std::size_t settings_title = nearest_index(settings.title_font_size, title_sizes);
+    std::size_t settings_row = nearest_index(settings.row_height, row_heights);
+    std::size_t settings_recent = nearest_index(settings.recent_experiments, recent_counts);
+    std::size_t settings_font = 0;
+    for (std::size_t index = 0; index < font_families.size(); ++index) {
+        if (font_families[index] == settings.font_family) settings_font = index;
+    }
+
     std::vector<ConfigScalar> scalars;
     std::filesystem::path loaded_config;
-    std::string scalar_error;
-    std::string message = scan.error.empty()
-        ? (configs.empty() ? "No JSON configurations found." : "Temporary overrides run immediately; the source JSON remains unchanged.")
+    std::filesystem::path selected_path;
+    std::string message = !preference_warning.empty() ? preference_warning : state_warning;
+    if (message.empty()) message = scan.error.empty()
+        ? "Temporary overrides run immediately; source JSON remains unchanged."
         : scan.error;
     Color message_color = scan.error.empty() ? GRAY : ORANGE;
-    std::string last_title;
-    std::vector<HistoryLine> history = recent_history(project_root);
+    bool state_dirty = false;
 
-    auto reload_selected = [&]() {
-        if (configs.empty()) {
-            scalars.clear();
-            loaded_config.clear();
-            return;
-        }
-        const std::filesystem::path selected_path = configs[state.selected];
-        if (selected_path == loaded_config) return;
-        scalar_error.clear();
-        scalars = inspect_scalar_config(selected_path, scalar_error);
-        loaded_config = selected_path;
-        reset_config_state(state, selected_path, scalars);
-        if (!scalar_error.empty()) {
-            message = scalar_error;
-            message_color = ORANGE;
-        }
+    auto lower = [](std::string value) {
+        std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
+            return static_cast<char>(std::tolower(c));
+        });
+        return value;
     };
-
+    auto visible_configs = [&]() {
+        std::vector<std::filesystem::path> result;
+        const std::string needle = lower(state.search);
+        for (const auto& config : configs) {
+            const std::string filename = config.filename().string();
+            if (!needle.empty() && lower(filename).find(needle) == std::string::npos) continue;
+            if (persistent.tag_filter != "all" &&
+                eco::preferences::infer_config_tag(config) != persistent.tag_filter) continue;
+            if (persistent.favorites_only && !persistent.favorites.contains(filename)) continue;
+            result.push_back(config);
+        }
+        return result;
+    };
+    auto preserve_selection = [&](const std::string& filename) {
+        auto visible = visible_configs();
+        state.selected = 0;
+        for (std::size_t index = 0; index < visible.size(); ++index) {
+            if (visible[index].filename() == filename) { state.selected = index; break; }
+        }
+        state.config_scroll = clamp_launcher_scroll(state.selected, visible.size(), 1U, state.config_scroll);
+    };
     auto refresh = [&]() {
-        const std::filesystem::path previous = configs.empty() ? std::filesystem::path{} : configs[state.selected];
+        const std::string keep = selected_path.empty() ? persistent.last_config : selected_path.filename().string();
         ConfigScanResult refreshed = find_configs(config_dir);
         configs = std::move(refreshed.configs);
-        state.selected = 0;
-        if (!previous.empty()) {
-            const auto found = std::find(configs.begin(), configs.end(), previous);
-            if (found != configs.end()) state.selected = static_cast<std::size_t>(found - configs.begin());
-        }
-        if (!configs.empty()) state.selected = std::min(state.selected, configs.size() - 1U);
-        state.config_scroll = 0;
+        eco::preferences::sort_configs(configs, persistent.sort_mode);
+        scan.error = refreshed.error;
+        preserve_selection(keep);
         loaded_config.clear();
-        reload_selected();
-        message = refreshed.error.empty() ? "Configuration list refreshed." : refreshed.error;
-        message_color = refreshed.error.empty() ? GRAY : ORANGE;
     };
-
+    auto reload_selected = [&]() {
+        auto visible = visible_configs();
+        if (visible.empty()) {
+            selected_path.clear();
+            scalars.clear();
+            return;
+        }
+        state.selected = std::min(state.selected, visible.size() - 1U);
+        const auto path = visible[state.selected];
+        if (path == loaded_config) { selected_path = path; return; }
+        selected_path = path;
+        loaded_config = path;
+        std::string error;
+        scalars = inspect_scalar_config(path, error);
+        reset_config_state(state, path, scalars);
+        persistent.last_config = path.filename().string();
+        state_dirty = true;
+        if (!error.empty()) { message = error; message_color = ORANGE; }
+    };
+    if (!persistent.last_config.empty()) preserve_selection(persistent.last_config);
     reload_selected();
 
-    while (!WindowShouldClose()) {
-        const LauncherLayout layout = make_launcher_layout(GetScreenWidth(), GetScreenHeight());
-        constexpr float config_row_height = 38.0F;
-        const std::size_t visible_rows = std::max<std::size_t>(1U, static_cast<std::size_t>(layout.list_view.height / config_row_height));
-        const Vector2 mouse = GetMousePosition();
-
-        if (IsKeyPressed(KEY_ESCAPE)) return std::nullopt;
-        if (IsKeyPressed(KEY_R) || (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mouse, layout.refresh_button))) refresh();
-
-        if (!configs.empty()) {
-            const auto move_selection = [&](long long delta) {
-                const long long maximum = static_cast<long long>(configs.size() - 1U);
-                state.selected = static_cast<std::size_t>(std::clamp(static_cast<long long>(state.selected) + delta, 0LL, maximum));
-                loaded_config.clear();
-                reload_selected();
-            };
-            if (IsKeyPressed(KEY_DOWN)) move_selection(1);
-            if (IsKeyPressed(KEY_UP)) move_selection(-1);
-            if (IsKeyPressed(KEY_PAGE_DOWN)) move_selection(static_cast<long long>(visible_rows));
-            if (IsKeyPressed(KEY_PAGE_UP)) move_selection(-static_cast<long long>(visible_rows));
-            if (IsKeyPressed(KEY_HOME)) { state.selected = 0; loaded_config.clear(); reload_selected(); }
-            if (IsKeyPressed(KEY_END)) { state.selected = configs.size() - 1U; loaded_config.clear(); reload_selected(); }
-            if (CheckCollisionPointRec(mouse, layout.list_view)) {
-                const float wheel = GetMouseWheelMove();
-                if (wheel != 0.0F) move_selection(wheel > 0.0F ? -3 : 3);
+    auto relative_time = [](const std::filesystem::path& path) {
+        std::error_code error;
+        const auto modified = std::filesystem::last_write_time(path, error);
+        if (error) return std::string("?");
+        const auto age = std::filesystem::file_time_type::clock::now() - modified;
+        const auto minutes = std::chrono::duration_cast<std::chrono::minutes>(age).count();
+        if (minutes < 1) return std::string("now");
+        if (minutes < 60) return std::to_string(minutes) + "m";
+        const auto hours = minutes / 60;
+        if (hours < 24) return std::to_string(hours) + "h";
+        return std::to_string(hours / 24) + "d";
+    };
+    auto save_persistent_state = [&]() {
+        persistent.config_search = state.search;
+        if (!selected_path.empty()) persistent.last_config = selected_path.filename().string();
+        std::string error;
+        if (!eco::preferences::save_state(project_root, persistent, error)) {
+            message = error;
+            message_color = ORANGE;
+        }
+        state_dirty = false;
+    };
+    auto active_resolution = [&]() {
+        ResolutionChoice choice;
+        choice.width = settings.window_width;
+        choice.height = settings.window_height;
+        choice.label = std::to_string(choice.width) + "x" + std::to_string(choice.height);
+        choice.custom = true;
+        return choice;
+    };
+    auto update_draft_from_controls = [&]() -> bool {
+        draft_settings.ui_scale = scales[settings_scale];
+        draft_settings.body_font_size = body_sizes[settings_body];
+        draft_settings.title_font_size = title_sizes[settings_title];
+        draft_settings.row_height = row_heights[settings_row];
+        draft_settings.recent_experiments = recent_counts[settings_recent];
+        draft_settings.font_family = font_families[settings_font];
+        try {
+            if (resolutions[settings_resolution].custom) {
+                draft_settings.window_width = std::stoi(settings_width_text);
+                draft_settings.window_height = std::stoi(settings_height_text);
+            } else {
+                draft_settings.window_width = resolutions[settings_resolution].width;
+                draft_settings.window_height = resolutions[settings_resolution].height;
+                settings_width_text = std::to_string(draft_settings.window_width);
+                settings_height_text = std::to_string(draft_settings.window_height);
             }
-            state.config_scroll = clamp_launcher_scroll(state.selected, configs.size(), visible_rows, state.config_scroll);
+        } catch (...) {
+            message = "Resolution width and height must be integers.";
+            message_color = ORANGE;
+            return false;
         }
+        if (draft_settings.window_width < 800 || draft_settings.window_width > 7680 ||
+            draft_settings.window_height < 600 || draft_settings.window_height > 4320) {
+            message = "Resolution must be within 800x600 and 7680x4320.";
+            message_color = ORANGE;
+            return false;
+        }
+        return true;
+    };
+    auto apply_settings = [&]() {
+        if (!update_draft_from_controls()) return false;
+        settings = draft_settings;
+        SetWindowSize(settings.window_width, settings.window_height);
+        eco::ui::set_font_metrics(settings.body_font_size, settings.title_font_size, settings.ui_scale);
+        eco::ui::reload_font(project_root, settings.font_family);
+        message = "GUI settings applied. Font: " + eco::ui::font_source();
+        message_color = Color{103, 225, 151, 255};
+        return true;
+    };
 
-        const std::filesystem::path selected_path = configs.empty() ? std::filesystem::path{} : configs[state.selected];
+    while (!WindowShouldClose()) {
+        auto visible = visible_configs();
+        if (!visible.empty()) {
+            state.selected = std::min(state.selected, visible.size() - 1U);
+        } else state.selected = 0;
+
+        if (!state.settings_open && state.text_edit.active.empty()) {
+            if (IsKeyPressed(KEY_UP) && state.selected > 0U) { --state.selected; loaded_config.clear(); }
+            if (IsKeyPressed(KEY_DOWN) && state.selected + 1U < visible.size()) { ++state.selected; loaded_config.clear(); }
+            const std::size_t page = 10U;
+            if (IsKeyPressed(KEY_PAGE_UP)) { state.selected = state.selected > page ? state.selected - page : 0U; loaded_config.clear(); }
+            if (IsKeyPressed(KEY_PAGE_DOWN) && !visible.empty()) { state.selected = std::min(visible.size() - 1U, state.selected + page); loaded_config.clear(); }
+            if (IsKeyPressed(KEY_HOME)) { state.selected = 0U; loaded_config.clear(); }
+            if (IsKeyPressed(KEY_END) && !visible.empty()) { state.selected = visible.size() - 1U; loaded_config.clear(); }
+            if (IsKeyPressed(KEY_R)) refresh();
+            if (IsKeyPressed(KEY_G)) state.settings_open = true;
+            if (IsKeyPressed(KEY_ESCAPE)) {
+                if (state_dirty) save_persistent_state();
+                return std::nullopt;
+            }
+        }
+        reload_selected();
         const ConfigFileStatus status = selected_path.empty() ? ConfigFileStatus{} : inspect_config_file(selected_path);
-        const std::string title = selected_path.empty()
-            ? "Subject Evolution Launcher — no configuration"
-            : "Subject Evolution Launcher — " + selected_path.filename().string() +
-                " [" + mode_short(state.mode) + "/" + backends[state.backend] + "]";
-        if (title != last_title) { SetWindowTitle(title.c_str()); last_title = title; }
+        const LauncherLayout layout = make_launcher_layout(GetScreenWidth(), GetScreenHeight());
+        const int row_height = settings.row_height;
+        const std::size_t visible_rows = std::max<std::size_t>(1U, static_cast<std::size_t>(layout.list_view.height / static_cast<float>(row_height)));
+        state.config_scroll = clamp_launcher_scroll(state.selected, visible.size(), visible_rows, state.config_scroll);
 
-        if (CheckCollisionPointRec(mouse, layout.details_view) &&
-            !(state.has_extended_list_rect && CheckCollisionPointRec(mouse, state.extended_list_rect))) {
-            state.detail_scroll = std::max(0.0F, state.detail_scroll - GetMouseWheelMove() * 48.0F);
+        const Vector2 mouse = GetMousePosition();
+        const float wheel = GetMouseWheelMove();
+        if (!state.settings_open && wheel != 0.0F) {
+            if (CheckCollisionPointRec(mouse, layout.list_view) && !visible.empty()) {
+                const int delta = wheel > 0.0F ? -3 : 3;
+                const int next = std::clamp(static_cast<int>(state.selected) + delta, 0, static_cast<int>(visible.size() - 1U));
+                state.selected = static_cast<std::size_t>(next);
+                loaded_config.clear();
+            } else if (CheckCollisionPointRec(mouse, layout.details_view)) {
+                state.detail_scroll = std::max(0.0F, state.detail_scroll - wheel * 42.0F);
+            }
         }
+
+        const std::string config_name = selected_path.empty() ? "no-config" : selected_path.filename().string();
+        const std::string window_title = "Subject Evolution Launcher — " + config_name + " [" +
+            mode_short(state.mode) + "/" + backends[state.backend] + "]";
+        SetWindowTitle(window_title.c_str());
+        g_launcher_input_blocked = state.settings_open;
 
         BeginDrawing();
         ClearBackground(Color{13, 17, 22, 255});
-        draw_text("Subject Evolution", static_cast<int>(layout.config_panel.x), 28, 32, RAYWHITE);
-        draw_text("Simulation-first experiment launcher", static_cast<int>(layout.config_panel.x), 69, 18, LIGHTGRAY);
-        draw_text(
-            (selected_path.empty() ? "No configuration" : selected_path.filename().string() + "  |  " + mode_short(state.mode) + "  |  " + backends[state.backend]).c_str(),
-            static_cast<int>(layout.config_panel.x), 96, 14, Color{142, 184, 202, 255}
-        );
+        draw_text("Subject Evolution", 42, 48, 30, RAYWHITE);
+        draw_text("Simulation-first experiment launcher", 42, 92, 16, LIGHTGRAY);
+        draw_text((config_name + "  |  " + mode_short(state.mode) + "  |  " + backends[state.backend]).c_str(),
+                  42, 121, 12, Color{145, 187, 205, 255});
+        Rectangle settings_button{static_cast<float>(GetScreenWidth() - 174), 45.0F, 132.0F, 38.0F};
+        if (button(settings_button, "⚙ Settings [G]", true, state.settings_open)) state.settings_open = !state.settings_open;
 
-        DrawRectangleRec(layout.config_panel, Color{6, 11, 16, 242});
-        DrawRectangleLinesEx(layout.config_panel, 1.0F, Fade(SKYBLUE, 0.22F));
-        draw_text(("Configurations  " + std::to_string(configs.size())).c_str(), static_cast<int>(layout.config_panel.x + 14), static_cast<int>(layout.config_panel.y + 15), 16, LIGHTGRAY);
+        DrawRectangleLinesEx(layout.config_panel, 1.0F, Fade(SKYBLUE, 0.28F));
+        DrawRectangleLinesEx(layout.details_panel, 1.0F, Fade(SKYBLUE, 0.28F));
+        draw_text(TextFormat("Configurations  %d", static_cast<int>(visible.size())),
+                  static_cast<int>(layout.config_panel.x + 14.0F),
+                  static_cast<int>(layout.config_panel.y + 16.0F), 14, LIGHTGRAY);
         if (button(layout.refresh_button, "Refresh [R]")) refresh();
-        DrawRectangleRec(layout.list_view, Color{9, 14, 19, 255});
-        BeginScissorMode(static_cast<int>(layout.list_view.x), static_cast<int>(layout.list_view.y), static_cast<int>(layout.list_view.width), static_cast<int>(layout.list_view.height));
-        const std::size_t row_end = std::min(configs.size(), state.config_scroll + visible_rows);
-        for (std::size_t index = state.config_scroll; index < row_end; ++index) {
-            const Rectangle row{layout.list_view.x, layout.list_view.y + static_cast<float>(index - state.config_scroll) * config_row_height, layout.list_view.width, config_row_height - 2.0F};
-            const bool active = index == state.selected;
-            const bool hovered = CheckCollisionPointRec(mouse, row);
-            if (active) DrawRectangleRec(row, Color{39, 82, 106, 255});
-            else if (hovered) DrawRectangleRec(row, Color{22, 31, 40, 255});
-            draw_text(elide_text(configs[index].filename().string(), static_cast<int>(row.width - 62.0F), 15).c_str(), static_cast<int>(row.x + 12), static_cast<int>(row.y + 10), 15, active ? RAYWHITE : LIGHTGRAY);
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && hovered) {
-                state.selected = index;
-                loaded_config.clear();
-                reload_selected();
+
+        Rectangle search_rect{layout.config_panel.x + 12.0F, layout.config_panel.y + 50.0F,
+                              layout.config_panel.width - 24.0F, 32.0F};
+        if (text_field("config_search", search_rect, state.search, state.text_edit, "Search configurations...")) state_dirty = true;
+        persistent.config_search = state.search;
+        Rectangle sort_rect{search_rect.x, search_rect.y + 38.0F, 132.0F, 30.0F};
+        if (button(sort_rect, std::string("Sort: ") + eco::preferences::sort_mode_name(persistent.sort_mode))) {
+            persistent.sort_mode = eco::preferences::next_sort_mode(persistent.sort_mode);
+            eco::preferences::sort_configs(configs, persistent.sort_mode);
+            preserve_selection(config_name);
+            loaded_config.clear(); state_dirty = true;
+        }
+        const std::array<std::string, 6> tags{"all", "mvp", "smoke", "long_run", "latent", "other"};
+        Rectangle tag_rect{sort_rect.x + 140.0F, sort_rect.y, 120.0F, 30.0F};
+        if (button(tag_rect, "Tag: " + persistent.tag_filter)) {
+            auto found = std::find(tags.begin(), tags.end(), persistent.tag_filter);
+            std::size_t index = found == tags.end() ? 0U : static_cast<std::size_t>(std::distance(tags.begin(), found));
+            persistent.tag_filter = tags[(index + 1U) % tags.size()];
+            preserve_selection(config_name); loaded_config.clear(); state_dirty = true;
+        }
+        Rectangle favorite_filter{tag_rect.x + 128.0F, tag_rect.y, 112.0F, 30.0F};
+        if (button(favorite_filter, persistent.favorites_only ? "★ Favorites" : "☆ Favorites", true, persistent.favorites_only)) {
+            persistent.favorites_only = !persistent.favorites_only;
+            preserve_selection(config_name); loaded_config.clear(); state_dirty = true;
+        }
+
+        BeginScissorMode(static_cast<int>(layout.list_view.x), static_cast<int>(layout.list_view.y),
+                         static_cast<int>(layout.list_view.width), static_cast<int>(layout.list_view.height));
+        for (std::size_t row = 0; row < visible_rows; ++row) {
+            const std::size_t index = state.config_scroll + row;
+            if (index >= visible.size()) break;
+            const Rectangle row_rect{layout.list_view.x,
+                                     layout.list_view.y + static_cast<float>(row * row_height),
+                                     layout.list_view.width,
+                                     static_cast<float>(row_height - 2)};
+            const bool selected = index == state.selected;
+            const bool hovered = CheckCollisionPointRec(mouse, row_rect);
+            if (selected || hovered) DrawRectangleRec(row_rect, selected ? Color{48, 98, 124, 255} : Color{28, 38, 46, 255});
+            Rectangle star_rect{row_rect.x + 5.0F, row_rect.y + 4.0F, 26.0F, row_rect.height - 8.0F};
+            const std::string filename = visible[index].filename().string();
+            const bool favorite = persistent.favorites.contains(filename);
+            draw_text(favorite ? "★" : "☆", static_cast<int>(star_rect.x + 3.0F), static_cast<int>(star_rect.y + 3.0F), 13,
+                      favorite ? GOLD : GRAY);
+            const int age_width = 42;
+            draw_text(elide_text(filename, static_cast<int>(row_rect.width - 88.0F), 13).c_str(),
+                      static_cast<int>(row_rect.x + 36.0F), static_cast<int>(row_rect.y + 8.0F), 13, LIGHTGRAY);
+            const std::string age = relative_time(visible[index]);
+            draw_text(age.c_str(), static_cast<int>(row_rect.x + row_rect.width - age_width),
+                      static_cast<int>(row_rect.y + 8.0F), 11, GRAY);
+            if (!state.settings_open && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                if (CheckCollisionPointRec(mouse, star_rect)) {
+                    if (favorite) persistent.favorites.erase(filename); else persistent.favorites.insert(filename);
+                    state_dirty = true;
+                } else if (CheckCollisionPointRec(mouse, row_rect)) {
+                    state.selected = index; loaded_config.clear(); state_dirty = true;
+                }
             }
         }
         EndScissorMode();
 
-        DrawRectangleRec(layout.details_panel, Color{6, 11, 16, 242});
-        DrawRectangleLinesEx(layout.details_panel, 1.0F, Fade(SKYBLUE, 0.22F));
-        BeginScissorMode(static_cast<int>(layout.details_view.x), static_cast<int>(layout.details_view.y), static_cast<int>(layout.details_view.width), static_cast<int>(layout.details_view.height));
-        const int x = static_cast<int>(layout.details_view.x + 8.0F);
-        const int width = static_cast<int>(layout.details_view.width - 22.0F);
-        int y = static_cast<int>(layout.details_view.y + 4.0F - state.detail_scroll);
-
-        auto section = [&](const std::string& name) {
-            draw_text(name.c_str(), x, y, 17, Color{122, 211, 255, 255});
-            y += 28;
+        BeginScissorMode(static_cast<int>(layout.details_view.x), static_cast<int>(layout.details_view.y),
+                         static_cast<int>(layout.details_view.width), static_cast<int>(layout.details_view.height));
+        int x = static_cast<int>(layout.details_view.x + 8.0F);
+        int y = static_cast<int>(layout.details_view.y + 8.0F - state.detail_scroll);
+        const int width = static_cast<int>(layout.details_view.width - 16.0F);
+        auto section = [&](const std::string& title) {
+            draw_text(title.c_str(), x, y, 15, Color{122, 211, 255, 255});
+            y += 31;
         };
-        auto label = [&](const std::string& name, int label_width = 104) {
-            draw_text(name.c_str(), x, y + 8, 13, GRAY);
-            return Rectangle{static_cast<float>(x + label_width), static_cast<float>(y), static_cast<float>(width - label_width), 32.0F};
+        auto label = [&](const std::string& title) {
+            draw_text(title.c_str(), x, y + 8, 12, GRAY);
+            Rectangle rect{static_cast<float>(x + 104), static_cast<float>(y), static_cast<float>(width - 104), 32.0F};
+            y += 42;
+            return rect;
         };
 
         section("Experiment");
+        draw_text(config_name.c_str(), x, y, 14, LIGHTGRAY);
         if (!selected_path.empty()) {
-            draw_text(
-                (selected_path.filename().string() + "  " + compact_bytes(status.size_bytes)).c_str(),
-                x, y, 14, status.launchable ? LIGHTGRAY : ORANGE
-            );
-            y += 21;
-            draw_text(elide_text(selected_path.string(), width, 12).c_str(), x, y, 12, GRAY);
-            y += 19;
-            draw_text(status.message.c_str(), x, y, 12, status.launchable ? Color{103, 225, 151, 255} : ORANGE);
-            y += 25;
+            draw_text(elide_text(selected_path.string(), width, 11).c_str(), x, y + 22, 11, GRAY);
+            draw_text((compact_bytes(status.size_bytes) + "  |  " + status.message).c_str(), x, y + 42, 11,
+                      status.launchable ? Color{103, 225, 151, 255} : ORANGE);
         }
-        const Rectangle mode_rect = label("Mode");
+        y += 68;
+        Rectangle mode_rect = label("Mode");
         if (button(mode_rect, state.mode == ExperimentMode::SingleRun ? "Single Run" : "Multi Seed", true, true)) {
             state.mode = state.mode == ExperimentMode::SingleRun ? ExperimentMode::MultiSeed : ExperimentMode::SingleRun;
-            if (!selected_path.empty()) {
-                const std::string stem = selected_path.stem().string();
-                state.output_text = state.mode == ExperimentMode::SingleRun
-                    ? "runs/gui_" + stem + "_<timestamp>"
-                    : "runs/multi_" + stem + "_<timestamp>";
-            }
+            if (!selected_path.empty()) reset_config_state(state, selected_path, scalars);
         }
-        y += 42;
-        const Rectangle backend_rect = label("Backend");
-        if (backends.size() <= 3U) {
-            if (button(backend_rect, backends[state.backend] + "  —  " + backend_help[state.backend], true, true)) {
-                state.backend = (state.backend + 1U) % backends.size();
-            }
-            y += 42;
-        } else {
-            if (button(backend_rect, backends[state.backend] + "  ▼", true, state.backend_open)) {
-                state.backend_open = !state.backend_open;
-            }
-            y += 38;
-            if (state.backend_open) {
-                for (std::size_t index = 0; index < backends.size(); ++index) {
-                    Rectangle option{backend_rect.x, static_cast<float>(y), backend_rect.width, 29.0F};
-                    if (button(option, backends[index] + " — " + backend_help[index], true, index == state.backend)) {
-                        state.backend = index;
-                        state.backend_open = false;
-                    }
-                    y += 31;
-                }
-            }
-            y += 4;
-        }
-        const Rectangle resolution_rect = label("Resolution");
-        const std::string resolution_label = state.resolution < resolutions.size() ? resolutions[state.resolution].label : "custom";
-        if (button(resolution_rect, resolution_label + "  ▼", true, state.resolution_open)) state.resolution_open = !state.resolution_open;
-        y += 38;
-        if (state.resolution_open) {
-            for (std::size_t i = 0; i < resolutions.size(); ++i) {
-                Rectangle option{resolution_rect.x, static_cast<float>(y), resolution_rect.width, 29.0F};
-                if (button(option, resolutions[i].label, true, i == state.resolution)) {
-                    state.resolution = i;
-                    state.resolution_open = false;
-                }
-                y += 31;
-            }
-        }
-        if (resolutions[state.resolution].custom) {
-            Rectangle wrect{static_cast<float>(x + 104), static_cast<float>(y), 116.0F, 32.0F};
-            Rectangle hrect{wrect.x + 126.0F, static_cast<float>(y), 116.0F, 32.0F};
-            draw_text("Custom", x, y + 8, 13, GRAY);
-            text_field("custom_width", wrect, state.custom_width_text, state.text_edit, "width");
-            text_field("custom_height", hrect, state.custom_height_text, state.text_edit, "height");
-            try { state.custom_width = std::clamp(std::stoi(state.custom_width_text), 800, 7680); } catch (...) {}
-            try { state.custom_height = std::clamp(std::stoi(state.custom_height_text), 600, 4320); } catch (...) {}
-            y += 42;
+        Rectangle backend_rect = label("Backend");
+        if (button(backend_rect, backends[state.backend] + "  —  " + backend_help[state.backend], true, true)) {
+            state.backend = (state.backend + 1U) % backends.size();
         }
 
-        y += 6;
         section("Basic overrides");
-        if (state.mode == ExperimentMode::SingleRun) {
-            Rectangle seed_rect = label("Seed");
-            text_field("seed", seed_rect, state.seed_text, state.text_edit, "10001");
-            y += 42;
-        } else {
-            Rectangle seeds_rect = label("Seeds");
-            text_field("seeds", seeds_rect, state.seeds_text, state.text_edit, "10001,10002,10003");
-            y += 42;
-        }
+        Rectangle seed_rect = label(state.mode == ExperimentMode::SingleRun ? "Seed" : "Seeds");
+        if (state.mode == ExperimentMode::SingleRun) text_field("seed", seed_rect, state.seed_text, state.text_edit, "10001");
+        else text_field("seeds", seed_rect, state.seeds_text, state.text_edit, "10001,10002,10003");
         Rectangle tick_rect = label("Until tick");
         text_field("tick", tick_rect, state.tick_text, state.text_edit, "1500");
-        y += 42;
         Rectangle output_rect = label("Output");
-        text_field("output", output_rect, state.output_text, state.text_edit, "runs/<mode>_<config>_<timestamp>");
-        y += 43;
-        draw_text("Temporary edits run directly and write config_resolved.json; the original file is untouched.", x + 2, y, 12, Color{125, 166, 182, 255});
-        y += 28;
-
-        const Rectangle extended_header{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), 34.0F};
-        if (button(extended_header, state.extended_open ? "▼ Extended overrides" : "▶ Extended overrides", true, state.extended_open)) {
-            state.extended_open = !state.extended_open;
+        text_field("output", output_rect, state.output_text, state.text_edit, "runs/...");
+        if (state.mode == ExperimentMode::MultiSeed) {
+            Rectangle overwrite_rect{static_cast<float>(x + 104), static_cast<float>(y), 240.0F, 30.0F};
+            if (button(overwrite_rect, state.overwrite_partial ? "✓ overwrite partial runs" : "□ overwrite partial runs", true, state.overwrite_partial)) {
+                state.overwrite_partial = !state.overwrite_partial;
+            }
+            y += 40;
         }
+        draw_text("Temporary edits run directly and write config_resolved.json; the source file is untouched.",
+                  x, y, 10, Color{145, 187, 205, 255});
+        y += 27;
+
+        Rectangle extended_header{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), 34.0F};
+        if (button(extended_header, state.extended_open ? "▼ Extended overrides" : "▶ Extended overrides", true, state.extended_open)) state.extended_open = !state.extended_open;
         y += 42;
-        state.has_extended_list_rect = false;
         if (state.extended_open) {
-            Rectangle search_rect{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), 32.0F};
-            text_field("search", search_rect, state.search, state.text_edit, "filter paths...");
+            Rectangle filter_rect{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), 32.0F};
+            text_field("scalar_search", filter_rect, state.scalar_search, state.text_edit, "Search scalar paths...");
             y += 40;
             const auto filtered = filtered_scalar_indices(scalars, state);
-            const std::size_t visible = 7U;
-            if (filtered.empty()) {
-                draw_text("No scalar fields match this filter.", x, y, 13, ORANGE);
-                y += 28;
-            } else {
-                state.selected_scalar = std::min(state.selected_scalar, filtered.size() - 1U);
-                state.extended_scroll = clamp_launcher_scroll(state.selected_scalar, filtered.size(), visible, state.extended_scroll);
-                const Rectangle list{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), 7.0F * 31.0F};
-                state.extended_list_rect = list;
-                state.has_extended_list_rect = true;
-                if (CheckCollisionPointRec(mouse, list)) {
-                    const float wheel = GetMouseWheelMove();
-                    if (wheel != 0.0F) {
-                        const long long maximum = static_cast<long long>(filtered.size() - 1U);
-                        const long long next = std::clamp(
-                            static_cast<long long>(state.selected_scalar) + (wheel > 0.0F ? -1LL : 1LL),
-                            0LL,
-                            maximum
-                        );
-                        if (static_cast<std::size_t>(next) != state.selected_scalar) {
-                            state.selected_scalar = static_cast<std::size_t>(next);
-                            state.scalar_edit.clear();
-                        }
-                        state.extended_scroll = clamp_launcher_scroll(
-                            state.selected_scalar,
-                            filtered.size(),
-                            visible,
-                            state.extended_scroll
-                        );
-                    }
+            const std::size_t rows = std::min<std::size_t>(7U, filtered.size());
+            state.selected_scalar = filtered.empty() ? 0U : std::min(state.selected_scalar, filtered.size() - 1U);
+            for (std::size_t row = 0; row < rows; ++row) {
+                const std::size_t index = state.extended_scroll + row;
+                if (index >= filtered.size()) break;
+                const ConfigScalar& scalar = scalars[filtered[index]];
+                Rectangle item{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), 28.0F};
+                if (button(item, scalar.path + " = " + (state.overrides.contains(scalar.path) ? state.overrides.at(scalar.path).value : scalar.value),
+                           true, index == state.selected_scalar)) {
+                    state.selected_scalar = index;
+                    state.scalar_edit = state.overrides.contains(scalar.path) ? state.overrides.at(scalar.path).value : scalar.value;
                 }
-                DrawRectangleRec(list, Color{9, 14, 19, 255});
-                BeginScissorMode(static_cast<int>(list.x), static_cast<int>(list.y), static_cast<int>(list.width), static_cast<int>(list.height));
-                for (std::size_t row = 0; row < visible && state.extended_scroll + row < filtered.size(); ++row) {
-                    const std::size_t list_index = state.extended_scroll + row;
-                    const ConfigScalar& item = scalars[filtered[list_index]];
-                    Rectangle item_rect{list.x, list.y + static_cast<float>(row) * 31.0F, list.width, 29.0F};
-                    const bool active = list_index == state.selected_scalar;
-                    const bool hovered = CheckCollisionPointRec(mouse, item_rect);
-                    if (active) DrawRectangleRec(item_rect, Color{34, 66, 83, 255});
-                    else if (hovered) DrawRectangleRec(item_rect, Color{22, 31, 40, 255});
-                    const auto override_it = state.overrides.find(item.path);
-                    const std::string value = override_it == state.overrides.end() ? item.value : override_it->second.value;
-                    draw_text(elide_text(item.path, width - 190, 13).c_str(), x + 8, static_cast<int>(item_rect.y + 8), 13, active ? RAYWHITE : LIGHTGRAY);
-                    draw_text(elide_text(value, 150, 13).c_str(), x + width - 158, static_cast<int>(item_rect.y + 8), 13, override_it == state.overrides.end() ? GRAY : Color{255, 204, 92, 255});
-                    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && hovered) {
-                        state.selected_scalar = list_index;
-                        state.scalar_edit = value;
-                    }
-                }
-                EndScissorMode();
-                y += static_cast<int>(list.height) + 8;
+                y += 30;
+            }
+            if (!filtered.empty()) {
                 const ConfigScalar& chosen = scalars[filtered[state.selected_scalar]];
-                if (state.scalar_edit.empty()) {
-                    const auto found = state.overrides.find(chosen.path);
-                    state.scalar_edit = found == state.overrides.end() ? chosen.value : found->second.value;
-                }
-                Rectangle edit_rect{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width - 178), 32.0F};
+                Rectangle edit_rect{static_cast<float>(x), static_cast<float>(y + 4), static_cast<float>(width - 174), 32.0F};
                 text_field("scalar_value", edit_rect, state.scalar_edit, state.text_edit, chosen.value);
-                Rectangle set_rect{edit_rect.x + edit_rect.width + 8.0F, edit_rect.y, 78.0F, 32.0F};
-                Rectangle reset_rect{set_rect.x + 84.0F, set_rect.y, 82.0F, 32.0F};
+                Rectangle set_rect{edit_rect.x + edit_rect.width + 8.0F, edit_rect.y, 72.0F, 32.0F};
+                Rectangle reset_rect{set_rect.x + 78.0F, edit_rect.y, 88.0F, 32.0F};
                 if (button(set_rect, "Set")) {
                     std::string override_error;
                     if (validate_scalar_text(state.scalar_edit, chosen.type, override_error)) {
-                        state.overrides[chosen.path] = ConfigScalar{chosen.path, state.scalar_edit, chosen.type};
-                        message = "Temporary override set: " + chosen.path;
-                        message_color = Color{103, 225, 151, 255};
-                    } else {
-                        message = chosen.path + ": " + override_error;
-                        message_color = ORANGE;
-                    }
+                        state.overrides[chosen.path] = {chosen.path, state.scalar_edit, chosen.type};
+                        message = "Temporary override set: " + chosen.path; message_color = Color{103, 225, 151, 255};
+                    } else { message = override_error; message_color = ORANGE; }
                 }
-                if (button(reset_rect, "Reset")) {
-                    state.overrides.erase(chosen.path);
-                    state.scalar_edit = chosen.value;
-                }
-                y += 42;
+                if (button(reset_rect, "Reset")) { state.overrides.erase(chosen.path); state.scalar_edit = chosen.value; }
+                y += 44;
             }
         }
 
-        section("Permanent config actions");
-        Rectangle name_rect{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width - 164), 32.0F};
-        text_field("save_name", name_rect, state.save_as_name, state.text_edit, "new_config.json");
-        Rectangle save_rect{name_rect.x + name_rect.width + 8.0F, name_rect.y, 156.0F, 32.0F};
-        std::string basic_error;
-        const auto permanent_seed = state.mode == ExperimentMode::SingleRun ? parse_single_seed(state.seed_text, basic_error) : std::optional<std::int64_t>{};
-        basic_error.clear();
-        const auto until_tick = parse_tick(state.tick_text, basic_error);
-        if (button(save_rect, "Save as new", status.launchable)) {
-            std::filesystem::path destination = config_dir / state.save_as_name;
-            if (destination.extension() != ".json") destination += ".json";
-            std::string save_error;
-            if (save_as_new_config(selected_path, destination, current_override_vector(state), permanent_seed, until_tick, save_error)) {
-                message = "Saved " + destination.filename().string();
-                message_color = Color{103, 225, 151, 255};
-                refresh();
-            } else {
-                message = save_error;
-                message_color = ORANGE;
-            }
-        }
-        y += 40;
-        Rectangle replace_rect{static_cast<float>(x), static_cast<float>(y), 220.0F, 32.0F};
-        if (button(replace_rect, state.replace_armed ? "Confirm replace original" : "Replace original", status.launchable, state.replace_armed)) {
-            if (!state.replace_armed) {
-                state.replace_armed = true;
-                message = "Click Replace original again to confirm permanent overwrite.";
-                message_color = ORANGE;
-            } else {
-                std::string replace_error;
-                if (replace_original_config(selected_path, current_override_vector(state), permanent_seed, until_tick, true, replace_error)) {
-                    message = "Original configuration replaced.";
-                    message_color = Color{103, 225, 151, 255};
-                    state.replace_armed = false;
-                    loaded_config.clear();
-                    reload_selected();
-                } else {
-                    message = replace_error;
-                    message_color = ORANGE;
-                }
-            }
-        }
-        y += 45;
-
-        section("Command preview");
-        LaunchRequest preview_request = request_template(project_root, selected_path, python, state, backends, resolutions);
+        Rectangle command_header{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), 34.0F};
+        if (button(command_header, state.command_open ? "▼ Command preview" : "▶ Command preview", true, state.command_open)) state.command_open = !state.command_open;
+        y += 42;
+        LaunchRequest preview_request = request_template(project_root, selected_path, python, state, backends, active_resolution());
         const std::string preview_output = state.output_text.empty() ? "runs/<output>" : state.output_text;
-        preview_request.output_path = std::filesystem::path(preview_output);
+        preview_request.output_path = preview_output;
         preview_request.config_path = preview_request.output_path / "config_resolved.json";
         preview_request.stream_path = preview_request.output_path / "eco_live.bin";
         preview_request.command = command_preview(preview_request, true);
-        Rectangle copy_rect{static_cast<float>(x + width - 116), static_cast<float>(y - 28), 108.0F, 28.0F};
-        if (button(copy_rect, "Copy command")) {
-            SetClipboardText(preview_request.command.c_str());
-            message = "Command copied to clipboard.";
-            message_color = Color{103, 225, 151, 255};
+        if (state.command_open) {
+            Rectangle copy_rect{static_cast<float>(x + width - 118), static_cast<float>(y), 110.0F, 28.0F};
+            if (button(copy_rect, "Copy command")) { SetClipboardText(preview_request.command.c_str()); message = "Command copied."; message_color = Color{103, 225, 151, 255}; }
+            y = draw_wrapped_text(preview_request.command, x, y + 34, width, 11, 18, 7, Color{145, 187, 205, 255});
+            y += 8;
+        } else {
+            draw_text(elide_text(preview_request.command, width, 10).c_str(), x, y - 5, 10, GRAY);
+            y += 18;
         }
-        y = draw_wrapped_text(preview_request.command, x, y, width, 12, 17, 7, Color{145, 187, 205, 255});
-        y += 10;
+
+        Rectangle permanent_header{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), 34.0F};
+        if (button(permanent_header, state.permanent_open ? "▼ Permanent config actions" : "▶ Permanent config actions", true, state.permanent_open)) state.permanent_open = !state.permanent_open;
+        y += 42;
+        if (state.permanent_open) {
+            Rectangle name_rect{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width - 164), 32.0F};
+            text_field("save_name", name_rect, state.save_as_name, state.text_edit, "new_config.json");
+            Rectangle save_rect{name_rect.x + name_rect.width + 8.0F, name_rect.y, 156.0F, 32.0F};
+            std::string basic_error;
+            const auto permanent_seed = state.mode == ExperimentMode::SingleRun ? parse_single_seed(state.seed_text, basic_error) : std::optional<std::int64_t>{};
+            basic_error.clear();
+            const auto until_tick = parse_tick(state.tick_text, basic_error);
+            if (button(save_rect, "Save as new", status.launchable)) {
+                auto destination = config_dir / state.save_as_name;
+                if (destination.extension() != ".json") destination += ".json";
+                std::string save_error;
+                if (save_as_new_config(selected_path, destination, current_override_vector(state), permanent_seed, until_tick, save_error)) {
+                    message = "Saved " + destination.filename().string(); message_color = Color{103, 225, 151, 255}; refresh();
+                } else { message = save_error; message_color = ORANGE; }
+            }
+            y += 40;
+            Rectangle replace_rect{static_cast<float>(x), static_cast<float>(y), 238.0F, 32.0F};
+            if (button(replace_rect, state.replace_armed ? "Confirm replace original" : "Replace original", status.launchable, state.replace_armed)) {
+                if (!state.replace_armed) { state.replace_armed = true; message = "Click again to confirm permanent overwrite."; message_color = ORANGE; }
+                else {
+                    std::string replace_error;
+                    if (replace_original_config(selected_path, current_override_vector(state), permanent_seed, until_tick, true, replace_error)) {
+                        message = "Original configuration replaced."; message_color = Color{103, 225, 151, 255}; state.replace_armed = false; loaded_config.clear(); reload_selected();
+                    } else { message = replace_error; message_color = ORANGE; }
+                }
+            }
+            y += 44;
+        }
 
         section("Recent experiments");
-        if (history.empty()) {
-            draw_text("No launcher history yet.", x, y, 13, GRAY);
-            y += 22;
-        } else {
-            for (const HistoryLine& line : history) {
-                draw_text(elide_text(line.text, width, 13).c_str(), x, y, 13, LIGHTGRAY);
-                y += 20;
-            }
-        }
+        const auto history = recent_history(project_root, static_cast<std::size_t>(settings.recent_experiments));
+        if (history.empty()) { draw_text("No launcher history yet.", x, y, 12, GRAY); y += 20; }
+        else for (const auto& line : history) { draw_text(elide_text(line.text, width, 11).c_str(), x, y, 11, LIGHTGRAY); y += 19; }
         const float content_bottom = static_cast<float>(y) + state.detail_scroll - layout.details_view.y + 14.0F;
         state.detail_scroll = std::clamp(state.detail_scroll, 0.0F, std::max(0.0F, content_bottom - layout.details_view.height));
         EndScissorMode();
 
-        draw_text(message.c_str(), static_cast<int>(layout.config_panel.x), GetScreenHeight() - 60, 14, message_color);
-        draw_text("Up/Down: config  |  wheel: scroll  |  Enter: start  |  backend/mode: click", static_cast<int>(layout.config_panel.x), GetScreenHeight() - 35, 12, GRAY);
+        draw_text(message.c_str(), static_cast<int>(layout.config_panel.x), GetScreenHeight() - 59, 12, message_color);
+        draw_text("Up/Down: config  |  wheel: scroll  |  G: settings  |  Enter: start",
+                  static_cast<int>(layout.config_panel.x), GetScreenHeight() - 34, 10, GRAY);
         const bool close_clicked = button(layout.close_button, "Close [Esc]");
 
         std::string validation_error;
         std::vector<std::int64_t> seeds;
         std::optional<std::int64_t> single_seed;
         if (state.mode == ExperimentMode::MultiSeed) seeds = parse_seed_list(state.seeds_text, validation_error);
-        else {
-            single_seed = parse_single_seed(state.seed_text, validation_error);
-            if (single_seed) seeds = {*single_seed};
-        }
+        else { single_seed = parse_single_seed(state.seed_text, validation_error); if (single_seed) seeds = {*single_seed}; }
         const auto tick = validation_error.empty() ? parse_tick(state.tick_text, validation_error) : std::optional<std::uint64_t>{};
-        if (resolutions[state.resolution].custom && (state.custom_width < 800 || state.custom_height < 600)) validation_error = "Custom resolution is out of range.";
         const bool start_enabled = status.launchable && validation_error.empty() && !selected_path.empty();
-        const bool start_clicked = button(layout.start_button, state.mode == ExperimentMode::SingleRun ? "Start simulation [Enter]" : "Start multi-seed [Enter]", start_enabled, true);
-        const bool keyboard_start = IsKeyPressed(KEY_ENTER) && state.text_edit.active.empty();
+        const bool start_clicked = button(layout.start_button,
+            state.mode == ExperimentMode::SingleRun ? "Start simulation [Enter]" : "Start multi-seed [Enter]",
+            start_enabled, true);
+        const bool keyboard_start = IsKeyPressed(KEY_ENTER) && state.text_edit.active.empty() && !state.settings_open;
+
+        if (state.settings_open) {
+            g_launcher_input_blocked = false;
+            DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.58F));
+            const float panel_width = std::min(660.0F, static_cast<float>(GetScreenWidth() - 80));
+            const float panel_height = std::min(610.0F, static_cast<float>(GetScreenHeight() - 80));
+            Rectangle panel{(GetScreenWidth() - panel_width) * 0.5F, (GetScreenHeight() - panel_height) * 0.5F, panel_width, panel_height};
+            DrawRectangleRec(panel, Color{16, 22, 28, 255});
+            DrawRectangleLinesEx(panel, 1.0F, Fade(SKYBLUE, 0.65F));
+            int sx = static_cast<int>(panel.x + 24.0F), sy = static_cast<int>(panel.y + 22.0F);
+            const int sw = static_cast<int>(panel.width - 48.0F);
+            draw_text("GUI Settings", sx, sy, 24, RAYWHITE); sy += 46;
+            draw_text(("Saved in " + eco::preferences::settings_path(project_root).string()).c_str(), sx, sy, 10, GRAY); sy += 34;
+            auto setting_row = [&](const std::string& name, const std::string& value) {
+                draw_text(name.c_str(), sx, sy + 8, 12, LIGHTGRAY);
+                Rectangle rect{static_cast<float>(sx + 190), static_cast<float>(sy), static_cast<float>(sw - 190), 34.0F};
+                sy += 43;
+                return std::pair<Rectangle, std::string>{rect, value};
+            };
+            auto resolution_row = setting_row("Window resolution", resolutions[settings_resolution].custom ? settings_width_text + "x" + settings_height_text : resolutions[settings_resolution].label);
+            if (button(resolution_row.first, resolution_row.second + "  ▼", true, true)) {
+                settings_resolution = (settings_resolution + 1U) % resolutions.size();
+                if (!resolutions[settings_resolution].custom) {
+                    settings_width_text = std::to_string(resolutions[settings_resolution].width);
+                    settings_height_text = std::to_string(resolutions[settings_resolution].height);
+                }
+            }
+            if (resolutions[settings_resolution].custom) {
+                Rectangle wr{static_cast<float>(sx + 190), static_cast<float>(sy), 130.0F, 32.0F};
+                Rectangle hr{wr.x + 142.0F, wr.y, 130.0F, 32.0F};
+                text_field("settings_width", wr, settings_width_text, state.text_edit, "1440");
+                text_field("settings_height", hr, settings_height_text, state.text_edit, "900");
+                sy += 41;
+            }
+            auto scale_row = setting_row("UI scale", TextFormat("%.0f%%", scales[settings_scale] * 100.0F));
+            if (button(scale_row.first, scale_row.second, true, true)) settings_scale = (settings_scale + 1U) % scales.size();
+            auto body_row = setting_row("Body/list font", std::to_string(body_sizes[settings_body]) + " px");
+            if (button(body_row.first, body_row.second, true, true)) settings_body = (settings_body + 1U) % body_sizes.size();
+            auto title_row = setting_row("Title font", std::to_string(title_sizes[settings_title]) + " px");
+            if (button(title_row.first, title_row.second, true, true)) settings_title = (settings_title + 1U) % title_sizes.size();
+            auto row_row = setting_row("List row height", std::to_string(row_heights[settings_row]) + " px");
+            if (button(row_row.first, row_row.second, true, true)) settings_row = (settings_row + 1U) % row_heights.size();
+            auto recent_row = setting_row("Recent experiments", std::to_string(recent_counts[settings_recent]));
+            if (button(recent_row.first, recent_row.second, true, true)) settings_recent = (settings_recent + 1U) % recent_counts.size();
+            auto font_row = setting_row("Monospace family", font_families[settings_font]);
+            if (button(font_row.first, font_row.second, true, true)) settings_font = (settings_font + 1U) % font_families.size();
+            draw_text(("Loaded font: " + eco::ui::font_source()).c_str(), sx, sy + 4, 10, GRAY); sy += 36;
+            Rectangle defaults{static_cast<float>(sx), static_cast<float>(panel.y + panel.height - 58.0F), 142.0F, 36.0F};
+            Rectangle apply{defaults.x + defaults.width + 10.0F, defaults.y, 112.0F, 36.0F};
+            Rectangle save{apply.x + apply.width + 10.0F, apply.y, 112.0F, 36.0F};
+            Rectangle close{panel.x + panel.width - 120.0F, defaults.y, 96.0F, 36.0F};
+            if (button(defaults, "Reset defaults")) {
+                draft_settings = eco::preferences::default_settings();
+                settings_width_text = std::to_string(draft_settings.window_width);
+                settings_height_text = std::to_string(draft_settings.window_height);
+                settings_resolution = resolutions.size() - 1U;
+                settings_scale = nearest_index(draft_settings.ui_scale, scales);
+                settings_body = nearest_index(draft_settings.body_font_size, body_sizes);
+                settings_title = nearest_index(draft_settings.title_font_size, title_sizes);
+                settings_row = nearest_index(draft_settings.row_height, row_heights);
+                settings_recent = nearest_index(draft_settings.recent_experiments, recent_counts);
+                settings_font = 0;
+            }
+            if (button(apply, "Apply")) apply_settings();
+            if (button(save, "Save")) {
+                if (apply_settings()) {
+                    std::string save_error;
+                    if (eco::preferences::save_settings(project_root, settings, save_error)) {
+                        message = "GUI settings saved in project saves/."; message_color = Color{103, 225, 151, 255};
+                    } else { message = save_error; message_color = ORANGE; }
+                }
+            }
+            if (button(close, "Close") || IsKeyPressed(KEY_ESCAPE)) state.settings_open = false;
+        }
 
         EndDrawing();
-
-        if (close_clicked) return std::nullopt;
+        if (close_clicked) { if (state_dirty) save_persistent_state(); return std::nullopt; }
         if ((keyboard_start || start_clicked) && start_enabled) {
             LaunchRequest request;
             request.project_root = project_root;
@@ -1734,47 +1876,29 @@ std::optional<LaunchRequest> show_launcher(
             request.python = python;
             request.backend = backends[state.backend];
             request.mode = state.mode;
-            request.resolution = resolutions[state.resolution];
-            if (request.resolution.custom) {
-                request.resolution.width = state.custom_width;
-                request.resolution.height = state.custom_height;
-                request.resolution.label = std::to_string(state.custom_width) + "x" + std::to_string(state.custom_height);
-            }
+            request.resolution = active_resolution();
             request.seeds = seeds;
             request.until_tick = *tick;
+            request.overwrite_partial = state.overwrite_partial;
             request.output_path = resolve_output_template(project_root, state.output_text, selected_path.stem().string());
             request.stream_path = request.output_path / "eco_live.bin";
             request.config_path = request.output_path / "config_resolved.json";
             std::string prepare_error;
-            if (!prepare_launch_request(request, prepare_error)) {
-                message = prepare_error;
-                message_color = ORANGE;
-                continue;
-            }
-            if (!create_resolved_config(
-                    selected_path,
-                    request.config_path,
-                    current_override_vector(state),
+            if (!prepare_launch_request(request, prepare_error)) { message = prepare_error; message_color = ORANGE; continue; }
+            if (!create_resolved_config(selected_path, request.config_path, current_override_vector(state),
                     state.mode == ExperimentMode::SingleRun ? single_seed : std::optional<std::int64_t>{},
-                    state.mode == ExperimentMode::SingleRun ? tick : std::optional<std::uint64_t>{},
-                    prepare_error)) {
-                message = prepare_error;
-                message_color = ORANGE;
-                continue;
+                    state.mode == ExperimentMode::SingleRun ? tick : std::optional<std::uint64_t>{}, prepare_error)) {
+                message = prepare_error; message_color = ORANGE; continue;
             }
-            if (!write_override_manifest(
-                    request,
-                    current_override_vector(state),
+            if (!write_override_manifest(request, current_override_vector(state),
                     state.mode == ExperimentMode::SingleRun ? single_seed : std::optional<std::int64_t>{},
-                    tick,
-                    prepare_error)) {
-                message = prepare_error;
-                message_color = ORANGE;
-                continue;
+                    tick, prepare_error)) {
+                message = prepare_error; message_color = ORANGE; continue;
             }
             request.command = command_preview(request, false);
             std::string history_error;
             append_history(request, "started", -1, history_error);
+            if (state_dirty) save_persistent_state();
             return request;
         }
         if ((keyboard_start || start_clicked) && !start_enabled) {
@@ -1782,6 +1906,7 @@ std::optional<LaunchRequest> show_launcher(
             message_color = ORANGE;
         }
     }
+    if (state_dirty) save_persistent_state();
     return std::nullopt;
 }
 

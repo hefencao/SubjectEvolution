@@ -36,6 +36,7 @@ struct LaunchRequest {
     std::uint64_t until_tick = 0;
     std::string command;
     std::string history_id;
+    bool overwrite_partial = false;
 };
 
 struct ConfigScanResult {

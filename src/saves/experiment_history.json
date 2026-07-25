@@ -1,0 +1,98 @@
+[
+  {
+    "id": "1784988132719",
+    "timestamp": "1784988132719",
+    "config": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_longrun.json",
+    "mode": "single",
+    "backend": "gpu",
+    "seeds": "10001",
+    "until_tick": 3000,
+    "output": "/home/unkloser/projects/SubjectEvolution/runs/gui_mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_longrun_1784988132718",
+    "status": "started",
+    "exit_code": -1
+  },
+  {
+    "id": "1784988132719",
+    "timestamp": "1784988148396",
+    "config": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_longrun.json",
+    "mode": "single",
+    "backend": "gpu",
+    "seeds": "10001",
+    "until_tick": 3000,
+    "output": "/home/unkloser/projects/SubjectEvolution/runs/gui_mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_longrun_1784988132718",
+    "status": "stopped",
+    "exit_code": 0
+  },
+  {
+    "id": "1784988192327",
+    "timestamp": "1784988192327",
+    "config": "heterogeneous_no_affinity_smoke.json",
+    "mode": "single",
+    "backend": "cpu",
+    "seeds": "10001",
+    "until_tick": 30,
+    "output": "/home/unkloser/projects/SubjectEvolution/runs/gui_heterogeneous_no_affinity_smoke_1784988192327",
+    "status": "started",
+    "exit_code": -1
+  },
+  {
+    "id": "1784988192327",
+    "timestamp": "1784988207941",
+    "config": "heterogeneous_no_affinity_smoke.json",
+    "mode": "single",
+    "backend": "cpu",
+    "seeds": "10001",
+    "until_tick": 30,
+    "output": "/home/unkloser/projects/SubjectEvolution/runs/gui_heterogeneous_no_affinity_smoke_1784988192327",
+    "status": "stopped",
+    "exit_code": 0
+  },
+  {
+    "id": "1784988246452",
+    "timestamp": "1784988246452",
+    "config": "heterogeneous_no_affinity_smoke.json",
+    "mode": "single",
+    "backend": "cpu",
+    "seeds": "10001",
+    "until_tick": 30,
+    "output": "/home/unkloser/projects/SubjectEvolution/runs/gui_heterogeneous_no_affinity_smoke_1784988246452",
+    "status": "started",
+    "exit_code": -1
+  },
+  {
+    "id": "1784988246452",
+    "timestamp": "1784988251817",
+    "config": "heterogeneous_no_affinity_smoke.json",
+    "mode": "single",
+    "backend": "cpu",
+    "seeds": "10001",
+    "until_tick": 30,
+    "output": "/home/unkloser/projects/SubjectEvolution/runs/gui_heterogeneous_no_affinity_smoke_1784988246452",
+    "status": "stopped",
+    "exit_code": 0
+  },
+  {
+    "id": "1784988683152",
+    "timestamp": "1784988683152",
+    "config": "heterogeneous_no_affinity_smoke.json",
+    "mode": "multi-seed",
+    "backend": "cpu",
+    "seeds": "10001,10002,10003",
+    "until_tick": 30,
+    "output": "/home/unkloser/projects/SubjectEvolution/runs/multi_heterogeneous_no_affinity_smoke_1784988683152",
+    "status": "started",
+    "exit_code": -1
+  },
+  {
+    "id": "1784988683152",
+    "timestamp": "1784988697486",
+    "config": "heterogeneous_no_affinity_smoke.json",
+    "mode": "multi-seed",
+    "backend": "cpu",
+    "seeds": "10001,10002,10003",
+    "until_tick": 30,
+    "output": "/home/unkloser/projects/SubjectEvolution/runs/multi_heterogeneous_no_affinity_smoke_1784988683152",
+    "status": "finished",
+    "exit_code": 0
+  }
+]

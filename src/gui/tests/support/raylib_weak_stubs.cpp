@@ -7,6 +7,8 @@ WEAK Vector2 GetWorldToScreen2D(Vector2 p, Camera2D c){return {(p.x-c.target.x)*
 WEAK Vector2 GetMousePosition(){return {};}
 WEAK Vector2 GetMouseDelta(){return {};}
 WEAK float GetMouseWheelMove(){return 0;}
+WEAK int GetCharPressed(){return 0;}
+WEAK double GetTime(){return 0.0;}
 WEAK int GetScreenWidth(){return 1280;}
 WEAK int GetScreenHeight(){return 720;}
 WEAK int GetFPS(){return 60;}
@@ -21,7 +23,14 @@ WEAK void CloseWindow(){}
 WEAK void SetTargetFPS(int){}
 WEAK void SetWindowTitle(const char*){}
 WEAK void SetWindowMinSize(int,int){}
+WEAK void SetWindowSize(int,int){}
 WEAK int MeasureText(const char* text,int size){int n=0; if(text){while(text[n]) ++n;} return n*size/2;}
+WEAK Vector2 MeasureTextEx(Font,const char* text,float size,float){int n=0; if(text){while(text[n]) ++n;} return {n*size*0.6f,size};}
+WEAK Font GetFontDefault(){return {16,96,0,Texture2D{1u,1,1,1,0},nullptr,nullptr};}
+WEAK Font LoadFontEx(const char*,int size,int*,int){return {size,96,0,Texture2D{1u,1,1,1,0},nullptr,nullptr};}
+WEAK void UnloadFont(Font){}
+WEAK void DrawTextEx(Font,const char*,Vector2,float,float,Color){}
+WEAK void SetClipboardText(const char*){}
 WEAK void BeginDrawing(){}
 WEAK void EndDrawing(){}
 WEAK void ClearBackground(Color){}

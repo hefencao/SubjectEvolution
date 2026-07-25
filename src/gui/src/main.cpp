@@ -1,6 +1,8 @@
 #include "eco/protocol.hpp"
 #include "eco/launcher.hpp"
 #include "eco/ui_font.hpp"
+#include "eco/gui_preferences.hpp"
+#include "eco/multi_seed_monitor.hpp"
 #include "eco/renderer.hpp"
 #include "eco/shared_reader.hpp"
 #include "eco/social_loop.hpp"
@@ -86,37 +88,6 @@ std::filesystem::path find_project_root(
     return std::filesystem::current_path();
 }
 
-int draw_wrapped_text(
-    const std::string& text,
-    int x,
-    int y,
-    int max_width,
-    int font_size,
-    int line_height,
-    int max_lines,
-    Color color
-) {
-    std::istringstream words(text);
-    std::string line;
-    std::string word;
-    int lines = 0;
-    while (words >> word && lines < max_lines) {
-        const std::string candidate = line.empty() ? word : line + " " + word;
-        if (!line.empty() && MeasureText(candidate.c_str(), font_size) > max_width) {
-            DrawText(line.c_str(), x, y, font_size, color);
-            y += line_height;
-            ++lines;
-            line = word;
-        } else {
-            line = candidate;
-        }
-    }
-    if (!line.empty() && lines < max_lines) {
-        DrawText(line.c_str(), x, y, font_size, color);
-        y += line_height;
-    }
-    return y;
-}
 
 #if defined(__unix__) || defined(__APPLE__)
 pid_t launch_simulation(
@@ -159,6 +130,7 @@ pid_t launch_simulation(
         storage.push_back(request.backend);
         storage.push_back("--until-tick");
         storage.push_back(std::to_string(request.until_tick));
+        if (request.overwrite_partial) storage.push_back("--overwrite-partial");
     } else {
         storage.push_back("subject_evolution.gui_interface.run_simulation");
         storage.push_back("--config");
@@ -200,13 +172,14 @@ void draw_multi_seed_status(
     int child
 #endif
 ) {
-    (void)child;
     const std::string title = "Subject Evolution Multi Seed — " +
         request.original_config_path.filename().string() + " [" +
         request.backend + "]";
     SetWindowTitle(title.c_str());
     bool finished = false;
     int exit_code = -1;
+    bool history_finalized = false;
+    eco::multi_seed::Monitor monitor(request.output_path, request.seeds, request.until_tick);
 
     while (!WindowShouldClose()) {
 #if defined(__unix__) || defined(__APPLE__)
@@ -218,67 +191,92 @@ void draw_multi_seed_status(
                 if (WIFEXITED(status)) exit_code = WEXITSTATUS(status);
                 else if (WIFSIGNALED(status)) exit_code = 128 + WTERMSIG(status);
                 else exit_code = 1;
-                std::string history_error;
-                eco::launcher::append_history(
-                    request,
-                    exit_code == 0 ? "finished" : "failed",
-                    exit_code,
-                    history_error
-                );
             }
         }
 #endif
+        const auto snapshot = monitor.poll(finished, exit_code);
+        if (finished && !history_finalized) {
+            std::string history_error;
+            eco::launcher::append_history(
+                request,
+                exit_code == 0 ? "finished" : "failed",
+                exit_code,
+                history_error
+            );
+            history_finalized = true;
+        }
+
         BeginDrawing();
         ClearBackground(Color{13, 17, 22, 255});
-        DrawText("Subject Evolution", 60, 48, 34, RAYWHITE);
-        DrawText("Multi-seed experiment", 60, 96, 21, LIGHTGRAY);
-        DrawText(
-            request.original_config_path.filename().string().c_str(),
-            60, 150, 24, Color{122, 211, 255, 255}
-        );
-        DrawText(
-            TextFormat("Backend %s    Until tick %llu    Resolution %s",
-                request.backend.c_str(),
-                static_cast<unsigned long long>(request.until_tick),
-                request.resolution.label.c_str()),
-            60, 190, 16, LIGHTGRAY
-        );
-        std::ostringstream seed_line;
-        seed_line << "Seeds ";
-        for (std::size_t index = 0; index < request.seeds.size(); ++index) {
-            if (index) seed_line << ", ";
-            seed_line << request.seeds[index];
+        DrawText("Subject Evolution", 54, 42, 30, RAYWHITE);
+        DrawText("Sequential multi-seed experiment", 54, 85, 18, LIGHTGRAY);
+        DrawText(request.original_config_path.filename().string().c_str(), 54, 123, 20, Color{122, 211, 255, 255});
+        DrawText(TextFormat("Backend %s    Target tick %llu", request.backend.c_str(),
+            static_cast<unsigned long long>(request.until_tick)), 54, 157, 14, LIGHTGRAY);
+        DrawText(("Output  " + request.output_path.string()).c_str(), 54, 182, 12, GRAY);
+
+        const float total = snapshot.aggregate_target == 0U ? 0.0F :
+            static_cast<float>(snapshot.aggregate_tick) / static_cast<float>(snapshot.aggregate_target);
+        Rectangle bar{54.0F, 220.0F, static_cast<float>(GetScreenWidth() - 108), 24.0F};
+        DrawRectangleRec(bar, Color{31, 40, 48, 255});
+        DrawRectangleRec(Rectangle{bar.x, bar.y, bar.width * std::clamp(total, 0.0F, 1.0F), bar.height}, Color{43, 142, 101, 255});
+        DrawRectangleLinesEx(bar, 1.0F, Fade(SKYBLUE, 0.35F));
+        DrawText(TextFormat("%d/%d seeds complete   %.1f%%",
+            static_cast<int>(snapshot.completed_count), static_cast<int>(snapshot.seeds.size()),
+            total * 100.0F), 62, 224, 12, RAYWHITE);
+
+        int y = 270;
+        const int row_height = 48;
+        const int max_rows = std::max(1, (GetScreenHeight() - 390) / row_height);
+        std::size_t first = 0;
+        if (snapshot.current_index && *snapshot.current_index >= static_cast<std::size_t>(max_rows / 2)) {
+            first = *snapshot.current_index - static_cast<std::size_t>(max_rows / 2);
         }
-        DrawText(seed_line.str().c_str(), 60, 224, 16, LIGHTGRAY);
-        DrawText("Output", 60, 275, 15, GRAY);
-        DrawText(request.output_path.string().c_str(), 150, 275, 15, LIGHTGRAY);
-        DrawText("Command", 60, 326, 15, GRAY);
-        int y = draw_wrapped_text(
-            request.command,
-            60, 354,
-            GetScreenWidth() - 120,
-            14, 21, 6,
-            Color{145, 187, 205, 255}
-        );
-        y += 24;
-        DrawText(
-            finished
-                ? (exit_code == 0 ? "Completed successfully." : TextFormat("Exited with code %d.", exit_code))
-                : "Running. Python writes per-seed outputs; this page does not fabricate a live world view.",
-            60, y, 18,
-            finished && exit_code != 0 ? ORANGE : Color{103, 225, 151, 255}
-        );
-        DrawText("Esc closes this page. Closing while running stops the child process.", 60, GetScreenHeight() - 52, 14, GRAY);
+        if (first + static_cast<std::size_t>(max_rows) > snapshot.seeds.size()) {
+            first = snapshot.seeds.size() > static_cast<std::size_t>(max_rows)
+                ? snapshot.seeds.size() - static_cast<std::size_t>(max_rows) : 0U;
+        }
+        for (std::size_t row = 0; row < static_cast<std::size_t>(max_rows) && first + row < snapshot.seeds.size(); ++row) {
+            const auto& seed = snapshot.seeds[first + row];
+            const bool current = seed.status == eco::multi_seed::SeedStatus::Current;
+            const bool failed = seed.status == eco::multi_seed::SeedStatus::Failed;
+            Rectangle row_rect{54.0F, static_cast<float>(y), static_cast<float>(GetScreenWidth() - 108), 40.0F};
+            DrawRectangleRec(row_rect, current ? Color{26, 60, 76, 255} : Color{18, 25, 31, 255});
+            DrawRectangleLinesEx(row_rect, 1.0F, current ? Fade(SKYBLUE, 0.65F) : Fade(SKYBLUE, 0.12F));
+            const char* prefix = "○";
+            Color color = GRAY;
+            if (seed.status == eco::multi_seed::SeedStatus::Completed ||
+                seed.status == eco::multi_seed::SeedStatus::SkippedCompleted) { prefix = "✓"; color = Color{103, 225, 151, 255}; }
+            else if (current) { prefix = "▶"; color = SKYBLUE; }
+            else if (failed) { prefix = "×"; color = ORANGE; }
+            DrawText(TextFormat("%s seed %lld", prefix, static_cast<long long>(seed.seed)), 65, y + 10, 14, color);
+            DrawText(TextFormat("tick %llu/%llu   alive %llu   %s",
+                static_cast<unsigned long long>(seed.tick),
+                static_cast<unsigned long long>(seed.target_tick),
+                static_cast<unsigned long long>(seed.alive),
+                eco::multi_seed::status_name(seed.status)),
+                250, y + 10, 12, LIGHTGRAY);
+            y += row_height;
+        }
+
+        int info_y = GetScreenHeight() - 104;
+        const std::string current_text = snapshot.current_index
+            ? "Current seed: " + std::to_string(snapshot.seeds[*snapshot.current_index].seed) +
+              "  tick " + std::to_string(snapshot.seeds[*snapshot.current_index].tick) +
+              "/" + std::to_string(request.until_tick)
+            : (finished ? "No active seed." : "Preparing the next seed...");
+        DrawText(current_text.c_str(), 54, info_y, 14, LIGHTGRAY);
+        DrawText(finished
+            ? (exit_code == 0 ? "Completed; aggregate analysis is ready." : TextFormat("Exited with code %d.", exit_code))
+            : "The Python runner executes seeds sequentially and updates files after each seed.",
+            54, info_y + 27, 13,
+            finished && exit_code != 0 ? ORANGE : Color{103, 225, 151, 255});
+        DrawText("Esc closes the monitor. The multi-seed process continues if it is still running.", 54, info_y + 53, 11, GRAY);
         EndDrawing();
         if (IsKeyPressed(KEY_ESCAPE)) break;
     }
-#if defined(__unix__) || defined(__APPLE__)
-    if (!finished) {
-        stop_simulation(child);
-        std::string history_error;
-        eco::launcher::append_history(request, "stopped", 143, history_error);
-    }
-#endif
+    // Deliberately do not terminate the sequential experiment when only the
+    // monitor window is closed. The output files remain the source of truth.
 }
 
 enum class ObservationPreset : std::uint8_t {
@@ -1318,11 +1316,16 @@ int main(int argc, char** argv) {
         FLAG_VSYNC_HINT
     );
 
-    InitWindow(1440, 900, "Eco Game Runtime");
+    std::string gui_settings_warning;
+    const auto gui_settings = eco::preferences::load_settings(project_root, gui_settings_warning);
+    InitWindow(gui_settings.window_width, gui_settings.window_height, "Eco Game Runtime");
     SetWindowMinSize(1024, 700);
     SetTargetFPS(144);
-    eco::ui::initialize_font(project_root);
+    eco::ui::set_font_metrics(gui_settings.body_font_size, gui_settings.title_font_size, gui_settings.ui_scale);
+    eco::ui::initialize_font(project_root, gui_settings.font_family);
     std::cout << "[eco-gui] UI font: " << eco::ui::font_source() << std::endl;
+    std::cout << "[eco-gui] GUI settings: " << eco::preferences::settings_path(project_root) << std::endl;
+    if (!gui_settings_warning.empty()) std::cerr << "[eco-gui] " << gui_settings_warning << std::endl;
 
     #if defined(__unix__) || defined(__APPLE__)
     pid_t simulation_process = -1;

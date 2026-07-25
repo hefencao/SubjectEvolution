@@ -97,3 +97,10 @@ target_sources(eco_game_runtime PRIVATE
     "src/ui_font.cpp"
 )
 # END ECO_GUI_V21_LAUNCHER
+
+# BEGIN ECO_GUI_V22_LAUNCHER
+target_sources(eco_game_runtime PRIVATE
+    "src/gui_preferences.cpp"
+    "src/multi_seed_monitor.cpp"
+)
+# END ECO_GUI_V22_LAUNCHER
