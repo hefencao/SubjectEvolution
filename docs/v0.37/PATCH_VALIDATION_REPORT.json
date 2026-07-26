@@ -1,0 +1,11 @@
+{
+  "schema": "patch-validation-v1",
+  "base_version": "0.36.0",
+  "target_version": "0.37.0",
+  "patch": "se_v037.patch",
+  "git_apply_check": true,
+  "applied_tree_matches_target": true,
+  "missing_files": 0,
+  "extra_files": 0,
+  "hash_differences": 0
+}

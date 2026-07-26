@@ -14,7 +14,7 @@ from se.env.partition import SpatialRegionPartition
 from se.policy import ParametricPolicy
 
 
-SCHEMA = "structural-measurement-protocol-audit-v4"
+SCHEMA = "structural-measurement-protocol-audit-v5"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -116,6 +116,14 @@ def build_protocol_audit(
             "resource_capacities": list(cfg.environment.resource_capacity),
             "resource_regeneration": list(cfg.environment.resource_regeneration),
             "resource_effect_matrix": [list(row) for row in cfg.environment.resource_effect_matrix],
+            "harvest_allocation_schema": cfg.entities.harvest_allocation_schema,
+            "harvest_channel_multipliers": list(cfg.environment.harvest_channel_multipliers),
+            "harvest_budget_semantics": (
+                "fixed total extraction budget spent on one channel sampled from inherited affinity with state-free keyed randomness"
+                if cfg.entities.harvest_allocation_schema
+                == "affinity-sampled-exclusive-harvest-v1"
+                else "fixed per-channel extraction requests"
+            ),
             "independent_cycle_periods": list(cfg.environment.resource_cycle_periods),
             "cycle_amplitudes": list(cfg.environment.resource_cycle_amplitudes),
             "primary_wave_vectors": [list(row) for row in cfg.environment.resource_primary_wave_vectors],
@@ -124,6 +132,10 @@ def build_protocol_audit(
             "secondary_wave_amplitudes": list(cfg.environment.resource_secondary_wave_amplitudes),
             "diffusion_rates": list(cfg.environment.resource_diffusion_rates),
             "entity_aware": False,
+            "environment_generation_entity_aware": False,
+            "harvest_demand_entity_aware": bool(
+                cfg.entities.harvest_allocation_schema == "affinity-sampled-exclusive-harvest-v1"
+            ),
             "lineage_aware": False,
             "group_aware": False,
             "diversity_protection": False,
@@ -315,10 +327,13 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "## Resource environment",
         "",
         f"- schema / channels: `{resource['schema']}` / {resource['channel_count']}",
+        f"- harvest allocation: `{resource['harvest_allocation_schema']}`",
+        f"- harvest budget semantics: {resource['harvest_budget_semantics']}",
         f"- independent cycle periods: {resource['independent_cycle_periods']}",
         f"- primary wave vectors: {resource['primary_wave_vectors']}",
         f"- diffusion rates: {resource['diffusion_rates']}",
-        f"- entity/lineage/group aware: {resource['entity_aware']} / {resource['lineage_aware']} / {resource['group_aware']}",
+        f"- environment generation entity/lineage/group aware: {resource['environment_generation_entity_aware']} / {resource['lineage_aware']} / {resource['group_aware']}",
+        f"- harvest demand phenotype-aware: {resource['harvest_demand_entity_aware']}",
         f"- boundary: {resource['interpretation']}",
         "",
         "## Elastic capacities",

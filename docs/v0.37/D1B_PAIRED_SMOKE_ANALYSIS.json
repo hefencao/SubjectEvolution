@@ -1,0 +1,2066 @@
+{
+  "analyzer_version": "0.37.0",
+  "cross_seed_local_sign_consistency": {
+    "local_culture.local_crowding_vs_local_outgoing_transfer_rate_next_window": {
+      "available_runs": 2,
+      "max": 0.2359261958618723,
+      "mean": 0.16578610771452373,
+      "min": 0.0956460195671752,
+      "negative_runs": 0,
+      "positive_runs": 2,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "local_culture.local_crowding_vs_local_outgoing_transfer_rate_within_region": {
+      "available_runs": 2,
+      "max": 0.11213421994458536,
+      "mean": 0.012692892196303845,
+      "min": -0.08674843555197767,
+      "negative_runs": 1,
+      "positive_runs": 1,
+      "same_nonzero_sign": false,
+      "zero_runs": 0
+    },
+    "local_culture.local_mortality_vs_local_incoming_transfer_rate_next_window": {
+      "available_runs": 2,
+      "max": -0.038407718989536335,
+      "mean": -0.10688836776105592,
+      "min": -0.17536901653257553,
+      "negative_runs": 2,
+      "positive_runs": 0,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "local_culture.local_mortality_vs_local_incoming_transfer_rate_within_region": {
+      "available_runs": 2,
+      "max": -0.10896584311464777,
+      "mean": -0.13195895185368378,
+      "min": -0.15495206059271982,
+      "negative_runs": 2,
+      "positive_runs": 0,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "local_culture.local_scarcity_vs_local_incoming_transfer_rate_next_window": {
+      "available_runs": 2,
+      "max": 0.18454624571315734,
+      "mean": 0.09700595474065583,
+      "min": 0.00946566376815434,
+      "negative_runs": 0,
+      "positive_runs": 2,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "local_culture.local_scarcity_vs_local_incoming_transfer_rate_within_region": {
+      "available_runs": 2,
+      "max": -0.11643266808475426,
+      "mean": -0.1576335585276948,
+      "min": -0.19883444897063535,
+      "negative_runs": 2,
+      "positive_runs": 0,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "local_culture.local_scarcity_vs_local_net_transferred_root_establishment_next_window": {
+      "available_runs": 2,
+      "max": -0.007340861759362405,
+      "mean": -0.02584539057285833,
+      "min": -0.044349919386354256,
+      "negative_runs": 2,
+      "positive_runs": 0,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "local_culture.local_scarcity_vs_local_net_transferred_root_establishment_within_region": {
+      "available_runs": 2,
+      "max": -0.23163284950111515,
+      "mean": -0.24028314577901216,
+      "min": -0.24893344205690915,
+      "negative_runs": 2,
+      "positive_runs": 0,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "local_culture.local_scarcity_vs_local_new_transferred_roots_next_window": {
+      "available_runs": 2,
+      "max": 0.09274954996244686,
+      "mean": 0.07891045448735887,
+      "min": 0.06507135901227089,
+      "negative_runs": 0,
+      "positive_runs": 2,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "local_culture.local_scarcity_vs_local_new_transferred_roots_within_region": {
+      "available_runs": 2,
+      "max": -0.19352869445222226,
+      "mean": -0.2234845590469251,
+      "min": -0.25344042364162794,
+      "negative_runs": 2,
+      "positive_runs": 0,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "local_culture.local_scarcity_vs_local_outgoing_transfer_rate_next_window": {
+      "available_runs": 2,
+      "max": 0.19381192680852516,
+      "mean": 0.16172295856385466,
+      "min": 0.12963399031918416,
+      "negative_runs": 0,
+      "positive_runs": 2,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "local_culture.local_scarcity_vs_local_outgoing_transfer_rate_within_region": {
+      "available_runs": 2,
+      "max": -0.014213553503719086,
+      "mean": -0.09389346576786226,
+      "min": -0.17357337803200543,
+      "negative_runs": 2,
+      "positive_runs": 0,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    }
+  },
+  "cross_seed_sign_consistency": {
+    "correlations_first_difference.delta_effective_lineages_vs_delta_cohesion": {
+      "available_runs": 1,
+      "max": -0.354059336605144,
+      "mean": -0.354059336605144,
+      "min": -0.354059336605144,
+      "negative_runs": 1,
+      "positive_runs": 0,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_first_difference.delta_largest_lineage_fraction_vs_delta_cohesion": {
+      "available_runs": 1,
+      "max": -0.35854312524546944,
+      "mean": -0.35854312524546944,
+      "min": -0.35854312524546944,
+      "negative_runs": 1,
+      "positive_runs": 0,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_first_difference.delta_lineage_group_pair_enrichment_vs_delta_cohesion": {
+      "available_runs": 1,
+      "max": 0.5491409306176667,
+      "mean": 0.5491409306176667,
+      "min": 0.5491409306176667,
+      "negative_runs": 0,
+      "positive_runs": 1,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_first_difference.delta_mortality_vs_delta_cohesion": {
+      "available_runs": 1,
+      "max": 0.5038578015926167,
+      "mean": 0.5038578015926167,
+      "min": 0.5038578015926167,
+      "negative_runs": 0,
+      "positive_runs": 1,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_first_difference.delta_strategy_dimensions_vs_delta_action_entropy": {
+      "available_runs": 2,
+      "max": 0.37787490503576676,
+      "mean": 0.2681321774606552,
+      "min": 0.1583894498855437,
+      "negative_runs": 0,
+      "positive_runs": 2,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_first_difference.mortality_vs_next_delta_cohesion": {
+      "available_runs": 1,
+      "max": -0.18689179128616468,
+      "mean": -0.18689179128616468,
+      "min": -0.18689179128616468,
+      "negative_runs": 1,
+      "positive_runs": 0,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_observational.effective_lineages_vs_cohesion": {
+      "available_runs": 1,
+      "max": 0.009696265368772815,
+      "mean": 0.009696265368772815,
+      "min": 0.009696265368772815,
+      "negative_runs": 0,
+      "positive_runs": 1,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_observational.knowledge_effective_roots_vs_effective_lineages": {
+      "available_runs": 2,
+      "max": 0.9823870286616265,
+      "mean": 0.9760946020780414,
+      "min": 0.9698021754944562,
+      "negative_runs": 0,
+      "positive_runs": 2,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_observational.largest_lineage_fraction_vs_cohesion": {
+      "available_runs": 1,
+      "max": -0.28592900081642086,
+      "mean": -0.28592900081642086,
+      "min": -0.28592900081642086,
+      "negative_runs": 1,
+      "positive_runs": 0,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_observational.lineage_group_nmi_vs_cohesion": {
+      "available_runs": 0,
+      "max": null,
+      "mean": null,
+      "min": null,
+      "negative_runs": 0,
+      "positive_runs": 0,
+      "same_nonzero_sign": false,
+      "zero_runs": 0
+    },
+    "correlations_observational.lineage_group_pair_enrichment_vs_cohesion": {
+      "available_runs": 1,
+      "max": 0.7566549952911847,
+      "mean": 0.7566549952911847,
+      "min": 0.7566549952911847,
+      "negative_runs": 0,
+      "positive_runs": 1,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_observational.mortality_vs_next_window_cohesion": {
+      "available_runs": 1,
+      "max": 0.4536753684424961,
+      "mean": 0.4536753684424961,
+      "min": 0.4536753684424961,
+      "negative_runs": 0,
+      "positive_runs": 1,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_observational.mortality_vs_same_window_cohesion": {
+      "available_runs": 1,
+      "max": 0.6536122049717118,
+      "mean": 0.6536122049717118,
+      "min": 0.6536122049717118,
+      "negative_runs": 0,
+      "positive_runs": 1,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_observational.strategy_dimensions_vs_action_entropy": {
+      "available_runs": 2,
+      "max": 0.9585468866844669,
+      "mean": 0.9539865117978805,
+      "min": 0.9494261369112942,
+      "negative_runs": 0,
+      "positive_runs": 2,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_partial.effective_lineages_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 1,
+      "max": -0.3702489418036779,
+      "mean": -0.3702489418036779,
+      "min": -0.3702489418036779,
+      "negative_runs": 1,
+      "positive_runs": 0,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_partial.largest_lineage_fraction_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 1,
+      "max": -0.4564107865350615,
+      "mean": -0.4564107865350615,
+      "min": -0.4564107865350615,
+      "negative_runs": 1,
+      "positive_runs": 0,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_partial.lineage_group_pair_enrichment_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 1,
+      "max": 0.6673965814421368,
+      "mean": 0.6673965814421368,
+      "min": 0.6673965814421368,
+      "negative_runs": 0,
+      "positive_runs": 1,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    },
+    "correlations_partial.mortality_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 1,
+      "max": 0.6508827232986965,
+      "mean": 0.6508827232986965,
+      "min": 0.6508827232986965,
+      "negative_runs": 0,
+      "positive_runs": 1,
+      "same_nonzero_sign": true,
+      "zero_runs": 0
+    }
+  },
+  "endpoint_aggregate": {
+    "alive_final": {
+      "max": 134.0,
+      "mean": 124.5,
+      "min": 115.0,
+      "std": 9.5
+    },
+    "benefit_boundary_cohesion_final": {
+      "max": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "std": 0.0
+    },
+    "capacity_effective_dimensions_final": {
+      "max": 3.853228023432437,
+      "mean": 3.830655585815085,
+      "min": 3.808083148197733,
+      "std": 0.022572437617351948
+    },
+    "effective_lineages_final": {
+      "max": 44.445544554455445,
+      "mean": 39.762560075636216,
+      "min": 35.07957559681698,
+      "std": 4.6829844788192325
+    },
+    "knowledge_effective_transferred_roots_final": {
+      "max": 18.0,
+      "mean": 17.5,
+      "min": 17.0,
+      "std": 0.5
+    },
+    "knowledge_transfer_committed_final": {
+      "max": 51.0,
+      "mean": 50.0,
+      "min": 49.0,
+      "std": 1.0
+    },
+    "largest_lineage_fraction_final": {
+      "max": 0.0782608695652174,
+      "mean": 0.06898118105126541,
+      "min": 0.05970149253731343,
+      "std": 0.009279688513951983
+    },
+    "strategy_effective_dimensions_final": {
+      "max": 32.48239976269608,
+      "mean": 30.1452923598738,
+      "min": 27.808184957051512,
+      "std": 2.3371074028222854
+    },
+    "window_action_entropy_final": {
+      "max": 1.8540404535261235,
+      "mean": 1.8496329397864744,
+      "min": 1.8452254260468253,
+      "std": 0.004407513739649094
+    }
+  },
+  "input_runtime_versions": [
+    "0.37.0"
+  ],
+  "interpretation_boundary": "Repeated signs across seeds support robustness, not necessity. Raw within-run correlations may reflect shared temporal drift. Controlled checkpoint interventions are required for phase-specific causal claims.",
+  "repeated_directional_patterns": [],
+  "repeated_local_directional_patterns": [],
+  "run_count": 2,
+  "runs": [
+    {
+      "alive_final": 134,
+      "alive_peak": 204,
+      "alive_peak_tick": 60,
+      "alive_trough": 123,
+      "alive_trough_tick": 240,
+      "analysis_warnings": [],
+      "benefit_boundary_cohesion_final": 0.0,
+      "capacity_correlations_observational": {
+        "attention_capacity_vs_committed_transfer": 0.6458014479031474,
+        "capacity_dimensions_vs_alive": 0.9312001660490388,
+        "capacity_dimensions_vs_boundary_cohesion": null,
+        "capacity_dimensions_vs_effective_transferred_roots": 0.09043471488987465,
+        "capacity_dimensions_vs_resource_affinity_dimensions": 0.5659354779123434,
+        "capacity_dimensions_vs_resource_environment_dimensions": 0.9537547854867606,
+        "knowledge_capacity_vs_effective_root_contents": 0.7515789585313147,
+        "relation_capacity_vs_boundary_cohesion": null,
+        "working_memory_capacity_vs_action_entropy": -0.8233613278645763
+      },
+      "capacity_final": {
+        "capacity_active_entities": 134,
+        "capacity_attention_zero_fraction": 0.1417910447761194,
+        "capacity_effective_dimensions": 3.808083148197733,
+        "capacity_knowledge_attention_slots_max": 2,
+        "capacity_knowledge_attention_slots_mean": 0.9328358208955224,
+        "capacity_knowledge_attention_slots_min": 0,
+        "capacity_knowledge_attention_slots_std": 0.4603334481579443,
+        "capacity_knowledge_attention_slots_unique": 3,
+        "capacity_knowledge_bytes_used_mean": 240.59701492537314,
+        "capacity_knowledge_capacity_bytes_max": 416,
+        "capacity_knowledge_capacity_bytes_mean": 256.4776119402985,
+        "capacity_knowledge_capacity_bytes_min": 128,
+        "capacity_knowledge_capacity_bytes_std": 64.82867391410495,
+        "capacity_knowledge_capacity_bytes_unique": 10,
+        "capacity_knowledge_saturated_fraction": 0.2835820895522388,
+        "capacity_knowledge_utilization_mean": 0.9334565620946219,
+        "capacity_relation_edges_used_mean": 1.8134328358208955,
+        "capacity_relation_saturated_fraction": 0.1865671641791045,
+        "capacity_relation_slots_max": 7,
+        "capacity_relation_slots_mean": 3.888059701492537,
+        "capacity_relation_slots_min": 2,
+        "capacity_relation_slots_std": 1.0903952984507466,
+        "capacity_relation_slots_unique": 6,
+        "capacity_relation_utilization_mean": 0.4945984363894811,
+        "capacity_working_memory_dimensions_max": 4,
+        "capacity_working_memory_dimensions_mean": 2.171641791044776,
+        "capacity_working_memory_dimensions_min": 0,
+        "capacity_working_memory_dimensions_std": 0.6749916461946867,
+        "capacity_working_memory_dimensions_unique": 5,
+        "capacity_working_memory_saturated_fraction": 1.0,
+        "capacity_working_memory_used_dimensions_mean": 2.171641791044776,
+        "capacity_working_memory_utilization_mean": 1.0,
+        "differentiation_schema": "inherited-elastic-capacities-v1"
+      },
+      "causal_caution": "All correlations are descriptive. Raw correlations can be dominated by shared time trends; first differences and partial correlations reduce, but do not eliminate, confounding.",
+      "config_context": {
+        "danger_evidence_schema": "disabled",
+        "differentiation_capacity_bounds": {
+          "knowledge_attention_slots": [
+            0,
+            2
+          ],
+          "knowledge_bytes": [
+            0,
+            512
+          ],
+          "relation_slots": [
+            0,
+            8
+          ],
+          "working_memory_dimensions": [
+            0,
+            4
+          ]
+        },
+        "differentiation_enabled": true,
+        "differentiation_mutation_probability": 0.03,
+        "differentiation_mutation_std": 0.16,
+        "differentiation_schema": "inherited-elastic-capacities-v1",
+        "environment_process_interpretation": "scientific-core-only",
+        "environment_process_mechanism_class": "none",
+        "environment_process_origin": "core-disabled",
+        "environment_process_parameter_names": [],
+        "environment_process_schema": "disabled",
+        "environment_schema": "orthogonal-four-resource-niche-v1",
+        "execution_backend": "cpu",
+        "gpu_acceleration_enabled": false,
+        "gpu_device_validated": false,
+        "gpu_semantics_mode": "strict-reference",
+        "group_label_propagation_rounds": 8,
+        "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+        "group_min_members": 6,
+        "group_trust_threshold": 0.12,
+        "group_update_max_period": 300,
+        "group_update_min_period": 100,
+        "group_update_mode": "adaptive-topology-v1",
+        "group_update_period": 50,
+        "harvest_allocation_schema": "uniform-channel-rates-v1",
+        "harvest_channel_multipliers": [
+          0.65,
+          0.65,
+          0.65,
+          0.65
+        ],
+        "harvest_rate": 0.3,
+        "harvest_request_budget": 0.78,
+        "knowledge_transfer_period": 1,
+        "knowledge_transfer_probability": 0.1,
+        "mortality_trace_schema": "local-decaying-mortality-trace-v1",
+        "moving_hazard_schema": "disabled",
+        "moving_hazard_source_count": 0,
+        "requested_backend": "cpu",
+        "resource_affinity_schema": "normalized-four-resource-affinity-v1",
+        "resource_cycle_amplitudes": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ],
+        "resource_cycle_periods": [
+          173,
+          257,
+          349,
+          431
+        ],
+        "resource_diffusion_rates": [
+          0.002,
+          0.004,
+          0.006,
+          0.008
+        ],
+        "resource_effect_matrix": [
+          [
+            0.52,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.03,
+            0.018,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.03,
+            0.24,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.018,
+            0.0,
+            0.24
+          ]
+        ],
+        "resource_primary_wave_amplitudes": [
+          0.25,
+          0.25,
+          0.25,
+          0.25
+        ],
+        "resource_primary_wave_vectors": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            -1.0
+          ]
+        ],
+        "resource_secondary_wave_amplitudes": [
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "resource_secondary_wave_vectors": [
+          [
+            2.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            -1.0
+          ],
+          [
+            1.0,
+            -2.0
+          ]
+        ],
+        "runtime_version": "0.37.0",
+        "spatial_region_partition": {
+          "boundary_convention": "half-open except clipped outer boundary",
+          "feedback_to_world": false,
+          "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+          "mapping": "row-major-y-then-x",
+          "normalized_region_height": 0.25,
+          "normalized_region_width": 0.25,
+          "partition_sha256": "80ca3a910af4d035ebdcc1b9fb961d80675113ed6ff16e84a7c3b5f30a34c3f9",
+          "physical_region_height": 32.0,
+          "physical_region_width": 32.0,
+          "region_count": 16,
+          "regions_x": 4,
+          "regions_y": 4,
+          "schema": "normalized-fixed-count-grid-v1",
+          "world_cells_per_region_x": 8.0,
+          "world_cells_per_region_y": 8.0,
+          "world_grid_aligned": true,
+          "world_grid_x": 32,
+          "world_grid_y": 32,
+          "world_height": 128.0,
+          "world_width": 128.0
+        },
+        "spatial_stress_diagnostics_schema": "spatial-local-stress-culture-diagnostics-v2"
+      },
+      "correlations_cultural_transfer": {
+        "committed_transfer_vs_effective_transferred_roots": 0.0767283086862011,
+        "cross_lineage_transfer_vs_lineage_group_cohesion": null
+      },
+      "correlations_first_difference": {
+        "delta_effective_lineages_vs_delta_cohesion": null,
+        "delta_largest_lineage_fraction_vs_delta_cohesion": null,
+        "delta_lineage_group_pair_enrichment_vs_delta_cohesion": null,
+        "delta_mortality_vs_delta_cohesion": null,
+        "delta_strategy_dimensions_vs_delta_action_entropy": 0.37787490503576676,
+        "mortality_vs_next_delta_cohesion": null
+      },
+      "correlations_observational": {
+        "effective_lineages_vs_cohesion": null,
+        "knowledge_effective_roots_vs_effective_lineages": 0.9698021754944562,
+        "largest_lineage_fraction_vs_cohesion": null,
+        "lineage_group_nmi_vs_cohesion": null,
+        "lineage_group_pair_enrichment_vs_cohesion": null,
+        "mortality_vs_next_window_cohesion": null,
+        "mortality_vs_same_window_cohesion": null,
+        "strategy_dimensions_vs_action_entropy": 0.9585468866844669
+      },
+      "correlations_partial": {
+        "effective_lineages_vs_cohesion_controlling_tick_alive": null,
+        "largest_lineage_fraction_vs_cohesion_controlling_tick_alive": null,
+        "lineage_group_pair_enrichment_vs_cohesion_controlling_tick_alive": null,
+        "mortality_vs_cohesion_controlling_tick_alive": null
+      },
+      "danger_direct_weight_mean_final": 1.0,
+      "danger_direct_weight_std_final": 0.0,
+      "danger_evidence_effective_dimensions_final": 0.0,
+      "danger_trace_weight_mean_final": 1.0,
+      "danger_trace_weight_std_final": 0.0,
+      "effective_lineages_final": 44.445544554455445,
+      "environment_atlas_final": {
+        "environment_atlas_2x2_entity_region_effective_count": 3.5983967935871743,
+        "environment_atlas_2x2_lineage_association": 0.8662933895305664,
+        "environment_atlas_2x2_lineage_covered_fraction": 0.7388059701492538,
+        "environment_atlas_2x2_lineage_span": 0.31902985074626866,
+        "environment_atlas_2x2_resource_effective_dimensions": 1.1307768931922897,
+        "environment_atlas_2x2_resource_max_abs_correlation": 0.9963997015488413,
+        "environment_atlas_2x2_resource_mean_abs_correlation": 0.7754058725679811,
+        "environment_atlas_2x2_resource_spatial_cv_mean": 0.07198939635353993,
+        "environment_atlas_2x2_signature_effective_dimensions": 1.1492543593102342,
+        "environment_atlas_2x2_signature_mean_distance": 0.19263896209723638,
+        "environment_atlas_2x2_social_association": 0.0,
+        "environment_atlas_2x2_social_covered_fraction": 0.0,
+        "environment_atlas_2x2_social_span": 0.0,
+        "environment_atlas_2x2_temporal_turnover": 0.057138571279738315,
+        "environment_atlas_4x4_entity_region_effective_count": 12.469444444444447,
+        "environment_atlas_4x4_lineage_association": 0.8485083783410952,
+        "environment_atlas_4x4_lineage_covered_fraction": 0.7388059701492538,
+        "environment_atlas_4x4_lineage_span": 0.08675373134328358,
+        "environment_atlas_4x4_resource_effective_dimensions": 2.2286695809240347,
+        "environment_atlas_4x4_resource_max_abs_correlation": 0.588862255053033,
+        "environment_atlas_4x4_resource_mean_abs_correlation": 0.45859687234714624,
+        "environment_atlas_4x4_resource_spatial_cv_mean": 0.14546700043904714,
+        "environment_atlas_4x4_signature_effective_dimensions": 2.7722565369313927,
+        "environment_atlas_4x4_signature_mean_distance": 0.2937285165613214,
+        "environment_atlas_4x4_social_association": 0.0,
+        "environment_atlas_4x4_social_covered_fraction": 0.0,
+        "environment_atlas_4x4_social_span": 0.0,
+        "environment_atlas_4x4_temporal_turnover": 0.0591393860129544,
+        "environment_atlas_8x8_entity_region_effective_count": 34.933852140077825,
+        "environment_atlas_8x8_lineage_association": 0.8136074548555853,
+        "environment_atlas_8x8_lineage_covered_fraction": 0.7388059701492538,
+        "environment_atlas_8x8_lineage_span": 0.026469216417910446,
+        "environment_atlas_8x8_resource_effective_dimensions": 2.0116499529969594,
+        "environment_atlas_8x8_resource_max_abs_correlation": 0.6643987001667616,
+        "environment_atlas_8x8_resource_mean_abs_correlation": 0.5519199732458545,
+        "environment_atlas_8x8_resource_spatial_cv_mean": 0.18325855590578813,
+        "environment_atlas_8x8_signature_effective_dimensions": 2.6669352007397693,
+        "environment_atlas_8x8_signature_mean_distance": 0.3408231208561617,
+        "environment_atlas_8x8_social_association": 0.0,
+        "environment_atlas_8x8_social_covered_fraction": 0.0,
+        "environment_atlas_8x8_social_span": 0.0,
+        "environment_atlas_8x8_temporal_turnover": 0.06423051646834388,
+        "environment_atlas_scale_count": 3,
+        "environment_atlas_schema": "multiscale-subject-environment-atlas-v2"
+      },
+      "environment_mortality_trace_max_final": 0.11364123225212097,
+      "environment_mortality_trace_mean_final": 0.001298069967010207,
+      "final_tick": 300,
+      "first_tick": 30,
+      "group_last_update_tick_final": 200,
+      "group_update_count_final": 3,
+      "group_update_skipped_final": 297,
+      "knowledge_active_transferred_root_count_final": 18,
+      "knowledge_cultural_spread_interpretable": true,
+      "knowledge_effective_root_contents_final": 514.570680628272,
+      "knowledge_effective_transferred_roots_final": 18.0,
+      "knowledge_largest_root_holder_fraction_final": 0.0055248618784530384,
+      "knowledge_largest_transferred_root_holder_fraction_final": 0.05555555555555555,
+      "knowledge_root_genetic_lineage_pair_enrichment_final": 9.396743295019157,
+      "knowledge_transfer_attempts_final": 66,
+      "knowledge_transfer_commit_rate_after_attention_final": 0.7727272727272727,
+      "knowledge_transfer_commit_rate_per_proposal_final": 0.6891891891891891,
+      "knowledge_transfer_committed_bytes_final": 3184,
+      "knowledge_transfer_committed_final": 51,
+      "knowledge_transfer_cross_group_committed_final": 0,
+      "knowledge_transfer_cross_lineage_committed_final": 47,
+      "knowledge_transfer_phase_summary": {
+        "decline": {
+          "attempts": 32,
+          "commit_rate": 0.75,
+          "committed": 24,
+          "windows": 6
+        },
+        "peak": {
+          "attempts": 40,
+          "commit_rate": 0.75,
+          "committed": 30,
+          "windows": 3
+        },
+        "rise": {
+          "attempts": 34,
+          "commit_rate": 0.7941176470588235,
+          "committed": 27,
+          "windows": 4
+        },
+        "trough": {
+          "attempts": 3,
+          "commit_rate": 1.0,
+          "committed": 3,
+          "windows": 3
+        }
+      },
+      "knowledge_transfer_proposals_final": 74,
+      "knowledge_transfer_same_group_committed_final": 0,
+      "knowledge_transfer_same_lineage_committed_final": 4,
+      "largest_lineage_fraction_final": 0.05970149253731343,
+      "lineage_group_nmi_final": 0.0,
+      "lineage_group_pair_enrichment_final": 0.0,
+      "mortality_to_cohesion_best_lag": null,
+      "mortality_to_cohesion_cross_lag": {
+        "-1": null,
+        "-2": null,
+        "-3": null,
+        "0": null,
+        "1": null,
+        "2": null,
+        "3": null
+      },
+      "path": "runs/v037_uniform300/evolution_progress.jsonl",
+      "record_count": 10,
+      "resource_affinity_effective_dimensions_final": 2.8664788744792893,
+      "resource_demand_analysis": {
+        "available": true,
+        "harvest_balance_effective_count": 3.996038366589119,
+        "harvest_balance_vs_resource_environment_dimensions": 0.9496670111153876,
+        "harvest_channel_correlation": [
+          [
+            1.0,
+            0.9034523725425566,
+            0.7756410155537469,
+            0.7169147195716054
+          ],
+          [
+            0.9034523725425566,
+            1.0,
+            0.9527575294484436,
+            0.9190708315697725
+          ],
+          [
+            0.7756410155537468,
+            0.9527575294484436,
+            1.0,
+            0.9870002982117826
+          ],
+          [
+            0.7169147195716052,
+            0.9190708315697725,
+            0.9870002982117826,
+            1.0
+          ]
+        ],
+        "harvest_channel_max_abs_correlation": 0.9870002982117826,
+        "harvest_channel_mean_abs_correlation": 0.8758061278163178,
+        "harvest_channel_shares": [
+          0.23872655882697674,
+          0.24741809263365963,
+          0.25391889583245897,
+          0.2599364527069047
+        ],
+        "harvest_channel_totals": [
+          1738.2165426630527,
+          1801.501364922151,
+          1848.8350328486413,
+          1892.6500861756504
+        ],
+        "harvest_extraction_efficiency_final": 0.9042928402393309,
+        "harvest_extraction_efficiency_mean": 0.941523451478392,
+        "harvest_temporal_effective_dimensions": 1.2014863139695957,
+        "interpretation": "Harvest demand metrics describe realized extraction, not fitness or causal niche differentiation. Selective acquisition must be paired with phenotype neutralization or shared-checkpoint branches for causal claims.",
+        "window_count": 10
+      },
+      "resource_environment_final": {
+        "environment_resource_channel_correlation": [
+          [
+            1.0,
+            0.7272534951090399,
+            0.7555052352619007,
+            0.780025175285228
+          ],
+          [
+            0.7272534951090399,
+            1.0,
+            0.7089420308788699,
+            0.728698939470621
+          ],
+          [
+            0.7555052352619007,
+            0.7089420308788699,
+            1.0,
+            0.7645347002245222
+          ],
+          [
+            0.780025175285228,
+            0.728698939470621,
+            0.7645347002245222,
+            1.0
+          ]
+        ],
+        "environment_resource_channel_max": [
+          7.030902862548828,
+          7.091632843017578,
+          6.3891425132751465,
+          6.389969348907471
+        ],
+        "environment_resource_channel_max_abs_correlation": 0.780025175285228,
+        "environment_resource_channel_mean": [
+          4.74873899378872,
+          4.693827160335786,
+          4.656268616025045,
+          4.607941462090821
+        ],
+        "environment_resource_channel_mean_abs_correlation": 0.7441599293716968,
+        "environment_resource_channel_min": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "environment_resource_channel_std": [
+          1.4480236338225025,
+          1.3940351881098905,
+          1.0826037567599724,
+          1.0496395288635563
+        ],
+        "environment_resource_effective_dimensions": 1.4897223626663485
+      },
+      "run_name": "v037_uniform300",
+      "same_lineage_given_same_group_final": 0.0,
+      "spatial_local_analysis": {
+        "available": true,
+        "causal_caution": "Spatial panel correlations are observational. Region fixed-effect, window fixed-effect, first-difference and lagged checks reduce some confounding but do not identify an in-world causal mechanism.",
+        "first_difference_correlations": {
+          "delta_local_crowding_vs_delta_local_cohesion": null,
+          "delta_local_hazard_vs_delta_local_cohesion": null,
+          "delta_local_mortality_vs_delta_local_cohesion": null,
+          "delta_local_population_change_vs_delta_local_cohesion": null,
+          "delta_local_scarcity_vs_delta_local_cohesion": null
+        },
+        "fraction_region_windows_above_2x_global_mortality": 0.13125,
+        "local_cultural_transfer_analysis": {
+          "available": true,
+          "causal_caution": "Local transfer and root event studies are observational. They identify where to place paired checkpoint interventions, not causal effects.",
+          "correlations": {
+            "local_cohesion_vs_local_same_region_transfer_retention_first_difference": null,
+            "local_cohesion_vs_local_same_region_transfer_retention_next_window": null,
+            "local_cohesion_vs_local_same_region_transfer_retention_raw": null,
+            "local_cohesion_vs_local_same_region_transfer_retention_within_region": null,
+            "local_cohesion_vs_local_same_region_transfer_retention_within_window": null,
+            "local_crowding_vs_local_outgoing_transfer_rate_first_difference": -0.1274684963571947,
+            "local_crowding_vs_local_outgoing_transfer_rate_next_window": 0.0956460195671752,
+            "local_crowding_vs_local_outgoing_transfer_rate_raw": 0.0400760216155827,
+            "local_crowding_vs_local_outgoing_transfer_rate_within_region": -0.08674843555197767,
+            "local_crowding_vs_local_outgoing_transfer_rate_within_window": 0.06812799955763175,
+            "local_mortality_vs_local_incoming_transfer_rate_first_difference": -0.11169352321927922,
+            "local_mortality_vs_local_incoming_transfer_rate_next_window": -0.17536901653257553,
+            "local_mortality_vs_local_incoming_transfer_rate_raw": -0.1721213482076708,
+            "local_mortality_vs_local_incoming_transfer_rate_within_region": -0.15495206059271982,
+            "local_mortality_vs_local_incoming_transfer_rate_within_window": -0.12547337162670602,
+            "local_scarcity_vs_local_incoming_transfer_rate_first_difference": -0.13289863072956137,
+            "local_scarcity_vs_local_incoming_transfer_rate_next_window": 0.18454624571315734,
+            "local_scarcity_vs_local_incoming_transfer_rate_raw": 0.12267362816372158,
+            "local_scarcity_vs_local_incoming_transfer_rate_within_region": -0.19883444897063535,
+            "local_scarcity_vs_local_incoming_transfer_rate_within_window": 0.19901747365125025,
+            "local_scarcity_vs_local_net_transferred_root_establishment_first_difference": -0.18197261144661994,
+            "local_scarcity_vs_local_net_transferred_root_establishment_next_window": -0.007340861759362405,
+            "local_scarcity_vs_local_net_transferred_root_establishment_raw": -0.07983307078874685,
+            "local_scarcity_vs_local_net_transferred_root_establishment_within_region": -0.24893344205690915,
+            "local_scarcity_vs_local_net_transferred_root_establishment_within_window": -0.020434764676448815,
+            "local_scarcity_vs_local_new_transferred_roots_first_difference": -0.09972972969611738,
+            "local_scarcity_vs_local_new_transferred_roots_next_window": 0.09274954996244686,
+            "local_scarcity_vs_local_new_transferred_roots_raw": 0.04782638029820513,
+            "local_scarcity_vs_local_new_transferred_roots_within_region": -0.25344042364162794,
+            "local_scarcity_vs_local_new_transferred_roots_within_window": 0.12010194645187774,
+            "local_scarcity_vs_local_outgoing_transfer_rate_first_difference": -0.05292083640789561,
+            "local_scarcity_vs_local_outgoing_transfer_rate_next_window": 0.12963399031918416,
+            "local_scarcity_vs_local_outgoing_transfer_rate_raw": 0.090382685252587,
+            "local_scarcity_vs_local_outgoing_transfer_rate_within_region": -0.17357337803200543,
+            "local_scarcity_vs_local_outgoing_transfer_rate_within_window": 0.15543467062525967
+          },
+          "final_active_transferred_root_count": 18,
+          "final_multi_region_transferred_root_count": 0,
+          "high_crowding_event_study": {
+            "causal_caution": "Events are selected from observed local exposure peaks. Pre/post changes remain descriptive because no environmental intervention was applied.",
+            "event_count": 0,
+            "min_gap_windows": 2,
+            "outcomes": {
+              "active_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "cohesion": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "incoming_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "net_transferred_root_establishment": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "new_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "outgoing_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "same_region_transfer_retention": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              }
+            },
+            "quantile": 0.8
+          },
+          "high_mortality_event_study": {
+            "causal_caution": "Events are selected from observed local exposure peaks. Pre/post changes remain descriptive because no environmental intervention was applied.",
+            "event_count": 0,
+            "min_gap_windows": 2,
+            "outcomes": {
+              "active_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "cohesion": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "incoming_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "net_transferred_root_establishment": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "new_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "outgoing_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "same_region_transfer_retention": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              }
+            },
+            "quantile": 0.8
+          },
+          "high_scarcity_event_study": {
+            "causal_caution": "Events are selected from observed local exposure peaks. Pre/post changes remain descriptive because no environmental intervention was applied.",
+            "event_count": 0,
+            "min_gap_windows": 2,
+            "outcomes": {
+              "active_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "cohesion": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "incoming_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "net_transferred_root_establishment": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "new_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "outgoing_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "same_region_transfer_retention": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              }
+            },
+            "quantile": 0.8
+          },
+          "schema": "spatial-local-cultural-panel-analysis-v1",
+          "total_cross_region_committed": 8,
+          "total_same_region_committed": 43
+        },
+        "max_local_to_global_mortality_ratio": 8.3739837398374,
+        "mean_cohesion_cv": 0.0,
+        "mean_mortality_pressure_cv": 1.147691452221014,
+        "mean_population_cv": 0.4020074416085665,
+        "mean_resource_scarcity_cv": 0.16793373438688258,
+        "next_window_correlations": {
+          "local_crowding_vs_next_window_local_cohesion": null,
+          "local_hazard_vs_next_window_local_cohesion": null,
+          "local_mortality_vs_next_window_local_cohesion": null,
+          "local_population_change_vs_next_window_local_cohesion": null,
+          "local_scarcity_vs_next_window_local_cohesion": null
+        },
+        "raw_panel_correlations": {
+          "local_crowding_vs_local_cohesion": null,
+          "local_hazard_vs_local_cohesion": null,
+          "local_mortality_vs_local_cohesion": null,
+          "local_population_change_vs_local_cohesion": null,
+          "local_scarcity_vs_local_cohesion": null
+        },
+        "region_count": 16,
+        "schema": "spatial-local-panel-analysis-v2",
+        "window_count": 10,
+        "within_region_correlations": {
+          "local_crowding_vs_cohesion_within_region": null,
+          "local_hazard_vs_cohesion_within_region": null,
+          "local_mortality_vs_cohesion_within_region": null,
+          "local_population_change_vs_cohesion_within_region": null,
+          "local_scarcity_vs_cohesion_within_region": null
+        },
+        "within_window_correlations": {
+          "local_crowding_vs_cohesion_within_window": null,
+          "local_hazard_vs_cohesion_within_window": null,
+          "local_mortality_vs_cohesion_within_window": null,
+          "local_population_change_vs_cohesion_within_window": null,
+          "local_scarcity_vs_cohesion_within_window": null
+        }
+      },
+      "strategy_effective_dimensions_final": 32.48239976269608,
+      "subject_structure_final": {
+        "subject_structure_active_groups": 0,
+        "subject_structure_dissolution_count_total": 0,
+        "subject_structure_effective_groups": 0.0,
+        "subject_structure_formation_count_total": 0,
+        "subject_structure_merge_count_total": 0,
+        "subject_structure_reactivation_count_total": 0,
+        "subject_structure_refresh_count": 3,
+        "subject_structure_schema": "stable-membership-subject-succession-v1",
+        "subject_structure_split_count_total": 0,
+        "subject_structure_weighted_inheritance": 0.0,
+        "subject_structure_weighted_jaccard": 0.0
+      },
+      "trends_per_1000_ticks": {
+        "alive": -323.6363636363637,
+        "benefit_boundary_cohesion": 0.0,
+        "capacity_effective_dimensions": -0.6483660119287777,
+        "capacity_knowledge_attention_slots_mean": -0.19692142516824565,
+        "capacity_knowledge_capacity_bytes_mean": -19.868731683616033,
+        "capacity_relation_slots_mean": 0.3218788802806669,
+        "capacity_working_memory_dimensions_mean": 0.6185988810124062,
+        "effective_lineages": -647.2136371696192,
+        "largest_lineage_fraction": 0.20785152184301686,
+        "resource_affinity_effective_dimensions": -0.1897644308460503,
+        "strategy_effective_dimensions": -167.625550762816,
+        "window_action_entropy": -0.2666548320142838
+      },
+      "window_action_entropy_final": 1.8540404535261235
+    },
+    {
+      "alive_final": 115,
+      "alive_peak": 205,
+      "alive_peak_tick": 60,
+      "alive_trough": 110,
+      "alive_trough_tick": 240,
+      "analysis_warnings": [],
+      "benefit_boundary_cohesion_final": 0.0,
+      "capacity_correlations_observational": {
+        "attention_capacity_vs_committed_transfer": 0.6052265659824849,
+        "capacity_dimensions_vs_alive": 0.7667247817885708,
+        "capacity_dimensions_vs_boundary_cohesion": 0.12237404345932533,
+        "capacity_dimensions_vs_effective_transferred_roots": -0.17453265155606665,
+        "capacity_dimensions_vs_resource_affinity_dimensions": 0.6967668142054853,
+        "capacity_dimensions_vs_resource_environment_dimensions": 0.9505909039010206,
+        "knowledge_capacity_vs_effective_root_contents": 0.665722856286547,
+        "relation_capacity_vs_boundary_cohesion": -0.21031636282097024,
+        "working_memory_capacity_vs_action_entropy": -0.9500211142448519
+      },
+      "capacity_final": {
+        "capacity_active_entities": 115,
+        "capacity_attention_zero_fraction": 0.17391304347826086,
+        "capacity_effective_dimensions": 3.853228023432437,
+        "capacity_knowledge_attention_slots_max": 2,
+        "capacity_knowledge_attention_slots_mean": 0.8956521739130435,
+        "capacity_knowledge_attention_slots_min": 0,
+        "capacity_knowledge_attention_slots_std": 0.48227563909085386,
+        "capacity_knowledge_attention_slots_unique": 3,
+        "capacity_knowledge_bytes_used_mean": 232.41739130434783,
+        "capacity_knowledge_capacity_bytes_max": 416,
+        "capacity_knowledge_capacity_bytes_mean": 251.54782608695652,
+        "capacity_knowledge_capacity_bytes_min": 128,
+        "capacity_knowledge_capacity_bytes_std": 69.45605347872365,
+        "capacity_knowledge_capacity_bytes_unique": 10,
+        "capacity_knowledge_saturated_fraction": 0.25217391304347825,
+        "capacity_knowledge_utilization_mean": 0.9212310274266797,
+        "capacity_relation_edges_used_mean": 1.3217391304347825,
+        "capacity_relation_saturated_fraction": 0.06956521739130435,
+        "capacity_relation_slots_max": 7,
+        "capacity_relation_slots_mean": 3.9304347826086956,
+        "capacity_relation_slots_min": 2,
+        "capacity_relation_slots_std": 1.0191363703640772,
+        "capacity_relation_slots_unique": 6,
+        "capacity_relation_utilization_mean": 0.352463768115942,
+        "capacity_working_memory_dimensions_max": 4,
+        "capacity_working_memory_dimensions_mean": 2.2,
+        "capacity_working_memory_dimensions_min": 0,
+        "capacity_working_memory_dimensions_std": 0.7003104901461177,
+        "capacity_working_memory_dimensions_unique": 5,
+        "capacity_working_memory_saturated_fraction": 0.9912280701754386,
+        "capacity_working_memory_used_dimensions_mean": 2.1826086956521737,
+        "capacity_working_memory_utilization_mean": 0.9912280701754386,
+        "differentiation_schema": "inherited-elastic-capacities-v1"
+      },
+      "causal_caution": "All correlations are descriptive. Raw correlations can be dominated by shared time trends; first differences and partial correlations reduce, but do not eliminate, confounding.",
+      "config_context": {
+        "danger_evidence_schema": "disabled",
+        "differentiation_capacity_bounds": {
+          "knowledge_attention_slots": [
+            0,
+            2
+          ],
+          "knowledge_bytes": [
+            0,
+            512
+          ],
+          "relation_slots": [
+            0,
+            8
+          ],
+          "working_memory_dimensions": [
+            0,
+            4
+          ]
+        },
+        "differentiation_enabled": true,
+        "differentiation_mutation_probability": 0.03,
+        "differentiation_mutation_std": 0.16,
+        "differentiation_schema": "inherited-elastic-capacities-v1",
+        "environment_process_interpretation": "scientific-core-only",
+        "environment_process_mechanism_class": "none",
+        "environment_process_origin": "core-disabled",
+        "environment_process_parameter_names": [],
+        "environment_process_schema": "disabled",
+        "environment_schema": "orthogonal-four-resource-niche-v1",
+        "execution_backend": "cpu",
+        "gpu_acceleration_enabled": false,
+        "gpu_device_validated": false,
+        "gpu_semantics_mode": "strict-reference",
+        "group_label_propagation_rounds": 8,
+        "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+        "group_min_members": 6,
+        "group_trust_threshold": 0.12,
+        "group_update_max_period": 300,
+        "group_update_min_period": 100,
+        "group_update_mode": "adaptive-topology-v1",
+        "group_update_period": 50,
+        "harvest_allocation_schema": "affinity-sampled-exclusive-harvest-v1",
+        "harvest_channel_multipliers": [
+          0.65,
+          0.65,
+          0.65,
+          0.65
+        ],
+        "harvest_rate": 0.3,
+        "harvest_request_budget": 0.78,
+        "knowledge_transfer_period": 1,
+        "knowledge_transfer_probability": 0.1,
+        "mortality_trace_schema": "local-decaying-mortality-trace-v1",
+        "moving_hazard_schema": "disabled",
+        "moving_hazard_source_count": 0,
+        "requested_backend": "cpu",
+        "resource_affinity_schema": "normalized-four-resource-affinity-v1",
+        "resource_cycle_amplitudes": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ],
+        "resource_cycle_periods": [
+          173,
+          257,
+          349,
+          431
+        ],
+        "resource_diffusion_rates": [
+          0.002,
+          0.004,
+          0.006,
+          0.008
+        ],
+        "resource_effect_matrix": [
+          [
+            0.52,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.03,
+            0.018,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.03,
+            0.24,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.018,
+            0.0,
+            0.24
+          ]
+        ],
+        "resource_primary_wave_amplitudes": [
+          0.25,
+          0.25,
+          0.25,
+          0.25
+        ],
+        "resource_primary_wave_vectors": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            -1.0
+          ]
+        ],
+        "resource_secondary_wave_amplitudes": [
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "resource_secondary_wave_vectors": [
+          [
+            2.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            -1.0
+          ],
+          [
+            1.0,
+            -2.0
+          ]
+        ],
+        "runtime_version": "0.37.0",
+        "spatial_region_partition": {
+          "boundary_convention": "half-open except clipped outer boundary",
+          "feedback_to_world": false,
+          "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+          "mapping": "row-major-y-then-x",
+          "normalized_region_height": 0.25,
+          "normalized_region_width": 0.25,
+          "partition_sha256": "80ca3a910af4d035ebdcc1b9fb961d80675113ed6ff16e84a7c3b5f30a34c3f9",
+          "physical_region_height": 32.0,
+          "physical_region_width": 32.0,
+          "region_count": 16,
+          "regions_x": 4,
+          "regions_y": 4,
+          "schema": "normalized-fixed-count-grid-v1",
+          "world_cells_per_region_x": 8.0,
+          "world_cells_per_region_y": 8.0,
+          "world_grid_aligned": true,
+          "world_grid_x": 32,
+          "world_grid_y": 32,
+          "world_height": 128.0,
+          "world_width": 128.0
+        },
+        "spatial_stress_diagnostics_schema": "spatial-local-stress-culture-diagnostics-v2"
+      },
+      "correlations_cultural_transfer": {
+        "committed_transfer_vs_effective_transferred_roots": 0.0922255668847851,
+        "cross_lineage_transfer_vs_lineage_group_cohesion": 0.03574383645387045
+      },
+      "correlations_first_difference": {
+        "delta_effective_lineages_vs_delta_cohesion": -0.354059336605144,
+        "delta_largest_lineage_fraction_vs_delta_cohesion": -0.35854312524546944,
+        "delta_lineage_group_pair_enrichment_vs_delta_cohesion": 0.5491409306176667,
+        "delta_mortality_vs_delta_cohesion": 0.5038578015926167,
+        "delta_strategy_dimensions_vs_delta_action_entropy": 0.1583894498855437,
+        "mortality_vs_next_delta_cohesion": -0.18689179128616468
+      },
+      "correlations_observational": {
+        "effective_lineages_vs_cohesion": 0.009696265368772815,
+        "knowledge_effective_roots_vs_effective_lineages": 0.9823870286616265,
+        "largest_lineage_fraction_vs_cohesion": -0.28592900081642086,
+        "lineage_group_nmi_vs_cohesion": null,
+        "lineage_group_pair_enrichment_vs_cohesion": 0.7566549952911847,
+        "mortality_vs_next_window_cohesion": 0.4536753684424961,
+        "mortality_vs_same_window_cohesion": 0.6536122049717118,
+        "strategy_dimensions_vs_action_entropy": 0.9494261369112942
+      },
+      "correlations_partial": {
+        "effective_lineages_vs_cohesion_controlling_tick_alive": -0.3702489418036779,
+        "largest_lineage_fraction_vs_cohesion_controlling_tick_alive": -0.4564107865350615,
+        "lineage_group_pair_enrichment_vs_cohesion_controlling_tick_alive": 0.6673965814421368,
+        "mortality_vs_cohesion_controlling_tick_alive": 0.6508827232986965
+      },
+      "danger_direct_weight_mean_final": 1.0,
+      "danger_direct_weight_std_final": 0.0,
+      "danger_evidence_effective_dimensions_final": 0.0,
+      "danger_trace_weight_mean_final": 1.0,
+      "danger_trace_weight_std_final": 0.0,
+      "effective_lineages_final": 35.07957559681698,
+      "environment_atlas_final": {
+        "environment_atlas_2x2_entity_region_effective_count": 3.6603930251868264,
+        "environment_atlas_2x2_lineage_association": 0.8931149817573597,
+        "environment_atlas_2x2_lineage_covered_fraction": 0.7217391304347827,
+        "environment_atlas_2x2_lineage_span": 0.29782608695652174,
+        "environment_atlas_2x2_resource_effective_dimensions": 1.3258160669032781,
+        "environment_atlas_2x2_resource_max_abs_correlation": 0.993859107176998,
+        "environment_atlas_2x2_resource_mean_abs_correlation": 0.5912262374815109,
+        "environment_atlas_2x2_resource_spatial_cv_mean": 0.054912378948072826,
+        "environment_atlas_2x2_signature_effective_dimensions": 1.2954162870751729,
+        "environment_atlas_2x2_signature_mean_distance": 0.17236977874613857,
+        "environment_atlas_2x2_social_association": 0.0,
+        "environment_atlas_2x2_social_covered_fraction": 0.0,
+        "environment_atlas_2x2_social_span": 0.0,
+        "environment_atlas_2x2_temporal_turnover": 0.05754489160908823,
+        "environment_atlas_4x4_entity_region_effective_count": 11.651982378854624,
+        "environment_atlas_4x4_lineage_association": 0.677692875373881,
+        "environment_atlas_4x4_lineage_covered_fraction": 0.7217391304347827,
+        "environment_atlas_4x4_lineage_span": 0.08804347826086957,
+        "environment_atlas_4x4_resource_effective_dimensions": 2.6485445512618417,
+        "environment_atlas_4x4_resource_max_abs_correlation": 0.439965814249772,
+        "environment_atlas_4x4_resource_mean_abs_correlation": 0.34034663123644354,
+        "environment_atlas_4x4_resource_spatial_cv_mean": 0.13545634691695027,
+        "environment_atlas_4x4_signature_effective_dimensions": 3.058964749098974,
+        "environment_atlas_4x4_signature_mean_distance": 0.28605831077335864,
+        "environment_atlas_4x4_social_association": 0.0,
+        "environment_atlas_4x4_social_covered_fraction": 0.0,
+        "environment_atlas_4x4_social_span": 0.0,
+        "environment_atlas_4x4_temporal_turnover": 0.06077205529570051,
+        "environment_atlas_8x8_entity_region_effective_count": 32.33496332518337,
+        "environment_atlas_8x8_lineage_association": 0.6428234909163142,
+        "environment_atlas_8x8_lineage_covered_fraction": 0.7217391304347827,
+        "environment_atlas_8x8_lineage_span": 0.029076086956521738,
+        "environment_atlas_8x8_resource_effective_dimensions": 2.376701020542088,
+        "environment_atlas_8x8_resource_max_abs_correlation": 0.5300018717487373,
+        "environment_atlas_8x8_resource_mean_abs_correlation": 0.43443790654741327,
+        "environment_atlas_8x8_resource_spatial_cv_mean": 0.16923316381399633,
+        "environment_atlas_8x8_signature_effective_dimensions": 3.0885161240249803,
+        "environment_atlas_8x8_signature_mean_distance": 0.3284493383475355,
+        "environment_atlas_8x8_social_association": 0.0,
+        "environment_atlas_8x8_social_covered_fraction": 0.0,
+        "environment_atlas_8x8_social_span": 0.0,
+        "environment_atlas_8x8_temporal_turnover": 0.06567131604193104,
+        "environment_atlas_scale_count": 3,
+        "environment_atlas_schema": "multiscale-subject-environment-atlas-v2"
+      },
+      "environment_mortality_trace_max_final": 0.2551128566265106,
+      "environment_mortality_trace_mean_final": 0.0030568449872276915,
+      "final_tick": 300,
+      "first_tick": 30,
+      "group_last_update_tick_final": 200,
+      "group_update_count_final": 3,
+      "group_update_skipped_final": 297,
+      "knowledge_active_transferred_root_count_final": 17,
+      "knowledge_cultural_spread_interpretable": true,
+      "knowledge_effective_root_contents_final": 443.6764091858038,
+      "knowledge_effective_transferred_roots_final": 17.0,
+      "knowledge_largest_root_holder_fraction_final": 0.004338394793926247,
+      "knowledge_largest_transferred_root_holder_fraction_final": 0.058823529411764705,
+      "knowledge_root_genetic_lineage_pair_enrichment_final": 24.828474417515515,
+      "knowledge_transfer_attempts_final": 63,
+      "knowledge_transfer_commit_rate_after_attention_final": 0.7777777777777778,
+      "knowledge_transfer_commit_rate_per_proposal_final": 0.6712328767123288,
+      "knowledge_transfer_committed_bytes_final": 2736,
+      "knowledge_transfer_committed_final": 49,
+      "knowledge_transfer_cross_group_committed_final": 0,
+      "knowledge_transfer_cross_lineage_committed_final": 40,
+      "knowledge_transfer_phase_summary": {
+        "decline": {
+          "attempts": 32,
+          "commit_rate": 0.8125,
+          "committed": 26,
+          "windows": 7
+        },
+        "peak": {
+          "attempts": 32,
+          "commit_rate": 0.75,
+          "committed": 24,
+          "windows": 3
+        },
+        "rise": {
+          "attempts": 31,
+          "commit_rate": 0.7419354838709677,
+          "committed": 23,
+          "windows": 3
+        },
+        "trough": {
+          "attempts": 11,
+          "commit_rate": 0.8181818181818182,
+          "committed": 9,
+          "windows": 3
+        }
+      },
+      "knowledge_transfer_proposals_final": 73,
+      "knowledge_transfer_same_group_committed_final": 0,
+      "knowledge_transfer_same_lineage_committed_final": 9,
+      "largest_lineage_fraction_final": 0.0782608695652174,
+      "lineage_group_nmi_final": 0.0,
+      "lineage_group_pair_enrichment_final": 0.0,
+      "mortality_to_cohesion_best_lag": {
+        "correlation": -0.9546433626825025,
+        "lag_windows": 3
+      },
+      "mortality_to_cohesion_cross_lag": {
+        "-1": 0.4330978215440236,
+        "-2": 0.09175741969457386,
+        "-3": -0.2783961047016062,
+        "0": 0.6536122049717118,
+        "1": 0.4536753684424961,
+        "2": -0.3028538752788659,
+        "3": -0.9546433626825025
+      },
+      "path": "runs/v037_selective300_sampled/evolution_progress.jsonl",
+      "record_count": 10,
+      "resource_affinity_effective_dimensions_final": 2.839190587660048,
+      "resource_demand_analysis": {
+        "available": true,
+        "harvest_balance_effective_count": 3.9994809192195344,
+        "harvest_balance_vs_resource_environment_dimensions": -0.10967749553522538,
+        "harvest_channel_correlation": [
+          [
+            1.0,
+            0.4503693024755113,
+            0.6518347669894357,
+            0.6769981094711471
+          ],
+          [
+            0.45036930247551127,
+            1.0,
+            0.14541156113830925,
+            0.6501549597702588
+          ],
+          [
+            0.6518347669894358,
+            0.14541156113830925,
+            1.0,
+            0.5597089617818715
+          ],
+          [
+            0.6769981094711472,
+            0.6501549597702589,
+            0.5597089617818715,
+            1.0
+          ]
+        ],
+        "harvest_channel_max_abs_correlation": 0.6769981094711472,
+        "harvest_channel_mean_abs_correlation": 0.5224129436044224,
+        "harvest_channel_shares": [
+          0.2450836260808229,
+          0.2518246967118872,
+          0.2512566372716723,
+          0.2518350399356176
+        ],
+        "harvest_channel_totals": [
+          1627.1835300689563,
+          1671.9395151231438,
+          1668.1679985187948,
+          1672.0081868804991
+        ],
+        "harvest_extraction_efficiency_final": 0.8712884826752668,
+        "harvest_extraction_efficiency_mean": 0.9093307885400819,
+        "harvest_temporal_effective_dimensions": 2.0816162016119484,
+        "interpretation": "Harvest demand metrics describe realized extraction, not fitness or causal niche differentiation. Selective acquisition must be paired with phenotype neutralization or shared-checkpoint branches for causal claims.",
+        "window_count": 10
+      },
+      "resource_environment_final": {
+        "environment_resource_channel_correlation": [
+          [
+            1.0,
+            0.6204353966901598,
+            0.6636132832858461,
+            0.6369138291717723
+          ],
+          [
+            0.6204353966901598,
+            1.0,
+            0.5610241604763698,
+            0.5701965015428769
+          ],
+          [
+            0.6636132832858461,
+            0.5610241604763698,
+            1.0,
+            0.5976200768774487
+          ],
+          [
+            0.6369138291717723,
+            0.5701965015428769,
+            0.5976200768774487,
+            1.0
+          ]
+        ],
+        "environment_resource_channel_max": [
+          7.031365871429443,
+          7.065322399139404,
+          6.54874324798584,
+          6.485942840576172
+        ],
+        "environment_resource_channel_max_abs_correlation": 0.6636132832858461,
+        "environment_resource_channel_mean": [
+          4.831507118862646,
+          4.802236740542867,
+          4.8016888482670765,
+          4.800732110787067
+        ],
+        "environment_resource_channel_mean_abs_correlation": 0.6083005413407455,
+        "environment_resource_channel_min": [
+          0.0,
+          0.0,
+          0.0,
+          0.13288386166095734
+        ],
+        "environment_resource_channel_std": [
+          1.3932424739304456,
+          1.3514751280550594,
+          1.0589537479107367,
+          0.9218579295389211
+        ],
+        "environment_resource_effective_dimensions": 1.8247825975544776
+      },
+      "run_name": "v037_selective300_sampled",
+      "same_lineage_given_same_group_final": 0.0,
+      "spatial_local_analysis": {
+        "available": true,
+        "causal_caution": "Spatial panel correlations are observational. Region fixed-effect, window fixed-effect, first-difference and lagged checks reduce some confounding but do not identify an in-world causal mechanism.",
+        "first_difference_correlations": {
+          "delta_local_crowding_vs_delta_local_cohesion": null,
+          "delta_local_hazard_vs_delta_local_cohesion": null,
+          "delta_local_mortality_vs_delta_local_cohesion": null,
+          "delta_local_population_change_vs_delta_local_cohesion": null,
+          "delta_local_scarcity_vs_delta_local_cohesion": null
+        },
+        "fraction_region_windows_above_2x_global_mortality": 0.10625,
+        "local_cultural_transfer_analysis": {
+          "available": true,
+          "causal_caution": "Local transfer and root event studies are observational. They identify where to place paired checkpoint interventions, not causal effects.",
+          "correlations": {
+            "local_cohesion_vs_local_same_region_transfer_retention_first_difference": null,
+            "local_cohesion_vs_local_same_region_transfer_retention_next_window": null,
+            "local_cohesion_vs_local_same_region_transfer_retention_raw": null,
+            "local_cohesion_vs_local_same_region_transfer_retention_within_region": null,
+            "local_cohesion_vs_local_same_region_transfer_retention_within_window": null,
+            "local_crowding_vs_local_outgoing_transfer_rate_first_difference": 0.07151906886298838,
+            "local_crowding_vs_local_outgoing_transfer_rate_next_window": 0.2359261958618723,
+            "local_crowding_vs_local_outgoing_transfer_rate_raw": 0.18375111492073928,
+            "local_crowding_vs_local_outgoing_transfer_rate_within_region": 0.11213421994458536,
+            "local_crowding_vs_local_outgoing_transfer_rate_within_window": 0.22153568587997166,
+            "local_mortality_vs_local_incoming_transfer_rate_first_difference": -0.1407939569734806,
+            "local_mortality_vs_local_incoming_transfer_rate_next_window": -0.038407718989536335,
+            "local_mortality_vs_local_incoming_transfer_rate_raw": -0.1138041523177722,
+            "local_mortality_vs_local_incoming_transfer_rate_within_region": -0.10896584311464777,
+            "local_mortality_vs_local_incoming_transfer_rate_within_window": -0.10707358920642228,
+            "local_scarcity_vs_local_incoming_transfer_rate_first_difference": -0.02855696459912564,
+            "local_scarcity_vs_local_incoming_transfer_rate_next_window": 0.00946566376815434,
+            "local_scarcity_vs_local_incoming_transfer_rate_raw": 0.031451281294967465,
+            "local_scarcity_vs_local_incoming_transfer_rate_within_region": -0.11643266808475426,
+            "local_scarcity_vs_local_incoming_transfer_rate_within_window": 0.06467411314835826,
+            "local_scarcity_vs_local_net_transferred_root_establishment_first_difference": -0.16453078703503632,
+            "local_scarcity_vs_local_net_transferred_root_establishment_next_window": -0.044349919386354256,
+            "local_scarcity_vs_local_net_transferred_root_establishment_raw": -0.09743841718805912,
+            "local_scarcity_vs_local_net_transferred_root_establishment_within_region": -0.23163284950111515,
+            "local_scarcity_vs_local_net_transferred_root_establishment_within_window": -0.07043907849103355,
+            "local_scarcity_vs_local_new_transferred_roots_first_difference": -0.16416639846691503,
+            "local_scarcity_vs_local_new_transferred_roots_next_window": 0.06507135901227089,
+            "local_scarcity_vs_local_new_transferred_roots_raw": 0.0423121125744944,
+            "local_scarcity_vs_local_new_transferred_roots_within_region": -0.19352869445222226,
+            "local_scarcity_vs_local_new_transferred_roots_within_window": 0.07273790175373188,
+            "local_scarcity_vs_local_outgoing_transfer_rate_first_difference": 0.04132861223187052,
+            "local_scarcity_vs_local_outgoing_transfer_rate_next_window": 0.19381192680852516,
+            "local_scarcity_vs_local_outgoing_transfer_rate_raw": 0.19269005809274897,
+            "local_scarcity_vs_local_outgoing_transfer_rate_within_region": -0.014213553503719086,
+            "local_scarcity_vs_local_outgoing_transfer_rate_within_window": 0.23470365184411912
+          },
+          "final_active_transferred_root_count": 17,
+          "final_multi_region_transferred_root_count": 0,
+          "high_crowding_event_study": {
+            "causal_caution": "Events are selected from observed local exposure peaks. Pre/post changes remain descriptive because no environmental intervention was applied.",
+            "event_count": 0,
+            "min_gap_windows": 2,
+            "outcomes": {
+              "active_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "cohesion": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "incoming_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "net_transferred_root_establishment": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "new_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "outgoing_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "same_region_transfer_retention": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              }
+            },
+            "quantile": 0.8
+          },
+          "high_mortality_event_study": {
+            "causal_caution": "Events are selected from observed local exposure peaks. Pre/post changes remain descriptive because no environmental intervention was applied.",
+            "event_count": 0,
+            "min_gap_windows": 2,
+            "outcomes": {
+              "active_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "cohesion": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "incoming_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "net_transferred_root_establishment": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "new_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "outgoing_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "same_region_transfer_retention": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              }
+            },
+            "quantile": 0.8
+          },
+          "high_scarcity_event_study": {
+            "causal_caution": "Events are selected from observed local exposure peaks. Pre/post changes remain descriptive because no environmental intervention was applied.",
+            "event_count": 0,
+            "min_gap_windows": 2,
+            "outcomes": {
+              "active_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "cohesion": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "incoming_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "net_transferred_root_establishment": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "new_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "outgoing_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              },
+              "same_region_transfer_retention": {
+                "mean_by_offset": {
+                  "-1": null,
+                  "0": null,
+                  "1": null,
+                  "2": null
+                },
+                "post1_minus_pre1": null,
+                "post2_minus_pre1": null
+              }
+            },
+            "quantile": 0.8
+          },
+          "schema": "spatial-local-cultural-panel-analysis-v1",
+          "total_cross_region_committed": 10,
+          "total_same_region_committed": 39
+        },
+        "max_local_to_global_mortality_ratio": 2.9437960687960687,
+        "mean_cohesion_cv": 0.0,
+        "mean_mortality_pressure_cv": 0.84619724184556,
+        "mean_population_cv": 0.44484318117859756,
+        "mean_resource_scarcity_cv": 0.1807638094382014,
+        "next_window_correlations": {
+          "local_crowding_vs_next_window_local_cohesion": null,
+          "local_hazard_vs_next_window_local_cohesion": null,
+          "local_mortality_vs_next_window_local_cohesion": null,
+          "local_population_change_vs_next_window_local_cohesion": null,
+          "local_scarcity_vs_next_window_local_cohesion": null
+        },
+        "raw_panel_correlations": {
+          "local_crowding_vs_local_cohesion": null,
+          "local_hazard_vs_local_cohesion": null,
+          "local_mortality_vs_local_cohesion": null,
+          "local_population_change_vs_local_cohesion": null,
+          "local_scarcity_vs_local_cohesion": null
+        },
+        "region_count": 16,
+        "schema": "spatial-local-panel-analysis-v2",
+        "window_count": 10,
+        "within_region_correlations": {
+          "local_crowding_vs_cohesion_within_region": null,
+          "local_hazard_vs_cohesion_within_region": null,
+          "local_mortality_vs_cohesion_within_region": null,
+          "local_population_change_vs_cohesion_within_region": null,
+          "local_scarcity_vs_cohesion_within_region": null
+        },
+        "within_window_correlations": {
+          "local_crowding_vs_cohesion_within_window": null,
+          "local_hazard_vs_cohesion_within_window": null,
+          "local_mortality_vs_cohesion_within_window": null,
+          "local_population_change_vs_cohesion_within_window": null,
+          "local_scarcity_vs_cohesion_within_window": null
+        }
+      },
+      "strategy_effective_dimensions_final": 27.808184957051512,
+      "subject_structure_final": {
+        "subject_structure_active_groups": 0,
+        "subject_structure_dissolution_count_total": 1,
+        "subject_structure_effective_groups": 0.0,
+        "subject_structure_formation_count_total": 1,
+        "subject_structure_merge_count_total": 0,
+        "subject_structure_reactivation_count_total": 0,
+        "subject_structure_refresh_count": 3,
+        "subject_structure_schema": "stable-membership-subject-succession-v1",
+        "subject_structure_split_count_total": 0,
+        "subject_structure_weighted_inheritance": 0.0,
+        "subject_structure_weighted_jaccard": 0.0
+      },
+      "trends_per_1000_ticks": {
+        "alive": -384.6464646464646,
+        "benefit_boundary_cohesion": -0.763864643464532,
+        "capacity_effective_dimensions": -0.39566891781336067,
+        "capacity_knowledge_attention_slots_mean": -0.3013714810302121,
+        "capacity_knowledge_capacity_bytes_mean": -48.778257422153004,
+        "capacity_relation_slots_mean": 0.3658888454093674,
+        "capacity_working_memory_dimensions_mean": 0.6311286468695733,
+        "effective_lineages": -628.456520495015,
+        "largest_lineage_fraction": 0.2717846695723089,
+        "resource_affinity_effective_dimensions": -0.3880343470013749,
+        "strategy_effective_dimensions": -177.11340895524305,
+        "window_action_entropy": -0.31185210766306437
+      },
+      "window_action_entropy_final": 1.8452254260468253
+    }
+  ],
+  "schema": "multi-seed-long-run-analysis-v12"
+}

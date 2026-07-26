@@ -33,12 +33,15 @@ from se.knowledge.latent import latent_router_state_features
 from se.env.niches import (
     AFFINITY_SCALE,
     RESOURCE_CHANNELS,
+    harvest_request_rates,
     policy_resource_view,
     resource_affinity_quantized,
+    selective_harvest_enabled,
 )
 from se.knowledge.routing_cost import RoutingCostBudgetResult, apply_routing_cost_budget
 from .intents import ActionIntentBatch
 from .policy import Action, ParametricPolicy, PolicyDecision
+from .random_api import RandomContext, Stream, uniform01
 from .reductions import stable_segmented_sum
 from se.env.spatial import SpatialIndex
 
@@ -869,12 +872,40 @@ class HybridGpuRuntime:
         device_rows = device_rows[order]
         device_cells = device_cells[order]
 
-        base = self.cfg.entities.harvest_rate
-        rate = xp.asarray([base, base * 0.45, base * 0.25, base * 0.18], dtype=xp.float32)
-        rates = xp.broadcast_to(rate, (device_rows.size, DeviceEnvironment.RESOURCE_CHANNELS))
+        host_rows = self._download(device_rows).astype(np.int32, copy=False)
+        affinity = (
+            None
+            if not selective_harvest_enabled(self.cfg)
+            else (
+                None
+                if snapshot.resource_affinity_q is None
+                else snapshot.resource_affinity_q[intents.carrier_index[host_rows]]
+            )
+        )
+        channel_draws = (
+            None
+            if not selective_harvest_enabled(self.cfg)
+            else uniform01(
+                RandomContext(
+                    self.cfg.run.seed,
+                    intents.submit_tick,
+                    phase=42,
+                    stream=Stream.HARVEST_CHANNEL,
+                ),
+                intents.carrier_id[host_rows],
+                draw_index=0,
+            )
+        )
+        host_rates = harvest_request_rates(
+            affinity,
+            self.cfg,
+            rows=int(host_rows.size),
+            channel_draws=channel_draws,
+        )
+        rates = self._upload(host_rates, dtype=xp.float32)
         device_gathered = self.environment.resolve_harvest(device_cells, rates)
         return HarvestResolution(
-            self._download(device_rows).astype(np.int32, copy=False),
+            host_rows,
             self._download(device_cells).astype(np.int32, copy=False),
             self._download(device_gathered).astype(np.float32, copy=False),
         )

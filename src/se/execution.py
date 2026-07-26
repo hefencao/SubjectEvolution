@@ -17,7 +17,8 @@ from .cfg import SimulationConfig
 from .intents import ActionIntentBatch, ActionResolutionBatch, FailureReason, action_rows, empty_resolutions
 from se.evolution.lifecycle import BirthRequestPlan, empty_birth_request_plan
 from .policy import Action
-from .random_api import RandomContext, Stream, keys
+from .random_api import RandomContext, Stream, keys, uniform01
+from se.env.niches import harvest_request_rates, selective_harvest_enabled
 from se.subjects.social import (
     RelationUpdatePlan,
     build_share_relation_update_plan,
@@ -94,6 +95,7 @@ class ActionResolutionSnapshot:
     fertility: np.ndarray
     primary_subject_id: np.ndarray
     free_slot_count: int
+    resource_affinity_q: np.ndarray | None = None
 
 
 @dataclass(frozen=True)
@@ -259,20 +261,36 @@ class DeterministicActionConflictResolver:
         order = np.lexsort((intents.carrier_id[harvest_rows], harvest_cells))
         harvest_rows = harvest_rows[order]
         harvest_cells = harvest_cells[order]
-        base = self.cfg.entities.harvest_rate
-        if self.cfg.environment.schema == "legacy-four-channel-v1":
-            rates = np.tile(
-                np.asarray(
-                    [base, base * 0.45, base * 0.25, base * 0.18],
-                    dtype=np.float32,
+        harvester_indices = intents.carrier_index[harvest_rows]
+        affinity = (
+            None
+            if not selective_harvest_enabled(self.cfg)
+            else (
+                None
+                if snapshot.resource_affinity_q is None
+                else snapshot.resource_affinity_q[harvester_indices]
+            )
+        )
+        channel_draws = (
+            None
+            if not selective_harvest_enabled(self.cfg)
+            else uniform01(
+                RandomContext(
+                    self.cfg.run.seed,
+                    intents.submit_tick,
+                    phase=42,
+                    stream=Stream.HARVEST_CHANNEL,
                 ),
-                (harvest_rows.size, 1),
+                intents.carrier_id[harvest_rows],
+                draw_index=0,
             )
-        else:
-            multipliers = np.asarray(
-                self.cfg.environment.harvest_channel_multipliers, dtype=np.float32
-            )
-            rates = np.tile(base * multipliers, (harvest_rows.size, 1))
+        )
+        rates = harvest_request_rates(
+            affinity,
+            self.cfg,
+            rows=int(harvest_rows.size),
+            channel_draws=channel_draws,
+        )
         gathered = np.asarray(harvest_allocator(harvest_cells, rates), dtype=np.float32)
         return HarvestResolution(harvest_rows, harvest_cells, gathered)
 

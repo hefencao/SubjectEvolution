@@ -1,0 +1,26 @@
+{
+  "all_selected_outputs_identical": true,
+  "boundary": "Analysis/report schemas intentionally changed; authoritative world trajectory is unchanged when harvest_allocation_schema remains uniform-channel-rates-v1.",
+  "byte_identical_outputs": {
+    "environment_atlas.jsonl": true,
+    "environment_atlas_summary.json": true,
+    "knowledge_events.jsonl": true,
+    "knowledge_outcome_updates.csv": true,
+    "knowledge_policy_contributions.csv": true,
+    "knowledge_routing_costs.csv": true,
+    "knowledge_selection_events.csv": true,
+    "knowledge_transfers.csv": true,
+    "knowledge_working_memory.csv": true,
+    "subject_structure_summary.json": true,
+    "subject_structure_transitions.jsonl": true
+  },
+  "common_non_timing_fields": 326,
+  "config": "configs/d1_elastic_capacities_smoke.json",
+  "first_differences": [],
+  "metric_cells_compared": 1304,
+  "metric_differences": 0,
+  "metrics_rows": 4,
+  "new_selective_harvest_disabled": true,
+  "schema": "v036-v037-disabled-path-compatibility-v1",
+  "until_tick": 30
+}

@@ -1,0 +1,13 @@
+SE v0.37 final test report
+
+Command: pytest -q
+Result: 174 passed, 1 skipped
+Skipped: real CUDA/CuPy device-dependent test unavailable in the build environment.
+
+Focused validation:
+- affinity-sampled exclusive harvest fixed-budget and frequency tests
+- CPU/simulated-device harvest commit equality
+- protocol audit v5 provenance
+- long-run analyzer v12 D1 strict-field rejection
+- all 73 JSON configurations load and validate
+- v0.36 disabled-path comparison: 1304 common non-timing metric cells, zero differences; selected knowledge/environment/subject outputs byte-identical

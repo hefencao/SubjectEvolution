@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.37.0
+
+### D1-B phenotype-routed resource demand
+
+- Added `affinity-sampled-exclusive-harvest-v1`: each HARVEST action spends the historical total request budget on one channel sampled from inherited resource affinity.
+- Added a state-free keyed harvest-channel random stream shared by CPU and GPU planners.
+- Left unselected channels at zero and did not reassign locally unavailable budget, creating an explicit extraction-efficiency cost.
+- Corrected partial-harvest outcome classification for exclusive requests.
+- Added D1-B smoke and 1500-tick long-run configs.
+- Upgraded protocol audit to v5 and long-run analysis to v12.
+- Added analyzer/runtime provenance, strict D1 field validation, capacity-use diagnostics, realized demand dimensions/correlations and extraction efficiency.
+
+### Evidence boundary
+
+- The uploaded v10 aggregate omitted D1 capacity fields and therefore cannot support capacity-selection conclusions.
+- Its three seeds showed final resource dimensions of 1.265–1.309 with channel correlations of 0.812–0.834, triggering the D0 common-demand stop condition.
+- A 300-tick same-seed smoke improved resource and demand dimensions but reduced extraction efficiency and population; no adaptive claim is made.
+
 ## 0.36.0
 
 ### D1-A inherited elastic capacities

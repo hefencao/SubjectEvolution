@@ -10,6 +10,7 @@ from typing import Any, Iterable
 
 import numpy as np
 
+from se import __version__
 from se.env.partition import NORMALIZED_FIXED_COUNT_SCHEMA, SpatialRegionPartition
 
 
@@ -119,6 +120,106 @@ def _array(records: list[dict[str, Any]], key: str) -> np.ndarray:
     return np.asarray([record.get(key, math.nan) for record in records], dtype=np.float64)
 
 
+
+def _matrix_effective_dimensions(values: np.ndarray) -> float:
+    matrix = np.asarray(values, dtype=np.float64)
+    if matrix.ndim != 2 or matrix.shape[0] <= 1 or matrix.shape[1] == 0:
+        return 0.0
+    std = matrix.std(axis=0)
+    active = std > 1e-12
+    if not np.any(active):
+        return 0.0
+    standardized = (matrix[:, active] - matrix[:, active].mean(axis=0)) / std[active]
+    covariance = np.atleast_2d(np.cov(standardized, rowvar=False))
+    eigenvalues = np.clip(np.linalg.eigvalsh(covariance), 0.0, None)
+    total = float(eigenvalues.sum())
+    squared = float(np.square(eigenvalues).sum())
+    return 0.0 if total <= 0.0 or squared <= 0.0 else total * total / squared
+
+
+def _resource_demand_analysis(
+    records: list[dict[str, Any]], config_context: dict[str, Any]
+) -> dict[str, Any]:
+    rows: list[np.ndarray] = []
+    field_dimensions: list[float] = []
+    balance: list[float] = []
+    extraction_efficiency: list[float] = []
+    for record in records:
+        value = np.asarray(record.get("harvested_resources_window", ()), dtype=np.float64)
+        if value.shape != (4,) or np.any(~np.isfinite(value)):
+            continue
+        rows.append(value)
+        total = float(value.sum())
+        if total > 0.0:
+            share = value / total
+            balance.append(float(1.0 / max(float(np.square(share).sum()), 1e-30)))
+        else:
+            balance.append(math.nan)
+        field_dimensions.append(
+            float(record.get("environment_resource_effective_dimensions", math.nan))
+        )
+        action_names = list(record.get("action_names", ()))
+        action_counts = list(record.get("window_action_counts", ()))
+        try:
+            harvest_index = action_names.index("HARVEST")
+            harvest_actions = int(action_counts[harvest_index])
+        except (ValueError, IndexError, TypeError):
+            harvest_actions = 0
+        request_budget = float(config_context.get("harvest_request_budget", math.nan))
+        requested_total = harvest_actions * request_budget
+        extraction_efficiency.append(
+            total / requested_total
+            if requested_total > 0.0 and math.isfinite(requested_total)
+            else math.nan
+        )
+    if not rows:
+        return {"available": False, "reason": "harvested_resources_window missing"}
+    matrix = np.vstack(rows)
+    totals = matrix.sum(axis=0)
+    grand_total = float(totals.sum())
+    shares = totals / grand_total if grand_total > 0.0 else np.zeros(4, dtype=np.float64)
+    active_columns = matrix.std(axis=0) > 1e-12
+    correlation = np.eye(4, dtype=np.float64)
+    if np.count_nonzero(active_columns) >= 2:
+        sub = np.corrcoef(matrix[:, active_columns], rowvar=False)
+        correlation[np.ix_(active_columns, active_columns)] = sub
+    off_diagonal = np.abs(correlation[~np.eye(4, dtype=bool)])
+    return {
+        "available": True,
+        "window_count": int(matrix.shape[0]),
+        "harvest_channel_totals": totals.tolist(),
+        "harvest_channel_shares": shares.tolist(),
+        "harvest_balance_effective_count": (
+            float(1.0 / max(float(np.square(shares).sum()), 1e-30))
+            if grand_total > 0.0
+            else 0.0
+        ),
+        "harvest_temporal_effective_dimensions": _matrix_effective_dimensions(matrix),
+        "harvest_channel_correlation": correlation.tolist(),
+        "harvest_channel_mean_abs_correlation": float(off_diagonal.mean()),
+        "harvest_channel_max_abs_correlation": float(off_diagonal.max(initial=0.0)),
+        "harvest_balance_vs_resource_environment_dimensions": _pearson(
+            balance, field_dimensions
+        ),
+        "harvest_extraction_efficiency_mean": (
+            float(np.nanmean(extraction_efficiency))
+            if np.any(np.isfinite(extraction_efficiency))
+            else None
+        ),
+        "harvest_extraction_efficiency_final": (
+            float(np.asarray(extraction_efficiency, dtype=np.float64)[
+                np.flatnonzero(np.isfinite(extraction_efficiency))[-1]
+            ])
+            if np.any(np.isfinite(extraction_efficiency))
+            else None
+        ),
+        "interpretation": (
+            "Harvest demand metrics describe realized extraction, not fitness or causal "
+            "niche differentiation. Selective acquisition must be paired with phenotype "
+            "neutralization or shared-checkpoint branches for causal claims."
+        ),
+    }
+
 def _resolved_config_context(path: str | Path) -> dict[str, Any]:
     progress = Path(path)
     resolved = progress.parent / "resolved_config.json"
@@ -219,6 +320,17 @@ def _resolved_config_context(path: str | Path) -> dict[str, Any]:
         "moving_hazard_source_count": environment.get("moving_hazard_source_count", 0),
         "mortality_trace_schema": environment.get("mortality_trace_schema", "disabled"),
         "resource_affinity_schema": entities.get("resource_affinity_schema"),
+        "harvest_allocation_schema": entities.get(
+            "harvest_allocation_schema", "uniform-channel-rates-v1"
+        ),
+        "harvest_rate": entities.get("harvest_rate"),
+        "harvest_channel_multipliers": environment.get(
+            "harvest_channel_multipliers", [1.0, 1.0, 1.0, 1.0]
+        ),
+        "harvest_request_budget": (
+            float(entities.get("harvest_rate", 0.0))
+            * float(sum(environment.get("harvest_channel_multipliers", [1.0, 1.0, 1.0, 1.0])))
+        ),
         "danger_evidence_schema": entities.get("danger_evidence_schema", "disabled"),
         "group_label_schema": social.get(
             "group_label_schema", "trusted-directed-fixed-round-min-label-v1"
@@ -263,6 +375,7 @@ def _resolved_config_context(path: str | Path) -> dict[str, Any]:
         "gpu_semantics_mode": manifest.get("gpu_semantics_mode"),
         "gpu_device_validated": manifest.get("gpu_device_validated"),
         "gpu_acceleration_enabled": manifest.get("gpu_acceleration_enabled"),
+        "runtime_version": manifest.get("version"),
     }
 
 
@@ -831,6 +944,16 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
         for key, value in final.items()
         if str(key).startswith("capacity_") or key == "differentiation_schema"
     }
+    if (
+        config_context.get("differentiation_enabled")
+        and config_context.get("differentiation_schema")
+        == "inherited-elastic-capacities-v1"
+        and not capacity_final
+    ):
+        raise ValueError(
+            f"{path} enables D1 elastic capacities but contains no capacity_* "
+            "progress fields; do not analyze it as a complete D1 run"
+        )
     return {
         "path": str(path),
         "run_name": (
@@ -958,6 +1081,7 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
             transfer_correlations if cultural_spread_interpretable else {}
         ),
         "spatial_local_analysis": _spatial_panel_analysis(records),
+        "resource_demand_analysis": _resource_demand_analysis(records, config_context),
         "config_context": config_context,
         "trends_per_1000_ticks": {
             "alive": _slope_per_1000_ticks(ticks, alive),
@@ -1109,7 +1233,15 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         if value["available_runs"] >= 3 and value["same_nonzero_sign"]
     ]
     return {
-        "schema": "multi-seed-long-run-analysis-v11",
+        "schema": "multi-seed-long-run-analysis-v12",
+        "analyzer_version": __version__,
+        "input_runtime_versions": sorted(
+            {
+                str(run.get("config_context", {}).get("runtime_version"))
+                for run in runs
+                if run.get("config_context", {}).get("runtime_version") is not None
+            }
+        ),
         "run_count": len(runs),
         "runs": runs,
         "endpoint_aggregate": aggregate,
@@ -1134,6 +1266,8 @@ def render_markdown(report: dict[str, Any]) -> str:
         "# Multi-seed long-run analysis",
         "",
         f"Schema: `{report['schema']}`",
+        f"Analyzer: `{report.get('analyzer_version', 'unknown')}`",
+        f"Input runtimes: `{report.get('input_runtime_versions', [])}`",
         f"Runs: **{report['run_count']}**",
         "",
         "> This report is observational. Raw correlations, first differences and partial correlations do not identify an in-world causal mechanism.",
@@ -1372,6 +1506,10 @@ def render_markdown(report: dict[str, Any]) -> str:
                 f"- knowledge bytes mean/std: {_format(values.get('capacity_knowledge_capacity_bytes_mean'))} / {_format(values.get('capacity_knowledge_capacity_bytes_std'))}",
                 f"- relation slots mean/std: {_format(values.get('capacity_relation_slots_mean'))} / {_format(values.get('capacity_relation_slots_std'))}",
                 f"- attention slots mean/std: {_format(values.get('capacity_knowledge_attention_slots_mean'))} / {_format(values.get('capacity_knowledge_attention_slots_std'))}",
+                f"- working-memory used/utilization/saturated: {_format(values.get('capacity_working_memory_used_dimensions_mean'))} / {_format(values.get('capacity_working_memory_utilization_mean'))} / {_format(values.get('capacity_working_memory_saturated_fraction'))}",
+                f"- knowledge bytes used/utilization/saturated: {_format(values.get('capacity_knowledge_bytes_used_mean'))} / {_format(values.get('capacity_knowledge_utilization_mean'))} / {_format(values.get('capacity_knowledge_saturated_fraction'))}",
+                f"- relation edges used/utilization/saturated: {_format(values.get('capacity_relation_edges_used_mean'))} / {_format(values.get('capacity_relation_utilization_mean'))} / {_format(values.get('capacity_relation_saturated_fraction'))}",
+                f"- zero-attention fraction: {_format(values.get('capacity_attention_zero_fraction'))}",
                 f"- final maintenance/development energy step: {_format(values.get('capacity_maintenance_energy_step'), 6)} / {_format(values.get('capacity_development_energy_step'), 6)}",
                 f"- configured bounds: {context.get('differentiation_capacity_bounds')}",
                 "- selected observational correlations:",
@@ -1396,6 +1534,25 @@ def render_markdown(report: dict[str, Any]) -> str:
                 f"- cumulative splits / merges / formations / dissolutions: {values.get('subject_structure_split_count_total', 0)} / {values.get('subject_structure_merge_count_total', 0)} / {values.get('subject_structure_formation_count_total', 0)} / {values.get('subject_structure_dissolution_count_total', 0)}",
                 "",
             ])
+    lines.extend(["## Realized resource demand", ""])
+    for run in report["runs"]:
+        demand = run.get("resource_demand_analysis", {})
+        lines.append(f"### {run['run_name']}")
+        if not demand.get("available", False):
+            lines.append(f"- unavailable: {demand.get('reason', 'no harvest data')}")
+            lines.append("")
+            continue
+        context = run.get("config_context", {})
+        lines.extend([
+            f"- harvest allocation schema: `{context.get('harvest_allocation_schema', 'uniform-channel-rates-v1')}`",
+            f"- channel shares: {[round(float(value), 4) for value in demand.get('harvest_channel_shares', [])]}",
+            f"- balance effective count: {_format(demand.get('harvest_balance_effective_count'))}",
+            f"- temporal effective dimensions: {_format(demand.get('harvest_temporal_effective_dimensions'))}",
+            f"- mean/max |channel correlation|: {_format(demand.get('harvest_channel_mean_abs_correlation'))} / {_format(demand.get('harvest_channel_max_abs_correlation'))}",
+            f"- balance vs resource-field dimensions: {_format(demand.get('harvest_balance_vs_resource_environment_dimensions'))}",
+            f"- realized/requested extraction efficiency mean/final: {_format(demand.get('harvest_extraction_efficiency_mean'))} / {_format(demand.get('harvest_extraction_efficiency_final'))}",
+            "",
+        ])
     if any(run.get("resource_environment_final") for run in report["runs"]):
         lines.extend(["## Orthogonal resource environment", ""])
         for run in report["runs"]:

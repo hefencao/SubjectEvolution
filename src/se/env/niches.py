@@ -10,6 +10,76 @@ BODY_OUTCOME_WIDTH = 5
 AFFINITY_GENE_START = 1
 AFFINITY_GENE_STOP = AFFINITY_GENE_START + RESOURCE_CHANNELS
 AFFINITY_SCALE = 4096
+UNIFORM_HARVEST_SCHEMA = "uniform-channel-rates-v1"
+SELECTIVE_HARVEST_SCHEMA = "affinity-sampled-exclusive-harvest-v1"
+
+
+
+
+def selective_harvest_enabled(cfg: SimulationConfig) -> bool:
+    return cfg.entities.harvest_allocation_schema == SELECTIVE_HARVEST_SCHEMA
+
+
+def harvest_request_rates(
+    resource_affinity_q: Any | None,
+    cfg: SimulationConfig,
+    *,
+    rows: int | None = None,
+    channel_draws: Any | None = None,
+) -> np.ndarray:
+    """Return deterministic per-entity four-channel extraction requests.
+
+    The uniform path is byte-for-byte equivalent to the historical fixed
+    channel rates.  The selective path spends the same total raw extraction
+    budget on exactly one channel sampled from the inherited affinity budget.
+    Draws are supplied by the resolver's state-free keyed random stream, so
+    generalists can use several channels while specialists increasingly choose
+    one; every action still excludes the other three channels.
+    """
+
+    base = float(cfg.entities.harvest_rate)
+    if cfg.environment.schema == "legacy-four-channel-v1":
+        neutral = np.asarray(
+            [base, base * 0.45, base * 0.25, base * 0.18], dtype=np.float32
+        )
+    else:
+        multipliers = np.asarray(
+            cfg.environment.harvest_channel_multipliers, dtype=np.float32
+        )
+        neutral = (np.float32(base) * multipliers).astype(np.float32)
+    if not selective_harvest_enabled(cfg):
+        count = int(
+            rows
+            if rows is not None
+            else (0 if resource_affinity_q is None else np.asarray(resource_affinity_q).shape[0])
+        )
+        return np.broadcast_to(neutral, (count, RESOURCE_CHANNELS)).copy()
+    if resource_affinity_q is None or channel_draws is None:
+        raise ValueError("selective harvest requires resource affinity and channel draws")
+    affinity = np.asarray(resource_affinity_q, dtype=np.int64)
+    draws = np.asarray(channel_draws, dtype=np.float64)
+    if affinity.ndim != 2 or affinity.shape[1] != RESOURCE_CHANNELS:
+        raise ValueError("resource affinity must be shaped [N, 4]")
+    if draws.shape != (affinity.shape[0],):
+        raise ValueError("harvest channel draws must align with resource affinity")
+    if rows is not None and affinity.shape[0] != int(rows):
+        raise ValueError("resource affinity row count does not match harvest requests")
+    multiplier_q = np.rint(
+        np.asarray(cfg.environment.harvest_channel_multipliers, dtype=np.float64)
+        * AFFINITY_SCALE
+    ).astype(np.int64)
+    weights = affinity * multiplier_q[None, :]
+    denominator = weights.sum(axis=1, dtype=np.int64)
+    if np.any(denominator <= 0):
+        raise ValueError("selective harvest produced a zero channel budget")
+    cumulative = np.cumsum(weights, axis=1, dtype=np.int64)
+    thresholds = np.clip(draws, 0.0, np.nextafter(1.0, 0.0)) * denominator
+    selected = np.sum(thresholds[:, None] >= cumulative, axis=1)
+    selected = np.clip(selected, 0, RESOURCE_CHANNELS - 1).astype(np.int32)
+    total_budget = np.float32(neutral.sum(dtype=np.float32))
+    rates = np.zeros((affinity.shape[0], RESOURCE_CHANNELS), dtype=np.float32)
+    rates[np.arange(rates.shape[0]), selected] = total_budget
+    return rates
 
 
 def resource_affinity_enabled(cfg: SimulationConfig) -> bool:
@@ -223,9 +293,12 @@ __all__ = [
     "AFFINITY_GENE_START",
     "AFFINITY_GENE_STOP",
     "AFFINITY_SCALE",
+    "SELECTIVE_HARVEST_SCHEMA",
+    "UNIFORM_HARVEST_SCHEMA",
     "BODY_OUTCOME_WIDTH",
     "RESOURCE_CHANNELS",
     "apply_harvest_effects",
+    "harvest_request_rates",
     "active_morphology_traits",
     "policy_resource_view",
     "public_resource_signal",
@@ -233,4 +306,5 @@ __all__ = [
     "resource_affinity_enabled",
     "resource_affinity_float",
     "resource_affinity_quantized",
+    "selective_harvest_enabled",
 ]

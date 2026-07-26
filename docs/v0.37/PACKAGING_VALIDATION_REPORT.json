@@ -1,0 +1,21 @@
+{
+  "schema": "packaging-validation-v1",
+  "version": "0.37.0",
+  "project_top_level": "se_v037_project",
+  "project_file_count": 219,
+  "single_top_level_directory": true,
+  "forbidden_entries_absent": [
+    "docs/archive",
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    "*.pyc",
+    "*.pyo",
+    "build",
+    "dist",
+    "*.egg-info"
+  ],
+  "patch_validated": true,
+  "wheel_validated": true,
+  "full_tests": "174 passed, 1 skipped"
+}

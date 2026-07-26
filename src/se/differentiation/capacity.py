@@ -222,6 +222,79 @@ def _effective_dimensions(matrix: np.ndarray) -> float:
     return 0.0 if total <= 0.0 else float(total * total / np.square(eigenvalues).sum())
 
 
+
+def capacity_use_diagnostics(
+    phenotype: CapacityPhenotype,
+    *,
+    alive: Any,
+    working_memory_q: Any,
+    relation_targets: Any,
+    knowledge_bytes_used: Any,
+) -> dict[str, Any]:
+    """Report realized use and binding pressure for the four D1 capacities.
+
+    Attention has no direct per-entity occupancy state, so this function only
+    reports its zero-capacity fraction.  Transfer-window utilization is derived
+    offline from admitted attempts and available attention slot-ticks.
+    """
+
+    active = np.flatnonzero(np.asarray(alive, dtype=bool))
+    wm = np.asarray(working_memory_q)
+    relations = np.asarray(relation_targets, dtype=np.int32)
+    knowledge_used_all = np.asarray(knowledge_bytes_used, dtype=np.int64)
+    capacity_matrix = np.asarray(phenotype.as_matrix(), dtype=np.int64)
+    if wm.shape[0] != capacity_matrix.shape[0]:
+        raise ValueError("working-memory rows must align with capacity phenotype")
+    if relations.shape[0] != capacity_matrix.shape[0]:
+        raise ValueError("relation rows must align with capacity phenotype")
+    if knowledge_used_all.shape != (capacity_matrix.shape[0],):
+        raise ValueError("knowledge usage must align with capacity phenotype")
+    if active.size == 0:
+        return {
+            "capacity_working_memory_used_dimensions_mean": 0.0,
+            "capacity_working_memory_utilization_mean": 0.0,
+            "capacity_working_memory_saturated_fraction": 0.0,
+            "capacity_knowledge_bytes_used_mean": 0.0,
+            "capacity_knowledge_utilization_mean": 0.0,
+            "capacity_knowledge_saturated_fraction": 0.0,
+            "capacity_relation_edges_used_mean": 0.0,
+            "capacity_relation_utilization_mean": 0.0,
+            "capacity_relation_saturated_fraction": 0.0,
+            "capacity_attention_zero_fraction": 0.0,
+        }
+    selected_capacity = capacity_matrix[active]
+    wm_cap = selected_capacity[:, 0]
+    knowledge_cap = selected_capacity[:, 1]
+    relation_cap = selected_capacity[:, 2]
+    attention_cap = selected_capacity[:, 3]
+    wm_used = np.count_nonzero(wm[active] != 0, axis=1).astype(np.int64)
+    relation_used = np.count_nonzero(relations[active] >= 0, axis=1).astype(np.int64)
+    knowledge_used = knowledge_used_all[active]
+
+    def utilization(used: np.ndarray, capacity: np.ndarray) -> tuple[float, float]:
+        positive = capacity > 0
+        if not np.any(positive):
+            return 0.0, 0.0
+        ratio = np.clip(used[positive] / capacity[positive], 0.0, 1.0)
+        saturated = used[positive] >= capacity[positive]
+        return float(ratio.mean()), float(saturated.mean())
+
+    wm_util, wm_saturated = utilization(wm_used, wm_cap)
+    knowledge_util, knowledge_saturated = utilization(knowledge_used, knowledge_cap)
+    relation_util, relation_saturated = utilization(relation_used, relation_cap)
+    return {
+        "capacity_working_memory_used_dimensions_mean": float(wm_used.mean()),
+        "capacity_working_memory_utilization_mean": wm_util,
+        "capacity_working_memory_saturated_fraction": wm_saturated,
+        "capacity_knowledge_bytes_used_mean": float(knowledge_used.mean()),
+        "capacity_knowledge_utilization_mean": knowledge_util,
+        "capacity_knowledge_saturated_fraction": knowledge_saturated,
+        "capacity_relation_edges_used_mean": float(relation_used.mean()),
+        "capacity_relation_utilization_mean": relation_util,
+        "capacity_relation_saturated_fraction": relation_saturated,
+        "capacity_attention_zero_fraction": float(np.mean(attention_cap == 0)),
+    }
+
 def capacity_diagnostics(
     phenotype: CapacityPhenotype,
     *,
@@ -255,6 +328,7 @@ __all__ = [
     "capacity_diagnostics",
     "capacity_gene_count",
     "capacity_maintenance_energy",
+    "capacity_use_diagnostics",
     "neutral_capacity_phenotype",
     "capacity_phenotype",
     "capacity_schema_enabled",

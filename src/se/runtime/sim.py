@@ -111,6 +111,7 @@ from se.env.niches import (
     public_resource_signal,
     resource_affinity_diagnostics,
     resource_affinity_quantized,
+    selective_harvest_enabled,
 )
 from ..policy import Action, ParametricPolicy
 from ..random_api import RandomContext, Stream, bernoulli, normal, uniform01
@@ -1349,6 +1350,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             fertility=ent.fertility,
             primary_subject_id=ent.primary_subject_id,
             free_slot_count=len(ent.free_slots),
+            resource_affinity_q=effective_resource_affinity_q,
         )
         harvest_allocator = (
             self.gpu_runtime.resolve_harvest
@@ -1702,18 +1704,30 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                         & (gathered[:, 0] < cfg.entities.harvest_rate - 1e-8)
                     )
                 else:
-                    requested_rates = (
-                        cfg.entities.harvest_rate
-                        * np.asarray(
-                            cfg.environment.harvest_channel_multipliers,
-                            dtype=np.float32,
+                    if selective_harvest_enabled(cfg):
+                        requested_total = np.float32(
+                            cfg.entities.harvest_rate
+                            * sum(cfg.environment.harvest_channel_multipliers)
                         )
-                    )
-                    partial_harvest = (
-                        resolutions.success[harvest_rows]
-                        & np.any(gathered > 1e-8, axis=1)
-                        & np.any(gathered < requested_rates[None, :] - 1e-8, axis=1)
-                    )
+                        gathered_total = np.asarray(gathered, dtype=np.float32).sum(axis=1)
+                        partial_harvest = (
+                            resolutions.success[harvest_rows]
+                            & (gathered_total > 1e-8)
+                            & (gathered_total < requested_total - 1e-8)
+                        )
+                    else:
+                        requested_rates = (
+                            cfg.entities.harvest_rate
+                            * np.asarray(
+                                cfg.environment.harvest_channel_multipliers,
+                                dtype=np.float32,
+                            )
+                        )
+                        partial_harvest = (
+                            resolutions.success[harvest_rows]
+                            & np.any(gathered > 1e-8, axis=1)
+                            & np.any(gathered < requested_rates[None, :] - 1e-8, axis=1)
+                        )
                 statuses[harvest_rows[partial_harvest]] = OUTCOME_STATUS_PARTIAL
             if share.rows.size:
                 proposed_share = np.minimum(

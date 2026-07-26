@@ -96,7 +96,7 @@ from se.evolution.lifecycle import (
 from ..metrics import MetricsWriter
 from se.env.local_stress import LocalStressDiagnostics
 from ..event_cohort import EventCohortDiagnostics
-from se.differentiation.capacity import capacity_diagnostics
+from se.differentiation.capacity import capacity_diagnostics, capacity_use_diagnostics
 from se.subjects.succession import SubjectStructureDiagnostics
 from se.env.atlas import EnvironmentAtlasDiagnostics
 from se.env.niches import (
@@ -165,6 +165,7 @@ class SimulationReportingMixin:
             ),
             "resource_affinity_schema": self.cfg.entities.resource_affinity_schema,
             "resource_affinity_strength": self.cfg.entities.resource_affinity_strength,
+            "harvest_allocation_schema": self.cfg.entities.harvest_allocation_schema,
             "resource_affinity_gene_indices": (
                 [1, 2, 3, 4]
                 if self.cfg.entities.resource_affinity_schema
@@ -945,11 +946,28 @@ class SimulationReportingMixin:
             ),
         }
         if self.cfg.differentiation.enabled:
+            capacity_phenotype = self.entities.capacity_phenotype()
             environment_metrics.update(
                 capacity_diagnostics(
-                    self.entities.capacity_phenotype(),
+                    capacity_phenotype,
                     alive=self.entities.alive,
                     config=self.cfg.differentiation,
+                )
+            )
+            knowledge_bytes_used = np.zeros(
+                self.entities.alive.size, dtype=np.int64
+            )
+            for entity_index in np.flatnonzero(self.entities.alive):
+                knowledge_bytes_used[entity_index] = self.knowledge.arena.holder_bytes(
+                    int(self.entities.primary_subject_id[entity_index])
+                )
+            environment_metrics.update(
+                capacity_use_diagnostics(
+                    capacity_phenotype,
+                    alive=self.entities.alive,
+                    working_memory_q=self.entities.working_memory_q,
+                    relation_targets=self.social.target,
+                    knowledge_bytes_used=knowledge_bytes_used,
                 )
             )
         if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
@@ -1272,6 +1290,7 @@ class SimulationReportingMixin:
             "move_social_fraction": stats.move_social_fraction,
             "environment_schema": self.cfg.environment.schema,
             "resource_affinity_schema": self.cfg.entities.resource_affinity_schema,
+            "harvest_allocation_schema": self.cfg.entities.harvest_allocation_schema,
             "capacity_ablation_enabled": int(self.capacity_ablation_enabled),
             "capacity_effective_schema": (
                 "fixed-midpoint-elastic-capacities-ablation-v1"

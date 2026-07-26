@@ -192,6 +192,10 @@ class EntityConfig:
     resource_affinity_strength: float = 0.0
     resource_affinity_min_efficiency: float = 0.25
     resource_affinity_max_efficiency: float = 1.75
+    # Harvest requests historically extract every channel at a fixed rate.
+    # The explicit selective schema instead spends the same total extraction
+    # budget on one locally available channel chosen through inherited affinity.
+    harvest_allocation_schema: str = "uniform-channel-rates-v1"
     # Morphology gene 6 can allocate a fixed evidence budget between direct
     # physical hazard and the delayed mortality trace.  It is inert unless the
     # explicit schema is enabled.
@@ -989,6 +993,30 @@ def validate_config(cfg: SimulationConfig) -> None:
         )
     if cfg.entities.resource_affinity_strength < 0.0:
         raise ValueError("entities.resource_affinity_strength cannot be negative")
+    if cfg.entities.harvest_allocation_schema not in {
+        "uniform-channel-rates-v1",
+        "affinity-sampled-exclusive-harvest-v1",
+    }:
+        raise ValueError(
+            "entities.harvest_allocation_schema must be "
+            "'uniform-channel-rates-v1' or "
+            "'affinity-sampled-exclusive-harvest-v1'"
+        )
+    if (
+        cfg.entities.harvest_allocation_schema
+        == "affinity-sampled-exclusive-harvest-v1"
+        and cfg.entities.resource_affinity_schema
+        != "normalized-four-resource-affinity-v1"
+    ):
+        raise ValueError("selective harvest requires inherited resource affinity")
+    if (
+        cfg.entities.harvest_allocation_schema
+        == "affinity-sampled-exclusive-harvest-v1"
+        and not any(
+            value > 0.0 for value in cfg.environment.harvest_channel_multipliers
+        )
+    ):
+        raise ValueError("selective harvest requires a positive extraction budget")
     if (
         cfg.entities.resource_affinity_min_efficiency <= 0.0
         or cfg.entities.resource_affinity_max_efficiency

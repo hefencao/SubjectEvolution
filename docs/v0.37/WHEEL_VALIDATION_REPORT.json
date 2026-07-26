@@ -1,0 +1,14 @@
+{
+  "schema": "wheel-validation-v1",
+  "version": "0.37.0",
+  "wheel": "se_mvp-0.37.0-py3-none-any.whl",
+  "build_command": "python -m pip wheel . --no-build-isolation --no-deps",
+  "clean_venv_install": true,
+  "version_import": "0.37.0",
+  "selective_harvest_import": true,
+  "console_scripts": {
+    "se": true,
+    "se-multi": true,
+    "se-gui": true
+  }
+}

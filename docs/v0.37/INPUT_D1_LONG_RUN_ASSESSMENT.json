@@ -1,0 +1,20 @@
+{
+  "schema": "d1-uploaded-long-run-assessment-v1",
+  "input_analysis_schema": "multi-seed-long-run-analysis-v10",
+  "run_count": 3,
+  "final_alive": [468, 558, 421],
+  "final_resource_effective_dimensions": [
+    1.3093961429864458,
+    1.2702660554206895,
+    1.2648712506900177
+  ],
+  "final_resource_mean_abs_correlation": [
+    0.8124656717904145,
+    0.8302823927630826,
+    0.8336978232717226
+  ],
+  "capacity_fields_present": false,
+  "capacity_conclusion_allowed": false,
+  "d0_stop_condition_triggered": true,
+  "decision": "implement D1-B selective resource acquisition before D2"
+}

@@ -1,4 +1,36 @@
-# Architecture
+# SE architecture
+
+## v0.37 resource-demand boundary
+
+The external environment and biological demand remain separate layers:
+
+```text
+se.env.world / process
+  └─ generates four resource fields without reading entities
+
+resource affinity phenotype
+  └─ fixed-budget inherited four-channel weights
+
+HARVEST resolver
+  ├─ uniform-channel-rates-v1
+  └─ affinity-sampled-exclusive-harvest-v1
+       ├─ keyed draw(run seed, tick, stable entity ID)
+       ├─ exactly one requested channel
+       ├─ unchanged total request budget
+       └─ no reassignment of unavailable budget
+
+world commit
+  └─ only gathered resources mutate fields and body state
+```
+
+Environment generation remains entity-, lineage- and group-unaware.  D1-B
+harvest demand is phenotype-aware, but it does not inspect local abundance or
+protect rare phenotypes.  CPU and GPU planners construct the same request rates
+before the authoritative commit phase.
+
+The offline analyzer is downstream of runtime/domain modules and cannot feed
+results back into the world.  Long-run v12 requires D1 capacity fields when the
+resolved config enables elastic capacities.
 
 ## Package layout
 

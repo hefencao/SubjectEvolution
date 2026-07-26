@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from se.cfg import load_config, validate_config
 from se.evolution.progress import _categorical_alignment, lineage_group_diagnostics
@@ -113,7 +114,7 @@ def test_offline_multi_seed_analysis_marks_correlations_observational(tmp_path: 
         paths.append(path)
     report = analyze(paths)
     assert report["run_count"] == 2
-    assert report["schema"] == "multi-seed-long-run-analysis-v11"
+    assert report["schema"] == "multi-seed-long-run-analysis-v12"
     assert "correlations_first_difference" in report["runs"][0]
     assert "correlations_partial" in report["runs"][0]
     assert "observational" in render_markdown(report).lower()
@@ -279,3 +280,35 @@ def test_analysis_reports_committed_cultural_transfer(tmp_path: Path) -> None:
     assert run["knowledge_transfer_committed_final"] == 48
     assert run["knowledge_transfer_commit_rate_after_attention_final"] == 0.6
     assert run["knowledge_transfer_phase_summary"]["rise"]["committed"] > 0
+
+
+def test_d1_analysis_rejects_missing_capacity_progress(tmp_path: Path) -> None:
+    run_dir = tmp_path / "incomplete_d1"
+    run_dir.mkdir()
+    rows = [
+        {
+            "tick": (index + 1) * 30,
+            "alive": 100,
+            "deaths_window": 1,
+            "effective_lineages": 10.0,
+            "largest_lineage_fraction": 0.1,
+            "strategy_effective_dimensions": 5.0,
+            "window_action_entropy": 1.0,
+            "benefit_boundary_cohesion": 0.2,
+        }
+        for index in range(8)
+    ]
+    progress = run_dir / "evolution_progress.jsonl"
+    progress.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
+    (run_dir / "resolved_config.json").write_text(
+        json.dumps(
+            {
+                "differentiation": {
+                    "enabled": True,
+                    "schema": "inherited-elastic-capacities-v1",
+                }
+            }
+        )
+    )
+    with pytest.raises(ValueError, match="contains no capacity_\\* progress fields"):
+        analyze([progress])
