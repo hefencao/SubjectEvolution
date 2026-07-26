@@ -1,0 +1,32 @@
+{
+  "schema": "v024-v025-default-path-compatibility-v1",
+  "ticks": 20,
+  "metrics_rows": 11,
+  "common_non_timing_cells": 1606,
+  "excluded_timing_fields": [
+    "conflict_seconds",
+    "device_commit_seconds",
+    "environment_seconds",
+    "evolution_evaluation_seconds",
+    "gpu_d2h_bytes",
+    "gpu_h2d_bytes",
+    "graph_seconds",
+    "observation_seconds",
+    "policy_seconds",
+    "spatial_seconds",
+    "step_seconds",
+    "wall_elapsed_seconds",
+    "window_seconds",
+    "window_seconds_per_tick"
+  ],
+  "difference_count": 0,
+  "first_differences": [],
+  "log_hashes": [
+    {
+      "name": "evolution_progress.jsonl",
+      "identical": true,
+      "v024_sha256": "1375e00fff7c145ca676fa9668204963340e0944f326793d68819bb02364254f",
+      "v025_sha256": "1375e00fff7c145ca676fa9668204963340e0944f326793d68819bb02364254f"
+    }
+  ]
+}

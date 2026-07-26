@@ -1,0 +1,30 @@
+{
+  "schema": "subject-evolution-v025-packaging-validation-v1",
+  "version": "0.25.0",
+  "pyproject_source": "user-provided, version bumped to 0.25.0",
+  "build_system_requires": [
+    "setuptools>=68"
+  ],
+  "explicit_wheel_build_requirement": false,
+  "wheel_build_succeeded": true,
+  "wheel_filename": "subject_evolution_mvp-0.25.0-py3-none-any.whl",
+  "wheel_entry_count": 51,
+  "console_entry_points": "[console_scripts]\nsubject-evolution = subject_evolution.cli:main\n",
+  "root_files": [
+    "README.md",
+    "pyproject.toml",
+    "run_gpu.ps1",
+    "run_gpu.sh"
+  ],
+  "docs_archive_present_in_project": false,
+  "docs_archive_policy": "excluded from v0.25 project and release archives",
+  "historical_root_report_count": 0,
+  "wheel_install_smoke_succeeded": true,
+  "installed_version": "0.25.0",
+  "console_script_help_succeeded": true,
+  "natural_event_execution_module_help_succeeded": true,
+  "release_zip_entry_count": 182,
+  "release_tar_entry_count": 182,
+  "release_archives_contain_docs_archive": false,
+  "release_archives_contain_cache_files": false
+}

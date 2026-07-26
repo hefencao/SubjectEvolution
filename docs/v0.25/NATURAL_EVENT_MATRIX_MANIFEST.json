@@ -1,0 +1,1115 @@
+{
+  "schema": "natural-event-paired-intervention-matrix-v1",
+  "selection_schema": "exposure-only-local-peak-selection-v1",
+  "selection_protocol": {
+    "event_kinds": [
+      "scarcity",
+      "crowding",
+      "mortality"
+    ],
+    "event_quantile": 0.8,
+    "max_events_per_kind_per_run": 2,
+    "min_tick": null,
+    "min_gap_windows": 2,
+    "min_region_alive": 5,
+    "selection_inputs": [
+      "tick",
+      "spatial_local_region_alive",
+      "spatial_local_region_resource_scarcity",
+      "spatial_local_region_crowding",
+      "spatial_local_region_mortality_pressure",
+      "checkpoint availability"
+    ],
+    "outcome_fields_excluded": [
+      "spatial_local_region_boundary_cohesion",
+      "spatial_local_region_new_transferred_roots",
+      "spatial_local_region_lost_transferred_roots",
+      "spatial_local_region_active_transferred_roots",
+      "spatial_local_region_incoming_transfer_commits",
+      "spatial_local_region_outgoing_transfer_commits",
+      "effective_lineages",
+      "largest_lineage_fraction",
+      "window_action_entropy"
+    ],
+    "post_event_outcomes_used_for_selection": false,
+    "analysis_summary_used_for_selection": false
+  },
+  "paired_randomness": true,
+  "baseline_and_intervention_share_checkpoint": true,
+  "horizon_ticks": 120,
+  "source_runs": [
+    {
+      "run_name": "seed_10001",
+      "seed": 10001,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001",
+      "progress_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/evolution_progress.jsonl",
+      "progress_sha256": "72506a30575e1a81c42eb948528ce00ef047e9f589ebb3944cdd01898ac1d6f6",
+      "config_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/resolved_config.json",
+      "config_sha256": "bf66d18b3d58141fa8ffed86e8d30c1fe34119a6ed600bc8f5a2ed0a87e3c093",
+      "final_tick": 1500,
+      "record_count": 50
+    },
+    {
+      "run_name": "seed_10002",
+      "seed": 10002,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002",
+      "progress_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/evolution_progress.jsonl",
+      "progress_sha256": "7724753036af36b64013e7a02830a3c7d48b00c3490087d690ba326698e07a23",
+      "config_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/resolved_config.json",
+      "config_sha256": "e5bfbedb77146ba2b0ee0c02c20f1f48d8fe559880225e414af58cd8e0220260",
+      "final_tick": 1500,
+      "record_count": 50
+    },
+    {
+      "run_name": "seed_10003",
+      "seed": 10003,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003",
+      "progress_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/evolution_progress.jsonl",
+      "progress_sha256": "bf0d70c41ca195ba0d5d92d653d47114489c624d2a5c0f98da4a4ef75e2a3fbf",
+      "config_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/resolved_config.json",
+      "config_sha256": "1a82eb62d93657dee1329c8915e0cd5343e05b5e00e390ede65adef1f763b827",
+      "final_tick": 1500,
+      "record_count": 50
+    }
+  ],
+  "analysis_context": {
+    "path": "/home/unkloser/projects/SubjectEvolution/analyses/mortality_trace_adaptive_groups/long_run_analysis.json",
+    "sha256": "fb7fe5500d69d7ad738a3eaf7281597af5e08763e114851d54669a8afe441222",
+    "schema": "multi-seed-long-run-analysis-v7",
+    "run_count": 3,
+    "repeated_local_directional_patterns": [
+      "local_culture.local_crowding_vs_local_outgoing_transfer_rate_next_window",
+      "local_culture.local_crowding_vs_local_outgoing_transfer_rate_within_region",
+      "local_culture.local_mortality_vs_local_incoming_transfer_rate_next_window",
+      "local_culture.local_mortality_vs_local_incoming_transfer_rate_within_region",
+      "local_culture.local_scarcity_vs_local_net_transferred_root_establishment_next_window",
+      "local_culture.local_scarcity_vs_local_net_transferred_root_establishment_within_region",
+      "local_culture.local_scarcity_vs_local_new_transferred_roots_next_window",
+      "local_culture.local_scarcity_vs_local_new_transferred_roots_within_region",
+      "local_culture.local_scarcity_vs_local_outgoing_transfer_rate_within_region",
+      "next_window_correlations.local_crowding_vs_next_window_local_cohesion",
+      "next_window_correlations.local_hazard_vs_next_window_local_cohesion",
+      "next_window_correlations.local_mortality_vs_next_window_local_cohesion",
+      "next_window_correlations.local_population_change_vs_next_window_local_cohesion",
+      "next_window_correlations.local_scarcity_vs_next_window_local_cohesion",
+      "within_region_correlations.local_crowding_vs_cohesion_within_region",
+      "within_region_correlations.local_mortality_vs_cohesion_within_region",
+      "within_region_correlations.local_population_change_vs_cohesion_within_region",
+      "within_region_correlations.local_scarcity_vs_cohesion_within_region"
+    ],
+    "used_for_anchor_selection": false,
+    "role": "rationale-and-audit-only"
+  },
+  "anchors": [
+    {
+      "anchor_id": "seed_10001-crowding-r14-t270",
+      "run_name": "seed_10001",
+      "seed": 10001,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001",
+      "event_kind": "crowding",
+      "exposure_field": "spatial_local_region_crowding",
+      "region_id": 14,
+      "event_tick": 270,
+      "event_value": 3.2136726842261023,
+      "region_threshold": 2.1071606770318905,
+      "standardized_score": 3.8120617004505273,
+      "alive_region": 112,
+      "checkpoint_tick": 240,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000240.sechk",
+      "checkpoint_sha256": "c38e1a04e2296b8e6105c435a1801be8f0a415a43e6af3e4ab9728953d32459f",
+      "until_tick": 390,
+      "selection_record_index": 8,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10001-crowding-r7-t300",
+      "run_name": "seed_10001",
+      "seed": 10001,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001",
+      "event_kind": "crowding",
+      "exposure_field": "spatial_local_region_crowding",
+      "region_id": 7,
+      "event_tick": 300,
+      "event_value": 3.674871335869322,
+      "region_threshold": 2.2187170670510388,
+      "standardized_score": 3.646146997722144,
+      "alive_region": 160,
+      "checkpoint_tick": 240,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000240.sechk",
+      "checkpoint_sha256": "c38e1a04e2296b8e6105c435a1801be8f0a415a43e6af3e4ab9728953d32459f",
+      "until_tick": 420,
+      "selection_record_index": 9,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10001-mortality-r7-t420",
+      "run_name": "seed_10001",
+      "seed": 10001,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001",
+      "event_kind": "mortality",
+      "exposure_field": "spatial_local_region_mortality_pressure",
+      "region_id": 7,
+      "event_tick": 420,
+      "event_value": 0.14868804664723032,
+      "region_threshold": 0.060469750295306796,
+      "standardized_score": 3.335032485375294,
+      "alive_region": 91,
+      "checkpoint_tick": 360,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000360.sechk",
+      "checkpoint_sha256": "3e4e348ba5af189bd338bf4b00c7fe5b0b3cb6090882cb6578b5b14f8782c7bd",
+      "until_tick": 540,
+      "selection_record_index": 13,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10001-mortality-r4-t510",
+      "run_name": "seed_10001",
+      "seed": 10001,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001",
+      "event_kind": "mortality",
+      "exposure_field": "spatial_local_region_mortality_pressure",
+      "region_id": 4,
+      "event_tick": 510,
+      "event_value": 0.2350307778399552,
+      "region_threshold": 0.07533837979660671,
+      "standardized_score": 3.7857557626322844,
+      "alive_region": 77,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "9100c59082823c90b2b0f540e3816fb86a4aecf93bea688c90c4397b10b7eb4b",
+      "until_tick": 630,
+      "selection_record_index": 16,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10001-scarcity-r8-t1410",
+      "run_name": "seed_10001",
+      "seed": 10001,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001",
+      "event_kind": "scarcity",
+      "exposure_field": "spatial_local_region_resource_scarcity",
+      "region_id": 8,
+      "event_tick": 1410,
+      "event_value": 0.9969360870825252,
+      "region_threshold": 0.9941208539944255,
+      "standardized_score": 0.5724529047198867,
+      "alive_region": 104,
+      "checkpoint_tick": 1380,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00001380.sechk",
+      "checkpoint_sha256": "f4c003cc3c426307cc0decf78d2f22a15421d76584e6506047767463546f0256",
+      "until_tick": 1530,
+      "selection_record_index": 46,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10001-scarcity-r4-t1470",
+      "run_name": "seed_10001",
+      "seed": 10001,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001",
+      "event_kind": "scarcity",
+      "exposure_field": "spatial_local_region_resource_scarcity",
+      "region_id": 4,
+      "event_tick": 1470,
+      "event_value": 0.9971799381910962,
+      "region_threshold": 0.9946973500814558,
+      "standardized_score": 0.5959841109098603,
+      "alive_region": 82,
+      "checkpoint_tick": 1440,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00001440.sechk",
+      "checkpoint_sha256": "81e25fa8724aa14d86e37eb94b01ed468d916be12ba787e7c42f320ea1d2b841",
+      "until_tick": 1590,
+      "selection_record_index": 48,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10002-crowding-r12-t240",
+      "run_name": "seed_10002",
+      "seed": 10002,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002",
+      "event_kind": "crowding",
+      "exposure_field": "spatial_local_region_crowding",
+      "region_id": 12,
+      "event_tick": 240,
+      "event_value": 3.7169021454735742,
+      "region_threshold": 2.191666166988259,
+      "standardized_score": 3.903043242337222,
+      "alive_region": 117,
+      "checkpoint_tick": 180,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000180.sechk",
+      "checkpoint_sha256": "1118598eda27d6db136428e8e3e685dcd40965105dc73f0303249d7e6a4e81dd",
+      "until_tick": 360,
+      "selection_record_index": 7,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10002-crowding-r15-t330",
+      "run_name": "seed_10002",
+      "seed": 10002,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002",
+      "event_kind": "crowding",
+      "exposure_field": "spatial_local_region_crowding",
+      "region_id": 15,
+      "event_tick": 330,
+      "event_value": 3.834919124643197,
+      "region_threshold": 2.248162739826052,
+      "standardized_score": 3.926035915537362,
+      "alive_region": 147,
+      "checkpoint_tick": 300,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000300.sechk",
+      "checkpoint_sha256": "b536d9f2260c348ee51f3d5949505a5badb5152c93c46c6eb2a7534feb6e3880",
+      "until_tick": 450,
+      "selection_record_index": 10,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10002-mortality-r11-t420",
+      "run_name": "seed_10002",
+      "seed": 10002,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002",
+      "event_kind": "mortality",
+      "exposure_field": "spatial_local_region_mortality_pressure",
+      "region_id": 11,
+      "event_tick": 420,
+      "event_value": 0.1857335127860027,
+      "region_threshold": 0.06564554918596163,
+      "standardized_score": 3.5632181184165255,
+      "alive_region": 92,
+      "checkpoint_tick": 360,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000360.sechk",
+      "checkpoint_sha256": "a6c847d4aaf0df444c9ea39a1e75931bffc16ef3737677af9bbe3db21cce90be",
+      "until_tick": 540,
+      "selection_record_index": 13,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10002-mortality-r14-t570",
+      "run_name": "seed_10002",
+      "seed": 10002,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002",
+      "event_kind": "mortality",
+      "exposure_field": "spatial_local_region_mortality_pressure",
+      "region_id": 14,
+      "event_tick": 570,
+      "event_value": 0.1853997682502897,
+      "region_threshold": 0.08142976390116874,
+      "standardized_score": 3.5122161326808503,
+      "alive_region": 60,
+      "checkpoint_tick": 540,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000540.sechk",
+      "checkpoint_sha256": "083f2bef83c22fccc16ffb4aabc3681aeab42bcf07f29f1c9e0b8b055e7588bc",
+      "until_tick": 690,
+      "selection_record_index": 18,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10002-scarcity-r8-t450",
+      "run_name": "seed_10002",
+      "seed": 10002,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002",
+      "event_kind": "scarcity",
+      "exposure_field": "spatial_local_region_resource_scarcity",
+      "region_id": 8,
+      "event_tick": 450,
+      "event_value": 0.9967549727120366,
+      "region_threshold": 0.9951703713549791,
+      "standardized_score": 0.5625492137541774,
+      "alive_region": 107,
+      "checkpoint_tick": 420,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000420.sechk",
+      "checkpoint_sha256": "a876cec8e8d2704c5b861cb2bddbb2a29cdd4275ad9a2daed4d259252f17b475",
+      "until_tick": 570,
+      "selection_record_index": 14,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10002-scarcity-r13-t1320",
+      "run_name": "seed_10002",
+      "seed": 10002,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002",
+      "event_kind": "scarcity",
+      "exposure_field": "spatial_local_region_resource_scarcity",
+      "region_id": 13,
+      "event_tick": 1320,
+      "event_value": 0.996873527937987,
+      "region_threshold": 0.9940014165079971,
+      "standardized_score": 0.5735053070883697,
+      "alive_region": 73,
+      "checkpoint_tick": 1260,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00001260.sechk",
+      "checkpoint_sha256": "5568d6737845756a4b60c48f40b24a34620bc7c5e12489338f8610dc37ef211e",
+      "until_tick": 1440,
+      "selection_record_index": 43,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10003-crowding-r7-t270",
+      "run_name": "seed_10003",
+      "seed": 10003,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003",
+      "event_kind": "crowding",
+      "exposure_field": "spatial_local_region_crowding",
+      "region_id": 7,
+      "event_tick": 270,
+      "event_value": 3.39852738150023,
+      "region_threshold": 2.1738724727838257,
+      "standardized_score": 3.477810652040381,
+      "alive_region": 146,
+      "checkpoint_tick": 240,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000240.sechk",
+      "checkpoint_sha256": "588cbb7f3214e3b6a633d58bf7b370978807c9b17fa48dd0fd310f6f38dfa056",
+      "until_tick": 390,
+      "selection_record_index": 8,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10003-crowding-r2-t300",
+      "run_name": "seed_10003",
+      "seed": 10003,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003",
+      "event_kind": "crowding",
+      "exposure_field": "spatial_local_region_crowding",
+      "region_id": 2,
+      "event_tick": 300,
+      "event_value": 3.4952624839948783,
+      "region_threshold": 2.2197287967494406,
+      "standardized_score": 3.461730550932507,
+      "alive_region": 136,
+      "checkpoint_tick": 240,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000240.sechk",
+      "checkpoint_sha256": "588cbb7f3214e3b6a633d58bf7b370978807c9b17fa48dd0fd310f6f38dfa056",
+      "until_tick": 420,
+      "selection_record_index": 9,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10003-mortality-r7-t390",
+      "run_name": "seed_10003",
+      "seed": 10003,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003",
+      "event_kind": "mortality",
+      "exposure_field": "spatial_local_region_mortality_pressure",
+      "region_id": 7,
+      "event_tick": 390,
+      "event_value": 0.15820698747528014,
+      "region_threshold": 0.0724699081271119,
+      "standardized_score": 3.5206463305766436,
+      "alive_region": 75,
+      "checkpoint_tick": 360,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000360.sechk",
+      "checkpoint_sha256": "e8dba08d19beadb5dcfacf4ab5cc6c8e80a2a1af74b04547b1578d166304a75a",
+      "until_tick": 510,
+      "selection_record_index": 12,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10003-mortality-r2-t450",
+      "run_name": "seed_10003",
+      "seed": 10003,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003",
+      "event_kind": "mortality",
+      "exposure_field": "spatial_local_region_mortality_pressure",
+      "region_id": 2,
+      "event_tick": 450,
+      "event_value": 0.14812376563528637,
+      "region_threshold": 0.05060960084319729,
+      "standardized_score": 3.8274119734177705,
+      "alive_region": 86,
+      "checkpoint_tick": 420,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000420.sechk",
+      "checkpoint_sha256": "d3f2f0bb00fc1c7d925cf1c8af3ec8a22ca5eee031c038509bf7def1d15c534c",
+      "until_tick": 570,
+      "selection_record_index": 14,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10003-scarcity-r13-t1080",
+      "run_name": "seed_10003",
+      "seed": 10003,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003",
+      "event_kind": "scarcity",
+      "exposure_field": "spatial_local_region_resource_scarcity",
+      "region_id": 13,
+      "event_tick": 1080,
+      "event_value": 0.996896202459648,
+      "region_threshold": 0.9932482155955956,
+      "standardized_score": 0.5776134671649816,
+      "alive_region": 80,
+      "checkpoint_tick": 1020,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00001020.sechk",
+      "checkpoint_sha256": "d495cbfc6165193f901a08f6d0b675e36fc24073eadc8d4462a169e105902a20",
+      "until_tick": 1200,
+      "selection_record_index": 35,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10003-scarcity-r14-t1290",
+      "run_name": "seed_10003",
+      "seed": 10003,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003",
+      "event_kind": "scarcity",
+      "exposure_field": "spatial_local_region_resource_scarcity",
+      "region_id": 14,
+      "event_tick": 1290,
+      "event_value": 0.9962473014069937,
+      "region_threshold": 0.9939488965109214,
+      "standardized_score": 0.5487089932233484,
+      "alive_region": 76,
+      "checkpoint_tick": 1260,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00001260.sechk",
+      "checkpoint_sha256": "ac1feb0b85785a449aac6321b805b5c53206bd31990cf6fdd1fe91e9137e93f4",
+      "until_tick": 1410,
+      "selection_record_index": 42,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ]
+    }
+  ],
+  "interpretation_boundary": "Anchor selection is exposure-blind with respect to recorded outcomes, but the events are naturally occurring rather than randomized. Paired checkpoint branches identify short-horizon mechanism effects conditional on the selected events; they do not prove that the event exposure itself caused the observed world trajectory.",
+  "plan_sha256": "737312dd4659807a89323fd275e784b91166fbaa53cdf094b16ca24618091dbb"
+}

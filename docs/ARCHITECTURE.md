@@ -49,3 +49,19 @@ metrics / logs / checkpoint / offline analysis
 ## 反事实边界
 
 所有科学干预通过注册表声明 kind、target scope 和是否直接控制行动。直接行动替换只允许 entertainment 模式。自然事件矩阵的锚点选择与执行分离，并对源 progress、resolved config、checkpoint 和最终计划记录 SHA-256。
+
+## Manifest 执行边界
+
+v0.25 将锚点规划与分支执行拆成两个不可互换阶段：
+
+```text
+run diagnostics → signed exposure-only manifest
+                           ↓
+                 signed execution plan
+                           ↓
+        hash preflight → shared trajectories
+                           ↓
+       per-anchor summaries → seed-level aggregation
+```
+
+路径映射只改变文件定位，不改变 manifest。轨迹共享只允许相同 checkpoint SHA-256 和相同 intervention；运行到最大所需 tick 后，各 anchor 仍用自己的 region、event tick 与 horizon 计算结果。完成 marker 必须绑定 manifest hash、checkpoint hash、intervention 和 completed tick。

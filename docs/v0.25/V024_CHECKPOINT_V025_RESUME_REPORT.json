@@ -1,0 +1,7 @@
+{
+  "schema": "v024-checkpoint-v025-resume-state-compatibility-v1",
+  "source_checkpoint": "/mnt/data/v024_checkpoint25/checkpoint_00000010.sechk",
+  "comparison_tick": 20,
+  "simulation_state_equal": true,
+  "first_failure": null
+}

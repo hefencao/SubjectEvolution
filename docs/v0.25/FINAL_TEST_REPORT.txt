@@ -1,0 +1,24 @@
+Subject Evolution v0.25.0 final validation
+==========================================
+
+pytest: 123 passed, 1 skipped, 0 failed
+Skipped: real CUDA/CuPy device test unavailable in the build environment.
+
+Validated:
+- signed v0.24 natural-event manifest compatibility;
+- path-prefix remapping without manifest mutation;
+- progress/config/checkpoint SHA-256 preflight;
+- shared-checkpoint trajectory deduplication;
+- per-anchor horizon truncation on shared trajectories;
+- resumable trajectory markers;
+- anchor-level and seed-level paired-delta aggregation;
+- v0.24/v0.25 default-world compatibility;
+- v0.24 full-checkpoint restore into v0.25;
+- wheel build from pyproject without explicit wheel build requirement;
+- package layout excludes docs/archive.
+
+Real execution of the attached 18-anchor manifest was not performed in the
+build environment because its source run/checkpoint paths are on the user's
+machine. No branch outcome was fabricated.
+- installed-wheel import/version smoke;
+- installed console script and natural-event execution help smoke.

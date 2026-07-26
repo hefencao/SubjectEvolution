@@ -1,10 +1,14 @@
 # 科学问题与研究债务
 
-本文件以 v0.24 代码和三个 seed、1500 tick 的长期分析为准。状态“已实现”只表示机制或防护存在，不表示科学假设成立。
+本文件以 v0.25 代码、三个 seed 的 1500-tick 长跑和已签名 18-anchor manifest 为准。状态“已实现”只表示机制或防护存在，不表示科学假设成立。
 
 | ID | 状态 | 当前问题 | 下一步判据 |
 |---|---|---|---|
-| CAUSAL-01 | 开放，已有工具 | 原始相关、首差分、偏相关、cross-lag 和自然事件窗口仍可能受共享时间趋势、空间选择和事件选择影响。 | 使用 v0.24 manifest，从相同事件前 checkpoint 执行 baseline/ablation；结论限定于预注册 horizon。 |
+| EXEC-01 | v0.25 结构完成 | manifest 含绝对路径，跨机器执行若静默替换文件会破坏预注册信任链。 | 使用路径前缀映射，并在执行前验证 progress、config、checkpoint SHA-256；任何 hash mismatch 都必须停止。 |
+| EXEC-02 | v0.25 结构完成，结果待运行 | 18 anchors 直接展开为 126 branches；共享 checkpoint 的重复运行浪费算力，也增加中断概率。 | 仅按相同 checkpoint hash 和 intervention 合并最长轨迹；每个 anchor 独立取 region/event/horizon summary。 |
+| SCALE-01 | 开放 | scarcity exposure 接近饱和，锚点 z-score 约 0.55–0.60；crowding/mortality 约 3.3–3.9。跨类型比较 z-score 会误导事件强度。 | 所有结果按 event kind 分层；对 scarcity 另报原始值、区域分位数与局部方差，不跨类型排名。 |
+| REPLICATION-01 | v0.25 防护完成 | 同一 seed 内多个 anchors 不独立，直接把 18 anchors 当 n=18 会产生伪重复。 | 先在 seed 内对同 event/intervention/metric 平均，再跨 seed 报方向；三 seed 不计算显著性结论。 |
+| CAUSAL-01 | 开放，已有工具 | 原始相关、首差分、偏相关、cross-lag 和自然事件窗口仍可能受共享时间趋势、空间选择和事件选择影响。 | 使用已签名 manifest，从相同事件前 checkpoint 执行 baseline/ablation；结论限定于预注册 horizon。 |
 | EVENT-01 | v0.24 结构修正完成 | 旧局部事件选择会参考 cohesion validity，且单 run、单 event kind 规划不利于预注册矩阵。 | 新矩阵必须保持 `exposure-only-local-peak-selection-v1`，分析摘要不得参与锚点选择，计划哈希必须在执行前固定。 |
 | CULTURE-01 | 因果开放 | 三 seed 均有 12k–14k committed transfers 和约 2k effective transferred roots，证明传播存在；不证明传播提高人口、遗传多样性或适应度。 | 在 scarcity/crowding/mortality anchor 上比较 transfer-off 与 baseline 的根建立、留存、跨区域扩散和局部人口。 |
 | CULTURE-02 | 开放 | 稀缺同时与“新根出现”正相关、与“净根建立”负相关，可能表示高周转而非文化适应。 | 分离新增、丢失、活跃、跨区域和多区域 roots；报告短期与较长 horizon 的方向是否一致。 |

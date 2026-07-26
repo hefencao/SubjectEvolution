@@ -1,0 +1,19 @@
+{
+  "schema": "natural-event-execution-v025-validation-v1",
+  "version": "0.25.0",
+  "manifest_sha256": "737312dd4659807a89323fd275e784b91166fbaa53cdf094b16ca24618091dbb",
+  "execution_plan_sha256": "431fd41f9da0b5e44014c1b61dc825c65ca7302a9fd3613b43aa0bc7b85c3ac2",
+  "selected_anchor_count": 18,
+  "naive_branch_count": 126,
+  "trajectory_count": 112,
+  "deduplicated_branch_count": 14,
+  "deduplication_fraction": 0.1111111111111111,
+  "unique_checkpoint_count": 16,
+  "local_preflight": {
+    "execution_ready": false,
+    "full_audit_ready": false,
+    "reason": "User run/checkpoint absolute paths are not mounted in the build environment; rerun with --path-prefix on the source machine."
+  },
+  "selection_recomputed": false,
+  "world_rules_changed": false
+}

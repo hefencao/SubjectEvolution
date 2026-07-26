@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.25.0
+
+### Manifest execution
+
+- 新增 `subject_evolution.natural_event_execution`，从已签名 v0.24 manifest 构造独立执行计划。
+- 支持跨机器 `OLD=NEW` 路径前缀映射，同时保留原始 manifest 不变。
+- 执行前分别校验 checkpoint、progress 和 resolved config SHA-256。
+- 相同 checkpoint hash 与 intervention 的多个锚点共享最长轨迹；用户 manifest 从 126 条 naive branches 降为 112 条 trajectories。
+- 每条完成轨迹写入可审计 marker，支持安全断点续跑；不完整目录默认拒绝覆盖。
+- paired results 升级为 v2，增加先 seed 内平均、再跨 seed 汇总的方向统计，避免 anchor 伪重复。
+
+### Packaging and documentation
+
+- `pyproject.toml` 采用用户提供的 project metadata、console script、dev dependency 和 pytest 配置。
+- build-system 移除显式 `wheel`，当前环境仍可成功生成 wheel。
+- 新发行压缩包不包含 `docs/archive`；根目录只保留稳定入口和运行脚本。
+- v0.25 实现、manifest、执行计划与验证报告集中在 `docs/v0.25/`。
+
+### Validation
+
+- `123 passed, 1 skipped`；跳过真实 CUDA/CuPy 设备测试。
+- v0.24→v0.25 默认 CPU 20 tick：1606 个共同非计时 metrics 单元零差异，`evolution_progress.jsonl` byte-identical。
+- v0.25 从 v0.24 tick-10 `.sechk` 恢复到 tick 20，内部 simulation state 与连续 v0.25 逐字段一致。
+
 ## 0.24.0
 
 ### Scientific workflow
@@ -48,10 +72,4 @@
 
 ## 0.20 及更早
 
-详细历史变更、实现报告和兼容矩阵保存在：
-
-```text
-docs/archive/pre-v0.24/
-```
-
-这些文件按原文件名保存，可能包含当时有效、现在已经过时的状态描述。
+详细历史材料保存在旧版本发行包中。当前发行包不再复制 `docs/archive`。
