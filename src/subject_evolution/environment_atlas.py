@@ -20,6 +20,7 @@ from .spatial_partition import NORMALIZED_FIXED_COUNT_SCHEMA, SpatialRegionParti
 
 
 ENVIRONMENT_ATLAS_SCHEMA = "multiscale-subject-environment-atlas-v1"
+ENVIRONMENT_ATLAS_ORTHOGONAL_SCHEMA = "multiscale-subject-environment-atlas-v2"
 
 
 def _effective_count(values: np.ndarray) -> float:
@@ -43,6 +44,34 @@ def _effective_dimensions(rows: np.ndarray) -> float:
     denominator = float(np.dot(spectrum, spectrum))
     return float(spectrum.sum() ** 2 / denominator) if denominator > 0.0 else 0.0
 
+
+
+
+def _channel_correlation_metrics(rows: np.ndarray) -> tuple[float, float, list[list[float]]]:
+    values = np.asarray(rows, dtype=np.float64)
+    if values.ndim != 2 or values.shape[1] != 4:
+        raise ValueError("resource channel correlation rows must be shaped [N, 4]")
+    centered = values - values.mean(axis=0, keepdims=True)
+    std = centered.std(axis=0)
+    correlation = np.eye(4, dtype=np.float64)
+    for left in range(4):
+        for right in range(left + 1, 4):
+            if std[left] <= 1e-30 or std[right] <= 1e-30:
+                value = 0.0
+            else:
+                value = float(
+                    np.mean(centered[:, left] * centered[:, right])
+                    / (std[left] * std[right])
+                )
+                value = float(np.clip(value, -1.0, 1.0))
+            correlation[left, right] = value
+            correlation[right, left] = value
+    upper = np.abs(correlation[np.triu_indices(4, k=1)])
+    return (
+        float(upper.mean()) if upper.size else 0.0,
+        float(upper.max(initial=0.0)),
+        correlation.tolist(),
+    )
 
 def _mean_pairwise_distance(rows: np.ndarray) -> tuple[float, float]:
     values = np.asarray(rows, dtype=np.float64)
@@ -121,7 +150,10 @@ class EnvironmentAtlasDiagnostics:
         scales: tuple[tuple[int, int], ...],
         schema: str = ENVIRONMENT_ATLAS_SCHEMA,
     ) -> None:
-        if schema != ENVIRONMENT_ATLAS_SCHEMA:
+        if schema not in {
+            ENVIRONMENT_ATLAS_SCHEMA,
+            ENVIRONMENT_ATLAS_ORTHOGONAL_SCHEMA,
+        }:
             raise ValueError(f"unsupported environment atlas schema {schema!r}")
         self.output_dir = Path(output_dir)
         self.schema = schema
@@ -193,6 +225,9 @@ class EnvironmentAtlasDiagnostics:
                 "between-subject share of realized regional exposure variance among "
                 "labels with at least two members; descriptive, not causal and not a "
                 "subjecthood score"
+            ),
+            "resource_independence_metrics": (
+                self.schema == ENVIRONMENT_ATLAS_ORTHOGONAL_SCHEMA
             ),
         }
 
@@ -314,6 +349,9 @@ class EnvironmentAtlasDiagnostics:
                 lineage_covered_fraction = social_covered_fraction = 0.0
                 lineage_span = social_span = 0.0
 
+            resource_mean_abs_correlation, resource_max_abs_correlation, resource_correlation = (
+                _channel_correlation_metrics(regional_resources)
+            )
             scale_record = {
                 "scale": key,
                 "partition": partition.metadata(),
@@ -324,6 +362,12 @@ class EnvironmentAtlasDiagnostics:
                 "resource_spatial_cv_mean": float(channel_cv.mean()),
                 "resource_spatial_cv_by_channel": channel_cv.tolist(),
                 "regional_resource_effective_dimensions_mean": float(resource_effective.mean()),
+                "resource_field_effective_dimensions": _effective_dimensions(
+                    regional_resources
+                ),
+                "resource_channel_mean_abs_correlation": resource_mean_abs_correlation,
+                "resource_channel_max_abs_correlation": resource_max_abs_correlation,
+                "resource_channel_correlation": resource_correlation,
                 "occupied_region_count": int(np.count_nonzero(region_population)),
                 "entity_region_effective_count": _effective_count(region_population),
                 "lineage_environment_association_fraction": lineage_association,
@@ -349,6 +393,11 @@ class EnvironmentAtlasDiagnostics:
                     prefix + "signature_mean_distance": mean_distance,
                     prefix + "temporal_turnover": turnover,
                     prefix + "resource_spatial_cv_mean": float(channel_cv.mean()),
+                    prefix + "resource_effective_dimensions": scale_record[
+                        "resource_field_effective_dimensions"
+                    ],
+                    prefix + "resource_mean_abs_correlation": resource_mean_abs_correlation,
+                    prefix + "resource_max_abs_correlation": resource_max_abs_correlation,
                     prefix + "entity_region_effective_count": scale_record[
                         "entity_region_effective_count"
                     ],
@@ -394,4 +443,8 @@ class EnvironmentAtlasDiagnostics:
         )
 
 
-__all__ = ["ENVIRONMENT_ATLAS_SCHEMA", "EnvironmentAtlasDiagnostics"]
+__all__ = [
+    "ENVIRONMENT_ATLAS_SCHEMA",
+    "ENVIRONMENT_ATLAS_ORTHOGONAL_SCHEMA",
+    "EnvironmentAtlasDiagnostics",
+]

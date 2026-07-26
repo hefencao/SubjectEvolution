@@ -1,3 +1,15 @@
+# Architecture and Commit Boundaries
+
+## v0.31 D0 environment orthogonalization
+
+`EnvironmentConfig.schema == orthogonal-four-resource-niche-v1` activates a fixed-layout four-channel field engine. Shared helpers in `environment_diversity.py` define spatial modes, channel-specific seasonal waves, diffusion, and resource-only diversity metrics for NumPy and CuPy-like backends.
+
+The commit order remains: regenerate authoritative fields, apply channel-local diffusion, clip to public capacity, then allow existing entity harvest commits. Environment generation does not inspect entities, lineages, groups, policies, or cultural state. This preserves a clean distinction between exogenous environmental variation and endogenous resource depletion.
+
+Legacy and `spatially-asynchronous-multiniche-v1` schemas do not call the D0 helpers. New config fields resolve through inert defaults for old trusted checkpoints.
+
+`multiscale-subject-environment-atlas-v2` computes resource-only dimensions/correlation alongside the existing combined resource/hazard/mortality signature. These diagnostics never feed the world.
+
 # 架构与提交边界
 
 ## 世界循环

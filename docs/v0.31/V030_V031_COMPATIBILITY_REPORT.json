@@ -1,0 +1,29 @@
+{
+  "schema": "v030-v031-compatibility-v1",
+  "default_cpu_reference_20_tick": {
+    "config": "configs/mvp_short_replay.json (reduced capacity, unchanged semantics)",
+    "metric_rows": 6,
+    "common_columns": 342,
+    "common_non_timing_columns": 329,
+    "cells_compared": 1974,
+    "mismatch_count": 0,
+    "first_mismatches": [],
+    "byte_identical_logs": {
+      "knowledge_events.jsonl": true,
+      "knowledge_boundary_flows.csv": true,
+      "knowledge_content_lineage.csv": true,
+      "knowledge_outcome_updates.csv": true,
+      "knowledge_policy_contributions.csv": true,
+      "knowledge_subject_candidates.csv": true,
+      "knowledge_subject_edges.csv": true,
+      "knowledge_transfers.csv": true
+    }
+  },
+  "v030_checkpoint_restored_by_v031": {
+    "checkpoint_tick": 10,
+    "final_tick": 20,
+    "semantic_state_equal": true,
+    "first_mismatches": [],
+    "comparison_note": "D0 orthogonal environment fields resolve through inert EnvironmentConfig defaults for legacy schemas; new diagnostics remain disabled."
+  }
+}

@@ -1,0 +1,630 @@
+{
+  "schema": "multi-seed-long-run-analysis-v10",
+  "run_count": 1,
+  "runs": [
+    {
+      "path": "/mnt/data/v031_d0_smoke/evolution_progress.jsonl",
+      "run_name": "v031_d0_smoke",
+      "record_count": 4,
+      "first_tick": 30,
+      "final_tick": 120,
+      "alive_final": 163,
+      "alive_peak": 203,
+      "alive_peak_tick": 30,
+      "alive_trough": 163,
+      "alive_trough_tick": 120,
+      "effective_lineages_final": 134.8680203045685,
+      "largest_lineage_fraction_final": 0.018404907975460124,
+      "strategy_effective_dimensions_final": 61.676436529315815,
+      "window_action_entropy_final": 1.9133940519524917,
+      "benefit_boundary_cohesion_final": 0.0,
+      "resource_affinity_effective_dimensions_final": 2.967857418643627,
+      "subject_structure_final": {
+        "subject_structure_schema": "stable-membership-subject-succession-v1",
+        "subject_structure_refresh_count": 2,
+        "subject_structure_active_groups": 0,
+        "subject_structure_effective_groups": 0.0,
+        "subject_structure_weighted_jaccard": 0.0,
+        "subject_structure_weighted_inheritance": 0.0,
+        "subject_structure_split_count_total": 0,
+        "subject_structure_merge_count_total": 0,
+        "subject_structure_formation_count_total": 0,
+        "subject_structure_dissolution_count_total": 0,
+        "subject_structure_reactivation_count_total": 0
+      },
+      "environment_atlas_final": {
+        "environment_atlas_schema": "multiscale-subject-environment-atlas-v2",
+        "environment_atlas_scale_count": 3,
+        "environment_atlas_2x2_signature_effective_dimensions": 1.817572405814381,
+        "environment_atlas_2x2_signature_mean_distance": 0.27275531957817883,
+        "environment_atlas_2x2_temporal_turnover": 0.03970510805482474,
+        "environment_atlas_2x2_resource_spatial_cv_mean": 0.10953908198021892,
+        "environment_atlas_2x2_resource_effective_dimensions": 1.8367455733263873,
+        "environment_atlas_2x2_resource_mean_abs_correlation": 0.3903391525196446,
+        "environment_atlas_2x2_resource_max_abs_correlation": 0.8884891443653531,
+        "environment_atlas_2x2_entity_region_effective_count": 3.9414033526183054,
+        "environment_atlas_2x2_lineage_association": 1.0,
+        "environment_atlas_2x2_lineage_covered_fraction": 0.1901840490797546,
+        "environment_atlas_2x2_social_association": 0.0,
+        "environment_atlas_2x2_social_covered_fraction": 0.0,
+        "environment_atlas_2x2_lineage_span": 0.25,
+        "environment_atlas_2x2_social_span": 0.0,
+        "environment_atlas_4x4_signature_effective_dimensions": 4.246833727335412,
+        "environment_atlas_4x4_signature_mean_distance": 0.40956904827564505,
+        "environment_atlas_4x4_temporal_turnover": 0.04989620882495253,
+        "environment_atlas_4x4_resource_spatial_cv_mean": 0.22762189653345383,
+        "environment_atlas_4x4_resource_effective_dimensions": 3.914859043644996,
+        "environment_atlas_4x4_resource_mean_abs_correlation": 0.053499044242040134,
+        "environment_atlas_4x4_resource_max_abs_correlation": 0.1209484375650896,
+        "environment_atlas_4x4_entity_region_effective_count": 14.951603826674168,
+        "environment_atlas_4x4_lineage_association": 0.9999999999999999,
+        "environment_atlas_4x4_lineage_covered_fraction": 0.1901840490797546,
+        "environment_atlas_4x4_social_association": 0.0,
+        "environment_atlas_4x4_social_covered_fraction": 0.0,
+        "environment_atlas_4x4_lineage_span": 0.0625,
+        "environment_atlas_4x4_social_span": 0.0,
+        "environment_atlas_8x8_signature_effective_dimensions": 4.3993619974544,
+        "environment_atlas_8x8_signature_mean_distance": 0.455231940969705,
+        "environment_atlas_8x8_temporal_turnover": 0.055291465788836515,
+        "environment_atlas_8x8_resource_spatial_cv_mean": 0.26535536698815637,
+        "environment_atlas_8x8_resource_effective_dimensions": 3.9209088167639954,
+        "environment_atlas_8x8_resource_mean_abs_correlation": 0.06581019104961831,
+        "environment_atlas_8x8_resource_max_abs_correlation": 0.154528065784671,
+        "environment_atlas_8x8_entity_region_effective_count": 47.700179533213635,
+        "environment_atlas_8x8_lineage_association": 1.0,
+        "environment_atlas_8x8_lineage_covered_fraction": 0.1901840490797546,
+        "environment_atlas_8x8_social_association": 0.0,
+        "environment_atlas_8x8_social_covered_fraction": 0.0,
+        "environment_atlas_8x8_lineage_span": 0.015625,
+        "environment_atlas_8x8_social_span": 0.0
+      },
+      "resource_environment_final": {
+        "environment_resource_channel_mean": [
+          4.377971471276396,
+          4.367991464183433,
+          4.278231576579856,
+          4.2503709794036695
+        ],
+        "environment_resource_channel_std": [
+          1.338478336995013,
+          1.3478395319839909,
+          1.307071802100743,
+          1.3004917658336483
+        ],
+        "environment_resource_channel_min": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "environment_resource_channel_max": [
+          6.893447399139404,
+          6.948922634124756,
+          6.803894519805908,
+          6.789711952209473
+        ],
+        "environment_resource_effective_dimensions": 3.5182712417615556,
+        "environment_resource_channel_mean_abs_correlation": 0.19675701688528383,
+        "environment_resource_channel_max_abs_correlation": 0.32836771476411813,
+        "environment_resource_channel_correlation": [
+          [
+            1.0,
+            0.32836771476411813,
+            0.2358926214587459,
+            0.21418863542943078
+          ],
+          [
+            0.32836771476411813,
+            1.0,
+            0.18133663218282714,
+            0.10609014414191169
+          ],
+          [
+            0.2358926214587459,
+            0.18133663218282714,
+            1.0,
+            0.1146663533346695
+          ],
+          [
+            0.21418863542943078,
+            0.10609014414191169,
+            0.1146663533346695,
+            1.0
+          ]
+        ]
+      },
+      "danger_direct_weight_mean_final": 1.0,
+      "danger_direct_weight_std_final": 0.0,
+      "danger_trace_weight_mean_final": 1.0,
+      "danger_trace_weight_std_final": 0.0,
+      "danger_evidence_effective_dimensions_final": 0.0,
+      "environment_mortality_trace_mean_final": 0.004827160515667117,
+      "environment_mortality_trace_max_final": 0.25284165143966675,
+      "group_update_count_final": 2,
+      "group_update_skipped_final": 118,
+      "group_last_update_tick_final": 100,
+      "lineage_group_nmi_final": 0.0,
+      "lineage_group_pair_enrichment_final": 0.0,
+      "same_lineage_given_same_group_final": 0.0,
+      "knowledge_effective_root_contents_final": 1251.1660851360782,
+      "knowledge_largest_root_holder_fraction_final": 0.002987303958177745,
+      "knowledge_root_genetic_lineage_pair_enrichment_final": 3.197346582573965,
+      "knowledge_transfer_proposals_final": 56,
+      "knowledge_transfer_attempts_final": 56,
+      "knowledge_transfer_committed_final": 45,
+      "knowledge_transfer_committed_bytes_final": 2888,
+      "knowledge_transfer_commit_rate_after_attention_final": 0.8035714285714286,
+      "knowledge_transfer_commit_rate_per_proposal_final": 0.8035714285714286,
+      "knowledge_transfer_same_lineage_committed_final": 1,
+      "knowledge_transfer_cross_lineage_committed_final": 44,
+      "knowledge_transfer_same_group_committed_final": 0,
+      "knowledge_transfer_cross_group_committed_final": 0,
+      "knowledge_active_transferred_root_count_final": 35,
+      "knowledge_effective_transferred_roots_final": 35.00000000000001,
+      "knowledge_largest_transferred_root_holder_fraction_final": 0.02857142857142857,
+      "knowledge_cultural_spread_interpretable": true,
+      "knowledge_transfer_phase_summary": {
+        "rise": {
+          "windows": 1,
+          "attempts": 11,
+          "committed": 8,
+          "commit_rate": 0.7272727272727273
+        },
+        "decline": {
+          "windows": 3,
+          "attempts": 45,
+          "committed": 37,
+          "commit_rate": 0.8222222222222222
+        },
+        "peak": {
+          "windows": 1,
+          "attempts": 11,
+          "committed": 8,
+          "commit_rate": 0.7272727272727273
+        },
+        "trough": {
+          "windows": 1,
+          "attempts": 13,
+          "committed": 10,
+          "commit_rate": 0.7692307692307693
+        }
+      },
+      "correlations_cultural_transfer": {
+        "committed_transfer_vs_effective_transferred_roots": null,
+        "cross_lineage_transfer_vs_lineage_group_cohesion": null
+      },
+      "spatial_local_analysis": {
+        "available": false,
+        "reason": "fewer than five spatial diagnostic windows"
+      },
+      "config_context": {
+        "knowledge_transfer_probability": 0.1,
+        "knowledge_transfer_period": 1,
+        "environment_schema": "orthogonal-four-resource-niche-v1",
+        "resource_cycle_periods": [
+          173,
+          257,
+          349,
+          431
+        ],
+        "resource_cycle_amplitudes": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ],
+        "resource_primary_wave_vectors": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            -1.0
+          ]
+        ],
+        "resource_secondary_wave_vectors": [
+          [
+            2.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            -1.0
+          ],
+          [
+            1.0,
+            -2.0
+          ]
+        ],
+        "resource_primary_wave_amplitudes": [
+          0.25,
+          0.25,
+          0.25,
+          0.25
+        ],
+        "resource_secondary_wave_amplitudes": [
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ],
+        "resource_diffusion_rates": [
+          0.002,
+          0.004,
+          0.006,
+          0.008
+        ],
+        "resource_effect_matrix": [
+          [
+            0.52,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.03,
+            0.018,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.03,
+            0.24,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.018,
+            0.0,
+            0.24
+          ]
+        ],
+        "environment_process_schema": "disabled",
+        "environment_process_origin": "core-disabled",
+        "environment_process_mechanism_class": "none",
+        "environment_process_interpretation": "scientific-core-only",
+        "environment_process_parameter_names": [],
+        "moving_hazard_schema": "disabled",
+        "moving_hazard_source_count": 0,
+        "mortality_trace_schema": "local-decaying-mortality-trace-v1",
+        "resource_affinity_schema": "normalized-four-resource-affinity-v1",
+        "danger_evidence_schema": "disabled",
+        "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+        "group_label_propagation_rounds": 8,
+        "group_trust_threshold": 0.12,
+        "group_min_members": 6,
+        "group_update_mode": "adaptive-topology-v1",
+        "group_update_period": 50,
+        "group_update_min_period": 100,
+        "group_update_max_period": 300,
+        "spatial_stress_diagnostics_schema": "spatial-local-stress-culture-diagnostics-v2",
+        "spatial_region_partition": {
+          "schema": "normalized-fixed-count-grid-v1",
+          "mapping": "row-major-y-then-x",
+          "boundary_convention": "half-open except clipped outer boundary",
+          "regions_x": 4,
+          "regions_y": 4,
+          "region_count": 16,
+          "world_width": 128.0,
+          "world_height": 128.0,
+          "world_grid_x": 32,
+          "world_grid_y": 32,
+          "normalized_region_width": 0.25,
+          "normalized_region_height": 0.25,
+          "physical_region_width": 32.0,
+          "physical_region_height": 32.0,
+          "world_cells_per_region_x": 8.0,
+          "world_cells_per_region_y": 8.0,
+          "world_grid_aligned": true,
+          "feedback_to_world": false,
+          "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+          "partition_sha256": "80ca3a910af4d035ebdcc1b9fb961d80675113ed6ff16e84a7c3b5f30a34c3f9"
+        },
+        "requested_backend": "cpu",
+        "execution_backend": "cpu",
+        "gpu_semantics_mode": "strict-reference",
+        "gpu_device_validated": false,
+        "gpu_acceleration_enabled": false
+      },
+      "trends_per_1000_ticks": {
+        "alive": null,
+        "effective_lineages": null,
+        "largest_lineage_fraction": null,
+        "strategy_effective_dimensions": null,
+        "window_action_entropy": null,
+        "benefit_boundary_cohesion": null,
+        "resource_affinity_effective_dimensions": null
+      },
+      "correlations_observational": {
+        "mortality_vs_same_window_cohesion": null,
+        "mortality_vs_next_window_cohesion": null,
+        "effective_lineages_vs_cohesion": null,
+        "largest_lineage_fraction_vs_cohesion": null,
+        "strategy_dimensions_vs_action_entropy": null,
+        "lineage_group_nmi_vs_cohesion": null,
+        "lineage_group_pair_enrichment_vs_cohesion": null,
+        "knowledge_effective_roots_vs_effective_lineages": null
+      },
+      "correlations_first_difference": {
+        "delta_mortality_vs_delta_cohesion": null,
+        "mortality_vs_next_delta_cohesion": null,
+        "delta_effective_lineages_vs_delta_cohesion": null,
+        "delta_largest_lineage_fraction_vs_delta_cohesion": null,
+        "delta_strategy_dimensions_vs_delta_action_entropy": null,
+        "delta_lineage_group_pair_enrichment_vs_delta_cohesion": null
+      },
+      "correlations_partial": {
+        "mortality_vs_cohesion_controlling_tick_alive": null,
+        "effective_lineages_vs_cohesion_controlling_tick_alive": null,
+        "largest_lineage_fraction_vs_cohesion_controlling_tick_alive": null,
+        "lineage_group_pair_enrichment_vs_cohesion_controlling_tick_alive": null
+      },
+      "mortality_to_cohesion_cross_lag": {
+        "-3": null,
+        "-2": null,
+        "-1": null,
+        "0": null,
+        "1": null,
+        "2": null,
+        "3": null
+      },
+      "mortality_to_cohesion_best_lag": null,
+      "analysis_warnings": [],
+      "causal_caution": "All correlations are descriptive. Raw correlations can be dominated by shared time trends; first differences and partial correlations reduce, but do not eliminate, confounding."
+    }
+  ],
+  "endpoint_aggregate": {
+    "alive_final": {
+      "mean": 163.0,
+      "min": 163.0,
+      "max": 163.0,
+      "std": 0.0
+    },
+    "effective_lineages_final": {
+      "mean": 134.8680203045685,
+      "min": 134.8680203045685,
+      "max": 134.8680203045685,
+      "std": 0.0
+    },
+    "largest_lineage_fraction_final": {
+      "mean": 0.018404907975460124,
+      "min": 0.018404907975460124,
+      "max": 0.018404907975460124,
+      "std": 0.0
+    },
+    "strategy_effective_dimensions_final": {
+      "mean": 61.676436529315815,
+      "min": 61.676436529315815,
+      "max": 61.676436529315815,
+      "std": 0.0
+    },
+    "window_action_entropy_final": {
+      "mean": 1.9133940519524917,
+      "min": 1.9133940519524917,
+      "max": 1.9133940519524917,
+      "std": 0.0
+    },
+    "benefit_boundary_cohesion_final": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "std": 0.0
+    },
+    "knowledge_transfer_committed_final": {
+      "mean": 45.0,
+      "min": 45.0,
+      "max": 45.0,
+      "std": 0.0
+    },
+    "knowledge_effective_transferred_roots_final": {
+      "mean": 35.00000000000001,
+      "min": 35.00000000000001,
+      "max": 35.00000000000001,
+      "std": 0.0
+    }
+  },
+  "cross_seed_sign_consistency": {
+    "correlations_observational.effective_lineages_vs_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_observational.knowledge_effective_roots_vs_effective_lineages": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_observational.largest_lineage_fraction_vs_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_observational.lineage_group_nmi_vs_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_observational.lineage_group_pair_enrichment_vs_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_observational.mortality_vs_next_window_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_observational.mortality_vs_same_window_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_observational.strategy_dimensions_vs_action_entropy": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_first_difference.delta_effective_lineages_vs_delta_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_first_difference.delta_largest_lineage_fraction_vs_delta_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_first_difference.delta_lineage_group_pair_enrichment_vs_delta_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_first_difference.delta_mortality_vs_delta_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_first_difference.delta_strategy_dimensions_vs_delta_action_entropy": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_first_difference.mortality_vs_next_delta_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_partial.effective_lineages_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_partial.largest_lineage_fraction_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_partial.lineage_group_pair_enrichment_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_partial.mortality_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    }
+  },
+  "cross_seed_local_sign_consistency": {},
+  "repeated_directional_patterns": [],
+  "repeated_local_directional_patterns": [],
+  "interpretation_boundary": "Repeated signs across seeds support robustness, not necessity. Raw within-run correlations may reflect shared temporal drift. Controlled checkpoint interventions are required for phase-specific causal claims."
+}

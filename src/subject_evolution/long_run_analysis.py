@@ -190,6 +190,14 @@ def _resolved_config_context(path: str | Path) -> dict[str, Any]:
         "knowledge_transfer_probability": knowledge.get("transfer_probability"),
         "knowledge_transfer_period": knowledge.get("transfer_period"),
         "environment_schema": environment.get("schema"),
+        "resource_cycle_periods": environment.get("resource_cycle_periods"),
+        "resource_cycle_amplitudes": environment.get("resource_cycle_amplitudes"),
+        "resource_primary_wave_vectors": environment.get("resource_primary_wave_vectors"),
+        "resource_secondary_wave_vectors": environment.get("resource_secondary_wave_vectors"),
+        "resource_primary_wave_amplitudes": environment.get("resource_primary_wave_amplitudes"),
+        "resource_secondary_wave_amplitudes": environment.get("resource_secondary_wave_amplitudes"),
+        "resource_diffusion_rates": environment.get("resource_diffusion_rates"),
+        "resource_effect_matrix": environment.get("resource_effect_matrix"),
         "environment_process_schema": manifest_process.get(
             "schema", resolved_process_schema
         ),
@@ -756,6 +764,11 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
         for key, value in final.items()
         if str(key).startswith("environment_atlas_")
     }
+    resource_environment_final = {
+        key: value
+        for key, value in final.items()
+        if str(key).startswith("environment_resource_")
+    }
     return {
         "path": str(path),
         "run_name": (
@@ -785,6 +798,7 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
         ),
         "subject_structure_final": subject_structure_final,
         "environment_atlas_final": environment_atlas_final,
+        "resource_environment_final": resource_environment_final,
         "danger_direct_weight_mean_final": (
             float(final["danger_direct_weight_mean"])
             if "danger_direct_weight_mean" in final else None
@@ -1006,7 +1020,7 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         if value["available_runs"] >= 3 and value["same_nonzero_sign"]
     ]
     return {
-        "schema": "multi-seed-long-run-analysis-v9",
+        "schema": "multi-seed-long-run-analysis-v10",
         "run_count": len(runs),
         "runs": runs,
         "endpoint_aggregate": aggregate,
@@ -1268,6 +1282,22 @@ def render_markdown(report: dict[str, Any]) -> str:
                 f"- cumulative splits / merges / formations / dissolutions: {values.get('subject_structure_split_count_total', 0)} / {values.get('subject_structure_merge_count_total', 0)} / {values.get('subject_structure_formation_count_total', 0)} / {values.get('subject_structure_dissolution_count_total', 0)}",
                 "",
             ])
+    if any(run.get("resource_environment_final") for run in report["runs"]):
+        lines.extend(["## Orthogonal resource environment", ""])
+        for run in report["runs"]:
+            values = run.get("resource_environment_final", {})
+            if not values:
+                continue
+            context = run.get("config_context", {})
+            lines.extend([
+                f"### {run['run_name']}",
+                f"- schema: `{context.get('environment_schema', 'unknown')}`",
+                f"- final resource effective dimensions: {_format(values.get('environment_resource_effective_dimensions'))}",
+                f"- final resource mean/max absolute correlation: {_format(values.get('environment_resource_channel_mean_abs_correlation'))} / {_format(values.get('environment_resource_channel_max_abs_correlation'))}",
+                f"- cycle periods: {context.get('resource_cycle_periods')}",
+                f"- diffusion rates: {context.get('resource_diffusion_rates')}",
+                "",
+            ])
     if any(run.get("environment_atlas_final") for run in report["runs"]):
         lines.extend(["## Multiscale subject–environment atlas", ""])
         for run in report["runs"]:
@@ -1279,7 +1309,7 @@ def render_markdown(report: dict[str, Any]) -> str:
             scale_prefixes = sorted({key[: key.find('_signature_effective_dimensions')] for key in values if key.endswith('_signature_effective_dimensions')})
             for prefix in scale_prefixes:
                 scale = prefix.removeprefix('environment_atlas_')
-                lines.append(f"- {scale}: signature dims={_format(values.get(prefix + '_signature_effective_dimensions'))}, mean distance={_format(values.get(prefix + '_signature_mean_distance'))}, turnover={_format(values.get(prefix + '_temporal_turnover'))}, lineage association={_format(values.get(prefix + '_lineage_association'))}, social association={_format(values.get(prefix + '_social_association'))}")
+                lines.append(f"- {scale}: signature dims={_format(values.get(prefix + '_signature_effective_dimensions'))}, resource dims={_format(values.get(prefix + '_resource_effective_dimensions'))}, resource mean/max |corr|={_format(values.get(prefix + '_resource_mean_abs_correlation'))}/{_format(values.get(prefix + '_resource_max_abs_correlation'))}, mean distance={_format(values.get(prefix + '_signature_mean_distance'))}, turnover={_format(values.get(prefix + '_temporal_turnover'))}, lineage association={_format(values.get(prefix + '_lineage_association'))}, social association={_format(values.get(prefix + '_social_association'))}")
             lines.append("")
     lines.extend(["## Repeated local directional patterns", ""])
     if report.get("repeated_local_directional_patterns"):

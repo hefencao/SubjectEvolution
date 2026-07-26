@@ -92,6 +92,35 @@ class EnvironmentConfig:
     # Number of additional seasonal cycles across the world in x/y.
     resource_spatial_phase_x: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)
     resource_spatial_phase_y: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)
+    # D0 orthogonal-resource schema. These fields are inert for legacy and v1
+    # heterogeneous environments. Wave vectors are expressed in normalized
+    # world cycles, while each channel has its own temporal period, amplitude,
+    # and diffusion scale.
+    resource_cycle_periods: tuple[int, int, int, int] = (120, 173, 229, 307)
+    resource_cycle_amplitudes: tuple[float, float, float, float] = (
+        0.55, 0.50, 0.45, 0.40
+    )
+    resource_primary_wave_vectors: tuple[
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+    ] = ((1.0, 0.0), (0.0, 1.0), (1.0, 1.0), (1.0, -1.0))
+    resource_secondary_wave_vectors: tuple[
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+    ] = ((2.0, 1.0), (1.0, 2.0), (2.0, -1.0), (1.0, -2.0))
+    resource_primary_wave_amplitudes: tuple[float, float, float, float] = (
+        0.24, 0.22, 0.20, 0.18
+    )
+    resource_secondary_wave_amplitudes: tuple[float, float, float, float] = (
+        0.14, 0.13, 0.12, 0.11
+    )
+    resource_diffusion_rates: tuple[float, float, float, float] = (
+        0.002, 0.006, 0.012, 0.020
+    )
     harvest_channel_multipliers: tuple[float, float, float, float] = (
         1.0, 0.45, 0.25, 0.18
     )
@@ -436,6 +465,50 @@ def load_config(path: str | Path) -> SimulationConfig:
                     "resource_spatial_phase_y", (0.0, 0.0, 0.0, 0.0)
                 )
             ),
+            resource_cycle_periods=tuple(
+                int(value)
+                for value in _require(raw, "environment").get(
+                    "resource_cycle_periods", (120, 173, 229, 307)
+                )
+            ),
+            resource_cycle_amplitudes=tuple(
+                float(value)
+                for value in _require(raw, "environment").get(
+                    "resource_cycle_amplitudes", (0.55, 0.50, 0.45, 0.40)
+                )
+            ),
+            resource_primary_wave_vectors=tuple(
+                tuple(float(component) for component in vector)
+                for vector in _require(raw, "environment").get(
+                    "resource_primary_wave_vectors",
+                    ((1.0, 0.0), (0.0, 1.0), (1.0, 1.0), (1.0, -1.0)),
+                )
+            ),
+            resource_secondary_wave_vectors=tuple(
+                tuple(float(component) for component in vector)
+                for vector in _require(raw, "environment").get(
+                    "resource_secondary_wave_vectors",
+                    ((2.0, 1.0), (1.0, 2.0), (2.0, -1.0), (1.0, -2.0)),
+                )
+            ),
+            resource_primary_wave_amplitudes=tuple(
+                float(value)
+                for value in _require(raw, "environment").get(
+                    "resource_primary_wave_amplitudes", (0.24, 0.22, 0.20, 0.18)
+                )
+            ),
+            resource_secondary_wave_amplitudes=tuple(
+                float(value)
+                for value in _require(raw, "environment").get(
+                    "resource_secondary_wave_amplitudes", (0.14, 0.13, 0.12, 0.11)
+                )
+            ),
+            resource_diffusion_rates=tuple(
+                float(value)
+                for value in _require(raw, "environment").get(
+                    "resource_diffusion_rates", (0.002, 0.006, 0.012, 0.020)
+                )
+            ),
             harvest_channel_multipliers=tuple(
                 _require(raw, "environment").get(
                     "harvest_channel_multipliers", (1.0, 0.45, 0.25, 0.18)
@@ -636,14 +709,19 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.run.environment_atlas_diagnostics_schema not in {
         "disabled",
         "multiscale-subject-environment-atlas-v1",
+        "multiscale-subject-environment-atlas-v2",
     }:
         raise ValueError(
-            "run.environment_atlas_diagnostics_schema must be 'disabled' or "
-            "'multiscale-subject-environment-atlas-v1'"
+            "run.environment_atlas_diagnostics_schema must be 'disabled', "
+            "'multiscale-subject-environment-atlas-v1', or "
+            "'multiscale-subject-environment-atlas-v2'"
         )
     if cfg.run.environment_atlas_diagnostics_enabled != (
         cfg.run.environment_atlas_diagnostics_schema
-        == "multiscale-subject-environment-atlas-v1"
+        in {
+            "multiscale-subject-environment-atlas-v1",
+            "multiscale-subject-environment-atlas-v2",
+        }
     ):
         raise ValueError(
             "environment atlas diagnostics enabled/schema fields must agree"
@@ -689,10 +767,12 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.environment.schema not in {
         "legacy-four-channel-v1",
         "spatially-asynchronous-multiniche-v1",
+        "orthogonal-four-resource-niche-v1",
     }:
         raise ValueError(
-            "environment.schema must be 'legacy-four-channel-v1' or "
-            "'spatially-asynchronous-multiniche-v1'"
+            "environment.schema must be 'legacy-four-channel-v1', "
+            "'spatially-asynchronous-multiniche-v1', or "
+            "'orthogonal-four-resource-niche-v1'"
         )
     for name, values in (
         ("resource_temporal_phase_offsets", cfg.environment.resource_temporal_phase_offsets),
@@ -704,6 +784,71 @@ def validate_config(cfg: SimulationConfig) -> None:
             raise ValueError(f"environment.{name} must contain four finite values")
     if any(value < 0.0 for value in cfg.environment.harvest_channel_multipliers):
         raise ValueError("environment.harvest_channel_multipliers cannot be negative")
+    for name, values in (
+        ("resource_cycle_periods", cfg.environment.resource_cycle_periods),
+        ("resource_cycle_amplitudes", cfg.environment.resource_cycle_amplitudes),
+        (
+            "resource_primary_wave_amplitudes",
+            cfg.environment.resource_primary_wave_amplitudes,
+        ),
+        (
+            "resource_secondary_wave_amplitudes",
+            cfg.environment.resource_secondary_wave_amplitudes,
+        ),
+        ("resource_diffusion_rates", cfg.environment.resource_diffusion_rates),
+    ):
+        if len(values) != 4 or any(not math.isfinite(float(value)) for value in values):
+            raise ValueError(f"environment.{name} must contain four finite values")
+    for name, vectors in (
+        ("resource_primary_wave_vectors", cfg.environment.resource_primary_wave_vectors),
+        ("resource_secondary_wave_vectors", cfg.environment.resource_secondary_wave_vectors),
+    ):
+        if len(vectors) != 4 or any(
+            len(vector) != 2
+            or any(not math.isfinite(float(component)) for component in vector)
+            for vector in vectors
+        ):
+            raise ValueError(f"environment.{name} must be shaped [4, 2] with finite values")
+    if cfg.environment.schema == "orthogonal-four-resource-niche-v1":
+        if any(int(value) <= 0 for value in cfg.environment.resource_cycle_periods):
+            raise ValueError("orthogonal resource cycle periods must be positive")
+        if any(
+            value < 0.0 or value >= 1.0
+            for value in cfg.environment.resource_cycle_amplitudes
+        ):
+            raise ValueError("orthogonal resource cycle amplitudes must be in [0, 1)")
+        if any(
+            value < 0.0 or value > 0.45
+            for value in cfg.environment.resource_primary_wave_amplitudes
+        ) or any(
+            value < 0.0 or value > 0.45
+            for value in cfg.environment.resource_secondary_wave_amplitudes
+        ):
+            raise ValueError("orthogonal resource wave amplitudes must be in [0, 0.45]")
+        if any(
+            primary + secondary > 0.45 + 1e-12
+            for primary, secondary in zip(
+                cfg.environment.resource_primary_wave_amplitudes,
+                cfg.environment.resource_secondary_wave_amplitudes,
+                strict=True,
+            )
+        ):
+            raise ValueError("orthogonal resource wave amplitude sums cannot exceed 0.45")
+        if any(
+            value < 0.0 or value > 0.25
+            for value in cfg.environment.resource_diffusion_rates
+        ):
+            raise ValueError("orthogonal resource diffusion rates must be in [0, 0.25]")
+        primary_vectors = tuple(
+            (float(vector[0]), float(vector[1]))
+            for vector in cfg.environment.resource_primary_wave_vectors
+        )
+        if len(set(primary_vectors)) != 4 or any(
+            abs(x) + abs(y) <= 1e-12 for x, y in primary_vectors
+        ):
+            raise ValueError(
+                "orthogonal resource primary wave vectors must be four distinct non-zero modes"
+            )
     if len(cfg.environment.resource_effect_matrix) != 4 or any(
         len(row) != 5 for row in cfg.environment.resource_effect_matrix
     ):
@@ -823,9 +968,12 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("resource affinity efficiency bounds are invalid")
     if (
         cfg.entities.resource_affinity_schema != "disabled"
-        and cfg.environment.schema != "spatially-asynchronous-multiniche-v1"
+        and cfg.environment.schema not in {
+            "spatially-asynchronous-multiniche-v1",
+            "orthogonal-four-resource-niche-v1",
+        }
     ):
-        raise ValueError("resource affinity requires the heterogeneous environment schema")
+        raise ValueError("resource affinity requires a heterogeneous environment schema")
     if cfg.entities.danger_evidence_schema not in {
         "disabled",
         "inherited-direct-trace-mixture-v1",

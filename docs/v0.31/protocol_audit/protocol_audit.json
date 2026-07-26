@@ -1,0 +1,262 @@
+{
+  "schema": "structural-measurement-protocol-audit-v3",
+  "config_path": "/mnt/data/subject_evolution_v031_work/subject_evolution_v031_project/configs/mvp_short_d0_orthogonal_environment_longrun.json",
+  "group_label_protocol": {
+    "label_schema": "trusted-directed-fixed-round-min-label-v1",
+    "edge_rule": "directed relation slot is eligible when target is alive and materialized trust is at least trust_group_threshold",
+    "successful_share_relation_rule": "forward full trust gain plus reciprocal half-gain; thresholded directions may still differ after history and decay",
+    "propagation_rule": "initialize label as physical slot index; for each fixed round, replace an entity label by the minimum of its current label and labels reachable through eligible outgoing relation slots",
+    "propagation_rounds": 8,
+    "trust_threshold": 0.12,
+    "minimum_members": 6,
+    "group_token_rule": "stable entity ID at the propagated minimum root slot; components below minimum members receive token 0 and remain ungrouped",
+    "exact_component_claim": false,
+    "interpretation": "finite-round directed minimum-label propagation is an approximate candidate-group measurement, not a subject-existence verdict",
+    "refresh": {
+      "mode": "adaptive-topology-v1",
+      "period": 50,
+      "minimum_period": 100,
+      "maximum_period": 300,
+      "adaptive_triggers": [
+        "initial snapshot",
+        "topology-relevant relation change after minimum period",
+        "predicted trust-threshold decay crossing after minimum period",
+        "maximum staleness"
+      ]
+    }
+  },
+  "subject_structure_protocol": {
+    "enabled": true,
+    "schema": "stable-membership-subject-succession-v1",
+    "identity_key": "stable entity ID membership",
+    "transition_rule": "connect previous and current candidate groups when they share at least one stable entity ID; classify zero/one/multiple overlap relations as formation, persistence, split, merge, or dissolution",
+    "feedback_to_world": false,
+    "interpretation": "membership succession among candidate social structures; not an ontological identity theorem, arbitrary nesting graph, or subjecthood score"
+  },
+  "spatial_region_protocol": {
+    "schema": "normalized-fixed-count-grid-v1",
+    "mapping": "row-major-y-then-x",
+    "boundary_convention": "half-open except clipped outer boundary",
+    "regions_x": 4,
+    "regions_y": 4,
+    "region_count": 16,
+    "world_width": 128.0,
+    "world_height": 128.0,
+    "world_grid_x": 32,
+    "world_grid_y": 32,
+    "normalized_region_width": 0.25,
+    "normalized_region_height": 0.25,
+    "physical_region_width": 32.0,
+    "physical_region_height": 32.0,
+    "world_cells_per_region_x": 8.0,
+    "world_cells_per_region_y": 8.0,
+    "world_grid_aligned": true,
+    "feedback_to_world": false,
+    "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+    "partition_sha256": "80ca3a910af4d035ebdcc1b9fb961d80675113ed6ff16e84a7c3b5f30a34c3f9"
+  },
+  "resource_environment_protocol": {
+    "schema": "orthogonal-four-resource-niche-v1",
+    "channel_count": 4,
+    "resource_capacities": [
+      8.0,
+      8.0,
+      8.0,
+      8.0
+    ],
+    "resource_regeneration": [
+      0.018,
+      0.018,
+      0.018,
+      0.018
+    ],
+    "resource_effect_matrix": [
+      [
+        0.52,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.03,
+        0.018,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.03,
+        0.24,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.018,
+        0.0,
+        0.24
+      ]
+    ],
+    "independent_cycle_periods": [
+      173,
+      257,
+      349,
+      431
+    ],
+    "cycle_amplitudes": [
+      0.5,
+      0.5,
+      0.5,
+      0.5
+    ],
+    "primary_wave_vectors": [
+      [
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        1.0
+      ],
+      [
+        1.0,
+        -1.0
+      ]
+    ],
+    "secondary_wave_vectors": [
+      [
+        2.0,
+        1.0
+      ],
+      [
+        1.0,
+        2.0
+      ],
+      [
+        2.0,
+        -1.0
+      ],
+      [
+        1.0,
+        -2.0
+      ]
+    ],
+    "primary_wave_amplitudes": [
+      0.25,
+      0.25,
+      0.25,
+      0.25
+    ],
+    "secondary_wave_amplitudes": [
+      0.1,
+      0.1,
+      0.1,
+      0.1
+    ],
+    "diffusion_rates": [
+      0.002,
+      0.004,
+      0.006,
+      0.008
+    ],
+    "entity_aware": false,
+    "lineage_aware": false,
+    "group_aware": false,
+    "diversity_protection": false,
+    "interpretation": "fixed four-channel physical interface with independently configured spatial, temporal, and diffusion dynamics; configuration can create environmental axes but does not guarantee evolved ecological differentiation"
+  },
+  "environment_atlas_protocol": {
+    "enabled": true,
+    "schema": "multiscale-subject-environment-atlas-v2",
+    "scales": [
+      {
+        "schema": "normalized-fixed-count-grid-v1",
+        "mapping": "row-major-y-then-x",
+        "boundary_convention": "half-open except clipped outer boundary",
+        "regions_x": 2,
+        "regions_y": 2,
+        "region_count": 4,
+        "world_width": 128.0,
+        "world_height": 128.0,
+        "world_grid_x": 32,
+        "world_grid_y": 32,
+        "normalized_region_width": 0.5,
+        "normalized_region_height": 0.5,
+        "physical_region_width": 64.0,
+        "physical_region_height": 64.0,
+        "world_cells_per_region_x": 16.0,
+        "world_cells_per_region_y": 16.0,
+        "world_grid_aligned": true,
+        "feedback_to_world": false,
+        "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+        "partition_sha256": "e44cf1d76a49a7081e676977301038cd524d39a839a4594fc74f7ac2d14827cd"
+      },
+      {
+        "schema": "normalized-fixed-count-grid-v1",
+        "mapping": "row-major-y-then-x",
+        "boundary_convention": "half-open except clipped outer boundary",
+        "regions_x": 4,
+        "regions_y": 4,
+        "region_count": 16,
+        "world_width": 128.0,
+        "world_height": 128.0,
+        "world_grid_x": 32,
+        "world_grid_y": 32,
+        "normalized_region_width": 0.25,
+        "normalized_region_height": 0.25,
+        "physical_region_width": 32.0,
+        "physical_region_height": 32.0,
+        "world_cells_per_region_x": 8.0,
+        "world_cells_per_region_y": 8.0,
+        "world_grid_aligned": true,
+        "feedback_to_world": false,
+        "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+        "partition_sha256": "80ca3a910af4d035ebdcc1b9fb961d80675113ed6ff16e84a7c3b5f30a34c3f9"
+      },
+      {
+        "schema": "normalized-fixed-count-grid-v1",
+        "mapping": "row-major-y-then-x",
+        "boundary_convention": "half-open except clipped outer boundary",
+        "regions_x": 8,
+        "regions_y": 8,
+        "region_count": 64,
+        "world_width": 128.0,
+        "world_height": 128.0,
+        "world_grid_x": 32,
+        "world_grid_y": 32,
+        "normalized_region_width": 0.125,
+        "normalized_region_height": 0.125,
+        "physical_region_width": 16.0,
+        "physical_region_height": 16.0,
+        "world_cells_per_region_x": 4.0,
+        "world_cells_per_region_y": 4.0,
+        "world_grid_aligned": true,
+        "feedback_to_world": false,
+        "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+        "partition_sha256": "0fdbb1f57edbe87a4e6a7e2929f4614d1637a26822bfa8a314c3936571dbb876"
+      }
+    ],
+    "signature": [
+      "four capacity-normalized resource means",
+      "hazard mean",
+      "mortality-trace mean"
+    ],
+    "resource_only_metrics": [
+      "resource effective dimensions",
+      "resource channel correlation matrix",
+      "mean/max absolute resource channel correlation"
+    ],
+    "subject_exposure_association": "between-label share of realized regional signature variance for genetic lineages and observed social groups",
+    "feedback_to_world": false,
+    "interpretation": "descriptive multiscale environment heterogeneity and exposure segregation; not environmental causation or subjecthood"
+  },
+  "anchor_protocol": null,
+  "audit_sha256": "adf49a12dfdbd27ccf7513bbb403a8c0f7eba774b57b3bfa5505d8e1a558ba6e"
+}

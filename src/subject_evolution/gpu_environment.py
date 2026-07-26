@@ -14,6 +14,14 @@ from .backend import Backend, resolve_backend
 from .config import SimulationConfig
 from .danger_evidence import DANGER_EVIDENCE_SCALE
 from .environment_process import build_environment_process, environment_process_metadata
+from .environment_diversity import (
+    ORTHOGONAL_ENVIRONMENT_SCHEMA,
+    diffuse_resource_fields,
+    normalized_grid as diversity_normalized_grid,
+    orthogonal_base_pattern,
+    orthogonal_seasonal_multiplier,
+    resource_field_diversity_metrics,
+)
 from .information import (
     DirectMessageObservationPlan,
     InformationObservation,
@@ -43,6 +51,11 @@ class DeviceEnvironment:
             frequencies_y = xp.asarray([0.08, 0.13, 0.06, 0.10], dtype=xp.float64)[:, None, None]
             base_pattern = 0.55 + 0.20 * xp.sin(xx[None, :, :] * frequencies_x)
             base_pattern += 0.15 * xp.cos(yy[None, :, :] * frequencies_y)
+        elif cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
+            xnorm, ynorm = self._normalized_grid(xx, yy)
+            base_pattern = orthogonal_base_pattern(
+                cfg.environment, xnorm, ynorm, xp=xp
+            )
         else:
             base_pattern = self._heterogeneous_base_pattern(xx, yy)
         self.resources = xp.clip(capacities * base_pattern, 0.0, capacities).astype(xp.float32)
@@ -52,9 +65,12 @@ class DeviceEnvironment:
         self.mortality_trace = xp.zeros((gy, gx), dtype=xp.float32)
 
     def _normalized_grid(self, xx: Any, yy: Any) -> tuple[Any, Any]:
-        return (
-            xx.astype(self.backend.xp.float64) / max(self.cfg.world.grid_x - 1, 1),
-            yy.astype(self.backend.xp.float64) / max(self.cfg.world.grid_y - 1, 1),
+        return diversity_normalized_grid(
+            xx,
+            yy,
+            grid_x=self.cfg.world.grid_x,
+            grid_y=self.cfg.world.grid_y,
+            xp=self.backend.xp,
         )
 
     def _heterogeneous_phase_grid(self, xx: Any, yy: Any) -> Any:
@@ -88,6 +104,15 @@ class DeviceEnvironment:
             )
         gx, gy = self.cfg.world.grid_x, self.cfg.world.grid_y
         yy, xx = xp.mgrid[0:gy, 0:gx]
+        if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
+            xnorm, ynorm = self._normalized_grid(xx, yy)
+            return orthogonal_seasonal_multiplier(
+                self.cfg.environment,
+                xnorm,
+                ynorm,
+                tick=tick,
+                xp=xp,
+            )
         return 1.0 + self.cfg.environment.season_amplitude * xp.sin(
             phase + self._heterogeneous_phase_grid(xx, yy)
         )
@@ -251,9 +276,20 @@ class DeviceEnvironment:
         xp = self.backend.xp
         seasonal = self._seasonal_multiplier(tick)
         growth = self.regeneration * seasonal * (1.0 - self.resources / xp.maximum(self.capacity, 1e-6))
-        self.resources = xp.clip(self.resources + growth, 0.0, self.capacity).astype(xp.float32)
+        resources = xp.clip(self.resources + growth, 0.0, self.capacity).astype(xp.float32)
+        if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
+            resources = diffuse_resource_fields(
+                resources, self.cfg.environment.resource_diffusion_rates, xp=xp
+            )
+        self.resources = xp.clip(resources, 0.0, self.capacity).astype(xp.float32)
         self.hazard = self._hazard_pattern(tick)
         self._update_mortality_trace()
+
+    def resource_diversity_metrics(self) -> dict[str, Any]:
+        return resource_field_diversity_metrics(
+            self.backend.to_numpy(self.resources),
+            self.cfg.environment.resource_capacity,
+        )
 
     def cell_values(self, cell_ids: Any) -> Any:
         xp = self.backend.xp

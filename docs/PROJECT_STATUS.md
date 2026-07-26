@@ -1,101 +1,74 @@
 # Subject Evolution 项目状态
 
-版本：**0.30.0**
+版本：**0.31.0**
 
 ## 当前主线
 
-项目主线已从自然事件执行工具转向：
+项目按照立项文档 v0.3 进入“环境与分化优先”阶段：
 
-1. **主体结构**：候选社会结构的持续、分裂、合并、消散和复现；
-2. **多元环境**：多尺度资源组合、危险、死亡痕迹、环境周转及主体暴露分化；
-3. **结构—环境耦合**：只做观察性测量与可审计实验设计，不把关联升级为主体性或环境因果结论。
+1. **D0 环境正交化**：建立不能由单一总体充足度解释的多条环境轴；
+2. **D1 弹性容量**：分别演化记忆、知识、关系、传感、储存和模块容量；
+3. **D2–D3 功能模块与结构突变**：固定物理接口内的表达、路由、复制、删除和新功能化；
+4. **D4 生态位形成**：验证多个生态型的条件性优势和长期共存；
+5. **D5 社会与高层主体**：在真实功能互补和生态依赖之后推进公共状态和控制。
 
-v0.29 的 group label、region partition、anchor selection 与 event-timed 工作流继续保留，作为已完成的测量与实验基础。
+v0.31 完成 D0 的首个世界机制版本。v0.30 的主体 succession 继续保留为观察性诊断，但不再是当前首要实现目标。
 
-## v0.30 新增能力
+## v0.31 新增
 
-### Candidate-subject succession
+### Orthogonal resource environment
 
-- schema：`stable-membership-subject-succession-v1`；
-- 每次实际 group refresh 后按 stable entity ID 比较成员集合；
-- 记录 formation、dissolution、split、merge、reactivation；
-- 记录 same-token、exact-membership、member-weighted Jaccard 和 inheritance；
-- stable ID 防止槽位复用伪造主体连续性；
-- succession edge 不进入世界主体图，不反馈世界。
+- schema：`orthogonal-four-resource-niche-v1`；
+- 四个已有资源通道分别配置空间主/次波、时间周期、相位、振幅和扩散率；
+- `resource_effect_matrix` 明确不同资源的身体用途；
+- 环境不读取实体、谱系、群组或策略，不保护多样性；
+- 旧环境 schema 保留原路径。
 
-### Multiscale subject–environment atlas
+### Resource diversity audit
 
-- schema：`multiscale-subject-environment-atlas-v1`；
-- signature：四资源容量归一化均值 + hazard + mortality trace；
-- 支持多个 `normalized-fixed-count-grid-v1` scale；
-- 当前主线配置使用 `2×2`、`4×4`、`8×8`；
-- 记录环境有效维数、区域距离、资源空间 CV、时间周转和实体区域有效数；
-- 记录 lineage/social exposure association、covered fraction 和 region span；
-- association 仅包含至少两个成员的 label，排除 social token 0。
+- schema：`resource-environment-diversity-audit-v1`；
+- 测量空间和时间资源有效维度；
+- 发布通道相关矩阵及平均/最大绝对相关；
+- 无实体采集审计不等于生态分化或选择实验。
 
-### Offline synthesis
+### Atlas and analysis
 
-- 新增 `multi-seed-subject-environment-analysis-v1`；
-- 将每个 atlas evaluation 对齐到此前最近一次 group refresh；
-- 报告环境周转与主体继承、split/merge、social association/span 的观察性相关；
-- 先逐 run/seed 分析，再登记至少三个 seed 同号方向。
+- atlas：`multiscale-subject-environment-atlas-v2`；
+- protocol audit：`structural-measurement-protocol-audit-v3`；
+- long-run：`multi-seed-long-run-analysis-v10`；
+- structure–environment：`multi-seed-subject-environment-analysis-v2`。
 
-### Protocol and long-run schemas
+## 当前验证
 
-- protocol audit：`structural-measurement-protocol-audit-v2`；
-- long-run analysis：`multi-seed-long-run-analysis-v9`；
-- run manifest 与 run metadata 发布主体 succession 和 atlas provenance；
-- full checkpoint、clone 和 trusted replay 保存诊断 accounting state。
+- 600-tick 外生审计：空间资源有效维度均值 3.8670，最低 3.6497；
+- 120-tick CPU smoke：最终全局资源有效维度 3.5183，4×4/8×8 atlas 为 3.9149/3.9209；
+- 全量测试：150 passed，1 skipped；
+- v0.30→v0.31 旧配置 20-tick：1974 个共同非计时 metrics 单元零差异；
+- 8 类知识日志 byte-identical；
+- v0.30 tick-10 checkpoint 可由 v0.31 精确续跑到 tick 20。
 
-## 当前实现矩阵
+## 当前科学边界
 
-| 领域 | 状态 | 当前边界 |
-|---|---|---|
-| CPU reference | 完成 | 科学语义权威 |
-| GPU strict-reference | 完成 | 验证设备，世界仍使用 reference 语义 |
-| GPU hybrid-accelerated | 部分 | 多 tick parity 未证明 |
-| 四资源异步生态位 | 完成 | 资源和环境 vocabulary 仍固定 |
-| 多尺度环境 atlas | **v0.30 完成** | 纯诊断，不是环境因果 |
-| 身体/谱系/社会候选图 | 完成 | 仅一层社会群组，不是任意嵌套 |
-| 社会结构 succession | **v0.30 完成** | 成员重叠关系，不是主体身份定理 |
-| 结构—环境 multi-seed analysis | **v0.30 完成** | 观察性、时间和人口混杂仍存在 |
-| K1–K4、L1/L2、记忆、Top-k | 完成 | 固定 action/feature vocabulary |
-| group/region/anchor provenance | v0.29 完成 | 测量协议改变必须新 schema/hash |
-| event-timed paired execution | 完成 | 自然 exposure 本身未随机化 |
-| 任意嵌套主体数据库 | 未完成 | 当前 graph 不支持 group-of-groups |
-| 主体性评分 | 未完成 | 不允许由 persistence 或 association 单指标推出 |
-| 任意环境/信息通道 schema | 未完成 | 当前资源 4、危险/社会通道固定 |
-| Hero RL、多 GPU | 未完成 | 当前非科学优先级 |
+1. 环境轴已经实现多维方差，但尚未证明遗传表型或生态型分化。
+2. 固定四通道和身体作用端口仍是模型基底，不是“无限无预设功能”。
+3. 资源通道方差高不保证每条轴都有相似选择强度；必须检查实际摄取、限制因子和繁殖结果。
+4. 当前主体 succession 仍是 group-label 测量下的成员重叠，不是独立高层控制者。
+5. D1/D2 尚未实现，不应把现有 latent router 或工作记忆重新命名为通用器官分化。
 
-## 当前科学解释
+## 下一步实验
 
-1. 现有 event-timed 108/108 pairs 支持知识传播维持短期局部文化状态，但不证明人口收益。
-2. 群组标签是有向有限轮候选分组；succession 只是该测量规则下的成员集合连续性。
-3. 多尺度 atlas 描述环境状态空间和实现暴露，不证明环境选择或主体主动选址。
-4. lineage/social association 必须结合 covered fraction；singleton 主导时不解释。
-5. structure–environment 相关可能由迁移、谱系历史、人口瓶颈和共同时间趋势产生。
-6. 在获得三 seed 长跑的动态范围前，不引入新的主体层级或环境机制。
-
-## 新主线配置
+优先运行：
 
 ```text
-configs/mvp_short_subject_structure_multienvironment_atlas_longrun.json
+configs/mvp_short_d0_orthogonal_environment_longrun.json
 ```
 
-该配置保留既有 flagship 动力学，只新增诊断输出和 2×2/4×4/8×8 atlas。
+建议 3 seeds × 1500 ticks，随后检查：
 
-## 验证状态
+- 资源有效维度随采集是否坍缩；
+- 四资源实际限制强度和使用率；
+- 资源亲和的跨区域、跨阶段条件性优势；
+- 谱系和群组 association 是否超出空间聚集基线；
+- 种群长期存续和生态型共存动态。
 
-- 全量测试：`142 passed, 1 skipped`；
-- 跳过项：真实 CUDA/CuPy 设备测试；
-- 定向 smoke 已产生 succession、atlas、run manifest 和 long-run v9 输出；
-- 默认 v0.29/v0.30 世界轨迹和 trusted checkpoint 兼容性已记录于 `docs/v0.30/V029_V030_COMPATIBILITY_REPORT.json`；
-- 新诊断默认关闭，因此旧配置不会产生额外 evolution-progress 字段。
-
-## 下一阶段
-
-1. 运行三 seed、1500-tick 新主线配置，检查 succession/atlas 动态范围；
-2. 对同步环境与异步多生态位环境做预注册消融；
-3. 对 group rounds/threshold/min-members/refresh schedule 做 schema-level 敏感性；
-4. 仅在结构指标跨 seed、跨尺度重复后，设计结构删除和环境相位 paired interventions；
-5. 任意嵌套主体与任意环境通道保持后续架构主线，不在当前阶段直接写入世界。
+在获得这些结果前，不直接实施通用功能张量、模块复制或群体控制。

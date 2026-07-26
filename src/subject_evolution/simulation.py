@@ -32,6 +32,10 @@ from .danger_evidence import (
     danger_evidence_quantized,
 )
 from .environment import Environment
+from .environment_diversity import (
+    ORTHOGONAL_ENVIRONMENT_SCHEMA,
+    resource_field_diversity_metrics,
+)
 from .environment_process import build_environment_process, environment_process_metadata
 from .evolution import (
     BENEFIT_FLOW_COUNT,
@@ -761,7 +765,10 @@ class Simulation:
             "environment_resource_channels": 4,
             "environment_spatially_asynchronous": (
                 self.cfg.environment.schema
-                == "spatially-asynchronous-multiniche-v1"
+                in {
+                    "spatially-asynchronous-multiniche-v1",
+                    ORTHOGONAL_ENVIRONMENT_SCHEMA,
+                }
             ),
             "environment_process": dict(
                 self.environment.environment_process_metadata
@@ -975,6 +982,40 @@ class Simulation:
                 "post-checkpoint" if self.checkpoint_lineage else "full-run"
             ),
         }
+        if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
+            manifest["environment_resource_dynamics"] = {
+                "schema": ORTHOGONAL_ENVIRONMENT_SCHEMA,
+                "cycle_periods": list(self.cfg.environment.resource_cycle_periods),
+                "cycle_amplitudes": list(
+                    self.cfg.environment.resource_cycle_amplitudes
+                ),
+                "primary_wave_vectors": [
+                    list(vector)
+                    for vector in self.cfg.environment.resource_primary_wave_vectors
+                ],
+                "secondary_wave_vectors": [
+                    list(vector)
+                    for vector in self.cfg.environment.resource_secondary_wave_vectors
+                ],
+                "primary_wave_amplitudes": list(
+                    self.cfg.environment.resource_primary_wave_amplitudes
+                ),
+                "secondary_wave_amplitudes": list(
+                    self.cfg.environment.resource_secondary_wave_amplitudes
+                ),
+                "diffusion_rates": list(
+                    self.cfg.environment.resource_diffusion_rates
+                ),
+                "entity_state_feedback": False,
+                "lineage_feedback": False,
+                "group_feedback": False,
+            }
+            manifest["environment_resource_diversity_initial"] = (
+                resource_field_diversity_metrics(
+                    self.environment.resources,
+                    self.cfg.environment.resource_capacity,
+                )
+            )
         (self.output_dir / "run_manifest.json").write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
         )
@@ -2617,6 +2658,26 @@ class Simulation:
                 self.entities.alive, self.entities.genotype, self.cfg
             ),
         }
+        if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
+            diversity = resource_field_diversity_metrics(
+                resource_fields, self.cfg.environment.resource_capacity
+            )
+            environment_metrics.update(
+                {
+                    "environment_resource_effective_dimensions": diversity[
+                        "resource_effective_dimensions"
+                    ],
+                    "environment_resource_channel_mean_abs_correlation": diversity[
+                        "resource_channel_mean_abs_correlation"
+                    ],
+                    "environment_resource_channel_max_abs_correlation": diversity[
+                        "resource_channel_max_abs_correlation"
+                    ],
+                    "environment_resource_channel_correlation": diversity[
+                        "resource_channel_correlation"
+                    ],
+                }
+            )
         if (
             self.local_stress_diagnostics is not None
             and self.local_stress_diagnostics.culture_enabled
@@ -4008,6 +4069,13 @@ class Simulation:
         resource_field_std = metric_resource_fields.std(
             axis=(1, 2), dtype=np.float64
         )
+        resource_diversity = (
+            resource_field_diversity_metrics(
+                metric_resource_fields, self.cfg.environment.resource_capacity
+            )
+            if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA
+            else None
+        )
         autonomy_cohort_size = int(self.autonomy_recovery_cohort_ids.size)
         autonomy_restored_alive = int(
             np.count_nonzero(self.autonomy_restored & ent.alive)
@@ -4728,6 +4796,24 @@ class Simulation:
                         ),
                     }
                 )
+        if resource_diversity is not None:
+            row.update(
+                {
+                    "environment_resource_effective_dimensions": float(
+                        resource_diversity["resource_effective_dimensions"]
+                    ),
+                    "environment_resource_channel_mean_abs_correlation": float(
+                        resource_diversity[
+                            "resource_channel_mean_abs_correlation"
+                        ]
+                    ),
+                    "environment_resource_channel_max_abs_correlation": float(
+                        resource_diversity[
+                            "resource_channel_max_abs_correlation"
+                        ]
+                    ),
+                }
+            )
         row.update(self.subjects.summary())
         return row
 

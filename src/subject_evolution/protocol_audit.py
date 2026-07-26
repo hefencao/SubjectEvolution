@@ -13,7 +13,7 @@ from .natural_event_matrix import load_manifest
 from .spatial_partition import SpatialRegionPartition
 
 
-SCHEMA = "structural-measurement-protocol-audit-v2"
+SCHEMA = "structural-measurement-protocol-audit-v3"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -109,6 +109,29 @@ def build_protocol_audit(
             ),
         },
         "spatial_region_protocol": partition.metadata(),
+        "resource_environment_protocol": {
+            "schema": cfg.environment.schema,
+            "channel_count": 4,
+            "resource_capacities": list(cfg.environment.resource_capacity),
+            "resource_regeneration": list(cfg.environment.resource_regeneration),
+            "resource_effect_matrix": [list(row) for row in cfg.environment.resource_effect_matrix],
+            "independent_cycle_periods": list(cfg.environment.resource_cycle_periods),
+            "cycle_amplitudes": list(cfg.environment.resource_cycle_amplitudes),
+            "primary_wave_vectors": [list(row) for row in cfg.environment.resource_primary_wave_vectors],
+            "secondary_wave_vectors": [list(row) for row in cfg.environment.resource_secondary_wave_vectors],
+            "primary_wave_amplitudes": list(cfg.environment.resource_primary_wave_amplitudes),
+            "secondary_wave_amplitudes": list(cfg.environment.resource_secondary_wave_amplitudes),
+            "diffusion_rates": list(cfg.environment.resource_diffusion_rates),
+            "entity_aware": False,
+            "lineage_aware": False,
+            "group_aware": False,
+            "diversity_protection": False,
+            "interpretation": (
+                "fixed four-channel physical interface with independently configured spatial, "
+                "temporal, and diffusion dynamics; configuration can create environmental axes "
+                "but does not guarantee evolved ecological differentiation"
+            ),
+        },
         "environment_atlas_protocol": {
             "enabled": bool(cfg.run.environment_atlas_diagnostics_enabled),
             "schema": cfg.run.environment_atlas_diagnostics_schema,
@@ -118,6 +141,11 @@ def build_protocol_audit(
                 "hazard mean",
                 "mortality-trace mean",
             ],
+            "resource_only_metrics": [
+                "resource effective dimensions",
+                "resource channel correlation matrix",
+                "mean/max absolute resource channel correlation",
+            ] if cfg.run.environment_atlas_diagnostics_schema == "multiscale-subject-environment-atlas-v2" else [],
             "subject_exposure_association": (
                 "between-label share of realized regional signature variance for genetic "
                 "lineages and observed social groups"
@@ -183,6 +211,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     region = payload["spatial_region_protocol"]
     subject_structure = payload["subject_structure_protocol"]
     atlas = payload["environment_atlas_protocol"]
+    resource = payload["resource_environment_protocol"]
     lines = [
         "# Structural measurement protocol audit",
         "",
@@ -217,11 +246,21 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- grid-aligned: {region['world_grid_aligned']}",
         f"- map-size semantics: {region['map_size_semantics']}",
         "",
+        "## Resource environment",
+        "",
+        f"- schema / channels: `{resource['schema']}` / {resource['channel_count']}",
+        f"- independent cycle periods: {resource['independent_cycle_periods']}",
+        f"- primary wave vectors: {resource['primary_wave_vectors']}",
+        f"- diffusion rates: {resource['diffusion_rates']}",
+        f"- entity/lineage/group aware: {resource['entity_aware']} / {resource['lineage_aware']} / {resource['group_aware']}",
+        f"- boundary: {resource['interpretation']}",
+        "",
         "## Environment atlas",
         "",
         f"- enabled / schema: {atlas['enabled']} / `{atlas['schema']}`",
         f"- scales: {', '.join(str(item['regions_x']) + '×' + str(item['regions_y']) for item in atlas['scales']) or 'none'}",
         f"- signature: {', '.join(atlas['signature'])}",
+        f"- resource-only metrics: {', '.join(atlas['resource_only_metrics']) or 'none'}",
         f"- subject exposure: {atlas['subject_exposure_association']}",
         f"- boundary: {atlas['interpretation']}",
     ]

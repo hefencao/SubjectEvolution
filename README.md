@@ -1,154 +1,106 @@
-# Subject Evolution v0.30
+# Subject Evolution v0.31
 
-一个以**可审计世界状态、局部交互、遗传策略、动态知识副本、候选主体结构和多元环境**为核心的演化模拟参考实现。
+一个以**可审计世界状态、局部交互、遗传策略、动态知识、生态分化和候选主体结构**为核心的演化模拟参考实现。
 
-科学核心不引入第二套“生物型危险实体”。具有出生、死亡、策略、关系、记忆或谱系的危险主体，应由现有实体系统分化；环境模块只承载资源、物理危险、死亡痕迹和受限插件字段。
+v0.31 开始落实更新后的 [项目立项文档 v0.3](docs/PROJECT_CHARTER_V0.3.md)：先建立真正可分化的环境与生态位，再逐步推进弹性容量、功能模块、生态关系、社会结构和高层主体。
 
-## v0.30 主线转向
+## v0.31：D0 环境正交化
 
-v0.30 将工作重心从自然事件执行工具转向两个基础研究层：
+新增科学核心环境 schema：
 
-1. **主体结构**：不再只看某个 tick 有多少群组，而是按稳定实体身份追踪候选社会结构的形成、延续、消散、分裂、合并与复现。
-2. **多元环境**：在多个空间尺度上描述四资源组合、危险、死亡痕迹、环境周转，以及谱系/社会结构实际占据的环境范围与暴露分化。
+```text
+orthogonal-four-resource-niche-v1
+```
 
-两层均为纯诊断，默认关闭，不修改策略、行动、群组标签、知识、关系、生命周期或环境场。默认世界轨迹保持兼容。
+它继续使用既有四个物理资源通道，但允许每个通道拥有独立的：
 
-## 主线配置
+- 空间主/次波向量；
+- 时间周期、相位和振幅；
+- 扩散速率；
+- 对能量、完整性、信息材料、繁殖材料等生命用途的作用矩阵。
 
-新的科学长跑配置：
+环境场不读取实体、谱系、群组或策略，不追逐种群，也不自动保护多样性。它只提供版本化的外生选择轴；是否产生生态型、功能分化和长期共存仍必须由演化实验检验。
+
+## D0 主线配置
 
 ```bash
 python -m subject_evolution.multi_seed \
-  --config configs/mvp_short_subject_structure_multienvironment_atlas_longrun.json \
+  --config configs/mvp_short_d0_orthogonal_environment_longrun.json \
   --seeds 10001,10002,10003 \
-  --output runs/subject_structure_multienvironment_multiseed \
+  --output runs/d0_orthogonal_environment_multiseed \
   --backend gpu \
   --until-tick 1500
 ```
 
-该配置保留 v0.29 flagship 的模拟语义，并额外启用：
+请求 GPU 时仍建议使用配置中的 `gpu_semantics_mode="strict-reference"`：设备被验证，但科学世界由 CPU reference 语义权威执行。
 
-- `stable-membership-subject-succession-v1`；
-- `multiscale-subject-environment-atlas-v1`；
-- `2×2`、`4×4`、`8×8` 三种归一化环境尺度；
-- long-run analysis v9 和原有 local stress/culture diagnostics。
-
-请求 GPU 时仍使用 `gpu_semantics_mode="strict-reference"`。设备会被验证，但科学世界语义由 CPU reference 路径权威执行。
-
-## 主体结构诊断
-
-每次实际 group refresh 后，诊断层读取：
-
-- 当前 group plan；
-- 每个成员的 stable entity ID；
-- 上一次 refresh 的候选群组成员集合。
-
-只要前后群组共享至少一个 stable entity ID，就建立一条**观察性继承边**。据此记录：
-
-- formation / dissolution；
-- split source / merge target；
-- same-token 与 exact-membership persistence；
-- 成员加权 predecessor Jaccard；
-- 成员继承比例；
-- 活跃群组年龄和有效群组数。
-
-这些继承边不写入世界中的 `CandidateSubjectGraph`，也不宣称群组具备本体论上的连续主体身份。
-
-输出：
-
-```text
-subject_structure_transitions.jsonl
-subject_structure_summary.json
-```
-
-## 多元环境图谱
-
-环境图谱在低频 evolution evaluation 点采样权威字段。每个尺度、每个区域的 signature 包含：
-
-```text
-四个容量归一化资源均值
-hazard 均值
-mortality trace 均值
-```
-
-图谱报告：
-
-- 环境 signature 有效维数；
-- 区域间平均/最大距离；
-- 资源空间 CV；
-- 相邻评估点的环境周转；
-- 实体占据区域的有效数量；
-- 谱系和社会群组的环境暴露 association；
-- 谱系和社会群组的平均区域跨度。
-
-association 只在至少两个成员的标签上计算，并同时报告 covered fraction，避免大量单体谱系把解释度机械推到 1。
-
-输出：
-
-```text
-environment_atlas.jsonl
-environment_atlas_summary.json
-```
-
-## 多 seed 主体—环境分析
+短程集成配置：
 
 ```bash
-python -m subject_evolution.structure_environment_analysis \
-  runs/subject_structure_multienvironment_multiseed/seed_10001 \
-  runs/subject_structure_multienvironment_multiseed/seed_10002 \
-  runs/subject_structure_multienvironment_multiseed/seed_10003 \
-  --output analyses/subject_structure_multienvironment
-```
-
-分析器会把每个环境评估点对齐到此前最近一次 group refresh，计算环境周转、结构继承、split/merge、社会暴露 association 和空间跨度之间的观察性关系，并先按 run/seed 分开，再报告跨 seed 同号方向。
-
-## 协议审计
-
-```bash
-python -m subject_evolution.protocol_audit \
-  --config configs/mvp_short_subject_structure_multienvironment_atlas_longrun.json \
-  --output analyses/protocol_audit
-```
-
-v2 审计同时覆盖：
-
-- group label 和 adaptive refresh；
-- candidate-subject succession；
-- spatial region partition；
-- multiscale environment atlas；
-- 可选 natural-event anchor selection。
-
-## 安装与快速运行
-
-```bash
-python -m venv .venv
-source .venv/bin/activate            # Windows PowerShell: .venv\Scripts\Activate.ps1
-python -m pip install -U pip
-python -m pip install -e .
-
 python -m subject_evolution.cli \
-  --config configs/smoke_cpu.json \
-  --output runs/smoke_cpu \
+  --config configs/d0_orthogonal_environment_smoke.json \
+  --output runs/d0_smoke \
   --backend cpu
 ```
 
-CPU reference 只依赖 NumPy。GPU 路径需要与本机 CUDA 主版本匹配的 CuPy。
+## 无实体环境维度审计
 
-## 解释边界
+```bash
+python -m subject_evolution.environment_diversity \
+  --config configs/mvp_short_d0_orthogonal_environment_longrun.json \
+  --output analyses/resource_diversity \
+  --ticks 600 \
+  --sample-period 10
+```
 
-- 候选群组继承不是主体身份定理。
-- 分裂/合并是成员集合重叠关系，不是生物繁殖或组织法律继承。
-- 环境 association 是实现暴露差异，不是环境选择的因果效应。
-- 社会结构与环境周转的相关可能共同受到人口瓶颈、迁移、谱系集中和时间趋势驱动。
-- 四资源、hazard 和 mortality trace 仍是固定环境 vocabulary；任意环境通道和任意嵌套主体尚未实现。
+该审计在不进行实体采集的情况下报告：
+
+- 四资源空间有效维度；
+- 通道相关矩阵及平均/最大绝对相关；
+- 时间变化有效维度；
+- 每个采样 tick 的维度保持情况。
+
+当前预注册配置的 600-tick 外生审计得到：空间有效维度均值 `3.8670`、最低 `3.6497`；这证明配置提供了多条独立环境轴，但不证明生物分化已经发生。
+
+## Multiscale atlas v2
+
+```text
+multiscale-subject-environment-atlas-v2
+```
+
+atlas 除原有综合 signature 外，新增资源自身的：
+
+- effective dimensions；
+- channel correlation matrix；
+- mean/max absolute correlation。
+
+这避免 hazard 或 mortality trace 掩盖资源通道是否真正独立。
+
+## 协议与长程分析
+
+```bash
+python -m subject_evolution.protocol_audit \
+  --config configs/mvp_short_d0_orthogonal_environment_longrun.json \
+  --output analyses/protocol_audit
+```
+
+protocol audit v3 发布资源周期、波向量、扩散、作用矩阵和非实体感知边界。long-run analysis 升级为 v10；structure–environment analysis 升级为 v2。
+
+## 科学边界
+
+- 四资源通道及其物理作用接口仍由模型版本定义；v0.31 实现的是**固定接口内的独立环境轴**，不是无限环境 vocabulary。
+- 高环境维度不等于生态位形成；必须检查遗传性状、容量、资源使用和相对适应优势是否发生条件性分化。
+- 当前 D0 不实现通用功能模块、基因复制或动态容量；这些属于 D1–D3。
+- 不引入第二套具有出生、死亡、策略或谱系的危险实体。
+- 主体 succession 与环境 association 仍是诊断，不是主体身份或环境因果定理。
 
 ## 文档
 
+- [项目立项文档 v0.3](docs/PROJECT_CHARTER_V0.3.md)
+- [分化架构评估](docs/DIFFERENTIATION_ARCHITECTURE_ASSESSMENT.md)
 - [当前项目状态](docs/PROJECT_STATUS.md)
 - [科学问题与研究债务](docs/SCIENTIFIC_ISSUES.md)
 - [架构与提交边界](docs/ARCHITECTURE.md)
-- [变更记录](docs/CHANGELOG.md)
-- [v0.30 文档](docs/v0.30/README.md)
-- [v0.29 group/region/anchor 协议](docs/v0.29/GROUP_REGION_ANCHOR_PROTOCOLS.md)
+- [v0.31 文档](docs/v0.31/README.md)
 
-发行压缩包不包含 `docs/archive`。更早的完整历史保存在旧版本发行包中。
+发行压缩包不包含 `docs/archive`。历史材料保留在此前版本发行包中。

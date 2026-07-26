@@ -11,7 +11,7 @@ from typing import Any
 import numpy as np
 
 
-SCHEMA = "multi-seed-subject-environment-analysis-v1"
+SCHEMA = "multi-seed-subject-environment-analysis-v2"
 MIN_SAMPLES = 5
 
 
@@ -90,6 +90,15 @@ def summarize_run(run_dir: str | Path) -> dict[str, Any]:
                 "resource_spatial_cv_mean": float(
                     scale.get("resource_spatial_cv_mean", math.nan)
                 ),
+                "resource_effective_dimensions": float(
+                    scale.get("resource_effective_dimensions", math.nan)
+                ),
+                "resource_mean_abs_correlation": float(
+                    scale.get("resource_channel_mean_abs_correlation", math.nan)
+                ),
+                "resource_max_abs_correlation": float(
+                    scale.get("resource_channel_max_abs_correlation", math.nan)
+                ),
                 "lineage_environment_association": float(
                     scale.get("lineage_environment_association_fraction", math.nan)
                 ),
@@ -152,11 +161,15 @@ def summarize_run(run_dir: str | Path) -> dict[str, Any]:
         association = [float(row["social_environment_association"]) for row in rows]
         span = [float(row["social_region_span"]) for row in rows]
         split_merge = [float(row["split_merge_count"]) for row in rows]
+        resource_dims = [float(row["resource_effective_dimensions"]) for row in rows]
+        resource_corr = [float(row["resource_mean_abs_correlation"]) for row in rows]
         scale_summaries[scale] = {
             "record_count": len(rows),
             "final": rows[-1] if rows else None,
             "slopes_per_1000_ticks": {
                 "environment_temporal_turnover": _slope(ticks, turnover),
+                "resource_effective_dimensions": _slope(ticks, resource_dims),
+                "resource_mean_abs_correlation": _slope(ticks, resource_corr),
                 "weighted_predecessor_jaccard": _slope(ticks, jaccard),
                 "social_environment_association": _slope(ticks, association),
                 "social_region_span": _slope(ticks, span),
@@ -164,6 +177,12 @@ def summarize_run(run_dir: str | Path) -> dict[str, Any]:
             "correlations": {
                 "environment_turnover_vs_subject_jaccard": _pearson(
                     turnover, jaccard
+                ),
+                "resource_dimensions_vs_subject_jaccard": _pearson(
+                    resource_dims, jaccard
+                ),
+                "resource_correlation_vs_subject_jaccard": _pearson(
+                    resource_corr, jaccard
                 ),
                 "environment_turnover_vs_split_merge": _pearson(
                     turnover, split_merge
@@ -279,6 +298,7 @@ def render_markdown(report: dict[str, Any]) -> str:
                     f"- final active/effective groups: {final.get('active_groups', 0)} / {_format(final.get('effective_groups'))}",
                     f"- final Jaccard/inheritance: {_format(final.get('weighted_predecessor_jaccard'))} / {_format(final.get('weighted_predecessor_inheritance'))}",
                     f"- final signature dims/distance/turnover: {_format(final.get('environment_signature_effective_dimensions'))} / {_format(final.get('environment_signature_mean_distance'))} / {_format(final.get('environment_temporal_turnover'))}",
+                    f"- final resource dims/mean correlation/max correlation: {_format(final.get('resource_effective_dimensions'))} / {_format(final.get('resource_mean_abs_correlation'))} / {_format(final.get('resource_max_abs_correlation'))}",
                     f"- final lineage association/coverage/span: {_format(final.get('lineage_environment_association'))} / {_format(final.get('lineage_environment_covered_fraction'))} / {_format(final.get('lineage_region_span'))}",
                     f"- final social association/coverage/span: {_format(final.get('social_environment_association'))} / {_format(final.get('social_environment_covered_fraction'))} / {_format(final.get('social_region_span'))}",
                     "- correlations:",

@@ -1,10 +1,20 @@
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 from .config import SimulationConfig
 from .danger_evidence import DANGER_EVIDENCE_SCALE
 from .environment_process import build_environment_process, environment_process_metadata
+from .environment_diversity import (
+    ORTHOGONAL_ENVIRONMENT_SCHEMA,
+    diffuse_resource_fields,
+    normalized_grid as diversity_normalized_grid,
+    orthogonal_base_pattern,
+    orthogonal_seasonal_multiplier,
+    resource_field_diversity_metrics,
+)
 from .niches import AFFINITY_SCALE, RESOURCE_CHANNELS
 from .reductions import stable_segmented_sum, validate_cell_ids
 
@@ -29,6 +39,11 @@ class Environment:
                 yy[None, :, :]
                 * np.asarray([0.08, 0.13, 0.06, 0.10])[:, None, None]
             )
+        elif cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
+            xnorm, ynorm = self._normalized_grid(xx, yy)
+            base_pattern = orthogonal_base_pattern(
+                cfg.environment, xnorm, ynorm, xp=np
+            )
         else:
             base_pattern = self._heterogeneous_base_pattern(xx, yy)
         self.resources = np.clip(capacities * base_pattern, 0.0, capacities).astype(np.float32)
@@ -40,9 +55,13 @@ class Environment:
         self.mortality_trace = np.zeros((gy, gx), dtype=np.float32)
 
     def _normalized_grid(self, xx: np.ndarray, yy: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        xnorm = xx.astype(np.float64) / max(self.cfg.world.grid_x - 1, 1)
-        ynorm = yy.astype(np.float64) / max(self.cfg.world.grid_y - 1, 1)
-        return xnorm, ynorm
+        return diversity_normalized_grid(
+            xx,
+            yy,
+            grid_x=self.cfg.world.grid_x,
+            grid_y=self.cfg.world.grid_y,
+            xp=np,
+        )
 
     def _heterogeneous_phase_grid(self, xx: np.ndarray, yy: np.ndarray) -> np.ndarray:
         xnorm, ynorm = self._normalized_grid(xx, yy)
@@ -80,6 +99,15 @@ class Environment:
             )
         gx, gy = self.cfg.world.grid_x, self.cfg.world.grid_y
         yy, xx = np.mgrid[0:gy, 0:gx]
+        if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
+            xnorm, ynorm = self._normalized_grid(xx, yy)
+            return orthogonal_seasonal_multiplier(
+                self.cfg.environment,
+                xnorm,
+                ynorm,
+                tick=tick,
+                xp=np,
+            )
         local_phase = phase + self._heterogeneous_phase_grid(xx, yy)
         return 1.0 + self.cfg.environment.season_amplitude * np.sin(local_phase)
 
@@ -241,11 +269,21 @@ class Environment:
         growth = self.regeneration * seasonal * (
             1.0 - self.resources / np.maximum(self.capacity, 1e-6)
         )
-        self.resources = np.clip(
+        resources = np.clip(
             self.resources + growth, 0.0, self.capacity
         ).astype(np.float32)
+        if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
+            resources = diffuse_resource_fields(
+                resources, self.cfg.environment.resource_diffusion_rates, xp=np
+            )
+        self.resources = np.clip(resources, 0.0, self.capacity).astype(np.float32)
         self.hazard = self._hazard_pattern(tick)
         self._update_mortality_trace()
+
+    def resource_diversity_metrics(self) -> dict[str, Any]:
+        return resource_field_diversity_metrics(
+            self.resources, self.cfg.environment.resource_capacity
+        )
 
     def cell_values(self, cell_ids: np.ndarray) -> np.ndarray:
         cells = validate_cell_ids(

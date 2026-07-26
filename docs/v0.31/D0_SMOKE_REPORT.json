@@ -1,0 +1,18 @@
+{
+  "schema": "v031-d0-orthogonal-environment-smoke-v1",
+  "config": "configs/d0_orthogonal_environment_smoke.json",
+  "backend": "cpu-reference",
+  "final_tick": 120,
+  "alive_final": 163,
+  "births_total": null,
+  "deaths_total": null,
+  "environment_resource_effective_dimensions_final": 3.5182712417615556,
+  "environment_resource_channel_mean_abs_correlation_final": 0.19675701688528383,
+  "environment_resource_channel_max_abs_correlation_final": 0.32836771476411813,
+  "atlas_4x4_resource_effective_dimensions_final": 3.914859043644996,
+  "atlas_4x4_resource_mean_abs_correlation_final": 0.053499044242040134,
+  "atlas_8x8_resource_effective_dimensions_final": 3.9209088167639954,
+  "atlas_8x8_resource_mean_abs_correlation_final": 0.06581019104961831,
+  "subject_structure_active_groups_final": 0,
+  "interpretation_boundary": "Short CPU integration smoke only. It verifies world integration and retained resource-field dimensionality, not evolved ecological differentiation or long-run coexistence."
+}

@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.31.0
+
+### D0 orthogonal environment
+
+- 新增 `orthogonal-four-resource-niche-v1`，为四个既有资源通道配置独立空间主/次波、时间周期、相位、振幅和扩散率。
+- 新增 D0 smoke 与 1500-tick long-run 配置；作用矩阵将资源连接到不同生命用途，但不预设生态角色。
+- 环境场不读取实体、谱系、群组、策略或死亡反馈，不自动保护多样性。
+
+### Audits and diagnostics
+
+- 新增 `resource-environment-diversity-audit-v1`，报告空间/时间有效维度和通道相关矩阵。
+- environment atlas 升级为 `multiscale-subject-environment-atlas-v2`，增加资源自身 effective dimensions 与 correlation。
+- protocol audit 升级 v3；long-run analysis 升级 v10；structure–environment analysis 升级 v2。
+- run manifest、metrics 和 evolution progress 只在新 schema 下发布资源动态 provenance。
+
+### Validation and compatibility
+
+- 外生 600-tick 审计空间有效维度均值 3.8670、最低 3.6497。
+- 全量测试 150 passed、1 skipped。
+- v0.30/v0.31 旧配置 20-tick 的 1974 个共同非计时 metrics 单元零差异，8 类知识日志 byte-identical。
+- v0.30 trusted checkpoint 可由 v0.31 精确续跑；D0 未启用时新增字段和数学路径均保持惰性。
+
 ## 0.30.0
 
 ### Candidate-subject succession

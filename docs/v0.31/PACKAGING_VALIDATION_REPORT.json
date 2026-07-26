@@ -1,0 +1,51 @@
+{
+  "schema": "v031-packaging-validation-v1",
+  "version": "0.31.0",
+  "project_file_count_before_report": 296,
+  "expected_project_file_count": 297,
+  "forbidden_entries_absent": {
+    "docs/archive": true,
+    ".git": true,
+    "__pycache__": true,
+    ".pytest_cache": true,
+    "pyc": true,
+    "build_dist_egg_info": true
+  },
+  "tests": {
+    "passed": 150,
+    "skipped": 1,
+    "failed": 0
+  },
+  "wheel": {
+    "filename": "subject_evolution_mvp-0.31.0-py3-none-any.whl",
+    "sha256": "072a1d7894c79d5033276f0e75a7c2b32902367bb691c8637f7c09a164b0074e",
+    "build_command": "python -m pip wheel . --no-build-isolation --no-deps",
+    "clean_venv_install": true,
+    "import_version": "0.31.0",
+    "console_script_help": true,
+    "environment_diversity_help": true
+  },
+  "patch": {
+    "filename": "subject_evolution_v031.patch",
+    "sha256": "04d49d7911aa8d7e8501146806264ec742eba874d04ee2b418c2466996e0f3a6",
+    "dry_run": true,
+    "applied_tree_equal": true,
+    "strip_level": 5
+  },
+  "compatibility_report": "docs/v0.31/V030_V031_COMPATIBILITY_REPORT.json",
+  "scientific_boundary": "The release validates D0 environment dimensionality and compatibility; it does not claim evolved ecological differentiation.",
+  "project_archives": {
+    "zip": {
+      "filename": "subject_evolution_v031_project.zip",
+      "file_count": 297,
+      "single_top_level": "subject_evolution_v031_project",
+      "forbidden_entries": []
+    },
+    "tar_gz": {
+      "filename": "subject_evolution_v031_project.tar.gz",
+      "file_count": 297,
+      "single_top_level": "subject_evolution_v031_project",
+      "forbidden_entries": []
+    }
+  }
+}
