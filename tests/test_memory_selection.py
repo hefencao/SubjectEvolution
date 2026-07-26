@@ -7,23 +7,23 @@ import unittest
 
 import numpy as np
 
-from subject_evolution.config import load_config, validate_config
-from subject_evolution.knowledge import (
+from se.cfg import load_config, validate_config
+from se.knowledge import (
     ACQUISITION_PRIVATE_EXPERIENCE,
     KnowledgeSystem,
     OUTCOME_WIDTH,
 )
-from subject_evolution.knowledge_policy import KnowledgePolicyPlan
-from subject_evolution.latent_knowledge import (
+from se.knowledge.policy import KnowledgePolicyPlan
+from se.knowledge.latent import (
     LatentBucket,
     LatentRouterBatch,
     select_latent_router_batch,
     sparse_selection_gene_count,
 )
-from subject_evolution.policy import Action, ParametricPolicy
-from subject_evolution.routing_cost import apply_routing_cost_budget
-from subject_evolution.simulation import Simulation
-from subject_evolution.working_memory import build_working_memory_update
+from se.policy import Action, ParametricPolicy
+from se.knowledge.routing_cost import apply_routing_cost_budget
+from se.runtime.sim import Simulation
+from se.knowledge.working_memory import build_working_memory_update
 from tests.test_checkpoint_replay import assert_state_equal
 
 ROOT = Path(__file__).resolve().parents[1]

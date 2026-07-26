@@ -5,8 +5,8 @@ import json
 from pathlib import Path
 import sys
 
-from subject_evolution import natural_event_execution as execution
-from subject_evolution.natural_event_matrix import SCHEMA, SELECTION_SCHEMA, _canonical_sha256
+from se.experiments import natural_event_execution as execution
+from se.experiments.natural_event_matrix import SCHEMA, SELECTION_SCHEMA, _canonical_sha256
 
 
 def _sha(path: Path) -> str:

@@ -7,9 +7,9 @@ import unittest
 
 import numpy as np
 
-from subject_evolution.config import KnowledgeConfig, load_config
-from subject_evolution.knowledge import KnowledgeSystem, KnowledgeTransferPlan, OUTCOME_WIDTH
-from subject_evolution.simulation import Simulation
+from se.cfg import KnowledgeConfig, load_config
+from se.knowledge import KnowledgeSystem, KnowledgeTransferPlan, OUTCOME_WIDTH
+from se.runtime.sim import Simulation
 
 
 ROOT = Path(__file__).resolve().parents[1]

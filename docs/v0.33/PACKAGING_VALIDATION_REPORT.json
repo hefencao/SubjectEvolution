@@ -1,0 +1,25 @@
+{
+  "schema": "subject-evolution-packaging-validation-v1",
+  "version": "0.33.0",
+  "project_directory": "subject_evolution_v033_project",
+  "file_count_including_this_report": 385,
+  "single_top_level_directory_expected": true,
+  "forbidden_entries": [],
+  "forbidden_entry_count": 0,
+  "build_system_requires": [
+    "setuptools>=68",
+    "wheel"
+  ],
+  "wheel_filename": "subject_evolution_mvp-0.33.0-py3-none-any.whl",
+  "wheel_sha256": "18968ea016f072bafb7bb72bd83f6f45b85cbf63678902da46143be52178fb2c",
+  "wheel_build_command": "python -m pip wheel . --no-deps --no-build-isolation",
+  "wheel_install_verified": true,
+  "console_scripts_verified": [
+    "subject-evolution",
+    "subject-evolution-multi-seed",
+    "subject-evolution-gui"
+  ],
+  "pytest": "161 passed, 1 skipped",
+  "patch_dry_run_verified": true,
+  "patch_apply_exact_tree_verified": true
+}

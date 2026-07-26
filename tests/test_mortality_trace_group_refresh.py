@@ -6,11 +6,11 @@ import tempfile
 
 import numpy as np
 
-from subject_evolution.config import load_config, validate_config
-from subject_evolution.environment import Environment
-from subject_evolution.gpu_environment import DeviceEnvironment
-from subject_evolution.social import SocialSystem, ungrouped_group_label_plan
-from subject_evolution.simulation import Simulation
+from se.cfg import load_config, validate_config
+from se.env.world import Environment
+from se.env.gpu import DeviceEnvironment
+from se.subjects.social import SocialSystem, ungrouped_group_label_plan
+from se.runtime.sim import Simulation
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -181,7 +181,7 @@ def test_v020_checkpoint_config_hash_accepts_physically_stored_fields(tmp_path: 
     import pickle
     import zipfile
 
-    from subject_evolution.checkpointing import (
+    from se.checkpointing import (
         CHECKPOINT_SCHEMA,
         read_checkpoint_bundle,
     )

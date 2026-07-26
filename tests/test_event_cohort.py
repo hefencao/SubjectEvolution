@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from subject_evolution.event_cohort import EventCohortDiagnostics, SCHEMA
+from se.event_cohort import EventCohortDiagnostics, SCHEMA
 
 
 def test_event_cohort_endpoint_decomposition_is_exact() -> None:

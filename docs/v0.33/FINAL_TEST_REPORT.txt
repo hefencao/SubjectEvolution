@@ -1,0 +1,42 @@
+Subject Evolution v0.33.0 final validation
+
+Full test suite:
+  161 passed, 1 skipped in 16.07s
+
+Skipped:
+  Real CUDA/CuPy device validation is unavailable in the build environment.
+
+Entrypoint smoke:
+  python -m subject_evolution --help
+  python -m subject_evolution.cli --help
+  python -m subject_evolution.multi_seed --help
+  python -m subject_evolution.environment_diversity --help
+  python -m subject_evolution.interfaces.gui.runner --help
+  python -m subject_evolution.gui_interface.run_simulation --help
+
+GUI integration smoke:
+  Legacy GUI runner advanced the D0 smoke configuration to tick 2.
+  Reference reader observed tick 2, 200 active entity records,
+  resources shape (4, 32, 32), and hazard shape (32, 32).
+
+Compatibility:
+  v0.32 -> v0.33, 30 ticks:
+    7 metrics rows
+    330 common metric fields
+    2219 compared non-timing cells
+    0 metric differences
+    10 core/environment outputs byte-identical
+    0 authoritative checkpoint-state differences
+
+Checkpoint migration:
+  v0.32 tick-15 trusted checkpoint restored by v0.33 to tick 30.
+  Final semantic state matched continuous v0.33 with 0 differences.
+
+GUI observation boundary:
+  GUI-attached and GUI-disabled 30-tick runs had identical authoritative state.
+  Core knowledge and environment outputs were byte-identical.
+
+Wheel:
+  Built with pip wheel --no-deps --no-build-isolation.
+  Installed in a clean system-site-packages virtual environment.
+  Version import, canonical GUI imports, and all three console scripts passed.

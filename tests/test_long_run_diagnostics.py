@@ -6,10 +6,10 @@ from pathlib import Path
 
 import numpy as np
 
-from subject_evolution.config import load_config, validate_config
-from subject_evolution.evolution import _categorical_alignment, lineage_group_diagnostics
-from subject_evolution.long_run_analysis import analyze, render_markdown
-from subject_evolution.simulation import Simulation
+from se.cfg import load_config, validate_config
+from se.evolution.progress import _categorical_alignment, lineage_group_diagnostics
+from se.analysis.long_run import analyze, render_markdown
+from se.runtime.sim import Simulation
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -194,7 +194,7 @@ def test_analysis_warns_when_knowledge_transfer_is_not_active(tmp_path: Path) ->
 
 
 def test_multi_seed_parser_rejects_duplicates() -> None:
-    from subject_evolution.multi_seed import parse_seeds
+    from se.cmd.multi_seed import parse_seeds
 
     assert parse_seeds("10001,10002") == [10001, 10002]
     try:
@@ -206,7 +206,7 @@ def test_multi_seed_parser_rejects_duplicates() -> None:
 
 
 def test_multi_seed_completed_tick_uses_progress(tmp_path: Path) -> None:
-    from subject_evolution.multi_seed import _completed_tick
+    from se.cmd.multi_seed import _completed_tick
 
     run_dir = tmp_path / "seed_1"
     run_dir.mkdir()

@@ -7,18 +7,18 @@ import unittest
 
 import numpy as np
 
-from subject_evolution.config import load_config, validate_config
-from subject_evolution.information import InformationObservation
-from subject_evolution.knowledge import (
+from se.cfg import load_config, validate_config
+from se.information import InformationObservation
+from se.knowledge import (
     ACQUISITION_PRIVATE_EXPERIENCE,
     ACQUISITION_SEED,
     ACQUISITION_TRANSFER,
     KnowledgeObservationPlan,
     OUTCOME_WIDTH,
 )
-from subject_evolution.knowledge_policy import build_knowledge_policy_plan
-from subject_evolution.policy import Action, ParametricPolicy
-from subject_evolution.simulation import Simulation
+from se.knowledge.policy import build_knowledge_policy_plan
+from se.policy import Action, ParametricPolicy
+from se.runtime.sim import Simulation
 
 
 ROOT = Path(__file__).resolve().parents[1]

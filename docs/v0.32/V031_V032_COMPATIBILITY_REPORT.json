@@ -1,0 +1,81 @@
+{
+  "schema": "v031-v032-compatibility-v1",
+  "comparison": {
+    "config": "configs/d0_orthogonal_environment_smoke.json",
+    "backend": "cpu",
+    "ticks": 120
+  },
+  "metrics": {
+    "rows_old": 13,
+    "rows_new": 13,
+    "common_non_timing_fields": 317,
+    "cells_compared": 4121,
+    "difference_count": 0,
+    "first_differences": []
+  },
+  "byte_identical_outputs": {
+    "knowledge_events.jsonl": {
+      "equal": true,
+      "old_sha256": "0343053effb4401761dc6d36fd2b4322bdcd4650a4b3e10585bc703aac166225",
+      "new_sha256": "0343053effb4401761dc6d36fd2b4322bdcd4650a4b3e10585bc703aac166225"
+    },
+    "knowledge_outcome_updates.csv": {
+      "equal": true,
+      "old_sha256": "bf608be238e4717e4bd4dfb168c26b1918b702b96c03f824a6661db90b515806",
+      "new_sha256": "bf608be238e4717e4bd4dfb168c26b1918b702b96c03f824a6661db90b515806"
+    },
+    "knowledge_policy_contributions.csv": {
+      "equal": true,
+      "old_sha256": "7217edd9f9d8cebc461284d5aecc9c0d73dcdbe0e2a96138c9f0d08f7952a34f",
+      "new_sha256": "7217edd9f9d8cebc461284d5aecc9c0d73dcdbe0e2a96138c9f0d08f7952a34f"
+    },
+    "knowledge_routing_costs.csv": {
+      "equal": true,
+      "old_sha256": "4eb81206ab8313831fe2d28b85261ad172e07a688dab5d7d9ca5b8398fd814b6",
+      "new_sha256": "4eb81206ab8313831fe2d28b85261ad172e07a688dab5d7d9ca5b8398fd814b6"
+    },
+    "knowledge_selection_events.csv": {
+      "equal": true,
+      "old_sha256": "deaff645c11261a7ca401ea5b1633cc24f9d9e5446f7cd196d622300bfd117a8",
+      "new_sha256": "deaff645c11261a7ca401ea5b1633cc24f9d9e5446f7cd196d622300bfd117a8"
+    },
+    "knowledge_transfers.csv": {
+      "equal": true,
+      "old_sha256": "2de09172efde9b950175e0dec09cc15aa73681cde30198518bad61a993266540",
+      "new_sha256": "2de09172efde9b950175e0dec09cc15aa73681cde30198518bad61a993266540"
+    },
+    "knowledge_working_memory.csv": {
+      "equal": true,
+      "old_sha256": "905f2632313e2f3e3325d5fbd13e18e26a8aa063ad93bd4759fcbae2805add50",
+      "new_sha256": "905f2632313e2f3e3325d5fbd13e18e26a8aa063ad93bd4759fcbae2805add50"
+    },
+    "environment_atlas.jsonl": {
+      "equal": true,
+      "old_sha256": "e2f8d3e5f671625fa87f1fe37cfaf2a1cd61d0eb8a5ecce71fc802c78c630881",
+      "new_sha256": "e2f8d3e5f671625fa87f1fe37cfaf2a1cd61d0eb8a5ecce71fc802c78c630881"
+    },
+    "environment_atlas_summary.json": {
+      "equal": true,
+      "old_sha256": "24a36525fb71a55626b02e0dbe3259e443e9157bd5b4abbb1d8cf1ddc66f26e8",
+      "new_sha256": "24a36525fb71a55626b02e0dbe3259e443e9157bd5b4abbb1d8cf1ddc66f26e8"
+    }
+  },
+  "final_authoritative_state_v031_vs_v032": {
+    "equal": true,
+    "old_tick": 120,
+    "new_tick": 120,
+    "old_state_sha256": "e5e54cdd638fbc883edd50926a21568a52138c19a6a5e066417c9b3a82aa7ee3",
+    "new_state_sha256": "2cae9684f493a2f831a96f81b9fdef727855d24ebd585c0563383883732a8d16"
+  },
+  "v031_checkpoint_resumed_by_v032_vs_continuous_v032": {
+    "equal": true,
+    "old_tick": 120,
+    "new_tick": 120,
+    "old_state_sha256": "e7557d9b5040a76088e58bf32e8daa1a8b88fdeefa22facd5926d9e9af9ce61c",
+    "new_state_sha256": "2cae9684f493a2f831a96f81b9fdef727855d24ebd585c0563383883732a8d16"
+  },
+  "notes": [
+    "Timing and run-manifest provenance fields are excluded from metrics comparison.",
+    "Checkpoint state SHA covers the full serialized record and may differ across code/module layouts; semantic simulation state is recursively compared instead."
+  ]
+}

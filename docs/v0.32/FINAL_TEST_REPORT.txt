@@ -1,0 +1,19 @@
+Subject Evolution v0.32.0 final test report
+============================================
+
+Command:
+  PYTHONPATH=src pytest -q
+
+Result:
+  154 passed, 1 skipped in 16.77s
+
+Skipped test:
+  Real CUDA/CuPy device-dependent test unavailable in the build environment.
+
+Additional validation:
+  - Legacy facade identity and monkey-patch forwarding tests passed.
+  - simulation.py and knowledge.py facade size limits passed.
+  - PROJECT_CHARTER.md stable path test passed.
+  - Optional CuPy import detection cache test passed.
+  - v0.31 trusted checkpoint restored and resumed under v0.32.
+  - v0.31/v0.32 semantic state and non-timing output compatibility passed.

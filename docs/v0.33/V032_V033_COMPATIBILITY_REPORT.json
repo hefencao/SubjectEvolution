@@ -1,0 +1,38 @@
+{
+  "schema": "v032-v033-compatibility-v1",
+  "ticks": 30,
+  "metrics_rows": 7,
+  "common_metric_fields": 330,
+  "excluded_timing_fields": [
+    "conflict_seconds",
+    "device_commit_seconds",
+    "environment_seconds",
+    "evolution_evaluation_seconds",
+    "graph_seconds",
+    "observation_seconds",
+    "policy_seconds",
+    "spatial_seconds",
+    "step_seconds",
+    "validation_seconds",
+    "wall_elapsed_seconds",
+    "window_seconds",
+    "window_seconds_per_tick"
+  ],
+  "compared_non_timing_cells": 2219,
+  "metric_difference_count": 0,
+  "first_metric_differences": [],
+  "byte_identical_outputs": {
+    "evolution_progress.jsonl": true,
+    "knowledge_events.jsonl": true,
+    "knowledge_outcome_updates.csv": true,
+    "knowledge_policy_contributions.csv": true,
+    "knowledge_routing_costs.csv": true,
+    "knowledge_selection_events.csv": true,
+    "knowledge_transfers.csv": true,
+    "knowledge_working_memory.csv": true,
+    "environment_atlas.jsonl": true,
+    "environment_atlas_summary.json": true
+  },
+  "authoritative_state_difference_count": 0,
+  "authoritative_state_first_differences": []
+}

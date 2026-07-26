@@ -1,0 +1,15 @@
+{
+  "schema": "se-v035-config-script-migration-v1",
+  "config_count": 69,
+  "configs_validated": 69,
+  "scientific_field_names_shortened": false,
+  "renamed_config_files": {
+    "d0_orthogonal_environment_smoke.json": "d0_orthogonal_env_smoke.json",
+    "mvp_short_d0_orthogonal_environment_longrun.json": "mvp_short_d0_orthogonal_env_longrun.json",
+    "mvp_short_subject_structure_multienvironment_atlas_longrun.json": "mvp_short_subject_structure_multi_env_atlas_longrun.json"
+  },
+  "shell_scripts_updated": 7,
+  "shell_syntax_passed": true,
+  "console_scripts": ["se", "se-multi", "se-gui"],
+  "compatibility_aliases": []
+}

@@ -1,5 +1,18 @@
 # 科学问题与研究债务
 
+## v0.32 架构与性能债务
+
+| ID | 状态 | 当前问题 | 下一步判据 |
+|---|---|---|---|
+| ARCH-01 | 部分完成 | `Simulation.step()` 仍约 1200 行，依赖大量共享局部变量；简单剪贴会隐藏提交顺序。 | 先定义 `StepContext`、phase plan/result 和只读/写边界，再拆 observation、control、resolution、commit、lifecycle。 |
+| ARCH-02 | 部分完成 | `runtime/reporting.py` 仍约 1800 行，manifest、scientific validity、progress 和 metrics 发布协议仍耦合。 | 按独立版本化 publisher 拆分，保持输出字段、排序和旧 schema 一致。 |
+| ARCH-03 | 开放 | `config.py` 同时承担 dataclass、解析、验证、默认迁移和 schema 兼容。 | 在新增 D1/D2 schema 前拆成 definitions/parser/validation/migrations，并增加旧配置 round-trip。 |
+| PERF-01 | 已定位 | policy contribution 逐项构造字典并逐行写 CSV，是当前 120-tick CPU 基准最大热点和约 25 MB 输出来源。 | 先增加可审计 sampling/aggregation 与批量 writer；完整日志模式必须保持字段和顺序兼容。 |
+| PERF-02 | 已定位 | knowledge outcome、latent hash/projection 和稀疏路由仍含大量 Python 循环与小数组操作。 | 用 phase profiling 证明占比，再迁入固定布局 NumPy/CuPy kernel；逐阶段与 CPU reference parity。 |
+| PERF-03 | 边界清晰 | strict-reference 科学运行仍以 CPU 世界为权威；hybrid 路径不是完整设备驻留。 | 真实 CUDA 环境建立多 tick stage parity、host/device transfer 和 kernel profile，不能以设备可用替代加速证明。 |
+| NATIVE-01 | 暂缓整体迁移 | 直接将世界重写为 C++/Rust 会复制规则、checkpoint 和实验协议，增加双实现漂移。 | 仅当稳定 phase 占目标长跑至少约 20%，且 Python/CuPy 优化不足并已有 plan/result API 与 parity 时，引入原生 kernel。 |
+| SHADER-01 | 非权威候选 | graphics/WebGPU compute shader 的浮点、驱动和编译器验证矩阵不适合作为当前科学权威世界。 | 只用于 renderer 同进程预览、热图或近似交互；不得产生 scientific checkpoint 或与 reference result 混合。 |
+
 ## v0.31 分化主线新增问题
 
 | ID | 状态 | 科学价值与当前问题 | 后续执行条件 |

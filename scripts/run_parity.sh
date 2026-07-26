@@ -3,7 +3,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 export PYTHONPATH="${PYTHONPATH:-}:$ROOT/src"
-python -m subject_evolution.parity \
+python -m se.analysis.parity \
   --config "${1:-configs/mvp_short_k1_compat.json}" \
   --output "${2:-runs/cpu_gpu_parity}" \
   --ticks "${3:-5}" \

@@ -1,0 +1,65 @@
+{
+  "schema": "python-performance-migration-assessment-v1",
+  "version": "0.32.0",
+  "benchmark": {
+    "command": "python -m subject_evolution.cli --config configs/d0_orthogonal_environment_smoke.json --backend cpu --until-tick 120",
+    "final_alive": 163,
+    "notes": [
+      "High-volume knowledge audit logging is enabled.",
+      "This CPU smoke benchmark is for hotspot discovery, not a production-scale or real-CUDA throughput claim."
+    ]
+  },
+  "wall_time_seconds": {
+    "v0.31_runs": [
+      8.35,
+      9.02,
+      9.33
+    ],
+    "v0.31_mean": 8.9,
+    "v0.31_median": 9.02,
+    "v0.32_runs": [
+      7.1,
+      7.28,
+      7.09
+    ],
+    "v0.32_mean": 7.16,
+    "v0.32_median": 7.1,
+    "mean_reduction_fraction": 0.196,
+    "median_reduction_fraction": 0.213
+  },
+  "cprofile": {
+    "v0.31": {
+      "total_seconds": 17.597123895,
+      "total_calls": 28988445,
+      "simulation_step_cumulative_seconds": 16.755107976,
+      "repeated_optional_cupy_import_cumulative_seconds": 4.144181106
+    },
+    "v0.32": {
+      "total_seconds": 11.79365815,
+      "total_calls": 20351280,
+      "simulation_step_cumulative_seconds": 11.254443261,
+      "knowledge_record_policy_plan_cumulative_seconds": 4.165984094,
+      "csv_writerow_cumulative_seconds": 3.063297402,
+      "knowledge_commit_outcomes_cumulative_seconds": 1.895407666,
+      "latent_policy_plan_cumulative_seconds": 1.437010476
+    },
+    "profile_time_reduction_fraction": 0.3298,
+    "call_count_reduction_fraction": 0.298
+  },
+  "high_volume_output": {
+    "knowledge_policy_contributions_rows_including_header": 110153,
+    "knowledge_policy_contributions_size_bytes": 25636847
+  },
+  "conclusion": {
+    "python_bottleneck_present": true,
+    "whole_project_rewrite_recommended": false,
+    "recommended_architecture": "Python reference/orchestration and scientific protocol layer; batch/columnar audit writers; CuPy custom kernels for proven device-resident numeric hotspots; C++/CUDA extension only for stable phases that remain dominant after batching; compute shader preview/non-authoritative only.",
+    "priority_order": [
+      "reduce and batch audit I/O",
+      "profile production-size runs by phase",
+      "migrate latent/outcome fixed-layout hotspots to CuPy kernels",
+      "introduce C++/CUDA only behind versioned plan/result APIs",
+      "keep compute shader outside authoritative scientific checkpoint path"
+    ]
+  }
+}

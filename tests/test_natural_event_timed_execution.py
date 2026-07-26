@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from subject_evolution import natural_event_timed_execution as timed
+from se.experiments import natural_event_timed_execution as timed
 from tests.test_natural_event_execution import _manifest
 
 

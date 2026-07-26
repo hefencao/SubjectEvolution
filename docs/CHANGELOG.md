@@ -1,5 +1,78 @@
 # Changelog
 
+## v0.35.0
+
+- 包导入根从 `subject_evolution` 改为 `se`。
+- 移除 `domains` 与 `interfaces` 两层无信息目录；环境、GUI 和命令分别使用 `se.env`、`se.gui`、`se.cmd`。
+- 高频文件使用 `cfg.py` 和 `runtime/sim.py`；其余易歧义领域名保留全称。
+- console scripts 改为 `se`、`se-multi`、`se-gui`，不提供旧别名。
+- 删除历史 checkpoint import bridge；旧 namespace checkpoint 采用重跑策略。
+- 当前源码包不重复携带旧版本详细报告。
+
+
+## 0.34.0
+
+### Canonical imports
+
+- 删除 35 个顶层 compatibility facade、通用 `_compat.py`、旧 `cli.py`、`multi_seed.py` 和 `gui_interface` package。
+- 批量迁移 source、tests、scripts 和当前文档到 `runtime`、`domains`、`analysis`、`experiments`、`commands`、`interfaces` 规范路径。
+- 只保留 `se.simulation` 作为历史 trusted-checkpoint pickle module bridge；不再支持通过旧模块 monkey-patch 规范实现。
+- 将环境多样性原语移动到 `domains.environment.diversity`，消除 domain 对 analysis 的反向依赖。
+- knowledge 子模块改为直接包内导入。
+
+### Configs and scripts
+
+- 69 个 JSON configs 批量加载和 schema 校验通过；配置为纯数据，不含需迁移的 Python module path，因此保持科学内容不变。
+- 5 个 shell scripts 批量改用 `python -m se` 或 `python -m se.analysis.parity`。
+
+
+## 0.33.0
+
+### Entrypoints and compatibility facades
+
+- 将规范单次运行和 multi-seed 命令迁入 `se.cmd`。
+- `cli.py`、`multi_seed.py`、`simulation.py` 与 35 个历史模块进一步缩为薄 facade。
+- 新增统一 `_compat.install_facade()`，保留旧 import、module execution、trusted checkpoint identity 和 monkey-patch 语义。
+- 新增 `subject-evolution-multi-seed` console script；`subject-evolution` 直接指向规范 command implementation。
+
+### Native GUI interface
+
+- 将用户提供的 triple-buffer mmap bridge 整合到 `se.gui`。
+- 保留 `se.gui_interface`、`eco_shm_bridge.py` 和 `run_simulation.py` 兼容路径。
+- 新增原子 sidecar manifest、reference reader、稳定帧 double-check、attachment context manager、重复挂载防护和 checkpoint-aware GUI runner。
+- 新增 `subject-evolution-gui` console script。
+- GUI 明确为 Python-authoritative、one-way、observation-only 接口。
+
+### Compatibility
+
+- v0.32→v0.33 30-tick 非计时 metrics、核心日志、环境输出和完整权威状态零差异。
+- v0.32 tick-15 checkpoint 可由 v0.33 精确续跑到 tick 30。
+- GUI attached 与无 GUI 条件的权威状态和非计时输出一致。
+- 全量测试 161 passed、1 skipped。
+
+## 0.32.0
+
+### Runtime and package refactor
+
+- 将 5034 行 `simulation.py` 拆分为 `runtime/state.py`、`runtime/simulation.py`、`runtime/checkpointing.py`、`runtime/experiments.py` 和 `runtime/reporting.py`。
+- 将 3118 行 `knowledge.py` 拆分为 types、storage、system、logging、diagnostics 以及 policy/latent/working-memory/routing 子模块。
+- 将环境、演化、主体、知识、分析/审计和自然事件实验移动到分层 package。
+- 历史顶层模块继续作为兼容 facade，保留旧导入、CLI、trusted checkpoint 和 monkey-patch 语义。
+- 项目立项文档稳定命名为 `docs/PROJECT_CHARTER.md`。
+
+### Performance baseline
+
+- 缓存 CuPy 可用性检测，消除低层数组路径中重复 optional-import discovery。
+- 共同 120-tick CPU 基准的三次 wall-time 中位数从 9.02 秒降至 7.10 秒。
+- cProfile 总时间从 17.597 秒降至 11.794 秒；当前首要热点是 knowledge contribution 日志、CSV 写入、outcome 更新和 latent 路由。
+- 明确迁移路线：Python reference/orchestration 保留；先优化日志与批处理，再以 CuPy custom kernels/C++ CUDA 迁移已证明热点；compute shader 只用于非权威预览。
+
+### Compatibility
+
+- 不改变世界规则、默认配置、随机键、提交顺序或日志字段。
+- 新增 package architecture、facade identity、charter path 和 CuPy import cache 测试。
+- v0.31→v0.32 默认世界、日志与 trusted checkpoint 兼容结果见 `docs/v0.32/`。
+
 ## 0.31.0
 
 ### D0 orthogonal environment
@@ -82,7 +155,7 @@
 
 ### Protocol audit, compatibility and packaging
 
-- 新增 `subject_evolution.protocol_audit`，一份报告说明 group label、refresh、region partition 和 anchor selection。
+- 新增 `se.protocol_audit`，一份报告说明 group label、refresh、region partition 和 anchor selection。
 - `pyproject.toml` build-system 显式依赖 `wheel`。
 - 默认世界动力学不变；v0.28→v0.29 compatibility、trusted checkpoint resume 与完整测试报告见 `docs/v0.29/`。
 - 发行包继续排除 `docs/archive`、缓存、Git 与构建临时目录。
@@ -97,7 +170,7 @@
 
 ### Event-timed execution
 
-- 新增 `subject_evolution.natural_event_timed_execution` 和 `natural-event-timed-execution-plan-v1`。
+- 新增 `se.natural_event_timed_execution` 和 `natural-event-timed-execution-plan-v1`。
 - 每个 source checkpoint/event tick 只重放一次 shared prefix，并保存 event checkpoint file/state SHA-256。
 - baseline/interventions 从同一个 event checkpoint 开始，common boundary 与 cohort 在干预前捕获。
 - 不同 event tick 不再因 source checkpoint 相同而错误共享已干预 trajectory。
@@ -135,7 +208,7 @@
 
 ### Cross-result synthesis
 
-- 新增 `subject_evolution.natural_event_result_synthesis`，合并多个同 manifest 结果集并验证重复分支的核心世界结果。
+- 新增 `se.natural_event_result_synthesis`，合并多个同 manifest 结果集并验证重复分支的核心世界结果。
 - 优先采用 cohort/common-boundary 更完整的重复分支，重新执行 seed-first aggregation，并报告 72/108 pair coverage。
 - 用户提供的四份结果确认 transfer-off 对 active transferred roots 的负向作用在 crowding、mortality、scarcity 三类事件中重复。
 - common-boundary 结果表明 freeze-group-refresh 的 current-label cohesion 下降主要由评价边界改变产生。
@@ -162,7 +235,7 @@
 - execution plan 升级为 v2，默认启用 common-boundary audit；兼容读取 v1。
 - trajectory marker 升级为 v2，防止旧轨迹被误当作含共同边界的新轨迹。
 - paired results 升级为 v3，增加累计 current/reference cohesion 与 outcome audit。
-- 新增 `subject_evolution.natural_event_result_audit`，支持审计 v0.25 results v2 和 v0.26 results v3。
+- 新增 `se.natural_event_result_audit`，支持审计 v0.25 results v2 和 v0.26 results v3。
 - 审计器区分操作检验、文化机制近端指标、边界定义指标和下游区域状态，并生成共同边界复跑、剩余事件复制及剩余机制消融计划。
 
 ### Input result assessment
@@ -183,7 +256,7 @@
 
 ### Manifest execution
 
-- 新增 `subject_evolution.natural_event_execution`，从已签名 v0.24 manifest 构造独立执行计划。
+- 新增 `se.natural_event_execution`，从已签名 v0.24 manifest 构造独立执行计划。
 - 支持跨机器 `OLD=NEW` 路径前缀映射，同时保留原始 manifest 不变。
 - 执行前分别校验 checkpoint、progress 和 resolved config SHA-256。
 - 相同 checkpoint hash 与 intervention 的多个锚点共享最长轨迹；用户 manifest 从 126 条 naive branches 降为 112 条 trajectories。
@@ -207,7 +280,7 @@
 
 ### Scientific workflow
 
-- 新增 `subject_evolution.natural_event_matrix`，支持跨 seed 的 scarcity、crowding、mortality 自然事件锚点规划与可选执行。
+- 新增 `se.natural_event_matrix`，支持跨 seed 的 scarcity、crowding、mortality 自然事件锚点规划与可选执行。
 - 新增 `exposure-only-local-peak-selection-v1`：锚点选择只读取暴露、区域 alive、tick 和 checkpoint 可用性；明确排除凝聚度、传播、文化根、谱系和动作结果字段。
 - manifest 记录 progress、resolved config、checkpoint 和完整计划 SHA-256；可检测执行前静默修改。
 - 可选 long-run analysis JSON 只保存为 rationale/audit，`used_for_anchor_selection=false`。

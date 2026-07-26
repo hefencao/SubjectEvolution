@@ -1,0 +1,20 @@
+{
+  "schema": "v034-v035-path-rename-compatibility-v1",
+  "ticks": 30,
+  "world_mechanisms_changed": false,
+  "non_timing_metric_cells": 1268,
+  "metric_differences": 0,
+  "byte_identical_outputs": {
+    "knowledge_events.jsonl": true,
+    "knowledge_outcome_updates.csv": true,
+    "knowledge_policy_contributions.csv": true,
+    "knowledge_routing_costs.csv": true,
+    "knowledge_selection_events.csv": true,
+    "knowledge_transfers.csv": true,
+    "knowledge_working_memory.csv": true,
+    "environment_atlas.jsonl": true,
+    "environment_atlas_summary.json": true
+  },
+  "new_checkpoint_self_resume": "covered-by-full-checkpoint-test-suite",
+  "old_checkpoint_compatibility": "intentionally-not-supported"
+}

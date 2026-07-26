@@ -4,13 +4,13 @@ from pathlib import Path
 
 import numpy as np
 
-from subject_evolution.protocol_audit import build_protocol_audit
-from subject_evolution.social import (
+from se.analysis.protocol_audit import build_protocol_audit
+from se.subjects.social import (
     GROUP_LABEL_SCHEMA,
     DeterministicGroupLabelPlanner,
     GroupDetectionSnapshot,
 )
-from subject_evolution.spatial_partition import SpatialRegionPartition
+from se.env.partition import SpatialRegionPartition
 
 
 ROOT = Path(__file__).resolve().parents[1]

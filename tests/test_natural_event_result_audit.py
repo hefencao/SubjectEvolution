@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from subject_evolution import natural_event_execution as execution
-from subject_evolution.natural_event_result_audit import build_result_audit
+from se.experiments import natural_event_execution as execution
+from se.analysis.natural_event_result_audit import build_result_audit
 from tests.test_natural_event_execution import _manifest
 
 

@@ -1,0 +1,44 @@
+{
+  "schema": "subject-evolution-packaging-validation-v1",
+  "version": "0.32.0",
+  "project_directory": "subject_evolution_v032_project",
+  "file_count_including_this_report": 358,
+  "directory_count": 28,
+  "single_top_level_directory_in_archives": true,
+  "forbidden_entries": [],
+  "forbidden_entries_absent": true,
+  "excluded_patterns": [
+    "docs/archive",
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    "*.pyc",
+    "*.pyo",
+    "build",
+    "dist",
+    "*.egg-info"
+  ],
+  "project_charter": "docs/PROJECT_CHARTER.md",
+  "legacy_charter_name_absent": true,
+  "build_system_requires": [
+    "setuptools>=68",
+    "wheel"
+  ],
+  "wheel_build_command": "python -m pip wheel . --no-deps --no-build-isolation",
+  "wheel_install_validation": {
+    "installed": true,
+    "import_version": "0.32.0",
+    "console_script_help": true
+  },
+  "patch_validation": {
+    "dry_run": true,
+    "actual_apply": true
+  },
+  "test_result": "154 passed, 1 skipped",
+  "archive_validation": {
+    "zip_file_count": 358,
+    "tar_file_count": 358,
+    "top_level_directory": "subject_evolution_v032_project",
+    "forbidden_entries_absent": true
+  }
+}

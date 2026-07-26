@@ -6,10 +6,10 @@ from pathlib import Path
 
 import numpy as np
 
-from subject_evolution.config import load_config, validate_config
-from subject_evolution.local_stress import LocalStressDiagnostics
-from subject_evolution.long_run_analysis import analyze
-from subject_evolution.simulation import Simulation
+from se.cfg import load_config, validate_config
+from se.env.local_stress import LocalStressDiagnostics
+from se.analysis.long_run import analyze
+from se.runtime.sim import Simulation
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -232,7 +232,7 @@ def test_knowledge_alignment_small_sample_entropy_roundoff_is_safe(tmp_path: Pat
 
 
 def test_local_culture_tracker_accounts_transfer_flows_and_roots() -> None:
-    from subject_evolution.knowledge import (
+    from se.knowledge import (
         KnowledgeTransferCommitAudit,
         KnowledgeTransferPlan,
     )

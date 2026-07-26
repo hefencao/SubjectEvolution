@@ -1,0 +1,12 @@
+SE v0.35 final validation
+
+- Full pytest suite: 161 passed, 1 skipped in 16.40s.
+- Skipped test: real CUDA/CuPy device-dependent validation.
+- Package import scan: 77 modules imported, 0 failures.
+- Old namespace import: subject_evolution intentionally unavailable.
+- Config validation: 69/69 JSON configs passed.
+- Shell syntax: run_gpu.sh and all scripts/*.sh passed bash -n.
+- v0.34 -> v0.35 30-tick semantic comparison: 1268 non-timing metric cells, 0 differences.
+- Nine knowledge/environment outputs were byte-identical.
+- v0.35 checkpoint write/restore paths are covered by the passing checkpoint test suite.
+- Old namespace checkpoints are intentionally unsupported; migration is re-run.

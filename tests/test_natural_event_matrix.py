@@ -6,14 +6,14 @@ from pathlib import Path
 
 import pytest
 
-from subject_evolution.config import load_config
-from subject_evolution.natural_event_matrix import (
+from se.cfg import load_config
+from se.experiments.natural_event_matrix import (
     build_manifest,
     detect_exposure_events,
     load_manifest,
     validate_manifest,
 )
-from subject_evolution.simulation import Simulation
+from se.runtime.sim import Simulation
 
 
 ROOT = Path(__file__).resolve().parents[1]

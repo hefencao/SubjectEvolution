@@ -7,10 +7,10 @@ import unittest
 
 import numpy as np
 
-from subject_evolution.config import load_config, validate_config
-from subject_evolution.knowledge import ACQUISITION_PRIVATE_EXPERIENCE, KnowledgeSystem, OUTCOME_WIDTH
-from subject_evolution.knowledge_policy import build_latent_knowledge_policy_plan
-from subject_evolution.latent_knowledge import (
+from se.cfg import load_config, validate_config
+from se.knowledge import ACQUISITION_PRIVATE_EXPERIENCE, KnowledgeSystem, OUTCOME_WIDTH
+from se.knowledge.policy import build_latent_knowledge_policy_plan
+from se.knowledge.latent import (
     LATENT_MLP_ROUTER_SCHEMA,
     LATENT_ROUTER_SCHEMA,
     latent_mlp_gene_start,
@@ -18,8 +18,8 @@ from subject_evolution.latent_knowledge import (
     linear_latent_router_gene_count,
     mlp_latent_router_gene_count,
 )
-from subject_evolution.policy import Action, ParametricPolicy
-from subject_evolution.simulation import Simulation
+from se.policy import Action, ParametricPolicy
+from se.runtime.sim import Simulation
 from tests.test_checkpoint_replay import assert_state_equal
 
 

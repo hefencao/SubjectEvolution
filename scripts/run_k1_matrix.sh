@@ -12,7 +12,7 @@ for spec in \
 do
   name="${spec%%:*}"
   cfg="${spec#*:}"
-  PYTHONPATH=src python -m subject_evolution.cli \
+  PYTHONPATH=src python -m se \
     --config "$cfg" \
     --output "runs/mvp_small_k1_${name}" \
     --backend cpu

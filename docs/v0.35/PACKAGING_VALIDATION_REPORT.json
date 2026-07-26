@@ -1,0 +1,26 @@
+{
+  "schema": "se-v035-packaging-validation-v1",
+  "project_version": "0.35.0",
+  "top_level_directory": "se_v035_project",
+  "file_count_before_report": 200,
+  "expected_file_count_after_report": 201,
+  "banned_entries": [],
+  "historical_release_doc_directories_included": false,
+  "console_scripts": [
+    "se",
+    "se-multi",
+    "se-gui"
+  ],
+  "package_namespace": "se",
+  "old_namespace_included": false,
+  "wheel_build": "pip wheel --no-deps --no-build-isolation",
+  "wheel_install_validation": true,
+  "full_tests": "161 passed, 1 skipped",
+  "file_count": 201,
+  "patch_dry_run": true,
+  "patch_apply_compare": true,
+  "patched_tree_file_count": 201,
+  "config_validation": "69/69",
+  "module_import_scan": "77/77",
+  "old_namespace_importable": false
+}

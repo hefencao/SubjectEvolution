@@ -8,9 +8,10 @@ from unittest.mock import patch
 
 import numpy as np
 
-from subject_evolution.config import load_config
-from subject_evolution.lifecycle import BirthRequestPlan, plan_birth_allocations
-from subject_evolution.simulation import EntityState, Simulation, _wrap_periodic_float32
+from se.cfg import load_config
+from se.evolution.lifecycle import BirthRequestPlan, plan_birth_allocations
+from se.runtime.sim import Simulation
+from se.runtime.state import EntityState, _wrap_periodic_float32
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -94,7 +95,7 @@ class PeriodicPositionTests(unittest.TestCase):
                 return np.full(ids.shape, -1.0e-7, dtype=np.float32)
             return np.zeros(ids.shape, dtype=np.float32)
 
-        with patch("subject_evolution.simulation.normal", side_effect=fake_normal):
+        with patch("se.runtime.state.normal", side_effect=fake_normal):
             _, slots = entities.commit_births(plan)
 
         child = int(slots[0])

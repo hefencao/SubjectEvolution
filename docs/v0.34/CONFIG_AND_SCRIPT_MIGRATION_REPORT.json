@@ -1,0 +1,384 @@
+{
+  "schema": "config-script-import-migration-v1",
+  "config_count": 69,
+  "configs_validated": 69,
+  "configs_unchanged_from_v033": 69,
+  "config_reason": "Configuration files are data-only and contain no Python module paths; scientific values were preserved.",
+  "script_count": 5,
+  "scripts_changed": 5,
+  "scripts_with_removed_paths_after_migration": 0,
+  "configs": [
+    {
+      "name": "d0_orthogonal_environment_smoke.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "heterogeneous_no_affinity_smoke.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "heterogeneous_smoke.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "long_run_diagnostics_smoke.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_100k.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_d0_orthogonal_environment_longrun.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_k1_compat.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_k1_legacy.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_k2_control.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_k2_exchange.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_k2_private.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_k3_exchange.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_k3_private.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_k4_boundary.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_k4_candidates.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_k4_high_damage.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_exchange.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_k3_control.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l1_costed.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l1_nocost.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_budget_matched.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_budget_rejection.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_costed.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk2.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk4.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk8.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_culture_120.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_culture_longrun.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_stress_120.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_stress_longrun.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_stress_validation.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_longrun.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_mortality_trace_adaptive_groups_longrun.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_mortality_trace_adaptive_groups_moving_hazards_evidence_longrun.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_longrun.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_no_affinity.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_no_affinity_longrun.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_no_affinity.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_memory_topk_inherited_legacy_120.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_l2_nocost.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_mlp_exchange.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_mlp_private.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_latent_private.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_replay.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_subject_structure_multienvironment_atlas_longrun.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_v022_adaptive_trace_control_120.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_v022_moving_hazards_inherited_evidence_120.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_v022_moving_hazards_neutral_evidence_120.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_short_v023_synthetic_abiotic_field_plugin_120.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_small.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_small_k1.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_small_k1_none.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_small_k1_private.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_small_k1_zero_cost.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_small_k2.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "mvp_small_k2_retest350.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "phase_counterfactual_smoke.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "smoke_cpu.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "v020_compat_v1_60.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "v020_local_culture_smoke.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "v020_local_culture_validation_120.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "v021_control_adaptive_no_trace_120.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "v021_control_adaptive_trace_120.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "v021_control_periodic_no_trace_120.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    },
+    {
+      "name": "v021_control_periodic_trace_120.json",
+      "validated": true,
+      "unchanged_from_v033": true
+    }
+  ],
+  "scripts": [
+    {
+      "name": "run_k1_matrix.sh",
+      "changed_from_v033": true,
+      "uses_removed_module_path": false
+    },
+    {
+      "name": "run_k2_short_matrix.sh",
+      "changed_from_v033": true,
+      "uses_removed_module_path": false
+    },
+    {
+      "name": "run_mvp_small_k2_gpu_retest350.sh",
+      "changed_from_v033": true,
+      "uses_removed_module_path": false
+    },
+    {
+      "name": "run_parity.sh",
+      "changed_from_v033": true,
+      "uses_removed_module_path": false
+    },
+    {
+      "name": "run_reported_gpu_parity_cases.sh",
+      "changed_from_v033": true,
+      "uses_removed_module_path": false
+    }
+  ]
+}

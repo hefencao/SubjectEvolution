@@ -8,25 +8,25 @@ from unittest.mock import patch
 
 import numpy as np
 
-from subject_evolution.backend import Backend, BackendUnavailableError, cupy_available, resolve_backend
-from subject_evolution.config import load_config
-from subject_evolution.environment import Environment
-from subject_evolution.gpu_environment import DeviceEnvironment, DeviceInformationField
-from subject_evolution.gpu_runtime import HybridGpuRuntime
-from subject_evolution.information import (
+from se.backend import Backend, BackendUnavailableError, cupy_available, resolve_backend
+from se.cfg import load_config
+from se.env.world import Environment
+from se.env.gpu import DeviceEnvironment, DeviceInformationField
+from se.gpu_runtime import HybridGpuRuntime
+from se.information import (
     DirectMessageObservationPlan,
     InformationSystem,
     SignalEmissionBatch,
     SignalEmissionPlan,
 )
-from subject_evolution.parity import (
+from se.analysis.parity import (
     _array_state_snapshot,
     _simulation_stages,
     compare_array,
     run_stage_parity,
 )
-from subject_evolution.reductions import stable_segmented_sum
-from subject_evolution.simulation import Simulation
+from se.reductions import stable_segmented_sum
+from se.runtime.sim import Simulation
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -247,7 +247,7 @@ class CpuGpuParityTests(unittest.TestCase):
         )
         fake_gpu = Backend(name="gpu", xp=np, is_gpu=True)
         with tempfile.TemporaryDirectory() as tmp, patch(
-            "subject_evolution.simulation.resolve_backend", return_value=fake_gpu
+            "se.runtime.sim.resolve_backend", return_value=fake_gpu
         ):
             cpu = Simulation(cfg, Path(tmp) / "cpu", backend="cpu")
             strict = Simulation(cfg, Path(tmp) / "strict", backend="gpu")

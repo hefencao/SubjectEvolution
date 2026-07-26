@@ -6,10 +6,10 @@ from pathlib import Path
 
 import numpy as np
 
-from subject_evolution.config import load_config, validate_config
-from subject_evolution.environment_atlas import EnvironmentAtlasDiagnostics
-from subject_evolution.simulation import Simulation
-from subject_evolution.subject_structure import SubjectStructureDiagnostics
+from se.cfg import load_config, validate_config
+from se.env.atlas import EnvironmentAtlasDiagnostics
+from se.runtime.sim import Simulation
+from se.subjects.succession import SubjectStructureDiagnostics
 
 
 ROOT = Path(__file__).resolve().parents[1]

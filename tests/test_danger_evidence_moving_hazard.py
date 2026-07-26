@@ -5,16 +5,16 @@ from pathlib import Path
 
 import numpy as np
 
-from subject_evolution.config import load_config, validate_config
-from subject_evolution.danger_evidence import (
+from se.cfg import load_config, validate_config
+from se.env.danger_evidence import (
     DANGER_EVIDENCE_SCALE,
     DANGER_EVIDENCE_TOTAL,
     danger_evidence_quantized,
 )
-from subject_evolution.environment import Environment
-from subject_evolution.gpu_environment import DeviceEnvironment
-from subject_evolution.niches import active_morphology_traits
-from subject_evolution.simulation import Simulation
+from se.env.world import Environment
+from se.env.gpu import DeviceEnvironment
+from se.env.niches import active_morphology_traits
+from se.runtime.sim import Simulation
 
 
 ROOT = Path(__file__).resolve().parents[1]

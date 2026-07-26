@@ -1,0 +1,11 @@
+{
+  "schema": "v032-v033-patch-validation-v1",
+  "patch_apply_command": "patch -p2 < subject_evolution_v033.patch",
+  "dry_run_passed": true,
+  "apply_passed": true,
+  "expected_files": 385,
+  "actual_files": 385,
+  "missing_files": [],
+  "unexpected_files": [],
+  "different_files": []
+}

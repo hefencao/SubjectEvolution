@@ -7,8 +7,8 @@ import unittest
 
 import numpy as np
 
-from subject_evolution.config import load_config
-from subject_evolution.knowledge import (
+from se.cfg import load_config
+from se.knowledge import (
     ACQUISITION_PRIVATE_EXPERIENCE,
     ACQUISITION_TRANSFER,
     KnowledgeOutcomePlan,
@@ -20,7 +20,7 @@ from subject_evolution.knowledge import (
     OUTCOME_WIDTH,
     encode_local_context,
 )
-from subject_evolution.simulation import Simulation
+from se.runtime.sim import Simulation
 
 
 ROOT = Path(__file__).resolve().parents[1]

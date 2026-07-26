@@ -10,7 +10,7 @@ for condition in k1_compat k2_private k2_exchange; do
   for repeat in a b; do
     output="runs/k2_short_validation/${condition}_${repeat}"
     rm -rf "$output"
-    python -m subject_evolution.cli \
+    python -m se \
       --config "$config" \
       --output "$output" \
       --backend cpu

@@ -7,8 +7,8 @@ import unittest
 
 import numpy as np
 
-from subject_evolution.config import load_config
-from subject_evolution.simulation import Simulation
+from se.cfg import load_config
+from se.runtime.sim import Simulation
 
 
 ROOT = Path(__file__).resolve().parents[1]

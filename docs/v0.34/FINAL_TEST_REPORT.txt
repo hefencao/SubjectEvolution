@@ -1,0 +1,30 @@
+Subject Evolution v0.34 final validation
+
+Full pytest:
+  162 passed, 1 skipped
+
+Skipped:
+  real CUDA/CuPy device test unavailable in the build environment
+
+Import audit:
+  81 modules imported, 0 failures
+
+Entrypoint smoke:
+  python -m subject_evolution --help
+  python -m subject_evolution.commands.multi_seed --help
+  python -m subject_evolution.analysis.parity --help
+  python -m subject_evolution.domains.environment.diversity --help
+  python -m subject_evolution.interfaces.gui.runner --help
+  all passed
+
+Config/script migration:
+  69/69 JSON configs loaded and validated
+  69/69 configs byte-identical to v0.33
+  5/5 shell scripts migrated
+  0 removed module paths remain in scripts
+  bash -n passed for every shell script
+
+Compatibility:
+  v0.33/v0.34 60-tick non-timing metrics: 2219 cells, 0 differences
+  final authoritative checkpoint state: 0 differences
+  v0.33 tick-30 trusted checkpoint resumed by v0.34 to tick 60: 0 differences versus continuous v0.34

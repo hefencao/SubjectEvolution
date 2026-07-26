@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from subject_evolution.local_event_counterfactual import detect_local_events
+from se.experiments.local_event_counterfactual import detect_local_events
 
 
 def test_detect_local_events_selects_region_specific_peaks() -> None:

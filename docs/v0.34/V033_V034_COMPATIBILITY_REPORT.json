@@ -1,0 +1,32 @@
+{
+  "schema": "v033-v034-compatibility-v1",
+  "baseline_version": "0.33.0",
+  "candidate_version": "0.34.0",
+  "config": "configs/d0_orthogonal_environment_smoke.json (ticks=60, checkpoint_period=30)",
+  "metrics": {
+    "row_count": 7,
+    "common_fields": 330,
+    "non_timing_fields": 317,
+    "cells_compared": 2219,
+    "difference_count": 0,
+    "first_differences": []
+  },
+  "byte_identical_outputs": {
+    "evolution_progress.jsonl": true,
+    "knowledge_events.jsonl": true,
+    "knowledge_outcome_updates.csv": true,
+    "knowledge_policy_contributions.csv": true,
+    "knowledge_routing_costs.csv": true,
+    "knowledge_selection_events.csv": true,
+    "knowledge_transfers.csv": true,
+    "knowledge_working_memory.csv": true,
+    "environment_atlas.jsonl": true,
+    "environment_atlas_summary.json": true,
+    "subject_structure_summary.json": true
+  },
+  "authoritative_checkpoint_state_difference_count": 0,
+  "authoritative_checkpoint_first_differences": [],
+  "v033_tick30_checkpoint_loaded_by_v034": true,
+  "v033_checkpoint_resume_to_v034_continuous_difference_count": 0,
+  "resume_first_differences": []
+}

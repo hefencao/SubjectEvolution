@@ -6,14 +6,14 @@ from pathlib import Path
 
 import numpy as np
 
-from subject_evolution.config import load_config
-from subject_evolution.niches import AFFINITY_SCALE, apply_harvest_effects, policy_resource_view
-from subject_evolution.phase_counterfactual import (
+from se.cfg import load_config
+from se.env.niches import AFFINITY_SCALE, apply_harvest_effects, policy_resource_view
+from se.experiments.phase_counterfactual import (
     build_phase_plan,
     detect_phase_targets,
     execute_phase_plan,
 )
-from subject_evolution.simulation import Simulation
+from se.runtime.sim import Simulation
 
 
 ROOT = Path(__file__).resolve().parents[1]

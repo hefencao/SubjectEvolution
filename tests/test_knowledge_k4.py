@@ -7,15 +7,15 @@ import unittest
 
 import numpy as np
 
-from subject_evolution.config import load_config, validate_config
-from subject_evolution.knowledge import (
+from se.cfg import load_config, validate_config
+from se.knowledge import (
     ACQUISITION_PRIVATE_EXPERIENCE,
     KnowledgeSystem,
     KnowledgeTransferPlan,
     OUTCOME_WIDTH,
 )
-from subject_evolution.knowledge_policy import KnowledgePolicyPlan
-from subject_evolution.simulation import Simulation
+from se.knowledge.policy import KnowledgePolicyPlan
+from se.runtime.sim import Simulation
 
 
 ROOT = Path(__file__).resolve().parents[1]

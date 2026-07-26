@@ -1,0 +1,20 @@
+{
+  "schema": "gui-observation-only-validation-v1",
+  "ticks": 30,
+  "publish_every": 2,
+  "authoritative_state_difference_count": 0,
+  "first_differences": [],
+  "byte_identical_non_timing_outputs": {
+    "evolution_progress.jsonl": true,
+    "knowledge_events.jsonl": true,
+    "knowledge_outcome_updates.csv": true,
+    "knowledge_policy_contributions.csv": true,
+    "knowledge_routing_costs.csv": true,
+    "knowledge_selection_events.csv": true,
+    "knowledge_transfers.csv": true,
+    "knowledge_working_memory.csv": true,
+    "environment_atlas.jsonl": true,
+    "environment_atlas_summary.json": true
+  },
+  "latest_frame_tick": 30
+}
