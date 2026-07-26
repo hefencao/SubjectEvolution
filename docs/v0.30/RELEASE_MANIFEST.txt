@@ -1,0 +1,22 @@
+Subject Evolution v0.30 release contents
+========================================
+
+Primary code additions:
+- src/subject_evolution/subject_structure.py
+- src/subject_evolution/environment_atlas.py
+- src/subject_evolution/structure_environment_analysis.py
+
+Primary configuration:
+- configs/mvp_short_subject_structure_multienvironment_atlas_longrun.json
+
+Primary version documentation:
+- docs/v0.30/SUBJECT_STRUCTURE_SUCCESSION.md
+- docs/v0.30/MULTISCALE_ENVIRONMENT_ATLAS.md
+- docs/v0.30/DIRECTION_AND_EXPERIMENT_PLAN.md
+- docs/v0.30/protocol_audit.md
+- docs/v0.30/V029_V030_COMPATIBILITY_REPORT.json
+- docs/v0.30/SMOKE_VALIDATION_REPORT.json
+- docs/v0.30/FINAL_TEST_REPORT.txt
+- docs/v0.30/PACKAGING_VALIDATION_REPORT.json
+
+Release archives intentionally exclude docs/archive and generated caches/build products.

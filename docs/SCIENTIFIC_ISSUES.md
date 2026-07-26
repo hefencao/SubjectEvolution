@@ -1,6 +1,6 @@
 # 科学问题与研究债务
 
-本文件以 v0.29 代码、三个 seed 的 1500-tick 长跑、18-anchor manifest，以及用户提供的 **108/108 event-timed pairs** 为准。“已实现”只表示机制、诊断或防护存在，不表示科学假设成立。
+本文件以 v0.30 代码、三个 seed 的 1500-tick 既有长跑、18-anchor manifest、108/108 event-timed pairs，以及新增主体结构/多尺度环境诊断为准。“已实现”只表示机制、诊断或防护存在，不表示科学假设成立。
 
 | ID | 状态 | 当前问题 | 下一步判据 |
 |---|---|---|---|
@@ -34,6 +34,13 @@
 | TIME-01 | 开放 | 世界 tick 不等于演化世代，120-tick horizon 不等于相同出生机会。 | 同时报告世代、出生量、有效谱系和共同 cohort 组成。 |
 | ENV-01 | 边界完成 | 生物型危险源会复制现有实体语义并混淆主体层级。 | 科学核心不新增第二套生命周期；合成移动场只作默认关闭插件。 |
 | ENV-02 | 开放 | 信息通道仍固定为资源、危险、社会。 | 设计版本化任意信息通道 schema，保持旧配置/checkpoint 兼容。 |
+| SUBJECT-STRUCT-01 | v0.30 测量完成 | 当前候选社会结构此前只有截面节点和累计 benefit，缺少跨 refresh 的连续性。 | 使用 stable-ID membership succession 报 formation/dissolution/split/merge/Jaccard；不得把 overlap edge 当成主体身份定理。 |
+| SUBJECT-STRUCT-02 | 开放 | 同一 group token 可能在成员大幅更替后仍存续，token 改变也可能保留大部分成员。 | 同时报告 same-token、exact-membership、Jaccard、source retention 和 target inheritance；不使用单一 token 判定连续性。 |
+| SUBJECT-STRUCT-03 | 开放 | 当前只有 body、lineage、single-level social group，尚无 group-of-groups、制度或任意嵌套。 | 先定义版本化层级/包含/控制/维护边，再实现可回放嵌套图；不得把 succession tracker 冒充嵌套数据库。 |
+| SUBJECT-ENV-01 | v0.30 测量完成、因果开放 | 谱系或社会群组的实现环境暴露可能不同，但 association 同时受迁移、共同历史、人口瓶颈和标签粒度影响。 | 报 covered fraction、scale、span 和共同时间趋势；后续使用 matched environment-phase interventions。 |
+| SUBJECT-ENV-02 | 开放 | 多尺度 association 可能随 region count 机械变化，粗尺度平均差异、细尺度放大局部迁移。 | 预注册 2×2/4×4/8×8，不事后挑尺度；只有跨尺度/跨 seed 稳定方向才进入反事实阶段。 |
+| ENV-ATLAS-01 | v0.30 测量完成 | 六维 signature 仍由固定四资源、hazard、mortality trace 构成，不等于任意环境空间。 | 报 schema 和维度；新增环境维度必须新 schema 并保持旧 checkpoint/分析兼容。 |
+| ENV-ATLAS-02 | 开放 | Euclidean signature distance 与 covariance effective dimensions 受各维量尺和饱和影响。 | 保持容量归一化，报告各维分布；比较 robust scaling 只能作为新诊断 schema。 |
 | SUBJECT-01 | 开放 | 身体、谱系、社会和知识节点都是候选主体结构，不是主体性结论。 | 需要维持、边界修复、控制贡献和删除反事实多指标矩阵。 |
 | SHIFT-01 | 开放 | 主体偏移不能写成实体状态或由单次依赖代理推出。 | 预注册 matched non-events 与跨尺度控制/物质流比较。 |
 | GPU-01 | 未完成 | `hybrid-accelerated` 多 tick parity 尚未证明；当前科学运行是 strict-reference。 | 真实 CUDA 逐阶段定位首差异；科学运行继续 strict-reference。 |
@@ -52,3 +59,6 @@
 7. anchor z-score 是区域内排序量，不是跨事件、跨地图的统一压力尺度。
 8. event cohort 只有在 stable-ID identity hashes 相同时才是共同 cohort。
 9. endpoint cohort 分解不是完整路径流量或死亡时序。
+10. succession overlap 是候选结构的成员连续性，不是主体身份、繁殖或制度继承。
+11. environment association 是实现暴露分化，不识别环境选择方向或主体主动适应。
+12. atlas scale、covered fraction 和 label size 必须共同报告，禁止事后选择最强尺度。

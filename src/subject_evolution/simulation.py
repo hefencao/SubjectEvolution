@@ -92,6 +92,8 @@ from .lifecycle import (
 from .metrics import MetricsWriter
 from .local_stress import LocalStressDiagnostics
 from .event_cohort import EventCohortDiagnostics
+from .subject_structure import SubjectStructureDiagnostics
+from .environment_atlas import EnvironmentAtlasDiagnostics
 from .niches import (
     AFFINITY_SCALE,
     RESOURCE_CHANNELS,
@@ -643,6 +645,28 @@ class Simulation:
             if cfg.run.spatial_stress_diagnostics_enabled
             else None
         )
+        self.subject_structure_diagnostics = (
+            SubjectStructureDiagnostics(
+                self.output_dir,
+                schema=cfg.run.subject_structure_diagnostics_schema,
+            )
+            if cfg.run.subject_structure_diagnostics_enabled
+            else None
+        )
+        self.environment_atlas_diagnostics = (
+            EnvironmentAtlasDiagnostics(
+                self.output_dir,
+                world_width=cfg.world.width,
+                world_height=cfg.world.height,
+                world_grid_x=cfg.world.grid_x,
+                world_grid_y=cfg.world.grid_y,
+                resource_capacity=cfg.environment.resource_capacity,
+                scales=cfg.run.environment_atlas_scales,
+                schema=cfg.run.environment_atlas_diagnostics_schema,
+            )
+            if cfg.run.environment_atlas_diagnostics_enabled
+            else None
+        )
         # Run-local, diagnostic-only endpoint cohort decomposition used by
         # preregistered natural-event branches. It is never checkpoint state and
         # never feeds the world.
@@ -783,6 +807,23 @@ class Simulation:
             "spatial_stress_region_partition": (
                 self.local_stress_diagnostics.partition.metadata()
                 if self.local_stress_diagnostics is not None
+                else None
+            ),
+            "subject_structure_diagnostics_enabled": (
+                self.subject_structure_diagnostics is not None
+            ),
+            "subject_structure_diagnostics_schema": (
+                self.cfg.run.subject_structure_diagnostics_schema
+            ),
+            "environment_atlas_diagnostics_enabled": (
+                self.environment_atlas_diagnostics is not None
+            ),
+            "environment_atlas_diagnostics_schema": (
+                self.cfg.run.environment_atlas_diagnostics_schema
+            ),
+            "environment_atlas": (
+                self.environment_atlas_diagnostics.metadata()
+                if self.environment_atlas_diagnostics is not None
                 else None
             ),
             "spatial_cultural_transfer_diagnostics_enabled": (
@@ -1093,6 +1134,16 @@ class Simulation:
                 if self.local_stress_diagnostics is not None
                 else None
             ),
+            "subject_structure_diagnostics": (
+                self.subject_structure_diagnostics.snapshot_state()
+                if self.subject_structure_diagnostics is not None
+                else None
+            ),
+            "environment_atlas_diagnostics": (
+                self.environment_atlas_diagnostics.snapshot_state()
+                if self.environment_atlas_diagnostics is not None
+                else None
+            ),
             "last_active": self.last_active.copy(),
             "last_cells": self.last_cells.copy(),
             "last_local_resources": self.last_local_resources.copy(),
@@ -1286,6 +1337,26 @@ class Simulation:
                     world_grid_y=self.cfg.world.grid_y,
                 )
             self.local_stress_diagnostics.restore_state(local_state)
+        subject_structure_state = state.get("subject_structure_diagnostics")
+        if subject_structure_state is not None:
+            if self.subject_structure_diagnostics is None:
+                self.subject_structure_diagnostics = SubjectStructureDiagnostics(
+                    self.output_dir
+                )
+            self.subject_structure_diagnostics.restore_state(subject_structure_state)
+        environment_atlas_state = state.get("environment_atlas_diagnostics")
+        if environment_atlas_state is not None:
+            if self.environment_atlas_diagnostics is None:
+                self.environment_atlas_diagnostics = EnvironmentAtlasDiagnostics(
+                    self.output_dir,
+                    world_width=self.cfg.world.width,
+                    world_height=self.cfg.world.height,
+                    world_grid_x=self.cfg.world.grid_x,
+                    world_grid_y=self.cfg.world.grid_y,
+                    resource_capacity=self.cfg.environment.resource_capacity,
+                    scales=self.cfg.run.environment_atlas_scales,
+                )
+            self.environment_atlas_diagnostics.restore_state(environment_atlas_state)
         self.last_active = np.asarray(state["last_active"], dtype=np.int32).copy()
         self.last_cells = np.asarray(state["last_cells"], dtype=np.int32).copy()
         self.last_local_resources = np.asarray(
@@ -1474,6 +1545,16 @@ class Simulation:
         branch.local_stress_diagnostics = (
             self.local_stress_diagnostics.clone()
             if self.local_stress_diagnostics is not None
+            else None
+        )
+        branch.subject_structure_diagnostics = (
+            self.subject_structure_diagnostics.clone(branch.output_dir)
+            if self.subject_structure_diagnostics is not None
+            else None
+        )
+        branch.environment_atlas_diagnostics = (
+            self.environment_atlas_diagnostics.clone(branch.output_dir)
+            if self.environment_atlas_diagnostics is not None
             else None
         )
         branch.last_birth_allocation = copy.deepcopy(self.last_birth_allocation)
@@ -2467,6 +2548,25 @@ class Simulation:
             mortality_trace_field = self.gpu_runtime.environment.to_numpy(
                 self.gpu_runtime.environment.mortality_trace
             ).astype(np.float32, copy=False)
+        structure_environment_metrics: dict[str, object] = {}
+        if self.subject_structure_diagnostics is not None:
+            structure_environment_metrics.update(
+                self.subject_structure_diagnostics.latest_metrics()
+            )
+        if self.environment_atlas_diagnostics is not None:
+            structure_environment_metrics.update(
+                self.environment_atlas_diagnostics.observe(
+                    tick=self.tick,
+                    resources=resource_fields,
+                    hazard=hazard_field,
+                    mortality_trace=mortality_trace_field,
+                    alive=self.entities.alive,
+                    x=self.entities.x,
+                    y=self.entities.y,
+                    lineage_ids=self.entities.lineage_id,
+                    group_ids=self.social.group_id,
+                )
+            )
         environment_metrics: dict[str, object] = {
             "environment_schema": self.cfg.environment.schema,
             "mortality_trace_schema": self.cfg.environment.mortality_trace_schema,
@@ -2509,6 +2609,7 @@ class Simulation:
             "environment_hazard_std": float(
                 hazard_field.std(dtype=np.float64)
             ),
+            **structure_environment_metrics,
             **resource_affinity_diagnostics(
                 self.entities.alive, self.entities.genotype, self.cfg
             ),
@@ -3705,6 +3806,15 @@ class Simulation:
                 self.last_group_plan.member_indices,
                 self.tick,
             )
+            if self.subject_structure_diagnostics is not None:
+                self.subject_structure_diagnostics.observe_group_refresh(
+                    tick=self.tick,
+                    group_tokens=self.last_group_plan.group_tokens,
+                    member_starts=self.last_group_plan.member_starts,
+                    member_counts=self.last_group_plan.member_counts,
+                    member_indices=self.last_group_plan.member_indices,
+                    stable_ids=ent.entity_id,
+                )
             stats.group_updated = 1
         else:
             self.social.note_group_update_skipped()
@@ -4704,6 +4814,10 @@ class Simulation:
             self.metrics.close()
             self.evolution_progress.close()
             self.knowledge.close()
+            if self.subject_structure_diagnostics is not None:
+                self.subject_structure_diagnostics.close()
+            if self.environment_atlas_diagnostics is not None:
+                self.environment_atlas_diagnostics.close()
             if self._trajectory_file is not None:
                 self._trajectory_file.close()
         interventions_metadata: dict[str, object] = {
@@ -4776,6 +4890,16 @@ class Simulation:
             "final": final_row,
             "action_counts": {action.name: int(self.action_counts[action]) for action in Action},
             "subject_graph": self.subjects.summary(),
+            "subject_structure_diagnostics": (
+                self.subject_structure_diagnostics.summary()
+                if self.subject_structure_diagnostics is not None
+                else None
+            ),
+            "environment_atlas_diagnostics": (
+                self.environment_atlas_diagnostics.summary()
+                if self.environment_atlas_diagnostics is not None
+                else None
+            ),
             "model_rules": {
                 "reproduction_capacity_arbitration": (
                     self.cfg.entities.reproduction_capacity_arbitration

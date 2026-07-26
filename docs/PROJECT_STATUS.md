@@ -1,108 +1,101 @@
 # Subject Evolution 项目状态
 
-版本：**0.29.0**
+版本：**0.30.0**
 
-## 本轮输入与结论
+## 当前主线
 
-用户提供的 `analyses.zip` 包含三组完整的 v0.28 event-timed 结果：
+项目主线已从自然事件执行工具转向：
 
-| 批次 | Anchors | Eligible pairs | Pairing failures |
-|---|---:|---:|---:|
-| primary mechanisms | 18 | 54 | 0 |
-| crowding knowledge mechanisms | 6 | 18 | 0 |
-| mortality/scarcity knowledge mechanisms | 12 | 36 | 0 |
-| **合计** | **18 unique** | **108/108** | **0** |
+1. **主体结构**：候选社会结构的持续、分裂、合并、消散和复现；
+2. **多元环境**：多尺度资源组合、危险、死亡痕迹、环境周转及主体暴露分化；
+3. **结构—环境耦合**：只做观察性测量与可审计实验设计，不把关联升级为主体性或环境因果结论。
 
-全部 branch 使用 `anchor-event-tick-v1`，baseline/intervention 在 event alive、全局 stable-ID hash 与区域 stable-ID hash 上一致。结果支持以下有限结论：
+v0.29 的 group label、region partition、anchor selection 与 event-timed 工作流继续保留，作为已完成的测量与实验基础。
 
-1. `disable-knowledge-transfer` 在 crowding、mortality、scarcity 中均减少区域 active transferred roots 和新传播活动，属于跨事件重复的文化状态维持作用；不等于人口、适应度或主体性收益。
-2. `freeze-group-refresh` 对 current-label cohesion 的方向主要由标签评价边界变化产生；checkpoint-common cohesion 没有跨 seed、跨事件稳定方向。
-3. `disable-knowledge-policy`、`ablate-working-memory`、`bypass-sparse-selection` 及资源亲和消融的下游方向依赖事件类型；现有结果不足以修改默认机制或参数。
+## v0.30 新增能力
 
-v0.29 因此没有新增世界规则，而是将 group label、区域划分和 anchor selection 明确版本化并写入 provenance。
+### Candidate-subject succession
 
-## v0.29 新增能力
+- schema：`stable-membership-subject-succession-v1`；
+- 每次实际 group refresh 后按 stable entity ID 比较成员集合；
+- 记录 formation、dissolution、split、merge、reactivation；
+- 记录 same-token、exact-membership、member-weighted Jaccard 和 inheritance；
+- stable ID 防止槽位复用伪造主体连续性；
+- succession edge 不进入世界主体图，不反馈世界。
 
-### Group-label protocol
+### Multiscale subject–environment atlas
 
-- schema：`trusted-directed-fixed-round-min-label-v1`；
-- edge：目标 alive 且 materialized trust 达到阈值的有向关系槽；
-- propagation：物理槽位标签初始化，固定轮数最小标签传播；
-- group token：传播根槽位上的 stable entity ID；
-- minimum size：不足最小成员数的组件保持未分组；
-- flagship：threshold `0.12`、rounds `8`、minimum members `6`；
-- refresh 与 label propagation 分层：旗舰使用 `adaptive-topology-v1`，最短 100、最长 300 ticks。
+- schema：`multiscale-subject-environment-atlas-v1`；
+- signature：四资源容量归一化均值 + hazard + mortality trace；
+- 支持多个 `normalized-fixed-count-grid-v1` scale；
+- 当前主线配置使用 `2×2`、`4×4`、`8×8`；
+- 记录环境有效维数、区域距离、资源空间 CV、时间周转和实体区域有效数；
+- 记录 lineage/social exposure association、covered fraction 和 region span；
+- association 仅包含至少两个成员的 label，排除 social token 0。
 
-该协议是候选群组测量，不是精确无向连通分量，也不是主体存在判定。
+### Offline synthesis
 
-### Spatial-region protocol
+- 新增 `multi-seed-subject-environment-analysis-v1`；
+- 将每个 atlas evaluation 对齐到此前最近一次 group refresh；
+- 报告环境周转与主体继承、split/merge、social association/span 的观察性相关；
+- 先逐 run/seed 分析，再登记至少三个 seed 同号方向。
 
-- schema：`normalized-fixed-count-grid-v1`；
-- normalized equal-area rectangular partition；
-- row-major-y-then-x region IDs；
-- 发布物理区域宽高、world-cell 覆盖、对齐状态、topology/partition SHA-256；
-- 4×4 区域在 128×128 地图上每区 32×32 物理单位；若地图变大而区域数不变，物理区域面积同步变大；
-- manifest 默认拒绝混合不同物理区域几何，显式 override 才能继续。
+### Protocol and long-run schemas
 
-### Anchor-selection protocol
-
-- 当前新 manifest schema：`natural-event-paired-intervention-matrix-v2`；
-- selection schema：`exposure-only-local-peak-selection-v2`；
-- 每个区域自己的 80% exposure 分位阈值；
-- 内部局部峰、区域内最小间隔、区域内 z-score 排序；
-- 优先不同区域，再按 z-score 降序、tick 升序、region ID 升序；
-- 最新严格早于 event tick 的完整 checkpoint；
-- 选择过程不读取事后 outcome；
-- z-score 不可跨事件类型解释为统一强度。
-
-### Protocol audit 与长期分析
-
-- 新增 `subject_evolution.protocol_audit`；
-- run manifest、run metadata、scientific validity、local diagnostics 和 event cohort 发布协议字段与哈希；
-- long-run analysis 升级为 `multi-seed-long-run-analysis-v8`；
-- 旧 v1 natural-event manifest 继续可读取，缺失的新字段会标记为 legacy/inferred，而不是伪造物理几何。
+- protocol audit：`structural-measurement-protocol-audit-v2`；
+- long-run analysis：`multi-seed-long-run-analysis-v9`；
+- run manifest 与 run metadata 发布主体 succession 和 atlas provenance；
+- full checkpoint、clone 和 trusted replay 保存诊断 accounting state。
 
 ## 当前实现矩阵
 
-| 领域 | 状态 | 边界 |
+| 领域 | 状态 | 当前边界 |
 |---|---|---|
-| CPU reference | 完成 | 当前科学语义权威 |
-| GPU strict-reference | 完成 | 验证设备，执行 reference 世界 |
-| GPU hybrid-accelerated | 部分完成 | 长程 parity 未证明 |
-| 四资源异步生态位 | 完成 | 任意信息通道 schema 未完成 |
-| 环境插件 ABI | 完成 | 非负标量场、默认关闭、无实体访问 |
-| 实体/生命周期/谱系 | 完成 | 主要提交仍在 CPU |
-| 遗传策略与 K1–K4 知识 | 完成 | 固定行动/特征 vocabulary 仍是模型约束 |
-| L1/L2、路由成本、记忆、Top-k | 完成 | 均可 checkpoint 与消融 |
-| 社会关系与 adaptive groups | 完成 | 候选主体结构，不是主体性判定 |
-| group-label provenance | **v0.29 完成** | 有向、有限轮传播，不宣称精确组件 |
-| spatial-region provenance | **v0.29 完成** | 固定归一化区域数，物理尺度随地图变化 |
-| anchor-selection provenance | **v0.29 v2** | outcome-blind，自然峰值非随机 exposure |
-| event-timed paired execution | 完成 | 108/108 用户结果 pairing 通过 |
-| common boundary / event cohort | 完成 | 诊断层，不反馈世界 |
-| result synthesis | 完成 | timing estimand 不可混合，seed-first 聚合 |
-| 任意嵌套主体数据库 | 未完成 | 当前是候选图与摘要 |
-| 主体性/主体偏移评分 | 未完成 | 不允许由单一代理推出 |
+| CPU reference | 完成 | 科学语义权威 |
+| GPU strict-reference | 完成 | 验证设备，世界仍使用 reference 语义 |
+| GPU hybrid-accelerated | 部分 | 多 tick parity 未证明 |
+| 四资源异步生态位 | 完成 | 资源和环境 vocabulary 仍固定 |
+| 多尺度环境 atlas | **v0.30 完成** | 纯诊断，不是环境因果 |
+| 身体/谱系/社会候选图 | 完成 | 仅一层社会群组，不是任意嵌套 |
+| 社会结构 succession | **v0.30 完成** | 成员重叠关系，不是主体身份定理 |
+| 结构—环境 multi-seed analysis | **v0.30 完成** | 观察性、时间和人口混杂仍存在 |
+| K1–K4、L1/L2、记忆、Top-k | 完成 | 固定 action/feature vocabulary |
+| group/region/anchor provenance | v0.29 完成 | 测量协议改变必须新 schema/hash |
+| event-timed paired execution | 完成 | 自然 exposure 本身未随机化 |
+| 任意嵌套主体数据库 | 未完成 | 当前 graph 不支持 group-of-groups |
+| 主体性评分 | 未完成 | 不允许由 persistence 或 association 单指标推出 |
+| 任意环境/信息通道 schema | 未完成 | 当前资源 4、危险/社会通道固定 |
 | Hero RL、多 GPU | 未完成 | 当前非科学优先级 |
 
 ## 当前科学解释
 
-1. 传播在共同 event state 后维持短期局部文化状态；没有证明其人口收益。
-2. 群组刷新消融的 current-label cohesion 受定义耦合，必须优先 common-boundary 口径。
-3. 区域人口由留存、迁出、缺失、既有实体迁入和事件后出生共同构成；方向依赖事件类型。
-4. 两个 anchors/seed 先在 seed 内平均，不能当作六个独立重复。
-5. 区域、群组与 anchor 都是测量协议；改变协议必须产生新 schema/hash，不能静默改义。
+1. 现有 event-timed 108/108 pairs 支持知识传播维持短期局部文化状态，但不证明人口收益。
+2. 群组标签是有向有限轮候选分组；succession 只是该测量规则下的成员集合连续性。
+3. 多尺度 atlas 描述环境状态空间和实现暴露，不证明环境选择或主体主动选址。
+4. lineage/social association 必须结合 covered fraction；singleton 主导时不解释。
+5. structure–environment 相关可能由迁移、谱系历史、人口瓶颈和共同时间趋势产生。
+6. 在获得三 seed 长跑的动态范围前，不引入新的主体层级或环境机制。
 
-## 验证
+## 新主线配置
 
-- 全量测试：`136 passed, 1 skipped`；
-- 新测试覆盖固定传播轮数的可达范围差异、地图尺寸下 topology/partition hash 分离、manifest 混合几何拒绝和 protocol audit；
-- 默认世界兼容与 trusted checkpoint 恢复报告位于 `docs/v0.29/`；
-- 默认动力学未因协议 provenance 改变。
+```text
+configs/mvp_short_subject_structure_multienvironment_atlas_longrun.json
+```
+
+该配置保留既有 flagship 动力学，只新增诊断输出和 2×2/4×4/8×8 atlas。
+
+## 验证状态
+
+- 全量测试：`142 passed, 1 skipped`；
+- 跳过项：真实 CUDA/CuPy 设备测试；
+- 定向 smoke 已产生 succession、atlas、run manifest 和 long-run v9 输出；
+- 默认 v0.29/v0.30 世界轨迹和 trusted checkpoint 兼容性已记录于 `docs/v0.30/V029_V030_COMPATIBILITY_REPORT.json`；
+- 新诊断默认关闭，因此旧配置不会产生额外 evolution-progress 字段。
 
 ## 下一阶段
 
-1. 使用 v2 manifest 对至少两种地图物理尺寸或 region count 做**预注册尺度敏感性实验**，不直接池化不同 partition hash；
-2. 对 group label 的 rounds、threshold、minimum members 做诊断敏感性矩阵，保持世界轨迹不变并报告候选群组稳定性；
-3. 仅在上述测量稳健性成立后，才讨论社会候选结构的跨尺度解释；
-4. 任意信息通道 schema 与真实 CUDA hybrid parity 继续作为独立工程主线。
+1. 运行三 seed、1500-tick 新主线配置，检查 succession/atlas 动态范围；
+2. 对同步环境与异步多生态位环境做预注册消融；
+3. 对 group rounds/threshold/min-members/refresh schedule 做 schema-level 敏感性；
+4. 仅在结构指标跨 seed、跨尺度重复后，设计结构删除和环境相位 paired interventions；
+5. 任意嵌套主体与任意环境通道保持后续架构主线，不在当前阶段直接写入世界。

@@ -1,0 +1,50 @@
+{
+  "schema": "v030-subject-structure-environment-smoke-v1",
+  "config": "configs/mvp_short_subject_structure_multienvironment_atlas_longrun.json",
+  "backend": "cpu",
+  "ticks": 30,
+  "subject_structure": {
+    "schema": "stable-membership-subject-succession-v1",
+    "refresh_count": 1,
+    "active_groups_final": 0,
+    "interpretation": "30-tick smoke validates integration only; it is too short to assess structural persistence."
+  },
+  "environment_atlas": {
+    "schema": "multiscale-subject-environment-atlas-v1",
+    "evaluation_count": 1,
+    "scales": [
+      "2x2",
+      "4x4",
+      "8x8"
+    ],
+    "signature_effective_dimensions": {
+      "environment_atlas_2x2_signature_effective_dimensions": 1.9140472327738334,
+      "environment_atlas_4x4_signature_effective_dimensions": 2.296115240736238,
+      "environment_atlas_8x8_signature_effective_dimensions": 2.8259250817944475
+    },
+    "signature_mean_distance": {
+      "environment_atlas_2x2_signature_mean_distance": 0.43809057922908895,
+      "environment_atlas_4x4_signature_mean_distance": 0.48372405131428586,
+      "environment_atlas_8x8_signature_mean_distance": 0.5351389817275862
+    },
+    "lineage_covered_fraction": {
+      "environment_atlas_2x2_lineage_covered_fraction": 0.23943661971830985,
+      "environment_atlas_4x4_lineage_covered_fraction": 0.23943661971830985,
+      "environment_atlas_8x8_lineage_covered_fraction": 0.23943661971830985
+    },
+    "social_covered_fraction": {
+      "environment_atlas_2x2_social_covered_fraction": 0.0,
+      "environment_atlas_4x4_social_covered_fraction": 0.0,
+      "environment_atlas_8x8_social_covered_fraction": 0.0
+    }
+  },
+  "files_present": {
+    "subject_structure_transitions.jsonl": true,
+    "subject_structure_summary.json": true,
+    "environment_atlas.jsonl": true,
+    "environment_atlas_summary.json": true,
+    "run_manifest.json": true,
+    "run_metadata.json": true
+  },
+  "scientific_interpretation": "Integration smoke only; no causal or subjecthood conclusion."
+}

@@ -1,0 +1,19 @@
+Subject Evolution v0.30 final test report
+========================================
+
+Command:
+  PYTHONPATH=src:. pytest -q
+
+Result:
+  142 passed, 1 skipped, 0 failed
+
+Skipped:
+  Real CUDA/CuPy device-dependent test.
+
+New coverage:
+  - stable-membership split/merge classification
+  - stable entity ID versus reused physical slots
+  - multiscale environment signatures and temporal turnover
+  - lineage/social exposure association and coverage
+  - diagnostic config, output files, checkpoint restore
+  - offline structure-environment alignment and missing-input handling

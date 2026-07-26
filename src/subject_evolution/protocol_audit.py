@@ -13,7 +13,7 @@ from .natural_event_matrix import load_manifest
 from .spatial_partition import SpatialRegionPartition
 
 
-SCHEMA = "structural-measurement-protocol-audit-v1"
+SCHEMA = "structural-measurement-protocol-audit-v2"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -77,11 +77,57 @@ def build_protocol_audit(
             ],
         },
     }
+    atlas_partitions = [
+        SpatialRegionPartition(
+            world_width=cfg.world.width,
+            world_height=cfg.world.height,
+            world_grid_x=cfg.world.grid_x,
+            world_grid_y=cfg.world.grid_y,
+            regions_x=int(scale[0]),
+            regions_y=int(scale[1]),
+            schema=cfg.run.spatial_stress_region_schema,
+        ).metadata()
+        for scale in cfg.run.environment_atlas_scales
+    ]
     payload: dict[str, Any] = {
         "schema": SCHEMA,
         "config_path": str(Path(config_path).resolve()),
         "group_label_protocol": group,
+        "subject_structure_protocol": {
+            "enabled": bool(cfg.run.subject_structure_diagnostics_enabled),
+            "schema": cfg.run.subject_structure_diagnostics_schema,
+            "identity_key": "stable entity ID membership",
+            "transition_rule": (
+                "connect previous and current candidate groups when they share at least one "
+                "stable entity ID; classify zero/one/multiple overlap relations as "
+                "formation, persistence, split, merge, or dissolution"
+            ),
+            "feedback_to_world": False,
+            "interpretation": (
+                "membership succession among candidate social structures; not an ontological "
+                "identity theorem, arbitrary nesting graph, or subjecthood score"
+            ),
+        },
         "spatial_region_protocol": partition.metadata(),
+        "environment_atlas_protocol": {
+            "enabled": bool(cfg.run.environment_atlas_diagnostics_enabled),
+            "schema": cfg.run.environment_atlas_diagnostics_schema,
+            "scales": atlas_partitions,
+            "signature": [
+                "four capacity-normalized resource means",
+                "hazard mean",
+                "mortality-trace mean",
+            ],
+            "subject_exposure_association": (
+                "between-label share of realized regional signature variance for genetic "
+                "lineages and observed social groups"
+            ),
+            "feedback_to_world": False,
+            "interpretation": (
+                "descriptive multiscale environment heterogeneity and exposure segregation; "
+                "not environmental causation or subjecthood"
+            ),
+        },
         "anchor_protocol": None,
     }
     if manifest_path is not None:
@@ -135,6 +181,8 @@ def build_protocol_audit(
 def render_markdown(payload: dict[str, Any]) -> str:
     group = payload["group_label_protocol"]
     region = payload["spatial_region_protocol"]
+    subject_structure = payload["subject_structure_protocol"]
+    atlas = payload["environment_atlas_protocol"]
     lines = [
         "# Structural measurement protocol audit",
         "",
@@ -151,6 +199,14 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- token: {group['group_token_rule']}",
         f"- boundary: {group['interpretation']}",
         "",
+        "## Subject succession",
+        "",
+        f"- enabled / schema: {subject_structure['enabled']} / "
+        f"`{subject_structure['schema']}`",
+        f"- identity key: {subject_structure['identity_key']}",
+        f"- transition rule: {subject_structure['transition_rule']}",
+        f"- boundary: {subject_structure['interpretation']}",
+        "",
         "## Spatial regions",
         "",
         f"- schema: `{region['schema']}`",
@@ -160,6 +216,14 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"{region['world_cells_per_region_y']}",
         f"- grid-aligned: {region['world_grid_aligned']}",
         f"- map-size semantics: {region['map_size_semantics']}",
+        "",
+        "## Environment atlas",
+        "",
+        f"- enabled / schema: {atlas['enabled']} / `{atlas['schema']}`",
+        f"- scales: {', '.join(str(item['regions_x']) + '×' + str(item['regions_y']) for item in atlas['scales']) or 'none'}",
+        f"- signature: {', '.join(atlas['signature'])}",
+        f"- subject exposure: {atlas['subject_exposure_association']}",
+        f"- boundary: {atlas['interpretation']}",
     ]
     anchor = payload.get("anchor_protocol")
     if isinstance(anchor, dict):

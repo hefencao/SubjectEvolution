@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.30.0
+
+### Candidate-subject succession
+
+- 新增 `stable-membership-subject-succession-v1`，在每次实际 group refresh 后按 stable entity ID 比较候选群组成员集合。
+- 记录 formation、dissolution、split、merge、reactivation、same-token、exact-membership、member-weighted Jaccard 与 inheritance。
+- 槽位复用不产生伪继承；succession edge 保持在诊断层，不写入世界主体图。
+- 诊断 accounting state 支持 full checkpoint、trusted replay 与 branch clone。
+
+### Multiscale subject–environment atlas
+
+- 新增 `multiscale-subject-environment-atlas-v1`，使用四资源容量归一化均值、hazard 和 mortality trace 构造区域 signature。
+- 支持任意多个 `normalized-fixed-count-grid-v1` scale；新主线配置使用 2×2、4×4、8×8。
+- 新增 signature effective dimensions、区域距离、资源空间 CV、时间周转、实体区域有效数。
+- 新增 lineage/social exposure association、covered fraction 与 region span；association 排除 singleton labels 和 social token 0。
+
+### Offline synthesis and provenance
+
+- 新增 `multi-seed-subject-environment-analysis-v1`，把 atlas evaluation 对齐到此前最近 group refresh，并报告跨 seed 方向。
+- long-run analysis 升级为 `multi-seed-long-run-analysis-v9`。
+- protocol audit 升级为 `structural-measurement-protocol-audit-v2`。
+- run manifest、run metadata、resolved config 和科学解释文档发布 succession/atlas schema、scales 和 partition hashes。
+
+### Compatibility and packaging
+
+- 新诊断默认关闭，不改变旧配置的默认世界轨迹。
+- 新增 6 个定向测试，覆盖 split/merge、stable-ID 槽位复用、多尺度异质性、association、checkpoint 和离线综合。
+- `pyproject.toml` 继续显式依赖 `wheel`；发行包继续排除 `docs/archive`、缓存、Git 与构建临时目录。
+
 ## 0.29.0
 
 ### Completed event-timed matrix audit

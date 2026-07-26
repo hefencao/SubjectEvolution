@@ -133,3 +133,18 @@ Event cohort 将终点区域人口拆为 retained、survived outside、absent、
 ## Cross-result synthesis boundary
 
 `natural_event_result_synthesis` 要求输入绑定同一 manifest hash，以 anchor/intervention identity 去重，拒绝核心世界结果冲突，并重新执行 seed-first aggregation。它不能修改 manifest、补造结果、将自然事件变成随机实验，或从机制近端指标推出人口与主体性结论。
+
+## v0.30：主体 succession 与环境 atlas 诊断层
+
+v0.30 在低频观察层增加两个独立状态容器：
+
+- `SubjectStructureDiagnostics`
+- `EnvironmentAtlasDiagnostics`
+
+它们只消费已提交的世界状态或 group plan，不参与任何 proposer、arbiter、intent、resolution 或 commit 边界。
+
+`SubjectStructureDiagnostics` 在 group commit 后读取 canonical membership segments，并立即把物理 slot 映射为 stable entity ID。其 transition graph 是分析图，不进入 `CandidateSubjectGraph`。
+
+`EnvironmentAtlasDiagnostics` 在 evolution evaluation 点读取 CPU reference 或已同步的设备权威资源/危险/死亡痕迹字段。空间划分复用 `SpatialRegionPartition`，每个 scale 单独发布 partition hash。
+
+两者的 accounting state 进入 trusted full checkpoint，以保证诊断续跑一致；默认关闭时不生成状态、不增加 evolution-progress 字段，也不改变世界轨迹。

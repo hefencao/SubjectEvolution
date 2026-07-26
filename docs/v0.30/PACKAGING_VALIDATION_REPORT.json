@@ -1,0 +1,67 @@
+{
+  "schema": "subject-evolution-packaging-validation-v1",
+  "version": "0.30.0",
+  "build_system": {
+    "requires": [
+      "setuptools>=68",
+      "wheel"
+    ],
+    "build_backend": "setuptools.build_meta",
+    "python_build_module_available": false,
+    "wheel_build_command": "python -m pip wheel . --no-deps --no-build-isolation",
+    "reason_for_no_build_isolation": "The execution environment did not have the optional build frontend module available; installed setuptools and wheel backends were used directly."
+  },
+  "wheel_validation": {
+    "filename": "subject_evolution_mvp-0.30.0-py3-none-any.whl",
+    "install_command": "python -m venv --system-site-packages ...; pip install --no-deps ...",
+    "system_site_packages_reason": "NumPy was already available locally and network dependency resolution was intentionally avoided.",
+    "version_import": "0.30.0",
+    "subject_structure_import": true,
+    "environment_atlas_import": true,
+    "analysis_schema": "multi-seed-subject-environment-analysis-v1",
+    "console_script_help": true
+  },
+  "tests": {
+    "passed": 142,
+    "skipped": 1,
+    "failed": 0,
+    "command": "PYTHONPATH=src:. pytest -q"
+  },
+  "compatibility_report": "docs/v0.30/V029_V030_COMPATIBILITY_REPORT.json",
+  "source_tree": {
+    "file_count": 276,
+    "forbidden_entry_count": 0,
+    "forbidden_entries": [],
+    "archive_policy": [
+      "one top-level directory",
+      "exclude docs/archive",
+      "exclude .git",
+      "exclude caches",
+      "exclude build/dist",
+      "exclude egg-info"
+    ]
+  },
+  "patch_validation": {
+    "filename": "subject_evolution_v030.patch",
+    "base_version": "0.29.0",
+    "target_version": "0.30.0",
+    "dry_run": true,
+    "actual_apply": true,
+    "post_apply_tree_equal": true,
+    "line_count": 4262
+  },
+  "archive_validation": {
+    "project_zip": {
+      "file_count": 276,
+      "one_top_level_directory": true,
+      "integrity_test": true,
+      "forbidden_entry_count": 0
+    },
+    "project_tar_gz": {
+      "file_count": 276,
+      "one_top_level_directory": true,
+      "integrity_test": true,
+      "forbidden_entry_count": 0
+    }
+  }
+}

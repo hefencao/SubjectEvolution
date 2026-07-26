@@ -50,6 +50,17 @@ class RunConfig:
     # normalized world coordinates; scale consequences are published in
     # provenance rather than silently treated as invariant.
     spatial_stress_region_schema: str = "normalized-fixed-count-grid-v1"
+    # Optional observational subject-succession diagnostics. The tracker uses
+    # stable entity IDs to compare social-group memberships across refreshes;
+    # it never changes group labels or candidate-subject graph state.
+    subject_structure_diagnostics_enabled: bool = False
+    subject_structure_diagnostics_schema: str = "disabled"
+    # Optional multiscale environment/subject exposure atlas. Each scale is a
+    # normalized fixed-count partition expressed as [regions_x, regions_y].
+    # Empty scales keep archived configurations and outputs unchanged.
+    environment_atlas_diagnostics_enabled: bool = False
+    environment_atlas_diagnostics_schema: str = "disabled"
+    environment_atlas_scales: tuple[tuple[int, int], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -391,6 +402,12 @@ def load_config(path: str | Path) -> SimulationConfig:
                 "gpu_harvest_conflict_planner": _require(raw, "run").get(
                     "gpu_harvest_conflict_planner", True
                 ),
+                "environment_atlas_scales": tuple(
+                    tuple(int(value) for value in scale)
+                    for scale in _require(raw, "run").get(
+                        "environment_atlas_scales", ()
+                    )
+                ),
             }
         ),
         world=WorldConfig(**_require(raw, "world")),
@@ -600,6 +617,59 @@ def validate_config(cfg: SimulationConfig) -> None:
     ):
         raise ValueError(
             "spatial stress diagnostic grid cannot exceed the physical world grid"
+        )
+    if cfg.run.subject_structure_diagnostics_schema not in {
+        "disabled",
+        "stable-membership-subject-succession-v1",
+    }:
+        raise ValueError(
+            "run.subject_structure_diagnostics_schema must be 'disabled' or "
+            "'stable-membership-subject-succession-v1'"
+        )
+    if cfg.run.subject_structure_diagnostics_enabled != (
+        cfg.run.subject_structure_diagnostics_schema
+        == "stable-membership-subject-succession-v1"
+    ):
+        raise ValueError(
+            "subject structure diagnostics enabled/schema fields must agree"
+        )
+    if cfg.run.environment_atlas_diagnostics_schema not in {
+        "disabled",
+        "multiscale-subject-environment-atlas-v1",
+    }:
+        raise ValueError(
+            "run.environment_atlas_diagnostics_schema must be 'disabled' or "
+            "'multiscale-subject-environment-atlas-v1'"
+        )
+    if cfg.run.environment_atlas_diagnostics_enabled != (
+        cfg.run.environment_atlas_diagnostics_schema
+        == "multiscale-subject-environment-atlas-v1"
+    ):
+        raise ValueError(
+            "environment atlas diagnostics enabled/schema fields must agree"
+        )
+    if cfg.run.environment_atlas_diagnostics_enabled and not cfg.run.environment_atlas_scales:
+        raise ValueError(
+            "enabled environment atlas diagnostics require at least one scale"
+        )
+    seen_atlas_scales: set[tuple[int, int]] = set()
+    for scale in cfg.run.environment_atlas_scales:
+        if len(scale) != 2:
+            raise ValueError("each environment atlas scale must contain [x, y]")
+        regions_x, regions_y = (int(scale[0]), int(scale[1]))
+        if regions_x <= 0 or regions_y <= 0:
+            raise ValueError("environment atlas scale dimensions must be positive")
+        if regions_x > cfg.world.grid_x or regions_y > cfg.world.grid_y:
+            raise ValueError(
+                "environment atlas scales cannot exceed the physical world grid"
+            )
+        normalized_scale = (regions_x, regions_y)
+        if normalized_scale in seen_atlas_scales:
+            raise ValueError("environment atlas scales must be unique")
+        seen_atlas_scales.add(normalized_scale)
+    if not cfg.run.environment_atlas_diagnostics_enabled and cfg.run.environment_atlas_scales:
+        raise ValueError(
+            "disabled environment atlas diagnostics require an empty scale list"
         )
     if not isinstance(cfg.run.full_checkpoint_enabled, bool):
         raise ValueError("run.full_checkpoint_enabled must be a boolean")

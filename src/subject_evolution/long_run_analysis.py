@@ -746,6 +746,16 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
             "window rejection counters and knowledge_transfers.csv."
         )
     path_obj = Path(path)
+    subject_structure_final = {
+        key: value
+        for key, value in final.items()
+        if str(key).startswith("subject_structure_")
+    }
+    environment_atlas_final = {
+        key: value
+        for key, value in final.items()
+        if str(key).startswith("environment_atlas_")
+    }
     return {
         "path": str(path),
         "run_name": (
@@ -773,6 +783,8 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
             if "resource_affinity_effective_dimensions" in final
             else None
         ),
+        "subject_structure_final": subject_structure_final,
+        "environment_atlas_final": environment_atlas_final,
         "danger_direct_weight_mean_final": (
             float(final["danger_direct_weight_mean"])
             if "danger_direct_weight_mean" in final else None
@@ -994,7 +1006,7 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         if value["available_runs"] >= 3 and value["same_nonzero_sign"]
     ]
     return {
-        "schema": "multi-seed-long-run-analysis-v8",
+        "schema": "multi-seed-long-run-analysis-v9",
         "run_count": len(runs),
         "runs": runs,
         "endpoint_aggregate": aggregate,
@@ -1242,6 +1254,33 @@ def render_markdown(report: dict[str, Any]) -> str:
                 f"{_format(cohesion_event.get('post1_minus_pre1'))}"
             )
         lines.append("")
+    if any(run.get("subject_structure_final") for run in report["runs"]):
+        lines.extend(["## Candidate-subject succession diagnostics", ""])
+        for run in report["runs"]:
+            values = run.get("subject_structure_final", {})
+            if not values:
+                continue
+            lines.extend([
+                f"### {run['run_name']}",
+                f"- schema: `{values.get('subject_structure_schema', 'disabled')}`",
+                f"- refreshes / active / effective groups: {values.get('subject_structure_refresh_count', 0)} / {values.get('subject_structure_active_groups', 0)} / {_format(values.get('subject_structure_effective_groups'))}",
+                f"- weighted predecessor Jaccard / inheritance: {_format(values.get('subject_structure_weighted_jaccard'))} / {_format(values.get('subject_structure_weighted_inheritance'))}",
+                f"- cumulative splits / merges / formations / dissolutions: {values.get('subject_structure_split_count_total', 0)} / {values.get('subject_structure_merge_count_total', 0)} / {values.get('subject_structure_formation_count_total', 0)} / {values.get('subject_structure_dissolution_count_total', 0)}",
+                "",
+            ])
+    if any(run.get("environment_atlas_final") for run in report["runs"]):
+        lines.extend(["## Multiscale subject–environment atlas", ""])
+        for run in report["runs"]:
+            values = run.get("environment_atlas_final", {})
+            if not values:
+                continue
+            lines.append(f"### {run['run_name']}")
+            lines.append(f"- schema / scales: `{values.get('environment_atlas_schema', 'disabled')}` / {values.get('environment_atlas_scale_count', 0)}")
+            scale_prefixes = sorted({key[: key.find('_signature_effective_dimensions')] for key in values if key.endswith('_signature_effective_dimensions')})
+            for prefix in scale_prefixes:
+                scale = prefix.removeprefix('environment_atlas_')
+                lines.append(f"- {scale}: signature dims={_format(values.get(prefix + '_signature_effective_dimensions'))}, mean distance={_format(values.get(prefix + '_signature_mean_distance'))}, turnover={_format(values.get(prefix + '_temporal_turnover'))}, lineage association={_format(values.get(prefix + '_lineage_association'))}, social association={_format(values.get(prefix + '_social_association'))}")
+            lines.append("")
     lines.extend(["## Repeated local directional patterns", ""])
     if report.get("repeated_local_directional_patterns"):
         for key in report["repeated_local_directional_patterns"]:

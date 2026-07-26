@@ -1,0 +1,365 @@
+{
+  "schema": "multi-seed-subject-environment-analysis-v1",
+  "run_count": 1,
+  "available_run_count": 1,
+  "runs": [
+    {
+      "run_name": "v030_subject_env_smoke_final",
+      "run_dir": "/mnt/data/v030_subject_env_smoke_final",
+      "subject_refresh_count": 1,
+      "environment_evaluation_count": 1,
+      "scale_summaries": {
+        "2x2": {
+          "record_count": 1,
+          "final": {
+            "tick": 30,
+            "environment_signature_effective_dimensions": 1.9140472327738334,
+            "environment_signature_mean_distance": 0.43809057922908895,
+            "environment_temporal_turnover": 0.0,
+            "resource_spatial_cv_mean": 0.23712202968256887,
+            "lineage_environment_association": 1.0,
+            "lineage_environment_covered_fraction": 0.23943661971830985,
+            "lineage_region_span": 0.25,
+            "social_environment_association": 0.0,
+            "social_environment_covered_fraction": 0.0,
+            "social_region_span": 0.0,
+            "structure_tick": 0,
+            "active_groups": 0,
+            "effective_groups": 0.0,
+            "weighted_predecessor_jaccard": 0.0,
+            "weighted_predecessor_inheritance": 0.0,
+            "split_merge_count": 0
+          },
+          "slopes_per_1000_ticks": {
+            "environment_temporal_turnover": null,
+            "weighted_predecessor_jaccard": null,
+            "social_environment_association": null,
+            "social_region_span": null
+          },
+          "correlations": {
+            "environment_turnover_vs_subject_jaccard": null,
+            "environment_turnover_vs_split_merge": null,
+            "social_environment_association_vs_subject_jaccard": null,
+            "social_region_span_vs_subject_jaccard": null
+          },
+          "causal_caution": "Atlas evaluations are aligned to the latest observed group refresh. Correlations may reflect common population and temporal changes."
+        },
+        "4x4": {
+          "record_count": 1,
+          "final": {
+            "tick": 30,
+            "environment_signature_effective_dimensions": 2.296115240736238,
+            "environment_signature_mean_distance": 0.48372405131428586,
+            "environment_temporal_turnover": 0.0,
+            "resource_spatial_cv_mean": 0.30784248925115426,
+            "lineage_environment_association": 0.993668164739352,
+            "lineage_environment_covered_fraction": 0.23943661971830985,
+            "lineage_region_span": 0.06316021126760564,
+            "social_environment_association": 0.0,
+            "social_environment_covered_fraction": 0.0,
+            "social_region_span": 0.0,
+            "structure_tick": 0,
+            "active_groups": 0,
+            "effective_groups": 0.0,
+            "weighted_predecessor_jaccard": 0.0,
+            "weighted_predecessor_inheritance": 0.0,
+            "split_merge_count": 0
+          },
+          "slopes_per_1000_ticks": {
+            "environment_temporal_turnover": null,
+            "weighted_predecessor_jaccard": null,
+            "social_environment_association": null,
+            "social_region_span": null
+          },
+          "correlations": {
+            "environment_turnover_vs_subject_jaccard": null,
+            "environment_turnover_vs_split_merge": null,
+            "social_environment_association_vs_subject_jaccard": null,
+            "social_region_span_vs_subject_jaccard": null
+          },
+          "causal_caution": "Atlas evaluations are aligned to the latest observed group refresh. Correlations may reflect common population and temporal changes."
+        },
+        "8x8": {
+          "record_count": 1,
+          "final": {
+            "tick": 30,
+            "environment_signature_effective_dimensions": 2.8259250817944475,
+            "environment_signature_mean_distance": 0.5351389817275862,
+            "environment_temporal_turnover": 0.0,
+            "resource_spatial_cv_mean": 0.3637819846723548,
+            "lineage_environment_association": 0.9967180448392923,
+            "lineage_environment_covered_fraction": 0.23943661971830985,
+            "lineage_region_span": 0.01584507042253521,
+            "social_environment_association": 0.0,
+            "social_environment_covered_fraction": 0.0,
+            "social_region_span": 0.0,
+            "structure_tick": 0,
+            "active_groups": 0,
+            "effective_groups": 0.0,
+            "weighted_predecessor_jaccard": 0.0,
+            "weighted_predecessor_inheritance": 0.0,
+            "split_merge_count": 0
+          },
+          "slopes_per_1000_ticks": {
+            "environment_temporal_turnover": null,
+            "weighted_predecessor_jaccard": null,
+            "social_environment_association": null,
+            "social_region_span": null
+          },
+          "correlations": {
+            "environment_turnover_vs_subject_jaccard": null,
+            "environment_turnover_vs_split_merge": null,
+            "social_environment_association_vs_subject_jaccard": null,
+            "social_region_span_vs_subject_jaccard": null
+          },
+          "causal_caution": "Atlas evaluations are aligned to the latest observed group refresh. Correlations may reflect common population and temporal changes."
+        }
+      },
+      "available": true
+    }
+  ],
+  "cross_seed_directional_consistency": {
+    "2x2.correlations.environment_turnover_vs_split_merge": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "2x2.correlations.environment_turnover_vs_subject_jaccard": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "2x2.correlations.social_environment_association_vs_subject_jaccard": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "2x2.correlations.social_region_span_vs_subject_jaccard": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "2x2.slopes_per_1000_ticks.environment_temporal_turnover": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "2x2.slopes_per_1000_ticks.social_environment_association": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "2x2.slopes_per_1000_ticks.social_region_span": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "2x2.slopes_per_1000_ticks.weighted_predecessor_jaccard": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "4x4.correlations.environment_turnover_vs_split_merge": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "4x4.correlations.environment_turnover_vs_subject_jaccard": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "4x4.correlations.social_environment_association_vs_subject_jaccard": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "4x4.correlations.social_region_span_vs_subject_jaccard": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "4x4.slopes_per_1000_ticks.environment_temporal_turnover": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "4x4.slopes_per_1000_ticks.social_environment_association": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "4x4.slopes_per_1000_ticks.social_region_span": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "4x4.slopes_per_1000_ticks.weighted_predecessor_jaccard": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "8x8.correlations.environment_turnover_vs_split_merge": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "8x8.correlations.environment_turnover_vs_subject_jaccard": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "8x8.correlations.social_environment_association_vs_subject_jaccard": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "8x8.correlations.social_region_span_vs_subject_jaccard": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "8x8.slopes_per_1000_ticks.environment_temporal_turnover": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "8x8.slopes_per_1000_ticks.social_environment_association": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "8x8.slopes_per_1000_ticks.social_region_span": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    },
+    "8x8.slopes_per_1000_ticks.weighted_predecessor_jaccard": {
+      "available_runs": 0,
+      "mean": null,
+      "minimum": null,
+      "maximum": null,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false
+    }
+  },
+  "repeated_directions": [],
+  "interpretation_boundary": "Candidate-group succession and subject–environment association are observational measurements. Repeated directions motivate matched interventions but do not establish subject identity or environmental causation."
+}
