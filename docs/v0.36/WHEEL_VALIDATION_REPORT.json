@@ -1,0 +1,18 @@
+{
+  "schema": "v036-wheel-validation-v1",
+  "wheel": "se_mvp-0.36.0-py3-none-any.whl",
+  "version_imported": "0.36.0",
+  "installed_in_clean_venv": true,
+  "imports": [
+    "se",
+    "se.cfg",
+    "se.differentiation",
+    "se.runtime.sim"
+  ],
+  "console_scripts": {
+    "se": true,
+    "se-multi": true,
+    "se-gui": true
+  },
+  "build_command": "python -m pip wheel . --no-deps --no-build-isolation"
+}

@@ -231,6 +231,42 @@ class SimulationExperimentMixin:
             canonical = "bypass-sparse-selection"
             self.knowledge.sparse_selection_ablation_enabled = True
             details = {"authority": "ephemeral-selector-only", "knowledge_copies_removed": 0}
+        elif normalized == "neutralize-elastic-capacities":
+            if not self.cfg.differentiation.enabled:
+                raise ValueError(
+                    "neutralize-elastic-capacities requires inherited elastic capacities"
+                )
+            canonical = "neutralize-elastic-capacities"
+            self.capacity_ablation_enabled = True
+            phenotype = self.entities.neutralize_capacity_phenotype(active)
+            self.social.set_effective_capacities(
+                active, self.entities.relation_capacity[active]
+            )
+            evicted = self.knowledge.enforce_capacities(
+                alive=self.entities.alive,
+                primary_subject_id=self.entities.primary_subject_id,
+                knowledge_capacities=self.entities.knowledge_capacity_bytes,
+            )
+            if self.gpu_runtime is not None:
+                self.gpu_runtime.mark_entity_static_dirty()
+                self.gpu_runtime.mark_social_state_dirty()
+            details = {
+                "working_memory_dimensions": int(
+                    np.asarray(phenotype.working_memory_dimensions)[0]
+                ) if active.size else 0,
+                "knowledge_capacity_bytes": int(
+                    np.asarray(phenotype.knowledge_capacity_bytes)[0]
+                ) if active.size else 0,
+                "relation_slots": int(np.asarray(phenotype.relation_slots)[0])
+                if active.size else 0,
+                "knowledge_attention_slots": int(
+                    np.asarray(phenotype.knowledge_attention_slots)[0]
+                ) if active.size else 0,
+                "knowledge_copies_evicted": int(evicted),
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+                "future_offspring_expression_neutralized": True,
+            }
         elif normalized == "neutralize-resource-affinity":
             if (
                 self.cfg.entities.resource_affinity_schema

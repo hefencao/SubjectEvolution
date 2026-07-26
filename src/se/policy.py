@@ -7,6 +7,7 @@ import numpy as np
 
 from .backend import backend_from_array
 from .cfg import SimulationConfig
+from .differentiation.capacity import capacity_gene_count
 from .information import InformationObservation
 from se.knowledge import OUTCOME_WIDTH
 from se.knowledge.policy import KnowledgePolicyPlan
@@ -153,7 +154,7 @@ class ParametricPolicy:
         ) - 1
 
     @classmethod
-    def genome_size_for_config(cls, cfg: SimulationConfig) -> int:
+    def core_genome_size_for_config(cls, cfg: SimulationConfig) -> int:
         if cls.uses_latent_router(cfg):
             return (
                 cls.LATENT_ROUTER_START
@@ -162,6 +163,14 @@ class ParametricPolicy:
                 + sparse_selection_gene_count(cfg.knowledge)
             )
         return cls.K3_GENOME_SIZE if cls.uses_knowledge_residual(cfg) else cls.BASE_GENOME_SIZE
+
+    @classmethod
+    def capacity_gene_start(cls, cfg: SimulationConfig) -> int:
+        return cls.core_genome_size_for_config(cfg)
+
+    @classmethod
+    def genome_size_for_config(cls, cfg: SimulationConfig) -> int:
+        return cls.core_genome_size_for_config(cfg) + capacity_gene_count(cfg)
 
     @classmethod
     def outcome_preferences_from_genotype(cls, genotype: Any) -> Any:

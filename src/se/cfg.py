@@ -339,6 +339,33 @@ class KnowledgeConfig:
 
 
 @dataclass(frozen=True)
+class DifferentiationConfig:
+    """D1 inherited effective capacities over fixed physical maxima."""
+
+    enabled: bool = False
+    schema: str = "disabled"
+    working_memory_min_dimensions: int = 0
+    working_memory_max_dimensions: int = 4
+    knowledge_min_bytes: int = 0
+    knowledge_max_bytes: int = 512
+    knowledge_quantum_bytes: int = 32
+    relation_min_slots: int = 0
+    relation_max_slots: int = 8
+    attention_min_slots: int = 0
+    attention_max_slots: int = 4
+    mutation_probability: float = 0.02
+    mutation_std: float = 0.12
+    maintenance_energy_per_working_memory_dimension: float = 0.0
+    maintenance_energy_per_knowledge_byte: float = 0.0
+    maintenance_energy_per_relation_slot: float = 0.0
+    maintenance_energy_per_attention_slot: float = 0.0
+    development_energy_per_working_memory_dimension: float = 0.0
+    development_energy_per_knowledge_byte: float = 0.0
+    development_energy_per_relation_slot: float = 0.0
+    development_energy_per_attention_slot: float = 0.0
+
+
+@dataclass(frozen=True)
 class PolicyConfig:
     temperature: float
     partner_samples: int
@@ -391,6 +418,7 @@ class SimulationConfig:
     entities: EntityConfig
     information: InformationConfig
     knowledge: KnowledgeConfig
+    differentiation: DifferentiationConfig
     policy: PolicyConfig
     social: SocialConfig
     control: ControlConfig
@@ -614,6 +642,7 @@ def load_config(path: str | Path) -> SimulationConfig:
                 ),
             }
         ),
+        differentiation=DifferentiationConfig(**raw.get("differentiation", {})),
         policy=PolicyConfig(**policy_raw),
         social=SocialConfig(**_require(raw, "social")),
         control=ControlConfig(**raw.get("control", {})),
@@ -1346,6 +1375,56 @@ def validate_config(cfg: SimulationConfig) -> None:
     )
     if cfg.control.autonomy_harvest_threshold < 0:
         raise ValueError("control.autonomy_harvest_threshold cannot be negative")
+    dcfg = cfg.differentiation
+    if dcfg.schema not in {"disabled", "inherited-elastic-capacities-v1"}:
+        raise ValueError(
+            "differentiation.schema must be 'disabled' or "
+            "'inherited-elastic-capacities-v1'"
+        )
+    if dcfg.enabled != (dcfg.schema == "inherited-elastic-capacities-v1"):
+        raise ValueError("differentiation enabled/schema fields must agree")
+    capacity_bounds = (
+        ("working_memory", dcfg.working_memory_min_dimensions, dcfg.working_memory_max_dimensions),
+        ("knowledge", dcfg.knowledge_min_bytes, dcfg.knowledge_max_bytes),
+        ("relation", dcfg.relation_min_slots, dcfg.relation_max_slots),
+        ("attention", dcfg.attention_min_slots, dcfg.attention_max_slots),
+    )
+    for name, minimum, maximum in capacity_bounds:
+        if minimum < 0 or maximum < minimum:
+            raise ValueError(f"invalid differentiation {name} capacity bounds")
+    if dcfg.knowledge_quantum_bytes <= 0:
+        raise ValueError("differentiation.knowledge_quantum_bytes must be positive")
+    if (dcfg.knowledge_max_bytes - dcfg.knowledge_min_bytes) % dcfg.knowledge_quantum_bytes:
+        raise ValueError("knowledge capacity range must be divisible by its quantum")
+    _probability("differentiation.mutation_probability", dcfg.mutation_probability)
+    if not math.isfinite(dcfg.mutation_std) or dcfg.mutation_std < 0.0:
+        raise ValueError("differentiation.mutation_std must be finite and non-negative")
+    d1_costs = (
+        dcfg.maintenance_energy_per_working_memory_dimension,
+        dcfg.maintenance_energy_per_knowledge_byte,
+        dcfg.maintenance_energy_per_relation_slot,
+        dcfg.maintenance_energy_per_attention_slot,
+        dcfg.development_energy_per_working_memory_dimension,
+        dcfg.development_energy_per_knowledge_byte,
+        dcfg.development_energy_per_relation_slot,
+        dcfg.development_energy_per_attention_slot,
+    )
+    if any((not math.isfinite(value) or value < 0.0) for value in d1_costs):
+        raise ValueError("differentiation capacity costs must be finite and non-negative")
+    if dcfg.enabled:
+        if not cfg.knowledge.enabled or not cfg.knowledge.working_memory_enabled:
+            raise ValueError("D1 requires enabled knowledge and working memory")
+        if cfg.entities.relation_slots <= 0:
+            raise ValueError("D1 requires positive physical relation capacity")
+        if dcfg.working_memory_max_dimensions > cfg.knowledge.working_memory_width:
+            raise ValueError("D1 working-memory maximum exceeds physical working_memory_width")
+        if dcfg.knowledge_max_bytes > cfg.knowledge.holder_capacity_bytes:
+            raise ValueError("D1 knowledge maximum exceeds physical holder_capacity_bytes")
+        if dcfg.relation_max_slots > cfg.entities.relation_slots:
+            raise ValueError("D1 relation maximum exceeds physical relation_slots")
+        if dcfg.attention_max_slots > cfg.knowledge.attention_slots_per_tick:
+            raise ValueError("D1 attention maximum exceeds physical attention_slots_per_tick")
+
     if cfg.policy.temperature <= 0:
         raise ValueError("policy.temperature must be positive")
     _probability("policy.mutation_probability", cfg.policy.mutation_probability)

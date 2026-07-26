@@ -348,6 +348,7 @@ class SocialSystem:
         self.cfg = cfg
         k = cfg.entities.relation_slots
         self.target = np.full((capacity, k), -1, dtype=np.int32)
+        self.effective_capacity = np.full(capacity, k, dtype=np.uint16)
         self.trust = np.zeros((capacity, k), dtype=np.float32)
         self.familiarity = np.zeros((capacity, k), dtype=np.float32)
         self.last_interaction = np.zeros((capacity, k), dtype=np.uint32)
@@ -378,6 +379,50 @@ class SocialSystem:
     def mark_group_labels_dirty(self, reason: str) -> None:
         self._mark_group_labels_dirty(reason)
 
+    def set_effective_capacities(
+        self, indices: np.ndarray, capacities: np.ndarray
+    ) -> None:
+        rows = np.asarray(indices, dtype=np.int32)
+        values = np.asarray(capacities, dtype=np.int32)
+        if rows.ndim != 1 or values.shape != rows.shape:
+            raise ValueError("relation capacities must align with entity indices")
+        if rows.size == 0:
+            return
+        physical = self.target.shape[1]
+        if (
+            np.any(rows < 0)
+            or np.any(rows >= self.target.shape[0])
+            or np.any(values < 0)
+            or np.any(values > physical)
+        ):
+            raise ValueError("relation capacity exceeds the physical relation table")
+        old = self.effective_capacity[rows].astype(np.int32)
+        self.effective_capacity[rows] = values.astype(np.uint16)
+        slot_index = np.arange(physical, dtype=np.int32)[None, :]
+        disabled = slot_index >= values[:, None]
+        if np.any(disabled):
+            row_grid = np.broadcast_to(rows[:, None], disabled.shape)
+            slots = np.broadcast_to(slot_index, disabled.shape)
+            cut_rows = row_grid[disabled]
+            cut_slots = slots[disabled]
+            had_links = np.any(self.target[cut_rows, cut_slots] >= 0)
+            self.target[cut_rows, cut_slots] = -1
+            self.trust[cut_rows, cut_slots] = 0.0
+            self.familiarity[cut_rows, cut_slots] = 0.0
+            self.last_interaction[cut_rows, cut_slots] = 0
+            self.last_decay_tick[cut_rows, cut_slots] = self._UNTRACKED_DECAY_TICK
+            if had_links:
+                self._mark_group_labels_dirty("relation-capacity-trim")
+        changed = old != values
+        if np.any(changed):
+            changed_rows = rows[changed]
+            affects_existing_boundary = bool(
+                np.any(self.group_id[changed_rows] != 0)
+                or np.any(self.target[changed_rows] >= 0)
+            )
+            if affects_existing_boundary:
+                self._mark_group_labels_dirty("relation-capacity-change")
+
     def reset_entities(self, indices: np.ndarray) -> None:
         if indices.size == 0:
             return
@@ -390,6 +435,7 @@ class SocialSystem:
         self.familiarity[indices] = 0.0
         self.last_interaction[indices] = 0
         self.last_decay_tick[indices] = self._UNTRACKED_DECAY_TICK
+        self.effective_capacity[indices] = 0
         self.group_id[indices] = 0
         self.group_age[indices] = 0
         self.group_dir_x[indices] = 0.0
@@ -439,7 +485,10 @@ class SocialSystem:
     def _update_one(self, owner: int, target: int, trust_delta: float, tick: int) -> None:
         if owner < 0 or target < 0 or owner == target:
             return
-        row_targets = self.target[owner]
+        limit = int(self.effective_capacity[owner])
+        if limit <= 0:
+            return
+        row_targets = self.target[owner, :limit]
         existing = np.flatnonzero(row_targets == target)
         if existing.size:
             slot = int(existing[0])
@@ -469,21 +518,36 @@ class SocialSystem:
         """Apply one event for each distinct owner in a vectorized batch."""
         if owners.size == 0:
             return
+        has_capacity = self.effective_capacity[owners] > 0
+        owners = owners[has_capacity]
+        targets = targets[has_capacity]
+        trust_delta = trust_delta[has_capacity]
+        familiarity_delta = familiarity_delta[has_capacity]
+        if owners.size == 0:
+            return
         row_targets = self.target[owners]
-        existing_matches = row_targets == targets[:, None]
+        slot_index = np.arange(self.target.shape[1], dtype=np.int32)[None, :]
+        allowed = slot_index < self.effective_capacity[owners, None].astype(np.int32)
+        existing_matches = (row_targets == targets[:, None]) & allowed
         existing = existing_matches.any(axis=1)
         existing_slot = existing_matches.argmax(axis=1)
-        empty = row_targets < 0
+        empty = (row_targets < 0) & allowed
         has_empty = empty.any(axis=1)
         empty_slot = empty.argmax(axis=1)
         slots = np.where(existing, existing_slot, empty_slot).astype(np.int32)
         needs_replacement = ~existing & ~has_empty
         if np.any(needs_replacement):
             replacement_owners = owners[needs_replacement]
-            slots[needs_replacement] = (
+            replacement_score = (
                 self.trust[replacement_owners]
                 + np.float32(0.25) * self.familiarity[replacement_owners]
-            ).argmin(axis=1)
+            )
+            replacement_allowed = (
+                np.arange(self.target.shape[1], dtype=np.int32)[None, :]
+                < self.effective_capacity[replacement_owners, None].astype(np.int32)
+            )
+            replacement_score = np.where(replacement_allowed, replacement_score, np.inf)
+            slots[needs_replacement] = replacement_score.argmin(axis=1)
         new_relation = ~existing
         if np.any(new_relation):
             inserted_owners = owners[new_relation]

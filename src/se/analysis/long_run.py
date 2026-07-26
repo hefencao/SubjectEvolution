@@ -133,6 +133,7 @@ def _resolved_config_context(path: str | Path) -> dict[str, Any]:
     entities = config.get("entities", {}) if isinstance(config, dict) else {}
     run = config.get("run", {}) if isinstance(config, dict) else {}
     social = config.get("social", {}) if isinstance(config, dict) else {}
+    differentiation = config.get("differentiation", {}) if isinstance(config, dict) else {}
     world = config.get("world", {}) if isinstance(config, dict) else {}
     manifest_path = progress.parent / "run_manifest.json"
     manifest: dict[str, Any] = {}
@@ -235,6 +236,28 @@ def _resolved_config_context(path: str | Path) -> dict[str, Any]:
             "spatial_stress_diagnostics_schema"
         ),
         "spatial_region_partition": spatial_partition,
+        "differentiation_enabled": bool(differentiation.get("enabled", False)),
+        "differentiation_schema": differentiation.get("schema", "disabled"),
+        "differentiation_capacity_bounds": {
+            "working_memory_dimensions": [
+                differentiation.get("working_memory_min_dimensions"),
+                differentiation.get("working_memory_max_dimensions"),
+            ],
+            "knowledge_bytes": [
+                differentiation.get("knowledge_min_bytes"),
+                differentiation.get("knowledge_max_bytes"),
+            ],
+            "relation_slots": [
+                differentiation.get("relation_min_slots"),
+                differentiation.get("relation_max_slots"),
+            ],
+            "knowledge_attention_slots": [
+                differentiation.get("attention_min_slots"),
+                differentiation.get("attention_max_slots"),
+            ],
+        },
+        "differentiation_mutation_probability": differentiation.get("mutation_probability"),
+        "differentiation_mutation_std": differentiation.get("mutation_std"),
         "requested_backend": manifest.get("requested_backend"),
         "execution_backend": manifest.get("execution_backend"),
         "gpu_semantics_mode": manifest.get("gpu_semantics_mode"),
@@ -658,6 +681,12 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
     lineage_group_pair_enrichment = _array(records, "lineage_group_pair_enrichment")
     knowledge_effective_roots = _array(records, "knowledge_effective_root_contents")
     affinity_dims = _array(records, "resource_affinity_effective_dimensions")
+    capacity_dims = _array(records, "capacity_effective_dimensions")
+    capacity_working_memory = _array(records, "capacity_working_memory_dimensions_mean")
+    capacity_knowledge = _array(records, "capacity_knowledge_capacity_bytes_mean")
+    capacity_relations = _array(records, "capacity_relation_slots_mean")
+    capacity_attention = _array(records, "capacity_knowledge_attention_slots_mean")
+    environment_resource_dims = _array(records, "environment_resource_effective_dimensions")
 
     raw_correlations = {
         "mortality_vs_same_window_cohesion": _pearson(mortality, cohesion),
@@ -673,6 +702,34 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
             knowledge_effective_roots, effective_lineages
         ),
     }
+    capacity_correlations = {
+        "capacity_dimensions_vs_alive": _pearson(capacity_dims, alive),
+        "capacity_dimensions_vs_resource_environment_dimensions": _pearson(
+            capacity_dims, environment_resource_dims
+        ),
+        "capacity_dimensions_vs_resource_affinity_dimensions": _pearson(
+            capacity_dims, affinity_dims
+        ),
+        "capacity_dimensions_vs_boundary_cohesion": _pearson(
+            capacity_dims, cohesion
+        ),
+        "capacity_dimensions_vs_effective_transferred_roots": _pearson(
+            capacity_dims, _array(records, "knowledge_effective_transferred_roots")
+        ),
+        "working_memory_capacity_vs_action_entropy": _pearson(
+            capacity_working_memory, action_entropy
+        ),
+        "knowledge_capacity_vs_effective_root_contents": _pearson(
+            capacity_knowledge, knowledge_effective_roots
+        ),
+        "relation_capacity_vs_boundary_cohesion": _pearson(
+            capacity_relations, cohesion
+        ),
+        "attention_capacity_vs_committed_transfer": _pearson(
+            capacity_attention, _array(records, "knowledge_transfer_committed_window")
+        ),
+    }
+
     transfer_window = _array(records, "knowledge_transfer_committed_window")
     transfer_cross_lineage_window = _array(
         records, "knowledge_transfer_cross_lineage_committed_window"
@@ -769,6 +826,11 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
         for key, value in final.items()
         if str(key).startswith("environment_resource_")
     }
+    capacity_final = {
+        key: value
+        for key, value in final.items()
+        if str(key).startswith("capacity_") or key == "differentiation_schema"
+    }
     return {
         "path": str(path),
         "run_name": (
@@ -799,6 +861,7 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
         "subject_structure_final": subject_structure_final,
         "environment_atlas_final": environment_atlas_final,
         "resource_environment_final": resource_environment_final,
+        "capacity_final": capacity_final,
         "danger_direct_weight_mean_final": (
             float(final["danger_direct_weight_mean"])
             if "danger_direct_weight_mean" in final else None
@@ -906,7 +969,25 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
             "resource_affinity_effective_dimensions": _slope_per_1000_ticks(
                 ticks, affinity_dims
             ),
+            "capacity_effective_dimensions": _slope_per_1000_ticks(
+                ticks, capacity_dims
+            ),
+            "capacity_working_memory_dimensions_mean": _slope_per_1000_ticks(
+                ticks, capacity_working_memory
+            ),
+            "capacity_knowledge_capacity_bytes_mean": _slope_per_1000_ticks(
+                ticks, capacity_knowledge
+            ),
+            "capacity_relation_slots_mean": _slope_per_1000_ticks(
+                ticks, capacity_relations
+            ),
+            "capacity_knowledge_attention_slots_mean": _slope_per_1000_ticks(
+                ticks, capacity_attention
+            ),
         },
+        "capacity_correlations_observational": (
+            capacity_correlations if capacity_final else {}
+        ),
         "correlations_observational": raw_correlations,
         "correlations_first_difference": first_difference,
         "correlations_partial": partial,
@@ -1007,6 +1088,14 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
     aggregate = {
         key: _aggregate_numeric([run[key] for run in runs]) for key in endpoint_keys
     }
+    capacity_values = [
+        run.get("capacity_final", {}).get("capacity_effective_dimensions")
+        for run in runs
+    ]
+    if capacity_values and all(value is not None for value in capacity_values):
+        aggregate["capacity_effective_dimensions_final"] = _aggregate_numeric(
+            [float(value) for value in capacity_values]
+        )
     consistency = _sign_consistency(runs)
     local_consistency = _local_sign_consistency(runs)
     robust = [
@@ -1020,7 +1109,7 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         if value["available_runs"] >= 3 and value["same_nonzero_sign"]
     ]
     return {
-        "schema": "multi-seed-long-run-analysis-v10",
+        "schema": "multi-seed-long-run-analysis-v11",
         "run_count": len(runs),
         "runs": runs,
         "endpoint_aggregate": aggregate,
@@ -1268,6 +1357,31 @@ def render_markdown(report: dict[str, Any]) -> str:
                 f"{_format(cohesion_event.get('post1_minus_pre1'))}"
             )
         lines.append("")
+    if any(run.get("capacity_final") for run in report["runs"]):
+        lines.extend(["## Inherited elastic capacities", ""])
+        for run in report["runs"]:
+            values = run.get("capacity_final", {})
+            if not values:
+                continue
+            context = run.get("config_context", {})
+            lines.extend([
+                f"### {run['run_name']}",
+                f"- schema: `{values.get('differentiation_schema', context.get('differentiation_schema', 'disabled'))}`",
+                f"- effective dimensions: {_format(values.get('capacity_effective_dimensions'))}",
+                f"- working-memory dimensions mean/std: {_format(values.get('capacity_working_memory_dimensions_mean'))} / {_format(values.get('capacity_working_memory_dimensions_std'))}",
+                f"- knowledge bytes mean/std: {_format(values.get('capacity_knowledge_capacity_bytes_mean'))} / {_format(values.get('capacity_knowledge_capacity_bytes_std'))}",
+                f"- relation slots mean/std: {_format(values.get('capacity_relation_slots_mean'))} / {_format(values.get('capacity_relation_slots_std'))}",
+                f"- attention slots mean/std: {_format(values.get('capacity_knowledge_attention_slots_mean'))} / {_format(values.get('capacity_knowledge_attention_slots_std'))}",
+                f"- final maintenance/development energy step: {_format(values.get('capacity_maintenance_energy_step'), 6)} / {_format(values.get('capacity_development_energy_step'), 6)}",
+                f"- configured bounds: {context.get('differentiation_capacity_bounds')}",
+                "- selected observational correlations:",
+            ])
+            for key, value in run.get("capacity_correlations_observational", {}).items():
+                lines.append(f"  - `{key}`: {_format(value)}")
+            lines.extend([
+                "- boundary: capacity–outcome correlations can reflect shared selection and demographic drift; paired capacity-expression interventions are required for causal claims.",
+                "",
+            ])
     if any(run.get("subject_structure_final") for run in report["runs"]):
         lines.extend(["## Candidate-subject succession diagnostics", ""])
         for run in report["runs"]:

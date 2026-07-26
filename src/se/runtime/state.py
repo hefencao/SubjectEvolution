@@ -6,6 +6,13 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from ..cfg import SimulationConfig
+from ..differentiation.capacity import (
+    CapacityPhenotype,
+    capacity_development_energy,
+    capacity_gene_count,
+    capacity_phenotype,
+    neutral_capacity_phenotype,
+)
 from se.evolution.progress import BENEFIT_FLOW_COUNT, BenefitFlowKind
 from se.knowledge import KnowledgeStepStats
 from se.evolution.lifecycle import BirthAllocationPlan, DeathCause, DeathEventPlan
@@ -47,6 +54,8 @@ class StepStats:
         default_factory=lambda: np.zeros(4, dtype=np.float64)
     )
     shared_energy: float = 0.0
+    capacity_maintenance_energy: float = 0.0
+    capacity_development_energy: float = 0.0
     benefit_flow_energy: np.ndarray = field(
         default_factory=lambda: np.zeros(BENEFIT_FLOW_COUNT, dtype=np.float64)
     )
@@ -132,6 +141,10 @@ class EntityState:
         self.lineage_subject_id = np.zeros(cap, dtype=np.uint64)
         self.genotype_size = ParametricPolicy.genome_size_for_config(cfg)
         self.genotype = np.zeros((cap, self.genotype_size), dtype=np.float32)
+        self.working_memory_capacity = np.zeros(cap, dtype=np.uint16)
+        self.knowledge_capacity_bytes = np.zeros(cap, dtype=np.uint32)
+        self.relation_capacity = np.zeros(cap, dtype=np.uint16)
+        self.knowledge_attention_capacity = np.zeros(cap, dtype=np.uint16)
         self.memory = np.zeros((cap, self.MEMORY_SIZE), dtype=np.float32)
         self.working_memory_q = np.zeros(
             (cap, int(cfg.knowledge.working_memory_width)), dtype=np.int16
@@ -167,6 +180,73 @@ class EntityState:
             self.genotype[idx, trait] = np.clip(
                 normal(init_ctx, ids, 0.0, 0.25, 10 + trait * 2), -0.8, 0.8
             ).astype(np.float32)
+        self.refresh_capacity_phenotype(idx)
+
+    def capacity_phenotype(self, indices: np.ndarray | None = None) -> CapacityPhenotype:
+        rows = (
+            np.arange(self.alive.size, dtype=np.int32)
+            if indices is None
+            else np.asarray(indices, dtype=np.int32)
+        )
+        return CapacityPhenotype(
+            working_memory_dimensions=self.working_memory_capacity[rows].astype(np.int32),
+            knowledge_capacity_bytes=self.knowledge_capacity_bytes[rows].astype(np.int32),
+            relation_slots=self.relation_capacity[rows].astype(np.int32),
+            knowledge_attention_slots=self.knowledge_attention_capacity[rows].astype(np.int32),
+        )
+
+    def refresh_capacity_phenotype(self, indices: np.ndarray) -> CapacityPhenotype:
+        rows = np.asarray(indices, dtype=np.int32)
+        if rows.size == 0:
+            return self.capacity_phenotype(rows)
+        phenotype = capacity_phenotype(
+            self.genotype[rows],
+            self.cfg,
+            gene_start=ParametricPolicy.capacity_gene_start(self.cfg),
+        )
+        self.working_memory_capacity[rows] = np.asarray(
+            phenotype.working_memory_dimensions, dtype=np.uint16
+        )
+        self.knowledge_capacity_bytes[rows] = np.asarray(
+            phenotype.knowledge_capacity_bytes, dtype=np.uint32
+        )
+        self.relation_capacity[rows] = np.asarray(
+            phenotype.relation_slots, dtype=np.uint16
+        )
+        self.knowledge_attention_capacity[rows] = np.asarray(
+            phenotype.knowledge_attention_slots, dtype=np.uint16
+        )
+        return self.capacity_phenotype(rows)
+
+    def neutralize_capacity_phenotype(self, indices: np.ndarray) -> CapacityPhenotype:
+        """Replace effective capacities by configured midpoint levels without editing genes."""
+        rows = np.asarray(indices, dtype=np.int32)
+        if rows.size == 0:
+            return self.capacity_phenotype(rows)
+        phenotype = neutral_capacity_phenotype(rows.size, self.cfg.differentiation)
+        self.working_memory_capacity[rows] = np.asarray(
+            phenotype.working_memory_dimensions, dtype=np.uint16
+        )
+        self.knowledge_capacity_bytes[rows] = np.asarray(
+            phenotype.knowledge_capacity_bytes, dtype=np.uint32
+        )
+        self.relation_capacity[rows] = np.asarray(
+            phenotype.relation_slots, dtype=np.uint16
+        )
+        self.knowledge_attention_capacity[rows] = np.asarray(
+            phenotype.knowledge_attention_slots, dtype=np.uint16
+        )
+        width = int(self.working_memory_q.shape[1])
+        capacity = self.working_memory_capacity[rows].astype(np.int32)
+        if width:
+            invalid = np.arange(width, dtype=np.int32)[None, :] >= capacity[:, None]
+            current = self.working_memory_q[rows].copy()
+            previous = self.working_memory_previous_observation_q[rows].copy()
+            current[invalid] = 0
+            previous[invalid] = 0
+            self.working_memory_q[rows] = current
+            self.working_memory_previous_observation_q[rows] = previous
+        return self.capacity_phenotype(rows)
 
     def sensor_quality(self) -> np.ndarray:
         return np.clip(1.0 + 0.35 * self.genotype[:, 0] + 0.15 * self.information_store, 0.1, 2.0).astype(np.float32)
@@ -271,11 +351,24 @@ class EntityState:
         mutation_stddev = (
             self.cfg.policy.mutation_std if mutation_std is None else mutation_std
         )
+        capacity_start = ParametricPolicy.capacity_gene_start(self.cfg)
+        capacity_stop = capacity_start + capacity_gene_count(self.cfg)
         for trait in range(self.genotype_size):
+            capacity_trait = capacity_start <= trait < capacity_stop
+            mutation_probability = (
+                self.cfg.differentiation.mutation_probability
+                if capacity_trait
+                else self.cfg.policy.mutation_probability
+            )
+            trait_mutation_std = (
+                (0.0 if mutation_std is not None else self.cfg.differentiation.mutation_std)
+                if capacity_trait
+                else mutation_stddev
+            )
             mutate = bernoulli(
                 mut_ctx,
                 ids,
-                self.cfg.policy.mutation_probability,
+                mutation_probability,
                 draw_index=trait * 3,
                 validate_probability=False,
             )
@@ -283,7 +376,7 @@ class EntityState:
                 mut_ctx,
                 ids,
                 0.0,
-                mutation_stddev,
+                trait_mutation_std,
                 draw_index=trait * 3 + 1,
                 validate_stddev=False,
             )
@@ -291,6 +384,16 @@ class EntityState:
                 self.genotype[parents, trait] + np.where(mutate, mutation, 0.0),
                 -1.5,
                 1.5,
+            ).astype(np.float32)
+        phenotype = self.refresh_capacity_phenotype(slots)
+        if self.cfg.differentiation.enabled:
+            development_cost = np.asarray(
+                capacity_development_energy(phenotype, self.cfg.differentiation),
+                dtype=np.float64,
+            )
+            self.energy[slots] = np.maximum(
+                self.energy[slots].astype(np.float64) - development_cost,
+                0.0,
             ).astype(np.float32)
         return parents, slots
 
@@ -341,6 +444,10 @@ class EntityState:
         self.memory[indices] = 0.0
         self.working_memory_q[indices] = 0
         self.working_memory_previous_observation_q[indices] = 0
+        self.working_memory_capacity[indices] = 0
+        self.knowledge_capacity_bytes[indices] = 0
+        self.relation_capacity[indices] = 0
+        self.knowledge_attention_capacity[indices] = 0
         self.free_slots.extend(indices.tolist())
         self.free_slot_version += 1
         self.entity_id[indices] = 0

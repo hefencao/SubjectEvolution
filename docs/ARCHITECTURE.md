@@ -7,6 +7,7 @@ se/
 ├── analysis/       # offline analysis and audits
 ├── cmd/            # CLI implementations
 ├── env/            # authoritative environment domain
+├── differentiation/# inherited phenotype-capacity mechanisms
 ├── evolution/      # lifecycle and evolution progress
 ├── experiments/    # replay and counterfactual execution
 ├── gui/            # observation-only shared-frame interface
@@ -24,7 +25,7 @@ Only common and unambiguous abbreviations are used. Domain terms whose shortened
 ```text
 cfg / shared infrastructure
             ↓
-env / evolution / knowledge / subjects
+env / differentiation / evolution / knowledge / subjects
             ↓
 runtime
             ↓
@@ -45,7 +46,7 @@ env / information / spatial / social snapshots
     ↓
 read-only observations
     ↓
-heritable policy + knowledge residual + memory + sparse selection
+heritable body policy + knowledge residual + capacity-masked memory/knowledge/social mechanisms
     ↓
 control proposal → arbitration → action intent
     ↓
@@ -59,6 +60,14 @@ metrics / logs / checkpoint / offline analysis
 ```
 
 Strategies, knowledge routing, controllers and conflict resolvers do not directly mutate authoritative state. Only versioned commit stages may write the world.
+
+## Differentiation boundary
+
+`se.differentiation` owns genotype-to-capacity expression and explicit structural/development costs. D1 keeps fixed physical tensor maxima and varies only effective masks. The domain does not assign ecological roles, observe lineage rarity or protect diversity.
+
+D1 capacity expression feeds existing domain mechanisms through typed arrays on `EntityState`. Knowledge, social and memory domains consume those capacities directly; they do not derive them independently. The runtime is the only layer that charges cross-domain capacity costs and commits lifecycle changes.
+
+`neutralize-elastic-capacities` is a phenotype-expression intervention. It leaves genotype and mutation intact, allowing matched branches to test effective capacity without rewriting ancestry.
 
 ## Backend boundary
 
@@ -74,4 +83,4 @@ Python remains the protocol, reference and orchestration layer. Stable numeric h
 
 ## Checkpoints
 
-v0.35 intentionally starts a new Python module namespace. Checkpoints produced by `se` are self-consistent, but checkpoints whose pickle payload encodes the removed `subject_evolution` namespace are not supported. Re-running is the migration policy.
+Checkpoints produced by the current `se` namespace are trusted Python-state snapshots and are exact within the registered schema. v0.36 adds explicit capacity arrays and capacity-ablation state. Old removed namespaces are not supported; re-running remains the migration policy.

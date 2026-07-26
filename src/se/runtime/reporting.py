@@ -96,6 +96,7 @@ from se.evolution.lifecycle import (
 from ..metrics import MetricsWriter
 from se.env.local_stress import LocalStressDiagnostics
 from ..event_cohort import EventCohortDiagnostics
+from se.differentiation.capacity import capacity_diagnostics
 from se.subjects.succession import SubjectStructureDiagnostics
 from se.env.atlas import EnvironmentAtlasDiagnostics
 from se.env.niches import (
@@ -349,6 +350,39 @@ class SimulationReportingMixin:
             "knowledge_global_category_embedding": False,
             "knowledge_attention_softmax": False,
             "knowledge_latent_external_optimizer": False,
+            "differentiation_enabled": self.cfg.differentiation.enabled,
+            "differentiation_schema": self.cfg.differentiation.schema,
+            "differentiation_capacity_gene_start": (
+                ParametricPolicy.capacity_gene_start(self.cfg)
+                if self.cfg.differentiation.enabled else None
+            ),
+            "differentiation_capacity_gene_count": (
+                4 if self.cfg.differentiation.enabled else 0
+            ),
+            "differentiation_capacity_bounds": (
+                {
+                    "working_memory_dimensions": [
+                        self.cfg.differentiation.working_memory_min_dimensions,
+                        self.cfg.differentiation.working_memory_max_dimensions,
+                    ],
+                    "knowledge_bytes": [
+                        self.cfg.differentiation.knowledge_min_bytes,
+                        self.cfg.differentiation.knowledge_max_bytes,
+                    ],
+                    "relation_slots": [
+                        self.cfg.differentiation.relation_min_slots,
+                        self.cfg.differentiation.relation_max_slots,
+                    ],
+                    "knowledge_attention_slots": [
+                        self.cfg.differentiation.attention_min_slots,
+                        self.cfg.differentiation.attention_max_slots,
+                    ],
+                }
+                if self.cfg.differentiation.enabled else None
+            ),
+            "differentiation_feedback_to_world": self.cfg.differentiation.enabled,
+            "differentiation_role_labels": False,
+            "differentiation_diversity_protection": False,
             "knowledge_candidate_tracking": self.cfg.knowledge.candidate_tracking_enabled,
             "knowledge_candidate_schema": (
                 self.cfg.knowledge.candidate_schema
@@ -367,6 +401,10 @@ class SimulationReportingMixin:
                 "post-checkpoint" if self.checkpoint_lineage else "full-run"
             ),
         }
+        if not self.cfg.differentiation.enabled:
+            for key in tuple(manifest):
+                if key.startswith("differentiation_"):
+                    manifest.pop(key)
         if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
             manifest["environment_resource_dynamics"] = {
                 "schema": ORTHOGONAL_ENVIRONMENT_SCHEMA,
@@ -502,6 +540,12 @@ class SimulationReportingMixin:
                 "knowledge_transfer_trigger_schema": "signal-action-partner-v1",
                 "knowledge_transfer_probability": self.cfg.knowledge.transfer_probability,
                 "knowledge_cultural_metrics_require_committed_transfer": True,
+                "capacity_ablation_enabled": self.capacity_ablation_enabled,
+                "capacity_effective_schema": (
+                    "fixed-midpoint-elastic-capacities-ablation-v1"
+                    if self.capacity_ablation_enabled
+                    else self.cfg.differentiation.schema
+                ),
                 "resource_affinity_ablation_enabled": (
                     self.resource_affinity_ablation_enabled
                 ),
@@ -900,6 +944,14 @@ class SimulationReportingMixin:
                 self.entities.alive, self.entities.genotype, self.cfg
             ),
         }
+        if self.cfg.differentiation.enabled:
+            environment_metrics.update(
+                capacity_diagnostics(
+                    self.entities.capacity_phenotype(),
+                    alive=self.entities.alive,
+                    config=self.cfg.differentiation,
+                )
+            )
         if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
             diversity = resource_field_diversity_metrics(
                 resource_fields, self.cfg.environment.resource_capacity
@@ -1057,6 +1109,15 @@ class SimulationReportingMixin:
         danger_evidence_metrics = danger_evidence_diagnostics(
             ent.alive, ent.genotype, self.cfg
         )
+        capacity_metrics = (
+            capacity_diagnostics(
+                ent.capacity_phenotype(),
+                alive=ent.alive,
+                config=self.cfg.differentiation,
+            )
+            if self.cfg.differentiation.enabled
+            else None
+        )
         if self.gpu_runtime is None:
             metric_resource_fields = np.asarray(
                 self.environment.resources, dtype=np.float32
@@ -1211,6 +1272,12 @@ class SimulationReportingMixin:
             "move_social_fraction": stats.move_social_fraction,
             "environment_schema": self.cfg.environment.schema,
             "resource_affinity_schema": self.cfg.entities.resource_affinity_schema,
+            "capacity_ablation_enabled": int(self.capacity_ablation_enabled),
+            "capacity_effective_schema": (
+                "fixed-midpoint-elastic-capacities-ablation-v1"
+                if self.capacity_ablation_enabled
+                else self.cfg.differentiation.schema
+            ),
             "resource_affinity_ablation_enabled": int(
                 self.resource_affinity_ablation_enabled
             ),
@@ -1425,6 +1492,41 @@ class SimulationReportingMixin:
                     ),
                     "entertainment_override_independent_harvest_success_rate": (
                         autonomy_harvest_success_rate
+                    ),
+                }
+            )
+        if capacity_metrics is not None:
+            row.update(
+                {
+                    "capacity_maintenance_energy_step": stats.capacity_maintenance_energy,
+                    "capacity_development_energy_step": stats.capacity_development_energy,
+                    "differentiation_schema": capacity_metrics["differentiation_schema"],
+                    "capacity_effective_dimensions": float(
+                        capacity_metrics["capacity_effective_dimensions"]
+                    ),
+                    "capacity_working_memory_dimensions_mean": float(
+                        capacity_metrics["capacity_working_memory_dimensions_mean"]
+                    ),
+                    "capacity_working_memory_dimensions_std": float(
+                        capacity_metrics["capacity_working_memory_dimensions_std"]
+                    ),
+                    "capacity_knowledge_capacity_bytes_mean": float(
+                        capacity_metrics["capacity_knowledge_capacity_bytes_mean"]
+                    ),
+                    "capacity_knowledge_capacity_bytes_std": float(
+                        capacity_metrics["capacity_knowledge_capacity_bytes_std"]
+                    ),
+                    "capacity_relation_slots_mean": float(
+                        capacity_metrics["capacity_relation_slots_mean"]
+                    ),
+                    "capacity_relation_slots_std": float(
+                        capacity_metrics["capacity_relation_slots_std"]
+                    ),
+                    "capacity_knowledge_attention_slots_mean": float(
+                        capacity_metrics["capacity_knowledge_attention_slots_mean"]
+                    ),
+                    "capacity_knowledge_attention_slots_std": float(
+                        capacity_metrics["capacity_knowledge_attention_slots_std"]
                     ),
                 }
             )

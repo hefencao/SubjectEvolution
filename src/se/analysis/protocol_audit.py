@@ -11,9 +11,10 @@ from typing import Any
 from ..cfg import load_config
 from se.experiments.natural_event_matrix import load_manifest
 from se.env.partition import SpatialRegionPartition
+from se.policy import ParametricPolicy
 
 
-SCHEMA = "structural-measurement-protocol-audit-v3"
+SCHEMA = "structural-measurement-protocol-audit-v4"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -132,6 +133,70 @@ def build_protocol_audit(
                 "but does not guarantee evolved ecological differentiation"
             ),
         },
+        "differentiation_capacity_protocol": {
+            "enabled": bool(cfg.differentiation.enabled),
+            "schema": cfg.differentiation.schema,
+            "fixed_physical_layout": {
+                "working_memory_dimensions": int(cfg.knowledge.working_memory_width),
+                "knowledge_bytes": int(cfg.knowledge.holder_capacity_bytes),
+                "relation_slots": int(cfg.entities.relation_slots),
+                "knowledge_attention_slots": int(cfg.knowledge.attention_slots_per_tick),
+            },
+            "effective_capacity_bounds": {
+                "working_memory_dimensions": [
+                    int(cfg.differentiation.working_memory_min_dimensions),
+                    int(cfg.differentiation.working_memory_max_dimensions),
+                ],
+                "knowledge_bytes": [
+                    int(cfg.differentiation.knowledge_min_bytes),
+                    int(cfg.differentiation.knowledge_max_bytes),
+                ],
+                "relation_slots": [
+                    int(cfg.differentiation.relation_min_slots),
+                    int(cfg.differentiation.relation_max_slots),
+                ],
+                "knowledge_attention_slots": [
+                    int(cfg.differentiation.attention_min_slots),
+                    int(cfg.differentiation.attention_max_slots),
+                ],
+            },
+            "knowledge_quantum_bytes": int(cfg.differentiation.knowledge_quantum_bytes),
+            "gene_layout": {
+                "start": (
+                    int(ParametricPolicy.capacity_gene_start(cfg))
+                    if cfg.differentiation.enabled else None
+                ),
+                "count": 4 if cfg.differentiation.enabled else 0,
+                "mapping": (
+                    "clip inherited float gene to [-1,1], map monotonically to an integer "
+                    "capacity level, then mask a fixed physical tensor layout"
+                ),
+            },
+            "mutation": {
+                "probability": float(cfg.differentiation.mutation_probability),
+                "std": float(cfg.differentiation.mutation_std),
+            },
+            "maintenance_energy": {
+                "per_working_memory_dimension": float(cfg.differentiation.maintenance_energy_per_working_memory_dimension),
+                "per_knowledge_byte": float(cfg.differentiation.maintenance_energy_per_knowledge_byte),
+                "per_relation_slot": float(cfg.differentiation.maintenance_energy_per_relation_slot),
+                "per_attention_slot": float(cfg.differentiation.maintenance_energy_per_attention_slot),
+            },
+            "development_energy": {
+                "per_working_memory_dimension": float(cfg.differentiation.development_energy_per_working_memory_dimension),
+                "per_knowledge_byte": float(cfg.differentiation.development_energy_per_knowledge_byte),
+                "per_relation_slot": float(cfg.differentiation.development_energy_per_relation_slot),
+                "per_attention_slot": float(cfg.differentiation.development_energy_per_attention_slot),
+            },
+            "world_feedback": bool(cfg.differentiation.enabled),
+            "preset_role_labels": False,
+            "diversity_protection": False,
+            "interpretation": (
+                "four inherited capacities alter the usable scale and explicit cost of existing "
+                "memory, knowledge, relationship, and attention mechanisms; they do not add a "
+                "predefined ecological role or guarantee adaptive differentiation"
+            ),
+        },
         "environment_atlas_protocol": {
             "enabled": bool(cfg.run.environment_atlas_diagnostics_enabled),
             "schema": cfg.run.environment_atlas_diagnostics_schema,
@@ -212,6 +277,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     subject_structure = payload["subject_structure_protocol"]
     atlas = payload["environment_atlas_protocol"]
     resource = payload["resource_environment_protocol"]
+    differentiation = payload["differentiation_capacity_protocol"]
     lines = [
         "# Structural measurement protocol audit",
         "",
@@ -254,6 +320,18 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- diffusion rates: {resource['diffusion_rates']}",
         f"- entity/lineage/group aware: {resource['entity_aware']} / {resource['lineage_aware']} / {resource['group_aware']}",
         f"- boundary: {resource['interpretation']}",
+        "",
+        "## Elastic capacities",
+        "",
+        f"- enabled / schema: {differentiation['enabled']} / `{differentiation['schema']}`",
+        f"- physical maxima: {differentiation['fixed_physical_layout']}",
+        f"- effective bounds: {differentiation['effective_capacity_bounds']}",
+        f"- gene start/count: {differentiation['gene_layout']['start']} / {differentiation['gene_layout']['count']}",
+        f"- mutation probability/std: {differentiation['mutation']['probability']} / {differentiation['mutation']['std']}",
+        f"- maintenance energy: {differentiation['maintenance_energy']}",
+        f"- development energy: {differentiation['development_energy']}",
+        f"- preset roles / diversity protection: {differentiation['preset_role_labels']} / {differentiation['diversity_protection']}",
+        f"- boundary: {differentiation['interpretation']}",
         "",
         "## Environment atlas",
         "",

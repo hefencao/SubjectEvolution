@@ -72,6 +72,12 @@ INTERVENTIONS = (
         aliases=("selection-off", "topk-off"),
     ),
     InterventionSpec(
+        "neutralize-elastic-capacities",
+        InterventionKind.MODIFY_RULES,
+        "inherited-effective-memory-knowledge-relation-attention-capacities",
+        aliases=("elastic-capacities-off", "capacity-expression-neutral"),
+    ),
+    InterventionSpec(
         "neutralize-resource-affinity",
         InterventionKind.MODIFY_RULES,
         "inherited-four-resource-affinity-expression",

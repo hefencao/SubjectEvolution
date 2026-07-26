@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.36.0
+
+### D1-A inherited elastic capacities
+
+- Added `inherited-elastic-capacities-v1` with four independent inherited effective capacities: working-memory dimensions, knowledge bytes, relationship slots and incoming knowledge-attention slots.
+- Kept fixed physical array maxima and appended four capacity genes after all existing genome regions.
+- Enforced per-entity masks in working memory, knowledge storage, social relations and transfer attention.
+- Added per-tick structural maintenance and birth development energy costs while retaining existing use costs.
+- Added capacity diagnostics, provenance, long-run trends/correlations, protocol audit v4 and long-run analysis v11.
+- Added `neutralize-elastic-capacities`, which fixes midpoint expression without editing genotype and persists for future offspring and checkpoints.
+- Added D1 smoke and 1500-tick multi-seed configurations.
+
+### Validation
+
+- Full suite: 167 passed, 1 real-CUDA test skipped before final packaging rerun.
+- D1-disabled v0.35 comparison: 1268 common non-timing metric cells, selected logs and common authoritative state are unchanged.
+- D1 paired tick-30→60 smoke verified immediate mechanism reach; no adaptive or ecological conclusion is claimed.
+
 ## v0.35.0
 
 - 包导入根从 `subject_evolution` 改为 `se`。

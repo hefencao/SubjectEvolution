@@ -25,6 +25,10 @@ from se.subjects.control import (
     social_guidance_control_proposal,
 )
 from ..device_state import EntityDeviceCommitPlan, build_entity_device_commit_plan
+from se.differentiation.capacity import (
+    capacity_development_energy,
+    capacity_maintenance_energy,
+)
 from se.env.danger_evidence import (
     DANGER_EVIDENCE_SCALE,
     danger_evidence_diagnostics,
@@ -246,6 +250,11 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             )
         self.subjects = CandidateSubjectGraph(cfg.world.max_entities)
         initial = np.flatnonzero(self.entities.alive).astype(np.int32)
+        if cfg.differentiation.enabled:
+            all_entity_slots = np.arange(cfg.world.max_entities, dtype=np.int32)
+            self.social.set_effective_capacities(
+                all_entity_slots, self.entities.relation_capacity
+            )
         body_subjects, lineage_subjects = self.subjects.register_bodies(
             initial, self.entities.lineage_id, tick=0
         )
@@ -256,6 +265,9 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             self.output_dir,
             initial_entity_ids=self.entities.entity_id[initial],
             initial_subject_ids=self.entities.primary_subject_id[initial],
+            initial_knowledge_capacities=(
+                self.entities.knowledge_capacity_bytes[initial]
+            ),
         )
         self.policy = ParametricPolicy(cfg)
         self.metrics = MetricsWriter(self.output_dir)
@@ -399,6 +411,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.social_connections_enabled = True
         self.direct_messages_enabled = True
         self.freeze_genotype = False
+        self.capacity_ablation_enabled = False
         self.resource_affinity_ablation_enabled = False
         self.danger_evidence_ablation_enabled = False
         self.knowledge_policy_ablation_enabled = False
@@ -462,6 +475,17 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 )
         if np.any(self.social.group_id[~ent.alive] != 0):
             raise AssertionError("dead entities must not retain group membership")
+        if active.size and not np.array_equal(
+            self.social.effective_capacity[active].astype(np.uint16),
+            ent.relation_capacity[active],
+        ):
+            raise AssertionError("social relation capacity diverged from entity phenotype")
+        if np.any(ent.working_memory_capacity > self.cfg.knowledge.working_memory_width):
+            raise AssertionError("working-memory capacity exceeds physical width")
+        if np.any(ent.knowledge_capacity_bytes > self.cfg.knowledge.holder_capacity_bytes):
+            raise AssertionError("knowledge capacity exceeds physical byte limit")
+        if np.any(ent.knowledge_attention_capacity > self.cfg.knowledge.attention_slots_per_tick):
+            raise AssertionError("attention capacity exceeds physical slot limit")
         if self.cfg.knowledge.working_memory_enabled:
             width = int(self.cfg.knowledge.working_memory_width)
             if ent.working_memory_q.shape != (ent.alive.size, width):
@@ -478,7 +502,9 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             ):
                 raise AssertionError("working-memory quantized range invariant failed")
             expected_memory = memory_float_view(
-                ent.working_memory_q[active], self.cfg.knowledge
+                ent.working_memory_q[active],
+                self.cfg.knowledge,
+                effective_widths=ent.working_memory_capacity[active],
             )
             if active.size and not np.array_equal(
                 ent.memory[active], expected_memory, equal_nan=True
@@ -1501,6 +1527,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 primary_subject_ids=ent.primary_subject_id,
                 alive=ent.alive,
                 tick=self.tick,
+                attention_capacities=ent.knowledge_attention_capacity,
             )
             transfer_stats = self.knowledge.commit_transfers(
                 transfer_plan,
@@ -1512,6 +1539,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 y=ent.y,
                 world_width=cfg.world.width,
                 world_height=cfg.world.height,
+                knowledge_capacities=ent.knowledge_capacity_bytes,
             )
             if self.local_stress_diagnostics is not None:
                 self.local_stress_diagnostics.observe_transfers(
@@ -1543,11 +1571,35 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 mutation_std=0.0 if self.freeze_genotype else None,
             )
             if newborns.size:
+                if self.capacity_ablation_enabled and cfg.differentiation.enabled:
+                    genetic_cost = np.asarray(
+                        capacity_development_energy(
+                            ent.capacity_phenotype(newborns), cfg.differentiation
+                        ),
+                        dtype=np.float64,
+                    )
+                    ent.neutralize_capacity_phenotype(newborns)
+                    neutral_cost = np.asarray(
+                        capacity_development_energy(
+                            ent.capacity_phenotype(newborns), cfg.differentiation
+                        ),
+                        dtype=np.float64,
+                    )
+                    ent.energy[newborns] = np.clip(
+                        ent.energy[newborns].astype(np.float64)
+                        + genetic_cost
+                        - neutral_cost,
+                        0.0,
+                        cfg.entities.max_energy,
+                    ).astype(np.float32)
                 # Recovery is a treatment of the selected living cohort, not
                 # a hereditary trait in the current experiment.
                 self.autonomy_restored[newborns] = False
                 self.autonomy_observation_cohort[newborns] = False
                 self.social.reset_entities(newborns)
+                self.social.set_effective_capacities(
+                    newborns, ent.relation_capacity[newborns]
+                )
                 body_subjects, lineage_subjects = self.subjects.register_bodies(
                     newborns, ent.lineage_id, self.tick
                 )
@@ -1556,6 +1608,16 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 ent.energy[accepted_parents] -= cfg.entities.reproduction_cost
                 ent.fertility[accepted_parents] -= 0.5
                 stats.births = int(newborns.size)
+                if cfg.differentiation.enabled:
+                    stats.capacity_development_energy = float(
+                        np.asarray(
+                            capacity_development_energy(
+                                ent.capacity_phenotype(newborns),
+                                cfg.differentiation,
+                            ),
+                            dtype=np.float64,
+                        ).sum(dtype=np.float64)
+                    )
                 self.total_births += stats.births
                 if self.local_stress_diagnostics is not None:
                     self.local_stress_diagnostics.observe_births(
@@ -1680,7 +1742,10 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 outcome_vectors=outcome_vectors.copy(),
             )
             outcome_stats = self.knowledge.commit_outcomes(
-                outcome_plan, energy=ent.energy, alive=ent.alive
+                outcome_plan,
+                energy=ent.energy,
+                alive=ent.alive,
+                knowledge_capacities=ent.knowledge_capacity_bytes,
             )
             for field_name in KnowledgeStepStats.__dataclass_fields__:
                 setattr(
@@ -1715,6 +1780,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 gene_start=ParametricPolicy.working_memory_gene_start(cfg),
                 available_energy=ent.energy[active],
                 config=cfg.knowledge,
+                effective_widths=ent.working_memory_capacity[active],
             )
             accepted_memory = working_memory_update_result.accepted
             ent.working_memory_q[active] = working_memory_update_result.committed_q
@@ -1724,7 +1790,9 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 ent.working_memory_previous_observation_q[active],
             ).astype(np.int16)
             ent.memory[active] = memory_float_view(
-                ent.working_memory_q[active], cfg.knowledge
+                ent.working_memory_q[active],
+                cfg.knowledge,
+                effective_widths=ent.working_memory_capacity[active],
             )
             ent.energy[active] = np.maximum(
                 ent.energy[active].astype(np.float64)
@@ -1766,6 +1834,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 alive=ent.alive,
                 primary_subject_id=ent.primary_subject_id,
                 tick=self.tick,
+                knowledge_capacities=ent.knowledge_capacity_bytes,
             )
             for field_name in KnowledgeStepStats.__dataclass_fields__:
                 setattr(
@@ -1775,6 +1844,18 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     + getattr(maintenance_stats, field_name),
                 )
         cost = cfg.entities.maintenance_cost + moved_now[current_active] * cfg.entities.movement_cost
+        if cfg.differentiation.enabled:
+            capacity_cost = np.asarray(
+                capacity_maintenance_energy(
+                    ent.capacity_phenotype(current_active),
+                    cfg.differentiation,
+                ),
+                dtype=np.float64,
+            )
+            stats.capacity_maintenance_energy = float(
+                capacity_cost.sum(dtype=np.float64)
+            )
+            cost = cost.astype(np.float64) + capacity_cost
         ent.energy[current_active] -= cost.astype(np.float32)
         ent.integrity[current_active] -= (hazard * 0.0015).astype(np.float32)
         starving = ent.energy[current_active] < 0.0
@@ -2077,6 +2158,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             "social_connections_enabled": self.social_connections_enabled,
             "direct_messages_enabled": self.direct_messages_enabled,
             "freeze_genotype": self.freeze_genotype,
+            "capacity_ablation_enabled": self.capacity_ablation_enabled,
             "environment_spatial_reversed": self.environment.spatial_reversed,
             "mortality_trace_schema": self.cfg.environment.mortality_trace_schema,
             "environment_process": dict(

@@ -1,0 +1,38 @@
+{
+  "schema": "v035-v036-compatibility-v1",
+  "ticks": 30,
+  "d1_enabled": false,
+  "metrics_rows": 4,
+  "common_non_timing_metric_fields": 317,
+  "metric_cells_compared": 1268,
+  "metric_mismatch_count": 0,
+  "metric_mismatches": [],
+  "byte_identical_outputs": {
+    "environment_atlas.jsonl": true,
+    "environment_atlas_summary.json": true,
+    "evolution_progress.jsonl": true,
+    "knowledge_events.jsonl": true,
+    "knowledge_outcome_updates.csv": true,
+    "knowledge_policy_contributions.csv": true,
+    "knowledge_routing_costs.csv": true,
+    "knowledge_selection_events.csv": true,
+    "knowledge_transfers.csv": true,
+    "knowledge_working_memory.csv": true,
+    "subject_structure_summary.json": true,
+    "subject_structure_transitions.jsonl": true
+  },
+  "all_selected_outputs_byte_identical": true,
+  "common_authoritative_arrays": 333,
+  "authoritative_array_mismatch_count": 0,
+  "authoritative_array_mismatches": [],
+  "common_semantic_scalars": 8035,
+  "semantic_scalar_mismatch_count": 0,
+  "semantic_scalar_mismatches": [],
+  "new_v036_entity_arrays": [
+    "working_memory_capacity",
+    "knowledge_capacity_bytes",
+    "relation_capacity",
+    "knowledge_attention_capacity"
+  ],
+  "interpretation": "D1 disabled preserves all common v0.35 trajectory fields. New capacity arrays are derived fixed-capacity state and are not present in v0.35."
+}

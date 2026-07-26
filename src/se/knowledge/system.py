@@ -39,6 +39,7 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
         *,
         initial_entity_ids: np.ndarray,
         initial_subject_ids: np.ndarray,
+        initial_knowledge_capacities: np.ndarray | None = None,
     ) -> None:
         self.cfg = cfg
         self.kcfg: KnowledgeConfig = cfg.knowledge
@@ -186,7 +187,11 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                     ],
                 )
                 self._selection_writer.writeheader()
-            self._seed(initial_entity_ids, initial_subject_ids)
+            self._seed(
+                initial_entity_ids,
+                initial_subject_ids,
+                initial_knowledge_capacities,
+            )
             self.candidates.ensure_catalog(self.catalog)
             self.observation = self.arena.publish(self.catalog, tick=0)
 
@@ -207,13 +212,25 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
             source_subject_id=source_subject_id,
         )
 
-    def _seed(self, entity_ids: np.ndarray, subject_ids: np.ndarray) -> None:
+    def _seed(
+        self,
+        entity_ids: np.ndarray,
+        subject_ids: np.ndarray,
+        knowledge_capacities: np.ndarray | None = None,
+    ) -> None:
         if self.kcfg.initial_content_count <= 0 or self.kcfg.initial_holders_fraction <= 0.0:
             return
         ids = np.asarray(entity_ids, dtype=np.uint64)
         subjects = np.asarray(subject_ids, dtype=np.uint64)
         if ids.shape != subjects.shape:
             raise ValueError("knowledge seed IDs and subjects must align")
+        capacities = (
+            np.full(ids.shape, int(self.kcfg.holder_capacity_bytes), dtype=np.int64)
+            if knowledge_capacities is None
+            else np.asarray(knowledge_capacities, dtype=np.int64)
+        )
+        if capacities.shape != ids.shape or np.any(capacities < 0):
+            raise ValueError("initial knowledge capacities must align with entities")
         source_subject = int(subjects[0]) if subjects.size else 1
         contents: list[int] = []
         for index in range(self.kcfg.initial_content_count):
@@ -244,10 +261,12 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
         selected = bernoulli(
             ctx, ids, self.kcfg.initial_holders_fraction, draw_index=0
         )
-        for entity_id, subject_id in zip(ids[selected], subjects[selected], strict=True):
+        for entity_id, subject_id, holder_capacity in zip(
+            ids[selected], subjects[selected], capacities[selected], strict=True
+        ):
             content_id = contents[(int(entity_id) - 1) % len(contents)]
             copy_bytes = int(self.catalog.encoded_bytes[content_id - 1])
-            if self.kcfg.holder_capacity_bytes < copy_bytes:
+            if int(holder_capacity) < copy_bytes:
                 continue
             self.arena.append(
                 holder_subject_id=int(subject_id),
@@ -477,6 +496,40 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
             self._write_event({"tick": tick, "type": "forget", "copies": removed})
         return removed
 
+    def enforce_capacities(
+        self,
+        *,
+        alive: np.ndarray,
+        primary_subject_id: np.ndarray,
+        knowledge_capacities: np.ndarray,
+    ) -> int:
+        """Immediately evict copies above effective per-entity storage limits."""
+        if not self.kcfg.enabled:
+            return 0
+        capacities = np.asarray(knowledge_capacities, dtype=np.int64)
+        alive_array = np.asarray(alive, dtype=bool)
+        subjects = np.asarray(primary_subject_id, dtype=np.uint64)
+        if capacities.shape != alive_array.shape or subjects.shape != alive_array.shape:
+            raise ValueError("knowledge capacity enforcement arrays must align")
+        if np.any(capacities < 0):
+            raise ValueError("knowledge capacities must be non-negative")
+        active_entities = np.flatnonzero(alive_array)
+        subject_to_entity = {
+            int(subjects[index]): int(index) for index in active_entities
+        }
+        evicted = 0
+        active_holders = np.unique(self.arena.holder_subject_id[self.arena.active])
+        for holder in active_holders:
+            holder_id = int(holder)
+            entity_index = subject_to_entity.get(holder_id)
+            if entity_index is None:
+                continue
+            excess = self.arena.holder_bytes(holder_id) - int(capacities[entity_index])
+            if excess > 0:
+                evicted += self.arena.evict_oldest(holder_id, excess)
+        self.observation = self.arena.publish(self.catalog, tick=self.observation.tick)
+        return int(evicted)
+
     def charge_maintenance(
         self,
         *,
@@ -484,6 +537,7 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
         alive: np.ndarray,
         primary_subject_id: np.ndarray,
         tick: int,
+        knowledge_capacities: np.ndarray | None = None,
     ) -> KnowledgeStepStats:
         stats = KnowledgeStepStats()
         if not self.kcfg.enabled:
@@ -502,6 +556,13 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
             stats.confidence_decayed = int(
                 np.count_nonzero(self.arena.confidence[rows] != before)
             )
+        capacities = (
+            np.full(alive.shape, int(self.kcfg.holder_capacity_bytes), dtype=np.int64)
+            if knowledge_capacities is None
+            else np.asarray(knowledge_capacities, dtype=np.int64)
+        )
+        if capacities.shape != alive.shape or np.any(capacities < 0):
+            raise ValueError("knowledge capacities must align with entity state")
         active_entities = np.flatnonzero(alive)
         subject_to_entity = {
             int(primary_subject_id[index]): int(index) for index in active_entities
@@ -514,7 +575,13 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                 rows = self.arena.rows_for_holder(holder_id)
                 stats.removed_dead_holder += self.arena.deactivate(rows)
                 continue
+            holder_capacity = int(capacities[entity_index])
             bytes_held = self.arena.holder_bytes(holder_id)
+            if bytes_held > holder_capacity:
+                stats.evicted_capacity += self.arena.evict_oldest(
+                    holder_id, bytes_held - holder_capacity
+                )
+                bytes_held = self.arena.holder_bytes(holder_id)
             cost = bytes_held * self.kcfg.maintenance_energy_per_byte
             if cost > float(energy[entity_index]) + 1e-12:
                 affordable_bytes = int(
@@ -551,6 +618,7 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
         primary_subject_ids: np.ndarray,
         alive: np.ndarray,
         tick: int,
+        attention_capacities: np.ndarray | None = None,
     ) -> KnowledgeTransferPlan:
         if (
             not self.kcfg.enabled
@@ -600,12 +668,19 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
         receivers = receivers[order]
         sender_entity_ids = sender_entity_ids[order]
         attention_rejected = 0
+        attention = (
+            np.full(alive.shape, int(self.kcfg.attention_slots_per_tick), dtype=np.int32)
+            if attention_capacities is None
+            else np.asarray(attention_capacities, dtype=np.int32)
+        )
+        if attention.shape != alive.shape or np.any(attention < 0):
+            raise ValueError("knowledge attention capacities must align with entity state")
         if self.kcfg.attention_slots_per_tick >= 0:
             keep = np.zeros(senders.size, dtype=bool)
             seen: dict[int, int] = {}
             for row, receiver in enumerate(receivers):
                 count = seen.get(int(receiver), 0)
-                if count < self.kcfg.attention_slots_per_tick:
+                if count < int(attention[int(receiver)]):
                     keep[row] = True
                     seen[int(receiver)] = count + 1
             attention_rejected = int(np.count_nonzero(~keep))
@@ -692,6 +767,7 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
         y: np.ndarray | None = None,
         world_width: float | None = None,
         world_height: float | None = None,
+        knowledge_capacities: np.ndarray | None = None,
     ) -> KnowledgeStepStats:
         stats = KnowledgeStepStats(
             transfer_attempts=plan.size, attention_rejected=plan.attention_rejected
@@ -701,6 +777,13 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
             self.last_transfer_commit_audit = KnowledgeTransferCommitAudit.empty(plan.tick)
             return stats
         plan.validate(alive.size)
+        capacities = (
+            np.full(alive.shape, int(self.kcfg.holder_capacity_bytes), dtype=np.int64)
+            if knowledge_capacities is None
+            else np.asarray(knowledge_capacities, dtype=np.int64)
+        )
+        if capacities.shape != alive.shape or np.any(capacities < 0):
+            raise ValueError("knowledge capacities must align with entity state")
 
         def region_for(entity_index: int) -> int:
             if (
@@ -843,14 +926,15 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                 stats.transfer_duplicate_rejected += 1
                 record(row, "duplicate-rejected", sender_cost_charged=send_cost)
                 continue
-            if storage_encoded_bytes > self.kcfg.holder_capacity_bytes:
+            receiver_capacity = int(capacities[receiver])
+            if storage_encoded_bytes > receiver_capacity:
                 stats.transfer_capacity_rejected += 1
                 record(row, "oversize-rejected", sender_cost_charged=send_cost)
                 continue
             required = max(
                 self.arena.holder_bytes(receiver_subject)
                 + storage_encoded_bytes
-                - self.kcfg.holder_capacity_bytes,
+                - receiver_capacity,
                 0,
             )
             if required:
@@ -859,7 +943,7 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                 )
             if (
                 self.arena.holder_bytes(receiver_subject) + storage_encoded_bytes
-                > self.kcfg.holder_capacity_bytes
+                > receiver_capacity
             ):
                 stats.transfer_capacity_rejected += 1
                 record(row, "capacity-rejected", sender_cost_charged=send_cost)
@@ -997,6 +1081,7 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
         *,
         energy: np.ndarray,
         alive: np.ndarray,
+        knowledge_capacities: np.ndarray | None = None,
     ) -> KnowledgeStepStats:
         """Update local copy statistics from committed current-tick outcomes.
 
@@ -1020,6 +1105,13 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
         if not self.kcfg.enabled or not self.kcfg.learning_enabled or plan.size == 0:
             return stats
         plan.validate(alive.size)
+        capacities = (
+            np.full(alive.shape, int(self.kcfg.holder_capacity_bytes), dtype=np.int64)
+            if knowledge_capacities is None
+            else np.asarray(knowledge_capacities, dtype=np.int64)
+        )
+        if capacities.shape != alive.shape or np.any(capacities < 0):
+            raise ValueError("knowledge capacities must align with entity state")
 
         # Build one canonical index for this tick.  The hot path remains SoA;
         # no per-copy Python object graph is stored between ticks.
@@ -1174,19 +1266,20 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                 action_id=action,
                 source_subject_id=holder,
             )
-            if encoded_bytes > self.kcfg.holder_capacity_bytes:
+            holder_capacity = int(capacities[carrier])
+            if encoded_bytes > holder_capacity:
                 stats.learning_capacity_rejected += 1
                 continue
             held_bytes = self.arena.holder_bytes(holder)
             required = max(
-                held_bytes + encoded_bytes - self.kcfg.holder_capacity_bytes, 0
+                held_bytes + encoded_bytes - holder_capacity, 0
             )
             if required and self.kcfg.experience_creation_requires_free_capacity:
                 stats.learning_capacity_rejected += 1
                 continue
             if required:
                 stats.evicted_capacity += self.arena.evict_oldest(holder, required)
-            if self.arena.holder_bytes(holder) + encoded_bytes > self.kcfg.holder_capacity_bytes:
+            if self.arena.holder_bytes(holder) + encoded_bytes > holder_capacity:
                 stats.learning_capacity_rejected += 1
                 continue
             if float(energy[carrier]) + 1e-12 < verification_cost:

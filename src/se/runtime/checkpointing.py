@@ -236,6 +236,7 @@ class SimulationCheckpointMixin:
             "social_connections_enabled": bool(self.social_connections_enabled),
             "direct_messages_enabled": bool(self.direct_messages_enabled),
             "freeze_genotype": bool(self.freeze_genotype),
+            "capacity_ablation_enabled": bool(self.capacity_ablation_enabled),
             "resource_affinity_ablation_enabled": bool(
                 self.resource_affinity_ablation_enabled
             ),
@@ -466,6 +467,9 @@ class SimulationCheckpointMixin:
         self.social_connections_enabled = bool(state["social_connections_enabled"])
         self.direct_messages_enabled = bool(state["direct_messages_enabled"])
         self.freeze_genotype = bool(state["freeze_genotype"])
+        self.capacity_ablation_enabled = bool(
+            state.get("capacity_ablation_enabled", False)
+        )
         self.resource_affinity_ablation_enabled = bool(
             state.get("resource_affinity_ablation_enabled", False)
         )
@@ -647,6 +651,7 @@ class SimulationCheckpointMixin:
         branch.social_connections_enabled = self.social_connections_enabled
         branch.direct_messages_enabled = self.direct_messages_enabled
         branch.freeze_genotype = self.freeze_genotype
+        branch.capacity_ablation_enabled = self.capacity_ablation_enabled
         branch.resource_affinity_ablation_enabled = (
             self.resource_affinity_ablation_enabled
         )

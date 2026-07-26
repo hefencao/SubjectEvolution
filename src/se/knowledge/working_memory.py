@@ -94,9 +94,21 @@ class WorkingMemoryUpdateResult:
         return float(self.requested_total - self.committed_total)
 
 
-def memory_float_view(memory_q: np.ndarray, config: KnowledgeConfig) -> np.ndarray:
+def memory_float_view(
+    memory_q: np.ndarray,
+    config: KnowledgeConfig,
+    *,
+    effective_widths: np.ndarray | None = None,
+) -> np.ndarray:
     scale = max(int(config.working_memory_quantization_scale), 1)
-    return (np.asarray(memory_q, dtype=np.float64) / float(scale)).astype(np.float32)
+    result = (np.asarray(memory_q, dtype=np.float64) / float(scale)).astype(np.float32)
+    if effective_widths is not None:
+        widths = np.asarray(effective_widths, dtype=np.int32)
+        if widths.shape != (result.shape[0],):
+            raise ValueError("effective working-memory widths must align with rows")
+        mask = np.arange(result.shape[1], dtype=np.int32)[None, :] < widths[:, None]
+        result = np.where(mask, result, 0.0).astype(np.float32)
+    return result
 
 
 def quantize_memory_observation(state_features: Any, config: KnowledgeConfig) -> np.ndarray:
@@ -156,6 +168,7 @@ def build_working_memory_update(
     gene_start: int,
     available_energy: np.ndarray,
     config: KnowledgeConfig,
+    effective_widths: np.ndarray | None = None,
 ) -> WorkingMemoryUpdateResult:
     width = int(config.working_memory_width)
     rows = np.asarray(active_rows, dtype=np.int32)
@@ -175,6 +188,14 @@ def build_working_memory_update(
         raise ValueError("working-memory outcomes must be five-dimensional")
     if ids.shape != (rows.size,) or energy.shape != (rows.size,):
         raise ValueError("working-memory entity metadata must align")
+    widths = (
+        np.full(rows.size, width, dtype=np.int32)
+        if effective_widths is None
+        else np.asarray(effective_widths, dtype=np.int32)
+    )
+    if widths.shape != (rows.size,) or np.any(widths < 0) or np.any(widths > width):
+        raise ValueError("effective working-memory widths exceed the physical width")
+    dimension_mask = np.arange(width, dtype=np.int32)[None, :] < widths[:, None]
 
     scale = int(config.working_memory_quantization_scale)
     current_obs = quantize_memory_observation(current_state_features, config)
@@ -212,20 +233,25 @@ def build_working_memory_update(
     magnitude = (np.abs(accumulator) + scale // 2) // scale
     proposed_i64 = np.where(accumulator < 0, -magnitude, magnitude)
     clip_q = max(1, int(round(float(config.working_memory_activation_clip) * scale)))
-    saturation_mask = np.abs(proposed_i64) > clip_q
-    proposed = np.clip(proposed_i64, -clip_q, clip_q).astype(np.int16)
+    saturation_mask = (np.abs(proposed_i64) > clip_q) & dimension_mask
+    proposed = np.where(
+        dimension_mask,
+        np.clip(proposed_i64, -clip_q, clip_q),
+        0,
+    ).astype(np.int16)
+    previous_effective = np.where(dimension_mask, prev, 0).astype(np.int16)
     saturation_count = saturation_mask.sum(axis=1).astype(np.uint16)
     active_dimensions = (proposed != 0).sum(axis=1).astype(np.uint16)
 
     requested = (
-        float(config.working_memory_base_energy_cost)
-        + width * float(config.working_memory_energy_per_dimension)
+        (widths > 0).astype(np.float64) * float(config.working_memory_base_energy_cost)
+        + widths.astype(np.float64) * float(config.working_memory_energy_per_dimension)
         + saturation_count.astype(np.float64)
         * float(config.working_memory_energy_per_saturation)
     )
-    accepted = energy + 1e-12 >= requested
+    accepted = (widths > 0) & (energy + 1e-12 >= requested)
     committed_energy = np.where(accepted, requested, 0.0)
-    committed_q = np.where(accepted[:, None], proposed, prev).astype(np.int16)
+    committed_q = np.where(accepted[:, None], proposed, previous_effective).astype(np.int16)
     return WorkingMemoryUpdateResult(
         tick=int(tick),
         active_rows=rows.copy(),

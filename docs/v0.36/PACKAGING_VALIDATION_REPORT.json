@@ -1,0 +1,35 @@
+{
+  "schema": "v036-packaging-validation-v1",
+  "project_top_level": "se_v036_project",
+  "project_file_count_before_report": 218,
+  "expected_project_file_count": 219,
+  "single_top_level_directory": true,
+  "forbidden_entries": [],
+  "forbidden_entries_absent": true,
+  "explicit_wheel_build_requirement": true,
+  "wheel_built": true,
+  "wheel_installed": true,
+  "console_scripts_validated": [
+    "se",
+    "se-multi",
+    "se-gui"
+  ],
+  "test_result": "167 passed, 1 skipped",
+  "patch_dry_run": true,
+  "patch_apply": true,
+  "patch_tree_equal": true,
+  "archive_formats": [
+    "zip",
+    "tar.gz"
+  ],
+  "project_file_count": 219,
+  "zip_file_count": 219,
+  "tar_file_count": 219,
+  "zip_top_level": [
+    "se_v036_project"
+  ],
+  "tar_top_level": [
+    "se_v036_project"
+  ],
+  "archives_inspected": true
+}
