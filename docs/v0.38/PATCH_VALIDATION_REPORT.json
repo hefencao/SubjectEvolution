@@ -1,0 +1,13 @@
+{
+  "schema": "v037-v038-patch-validation-v1",
+  "base": "se_v037_project",
+  "target": "se_v038_project",
+  "dry_run_passed": true,
+  "apply_passed": true,
+  "source_file_count": 230,
+  "patched_file_count": 230,
+  "missing_after_apply": [],
+  "extra_after_apply": [],
+  "hash_mismatches": [],
+  "exact_match": true
+}

@@ -53,6 +53,9 @@ class StepStats:
     harvested_resources: np.ndarray = field(
         default_factory=lambda: np.zeros(4, dtype=np.float64)
     )
+    requested_harvest_resources: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
     shared_energy: float = 0.0
     capacity_maintenance_energy: float = 0.0
     capacity_development_energy: float = 0.0

@@ -361,3 +361,22 @@
 ## 0.20 及更早
 
 详细历史材料保存在旧版本发行包中。当前发行包不再复制 `docs/archive`。
+## 0.38.0
+
+### D1-C request composition
+
+- Separates requested HARVEST resources from realized extraction at the authoritative resolution/commit boundary.
+- Evolution progress and metrics publish requested channel totals, shares and extraction efficiency.
+- Long-run analysis upgrades to v13 and separates common volume scale from per-window channel composition.
+- Legacy selective runs without explicit request fields are marked unavailable rather than reconstructed from realized output.
+
+### D1 paired factorial experiment
+
+- Adds shared-checkpoint baseline, affinity-neutral, capacity-neutral and combined-neutral branches.
+- Reports affinity-expression, capacity-expression and interaction contrasts over fixed phase/horizon windows.
+- Adds the `se-d1-factorial` console script and protocol audit v6.
+
+### Distribution validation
+
+- Adds disposable-venv release validation that builds an sdist, builds the wheel from the sdist, force-reinstalls over an optional prior wheel, excludes source/user paths, imports all installed modules, runs `pip check`, validates all CLI entry points and executes an external-config smoke.
+- Adds `make test`, `make verify-dist` and `make release-check`.

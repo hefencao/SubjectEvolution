@@ -1030,6 +1030,7 @@ class SimulationReportingMixin:
             ),
             shared_energy_total=self.total_shared_energy,
             harvested_resources_total=self.total_harvested_resources,
+            requested_harvest_resources_total=self.total_requested_harvest_resources,
             reproduction_eligible_total=self.total_reproduction_eligible,
             reproduction_proposals_total=self.total_reproduction_proposals,
             reproduction_rejected_capacity_total=(
@@ -1390,6 +1391,14 @@ class SimulationReportingMixin:
             "harvested_resource_1_total": float(self.total_harvested_resources[1]),
             "harvested_resource_2_total": float(self.total_harvested_resources[2]),
             "harvested_resource_3_total": float(self.total_harvested_resources[3]),
+            "requested_harvest_resource_0_step": float(stats.requested_harvest_resources[0]),
+            "requested_harvest_resource_1_step": float(stats.requested_harvest_resources[1]),
+            "requested_harvest_resource_2_step": float(stats.requested_harvest_resources[2]),
+            "requested_harvest_resource_3_step": float(stats.requested_harvest_resources[3]),
+            "requested_harvest_resource_0_total": float(self.total_requested_harvest_resources[0]),
+            "requested_harvest_resource_1_total": float(self.total_requested_harvest_resources[1]),
+            "requested_harvest_resource_2_total": float(self.total_requested_harvest_resources[2]),
+            "requested_harvest_resource_3_total": float(self.total_requested_harvest_resources[3]),
             "shared_energy_step": stats.shared_energy,
             "shared_energy_total": self.total_shared_energy,
             "benefit_classification_residual_step": (

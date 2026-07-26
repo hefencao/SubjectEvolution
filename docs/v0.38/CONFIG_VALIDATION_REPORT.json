@@ -1,0 +1,8 @@
+{
+  "schema": "config-validation-v1",
+  "version": "0.38.0",
+  "config_count": 73,
+  "validated_count": 73,
+  "errors": [],
+  "passed": true
+}

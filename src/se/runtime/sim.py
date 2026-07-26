@@ -285,6 +285,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.total_deaths = 0
         self.total_shared_energy = 0.0
         self.total_harvested_resources = np.zeros(4, dtype=np.float64)
+        self.total_requested_harvest_resources = np.zeros(4, dtype=np.float64)
         self.action_counts = np.zeros(len(Action), dtype=np.int64)
         self.benefit_flow_energy_total = np.zeros(
             BENEFIT_FLOW_COUNT, dtype=np.float64
@@ -1362,6 +1363,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         harvest_rows = resolution_plan.harvest_rows
         harvest_cells = resolution_plan.harvest_cells
         gathered = resolution_plan.gathered
+        requested_harvest = resolution_plan.requested
         share = resolution_plan.share
         signal_rows = resolution_plan.signal_rows
         birth_requests = resolution_plan.birth_requests
@@ -1444,6 +1446,10 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             else:
                 self.environment.commit_harvest(harvest_cells, gathered)
             harvesters = intents.carrier_index[harvest_rows]
+            stats.requested_harvest_resources = np.asarray(
+                requested_harvest, dtype=np.float64
+            ).sum(axis=0)
+            self.total_requested_harvest_resources += stats.requested_harvest_resources
             stats.harvested_resources = np.asarray(
                 gathered, dtype=np.float64
             ).sum(axis=0)

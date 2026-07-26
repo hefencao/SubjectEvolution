@@ -1,0 +1,21 @@
+SE v0.38 final test report
+
+Command:
+  make release-check PREVIOUS_WHEEL=/mnt/data/se_mvp-0.37.0-py3-none-any.whl
+
+Source suite:
+  180 passed, 1 skipped in 17.65s
+
+Skipped:
+  real CUDA/CuPy device-dependent test in the current build environment
+
+Distribution validation:
+  passed
+  - sdist built from final source
+  - wheel built from sdist
+  - previous 0.37 wheel installed, then candidate 0.38 force-reinstalled
+  - source tree and user site excluded
+  - all installed se modules imported
+  - pip dependency check applied
+  - se, se-multi, se-gui, se-d1-factorial checked
+  - external-config installed-wheel smoke completed

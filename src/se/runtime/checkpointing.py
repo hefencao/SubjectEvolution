@@ -174,6 +174,7 @@ class SimulationCheckpointMixin:
             "total_deaths": int(self.total_deaths),
             "total_shared_energy": float(self.total_shared_energy),
             "total_harvested_resources": self.total_harvested_resources.copy(),
+            "total_requested_harvest_resources": self.total_requested_harvest_resources.copy(),
             "action_counts": self.action_counts.copy(),
             "benefit_flow_energy_total": self.benefit_flow_energy_total.copy(),
             "lagged_benefit_boundary": self.lagged_benefit_boundary.clone(),
@@ -367,6 +368,9 @@ class SimulationCheckpointMixin:
         self.total_shared_energy = float(state["total_shared_energy"])
         self.total_harvested_resources = np.asarray(
             state.get("total_harvested_resources", np.zeros(4)), dtype=np.float64
+        ).copy()
+        self.total_requested_harvest_resources = np.asarray(
+            state.get("total_requested_harvest_resources", np.zeros(4)), dtype=np.float64
         ).copy()
         self.action_counts = np.asarray(state["action_counts"], dtype=np.int64).copy()
         self.benefit_flow_energy_total = np.asarray(
@@ -595,6 +599,9 @@ class SimulationCheckpointMixin:
         branch.total_deaths = self.total_deaths
         branch.total_shared_energy = self.total_shared_energy
         branch.total_harvested_resources = self.total_harvested_resources.copy()
+        branch.total_requested_harvest_resources = (
+            self.total_requested_harvest_resources.copy()
+        )
         branch.action_counts = self.action_counts.copy()
         branch.benefit_flow_energy_total = self.benefit_flow_energy_total.copy()
         branch.lagged_benefit_boundary = self.lagged_benefit_boundary.clone()

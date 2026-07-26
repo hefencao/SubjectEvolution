@@ -106,6 +106,7 @@ class ActionResolutionPlan:
     harvest_rows: np.ndarray
     harvest_cells: np.ndarray
     gathered: np.ndarray
+    requested: np.ndarray
     share: ShareResolution
     signal_rows: np.ndarray
     birth_requests: BirthRequestPlan
@@ -123,6 +124,7 @@ class HarvestResolution:
     rows: np.ndarray
     cells: np.ndarray
     gathered: np.ndarray
+    requested: np.ndarray
 
 
 @dataclass(frozen=True)
@@ -255,6 +257,7 @@ class DeterministicActionConflictResolver:
                 harvest_rows,
                 np.empty(0, dtype=np.int32),
                 np.empty((0, 4), dtype=np.float32),
+                np.empty((0, 4), dtype=np.float32),
             )
         observation_rows = np.searchsorted(snapshot.active, intents.carrier_index[harvest_rows])
         harvest_cells = snapshot.cells[observation_rows]
@@ -292,7 +295,7 @@ class DeterministicActionConflictResolver:
             channel_draws=channel_draws,
         )
         gathered = np.asarray(harvest_allocator(harvest_cells, rates), dtype=np.float32)
-        return HarvestResolution(harvest_rows, harvest_cells, gathered)
+        return HarvestResolution(harvest_rows, harvest_cells, gathered, rates)
 
     def resolve(
         self,
@@ -368,6 +371,7 @@ class DeterministicActionConflictResolver:
             harvest_rows=harvest_rows,
             harvest_cells=harvest_cells,
             gathered=gathered,
+            requested=harvest.requested,
             share=share,
             signal_rows=signal_rows,
             birth_requests=birth_requests,

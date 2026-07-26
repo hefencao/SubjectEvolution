@@ -14,7 +14,7 @@ from se.env.partition import SpatialRegionPartition
 from se.policy import ParametricPolicy
 
 
-SCHEMA = "structural-measurement-protocol-audit-v5"
+SCHEMA = "structural-measurement-protocol-audit-v6"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -136,6 +136,12 @@ def build_protocol_audit(
             "harvest_demand_entity_aware": bool(
                 cfg.entities.harvest_allocation_schema == "affinity-sampled-exclusive-harvest-v1"
             ),
+            "harvest_request_observation": {
+                "schema": "explicit-requested-harvest-window-v1",
+                "requested_before_environment_allocation": True,
+                "realized_after_environment_allocation": True,
+                "scale_composition_separation": True,
+            },
             "lineage_aware": False,
             "group_aware": False,
             "diversity_protection": False,
@@ -143,6 +149,25 @@ def build_protocol_audit(
                 "fixed four-channel physical interface with independently configured spatial, "
                 "temporal, and diffusion dynamics; configuration can create environmental axes "
                 "but does not guarantee evolved ecological differentiation"
+            ),
+        },
+        "d1_factorial_protocol": {
+            "schema": "d1-affinity-capacity-factorial-plan-v1",
+            "branches": {
+                "baseline": [],
+                "affinity-neutral": ["neutralize-resource-affinity"],
+                "capacity-neutral": ["neutralize-elastic-capacities"],
+                "combined-neutral": [
+                    "neutralize-resource-affinity",
+                    "neutralize-elastic-capacities",
+                ],
+            },
+            "paired_randomness": True,
+            "genotype_preserved": True,
+            "effect_sign": "expressed phenotype minus neutralized branch",
+            "interaction": "baseline - affinity-neutral - capacity-neutral + combined-neutral",
+            "interpretation": (
+                "local checkpoint-phase effects over a fixed horizon; not universal necessity"
             ),
         },
         "differentiation_capacity_protocol": {
@@ -329,6 +354,10 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- schema / channels: `{resource['schema']}` / {resource['channel_count']}",
         f"- harvest allocation: `{resource['harvest_allocation_schema']}`",
         f"- harvest budget semantics: {resource['harvest_budget_semantics']}",
+        f"- request observation: `{resource['harvest_request_observation']['schema']}`; "
+        f"requested-before-allocation={resource['harvest_request_observation']['requested_before_environment_allocation']}; "
+        f"realized-after-allocation={resource['harvest_request_observation']['realized_after_environment_allocation']}; "
+        f"scale/composition separated={resource['harvest_request_observation']['scale_composition_separation']}",
         f"- independent cycle periods: {resource['independent_cycle_periods']}",
         f"- primary wave vectors: {resource['primary_wave_vectors']}",
         f"- diffusion rates: {resource['diffusion_rates']}",
@@ -347,6 +376,17 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- development energy: {differentiation['development_energy']}",
         f"- preset roles / diversity protection: {differentiation['preset_role_labels']} / {differentiation['diversity_protection']}",
         f"- boundary: {differentiation['interpretation']}",
+        "",
+        "## D1 affinity × capacity factorial",
+        "",
+        f"- schema: `{payload['d1_factorial_protocol']['schema']}`",
+        f"- branches: {payload['d1_factorial_protocol']['branches']}",
+        f"- paired randomness / genotype preserved: "
+        f"{payload['d1_factorial_protocol']['paired_randomness']} / "
+        f"{payload['d1_factorial_protocol']['genotype_preserved']}",
+        f"- expression effect sign: {payload['d1_factorial_protocol']['effect_sign']}",
+        f"- interaction contrast: {payload['d1_factorial_protocol']['interaction']}",
+        f"- boundary: {payload['d1_factorial_protocol']['interpretation']}",
         "",
         "## Environment atlas",
         "",

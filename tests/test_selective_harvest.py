@@ -119,7 +119,7 @@ def test_selective_harvest_is_published_and_analyzed(tmp_path: Path) -> None:
     manifest = json.loads((out / "run_manifest.json").read_text())
     assert manifest["harvest_allocation_schema"] == SELECTIVE_HARVEST_SCHEMA
     report = analyze([out / "evolution_progress.jsonl"])
-    assert report["schema"] == "multi-seed-long-run-analysis-v12"
+    assert report["schema"] == "multi-seed-long-run-analysis-v13"
     demand = report["runs"][0]["resource_demand_analysis"]
     assert demand["available"] is True
     assert len(demand["harvest_channel_shares"]) == 4
@@ -128,7 +128,7 @@ def test_selective_harvest_is_published_and_analyzed(tmp_path: Path) -> None:
 
 def test_protocol_audit_records_selective_budget() -> None:
     report = build_protocol_audit(CONFIG)
-    assert report["schema"] == "structural-measurement-protocol-audit-v5"
+    assert report["schema"] == "structural-measurement-protocol-audit-v6"
     resource = report["resource_environment_protocol"]
     assert resource["harvest_allocation_schema"] == SELECTIVE_HARVEST_SCHEMA
     assert "one channel" in resource["harvest_budget_semantics"]

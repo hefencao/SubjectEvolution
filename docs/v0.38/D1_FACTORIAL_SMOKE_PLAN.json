@@ -1,0 +1,44 @@
+{
+  "schema": "d1-affinity-capacity-factorial-plan-v1",
+  "horizon_ticks": 10,
+  "phases": [
+    "peak",
+    "trough"
+  ],
+  "checkpoints": [
+    {
+      "run_name": "v038_factorial_source",
+      "run_dir": "/mnt/data/v038_factorial_source",
+      "phase": "peak",
+      "target_tick": 50,
+      "checkpoint_tick": 60,
+      "checkpoint_path": "/mnt/data/v038_factorial_source/checkpoint_00000060.sechk",
+      "until_tick": 70
+    },
+    {
+      "run_name": "v038_factorial_source",
+      "run_dir": "/mnt/data/v038_factorial_source",
+      "phase": "trough",
+      "target_tick": 80,
+      "checkpoint_tick": 20,
+      "checkpoint_path": "/mnt/data/v038_factorial_source/checkpoint_00000020.sechk",
+      "until_tick": 30
+    }
+  ],
+  "branches": {
+    "baseline": [],
+    "affinity-neutral": [
+      "neutralize-resource-affinity"
+    ],
+    "capacity-neutral": [
+      "neutralize-elastic-capacities"
+    ],
+    "combined-neutral": [
+      "neutralize-resource-affinity",
+      "neutralize-elastic-capacities"
+    ]
+  },
+  "paired_randomness": true,
+  "genotype_preserved": true,
+  "observational_phase_selection": true
+}

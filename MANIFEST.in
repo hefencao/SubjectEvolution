@@ -1,0 +1,12 @@
+include Makefile
+include run_gpu.sh
+include run_gpu.ps1
+recursive-include configs *.json
+recursive-include docs *.md *.json *.txt
+recursive-include scripts *.py *.sh *.ps1
+recursive-include tests *.py
+prune docs/archive
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude .pytest_cache
+global-exclude .git

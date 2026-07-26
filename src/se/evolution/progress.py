@@ -613,6 +613,7 @@ class EvolutionProgressTracker:
         )
         self.previous_shared_energy = 0.0
         self.previous_harvested_resources = np.zeros(4, dtype=np.float64)
+        self.previous_requested_harvest_resources = np.zeros(4, dtype=np.float64)
         self.previous_reproduction_eligible = 0
         self.previous_reproduction_proposals = 0
         self.previous_reproduction_rejected_capacity = 0
@@ -649,6 +650,8 @@ class EvolutionProgressTracker:
             setattr(self, name, copy.deepcopy(value))
         if not hasattr(self, "previous_knowledge_transfer_totals"):
             self.previous_knowledge_transfer_totals = {}
+        if not hasattr(self, "previous_requested_harvest_resources"):
+            self.previous_requested_harvest_resources = np.zeros(4, dtype=np.float64)
         self._file = None
 
     def clone(self, output_dir: str | Path) -> "EvolutionProgressTracker":
@@ -665,6 +668,9 @@ class EvolutionProgressTracker:
         )
         branch.previous_harvested_resources = (
             self.previous_harvested_resources.copy()
+        )
+        branch.previous_requested_harvest_resources = (
+            self.previous_requested_harvest_resources.copy()
         )
         branch.previous_knowledge_transfer_totals = dict(
             self.previous_knowledge_transfer_totals
@@ -753,6 +759,7 @@ class EvolutionProgressTracker:
         lagged_benefit_boundary_snapshot_tick: int,
         shared_energy_total: float,
         harvested_resources_total: np.ndarray,
+        requested_harvest_resources_total: np.ndarray,
         reproduction_eligible_total: int,
         reproduction_proposals_total: int,
         reproduction_rejected_capacity_total: int,
@@ -896,6 +903,20 @@ class EvolutionProgressTracker:
             if harvested_window_total > 0.0
             else np.zeros(4, dtype=np.float64)
         )
+        requested_totals = np.asarray(
+            requested_harvest_resources_total, dtype=np.float64
+        )
+        if requested_totals.shape != (4,):
+            raise ValueError("requested harvest totals must contain four channels")
+        requested_window = (
+            requested_totals - self.previous_requested_harvest_resources
+        )
+        requested_window_total = float(requested_window.sum())
+        requested_window_share = (
+            requested_window / requested_window_total
+            if requested_window_total > 0.0
+            else np.zeros(4, dtype=np.float64)
+        )
         reproduction_accepted_window = int(births_total - self.previous_births)
         reproduction_accounting_residual = int(
             reproduction_proposals_window
@@ -1015,6 +1036,13 @@ class EvolutionProgressTracker:
             "strategy_feature_names": list(ParametricPolicy.FEATURE_NAMES),
             "harvested_resources_window": harvested_window.tolist(),
             "harvested_resource_share_window": harvested_window_share.tolist(),
+            "requested_harvest_resources_window": requested_window.tolist(),
+            "requested_harvest_resource_share_window": requested_window_share.tolist(),
+            "harvest_extraction_efficiency_window": (
+                harvested_window_total / requested_window_total
+                if requested_window_total > 0.0
+                else 0.0
+            ),
             "mean_strategy_shift_l2": policy_shift,
             "mean_strategy_shift_from_initial_l2": cumulative_policy_shift,
             "canonical_diversity_ratio_to_initial": (
@@ -1130,6 +1158,7 @@ class EvolutionProgressTracker:
         self.previous_lagged_benefit_flow_totals = lagged_benefit_totals.copy()
         self.previous_shared_energy = float(shared_energy_total)
         self.previous_harvested_resources = harvested_totals.copy()
+        self.previous_requested_harvest_resources = requested_totals.copy()
         self.previous_reproduction_eligible = int(reproduction_eligible_total)
         self.previous_reproduction_proposals = int(reproduction_proposals_total)
         self.previous_reproduction_rejected_capacity = int(

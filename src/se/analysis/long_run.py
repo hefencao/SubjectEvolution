@@ -137,27 +137,50 @@ def _matrix_effective_dimensions(values: np.ndarray) -> float:
     return 0.0 if total <= 0.0 or squared <= 0.0 else total * total / squared
 
 
+def _channel_correlation(matrix: np.ndarray) -> tuple[np.ndarray, float, float]:
+    values = np.asarray(matrix, dtype=np.float64)
+    correlation = np.eye(4, dtype=np.float64)
+    active_columns = values.std(axis=0) > 1e-12
+    if np.count_nonzero(active_columns) >= 2:
+        sub = np.corrcoef(values[:, active_columns], rowvar=False)
+        correlation[np.ix_(active_columns, active_columns)] = sub
+    off_diagonal = np.abs(correlation[~np.eye(4, dtype=bool)])
+    return (
+        correlation,
+        float(off_diagonal.mean()),
+        float(off_diagonal.max(initial=0.0)),
+    )
+
+
 def _resource_demand_analysis(
     records: list[dict[str, Any]], config_context: dict[str, Any]
 ) -> dict[str, Any]:
-    rows: list[np.ndarray] = []
+    realized_rows: list[np.ndarray] = []
+    requested_rows: list[np.ndarray] = []
+    requested_window_totals: list[float] = []
     field_dimensions: list[float] = []
-    balance: list[float] = []
+    realized_balance: list[float] = []
     extraction_efficiency: list[float] = []
+    explicit_request_rows = 0
+    inferred_request_rows = 0
+    unavailable_request_rows = 0
+    allocation_schema = str(
+        config_context.get("harvest_allocation_schema", "uniform-channel-rates-v1")
+    )
+    multipliers = np.asarray(
+        config_context.get("harvest_channel_multipliers", [1.0, 1.0, 1.0, 1.0]),
+        dtype=np.float64,
+    )
+    if multipliers.shape != (4,) or np.any(~np.isfinite(multipliers)):
+        multipliers = np.ones(4, dtype=np.float64)
+    harvest_rate = float(config_context.get("harvest_rate", 0.0) or 0.0)
+
     for record in records:
-        value = np.asarray(record.get("harvested_resources_window", ()), dtype=np.float64)
-        if value.shape != (4,) or np.any(~np.isfinite(value)):
-            continue
-        rows.append(value)
-        total = float(value.sum())
-        if total > 0.0:
-            share = value / total
-            balance.append(float(1.0 / max(float(np.square(share).sum()), 1e-30)))
-        else:
-            balance.append(math.nan)
-        field_dimensions.append(
-            float(record.get("environment_resource_effective_dimensions", math.nan))
+        realized = np.asarray(
+            record.get("harvested_resources_window", ()), dtype=np.float64
         )
+        if realized.shape != (4,) or np.any(~np.isfinite(realized)):
+            continue
         action_names = list(record.get("action_names", ()))
         action_counts = list(record.get("window_action_counts", ()))
         try:
@@ -166,40 +189,174 @@ def _resource_demand_analysis(
         except (ValueError, IndexError, TypeError):
             harvest_actions = 0
         request_budget = float(config_context.get("harvest_request_budget", math.nan))
-        requested_total = harvest_actions * request_budget
+        scalar_requested_total = harvest_actions * request_budget
+        if not math.isfinite(scalar_requested_total):
+            scalar_requested_total = math.nan
+
+        requested = np.asarray(
+            record.get("requested_harvest_resources_window", ()), dtype=np.float64
+        )
+        if requested.shape == (4,) and np.all(np.isfinite(requested)):
+            requested_rows.append(requested)
+            explicit_request_rows += 1
+            scalar_requested_total = float(requested.sum())
+        elif allocation_schema == "uniform-channel-rates-v1":
+            inferred = harvest_actions * harvest_rate * multipliers
+            requested_rows.append(inferred.astype(np.float64, copy=False))
+            inferred_request_rows += 1
+            scalar_requested_total = float(inferred.sum())
+        else:
+            unavailable_request_rows += 1
+
+        realized_rows.append(realized)
+        requested_window_totals.append(scalar_requested_total)
+        realized_total = float(realized.sum())
+        if realized_total > 0.0:
+            share = realized / realized_total
+            realized_balance.append(
+                float(1.0 / max(float(np.square(share).sum()), 1e-30))
+            )
+        else:
+            realized_balance.append(math.nan)
+        field_dimensions.append(
+            float(record.get("environment_resource_effective_dimensions", math.nan))
+        )
         extraction_efficiency.append(
-            total / requested_total
-            if requested_total > 0.0 and math.isfinite(requested_total)
+            realized_total / scalar_requested_total
+            if scalar_requested_total > 0.0 and math.isfinite(scalar_requested_total)
             else math.nan
         )
-    if not rows:
+    if not realized_rows:
         return {"available": False, "reason": "harvested_resources_window missing"}
-    matrix = np.vstack(rows)
-    totals = matrix.sum(axis=0)
-    grand_total = float(totals.sum())
-    shares = totals / grand_total if grand_total > 0.0 else np.zeros(4, dtype=np.float64)
-    active_columns = matrix.std(axis=0) > 1e-12
-    correlation = np.eye(4, dtype=np.float64)
-    if np.count_nonzero(active_columns) >= 2:
-        sub = np.corrcoef(matrix[:, active_columns], rowvar=False)
-        correlation[np.ix_(active_columns, active_columns)] = sub
-    off_diagonal = np.abs(correlation[~np.eye(4, dtype=bool)])
+
+    realized_matrix = np.vstack(realized_rows)
+    realized_totals = realized_matrix.sum(axis=0)
+    realized_grand_total = float(realized_totals.sum())
+    realized_shares = (
+        realized_totals / realized_grand_total
+        if realized_grand_total > 0.0
+        else np.zeros(4, dtype=np.float64)
+    )
+    realized_window_totals = realized_matrix.sum(axis=1)
+    realized_share_matrix = np.divide(
+        realized_matrix,
+        realized_window_totals[:, None],
+        out=np.zeros_like(realized_matrix),
+        where=realized_window_totals[:, None] > 0.0,
+    )
+    realized_corr, realized_mean_corr, realized_max_corr = _channel_correlation(
+        realized_matrix
+    )
+    realized_share_corr, realized_share_mean_corr, realized_share_max_corr = (
+        _channel_correlation(realized_share_matrix)
+    )
+
+    request_channel_metrics_available = len(requested_rows) == len(realized_rows)
+    if request_channel_metrics_available:
+        requested_matrix = np.vstack(requested_rows)
+        requested_totals = requested_matrix.sum(axis=0)
+        requested_grand_total = float(requested_totals.sum())
+        requested_shares = (
+            requested_totals / requested_grand_total
+            if requested_grand_total > 0.0
+            else np.zeros(4, dtype=np.float64)
+        )
+        requested_window_matrix_totals = requested_matrix.sum(axis=1)
+        requested_share_matrix = np.divide(
+            requested_matrix,
+            requested_window_matrix_totals[:, None],
+            out=np.zeros_like(requested_matrix),
+            where=requested_window_matrix_totals[:, None] > 0.0,
+        )
+        requested_corr, requested_mean_corr, requested_max_corr = _channel_correlation(
+            requested_matrix
+        )
+        requested_share_corr, requested_share_mean_corr, requested_share_max_corr = (
+            _channel_correlation(requested_share_matrix)
+        )
+        requested_metrics = {
+            "requested_harvest_channel_totals": requested_totals.tolist(),
+            "requested_harvest_channel_shares": requested_shares.tolist(),
+            "requested_harvest_balance_effective_count": (
+                float(1.0 / max(float(np.square(requested_shares).sum()), 1e-30))
+                if requested_grand_total > 0.0
+                else 0.0
+            ),
+            "requested_harvest_temporal_effective_dimensions": (
+                _matrix_effective_dimensions(requested_matrix)
+            ),
+            "requested_harvest_channel_correlation": requested_corr.tolist(),
+            "requested_harvest_channel_mean_abs_correlation": requested_mean_corr,
+            "requested_harvest_channel_max_abs_correlation": requested_max_corr,
+            "requested_harvest_share_temporal_effective_dimensions": (
+                _matrix_effective_dimensions(requested_share_matrix)
+            ),
+            "requested_harvest_share_channel_correlation": (
+                requested_share_corr.tolist()
+            ),
+            "requested_harvest_share_channel_mean_abs_correlation": (
+                requested_share_mean_corr
+            ),
+            "requested_harvest_share_channel_max_abs_correlation": (
+                requested_share_max_corr
+            ),
+        }
+    else:
+        requested_metrics = {
+            "requested_harvest_channel_totals": [],
+            "requested_harvest_channel_shares": [],
+            "requested_harvest_balance_effective_count": None,
+            "requested_harvest_temporal_effective_dimensions": None,
+            "requested_harvest_channel_correlation": [],
+            "requested_harvest_channel_mean_abs_correlation": None,
+            "requested_harvest_channel_max_abs_correlation": None,
+            "requested_harvest_share_temporal_effective_dimensions": None,
+            "requested_harvest_share_channel_correlation": [],
+            "requested_harvest_share_channel_mean_abs_correlation": None,
+            "requested_harvest_share_channel_max_abs_correlation": None,
+        }
+
+    if explicit_request_rows == len(realized_rows):
+        request_schema = "explicit-requested-harvest-window-v1"
+    elif inferred_request_rows == len(realized_rows):
+        request_schema = "legacy-inferred-uniform-request-v1"
+    else:
+        request_schema = "requested-channel-composition-unavailable-v1"
+
+    scalar_requested = np.asarray(requested_window_totals, dtype=np.float64)
     return {
         "available": True,
-        "window_count": int(matrix.shape[0]),
-        "harvest_channel_totals": totals.tolist(),
-        "harvest_channel_shares": shares.tolist(),
+        "window_count": int(realized_matrix.shape[0]),
+        "request_observation_schema": request_schema,
+        "request_channel_metrics_available": request_channel_metrics_available,
+        "explicit_request_window_count": int(explicit_request_rows),
+        "inferred_request_window_count": int(inferred_request_rows),
+        "unavailable_request_window_count": int(unavailable_request_rows),
+        "harvest_channel_totals": realized_totals.tolist(),
+        "harvest_channel_shares": realized_shares.tolist(),
         "harvest_balance_effective_count": (
-            float(1.0 / max(float(np.square(shares).sum()), 1e-30))
-            if grand_total > 0.0
+            float(1.0 / max(float(np.square(realized_shares).sum()), 1e-30))
+            if realized_grand_total > 0.0
             else 0.0
         ),
-        "harvest_temporal_effective_dimensions": _matrix_effective_dimensions(matrix),
-        "harvest_channel_correlation": correlation.tolist(),
-        "harvest_channel_mean_abs_correlation": float(off_diagonal.mean()),
-        "harvest_channel_max_abs_correlation": float(off_diagonal.max(initial=0.0)),
+        "harvest_temporal_effective_dimensions": _matrix_effective_dimensions(
+            realized_matrix
+        ),
+        "harvest_channel_correlation": realized_corr.tolist(),
+        "harvest_channel_mean_abs_correlation": realized_mean_corr,
+        "harvest_channel_max_abs_correlation": realized_max_corr,
+        "harvest_share_temporal_effective_dimensions": _matrix_effective_dimensions(
+            realized_share_matrix
+        ),
+        "harvest_share_channel_correlation": realized_share_corr.tolist(),
+        "harvest_share_channel_mean_abs_correlation": realized_share_mean_corr,
+        "harvest_share_channel_max_abs_correlation": realized_share_max_corr,
+        **requested_metrics,
+        "harvest_volume_vs_requested_volume": _pearson(
+            realized_window_totals, scalar_requested
+        ),
         "harvest_balance_vs_resource_environment_dimensions": _pearson(
-            balance, field_dimensions
+            realized_balance, field_dimensions
         ),
         "harvest_extraction_efficiency_mean": (
             float(np.nanmean(extraction_efficiency))
@@ -214,11 +371,14 @@ def _resource_demand_analysis(
             else None
         ),
         "interpretation": (
-            "Harvest demand metrics describe realized extraction, not fitness or causal "
-            "niche differentiation. Selective acquisition must be paired with phenotype "
-            "neutralization or shared-checkpoint branches for causal claims."
+            "Raw channel volumes co-move with population and HARVEST action count. "
+            "Share-composition metrics remove that common scale before measuring "
+            "demand differentiation. Realized extraction remains availability-limited; "
+            "explicit requested-channel metrics are authoritative. Older selective runs "
+            "without requested-channel fields cannot reconstruct channel composition."
         ),
     }
+
 
 def _resolved_config_context(path: str | Path) -> dict[str, Any]:
     progress = Path(path)
@@ -1233,7 +1393,7 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         if value["available_runs"] >= 3 and value["same_nonzero_sign"]
     ]
     return {
-        "schema": "multi-seed-long-run-analysis-v12",
+        "schema": "multi-seed-long-run-analysis-v13",
         "analyzer_version": __version__,
         "input_runtime_versions": sorted(
             {
@@ -1545,10 +1705,16 @@ def render_markdown(report: dict[str, Any]) -> str:
         context = run.get("config_context", {})
         lines.extend([
             f"- harvest allocation schema: `{context.get('harvest_allocation_schema', 'uniform-channel-rates-v1')}`",
-            f"- channel shares: {[round(float(value), 4) for value in demand.get('harvest_channel_shares', [])]}",
-            f"- balance effective count: {_format(demand.get('harvest_balance_effective_count'))}",
-            f"- temporal effective dimensions: {_format(demand.get('harvest_temporal_effective_dimensions'))}",
-            f"- mean/max |channel correlation|: {_format(demand.get('harvest_channel_mean_abs_correlation'))} / {_format(demand.get('harvest_channel_max_abs_correlation'))}",
+            f"- request observation schema: `{demand.get('request_observation_schema', 'unknown')}`",
+            f"- realized channel shares: {[round(float(value), 4) for value in demand.get('harvest_channel_shares', [])]}",
+            f"- requested channel shares: {[round(float(value), 4) for value in demand.get('requested_harvest_channel_shares', [])]}",
+            f"- realized balance effective count: {_format(demand.get('harvest_balance_effective_count'))}",
+            f"- requested balance effective count: {_format(demand.get('requested_harvest_balance_effective_count'))}",
+            f"- raw realized volume dimensions / mean |corr|: {_format(demand.get('harvest_temporal_effective_dimensions'))} / {_format(demand.get('harvest_channel_mean_abs_correlation'))}",
+            f"- realized share-composition dimensions / mean |corr|: {_format(demand.get('harvest_share_temporal_effective_dimensions'))} / {_format(demand.get('harvest_share_channel_mean_abs_correlation'))}",
+            f"- raw requested volume dimensions / mean |corr|: {_format(demand.get('requested_harvest_temporal_effective_dimensions'))} / {_format(demand.get('requested_harvest_channel_mean_abs_correlation'))}",
+            f"- requested share-composition dimensions / mean |corr|: {_format(demand.get('requested_harvest_share_temporal_effective_dimensions'))} / {_format(demand.get('requested_harvest_share_channel_mean_abs_correlation'))}",
+            f"- realized volume vs requested volume: {_format(demand.get('harvest_volume_vs_requested_volume'))}",
             f"- balance vs resource-field dimensions: {_format(demand.get('harvest_balance_vs_resource_environment_dimensions'))}",
             f"- realized/requested extraction efficiency mean/final: {_format(demand.get('harvest_extraction_efficiency_mean'))} / {_format(demand.get('harvest_extraction_efficiency_final'))}",
             "",

@@ -856,6 +856,7 @@ class HybridGpuRuntime:
                 np.empty(0, dtype=np.int32),
                 np.empty(0, dtype=np.int32),
                 np.empty((0, DeviceEnvironment.RESOURCE_CHANNELS), dtype=np.float32),
+                np.empty((0, DeviceEnvironment.RESOURCE_CHANNELS), dtype=np.float32),
             )
 
         # These are copies of the supplied read-only snapshot, not pointers
@@ -908,6 +909,7 @@ class HybridGpuRuntime:
             host_rows,
             self._download(device_cells).astype(np.int32, copy=False),
             self._download(device_gathered).astype(np.float32, copy=False),
+            np.asarray(host_rates, dtype=np.float32),
         )
 
     def commit_harvest(self, cell_ids: np.ndarray, gathered: np.ndarray) -> None:

@@ -1,0 +1,107 @@
+{
+  "schema": "d1b-long-run-assessment-v1",
+  "input_schema": "multi-seed-long-run-analysis-v12",
+  "analyzer_version": "0.37.0",
+  "input_runtime_versions": [
+    "0.37.0"
+  ],
+  "run_count": 3,
+  "runs": [
+    {
+      "run_name": "seed_10001",
+      "final_tick": 1500,
+      "alive_final": 462,
+      "resource_effective_dimensions_final": 1.83313497541319,
+      "resource_mean_abs_correlation_final": 0.6043772591772839,
+      "capacity_effective_dimensions_final": 3.455634239177557,
+      "working_memory_utilization_final": 0.9956709956709957,
+      "knowledge_utilization_final": 0.9289536326468145,
+      "relation_utilization_final": 0.7864873222016079,
+      "attention_zero_fraction_final": 0.021645021645021644,
+      "raw_realized_harvest_temporal_dimensions": 1.0343887397043792,
+      "raw_realized_harvest_mean_abs_correlation": 0.9775725443912687,
+      "extraction_efficiency_mean": 0.6402776149503486,
+      "extraction_efficiency_final": 0.48279806123890834
+    },
+    {
+      "run_name": "seed_10002",
+      "final_tick": 1500,
+      "alive_final": 458,
+      "resource_effective_dimensions_final": 2.0040875664806057,
+      "resource_mean_abs_correlation_final": 0.543304546321154,
+      "capacity_effective_dimensions_final": 3.4597252443263136,
+      "working_memory_utilization_final": 0.9954648526077098,
+      "knowledge_utilization_final": 0.935488398670713,
+      "relation_utilization_final": 0.7235443959243085,
+      "attention_zero_fraction_final": 0.028384279475982533,
+      "raw_realized_harvest_temporal_dimensions": 1.070112149448296,
+      "raw_realized_harvest_mean_abs_correlation": 0.9552979649493759,
+      "extraction_efficiency_mean": 0.6320168021666137,
+      "extraction_efficiency_final": 0.45182646422737693
+    },
+    {
+      "run_name": "seed_10003",
+      "final_tick": 1500,
+      "alive_final": 418,
+      "resource_effective_dimensions_final": 1.7371541096058143,
+      "resource_mean_abs_correlation_final": 0.6423486328245306,
+      "capacity_effective_dimensions_final": 3.7609359261062423,
+      "working_memory_utilization_final": 1.0,
+      "knowledge_utilization_final": 0.9384884553245797,
+      "relation_utilization_final": 0.733013589128697,
+      "attention_zero_fraction_final": 0.009569377990430622,
+      "raw_realized_harvest_temporal_dimensions": 1.0422160183528568,
+      "raw_realized_harvest_mean_abs_correlation": 0.972588551541229,
+      "extraction_efficiency_mean": 0.6820034208254987,
+      "extraction_efficiency_final": 0.5197774381968022
+    }
+  ],
+  "aggregate": {
+    "resource_effective_dimensions_final": {
+      "mean": 1.85812555049987,
+      "min": 1.7371541096058143,
+      "max": 2.0040875664806057
+    },
+    "capacity_effective_dimensions_final": {
+      "mean": 3.5587651365367043,
+      "min": 3.455634239177557,
+      "max": 3.7609359261062423
+    },
+    "working_memory_utilization_final": {
+      "mean": 0.9970452827595685,
+      "min": 0.9954648526077098,
+      "max": 1.0
+    },
+    "knowledge_utilization_final": {
+      "mean": 0.9343101622140357,
+      "min": 0.9289536326468145,
+      "max": 0.9384884553245797
+    },
+    "relation_utilization_final": {
+      "mean": 0.7476817690848712,
+      "min": 0.7235443959243085,
+      "max": 0.7864873222016079
+    },
+    "raw_realized_harvest_temporal_dimensions": {
+      "mean": 1.0489056358351774,
+      "min": 1.0343887397043792,
+      "max": 1.070112149448296
+    },
+    "raw_realized_harvest_mean_abs_correlation": {
+      "mean": 0.9684863536272912,
+      "min": 0.9552979649493759,
+      "max": 0.9775725443912687
+    },
+    "extraction_efficiency_mean": {
+      "mean": 0.651432612647487,
+      "min": 0.6320168021666137,
+      "max": 0.6820034208254987
+    }
+  },
+  "decision": {
+    "d0_environment_axis_persistence": "passed-minimum: all three final global resource dimensions > 1.7",
+    "d1_capacity_use": "passed-minimum: all three capacity effective dimensions > 3.4 with high use",
+    "demand_composition_identifiability": "failed in v0.37: report stores realized volumes only; raw volume co-movement is confounded by population/action scale",
+    "d2_status": "blocked pending explicit requested-channel composition and paired affinity x capacity checkpoint effects"
+  }
+}

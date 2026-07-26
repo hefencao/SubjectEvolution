@@ -1,0 +1,39 @@
+{
+  "schema": "v037-v038-compatibility-v1",
+  "old_version": "0.37.0",
+  "new_version": "0.38.0",
+  "config": "configs/d1b_selective_harvest_smoke.json",
+  "ticks": 30,
+  "backend": "cpu",
+  "metrics": {
+    "rows": 4,
+    "common_fields": 345,
+    "common_non_timing_fields": 332,
+    "cells_compared": 1328,
+    "mismatch_count": 0,
+    "first_mismatches": []
+  },
+  "byte_identical_outputs": {
+    "knowledge_events.jsonl": true,
+    "knowledge_outcome_updates.csv": true,
+    "knowledge_policy_contributions.csv": true,
+    "knowledge_routing_costs.csv": true,
+    "knowledge_selection_events.csv": true,
+    "knowledge_transfers.csv": true,
+    "knowledge_working_memory.csv": true,
+    "environment_atlas.jsonl": true,
+    "environment_atlas_summary.json": true,
+    "subject_structure_transitions.jsonl": true,
+    "subject_structure_summary.json": true
+  },
+  "semantic_state": {
+    "common_leaves_compared": 12716,
+    "mismatch_count": 0,
+    "first_mismatches": [],
+    "excluded_new_diagnostic_fields": [
+      "total_requested_harvest_resources",
+      "previous_requested_harvest_resources"
+    ]
+  },
+  "world_semantics_unchanged": true
+}

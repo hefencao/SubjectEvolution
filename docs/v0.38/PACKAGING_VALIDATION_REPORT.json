@@ -1,0 +1,37 @@
+{
+  "schema": "packaging-validation-v1",
+  "version": "0.38.0",
+  "project_top_level": "se_v038_project",
+  "source_file_count_before_report": 229,
+  "expected_final_file_count": 230,
+  "initial_zip_file_count": 229,
+  "initial_tar_file_count": 229,
+  "initial_zip_top_levels": [
+    "se_v038_project"
+  ],
+  "initial_tar_top_levels": [
+    "se_v038_project"
+  ],
+  "initial_forbidden_entries": [],
+  "excluded": [
+    "docs/archive",
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    "*.pyc",
+    "*.pyo",
+    "build",
+    "dist",
+    "*.egg-info"
+  ],
+  "passed": true,
+  "final_zip_file_count": 230,
+  "final_tar_file_count": 230,
+  "final_zip_top_levels": [
+    "se_v038_project"
+  ],
+  "final_tar_top_levels": [
+    "se_v038_project"
+  ],
+  "final_forbidden_entries": []
+}
