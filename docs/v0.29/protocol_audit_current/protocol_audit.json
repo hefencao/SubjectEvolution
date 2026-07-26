@@ -1,0 +1,52 @@
+{
+  "schema": "structural-measurement-protocol-audit-v1",
+  "config_path": "/mnt/data/subject_evolution_v029_project/configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_mortality_trace_adaptive_groups_longrun.json",
+  "group_label_protocol": {
+    "label_schema": "trusted-directed-fixed-round-min-label-v1",
+    "edge_rule": "directed relation slot is eligible when target is alive and materialized trust is at least trust_group_threshold",
+    "successful_share_relation_rule": "forward full trust gain plus reciprocal half-gain; thresholded directions may still differ after history and decay",
+    "propagation_rule": "initialize label as physical slot index; for each fixed round, replace an entity label by the minimum of its current label and labels reachable through eligible outgoing relation slots",
+    "propagation_rounds": 8,
+    "trust_threshold": 0.12,
+    "minimum_members": 6,
+    "group_token_rule": "stable entity ID at the propagated minimum root slot; components below minimum members receive token 0 and remain ungrouped",
+    "exact_component_claim": false,
+    "interpretation": "finite-round directed minimum-label propagation is an approximate candidate-group measurement, not a subject-existence verdict",
+    "refresh": {
+      "mode": "adaptive-topology-v1",
+      "period": 50,
+      "minimum_period": 100,
+      "maximum_period": 300,
+      "adaptive_triggers": [
+        "initial snapshot",
+        "topology-relevant relation change after minimum period",
+        "predicted trust-threshold decay crossing after minimum period",
+        "maximum staleness"
+      ]
+    }
+  },
+  "spatial_region_protocol": {
+    "schema": "normalized-fixed-count-grid-v1",
+    "mapping": "row-major-y-then-x",
+    "boundary_convention": "half-open except clipped outer boundary",
+    "regions_x": 4,
+    "regions_y": 4,
+    "region_count": 16,
+    "world_width": 128.0,
+    "world_height": 128.0,
+    "world_grid_x": 32,
+    "world_grid_y": 32,
+    "normalized_region_width": 0.25,
+    "normalized_region_height": 0.25,
+    "physical_region_width": 32.0,
+    "physical_region_height": 32.0,
+    "world_cells_per_region_x": 8.0,
+    "world_cells_per_region_y": 8.0,
+    "world_grid_aligned": true,
+    "feedback_to_world": false,
+    "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+    "partition_sha256": "80ca3a910af4d035ebdcc1b9fb961d80675113ed6ff16e84a7c3b5f30a34c3f9"
+  },
+  "anchor_protocol": null,
+  "audit_sha256": "47c56e44a6aeb91a20752999c2dd2a349c6d888a8548cb585fcb3bb75e0ffc53"
+}

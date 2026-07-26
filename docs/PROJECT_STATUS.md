@@ -1,59 +1,66 @@
 # Subject Evolution 项目状态
 
-版本：**0.28.0**
+版本：**0.29.0**
 
 ## 本轮输入与结论
 
-用户提供的 `analyses.zip` 包含：
+用户提供的 `analyses.zip` 包含三组完整的 v0.28 event-timed 结果：
 
-- 已完成的 18-anchor primary cohort rerun（54 pairs）；
-- 已完成的 6-anchor crowding knowledge cohort rerun（18 pairs）；
-- 已通过 preflight、但未附 results 的 12-anchor mortality/scarcity knowledge plan（36 pairs）。
-
-因此当前实际结果覆盖仍为 **72/108 eligible pairs**。
-
-v0.27 stable-ID endpoint 恒等式本身成立，但本轮审计发现更上游的执行时序问题：所有 72 个干预都在 prior checkpoint tick 应用，比名义 event tick 提前 30 或 60 ticks。48/72 pairs 在 event tick 的区域 alive 数已经与 baseline 不同；旧 cohort schema 也没有实体集合哈希，人数相同的 pairs 仍无法证明身份相同。
-
-旧结果估计的是 checkpoint 后整段总效应，而不是共同自然事件状态形成后的 post-event 机制效应。v0.28 因此不增加世界机制，而是新增 shared-prefix/event-checkpoint 执行边界。
-
-## v0.28 新增能力
-
-### Event-timed paired execution
-
-`subject_evolution.natural_event_timed_execution`：
-
-1. 按 `(source checkpoint SHA-256, event tick)` 只演进一次共同前史；
-2. 保存并验证 event checkpoint file/state SHA-256；
-3. baseline 与 interventions 从完全相同的 event checkpoint 开始；
-4. 在干预前冻结共同群组边界和 event cohort；
-5. 干预严格在名义 event tick 应用；
-6. 每个 pair 输出 `shared-event-checkpoint-pairing-v1`。
-
-### Event cohort v2
-
-`event-region-endpoint-cohort-decomposition-v2` 在 v1 五类终点分解基础上新增：
-
-- `event_global_ids_sha256`；
-- `event_region_ids_sha256`。
-
-pairing 只有在 event alive、全局 identity hash、区域 identity hash 全部一致时有效。
-
-### 两类估计量显式分离
-
-| 入口 | Timing | 解释 |
-|---|---|---|
-| `natural_event_execution` | `checkpoint-immediate-v1` | prior checkpoint 后机制总效应，可改变事件形成 |
-| `natural_event_timed_execution` | `anchor-event-tick-v1` | 共同事件状态形成后的短 horizon 机制效应 |
-
-result synthesis v2 拒绝将两类结果池化。
-
-### 新签名计划
-
-| 计划 | Anchors | Shared prefixes | Post-event trajectories |
+| 批次 | Anchors | Eligible pairs | Pairing failures |
 |---|---:|---:|---:|
-| event-timed primary | 18 | 18 | 72 |
-| event-timed crowding knowledge | 6 | 6 | 24 |
-| event-timed mortality/scarcity knowledge | 12 | 12 | 48 |
+| primary mechanisms | 18 | 54 | 0 |
+| crowding knowledge mechanisms | 6 | 18 | 0 |
+| mortality/scarcity knowledge mechanisms | 12 | 36 | 0 |
+| **合计** | **18 unique** | **108/108** | **0** |
+
+全部 branch 使用 `anchor-event-tick-v1`，baseline/intervention 在 event alive、全局 stable-ID hash 与区域 stable-ID hash 上一致。结果支持以下有限结论：
+
+1. `disable-knowledge-transfer` 在 crowding、mortality、scarcity 中均减少区域 active transferred roots 和新传播活动，属于跨事件重复的文化状态维持作用；不等于人口、适应度或主体性收益。
+2. `freeze-group-refresh` 对 current-label cohesion 的方向主要由标签评价边界变化产生；checkpoint-common cohesion 没有跨 seed、跨事件稳定方向。
+3. `disable-knowledge-policy`、`ablate-working-memory`、`bypass-sparse-selection` 及资源亲和消融的下游方向依赖事件类型；现有结果不足以修改默认机制或参数。
+
+v0.29 因此没有新增世界规则，而是将 group label、区域划分和 anchor selection 明确版本化并写入 provenance。
+
+## v0.29 新增能力
+
+### Group-label protocol
+
+- schema：`trusted-directed-fixed-round-min-label-v1`；
+- edge：目标 alive 且 materialized trust 达到阈值的有向关系槽；
+- propagation：物理槽位标签初始化，固定轮数最小标签传播；
+- group token：传播根槽位上的 stable entity ID；
+- minimum size：不足最小成员数的组件保持未分组；
+- flagship：threshold `0.12`、rounds `8`、minimum members `6`；
+- refresh 与 label propagation 分层：旗舰使用 `adaptive-topology-v1`，最短 100、最长 300 ticks。
+
+该协议是候选群组测量，不是精确无向连通分量，也不是主体存在判定。
+
+### Spatial-region protocol
+
+- schema：`normalized-fixed-count-grid-v1`；
+- normalized equal-area rectangular partition；
+- row-major-y-then-x region IDs；
+- 发布物理区域宽高、world-cell 覆盖、对齐状态、topology/partition SHA-256；
+- 4×4 区域在 128×128 地图上每区 32×32 物理单位；若地图变大而区域数不变，物理区域面积同步变大；
+- manifest 默认拒绝混合不同物理区域几何，显式 override 才能继续。
+
+### Anchor-selection protocol
+
+- 当前新 manifest schema：`natural-event-paired-intervention-matrix-v2`；
+- selection schema：`exposure-only-local-peak-selection-v2`；
+- 每个区域自己的 80% exposure 分位阈值；
+- 内部局部峰、区域内最小间隔、区域内 z-score 排序；
+- 优先不同区域，再按 z-score 降序、tick 升序、region ID 升序；
+- 最新严格早于 event tick 的完整 checkpoint；
+- 选择过程不读取事后 outcome；
+- z-score 不可跨事件类型解释为统一强度。
+
+### Protocol audit 与长期分析
+
+- 新增 `subject_evolution.protocol_audit`；
+- run manifest、run metadata、scientific validity、local diagnostics 和 event cohort 发布协议字段与哈希；
+- long-run analysis 升级为 `multi-seed-long-run-analysis-v8`；
+- 旧 v1 natural-event manifest 继续可读取，缺失的新字段会标记为 legacy/inferred，而不是伪造物理几何。
 
 ## 当前实现矩阵
 
@@ -68,37 +75,34 @@ result synthesis v2 拒绝将两类结果池化。
 | 遗传策略与 K1–K4 知识 | 完成 | 固定行动/特征 vocabulary 仍是模型约束 |
 | L1/L2、路由成本、记忆、Top-k | 完成 | 均可 checkpoint 与消融 |
 | 社会关系与 adaptive groups | 完成 | 候选主体结构，不是主体性判定 |
-| 暴露盲选 manifest | 完成 | 不读取事后 outcome |
-| checkpoint-immediate execution | v0.25–v0.28 保留 | pre-event 总效应估计量 |
-| common boundary / endpoint cohort | v0.26–v0.28 完成 | 诊断层，不反馈世界 |
-| event-timed execution | **v0.28 完成** | shared event state + stable-ID hash proof |
-| result synthesis | **v0.28 v2** | timing estimand 不可混合 |
+| group-label provenance | **v0.29 完成** | 有向、有限轮传播，不宣称精确组件 |
+| spatial-region provenance | **v0.29 完成** | 固定归一化区域数，物理尺度随地图变化 |
+| anchor-selection provenance | **v0.29 v2** | outcome-blind，自然峰值非随机 exposure |
+| event-timed paired execution | 完成 | 108/108 用户结果 pairing 通过 |
+| common boundary / event cohort | 完成 | 诊断层，不反馈世界 |
+| result synthesis | 完成 | timing estimand 不可混合，seed-first 聚合 |
 | 任意嵌套主体数据库 | 未完成 | 当前是候选图与摘要 |
 | 主体性/主体偏移评分 | 未完成 | 不允许由单一代理推出 |
 | Hero RL、多 GPU | 未完成 | 当前非科学优先级 |
 
 ## 当前科学解释
 
-1. checkpoint-immediate transfer-off 在三类事件中均减少局部文化根，仍可描述为“提前关闭传播后，后续局部文化状态减少”。
-2. 不能把这些方向直接写成 event-conditional 机制效应，因为干预已在事件前改变世界。
-3. v0.27 cohort 分解可描述每个分支自己的终点构成，但 branch-specific cohorts 不能作为共同 cohort delta。
-4. freeze-group-refresh 的 current-label cohesion 下降仍主要受评价边界定义影响。
-5. mortality/scarcity 的 policy、memory、Top-k 结果尚未附上，覆盖仍是 72/108。
+1. 传播在共同 event state 后维持短期局部文化状态；没有证明其人口收益。
+2. 群组刷新消融的 current-label cohesion 受定义耦合，必须优先 common-boundary 口径。
+3. 区域人口由留存、迁出、缺失、既有实体迁入和事件后出生共同构成；方向依赖事件类型。
+4. 两个 anchors/seed 先在 seed 内平均，不能当作六个独立重复。
+5. 区域、群组与 anchor 都是测量协议；改变协议必须产生新 schema/hash，不能静默改义。
 
 ## 验证
 
-- 全量测试：`133 passed, 1 skipped`；
-- event-timed CPU smoke：1 shared prefix、2 post-event trajectories，pairing failure=0，baseline/branch event alive 相同；
-- v0.27→v0.28 默认世界兼容测试见 `docs/v0.28/V027_V028_COMPATIBILITY_REPORT.json`；
-- v0.27 trusted checkpoint 恢复测试见同一报告；
-- event cohort identity hash、不同 event tick 不错误去重、signed plan、prefix/trajectory resume 均有测试覆盖；
-- 默认世界轨迹不因新执行层改变。
+- 全量测试：`136 passed, 1 skipped`；
+- 新测试覆盖固定传播轮数的可达范围差异、地图尺寸下 topology/partition hash 分离、manifest 混合几何拒绝和 protocol audit；
+- 默认世界兼容与 trusted checkpoint 恢复报告位于 `docs/v0.29/`；
+- 默认动力学未因协议 provenance 改变。
 
-## 下一阶段执行顺序
+## 下一阶段
 
-1. 运行 `event_timed_primary_execution_plan.json`；
-2. 运行 `event_timed_crowding_knowledge_execution_plan.json`；
-3. 直接运行 event-timed remaining-event knowledge plan，而不是先执行旧 checkpoint-immediate 缺失计划；
-4. 只有 pairing failure=0 的结果才进入 event-conditional synthesis；
-5. 不因旧 branch-specific cohort 方向修改传播概率、资源亲和、记忆或群组规则；
-6. 真实 CUDA hybrid parity 继续独立推进。
+1. 使用 v2 manifest 对至少两种地图物理尺寸或 region count 做**预注册尺度敏感性实验**，不直接池化不同 partition hash；
+2. 对 group label 的 rounds、threshold、minimum members 做诊断敏感性矩阵，保持世界轨迹不变并报告候选群组稳定性；
+3. 仅在上述测量稳健性成立后，才讨论社会候选结构的跨尺度解释；
+4. 任意信息通道 schema 与真实 CUDA hybrid parity 继续作为独立工程主线。

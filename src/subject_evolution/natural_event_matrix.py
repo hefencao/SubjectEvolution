@@ -13,6 +13,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+from collections import Counter
 from typing import Any, Iterable, Sequence
 
 import numpy as np
@@ -21,11 +22,17 @@ from .interventions import ExperimentMode, resolve_intervention
 from .local_event_counterfactual import _numeric_delta, _region_summary, _run_branch
 from .long_run_analysis import load_progress
 from .phase_counterfactual import discover_checkpoints
+from .spatial_partition import (
+    NORMALIZED_FIXED_COUNT_SCHEMA,
+    SpatialRegionPartition,
+)
 
 
-SCHEMA = "natural-event-paired-intervention-matrix-v1"
+LEGACY_SCHEMA = "natural-event-paired-intervention-matrix-v1"
+SCHEMA = "natural-event-paired-intervention-matrix-v2"
 RESULT_SCHEMA = "natural-event-paired-intervention-results-v1"
-SELECTION_SCHEMA = "exposure-only-local-peak-selection-v1"
+LEGACY_SELECTION_SCHEMA = "exposure-only-local-peak-selection-v1"
+SELECTION_SCHEMA = "exposure-only-local-peak-selection-v2"
 DEFAULT_EVENT_KINDS = ("scarcity", "crowding", "mortality")
 DEFAULT_INTERVENTIONS = (
     "disable-knowledge-transfer",
@@ -93,6 +100,56 @@ def _load_resolved_config(run_dir: Path) -> tuple[dict[str, Any], Path]:
 def _nested(config: dict[str, Any], section: str, key: str, default: Any = None) -> Any:
     value = config.get(section, {})
     return value.get(key, default) if isinstance(value, dict) else default
+
+
+def _partition_from_config_and_records(
+    config: dict[str, Any], records: list[dict[str, Any]]
+) -> tuple[SpatialRegionPartition, str, bool]:
+    world = config.get("world", {}) if isinstance(config, dict) else {}
+    run = config.get("run", {}) if isinstance(config, dict) else {}
+    required = {"width", "height", "grid_x", "grid_y"}
+    if isinstance(world, dict) and required.issubset(world):
+        return (
+            SpatialRegionPartition(
+                world_width=float(world["width"]),
+                world_height=float(world["height"]),
+                world_grid_x=int(world["grid_x"]),
+                world_grid_y=int(world["grid_y"]),
+                regions_x=int(run.get("spatial_stress_regions_x", 4)),
+                regions_y=int(run.get("spatial_stress_regions_y", 4)),
+                schema=str(
+                    run.get(
+                        "spatial_stress_region_schema",
+                        NORMALIZED_FIXED_COUNT_SCHEMA,
+                    )
+                ),
+            ),
+            "resolved-config",
+            True,
+        )
+    # Compatibility for old/minimal analysis fixtures that predate spatial
+    # geometry provenance. Only normalized topology can be recovered.
+    alive = next(
+        (record.get("spatial_local_region_alive") for record in records
+         if record.get("spatial_local_region_alive") is not None),
+        None,
+    )
+    count = len(alive) if isinstance(alive, list) and alive else 1
+    root = int(round(count ** 0.5))
+    regions_x = root if root * root == count else count
+    regions_y = root if root * root == count else 1
+    return (
+        SpatialRegionPartition(
+            world_width=float(regions_x),
+            world_height=float(regions_y),
+            world_grid_x=regions_x,
+            world_grid_y=regions_y,
+            regions_x=regions_x,
+            regions_y=regions_y,
+        ),
+        "legacy-inferred-region-count-only",
+        False,
+    )
 
 
 def discover_run_dirs(run_root: str | Path) -> tuple[Path, ...]:
@@ -208,13 +265,22 @@ def detect_exposure_events(
             int(item["region_id"]),
         )
     )
+    region_candidate_counts = Counter(int(item["region_id"]) for item in candidates)
+    for rank, item in enumerate(candidates, start=1):
+        item["candidate_rank"] = int(rank)
+        item["run_candidate_count"] = int(len(candidates))
+        item["region_candidate_count"] = int(
+            region_candidate_counts[int(item["region_id"])]
+        )
     selected: list[dict[str, int | float]] = []
     used_regions: set[int] = set()
     for item in candidates:
         region = int(item["region_id"])
         if region in used_regions and len(used_regions) < values.shape[1]:
             continue
-        selected.append(item)
+        selected_item = dict(item)
+        selected_item["selection_rank"] = int(len(selected) + 1)
+        selected.append(selected_item)
         used_regions.add(region)
         if len(selected) >= max_events:
             break
@@ -334,6 +400,7 @@ def build_manifest(
     horizon_ticks: int = 120,
     interventions: Iterable[str] = DEFAULT_INTERVENTIONS,
     analysis_json: str | Path | None = None,
+    allow_mixed_region_partitions: bool = False,
 ) -> dict[str, Any]:
     normalized_kinds = _normalize_names(event_kinds, event_kinds=True)
     normalized_interventions = _normalize_names(interventions)
@@ -346,6 +413,13 @@ def build_manifest(
         records = load_progress(progress_path)
         config, config_path = _load_resolved_config(run_dir)
         checkpoints = discover_checkpoints(run_dir)
+        partition, partition_source, physical_geometry_known = (
+            _partition_from_config_and_records(config, records)
+        )
+        partition_metadata = partition.metadata()
+        partition_metadata["geometry_source"] = partition_source
+        partition_metadata["physical_geometry_known"] = physical_geometry_known
+        partition_topology = partition.normalized_topology()
         seed = int(_nested(config, "run", "seed", 0))
         run_name = run_dir.name
         source_runs.append(
@@ -359,6 +433,8 @@ def build_manifest(
                 "config_sha256": _sha256_file(config_path),
                 "final_tick": int(records[-1]["tick"]),
                 "record_count": len(records),
+                "region_partition": partition_metadata,
+                "region_topology": partition_topology,
             }
         )
         usable_by_kind = {
@@ -408,10 +484,18 @@ def build_manifest(
                         "event_kind": kind,
                         "exposure_field": EVENT_FIELDS[kind],
                         "region_id": region,
+                        "region_bounds": partition.region_bounds(region),
+                        "region_partition_sha256": partition_metadata[
+                            "partition_sha256"
+                        ],
                         "event_tick": event_tick,
                         "event_value": float(event["event_value"]),
                         "region_threshold": float(event["region_threshold"]),
                         "standardized_score": float(event["standardized_score"]),
+                        "candidate_rank": int(event["candidate_rank"]),
+                        "selection_rank": int(event["selection_rank"]),
+                        "run_candidate_count": int(event["run_candidate_count"]),
+                        "region_candidate_count": int(event["region_candidate_count"]),
                         "alive_region": int(event["alive_region"]),
                         "checkpoint_tick": int(checkpoint_tick),
                         "checkpoint_path": str(checkpoint_path.resolve()),
@@ -430,6 +514,29 @@ def build_manifest(
             int(item["region_id"]),
         )
     )
+    topology_hashes = sorted(
+        {str(item["region_topology"]["topology_sha256"]) for item in source_runs}
+    )
+    partition_hashes = sorted(
+        {str(item["region_partition"]["partition_sha256"]) for item in source_runs}
+    )
+    physical_geometry_known = all(
+        bool(item["region_partition"].get("physical_geometry_known", False))
+        for item in source_runs
+    )
+    if len(topology_hashes) != 1:
+        raise ValueError(
+            "source runs use different normalized region topologies; region IDs are not comparable"
+        )
+    if (
+        physical_geometry_known
+        and len(partition_hashes) != 1
+        and not allow_mixed_region_partitions
+    ):
+        raise ValueError(
+            "source runs use different physical region geometry or world-grid resolution; "
+            "pass allow_mixed_region_partitions=True only for an explicitly non-scale-comparable audit"
+        )
     payload: dict[str, Any] = {
         "schema": SCHEMA,
         "selection_schema": SELECTION_SCHEMA,
@@ -449,6 +556,37 @@ def build_manifest(
             "outcome_fields_excluded": list(OUTCOME_FIELDS_EXCLUDED_FROM_SELECTION),
             "post_event_outcomes_used_for_selection": False,
             "analysis_summary_used_for_selection": False,
+            "candidate_rule": (
+                "per-region within-run quantile threshold; interior local maximum; "
+                "minimum window gap enforced independently within each region"
+            ),
+            "ranking_rule": (
+                "descending within-region z-score, then earlier tick, then lower region ID"
+            ),
+            "region_diversity_rule": (
+                "prefer distinct regions until max_events is reached; repeated regions are "
+                "allowed only after every candidate-bearing region has been represented"
+            ),
+            "cross_event_score_comparability": False,
+        },
+        "region_partition_audit": {
+            "policy": (
+                "strict-physical-geometry-v1"
+                if not allow_mixed_region_partitions
+                else "explicit-mixed-geometry-audit-v1"
+            ),
+            "normalized_topology_sha256": topology_hashes[0],
+            "partition_sha256_values": partition_hashes,
+            "physical_geometry_known": physical_geometry_known,
+            "cross_run_spatial_scale_comparable": (
+                physical_geometry_known and len(partition_hashes) == 1
+            ),
+            "interpretation": (
+                "Region IDs are row-major cells in a fixed-count normalized grid. "
+                "Changing map width/height changes physical region area; changing world-grid "
+                "resolution changes represented physical-cell count. Mixed geometry is rejected "
+                "by default."
+            ),
         },
         "paired_randomness": True,
         "baseline_and_intervention_share_checkpoint": True,
@@ -468,16 +606,23 @@ def build_manifest(
 
 
 def validate_manifest(payload: dict[str, Any]) -> None:
-    if payload.get("schema") != SCHEMA:
-        raise ValueError(f"unsupported natural-event manifest schema {payload.get('schema')!r}")
+    schema = payload.get("schema")
+    selection_schema = payload.get("selection_schema")
+    if schema not in {LEGACY_SCHEMA, SCHEMA}:
+        raise ValueError(f"unsupported natural-event manifest schema {schema!r}")
     expected = str(payload.get("plan_sha256", ""))
     unsigned = dict(payload)
     unsigned.pop("plan_sha256", None)
     actual = _canonical_sha256(unsigned)
     if expected != actual:
         raise ValueError("natural-event manifest checksum mismatch")
-    if payload.get("selection_schema") != SELECTION_SCHEMA:
-        raise ValueError("natural-event manifest is not exposure-only selection v1")
+    expected_selection = (
+        LEGACY_SELECTION_SCHEMA if schema == LEGACY_SCHEMA else SELECTION_SCHEMA
+    )
+    if selection_schema != expected_selection:
+        raise ValueError(
+            f"natural-event manifest selection schema mismatch: {selection_schema!r}"
+        )
 
 
 def load_manifest(path: str | Path) -> dict[str, Any]:
@@ -671,6 +816,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--analysis-json")
     parser.add_argument("--event-kinds", default=",".join(DEFAULT_EVENT_KINDS))
     parser.add_argument("--event-quantile", type=float, default=0.80)
+    parser.add_argument(
+        "--allow-mixed-region-partitions",
+        action="store_true",
+        help="Allow source runs with different physical region geometry; marks scale comparison invalid",
+    )
     parser.add_argument("--events-per-kind", type=int, default=2)
     parser.add_argument("--min-tick", type=int)
     parser.add_argument("--min-gap-windows", type=int, default=2)
@@ -706,6 +856,7 @@ def main() -> None:
         horizon_ticks=args.horizon,
         interventions=_split_csv(args.interventions),
         analysis_json=args.analysis_json,
+        allow_mixed_region_partitions=args.allow_mixed_region_partitions,
     )
     manifest_path = output / "natural_event_matrix_manifest.json"
     manifest_path.write_text(

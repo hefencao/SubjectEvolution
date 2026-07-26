@@ -46,6 +46,10 @@ class RunConfig:
     spatial_stress_diagnostics_schema: str = "disabled"
     spatial_stress_regions_x: int = 4
     spatial_stress_regions_y: int = 4
+    # Analysis-only spatial partition. v1 keeps a fixed region count over
+    # normalized world coordinates; scale consequences are published in
+    # provenance rather than silently treated as invariant.
+    spatial_stress_region_schema: str = "normalized-fixed-count-grid-v1"
 
 
 @dataclass(frozen=True)
@@ -320,6 +324,9 @@ class SocialConfig:
     group_update_mode: str = "periodic-v1"
     group_update_min_period: int = 1
     group_update_max_period: int = 0
+    # Candidate-group labels are a measurement rule, not an ontological fact.
+    group_label_schema: str = "trusted-directed-fixed-round-min-label-v1"
+    group_label_propagation_rounds: int = 8
 
 
 @dataclass(frozen=True)
@@ -582,6 +589,11 @@ def validate_config(cfg: SimulationConfig) -> None:
         )
     if cfg.run.spatial_stress_regions_x <= 0 or cfg.run.spatial_stress_regions_y <= 0:
         raise ValueError("spatial stress diagnostic region dimensions must be positive")
+    if cfg.run.spatial_stress_region_schema != "normalized-fixed-count-grid-v1":
+        raise ValueError(
+            "run.spatial_stress_region_schema must be "
+            "'normalized-fixed-count-grid-v1'"
+        )
     if (
         cfg.run.spatial_stress_regions_x > cfg.world.grid_x
         or cfg.run.spatial_stress_regions_y > cfg.world.grid_y
@@ -792,6 +804,13 @@ def validate_config(cfg: SimulationConfig) -> None:
             "social.group_update_mode must be 'periodic-v1' or "
             "'adaptive-topology-v1'"
         )
+    if cfg.social.group_label_schema != "trusted-directed-fixed-round-min-label-v1":
+        raise ValueError(
+            "social.group_label_schema must be "
+            "'trusted-directed-fixed-round-min-label-v1'"
+        )
+    if cfg.social.group_label_propagation_rounds < 0:
+        raise ValueError("social.group_label_propagation_rounds cannot be negative")
     if cfg.social.group_update_min_period <= 0:
         raise ValueError("social.group_update_min_period must be positive")
     if cfg.social.group_update_max_period < 0:

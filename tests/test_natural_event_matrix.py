@@ -120,10 +120,16 @@ def test_manifest_is_hashed_and_marks_ineligible_mechanisms(tmp_path: Path) -> N
         analysis_json=analysis,
     )
     validate_manifest(manifest)
+    assert manifest["schema"] == "natural-event-paired-intervention-matrix-v2"
+    assert manifest["selection_schema"] == "exposure-only-local-peak-selection-v2"
+    assert manifest["region_partition_audit"]["physical_geometry_known"] is False
     assert manifest["selection_protocol"]["post_event_outcomes_used_for_selection"] is False
     assert len(manifest["anchors"]) == 3
     assert manifest["analysis_context"]["used_for_anchor_selection"] is False
     for anchor in manifest["anchors"]:
+        assert anchor["candidate_rank"] >= anchor["selection_rank"] >= 1
+        assert anchor["run_candidate_count"] >= 1
+        assert "region_bounds" in anchor
         eligibility = {
             item["intervention"]: item for item in anchor["interventions"]
         }

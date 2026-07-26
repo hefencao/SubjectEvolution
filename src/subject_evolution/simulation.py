@@ -638,6 +638,7 @@ class Simulation:
                 world_grid_x=cfg.world.grid_x,
                 world_grid_y=cfg.world.grid_y,
                 schema=cfg.run.spatial_stress_diagnostics_schema,
+                region_schema=cfg.run.spatial_stress_region_schema,
             )
             if cfg.run.spatial_stress_diagnostics_enabled
             else None
@@ -777,6 +778,11 @@ class Simulation:
                     self.cfg.run.spatial_stress_regions_y,
                 ]
                 if self.cfg.run.spatial_stress_diagnostics_enabled
+                else None
+            ),
+            "spatial_stress_region_partition": (
+                self.local_stress_diagnostics.partition.metadata()
+                if self.local_stress_diagnostics is not None
                 else None
             ),
             "spatial_cultural_transfer_diagnostics_enabled": (
@@ -1552,6 +1558,9 @@ class Simulation:
             world_height=self.cfg.world.height,
             regions_x=self.cfg.run.spatial_stress_regions_x,
             regions_y=self.cfg.run.spatial_stress_regions_y,
+            world_grid_x=self.cfg.world.grid_x,
+            world_grid_y=self.cfg.world.grid_y,
+            region_schema=self.cfg.run.spatial_stress_region_schema,
         )
         self._observe_event_cohort_diagnostics()
 
@@ -2112,6 +2121,12 @@ class Simulation:
                 "group_label_planner_scientific_safe": bool(
                     getattr(self.group_label_planner, "scientific_safe", False)
                 ),
+                "group_label_schema": self.cfg.social.group_label_schema,
+                "group_label_propagation_rounds": (
+                    self.cfg.social.group_label_propagation_rounds
+                ),
+                "group_trust_threshold": self.cfg.social.trust_group_threshold,
+                "group_min_members": self.cfg.social.group_min_members,
                 "group_update_mode": self.cfg.social.group_update_mode,
                 "group_update_period": self.cfg.social.group_update_period,
                 "group_update_min_period": self.cfg.social.group_update_min_period,
@@ -4781,6 +4796,10 @@ class Simulation:
             "control": control_metadata,
             "group_planning": {
                 "planner": type(self.group_label_planner).__name__,
+                "label_schema": self.cfg.social.group_label_schema,
+                "propagation_rounds": self.cfg.social.group_label_propagation_rounds,
+                "trust_threshold": self.cfg.social.trust_group_threshold,
+                "minimum_members": self.cfg.social.group_min_members,
                 "last_plan_tick": self.last_group_plan.tick,
                 "last_plan_groups": self.last_group_plan.group_count,
                 "last_plan_members": self.last_group_plan.member_count,

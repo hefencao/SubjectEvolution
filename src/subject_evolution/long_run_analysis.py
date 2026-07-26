@@ -10,6 +10,8 @@ from typing import Any, Iterable
 
 import numpy as np
 
+from .spatial_partition import NORMALIZED_FIXED_COUNT_SCHEMA, SpatialRegionPartition
+
 
 MIN_CORRELATION_SAMPLES = 5
 MIN_PARTIAL_SAMPLES = 8
@@ -130,6 +132,8 @@ def _resolved_config_context(path: str | Path) -> dict[str, Any]:
     environment = config.get("environment", {}) if isinstance(config, dict) else {}
     entities = config.get("entities", {}) if isinstance(config, dict) else {}
     run = config.get("run", {}) if isinstance(config, dict) else {}
+    social = config.get("social", {}) if isinstance(config, dict) else {}
+    world = config.get("world", {}) if isinstance(config, dict) else {}
     manifest_path = progress.parent / "run_manifest.json"
     manifest: dict[str, Any] = {}
     if manifest_path.is_file():
@@ -163,6 +167,25 @@ def _resolved_config_context(path: str | Path) -> dict[str, Any]:
     manifest_process = manifest.get("environment_process", {})
     if not isinstance(manifest_process, dict):
         manifest_process = {}
+    spatial_partition: dict[str, Any] | None = None
+    try:
+        if run.get("spatial_stress_diagnostics_enabled", False):
+            spatial_partition = SpatialRegionPartition(
+                world_width=float(world["width"]),
+                world_height=float(world["height"]),
+                world_grid_x=int(world["grid_x"]),
+                world_grid_y=int(world["grid_y"]),
+                regions_x=int(run.get("spatial_stress_regions_x", 4)),
+                regions_y=int(run.get("spatial_stress_regions_y", 4)),
+                schema=str(
+                    run.get(
+                        "spatial_stress_region_schema",
+                        NORMALIZED_FIXED_COUNT_SCHEMA,
+                    )
+                ),
+            ).metadata()
+    except (KeyError, TypeError, ValueError):
+        spatial_partition = None
     return {
         "knowledge_transfer_probability": knowledge.get("transfer_probability"),
         "knowledge_transfer_period": knowledge.get("transfer_period"),
@@ -188,10 +211,22 @@ def _resolved_config_context(path: str | Path) -> dict[str, Any]:
         "mortality_trace_schema": environment.get("mortality_trace_schema", "disabled"),
         "resource_affinity_schema": entities.get("resource_affinity_schema"),
         "danger_evidence_schema": entities.get("danger_evidence_schema", "disabled"),
-        "group_update_mode": config.get("social", {}).get("group_update_mode", "periodic-v1"),
+        "group_label_schema": social.get(
+            "group_label_schema", "trusted-directed-fixed-round-min-label-v1"
+        ),
+        "group_label_propagation_rounds": social.get(
+            "group_label_propagation_rounds", 8
+        ),
+        "group_trust_threshold": social.get("trust_group_threshold"),
+        "group_min_members": social.get("group_min_members"),
+        "group_update_mode": social.get("group_update_mode", "periodic-v1"),
+        "group_update_period": social.get("group_update_period"),
+        "group_update_min_period": social.get("group_update_min_period"),
+        "group_update_max_period": social.get("group_update_max_period"),
         "spatial_stress_diagnostics_schema": run.get(
             "spatial_stress_diagnostics_schema"
         ),
+        "spatial_region_partition": spatial_partition,
         "requested_backend": manifest.get("requested_backend"),
         "execution_backend": manifest.get("execution_backend"),
         "gpu_semantics_mode": manifest.get("gpu_semantics_mode"),
@@ -959,7 +994,7 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         if value["available_runs"] >= 3 and value["same_nonzero_sign"]
     ]
     return {
-        "schema": "multi-seed-long-run-analysis-v7",
+        "schema": "multi-seed-long-run-analysis-v8",
         "run_count": len(runs),
         "runs": runs,
         "endpoint_aggregate": aggregate,
@@ -1108,6 +1143,24 @@ def render_markdown(report: dict[str, Any]) -> str:
             f"{run.get('group_update_count_final')} / "
             f"{run.get('group_update_skipped_final')}"
         )
+        lines.append(
+            f"- group label schema / rounds / trust / min members: "
+            f"{context.get('group_label_schema')} / "
+            f"{context.get('group_label_propagation_rounds')} / "
+            f"{context.get('group_trust_threshold')} / "
+            f"{context.get('group_min_members')}"
+        )
+        partition = context.get("spatial_region_partition")
+        if isinstance(partition, dict):
+            lines.append(
+                f"- spatial partition: {partition.get('schema')} "
+                f"{partition.get('regions_x')}x{partition.get('regions_y')}, "
+                f"physical={partition.get('physical_region_width')}x"
+                f"{partition.get('physical_region_height')}, "
+                f"cells={partition.get('world_cells_per_region_x')}x"
+                f"{partition.get('world_cells_per_region_y')}, "
+                f"aligned={partition.get('world_grid_aligned')}"
+            )
         lines.append("")
 
     lines.extend(["## Execution backend context", ""])

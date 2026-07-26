@@ -13,6 +13,11 @@ from typing import Any
 
 import numpy as np
 
+from .spatial_partition import (
+    NORMALIZED_FIXED_COUNT_SCHEMA,
+    SpatialRegionPartition,
+)
+
 
 FLOW_INTERNAL = 0
 FLOW_GROUP_TO_GROUP = 1
@@ -64,11 +69,19 @@ class LocalStressDiagnostics:
     world_grid_x: int
     world_grid_y: int
     schema: str = SCHEMA_STRESS_V1
+    region_schema: str = NORMALIZED_FIXED_COUNT_SCHEMA
 
     def __post_init__(self) -> None:
-        self.region_count = int(self.regions_x * self.regions_y)
-        if self.regions_x <= 0 or self.regions_y <= 0:
-            raise ValueError("local diagnostic region dimensions must be positive")
+        self.partition = SpatialRegionPartition(
+            world_width=float(self.world_width),
+            world_height=float(self.world_height),
+            world_grid_x=int(self.world_grid_x),
+            world_grid_y=int(self.world_grid_y),
+            regions_x=int(self.regions_x),
+            regions_y=int(self.regions_y),
+            schema=str(self.region_schema),
+        )
+        self.region_count = self.partition.region_count
         if self.schema not in {SCHEMA_STRESS_V1, SCHEMA_CULTURE_V2}:
             raise ValueError(f"unsupported local diagnostic schema {self.schema!r}")
         self.culture_enabled = self.schema == SCHEMA_CULTURE_V2
@@ -111,6 +124,20 @@ class LocalStressDiagnostics:
     def restore_state(self, state: dict[str, Any]) -> None:
         for key, value in state.items():
             setattr(self, key, copy.deepcopy(value))
+        # Trusted pre-v0.29 checkpoints do not contain partition provenance.
+        self.region_schema = str(
+            getattr(self, "region_schema", NORMALIZED_FIXED_COUNT_SCHEMA)
+        )
+        self.partition = SpatialRegionPartition(
+            world_width=float(self.world_width),
+            world_height=float(self.world_height),
+            world_grid_x=int(self.world_grid_x),
+            world_grid_y=int(self.world_grid_y),
+            regions_x=int(self.regions_x),
+            regions_y=int(self.regions_y),
+            schema=self.region_schema,
+        )
+        self.region_count = self.partition.region_count
         # Trusted v0.19 checkpoints do not contain cultural accounting fields.
         self.schema = str(getattr(self, "schema", SCHEMA_STRESS_V1))
         self.culture_enabled = bool(
@@ -170,13 +197,7 @@ class LocalStressDiagnostics:
         self.reference_benefit_flow.fill(0.0)
 
     def region_ids(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        px = np.asarray(x, dtype=np.float64)
-        py = np.asarray(y, dtype=np.float64)
-        rx = np.floor(px / self.world_width * self.regions_x).astype(np.int64)
-        ry = np.floor(py / self.world_height * self.regions_y).astype(np.int64)
-        rx = np.clip(rx, 0, self.regions_x - 1)
-        ry = np.clip(ry, 0, self.regions_y - 1)
-        return (ry * self.regions_x + rx).astype(np.int32, copy=False)
+        return self.partition.region_ids(x, y)
 
     def observe_population(
         self,
@@ -476,8 +497,17 @@ class LocalStressDiagnostics:
         benefit_valid = boundary > 0.0
         occupied = exposure > 0.0
 
+        partition = self.partition.metadata()
         payload: dict[str, Any] = {
             "spatial_local_stress_schema": self.schema,
+            "spatial_local_region_partition_schema": partition["schema"],
+            "spatial_local_region_partition_sha256": partition["partition_sha256"],
+            "spatial_local_region_mapping": partition["mapping"],
+            "spatial_local_region_physical_width": partition["physical_region_width"],
+            "spatial_local_region_physical_height": partition["physical_region_height"],
+            "spatial_local_region_world_cells_x": partition["world_cells_per_region_x"],
+            "spatial_local_region_world_cells_y": partition["world_cells_per_region_y"],
+            "spatial_local_region_world_grid_aligned": partition["world_grid_aligned"],
             "spatial_local_regions_x": int(self.regions_x),
             "spatial_local_regions_y": int(self.regions_y),
             "spatial_local_observed_ticks": int(self.observed_ticks),

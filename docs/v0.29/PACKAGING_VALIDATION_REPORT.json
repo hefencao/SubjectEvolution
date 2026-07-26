@@ -1,0 +1,51 @@
+{
+  "schema": "subject-evolution-v029-packaging-validation-v1",
+  "version": "0.29.0",
+  "pyproject_build_system": {
+    "requires": [
+      "setuptools>=68",
+      "wheel"
+    ],
+    "build_backend": "setuptools.build_meta",
+    "explicit_wheel_dependency": true
+  },
+  "wheel": {
+    "filename": "subject_evolution_mvp-0.29.0-py3-none-any.whl",
+    "build_method": "setuptools.build_meta.build_wheel using setuptools 82.0.1",
+    "standalone_wheel_distribution_visible_to_pip": false,
+    "note": "The environment package index did not expose a standalone wheel distribution; setuptools 82 vendored the wheel command and produced the standards-compliant wheel. Clean-venv installation, version import, SpatialRegionPartition import, and console-script help passed."
+  },
+  "tests": {
+    "passed": 136,
+    "skipped": 1,
+    "failed": 0,
+    "skipped_scope": "real CUDA/CuPy device-dependent validation"
+  },
+  "compatibility": {
+    "common_non_timing_metric_cells": 1645,
+    "metric_mismatches": 0,
+    "byte_identical_knowledge_logs": 8,
+    "v028_checkpoint_v029_resume_semantic_state_equal": true
+  },
+  "input_analysis": {
+    "event_timed_unique_anchors": 18,
+    "eligible_pairs_completed": 108,
+    "eligible_pairs_total": 108,
+    "pairing_failures": 0
+  },
+  "archive_policy": {
+    "exclude_docs_archive": true,
+    "forbidden_patterns": [
+      "docs/archive",
+      ".git",
+      "__pycache__",
+      ".pytest_cache",
+      "*.pyc",
+      "*.pyo",
+      "build",
+      "dist",
+      "*.egg-info"
+    ],
+    "top_level_directory": "subject_evolution_v029_project"
+  }
+}

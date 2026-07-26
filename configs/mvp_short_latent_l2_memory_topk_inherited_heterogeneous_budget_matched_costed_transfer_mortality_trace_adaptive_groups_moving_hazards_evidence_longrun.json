@@ -15,7 +15,8 @@
     "spatial_stress_diagnostics_enabled": true,
     "spatial_stress_diagnostics_schema": "spatial-local-stress-culture-diagnostics-v2",
     "spatial_stress_regions_x": 4,
-    "spatial_stress_regions_y": 4
+    "spatial_stress_regions_y": 4,
+    "spatial_stress_region_schema": "normalized-fixed-count-grid-v1"
   },
   "world": {
     "width": 128.0,
@@ -167,7 +168,9 @@
     "trust_loss_failed": 0.02,
     "group_update_mode": "adaptive-topology-v1",
     "group_update_min_period": 100,
-    "group_update_max_period": 300
+    "group_update_max_period": 300,
+    "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+    "group_label_propagation_rounds": 8
   },
   "control": {
     "heuristic_social_guidance": false,

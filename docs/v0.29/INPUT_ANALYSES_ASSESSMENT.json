@@ -1,0 +1,663 @@
+{
+  "schema": "v0.29-input-analyses-assessment-v1",
+  "input_zip": "/mnt/data/analyses.zip",
+  "input_zip_sha256": "8f01e3c691829f377156515798b71aba6703f4ccf44e08e435aa1307a8099c10",
+  "archive_entry_count": 19,
+  "batches": [
+    {
+      "name": "event_timed_crowding_knowledge",
+      "result_schema": "natural-event-timed-paired-intervention-results-v1",
+      "execution_plan_sha256": "27ec8e8216b481c7e7a0305ba6eabb989bc831b4417a436a2a685fb83ba43bca",
+      "plan_hash_matches": true,
+      "manifest_sha256": "737312dd4659807a89323fd275e784b91166fbaa53cdf094b16ca24618091dbb",
+      "prefix_count": 6,
+      "executed_prefix_count": 6,
+      "resumed_prefix_count": 0,
+      "trajectory_count": 24,
+      "executed_trajectory_count": 24,
+      "resumed_trajectory_count": 0,
+      "anchor_count": 6,
+      "pair_count": 18,
+      "pairing_failure_count": 0,
+      "preflight_execution_ready": true,
+      "preflight_full_audit_ready": true
+    },
+    {
+      "name": "event_timed_primary",
+      "result_schema": "natural-event-timed-paired-intervention-results-v1",
+      "execution_plan_sha256": "2bc053cb039b592cd74e2a6ea2fa9395a4a67e8dfb1e295af61b2493181ebbfa",
+      "plan_hash_matches": true,
+      "manifest_sha256": "737312dd4659807a89323fd275e784b91166fbaa53cdf094b16ca24618091dbb",
+      "prefix_count": 18,
+      "executed_prefix_count": 0,
+      "resumed_prefix_count": 18,
+      "trajectory_count": 72,
+      "executed_trajectory_count": 0,
+      "resumed_trajectory_count": 72,
+      "anchor_count": 18,
+      "pair_count": 54,
+      "pairing_failure_count": 0,
+      "preflight_execution_ready": true,
+      "preflight_full_audit_ready": true
+    },
+    {
+      "name": "event_timed_remaining_event_knowledge",
+      "result_schema": "natural-event-timed-paired-intervention-results-v1",
+      "execution_plan_sha256": "f2839146808ab81467ecbc6c5ae69dacc788fafd5285588db518eac9de0301cc",
+      "plan_hash_matches": true,
+      "manifest_sha256": "737312dd4659807a89323fd275e784b91166fbaa53cdf094b16ca24618091dbb",
+      "prefix_count": 12,
+      "executed_prefix_count": 12,
+      "resumed_prefix_count": 0,
+      "trajectory_count": 48,
+      "executed_trajectory_count": 48,
+      "resumed_trajectory_count": 0,
+      "anchor_count": 12,
+      "pair_count": 36,
+      "pairing_failure_count": 0,
+      "preflight_execution_ready": true,
+      "preflight_full_audit_ready": true
+    }
+  ],
+  "coverage": {
+    "expected_eligible_pair_count": 108,
+    "observed_pair_count": 108,
+    "complete": true,
+    "missing_pairs": [],
+    "unexpected_pairs": []
+  },
+  "intervention_timing_audit": {
+    "schema": "natural-event-intervention-timing-audit-v1",
+    "intervention_timing": "anchor-event-tick-v1",
+    "pair_count": 108,
+    "intervention_before_event_pair_count": 0,
+    "event_alive_mismatch_pair_count": 0,
+    "event_identity_proven_pair_count": 108,
+    "event_identity_mismatch_pair_count": 0,
+    "common_pre_event_identity_proven": true,
+    "examples": [],
+    "interpretation_boundary": "Checkpoint-immediate branches may change the nominal event exposure and event cohort before the selected event tick. Event-timed branches require the same stable-ID global and regional cohort hashes before intervention."
+  },
+  "findings": [
+    {
+      "id": "TRANSFER-MAINTAINS-CULTURAL-STATE-ACROSS-EVENTS",
+      "status": "replicated-mechanism-proximal",
+      "evidence": {
+        "intervention": "disable-knowledge-transfer",
+        "metric": "final_active_transferred_roots_region",
+        "direction": "negative",
+        "event_count": 3,
+        "events": [
+          {
+            "event_kind": "crowding",
+            "direction": "negative",
+            "mean": -64.33333333333333,
+            "seed_count": 3
+          },
+          {
+            "event_kind": "mortality",
+            "direction": "negative",
+            "mean": -31.666666666666668,
+            "seed_count": 3
+          },
+          {
+            "event_kind": "scarcity",
+            "direction": "negative",
+            "mean": -24.833333333333332,
+            "seed_count": 3
+          }
+        ]
+      },
+      "interpretation": "Disabling future transfer reduces active transferred roots in the same seed-level direction across multiple natural-event classes. This is a cultural-state maintenance result, not a demographic benefit claim."
+    },
+    {
+      "id": "GROUP-REFRESH-CURRENT-LABEL-COHESION",
+      "status": "boundary-definition-dominated",
+      "evidence": {
+        "current_label": [
+          {
+            "intervention": "freeze-group-refresh",
+            "metric": "post_event_cohesion_region",
+            "direction": "negative",
+            "event_count": 3,
+            "events": [
+              {
+                "event_kind": "crowding",
+                "direction": "negative",
+                "mean": -0.09739259901118304,
+                "seed_count": 3
+              },
+              {
+                "event_kind": "mortality",
+                "direction": "negative",
+                "mean": -0.03840870044032509,
+                "seed_count": 3
+              },
+              {
+                "event_kind": "scarcity",
+                "direction": "negative",
+                "mean": -0.038359999634041686,
+                "seed_count": 3
+              }
+            ]
+          }
+        ],
+        "checkpoint_common": []
+      },
+      "interpretation": "A repeated current-label cohesion direction without the same checkpoint-common direction indicates that most of the apparent effect is produced by changing the evaluation partition rather than stable common-boundary benefit flow."
+    },
+    {
+      "id": "PRE-EVENT-PAIRING",
+      "status": "common-event-state-proven",
+      "evidence": {
+        "schema": "natural-event-intervention-timing-audit-v1",
+        "intervention_timing": "anchor-event-tick-v1",
+        "pair_count": 108,
+        "intervention_before_event_pair_count": 0,
+        "event_alive_mismatch_pair_count": 0,
+        "event_identity_proven_pair_count": 108,
+        "event_identity_mismatch_pair_count": 0,
+        "common_pre_event_identity_proven": true,
+        "examples": [],
+        "interpretation_boundary": "Checkpoint-immediate branches may change the nominal event exposure and event cohort before the selected event tick. Event-timed branches require the same stable-ID global and regional cohort hashes before intervention."
+      },
+      "interpretation": "A branch-specific endpoint cohort is not a paired event cohort when the intervention began at the prior checkpoint. Post-event mechanism claims require one shared event state and identical stable-ID cohort hashes."
+    },
+    {
+      "id": "REGIONAL-DEMOGRAPHIC-MECHANISM",
+      "status": "decomposed-on-common-event-cohort",
+      "evidence": {
+        "event_cohort_observed": true,
+        "common_pre_event_identity_proven": true
+      },
+      "interpretation": "Endpoint identity accounting separates retained, absent, migrated, and post-event-born entities, but causal branch deltas require the same event cohort in baseline and intervention."
+    }
+  ],
+  "cross_event_replication": [
+    {
+      "intervention": "ablate-working-memory",
+      "metric": "final_scarcity_region",
+      "direction": "negative",
+      "event_count": 2,
+      "events": [
+        {
+          "event_kind": "mortality",
+          "direction": "negative",
+          "mean": -0.0032217908281073995,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "negative",
+          "mean": -0.0025957873139376697,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "ablate-working-memory",
+      "metric": "post_event_benefit_cross_boundary_region",
+      "direction": "positive",
+      "event_count": 2,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "positive",
+          "mean": 6.883039771812037,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "positive",
+          "mean": 7.780245654284954,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "ablate-working-memory",
+      "metric": "post_event_outgoing_commits",
+      "direction": "positive",
+      "event_count": 3,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "positive",
+          "mean": 6.5,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "mortality",
+          "direction": "positive",
+          "mean": 3.5,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "positive",
+          "mean": 8.666666666666666,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "bypass-sparse-selection",
+      "metric": "post_event_reference_benefit_internal_region",
+      "direction": "positive",
+      "event_count": 2,
+      "events": [
+        {
+          "event_kind": "mortality",
+          "direction": "positive",
+          "mean": 2.231911525130272,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "positive",
+          "mean": 1.117680164674918,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "disable-knowledge-policy",
+      "metric": "endpoint_population_change_reconstructed",
+      "direction": "positive",
+      "event_count": 2,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "positive",
+          "mean": 2.1666666666666665,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "positive",
+          "mean": 3.0,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "disable-knowledge-policy",
+      "metric": "endpoint_population_change_region",
+      "direction": "positive",
+      "event_count": 2,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "positive",
+          "mean": 2.1666666666666665,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "positive",
+          "mean": 3.0,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "disable-knowledge-policy",
+      "metric": "final_alive_region",
+      "direction": "positive",
+      "event_count": 2,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "positive",
+          "mean": 2.3333333333333335,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "positive",
+          "mean": 2.3333333333333335,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "disable-knowledge-policy",
+      "metric": "final_alive_region_from_cohort_audit",
+      "direction": "positive",
+      "event_count": 2,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "positive",
+          "mean": 2.1666666666666665,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "positive",
+          "mean": 3.0,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "disable-knowledge-transfer",
+      "metric": "final_active_transferred_roots_region",
+      "direction": "negative",
+      "event_count": 3,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "negative",
+          "mean": -64.33333333333333,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "mortality",
+          "direction": "negative",
+          "mean": -31.666666666666668,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "negative",
+          "mean": -24.833333333333332,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "disable-knowledge-transfer",
+      "metric": "post_event_incoming_commits",
+      "direction": "negative",
+      "event_count": 3,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "negative",
+          "mean": -103.0,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "mortality",
+          "direction": "negative",
+          "mean": -49.833333333333336,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "negative",
+          "mean": -49.0,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "disable-knowledge-transfer",
+      "metric": "post_event_lost_transferred_roots",
+      "direction": "negative",
+      "event_count": 2,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "negative",
+          "mean": -16.0,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "mortality",
+          "direction": "negative",
+          "mean": -6.5,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "disable-knowledge-transfer",
+      "metric": "post_event_new_transferred_roots",
+      "direction": "negative",
+      "event_count": 3,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "negative",
+          "mean": -80.33333333333333,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "mortality",
+          "direction": "negative",
+          "mean": -38.166666666666664,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "negative",
+          "mean": -35.5,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "disable-knowledge-transfer",
+      "metric": "post_event_outgoing_commits",
+      "direction": "negative",
+      "event_count": 3,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "negative",
+          "mean": -103.33333333333333,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "mortality",
+          "direction": "negative",
+          "mean": -52.0,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "negative",
+          "mean": -47.666666666666664,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "freeze-group-refresh",
+      "metric": "final_boundary_definition_gap_region",
+      "direction": "negative",
+      "event_count": 3,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "negative",
+          "mean": -0.1595238144350925,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "mortality",
+          "direction": "negative",
+          "mean": -0.044092181913763635,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "negative",
+          "mean": -0.1039825381344468,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "freeze-group-refresh",
+      "metric": "final_cohesion_region",
+      "direction": "negative",
+      "event_count": 2,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "negative",
+          "mean": -0.15411268044707324,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "mortality",
+          "direction": "negative",
+          "mean": -0.04999857134515432,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "freeze-group-refresh",
+      "metric": "post_event_benefit_internal_region",
+      "direction": "negative",
+      "event_count": 3,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "negative",
+          "mean": -19.26965495944023,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "mortality",
+          "direction": "negative",
+          "mean": -3.5397912537058196,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "negative",
+          "mean": -2.0008319343129792,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "freeze-group-refresh",
+      "metric": "post_event_boundary_definition_gap_region",
+      "direction": "negative",
+      "event_count": 3,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "negative",
+          "mean": -0.0963855671188355,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "mortality",
+          "direction": "negative",
+          "mean": -0.03674882178970162,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "negative",
+          "mean": -0.03767856603913132,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "freeze-group-refresh",
+      "metric": "post_event_cohesion_region",
+      "direction": "negative",
+      "event_count": 3,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "negative",
+          "mean": -0.09739259901118304,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "mortality",
+          "direction": "negative",
+          "mean": -0.03840870044032509,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "negative",
+          "mean": -0.038359999634041686,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "neutralize-resource-affinity",
+      "metric": "event_cohort_survival_fraction",
+      "direction": "negative",
+      "event_count": 2,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "negative",
+          "mean": -0.00941207635258943,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "mortality",
+          "direction": "negative",
+          "mean": -0.029953531182772702,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "neutralize-resource-affinity",
+      "metric": "final_mortality_region",
+      "direction": "negative",
+      "event_count": 2,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "negative",
+          "mean": -0.03460814740637797,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "scarcity",
+          "direction": "negative",
+          "mean": -0.013967246215577005,
+          "seed_count": 3
+        }
+      ]
+    },
+    {
+      "intervention": "neutralize-resource-affinity",
+      "metric": "post_event_boundary_definition_gap_region",
+      "direction": "positive",
+      "event_count": 2,
+      "events": [
+        {
+          "event_kind": "crowding",
+          "direction": "positive",
+          "mean": 0.010420559111037347,
+          "seed_count": 3
+        },
+        {
+          "event_kind": "mortality",
+          "direction": "positive",
+          "mean": 0.014870071683385245,
+          "seed_count": 3
+        }
+      ]
+    }
+  ],
+  "assessment": {
+    "complete_event_timed_matrix": true,
+    "common_event_state_proven": true,
+    "next_code_direction": [
+      "version group-label measurement semantics instead of leaving propagation rounds hard-coded",
+      "centralize spatial region partition and publish physical/map-grid scale provenance",
+      "version anchor selection and reject mixed physical region geometry by default",
+      "do not add new world mechanisms from context-dependent three-seed directions"
+    ],
+    "scientific_boundary": "The 108 paired branches estimate short-horizon mechanism effects after naturally occurring events. Three seeds and two anchors per seed remain descriptive; anchor rows are not independent."
+  }
+}

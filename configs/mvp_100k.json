@@ -6,7 +6,8 @@
     "checkpoint_period": 1000,
     "gpu_harvest_conflict_planner": true,
     "experiment_mode": "scientific",
-    "evolution_evaluation_period": 500
+    "evolution_evaluation_period": 500,
+    "spatial_stress_region_schema": "normalized-fixed-count-grid-v1"
   },
   "world": {
     "width": 2048.0,
@@ -57,7 +58,11 @@
     "max_signal_delay": 5,
     "direct_message_capacity": 16,
     "source_noise": 0.03,
-    "signal_flush_periods": [1, 1, 1]
+    "signal_flush_periods": [
+      1,
+      1,
+      1
+    ]
   },
   "policy": {
     "temperature": 0.8,
@@ -71,7 +76,9 @@
     "group_min_members": 8,
     "relation_decay": 0.001,
     "trust_gain_share": 0.06,
-    "trust_loss_failed": 0.015
+    "trust_loss_failed": 0.015,
+    "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+    "group_label_propagation_rounds": 8
   },
   "control": {
     "heuristic_social_guidance": false,

@@ -1,0 +1,7 @@
+{
+  "checkpoint_tick": 10,
+  "final_tick": 20,
+  "semantic_state_equal": true,
+  "first_mismatches": [],
+  "comparison_note": "New v0.29 group-label config fields were absent from the stored v0.28 dataclass payload and resolved through unchanged class defaults; semantic world state was compared after treating those defaulted fields as equivalent."
+}

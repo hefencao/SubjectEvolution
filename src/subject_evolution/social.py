@@ -7,6 +7,9 @@ import numpy as np
 from .config import SimulationConfig
 
 
+GROUP_LABEL_SCHEMA = "trusted-directed-fixed-round-min-label-v1"
+
+
 def _readonly_view(value: np.ndarray) -> np.ndarray:
     """Return a zero-copy array view that rejects planner-side mutation."""
     result = value.view()
@@ -41,6 +44,7 @@ class GroupDetectionSnapshot:
     resource_grad_y: np.ndarray
     trust_threshold: float
     min_members: int
+    label_schema: str
     propagation_rounds: int
     tick: int
 
@@ -133,6 +137,8 @@ class DeterministicGroupLabelPlanner:
             raise ValueError("group detection active rows do not match occupancy")
         if not np.array_equal(stable_ids[active], active_ids):
             raise ValueError("group detection active entity IDs are stale")
+        if str(snapshot.label_schema) != GROUP_LABEL_SCHEMA:
+            raise ValueError(f"unsupported group label schema {snapshot.label_schema!r}")
         if int(snapshot.min_members) <= 0 or int(snapshot.propagation_rounds) < 0:
             raise ValueError("group detection parameters are invalid")
         if active.size == 0:
@@ -714,7 +720,8 @@ class SocialSystem:
             resource_grad_y=_readonly_view(grad_y),
             trust_threshold=float(self.cfg.social.trust_group_threshold),
             min_members=int(self.cfg.social.group_min_members),
-            propagation_rounds=8,
+            label_schema=str(self.cfg.social.group_label_schema),
+            propagation_rounds=int(self.cfg.social.group_label_propagation_rounds),
             tick=int(tick),
         )
 

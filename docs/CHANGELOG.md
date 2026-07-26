@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.29.0
+
+### Completed event-timed matrix audit
+
+- 审计用户提供的三批 v0.28 结果：18 个 anchors、108/108 eligible pairs、全部 stable-ID pairing 通过。
+- transfer-off 对局部 active transferred roots 的负向方向在 crowding、mortality、scarcity 中重复；只解释为短期文化状态维持。
+- group refresh 的 current-label cohesion 方向被 common-boundary 结果判定为评价边界主导；其余知识机制和人口结果按事件类型变化，不修改默认世界机制。
+
+### Versioned group-label protocol
+
+- 新增 `trusted-directed-fixed-round-min-label-v1`；配置显式发布 `group_label_schema` 和 `group_label_propagation_rounds`。
+- 移除 planner 内硬编码 8 轮，仍以 8 作为旧配置兼容默认值。
+- run manifest、metadata 和 scientific-validity provenance 发布 label schema、rounds、trust threshold、minimum members 与 adaptive refresh 参数。
+- 新测试证明有限传播轮数会改变候选群组可达范围，协议不宣称精确无向连通分量。
+
+### Versioned spatial-region protocol
+
+- 新增共享 `SpatialRegionPartition` 和 `normalized-fixed-count-grid-v1`。
+- local stress、event cohort、manifest 与 protocol audit 使用同一坐标映射。
+- 发布 normalized topology、物理区域宽高、world-cell coverage、grid alignment 与 partition SHA-256。
+- manifest 默认拒绝跨 run 混合不同 topology 或物理 region geometry；可显式 `--allow-mixed-region-partitions` 覆盖。
+
+### Anchor selection v2
+
+- natural-event manifest 升级为 v2，selection 升级为 `exposure-only-local-peak-selection-v2`。
+- 显式记录 per-region quantile/local-peak/gap、within-region z-score ranking、distinct-region preference、candidate ranks、region bounds 与 partition hash。
+- 保持旧 v1 manifest 可读；缺失几何字段标记为 legacy/inferred，不伪造 provenance。
+- long-run analysis 升级为 `multi-seed-long-run-analysis-v8`。
+
+### Protocol audit, compatibility and packaging
+
+- 新增 `subject_evolution.protocol_audit`，一份报告说明 group label、refresh、region partition 和 anchor selection。
+- `pyproject.toml` build-system 显式依赖 `wheel`。
+- 默认世界动力学不变；v0.28→v0.29 compatibility、trusted checkpoint resume 与完整测试报告见 `docs/v0.29/`。
+- 发行包继续排除 `docs/archive`、缓存、Git 与构建临时目录。
+
 ## 0.28.0
 
 ### Intervention timing audit

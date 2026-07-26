@@ -11,7 +11,8 @@
     "gpu_semantics_mode": "strict-reference",
     "full_checkpoint_enabled": false,
     "long_run_diagnostics_enabled": true,
-    "long_run_diagnostics_schema": "long-run-evolution-diagnostics-v1"
+    "long_run_diagnostics_schema": "long-run-evolution-diagnostics-v1",
+    "spatial_stress_region_schema": "normalized-fixed-count-grid-v1"
   },
   "world": {
     "width": 128.0,
@@ -144,7 +145,9 @@
     "group_min_members": 6,
     "relation_decay": 0.002,
     "trust_gain_share": 0.08,
-    "trust_loss_failed": 0.02
+    "trust_loss_failed": 0.02,
+    "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+    "group_label_propagation_rounds": 8
   },
   "control": {
     "heuristic_social_guidance": false,

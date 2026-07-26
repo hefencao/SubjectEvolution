@@ -1,0 +1,20 @@
+Subject Evolution v0.29 final validation
+
+Command:
+  cd subject_evolution_v029_project
+  PYTHONPATH=src:. pytest -q
+
+Result:
+  136 passed, 1 skipped in 25.30s
+
+Skipped:
+  Real CUDA/CuPy device-dependent validation. CPU reference and NumPy simulated-device tests passed.
+
+Compatibility:
+  v0.28/v0.29 CPU reference 20-tick comparison: 1645 common non-timing metric cells, 0 mismatches.
+  Eight knowledge/event logs were byte-identical.
+  A trusted v0.28 tick-10 full checkpoint restored under v0.29 and reached the same semantic world state at tick 20 as a continuous v0.29 run. New v0.29 config fields resolve through unchanged defaults for old checkpoint payloads.
+
+Wheel:
+  subject_evolution_mvp-0.29.0-py3-none-any.whl built with setuptools.build_meta.
+  Installed into a clean venv with system NumPy available; version import and subject-evolution console script passed.

@@ -20,6 +20,11 @@ from typing import Any, Iterable
 
 import numpy as np
 
+from .spatial_partition import (
+    NORMALIZED_FIXED_COUNT_SCHEMA,
+    SpatialRegionPartition,
+)
+
 
 SCHEMA = "event-region-endpoint-cohort-decomposition-v2"
 LEGACY_SCHEMA = "event-region-endpoint-cohort-decomposition-v1"
@@ -53,6 +58,9 @@ class EventCohortDiagnostics:
         world_height: float,
         regions_x: int,
         regions_y: int,
+        world_grid_x: int | None = None,
+        world_grid_y: int | None = None,
+        region_schema: str = NORMALIZED_FIXED_COUNT_SCHEMA,
     ) -> None:
         normalized = [
             item if isinstance(item, EventCohortRequest) else EventCohortRequest.from_mapping(item)
@@ -61,9 +69,16 @@ class EventCohortDiagnostics:
         ids = [item.anchor_id for item in normalized]
         if len(ids) != len(set(ids)):
             raise ValueError("event cohort requests have duplicate anchor IDs")
-        if regions_x <= 0 or regions_y <= 0:
-            raise ValueError("event cohort region dimensions must be positive")
-        region_count = int(regions_x * regions_y)
+        self.partition = SpatialRegionPartition(
+            world_width=float(world_width),
+            world_height=float(world_height),
+            world_grid_x=int(world_grid_x if world_grid_x is not None else regions_x),
+            world_grid_y=int(world_grid_y if world_grid_y is not None else regions_y),
+            regions_x=int(regions_x),
+            regions_y=int(regions_y),
+            schema=str(region_schema),
+        )
+        region_count = self.partition.region_count
         for item in normalized:
             if item.event_tick < 0 or item.until_tick < item.event_tick:
                 raise ValueError("event cohort ticks are invalid")
@@ -74,19 +89,14 @@ class EventCohortDiagnostics:
         self.world_height = float(world_height)
         self.regions_x = int(regions_x)
         self.regions_y = int(regions_y)
+        self.region_schema = str(region_schema)
         self.feedback_to_world = False
         self._event_global_ids: dict[str, set[int]] = {}
         self._event_region_ids: dict[str, set[int]] = {}
         self._summaries: dict[str, dict[str, Any]] = {}
 
     def _region_ids(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        px = np.asarray(x, dtype=np.float64)
-        py = np.asarray(y, dtype=np.float64)
-        rx = np.floor(px / self.world_width * self.regions_x).astype(np.int64)
-        ry = np.floor(py / self.world_height * self.regions_y).astype(np.int64)
-        rx = np.clip(rx, 0, self.regions_x - 1)
-        ry = np.clip(ry, 0, self.regions_y - 1)
-        return (ry * self.regions_x + rx).astype(np.int32, copy=False)
+        return self.partition.region_ids(x, y)
 
     @staticmethod
     def _stable_id_set(values: np.ndarray) -> set[int]:
@@ -159,6 +169,10 @@ class EventCohortDiagnostics:
                 "event_cohort_feedback_to_world": False,
                 "event_cohort_anchor_id": request.anchor_id,
                 "event_cohort_region_id": request.region_id,
+                "event_cohort_region_partition_schema": self.partition.schema,
+                "event_cohort_region_partition_sha256": self.partition.metadata()[
+                    "partition_sha256"
+                ],
                 "event_cohort_event_tick": request.event_tick,
                 "event_cohort_until_tick": request.until_tick,
                 "event_alive_region": event_alive,

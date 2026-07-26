@@ -42,62 +42,76 @@ metrics / logs / checkpoint / offline analysis
 
 候选知识主体图是诊断结构，不是本体论判定，也不拥有额外世界写权限。
 
-## 群组层
+## Group-label protocol
 
-社会群组是高信任关系图上的候选结构。`adaptive-topology-v1` 受最短周期、dirty 状态、信任衰减阈值和最大陈旧期约束。v0.24 的 `freeze-group-refresh` 只冻结后续标签刷新：已有标签保持，死亡成员清除，新生体保持未分组；它是 checkpoint 分支消融，不是新的基线规则。
+群组标签规划与刷新调度是两个独立协议层。
 
-## 反事实边界
+### Label planner
 
-所有科学干预通过注册表声明 kind、target scope 和是否直接控制行动。直接行动替换只允许 entertainment 模式。自然事件矩阵的锚点选择与执行分离，并对源 progress、resolved config、checkpoint 和最终计划记录 SHA-256。
-
-## Manifest 执行边界
-
-v0.25 将锚点规划与分支执行拆成两个不可互换阶段：
+`trusted-directed-fixed-round-min-label-v1` 的输入是只读 `GroupDetectionSnapshot`：alive mask、每个拥有者的固定关系槽、物化 trust、stable entity IDs 和配置参数。
 
 ```text
-run diagnostics → signed exposure-only manifest
-                           ↓
-                 signed execution plan
-                           ↓
-        hash preflight → shared trajectories
-                           ↓
-       per-anchor summaries → seed-level aggregation
+label_i^0 = physical slot i
+
+for round = 1..R:
+    label_i^round = min(label_i^(round-1),
+                        labels of eligible outgoing targets)
 ```
 
-路径映射只改变文件定位，不改变 manifest。轨迹共享只允许相同 checkpoint SHA-256 和相同 intervention；运行到最大所需 tick 后，各 anchor 仍用自己的 region、event tick 与 horizon 计算结果。完成 marker 必须绑定 manifest hash、checkpoint hash、intervention 和 completed tick。
+eligible edge 需满足目标 alive 且 trust ≥ threshold。实现使用上一轮标签的快照进行同步更新。传播结束后按最终根统计成员数；不足 minimum members 的根映射为 token 0，其余根的 token 是根槽位上实体的 stable ID。
 
-## Common-boundary evaluation boundary
+成功分享的 relation plan 写入正向完整 trust gain 和反向半 gain。边在历史、衰减和阈值化后仍可能是单向，因此该 planner 是有限轮、有向的近似候选结构，不等于无向图精确连通分量。
 
-v0.26 为 paired natural-event trajectory 增加独立评价分区：从共同 checkpoint 冻结稳定实体 ID 与群组 token，后续只对已提交分享流做第二套分类记账。
+### Refresh scheduler
+
+`adaptive-topology-v1` 不在每 tick 重算标签。旗舰配置：minimum period 100、maximum period 300；初始快照、最短期后 topology dirty、预测 trust 衰减跨阈值或最大陈旧期触发更新。`freeze-group-refresh` 只冻结该调度后的刷新，不改变已有关系、死亡清理或世界提交。
+
+任何 rounds、threshold、minimum members、edge semantics 或 refresh semantics 的改变都必须产生新配置 provenance；不能将离线替代分组静默写回世界。
+
+## Spatial-region protocol
+
+`normalized-fixed-count-grid-v1` 是 local-stress、event cohort 和 natural-event planner 共享的唯一当前 region mapping：
 
 ```text
-same checkpoint
-   ├─ baseline world ───── current labels ─┐
-   │                                      ├─ current-boundary flow
-   └─ intervention world ─ current labels ┘
-
-checkpoint stable-ID + group-token snapshot
-   ├─ baseline committed shares ──────────┐
-   └─ intervention committed shares ──────┴─ common-boundary flow
+u = (x mod world_width) / world_width
+v = (y mod world_height) / world_height
+rx = clip(floor(u * regions_x))
+ry = clip(floor(v * regions_y))
+region_id = ry * regions_x + rx
 ```
 
-该分区不拥有世界写权限，不改变群组刷新，不进入行动观察。物理槽和稳定实体 ID 必须同时匹配；新生或复用槽位实体属于共同边界之外。它只修正评价口径，不能消除自然事件选择偏差或区域迁移构成。
+矩形边界半开，最外层裁剪；世界本身仍是周期边界。该划分不反馈世界，只用于诊断和实验定位。
 
-## Result audit boundary
+固定 region count 意味着 normalized topology 随地图尺寸保持一致，但 physical region width/height 随世界物理大小缩放；world cells per region 随物理网格分辨率变化。v0.29 分离：
 
-`natural_event_result_audit` 是纯离线工具。它验证结果、执行计划和 manifest 哈希，读取已计算 delta，分类指标并生成后续执行计划；不得修改原 manifest、重新选择锚点或自动将描述性方向升级为因果事实。
+- topology SHA：schema、regions_x/y、mapping、boundary convention；
+- partition SHA：再包含世界物理大小、world-grid 分辨率和派生物理尺度。
 
-## Event-cohort and intervention-timing boundary
+跨 run anchor planning 默认要求 topology 和物理 partition 一致。显式允许 mixed partitions 只解除执行阻止，不使指标自动可比。
 
-v0.28 将自然事件实验分成两种不可混合的估计量。
+## Anchor-selection protocol
 
-### Checkpoint-immediate
+`exposure-only-local-peak-selection-v2` 是离线规划器，不读取 post-event outcome。
 
-旧执行器从 prior checkpoint 立即应用干预。它可以改变名义事件形成前的世界、区域人口和 cohort，适合研究 checkpoint 后整段总效应，但不能证明 baseline/intervention 共享同一 event state。
+对每个 run、event kind、region：
 
-### Event-timed
+1. 建立 exposure 时间序列并应用 tick、finite、minimum alive 过滤；
+2. 至少 5 个有效窗口且标准差非零；
+3. 使用该区域自身 quantile 阈值；
+4. 保留 interior local maxima，规则为 value ≥ previous 且 value > next；
+5. 在同一区域内执行 minimum-gap windows；
+6. 计算该区域自身 mean/std 下的 z-score；
+7. 全部候选按 z-score 降序、tick 升序、region ID 升序；
+8. 先从不同 region 选取，候选 region 不足时才复用；
+9. 选择 checkpoint_tick < event_tick 的最新完整 checkpoint。
 
-新执行器先重放一次共同前史：
+candidate rank、selection rank、region bounds 和 partition SHA 进入 v2 manifest。z-score 只用于同一种 exposure 的排序，不是跨事件或跨 partition 的强度单位。analysis summary 可以进入 rationale/audit，但 `used_for_anchor_selection=false`。
+
+## 反事实与 event-timed 边界
+
+科学干预通过注册表声明 kind、target scope 和是否直接控制行动。直接行动替换只允许 entertainment 模式。
+
+推荐 event-timed 执行：
 
 ```text
 signed source checkpoint
@@ -108,14 +122,14 @@ nominal event checkpoint (file/state SHA-256)
         └─ capture same boundary + cohort → intervention B
 ```
 
-干预只在 event checkpoint 加载后应用。`event-region-endpoint-cohort-decomposition-v2` 发布全局和目标区域 stable-ID 集合 SHA-256；pairing audit 要求 baseline/intervention 的 event alive、global identity hash、regional identity hash 全部一致。
+干预只在 event checkpoint 加载后应用。pairing audit 要求 baseline/intervention 的 event alive、global identity hash、regional identity hash 全部一致。checkpoint-immediate 估计量继续存在，但禁止与 event-timed 结果池化。
 
-cohort 终点仍拆为 retained、survived outside、absent、existing in-migrants 和 post-event born，并验证 balance residual=0。观察器无世界写接口，不记录中间多次迁入迁出，因此不是 pathwise flow ledger。
+## Common-boundary 与 cohort 诊断
 
-不同 event tick 必须拥有不同 shared prefix/event checkpoint，即使源 checkpoint 相同，也不能共享已应用干预的 trajectory。
+checkpoint-common boundary 以 stable entity ID 冻结群组 token，只对已提交分享流进行第二套分类，不参与世界行动或群组更新。它用于拆分真实流变化与 current-label 定义变化。
+
+Event cohort 将终点区域人口拆为 retained、survived outside、absent、existing in-migrants 和 post-event born，并验证恒等式 residual=0。它是 endpoint identity accounting，不是 pathwise migration/death ledger。
 
 ## Cross-result synthesis boundary
 
-`natural_event_result_synthesis` 是纯离线合并层。它要求全部输入绑定同一 manifest hash，以 anchor/intervention identity 去重，并拒绝核心世界结果不一致的重复分支。诊断完整度只决定在核心结果相同的前提下保留哪份记录。
-
-综合器重新执行 seed-first 聚合、计算 manifest coverage、审计 intervention timing、标注跨事件重复方向并生成新的签名 execution plan；它不得修改原 manifest、补造未执行结果、把自然事件变成随机实验，或从机制近端指标推导人口与主体性结论。checkpoint-immediate 与 event-timed 结果属于不同估计量，必须拒绝池化。
+`natural_event_result_synthesis` 要求输入绑定同一 manifest hash，以 anchor/intervention identity 去重，拒绝核心世界结果冲突，并重新执行 seed-first aggregation。它不能修改 manifest、补造结果、将自然事件变成随机实验，或从机制近端指标推出人口与主体性结论。
