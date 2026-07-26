@@ -1,20 +1,20 @@
-# Subject Evolution v0.27
+# Subject Evolution v0.28
 
 一个以**可审计世界状态、局部交互、遗传策略、动态知识副本和候选主体结构**为核心的演化模拟参考实现。
 
-科学核心继续不引入第二套“生物型危险实体”。环境层只包含资源、权威危险场、死亡痕迹及默认关闭的低耦合标量场插件；具有出生、死亡、策略、关系、记忆或谱系的危险主体，应由现有实体系统分化，而不是在环境模块中复制。
+科学核心不引入第二套“生物型危险实体”。环境层只包含资源、权威危险场、死亡痕迹及默认关闭的低耦合标量场插件；具有出生、死亡、策略、关系、记忆或谱系的危险主体，应由现有实体系统分化，而不是在环境模块中复制。
 
-## v0.27 重点
+## v0.28 重点
 
-v0.27 不改变世界动力学，主要补齐自然事件配对实验的两个诊断缺口：
+v0.28 不修改默认世界动力学，修正自然事件配对实验的**干预时序与共同 cohort 证明**：
 
-- 新增 stable-ID **event cohort endpoint decomposition**，把区域终点人口变化精确拆为：事件 cohort 留在区域、存活但迁出、死亡/终点缺失、事件时已存在实体迁入、事件后出生且终点仍在区域；
-- 分解恒等式逐 anchor 验证，残差必须为 0；该诊断不反馈策略、行动、关系、群组、生命周期或环境；
-- natural-event execution plan 升级为 v3，trajectory marker 升级为 v3，paired results 升级为 v4；
-- 新增 `subject_evolution.natural_event_result_synthesis`，可合并多个签名结果集、优先采用诊断更完整的重复分支、重新执行 seed-first 聚合，并检查 manifest 覆盖率；
-- 对用户提供的 4 份结果完成综合：18 anchors、72/108 eligible pairs；关闭传播对局部文化根的负向作用在 crowding、mortality、scarcity 三类事件中重复；冻结群组刷新造成的 current-label cohesion 下降主要由边界定义变化解释；
-- 自动生成三份 v3 cohort 复跑计划，覆盖当前主要机制和尚未执行的 scarcity/mortality 知识消融；
-- 发行包继续不包含 `docs/archive`，`pyproject.toml` 保持无显式 `wheel` 构建依赖。
+- 审计用户提供的 v0.27 cohort 结果后发现，72/72 个已执行 pairs 都在 prior checkpoint 就应用干预，比名义 event tick 提前 30 或 60 ticks；
+- 48/72 pairs 在 event tick 的区域 alive 已不同，其余 pairs 也没有 stable-ID 集合哈希，不能证明是同一事件 cohort；
+- 新增 `subject_evolution.natural_event_timed_execution`：共同前史只重放一次到 event tick，再从同一个 event checkpoint 分出 baseline/interventions；
+- event cohort schema 升级为 v2，发布全局和区域 stable-ID SHA-256；每个 pair 必须通过 alive、全局身份、区域身份三项 pairing audit；
+- 旧 `natural_event_execution` 继续保留，明确标记 `checkpoint-immediate-v1`，用于研究机制从 prior checkpoint 开始后的总效应；
+- result synthesis 升级为 v2，禁止混合不同 intervention timing estimand，并自动生成三份 event-timed signed plans；
+- 发行包继续排除 `docs/archive`，`pyproject.toml` 保持无显式 `wheel` 构建依赖。
 
 ## 安装
 
@@ -66,61 +66,61 @@ python -m subject_evolution.natural_event_matrix \
 
 锚点选择只读取 tick、区域 alive、稀缺、拥挤、死亡压力和 checkpoint 可用性；凝聚度、传播流、文化根、谱系和动作结果均被排除。
 
-### 2. 预检与执行
+### 2. Event-timed 计划与预检
+
+推荐的 post-event 估计量使用：
 
 ```bash
-python -m subject_evolution.natural_event_execution \
+python -m subject_evolution.natural_event_timed_execution \
   --manifest analyses/natural_event_matrix/natural_event_matrix_manifest.json \
-  --output analyses/natural_event_execution \
+  --event-kinds crowding,mortality,scarcity \
+  --interventions disable-knowledge-transfer,freeze-group-refresh,neutralize-resource-affinity \
+  --output analyses/event_timed_primary \
   --path-prefix /旧项目绝对路径=/当前项目绝对路径
 ```
 
-预检通过后增加：
-
-```text
---execute --backend gpu --gpu-semantics-mode strict-reference
-```
-
-v0.27 默认同时启用：
-
-- checkpoint-common group boundary audit；
-- stable-ID event cohort endpoint audit。
-
-仅为历史兼容而明确关闭时可使用：
-
-```text
---no-common-boundary-audit
---no-event-cohort-audit
-```
-
-旧 marker 不会被静默复用为带新诊断的轨迹。
-
-### 3. 综合多个结果集
+该计划先从签名 checkpoint 只演进一次到 event tick，保存 event checkpoint，然后才分出 baseline 与 intervention。预检通过后执行：
 
 ```bash
-python -m subject_evolution.natural_event_result_synthesis \
-  --results analyses/initial_crowding/natural_event_matrix_results.json \
-  --results analyses/common_boundary_rerun \
-  --results analyses/remaining_event_replication \
-  --results analyses/remaining_mechanism_ablation \
-  --manifest analyses/natural_event_matrix/natural_event_matrix_manifest.json \
-  --output analyses/natural_event_result_synthesis
-```
-
-目录参数会递归发现 `natural_event_matrix_results.json`。综合器按 `(anchor_id, intervention)` 合并，重复分支必须在世界结果字段上兼容；若同一分支存在共同边界或 cohort 诊断更完整的版本，会优先使用更完整版本。
-
-### 4. 执行已签名 follow-up plan
-
-```bash
-python -m subject_evolution.natural_event_execution \
-  --execution-plan analyses/natural_event_result_synthesis/primary_event_cohort_rerun_execution_plan.json \
-  --output analyses/primary_event_cohort_rerun \
+python -m subject_evolution.natural_event_timed_execution \
+  --execution-plan analyses/event_timed_primary/natural_event_timed_execution_plan.json \
+  --output analyses/event_timed_primary \
   --execute \
   --backend gpu \
   --gpu-semantics-mode strict-reference
 ```
 
-使用 `--execution-plan` 时不能再附加路径、锚点、事件、diagnostic 或 intervention 过滤；若需修改，必须从原 manifest 重建并产生新的计划哈希。
+每个 pair 都必须证明：
+
+```text
+event alive count equal
+event global stable-ID hash equal
+event regional stable-ID hash equal
+```
+
+### 3. Checkpoint-immediate 历史估计量
+
+旧入口仍可用于“从 prior checkpoint 开始改变机制”的实验：
+
+```bash
+python -m subject_evolution.natural_event_execution \
+  --manifest analyses/natural_event_matrix/natural_event_matrix_manifest.json \
+  --output analyses/checkpoint_immediate
+```
+
+其结果明确标记 `intervention_timing="checkpoint-immediate-v1"`。它可能改变名义事件暴露和事件 cohort，不应与 event-timed 结果合并。
+
+### 4. 综合多个结果集
+
+```bash
+python -m subject_evolution.natural_event_result_synthesis \
+  --results analyses/result_batch_a \
+  --results analyses/result_batch_b \
+  --manifest analyses/natural_event_matrix/natural_event_matrix_manifest.json \
+  --output analyses/natural_event_result_synthesis
+```
+
+综合器按 `(anchor_id, intervention)` 合并，先 seed 内平均再跨 seed 汇总，并拒绝混合 `checkpoint-immediate-v1` 与 `anchor-event-tick-v1` 两种估计量。
 
 ## checkpoint 与单项重放
 
@@ -147,7 +147,7 @@ python -m subject_evolution.replay \
 - CPU reference、GPU strict-reference 和实验性 hybrid-accelerated 路径；
 - 完整 checkpoint、共同前史分支、相位/局部事件配对反事实；
 - 长期遗传、群组、局部压力和文化传播诊断；
-- 暴露盲选 manifest、哈希预检、共享轨迹、断点续跑、共同边界、event cohort 分解与跨结果综合。
+- 暴露盲选 manifest、哈希预检、断点续跑、共同边界、stable-ID cohort、event-timed pairing 与跨结果综合。
 
 ## 文档
 
@@ -158,6 +158,7 @@ python -m subject_evolution.replay \
 - [v0.24 文档](docs/v0.24/README.md)
 - [v0.25 文档](docs/v0.25/README.md)
 - [v0.26 文档](docs/v0.26/README.md)
-- [v0.27 文档与结果综合](docs/v0.27/README.md)
+- [v0.27 文档](docs/v0.27/README.md)
+- [v0.28 文档与 event-timed 计划](docs/v0.28/README.md)
 
 发行压缩包不包含 `docs/archive`。更早的完整历史仍保存在旧版本发行包中。

@@ -70,7 +70,9 @@ def test_synthesis_prefers_richer_duplicate_and_generates_cohort_plan(tmp_path: 
     assert synthesis["merged_pair_count"] == 2
     assert synthesis["coverage"]["complete"] is False
     assert synthesis["diagnostic_coverage"][0]["common_boundary"] == 2
-    assert "primary_event_cohort_rerun" in synthesis["followup_plans"]
-    assert synthesis["followup_plans"]["primary_event_cohort_rerun"]["diagnostics"][
+    assert synthesis["intervention_timing_audit"]["common_pre_event_identity_proven"] is False
+    assert "event_timed_primary" in synthesis["followup_plans"]
+    assert synthesis["followup_plans"]["event_timed_primary"]["intervention_timing"] == "anchor-event-tick-v1"
+    assert synthesis["followup_plans"]["event_timed_primary"]["diagnostics"][
         "event_cohort_audit"
     ] is True

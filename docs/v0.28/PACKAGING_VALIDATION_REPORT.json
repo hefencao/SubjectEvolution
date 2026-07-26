@@ -1,0 +1,31 @@
+{
+  "schema": "subject-evolution-packaging-validation-v028",
+  "version": "0.28.0",
+  "project_file_count": 233,
+  "excluded_patterns": [
+    "docs/archive",
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    "*.pyc",
+    "build",
+    "dist",
+    "*.egg-info"
+  ],
+  "pyproject_explicit_wheel_dependency": false,
+  "full_tests": {
+    "passed": 133,
+    "skipped": 1,
+    "failed": 0
+  },
+  "compatibility_report": "V027_V028_COMPATIBILITY_REPORT.json",
+  "event_timed_smoke_report": "TIMED_EXECUTION_SMOKE_REPORT.json",
+  "wheel": {
+    "filename": "subject_evolution_mvp-0.28.0-py3-none-any.whl",
+    "build_isolation": false,
+    "install_verified": true,
+    "imported_version": "0.28.0",
+    "console_script_help_verified": true,
+    "dependency_note": "Installation test used a clean venv with system-site-packages so the already installed NumPy dependency was available without network access."
+  }
+}

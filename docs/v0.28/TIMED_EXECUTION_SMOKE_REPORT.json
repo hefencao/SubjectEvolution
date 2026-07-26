@@ -1,0 +1,17 @@
+{
+  "schema": "event-timed-execution-smoke-v1",
+  "backend": "cpu",
+  "gpu_semantics_mode": null,
+  "prefix_count": 1,
+  "trajectory_count": 2,
+  "pre_event_pairing": {
+    "schema": "shared-event-checkpoint-pairing-v1",
+    "pair_count": 1,
+    "failure_count": 0,
+    "all_valid": true
+  },
+  "baseline_event_alive": 68,
+  "intervention_event_alive": 68,
+  "global_identity_equal": true,
+  "regional_identity_equal": true
+}

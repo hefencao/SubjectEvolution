@@ -1,0 +1,17 @@
+{
+  "schema": "v027-v028-compatibility-v1",
+  "default_cpu_20_tick": {
+    "rows": 11,
+    "common_non_timing_columns": 142,
+    "cells_compared": 1562,
+    "mismatch_count": 0,
+    "first_mismatches": [],
+    "evolution_progress_byte_identical": true
+  },
+  "v027_checkpoint_restored_by_v028": {
+    "checkpoint_tick": 6,
+    "final_tick": 12,
+    "semantic_state_equal": true,
+    "first_failure_path": null
+  }
+}

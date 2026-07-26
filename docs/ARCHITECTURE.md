@@ -87,26 +87,35 @@ checkpoint stable-ID + group-token snapshot
 
 `natural_event_result_audit` 是纯离线工具。它验证结果、执行计划和 manifest 哈希，读取已计算 delta，分类指标并生成后续执行计划；不得修改原 manifest、重新选择锚点或自动将描述性方向升级为因果事实。
 
-## Event-cohort diagnostic boundary
+## Event-cohort and intervention-timing boundary
 
-v0.27 在 natural-event 执行器中增加 run-local stable-ID cohort 观察器。每个 anchor 在自己的 `event_tick` 捕获全局和目标区域的 alive stable IDs，在 `until_tick` 只读取最终已提交实体状态，计算终点人口构成。
+v0.28 将自然事件实验分成两种不可混合的估计量。
+
+### Checkpoint-immediate
+
+旧执行器从 prior checkpoint 立即应用干预。它可以改变名义事件形成前的世界、区域人口和 cohort，适合研究 checkpoint 后整段总效应，但不能证明 baseline/intervention 共享同一 event state。
+
+### Event-timed
+
+新执行器先重放一次共同前史：
 
 ```text
-event tick stable-ID snapshot
-       ↓
-shared baseline / intervention world trajectory
-       ↓
-anchor-specific horizon state
-       ↓
-retained + survived-outside + absent + existing-in + post-event-born
-       ↓
-endpoint population balance residual = 0
+signed source checkpoint
+        ↓ shared deterministic prefix
+nominal event checkpoint (file/state SHA-256)
+        ├─ capture common boundary + stable-ID cohort → baseline
+        ├─ capture same boundary + cohort → intervention A
+        └─ capture same boundary + cohort → intervention B
 ```
 
-观察器没有世界写接口，不修改 checkpoint payload。共享轨迹可承载多个 anchor 请求，但每个请求的 snapshot tick、region 和 horizon 独立。该分解识别终点身份构成，不记录中间多次迁入迁出，因此不是 pathwise flow ledger。
+干预只在 event checkpoint 加载后应用。`event-region-endpoint-cohort-decomposition-v2` 发布全局和目标区域 stable-ID 集合 SHA-256；pairing audit 要求 baseline/intervention 的 event alive、global identity hash、regional identity hash 全部一致。
+
+cohort 终点仍拆为 retained、survived outside、absent、existing in-migrants 和 post-event born，并验证 balance residual=0。观察器无世界写接口，不记录中间多次迁入迁出，因此不是 pathwise flow ledger。
+
+不同 event tick 必须拥有不同 shared prefix/event checkpoint，即使源 checkpoint 相同，也不能共享已应用干预的 trajectory。
 
 ## Cross-result synthesis boundary
 
 `natural_event_result_synthesis` 是纯离线合并层。它要求全部输入绑定同一 manifest hash，以 anchor/intervention identity 去重，并拒绝核心世界结果不一致的重复分支。诊断完整度只决定在核心结果相同的前提下保留哪份记录。
 
-综合器重新执行 seed-first 聚合、计算 manifest coverage、标注跨事件重复方向并生成新的签名 execution plan；它不得修改原 manifest、补造未执行结果、把自然事件变成随机实验，或从机制近端指标推导人口与主体性结论。
+综合器重新执行 seed-first 聚合、计算 manifest coverage、审计 intervention timing、标注跨事件重复方向并生成新的签名 execution plan；它不得修改原 manifest、补造未执行结果、把自然事件变成随机实验，或从机制近端指标推导人口与主体性结论。checkpoint-immediate 与 event-timed 结果属于不同估计量，必须拒绝池化。

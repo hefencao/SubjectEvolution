@@ -1,0 +1,24 @@
+Subject Evolution v0.28 final validation
+
+Full pytest: 133 passed, 1 skipped, 0 failed
+Skipped: real CUDA/CuPy device-dependent test
+
+Event-timed CPU smoke:
+- shared prefixes: 1
+- post-event trajectories: 2
+- pre-event pairing failures: 0
+- baseline/intervention event alive: 68 / 68
+- global stable-ID identity hash equal: true
+- regional stable-ID identity hash equal: true
+
+Compatibility:
+- v0.27/v0.28 default CPU 20-tick non-timing cells compared: 1562
+- mismatches: 0
+- evolution_progress.jsonl byte-identical: true
+- v0.27 tick-6 checkpoint restored by v0.28 to tick 12: semantic state equal
+
+Wheel:
+- built with setuptools backend and --no-build-isolation
+- installed in a clean venv using system site packages for NumPy
+- imported version: 0.28.0
+- console script --help: passed

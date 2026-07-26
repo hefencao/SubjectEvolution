@@ -15,12 +15,14 @@ horizon are not counted in the final-region terms.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 from typing import Any, Iterable
 
 import numpy as np
 
 
-SCHEMA = "event-region-endpoint-cohort-decomposition-v1"
+SCHEMA = "event-region-endpoint-cohort-decomposition-v2"
+LEGACY_SCHEMA = "event-region-endpoint-cohort-decomposition-v1"
 
 
 @dataclass(frozen=True)
@@ -90,6 +92,11 @@ class EventCohortDiagnostics:
     def _stable_id_set(values: np.ndarray) -> set[int]:
         return {int(value) for value in np.asarray(values, dtype=np.uint64).tolist()}
 
+    @staticmethod
+    def _stable_id_sha256(values: set[int]) -> str:
+        ordered = np.asarray(sorted(values), dtype="<u8")
+        return hashlib.sha256(ordered.tobytes(order="C")).hexdigest()
+
     def observe(
         self,
         *,
@@ -155,6 +162,8 @@ class EventCohortDiagnostics:
                 "event_cohort_event_tick": request.event_tick,
                 "event_cohort_until_tick": request.until_tick,
                 "event_alive_region": event_alive,
+                "event_global_ids_sha256": self._stable_id_sha256(event_global),
+                "event_region_ids_sha256": self._stable_id_sha256(event_region),
                 "final_alive_region_from_cohort_audit": final_alive,
                 "final_event_cohort_retained_region": len(retained),
                 "final_event_cohort_survived_outside_region": len(survived_outside),
@@ -173,9 +182,10 @@ class EventCohortDiagnostics:
                     len(retained) / event_alive if event_alive > 0 else None
                 ),
                 "interpretation_boundary": (
-                    "Endpoint decomposition uses stable IDs at the nominal event tick. "
-                    "Post-event births and in-migrants are counted only when alive in the "
-                    "region at the horizon; it is not a complete pathwise flow ledger."
+                    "Endpoint decomposition uses stable IDs at the nominal event tick and "
+                    "publishes global/region cohort identity hashes. Post-event births and "
+                    "in-migrants are counted only when alive in the region at the horizon; "
+                    "it is not a complete pathwise flow ledger."
                 ),
             }
 

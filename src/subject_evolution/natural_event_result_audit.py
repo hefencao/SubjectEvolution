@@ -27,6 +27,7 @@ AUDIT_SCHEMA = "natural-event-result-audit-v1"
 SUPPORTED_RESULT_SCHEMAS = {
     "natural-event-paired-intervention-results-v2",
     "natural-event-paired-intervention-results-v3",
+    "natural-event-paired-intervention-results-v4",
     RESULT_SCHEMA,
 }
 

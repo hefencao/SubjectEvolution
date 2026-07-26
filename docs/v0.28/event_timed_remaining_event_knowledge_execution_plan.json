@@ -1,0 +1,2246 @@
+{
+  "schema": "natural-event-timed-execution-plan-v1",
+  "manifest_schema": "natural-event-paired-intervention-matrix-v1",
+  "manifest_sha256": "737312dd4659807a89323fd275e784b91166fbaa53cdf094b16ca24618091dbb",
+  "intervention_timing": "anchor-event-tick-v1",
+  "pairing_schema": "shared-event-checkpoint-pairing-v1",
+  "path_prefixes": [],
+  "selection": {
+    "anchor_ids": [],
+    "seeds": [],
+    "event_kinds": [
+      "mortality",
+      "scarcity"
+    ],
+    "interventions": [
+      "disable-knowledge-policy",
+      "ablate-working-memory",
+      "bypass-sparse-selection"
+    ]
+  },
+  "diagnostics": {
+    "common_boundary_audit": true,
+    "common_boundary_schema": "checkpoint-frozen-stable-entity-boundary-v1",
+    "event_cohort_audit": true,
+    "event_cohort_schema": "event-region-endpoint-cohort-decomposition-v2",
+    "event_identity_hashes": true,
+    "feedback_to_world": false
+  },
+  "selected_anchor_count": 12,
+  "selected_anchors": [
+    {
+      "anchor_id": "seed_10001-mortality-r7-t420",
+      "run_name": "seed_10001",
+      "seed": 10001,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001",
+      "event_kind": "mortality",
+      "exposure_field": "spatial_local_region_mortality_pressure",
+      "region_id": 7,
+      "event_tick": 420,
+      "event_value": 0.14868804664723032,
+      "region_threshold": 0.060469750295306796,
+      "standardized_score": 3.335032485375294,
+      "alive_region": 91,
+      "checkpoint_tick": 360,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000360.sechk",
+      "checkpoint_sha256": "3e4e348ba5af189bd338bf4b00c7fe5b0b3cb6090882cb6578b5b14f8782c7bd",
+      "until_tick": 540,
+      "selection_record_index": 13,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000360.sechk",
+      "prefix_id": "3e4e348ba5af189b-event-00000420",
+      "intervention_tick": 420,
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10001-mortality-r4-t510",
+      "run_name": "seed_10001",
+      "seed": 10001,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001",
+      "event_kind": "mortality",
+      "exposure_field": "spatial_local_region_mortality_pressure",
+      "region_id": 4,
+      "event_tick": 510,
+      "event_value": 0.2350307778399552,
+      "region_threshold": 0.07533837979660671,
+      "standardized_score": 3.7857557626322844,
+      "alive_region": 77,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "9100c59082823c90b2b0f540e3816fb86a4aecf93bea688c90c4397b10b7eb4b",
+      "until_tick": 630,
+      "selection_record_index": 16,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000480.sechk",
+      "prefix_id": "9100c59082823c90-event-00000510",
+      "intervention_tick": 510,
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10001-scarcity-r8-t1410",
+      "run_name": "seed_10001",
+      "seed": 10001,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001",
+      "event_kind": "scarcity",
+      "exposure_field": "spatial_local_region_resource_scarcity",
+      "region_id": 8,
+      "event_tick": 1410,
+      "event_value": 0.9969360870825252,
+      "region_threshold": 0.9941208539944255,
+      "standardized_score": 0.5724529047198867,
+      "alive_region": 104,
+      "checkpoint_tick": 1380,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00001380.sechk",
+      "checkpoint_sha256": "f4c003cc3c426307cc0decf78d2f22a15421d76584e6506047767463546f0256",
+      "until_tick": 1530,
+      "selection_record_index": 46,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00001380.sechk",
+      "prefix_id": "f4c003cc3c426307-event-00001410",
+      "intervention_tick": 1410,
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10001-scarcity-r4-t1470",
+      "run_name": "seed_10001",
+      "seed": 10001,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001",
+      "event_kind": "scarcity",
+      "exposure_field": "spatial_local_region_resource_scarcity",
+      "region_id": 4,
+      "event_tick": 1470,
+      "event_value": 0.9971799381910962,
+      "region_threshold": 0.9946973500814558,
+      "standardized_score": 0.5959841109098603,
+      "alive_region": 82,
+      "checkpoint_tick": 1440,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00001440.sechk",
+      "checkpoint_sha256": "81e25fa8724aa14d86e37eb94b01ed468d916be12ba787e7c42f320ea1d2b841",
+      "until_tick": 1590,
+      "selection_record_index": 48,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00001440.sechk",
+      "prefix_id": "81e25fa8724aa14d-event-00001470",
+      "intervention_tick": 1470,
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10002-mortality-r11-t420",
+      "run_name": "seed_10002",
+      "seed": 10002,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002",
+      "event_kind": "mortality",
+      "exposure_field": "spatial_local_region_mortality_pressure",
+      "region_id": 11,
+      "event_tick": 420,
+      "event_value": 0.1857335127860027,
+      "region_threshold": 0.06564554918596163,
+      "standardized_score": 3.5632181184165255,
+      "alive_region": 92,
+      "checkpoint_tick": 360,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000360.sechk",
+      "checkpoint_sha256": "a6c847d4aaf0df444c9ea39a1e75931bffc16ef3737677af9bbe3db21cce90be",
+      "until_tick": 540,
+      "selection_record_index": 13,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000360.sechk",
+      "prefix_id": "a6c847d4aaf0df44-event-00000420",
+      "intervention_tick": 420,
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10002-mortality-r14-t570",
+      "run_name": "seed_10002",
+      "seed": 10002,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002",
+      "event_kind": "mortality",
+      "exposure_field": "spatial_local_region_mortality_pressure",
+      "region_id": 14,
+      "event_tick": 570,
+      "event_value": 0.1853997682502897,
+      "region_threshold": 0.08142976390116874,
+      "standardized_score": 3.5122161326808503,
+      "alive_region": 60,
+      "checkpoint_tick": 540,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000540.sechk",
+      "checkpoint_sha256": "083f2bef83c22fccc16ffb4aabc3681aeab42bcf07f29f1c9e0b8b055e7588bc",
+      "until_tick": 690,
+      "selection_record_index": 18,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000540.sechk",
+      "prefix_id": "083f2bef83c22fcc-event-00000570",
+      "intervention_tick": 570,
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10002-scarcity-r8-t450",
+      "run_name": "seed_10002",
+      "seed": 10002,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002",
+      "event_kind": "scarcity",
+      "exposure_field": "spatial_local_region_resource_scarcity",
+      "region_id": 8,
+      "event_tick": 450,
+      "event_value": 0.9967549727120366,
+      "region_threshold": 0.9951703713549791,
+      "standardized_score": 0.5625492137541774,
+      "alive_region": 107,
+      "checkpoint_tick": 420,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000420.sechk",
+      "checkpoint_sha256": "a876cec8e8d2704c5b861cb2bddbb2a29cdd4275ad9a2daed4d259252f17b475",
+      "until_tick": 570,
+      "selection_record_index": 14,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000420.sechk",
+      "prefix_id": "a876cec8e8d2704c-event-00000450",
+      "intervention_tick": 450,
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10002-scarcity-r13-t1320",
+      "run_name": "seed_10002",
+      "seed": 10002,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002",
+      "event_kind": "scarcity",
+      "exposure_field": "spatial_local_region_resource_scarcity",
+      "region_id": 13,
+      "event_tick": 1320,
+      "event_value": 0.996873527937987,
+      "region_threshold": 0.9940014165079971,
+      "standardized_score": 0.5735053070883697,
+      "alive_region": 73,
+      "checkpoint_tick": 1260,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00001260.sechk",
+      "checkpoint_sha256": "5568d6737845756a4b60c48f40b24a34620bc7c5e12489338f8610dc37ef211e",
+      "until_tick": 1440,
+      "selection_record_index": 43,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00001260.sechk",
+      "prefix_id": "5568d6737845756a-event-00001320",
+      "intervention_tick": 1320,
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10003-mortality-r7-t390",
+      "run_name": "seed_10003",
+      "seed": 10003,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003",
+      "event_kind": "mortality",
+      "exposure_field": "spatial_local_region_mortality_pressure",
+      "region_id": 7,
+      "event_tick": 390,
+      "event_value": 0.15820698747528014,
+      "region_threshold": 0.0724699081271119,
+      "standardized_score": 3.5206463305766436,
+      "alive_region": 75,
+      "checkpoint_tick": 360,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000360.sechk",
+      "checkpoint_sha256": "e8dba08d19beadb5dcfacf4ab5cc6c8e80a2a1af74b04547b1578d166304a75a",
+      "until_tick": 510,
+      "selection_record_index": 12,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000360.sechk",
+      "prefix_id": "e8dba08d19beadb5-event-00000390",
+      "intervention_tick": 390,
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10003-mortality-r2-t450",
+      "run_name": "seed_10003",
+      "seed": 10003,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003",
+      "event_kind": "mortality",
+      "exposure_field": "spatial_local_region_mortality_pressure",
+      "region_id": 2,
+      "event_tick": 450,
+      "event_value": 0.14812376563528637,
+      "region_threshold": 0.05060960084319729,
+      "standardized_score": 3.8274119734177705,
+      "alive_region": 86,
+      "checkpoint_tick": 420,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000420.sechk",
+      "checkpoint_sha256": "d3f2f0bb00fc1c7d925cf1c8af3ec8a22ca5eee031c038509bf7def1d15c534c",
+      "until_tick": 570,
+      "selection_record_index": 14,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000420.sechk",
+      "prefix_id": "d3f2f0bb00fc1c7d-event-00000450",
+      "intervention_tick": 450,
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10003-scarcity-r13-t1080",
+      "run_name": "seed_10003",
+      "seed": 10003,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003",
+      "event_kind": "scarcity",
+      "exposure_field": "spatial_local_region_resource_scarcity",
+      "region_id": 13,
+      "event_tick": 1080,
+      "event_value": 0.996896202459648,
+      "region_threshold": 0.9932482155955956,
+      "standardized_score": 0.5776134671649816,
+      "alive_region": 80,
+      "checkpoint_tick": 1020,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00001020.sechk",
+      "checkpoint_sha256": "d495cbfc6165193f901a08f6d0b675e36fc24073eadc8d4462a169e105902a20",
+      "until_tick": 1200,
+      "selection_record_index": 35,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00001020.sechk",
+      "prefix_id": "d495cbfc6165193f-event-00001080",
+      "intervention_tick": 1080,
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10003-scarcity-r14-t1290",
+      "run_name": "seed_10003",
+      "seed": 10003,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003",
+      "event_kind": "scarcity",
+      "exposure_field": "spatial_local_region_resource_scarcity",
+      "region_id": 14,
+      "event_tick": 1290,
+      "event_value": 0.9962473014069937,
+      "region_threshold": 0.9939488965109214,
+      "standardized_score": 0.5487089932233484,
+      "alive_region": 76,
+      "checkpoint_tick": 1260,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00001260.sechk",
+      "checkpoint_sha256": "ac1feb0b85785a449aac6321b805b5c53206bd31990cf6fdd1fe91e9137e93f4",
+      "until_tick": 1410,
+      "selection_record_index": 42,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00001260.sechk",
+      "prefix_id": "ac1feb0b85785a44-event-00001290",
+      "intervention_tick": 1290,
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    }
+  ],
+  "source_files": [
+    {
+      "kind": "progress",
+      "run_name": "seed_10001",
+      "path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/evolution_progress.jsonl",
+      "path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/evolution_progress.jsonl",
+      "expected_sha256": "72506a30575e1a81c42eb948528ce00ef047e9f589ebb3944cdd01898ac1d6f6",
+      "required_for_execution": false,
+      "required_for_full_audit": true
+    },
+    {
+      "kind": "config",
+      "run_name": "seed_10001",
+      "path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/resolved_config.json",
+      "path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/resolved_config.json",
+      "expected_sha256": "bf66d18b3d58141fa8ffed86e8d30c1fe34119a6ed600bc8f5a2ed0a87e3c093",
+      "required_for_execution": false,
+      "required_for_full_audit": true
+    },
+    {
+      "kind": "progress",
+      "run_name": "seed_10002",
+      "path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/evolution_progress.jsonl",
+      "path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/evolution_progress.jsonl",
+      "expected_sha256": "7724753036af36b64013e7a02830a3c7d48b00c3490087d690ba326698e07a23",
+      "required_for_execution": false,
+      "required_for_full_audit": true
+    },
+    {
+      "kind": "config",
+      "run_name": "seed_10002",
+      "path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/resolved_config.json",
+      "path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/resolved_config.json",
+      "expected_sha256": "e5bfbedb77146ba2b0ee0c02c20f1f48d8fe559880225e414af58cd8e0220260",
+      "required_for_execution": false,
+      "required_for_full_audit": true
+    },
+    {
+      "kind": "progress",
+      "run_name": "seed_10003",
+      "path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/evolution_progress.jsonl",
+      "path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/evolution_progress.jsonl",
+      "expected_sha256": "bf0d70c41ca195ba0d5d92d653d47114489c624d2a5c0f98da4a4ef75e2a3fbf",
+      "required_for_execution": false,
+      "required_for_full_audit": true
+    },
+    {
+      "kind": "config",
+      "run_name": "seed_10003",
+      "path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/resolved_config.json",
+      "path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/resolved_config.json",
+      "expected_sha256": "1a82eb62d93657dee1329c8915e0cd5343e05b5e00e390ede65adef1f763b827",
+      "required_for_execution": false,
+      "required_for_full_audit": true
+    }
+  ],
+  "prefix_count": 12,
+  "prefixes": [
+    {
+      "prefix_id": "083f2bef83c22fcc-event-00000570",
+      "source_checkpoint_sha256": "083f2bef83c22fccc16ffb4aabc3681aeab42bcf07f29f1c9e0b8b055e7588bc",
+      "source_checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000540.sechk",
+      "source_checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000540.sechk",
+      "source_checkpoint_tick": 540,
+      "event_tick": 570,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-mortality-r14-t570",
+          "seed": 10002,
+          "event_kind": "mortality",
+          "region_id": 14,
+          "event_tick": 570,
+          "until_tick": 690
+        }
+      ],
+      "output_relative_path": "prefixes/083f2bef83c22fcc-event-00000570"
+    },
+    {
+      "prefix_id": "3e4e348ba5af189b-event-00000420",
+      "source_checkpoint_sha256": "3e4e348ba5af189bd338bf4b00c7fe5b0b3cb6090882cb6578b5b14f8782c7bd",
+      "source_checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000360.sechk",
+      "source_checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000360.sechk",
+      "source_checkpoint_tick": 360,
+      "event_tick": 420,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-mortality-r7-t420",
+          "seed": 10001,
+          "event_kind": "mortality",
+          "region_id": 7,
+          "event_tick": 420,
+          "until_tick": 540
+        }
+      ],
+      "output_relative_path": "prefixes/3e4e348ba5af189b-event-00000420"
+    },
+    {
+      "prefix_id": "5568d6737845756a-event-00001320",
+      "source_checkpoint_sha256": "5568d6737845756a4b60c48f40b24a34620bc7c5e12489338f8610dc37ef211e",
+      "source_checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00001260.sechk",
+      "source_checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00001260.sechk",
+      "source_checkpoint_tick": 1260,
+      "event_tick": 1320,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-scarcity-r13-t1320",
+          "seed": 10002,
+          "event_kind": "scarcity",
+          "region_id": 13,
+          "event_tick": 1320,
+          "until_tick": 1440
+        }
+      ],
+      "output_relative_path": "prefixes/5568d6737845756a-event-00001320"
+    },
+    {
+      "prefix_id": "81e25fa8724aa14d-event-00001470",
+      "source_checkpoint_sha256": "81e25fa8724aa14d86e37eb94b01ed468d916be12ba787e7c42f320ea1d2b841",
+      "source_checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00001440.sechk",
+      "source_checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00001440.sechk",
+      "source_checkpoint_tick": 1440,
+      "event_tick": 1470,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-scarcity-r4-t1470",
+          "seed": 10001,
+          "event_kind": "scarcity",
+          "region_id": 4,
+          "event_tick": 1470,
+          "until_tick": 1590
+        }
+      ],
+      "output_relative_path": "prefixes/81e25fa8724aa14d-event-00001470"
+    },
+    {
+      "prefix_id": "9100c59082823c90-event-00000510",
+      "source_checkpoint_sha256": "9100c59082823c90b2b0f540e3816fb86a4aecf93bea688c90c4397b10b7eb4b",
+      "source_checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000480.sechk",
+      "source_checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000480.sechk",
+      "source_checkpoint_tick": 480,
+      "event_tick": 510,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-mortality-r4-t510",
+          "seed": 10001,
+          "event_kind": "mortality",
+          "region_id": 4,
+          "event_tick": 510,
+          "until_tick": 630
+        }
+      ],
+      "output_relative_path": "prefixes/9100c59082823c90-event-00000510"
+    },
+    {
+      "prefix_id": "a6c847d4aaf0df44-event-00000420",
+      "source_checkpoint_sha256": "a6c847d4aaf0df444c9ea39a1e75931bffc16ef3737677af9bbe3db21cce90be",
+      "source_checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000360.sechk",
+      "source_checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000360.sechk",
+      "source_checkpoint_tick": 360,
+      "event_tick": 420,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-mortality-r11-t420",
+          "seed": 10002,
+          "event_kind": "mortality",
+          "region_id": 11,
+          "event_tick": 420,
+          "until_tick": 540
+        }
+      ],
+      "output_relative_path": "prefixes/a6c847d4aaf0df44-event-00000420"
+    },
+    {
+      "prefix_id": "a876cec8e8d2704c-event-00000450",
+      "source_checkpoint_sha256": "a876cec8e8d2704c5b861cb2bddbb2a29cdd4275ad9a2daed4d259252f17b475",
+      "source_checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000420.sechk",
+      "source_checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000420.sechk",
+      "source_checkpoint_tick": 420,
+      "event_tick": 450,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-scarcity-r8-t450",
+          "seed": 10002,
+          "event_kind": "scarcity",
+          "region_id": 8,
+          "event_tick": 450,
+          "until_tick": 570
+        }
+      ],
+      "output_relative_path": "prefixes/a876cec8e8d2704c-event-00000450"
+    },
+    {
+      "prefix_id": "ac1feb0b85785a44-event-00001290",
+      "source_checkpoint_sha256": "ac1feb0b85785a449aac6321b805b5c53206bd31990cf6fdd1fe91e9137e93f4",
+      "source_checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00001260.sechk",
+      "source_checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00001260.sechk",
+      "source_checkpoint_tick": 1260,
+      "event_tick": 1290,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-scarcity-r14-t1290",
+          "seed": 10003,
+          "event_kind": "scarcity",
+          "region_id": 14,
+          "event_tick": 1290,
+          "until_tick": 1410
+        }
+      ],
+      "output_relative_path": "prefixes/ac1feb0b85785a44-event-00001290"
+    },
+    {
+      "prefix_id": "d3f2f0bb00fc1c7d-event-00000450",
+      "source_checkpoint_sha256": "d3f2f0bb00fc1c7d925cf1c8af3ec8a22ca5eee031c038509bf7def1d15c534c",
+      "source_checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000420.sechk",
+      "source_checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000420.sechk",
+      "source_checkpoint_tick": 420,
+      "event_tick": 450,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-mortality-r2-t450",
+          "seed": 10003,
+          "event_kind": "mortality",
+          "region_id": 2,
+          "event_tick": 450,
+          "until_tick": 570
+        }
+      ],
+      "output_relative_path": "prefixes/d3f2f0bb00fc1c7d-event-00000450"
+    },
+    {
+      "prefix_id": "d495cbfc6165193f-event-00001080",
+      "source_checkpoint_sha256": "d495cbfc6165193f901a08f6d0b675e36fc24073eadc8d4462a169e105902a20",
+      "source_checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00001020.sechk",
+      "source_checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00001020.sechk",
+      "source_checkpoint_tick": 1020,
+      "event_tick": 1080,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-scarcity-r13-t1080",
+          "seed": 10003,
+          "event_kind": "scarcity",
+          "region_id": 13,
+          "event_tick": 1080,
+          "until_tick": 1200
+        }
+      ],
+      "output_relative_path": "prefixes/d495cbfc6165193f-event-00001080"
+    },
+    {
+      "prefix_id": "e8dba08d19beadb5-event-00000390",
+      "source_checkpoint_sha256": "e8dba08d19beadb5dcfacf4ab5cc6c8e80a2a1af74b04547b1578d166304a75a",
+      "source_checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000360.sechk",
+      "source_checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000360.sechk",
+      "source_checkpoint_tick": 360,
+      "event_tick": 390,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-mortality-r7-t390",
+          "seed": 10003,
+          "event_kind": "mortality",
+          "region_id": 7,
+          "event_tick": 390,
+          "until_tick": 510
+        }
+      ],
+      "output_relative_path": "prefixes/e8dba08d19beadb5-event-00000390"
+    },
+    {
+      "prefix_id": "f4c003cc3c426307-event-00001410",
+      "source_checkpoint_sha256": "f4c003cc3c426307cc0decf78d2f22a15421d76584e6506047767463546f0256",
+      "source_checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00001380.sechk",
+      "source_checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00001380.sechk",
+      "source_checkpoint_tick": 1380,
+      "event_tick": 1410,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-scarcity-r8-t1410",
+          "seed": 10001,
+          "event_kind": "scarcity",
+          "region_id": 8,
+          "event_tick": 1410,
+          "until_tick": 1530
+        }
+      ],
+      "output_relative_path": "prefixes/f4c003cc3c426307-event-00001410"
+    }
+  ],
+  "naive_branch_count": 48,
+  "trajectory_count": 48,
+  "deduplicated_branch_count": 0,
+  "trajectories": [
+    {
+      "trajectory_id": "083f2bef83c22fcc-event-00000570-ablate_working_memory",
+      "prefix_id": "083f2bef83c22fcc-event-00000570",
+      "source_checkpoint_sha256": "083f2bef83c22fccc16ffb4aabc3681aeab42bcf07f29f1c9e0b8b055e7588bc",
+      "event_tick": 570,
+      "intervention_tick": 570,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 690,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-mortality-r14-t570",
+          "seed": 10002,
+          "event_kind": "mortality",
+          "region_id": 14,
+          "event_tick": 570,
+          "until_tick": 690
+        }
+      ],
+      "output_relative_path": "trajectories/083f2bef83c22fcc-event-00000570-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "083f2bef83c22fcc-event-00000570-baseline",
+      "prefix_id": "083f2bef83c22fcc-event-00000570",
+      "source_checkpoint_sha256": "083f2bef83c22fccc16ffb4aabc3681aeab42bcf07f29f1c9e0b8b055e7588bc",
+      "event_tick": 570,
+      "intervention_tick": null,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 690,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-mortality-r14-t570",
+          "seed": 10002,
+          "event_kind": "mortality",
+          "region_id": 14,
+          "event_tick": 570,
+          "until_tick": 690
+        }
+      ],
+      "output_relative_path": "trajectories/083f2bef83c22fcc-event-00000570-baseline"
+    },
+    {
+      "trajectory_id": "083f2bef83c22fcc-event-00000570-bypass_sparse_selection",
+      "prefix_id": "083f2bef83c22fcc-event-00000570",
+      "source_checkpoint_sha256": "083f2bef83c22fccc16ffb4aabc3681aeab42bcf07f29f1c9e0b8b055e7588bc",
+      "event_tick": 570,
+      "intervention_tick": 570,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 690,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-mortality-r14-t570",
+          "seed": 10002,
+          "event_kind": "mortality",
+          "region_id": 14,
+          "event_tick": 570,
+          "until_tick": 690
+        }
+      ],
+      "output_relative_path": "trajectories/083f2bef83c22fcc-event-00000570-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "083f2bef83c22fcc-event-00000570-disable_knowledge_policy",
+      "prefix_id": "083f2bef83c22fcc-event-00000570",
+      "source_checkpoint_sha256": "083f2bef83c22fccc16ffb4aabc3681aeab42bcf07f29f1c9e0b8b055e7588bc",
+      "event_tick": 570,
+      "intervention_tick": 570,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 690,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-mortality-r14-t570",
+          "seed": 10002,
+          "event_kind": "mortality",
+          "region_id": 14,
+          "event_tick": 570,
+          "until_tick": 690
+        }
+      ],
+      "output_relative_path": "trajectories/083f2bef83c22fcc-event-00000570-disable_knowledge_policy"
+    },
+    {
+      "trajectory_id": "3e4e348ba5af189b-event-00000420-ablate_working_memory",
+      "prefix_id": "3e4e348ba5af189b-event-00000420",
+      "source_checkpoint_sha256": "3e4e348ba5af189bd338bf4b00c7fe5b0b3cb6090882cb6578b5b14f8782c7bd",
+      "event_tick": 420,
+      "intervention_tick": 420,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 540,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-mortality-r7-t420",
+          "seed": 10001,
+          "event_kind": "mortality",
+          "region_id": 7,
+          "event_tick": 420,
+          "until_tick": 540
+        }
+      ],
+      "output_relative_path": "trajectories/3e4e348ba5af189b-event-00000420-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "3e4e348ba5af189b-event-00000420-baseline",
+      "prefix_id": "3e4e348ba5af189b-event-00000420",
+      "source_checkpoint_sha256": "3e4e348ba5af189bd338bf4b00c7fe5b0b3cb6090882cb6578b5b14f8782c7bd",
+      "event_tick": 420,
+      "intervention_tick": null,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 540,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-mortality-r7-t420",
+          "seed": 10001,
+          "event_kind": "mortality",
+          "region_id": 7,
+          "event_tick": 420,
+          "until_tick": 540
+        }
+      ],
+      "output_relative_path": "trajectories/3e4e348ba5af189b-event-00000420-baseline"
+    },
+    {
+      "trajectory_id": "3e4e348ba5af189b-event-00000420-bypass_sparse_selection",
+      "prefix_id": "3e4e348ba5af189b-event-00000420",
+      "source_checkpoint_sha256": "3e4e348ba5af189bd338bf4b00c7fe5b0b3cb6090882cb6578b5b14f8782c7bd",
+      "event_tick": 420,
+      "intervention_tick": 420,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 540,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-mortality-r7-t420",
+          "seed": 10001,
+          "event_kind": "mortality",
+          "region_id": 7,
+          "event_tick": 420,
+          "until_tick": 540
+        }
+      ],
+      "output_relative_path": "trajectories/3e4e348ba5af189b-event-00000420-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "3e4e348ba5af189b-event-00000420-disable_knowledge_policy",
+      "prefix_id": "3e4e348ba5af189b-event-00000420",
+      "source_checkpoint_sha256": "3e4e348ba5af189bd338bf4b00c7fe5b0b3cb6090882cb6578b5b14f8782c7bd",
+      "event_tick": 420,
+      "intervention_tick": 420,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 540,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-mortality-r7-t420",
+          "seed": 10001,
+          "event_kind": "mortality",
+          "region_id": 7,
+          "event_tick": 420,
+          "until_tick": 540
+        }
+      ],
+      "output_relative_path": "trajectories/3e4e348ba5af189b-event-00000420-disable_knowledge_policy"
+    },
+    {
+      "trajectory_id": "5568d6737845756a-event-00001320-ablate_working_memory",
+      "prefix_id": "5568d6737845756a-event-00001320",
+      "source_checkpoint_sha256": "5568d6737845756a4b60c48f40b24a34620bc7c5e12489338f8610dc37ef211e",
+      "event_tick": 1320,
+      "intervention_tick": 1320,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 1440,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-scarcity-r13-t1320",
+          "seed": 10002,
+          "event_kind": "scarcity",
+          "region_id": 13,
+          "event_tick": 1320,
+          "until_tick": 1440
+        }
+      ],
+      "output_relative_path": "trajectories/5568d6737845756a-event-00001320-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "5568d6737845756a-event-00001320-baseline",
+      "prefix_id": "5568d6737845756a-event-00001320",
+      "source_checkpoint_sha256": "5568d6737845756a4b60c48f40b24a34620bc7c5e12489338f8610dc37ef211e",
+      "event_tick": 1320,
+      "intervention_tick": null,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 1440,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-scarcity-r13-t1320",
+          "seed": 10002,
+          "event_kind": "scarcity",
+          "region_id": 13,
+          "event_tick": 1320,
+          "until_tick": 1440
+        }
+      ],
+      "output_relative_path": "trajectories/5568d6737845756a-event-00001320-baseline"
+    },
+    {
+      "trajectory_id": "5568d6737845756a-event-00001320-bypass_sparse_selection",
+      "prefix_id": "5568d6737845756a-event-00001320",
+      "source_checkpoint_sha256": "5568d6737845756a4b60c48f40b24a34620bc7c5e12489338f8610dc37ef211e",
+      "event_tick": 1320,
+      "intervention_tick": 1320,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 1440,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-scarcity-r13-t1320",
+          "seed": 10002,
+          "event_kind": "scarcity",
+          "region_id": 13,
+          "event_tick": 1320,
+          "until_tick": 1440
+        }
+      ],
+      "output_relative_path": "trajectories/5568d6737845756a-event-00001320-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "5568d6737845756a-event-00001320-disable_knowledge_policy",
+      "prefix_id": "5568d6737845756a-event-00001320",
+      "source_checkpoint_sha256": "5568d6737845756a4b60c48f40b24a34620bc7c5e12489338f8610dc37ef211e",
+      "event_tick": 1320,
+      "intervention_tick": 1320,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 1440,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-scarcity-r13-t1320",
+          "seed": 10002,
+          "event_kind": "scarcity",
+          "region_id": 13,
+          "event_tick": 1320,
+          "until_tick": 1440
+        }
+      ],
+      "output_relative_path": "trajectories/5568d6737845756a-event-00001320-disable_knowledge_policy"
+    },
+    {
+      "trajectory_id": "81e25fa8724aa14d-event-00001470-ablate_working_memory",
+      "prefix_id": "81e25fa8724aa14d-event-00001470",
+      "source_checkpoint_sha256": "81e25fa8724aa14d86e37eb94b01ed468d916be12ba787e7c42f320ea1d2b841",
+      "event_tick": 1470,
+      "intervention_tick": 1470,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 1590,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-scarcity-r4-t1470",
+          "seed": 10001,
+          "event_kind": "scarcity",
+          "region_id": 4,
+          "event_tick": 1470,
+          "until_tick": 1590
+        }
+      ],
+      "output_relative_path": "trajectories/81e25fa8724aa14d-event-00001470-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "81e25fa8724aa14d-event-00001470-baseline",
+      "prefix_id": "81e25fa8724aa14d-event-00001470",
+      "source_checkpoint_sha256": "81e25fa8724aa14d86e37eb94b01ed468d916be12ba787e7c42f320ea1d2b841",
+      "event_tick": 1470,
+      "intervention_tick": null,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 1590,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-scarcity-r4-t1470",
+          "seed": 10001,
+          "event_kind": "scarcity",
+          "region_id": 4,
+          "event_tick": 1470,
+          "until_tick": 1590
+        }
+      ],
+      "output_relative_path": "trajectories/81e25fa8724aa14d-event-00001470-baseline"
+    },
+    {
+      "trajectory_id": "81e25fa8724aa14d-event-00001470-bypass_sparse_selection",
+      "prefix_id": "81e25fa8724aa14d-event-00001470",
+      "source_checkpoint_sha256": "81e25fa8724aa14d86e37eb94b01ed468d916be12ba787e7c42f320ea1d2b841",
+      "event_tick": 1470,
+      "intervention_tick": 1470,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 1590,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-scarcity-r4-t1470",
+          "seed": 10001,
+          "event_kind": "scarcity",
+          "region_id": 4,
+          "event_tick": 1470,
+          "until_tick": 1590
+        }
+      ],
+      "output_relative_path": "trajectories/81e25fa8724aa14d-event-00001470-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "81e25fa8724aa14d-event-00001470-disable_knowledge_policy",
+      "prefix_id": "81e25fa8724aa14d-event-00001470",
+      "source_checkpoint_sha256": "81e25fa8724aa14d86e37eb94b01ed468d916be12ba787e7c42f320ea1d2b841",
+      "event_tick": 1470,
+      "intervention_tick": 1470,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 1590,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-scarcity-r4-t1470",
+          "seed": 10001,
+          "event_kind": "scarcity",
+          "region_id": 4,
+          "event_tick": 1470,
+          "until_tick": 1590
+        }
+      ],
+      "output_relative_path": "trajectories/81e25fa8724aa14d-event-00001470-disable_knowledge_policy"
+    },
+    {
+      "trajectory_id": "9100c59082823c90-event-00000510-ablate_working_memory",
+      "prefix_id": "9100c59082823c90-event-00000510",
+      "source_checkpoint_sha256": "9100c59082823c90b2b0f540e3816fb86a4aecf93bea688c90c4397b10b7eb4b",
+      "event_tick": 510,
+      "intervention_tick": 510,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 630,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-mortality-r4-t510",
+          "seed": 10001,
+          "event_kind": "mortality",
+          "region_id": 4,
+          "event_tick": 510,
+          "until_tick": 630
+        }
+      ],
+      "output_relative_path": "trajectories/9100c59082823c90-event-00000510-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "9100c59082823c90-event-00000510-baseline",
+      "prefix_id": "9100c59082823c90-event-00000510",
+      "source_checkpoint_sha256": "9100c59082823c90b2b0f540e3816fb86a4aecf93bea688c90c4397b10b7eb4b",
+      "event_tick": 510,
+      "intervention_tick": null,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 630,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-mortality-r4-t510",
+          "seed": 10001,
+          "event_kind": "mortality",
+          "region_id": 4,
+          "event_tick": 510,
+          "until_tick": 630
+        }
+      ],
+      "output_relative_path": "trajectories/9100c59082823c90-event-00000510-baseline"
+    },
+    {
+      "trajectory_id": "9100c59082823c90-event-00000510-bypass_sparse_selection",
+      "prefix_id": "9100c59082823c90-event-00000510",
+      "source_checkpoint_sha256": "9100c59082823c90b2b0f540e3816fb86a4aecf93bea688c90c4397b10b7eb4b",
+      "event_tick": 510,
+      "intervention_tick": 510,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 630,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-mortality-r4-t510",
+          "seed": 10001,
+          "event_kind": "mortality",
+          "region_id": 4,
+          "event_tick": 510,
+          "until_tick": 630
+        }
+      ],
+      "output_relative_path": "trajectories/9100c59082823c90-event-00000510-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "9100c59082823c90-event-00000510-disable_knowledge_policy",
+      "prefix_id": "9100c59082823c90-event-00000510",
+      "source_checkpoint_sha256": "9100c59082823c90b2b0f540e3816fb86a4aecf93bea688c90c4397b10b7eb4b",
+      "event_tick": 510,
+      "intervention_tick": 510,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 630,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-mortality-r4-t510",
+          "seed": 10001,
+          "event_kind": "mortality",
+          "region_id": 4,
+          "event_tick": 510,
+          "until_tick": 630
+        }
+      ],
+      "output_relative_path": "trajectories/9100c59082823c90-event-00000510-disable_knowledge_policy"
+    },
+    {
+      "trajectory_id": "a6c847d4aaf0df44-event-00000420-ablate_working_memory",
+      "prefix_id": "a6c847d4aaf0df44-event-00000420",
+      "source_checkpoint_sha256": "a6c847d4aaf0df444c9ea39a1e75931bffc16ef3737677af9bbe3db21cce90be",
+      "event_tick": 420,
+      "intervention_tick": 420,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 540,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-mortality-r11-t420",
+          "seed": 10002,
+          "event_kind": "mortality",
+          "region_id": 11,
+          "event_tick": 420,
+          "until_tick": 540
+        }
+      ],
+      "output_relative_path": "trajectories/a6c847d4aaf0df44-event-00000420-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "a6c847d4aaf0df44-event-00000420-baseline",
+      "prefix_id": "a6c847d4aaf0df44-event-00000420",
+      "source_checkpoint_sha256": "a6c847d4aaf0df444c9ea39a1e75931bffc16ef3737677af9bbe3db21cce90be",
+      "event_tick": 420,
+      "intervention_tick": null,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 540,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-mortality-r11-t420",
+          "seed": 10002,
+          "event_kind": "mortality",
+          "region_id": 11,
+          "event_tick": 420,
+          "until_tick": 540
+        }
+      ],
+      "output_relative_path": "trajectories/a6c847d4aaf0df44-event-00000420-baseline"
+    },
+    {
+      "trajectory_id": "a6c847d4aaf0df44-event-00000420-bypass_sparse_selection",
+      "prefix_id": "a6c847d4aaf0df44-event-00000420",
+      "source_checkpoint_sha256": "a6c847d4aaf0df444c9ea39a1e75931bffc16ef3737677af9bbe3db21cce90be",
+      "event_tick": 420,
+      "intervention_tick": 420,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 540,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-mortality-r11-t420",
+          "seed": 10002,
+          "event_kind": "mortality",
+          "region_id": 11,
+          "event_tick": 420,
+          "until_tick": 540
+        }
+      ],
+      "output_relative_path": "trajectories/a6c847d4aaf0df44-event-00000420-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "a6c847d4aaf0df44-event-00000420-disable_knowledge_policy",
+      "prefix_id": "a6c847d4aaf0df44-event-00000420",
+      "source_checkpoint_sha256": "a6c847d4aaf0df444c9ea39a1e75931bffc16ef3737677af9bbe3db21cce90be",
+      "event_tick": 420,
+      "intervention_tick": 420,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 540,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-mortality-r11-t420",
+          "seed": 10002,
+          "event_kind": "mortality",
+          "region_id": 11,
+          "event_tick": 420,
+          "until_tick": 540
+        }
+      ],
+      "output_relative_path": "trajectories/a6c847d4aaf0df44-event-00000420-disable_knowledge_policy"
+    },
+    {
+      "trajectory_id": "a876cec8e8d2704c-event-00000450-ablate_working_memory",
+      "prefix_id": "a876cec8e8d2704c-event-00000450",
+      "source_checkpoint_sha256": "a876cec8e8d2704c5b861cb2bddbb2a29cdd4275ad9a2daed4d259252f17b475",
+      "event_tick": 450,
+      "intervention_tick": 450,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 570,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-scarcity-r8-t450",
+          "seed": 10002,
+          "event_kind": "scarcity",
+          "region_id": 8,
+          "event_tick": 450,
+          "until_tick": 570
+        }
+      ],
+      "output_relative_path": "trajectories/a876cec8e8d2704c-event-00000450-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "a876cec8e8d2704c-event-00000450-baseline",
+      "prefix_id": "a876cec8e8d2704c-event-00000450",
+      "source_checkpoint_sha256": "a876cec8e8d2704c5b861cb2bddbb2a29cdd4275ad9a2daed4d259252f17b475",
+      "event_tick": 450,
+      "intervention_tick": null,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 570,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-scarcity-r8-t450",
+          "seed": 10002,
+          "event_kind": "scarcity",
+          "region_id": 8,
+          "event_tick": 450,
+          "until_tick": 570
+        }
+      ],
+      "output_relative_path": "trajectories/a876cec8e8d2704c-event-00000450-baseline"
+    },
+    {
+      "trajectory_id": "a876cec8e8d2704c-event-00000450-bypass_sparse_selection",
+      "prefix_id": "a876cec8e8d2704c-event-00000450",
+      "source_checkpoint_sha256": "a876cec8e8d2704c5b861cb2bddbb2a29cdd4275ad9a2daed4d259252f17b475",
+      "event_tick": 450,
+      "intervention_tick": 450,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 570,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-scarcity-r8-t450",
+          "seed": 10002,
+          "event_kind": "scarcity",
+          "region_id": 8,
+          "event_tick": 450,
+          "until_tick": 570
+        }
+      ],
+      "output_relative_path": "trajectories/a876cec8e8d2704c-event-00000450-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "a876cec8e8d2704c-event-00000450-disable_knowledge_policy",
+      "prefix_id": "a876cec8e8d2704c-event-00000450",
+      "source_checkpoint_sha256": "a876cec8e8d2704c5b861cb2bddbb2a29cdd4275ad9a2daed4d259252f17b475",
+      "event_tick": 450,
+      "intervention_tick": 450,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 570,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-scarcity-r8-t450",
+          "seed": 10002,
+          "event_kind": "scarcity",
+          "region_id": 8,
+          "event_tick": 450,
+          "until_tick": 570
+        }
+      ],
+      "output_relative_path": "trajectories/a876cec8e8d2704c-event-00000450-disable_knowledge_policy"
+    },
+    {
+      "trajectory_id": "ac1feb0b85785a44-event-00001290-ablate_working_memory",
+      "prefix_id": "ac1feb0b85785a44-event-00001290",
+      "source_checkpoint_sha256": "ac1feb0b85785a449aac6321b805b5c53206bd31990cf6fdd1fe91e9137e93f4",
+      "event_tick": 1290,
+      "intervention_tick": 1290,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 1410,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-scarcity-r14-t1290",
+          "seed": 10003,
+          "event_kind": "scarcity",
+          "region_id": 14,
+          "event_tick": 1290,
+          "until_tick": 1410
+        }
+      ],
+      "output_relative_path": "trajectories/ac1feb0b85785a44-event-00001290-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "ac1feb0b85785a44-event-00001290-baseline",
+      "prefix_id": "ac1feb0b85785a44-event-00001290",
+      "source_checkpoint_sha256": "ac1feb0b85785a449aac6321b805b5c53206bd31990cf6fdd1fe91e9137e93f4",
+      "event_tick": 1290,
+      "intervention_tick": null,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 1410,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-scarcity-r14-t1290",
+          "seed": 10003,
+          "event_kind": "scarcity",
+          "region_id": 14,
+          "event_tick": 1290,
+          "until_tick": 1410
+        }
+      ],
+      "output_relative_path": "trajectories/ac1feb0b85785a44-event-00001290-baseline"
+    },
+    {
+      "trajectory_id": "ac1feb0b85785a44-event-00001290-bypass_sparse_selection",
+      "prefix_id": "ac1feb0b85785a44-event-00001290",
+      "source_checkpoint_sha256": "ac1feb0b85785a449aac6321b805b5c53206bd31990cf6fdd1fe91e9137e93f4",
+      "event_tick": 1290,
+      "intervention_tick": 1290,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 1410,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-scarcity-r14-t1290",
+          "seed": 10003,
+          "event_kind": "scarcity",
+          "region_id": 14,
+          "event_tick": 1290,
+          "until_tick": 1410
+        }
+      ],
+      "output_relative_path": "trajectories/ac1feb0b85785a44-event-00001290-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "ac1feb0b85785a44-event-00001290-disable_knowledge_policy",
+      "prefix_id": "ac1feb0b85785a44-event-00001290",
+      "source_checkpoint_sha256": "ac1feb0b85785a449aac6321b805b5c53206bd31990cf6fdd1fe91e9137e93f4",
+      "event_tick": 1290,
+      "intervention_tick": 1290,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 1410,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-scarcity-r14-t1290",
+          "seed": 10003,
+          "event_kind": "scarcity",
+          "region_id": 14,
+          "event_tick": 1290,
+          "until_tick": 1410
+        }
+      ],
+      "output_relative_path": "trajectories/ac1feb0b85785a44-event-00001290-disable_knowledge_policy"
+    },
+    {
+      "trajectory_id": "d3f2f0bb00fc1c7d-event-00000450-ablate_working_memory",
+      "prefix_id": "d3f2f0bb00fc1c7d-event-00000450",
+      "source_checkpoint_sha256": "d3f2f0bb00fc1c7d925cf1c8af3ec8a22ca5eee031c038509bf7def1d15c534c",
+      "event_tick": 450,
+      "intervention_tick": 450,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 570,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-mortality-r2-t450",
+          "seed": 10003,
+          "event_kind": "mortality",
+          "region_id": 2,
+          "event_tick": 450,
+          "until_tick": 570
+        }
+      ],
+      "output_relative_path": "trajectories/d3f2f0bb00fc1c7d-event-00000450-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "d3f2f0bb00fc1c7d-event-00000450-baseline",
+      "prefix_id": "d3f2f0bb00fc1c7d-event-00000450",
+      "source_checkpoint_sha256": "d3f2f0bb00fc1c7d925cf1c8af3ec8a22ca5eee031c038509bf7def1d15c534c",
+      "event_tick": 450,
+      "intervention_tick": null,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 570,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-mortality-r2-t450",
+          "seed": 10003,
+          "event_kind": "mortality",
+          "region_id": 2,
+          "event_tick": 450,
+          "until_tick": 570
+        }
+      ],
+      "output_relative_path": "trajectories/d3f2f0bb00fc1c7d-event-00000450-baseline"
+    },
+    {
+      "trajectory_id": "d3f2f0bb00fc1c7d-event-00000450-bypass_sparse_selection",
+      "prefix_id": "d3f2f0bb00fc1c7d-event-00000450",
+      "source_checkpoint_sha256": "d3f2f0bb00fc1c7d925cf1c8af3ec8a22ca5eee031c038509bf7def1d15c534c",
+      "event_tick": 450,
+      "intervention_tick": 450,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 570,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-mortality-r2-t450",
+          "seed": 10003,
+          "event_kind": "mortality",
+          "region_id": 2,
+          "event_tick": 450,
+          "until_tick": 570
+        }
+      ],
+      "output_relative_path": "trajectories/d3f2f0bb00fc1c7d-event-00000450-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "d3f2f0bb00fc1c7d-event-00000450-disable_knowledge_policy",
+      "prefix_id": "d3f2f0bb00fc1c7d-event-00000450",
+      "source_checkpoint_sha256": "d3f2f0bb00fc1c7d925cf1c8af3ec8a22ca5eee031c038509bf7def1d15c534c",
+      "event_tick": 450,
+      "intervention_tick": 450,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 570,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-mortality-r2-t450",
+          "seed": 10003,
+          "event_kind": "mortality",
+          "region_id": 2,
+          "event_tick": 450,
+          "until_tick": 570
+        }
+      ],
+      "output_relative_path": "trajectories/d3f2f0bb00fc1c7d-event-00000450-disable_knowledge_policy"
+    },
+    {
+      "trajectory_id": "d495cbfc6165193f-event-00001080-ablate_working_memory",
+      "prefix_id": "d495cbfc6165193f-event-00001080",
+      "source_checkpoint_sha256": "d495cbfc6165193f901a08f6d0b675e36fc24073eadc8d4462a169e105902a20",
+      "event_tick": 1080,
+      "intervention_tick": 1080,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 1200,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-scarcity-r13-t1080",
+          "seed": 10003,
+          "event_kind": "scarcity",
+          "region_id": 13,
+          "event_tick": 1080,
+          "until_tick": 1200
+        }
+      ],
+      "output_relative_path": "trajectories/d495cbfc6165193f-event-00001080-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "d495cbfc6165193f-event-00001080-baseline",
+      "prefix_id": "d495cbfc6165193f-event-00001080",
+      "source_checkpoint_sha256": "d495cbfc6165193f901a08f6d0b675e36fc24073eadc8d4462a169e105902a20",
+      "event_tick": 1080,
+      "intervention_tick": null,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 1200,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-scarcity-r13-t1080",
+          "seed": 10003,
+          "event_kind": "scarcity",
+          "region_id": 13,
+          "event_tick": 1080,
+          "until_tick": 1200
+        }
+      ],
+      "output_relative_path": "trajectories/d495cbfc6165193f-event-00001080-baseline"
+    },
+    {
+      "trajectory_id": "d495cbfc6165193f-event-00001080-bypass_sparse_selection",
+      "prefix_id": "d495cbfc6165193f-event-00001080",
+      "source_checkpoint_sha256": "d495cbfc6165193f901a08f6d0b675e36fc24073eadc8d4462a169e105902a20",
+      "event_tick": 1080,
+      "intervention_tick": 1080,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 1200,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-scarcity-r13-t1080",
+          "seed": 10003,
+          "event_kind": "scarcity",
+          "region_id": 13,
+          "event_tick": 1080,
+          "until_tick": 1200
+        }
+      ],
+      "output_relative_path": "trajectories/d495cbfc6165193f-event-00001080-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "d495cbfc6165193f-event-00001080-disable_knowledge_policy",
+      "prefix_id": "d495cbfc6165193f-event-00001080",
+      "source_checkpoint_sha256": "d495cbfc6165193f901a08f6d0b675e36fc24073eadc8d4462a169e105902a20",
+      "event_tick": 1080,
+      "intervention_tick": 1080,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 1200,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-scarcity-r13-t1080",
+          "seed": 10003,
+          "event_kind": "scarcity",
+          "region_id": 13,
+          "event_tick": 1080,
+          "until_tick": 1200
+        }
+      ],
+      "output_relative_path": "trajectories/d495cbfc6165193f-event-00001080-disable_knowledge_policy"
+    },
+    {
+      "trajectory_id": "e8dba08d19beadb5-event-00000390-ablate_working_memory",
+      "prefix_id": "e8dba08d19beadb5-event-00000390",
+      "source_checkpoint_sha256": "e8dba08d19beadb5dcfacf4ab5cc6c8e80a2a1af74b04547b1578d166304a75a",
+      "event_tick": 390,
+      "intervention_tick": 390,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 510,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-mortality-r7-t390",
+          "seed": 10003,
+          "event_kind": "mortality",
+          "region_id": 7,
+          "event_tick": 390,
+          "until_tick": 510
+        }
+      ],
+      "output_relative_path": "trajectories/e8dba08d19beadb5-event-00000390-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "e8dba08d19beadb5-event-00000390-baseline",
+      "prefix_id": "e8dba08d19beadb5-event-00000390",
+      "source_checkpoint_sha256": "e8dba08d19beadb5dcfacf4ab5cc6c8e80a2a1af74b04547b1578d166304a75a",
+      "event_tick": 390,
+      "intervention_tick": null,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 510,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-mortality-r7-t390",
+          "seed": 10003,
+          "event_kind": "mortality",
+          "region_id": 7,
+          "event_tick": 390,
+          "until_tick": 510
+        }
+      ],
+      "output_relative_path": "trajectories/e8dba08d19beadb5-event-00000390-baseline"
+    },
+    {
+      "trajectory_id": "e8dba08d19beadb5-event-00000390-bypass_sparse_selection",
+      "prefix_id": "e8dba08d19beadb5-event-00000390",
+      "source_checkpoint_sha256": "e8dba08d19beadb5dcfacf4ab5cc6c8e80a2a1af74b04547b1578d166304a75a",
+      "event_tick": 390,
+      "intervention_tick": 390,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 510,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-mortality-r7-t390",
+          "seed": 10003,
+          "event_kind": "mortality",
+          "region_id": 7,
+          "event_tick": 390,
+          "until_tick": 510
+        }
+      ],
+      "output_relative_path": "trajectories/e8dba08d19beadb5-event-00000390-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "e8dba08d19beadb5-event-00000390-disable_knowledge_policy",
+      "prefix_id": "e8dba08d19beadb5-event-00000390",
+      "source_checkpoint_sha256": "e8dba08d19beadb5dcfacf4ab5cc6c8e80a2a1af74b04547b1578d166304a75a",
+      "event_tick": 390,
+      "intervention_tick": 390,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 510,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-mortality-r7-t390",
+          "seed": 10003,
+          "event_kind": "mortality",
+          "region_id": 7,
+          "event_tick": 390,
+          "until_tick": 510
+        }
+      ],
+      "output_relative_path": "trajectories/e8dba08d19beadb5-event-00000390-disable_knowledge_policy"
+    },
+    {
+      "trajectory_id": "f4c003cc3c426307-event-00001410-ablate_working_memory",
+      "prefix_id": "f4c003cc3c426307-event-00001410",
+      "source_checkpoint_sha256": "f4c003cc3c426307cc0decf78d2f22a15421d76584e6506047767463546f0256",
+      "event_tick": 1410,
+      "intervention_tick": 1410,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 1530,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-scarcity-r8-t1410",
+          "seed": 10001,
+          "event_kind": "scarcity",
+          "region_id": 8,
+          "event_tick": 1410,
+          "until_tick": 1530
+        }
+      ],
+      "output_relative_path": "trajectories/f4c003cc3c426307-event-00001410-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "f4c003cc3c426307-event-00001410-baseline",
+      "prefix_id": "f4c003cc3c426307-event-00001410",
+      "source_checkpoint_sha256": "f4c003cc3c426307cc0decf78d2f22a15421d76584e6506047767463546f0256",
+      "event_tick": 1410,
+      "intervention_tick": null,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 1530,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-scarcity-r8-t1410",
+          "seed": 10001,
+          "event_kind": "scarcity",
+          "region_id": 8,
+          "event_tick": 1410,
+          "until_tick": 1530
+        }
+      ],
+      "output_relative_path": "trajectories/f4c003cc3c426307-event-00001410-baseline"
+    },
+    {
+      "trajectory_id": "f4c003cc3c426307-event-00001410-bypass_sparse_selection",
+      "prefix_id": "f4c003cc3c426307-event-00001410",
+      "source_checkpoint_sha256": "f4c003cc3c426307cc0decf78d2f22a15421d76584e6506047767463546f0256",
+      "event_tick": 1410,
+      "intervention_tick": 1410,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 1530,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-scarcity-r8-t1410",
+          "seed": 10001,
+          "event_kind": "scarcity",
+          "region_id": 8,
+          "event_tick": 1410,
+          "until_tick": 1530
+        }
+      ],
+      "output_relative_path": "trajectories/f4c003cc3c426307-event-00001410-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "f4c003cc3c426307-event-00001410-disable_knowledge_policy",
+      "prefix_id": "f4c003cc3c426307-event-00001410",
+      "source_checkpoint_sha256": "f4c003cc3c426307cc0decf78d2f22a15421d76584e6506047767463546f0256",
+      "event_tick": 1410,
+      "intervention_tick": 1410,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 1530,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-scarcity-r8-t1410",
+          "seed": 10001,
+          "event_kind": "scarcity",
+          "region_id": 8,
+          "event_tick": 1410,
+          "until_tick": 1530
+        }
+      ],
+      "output_relative_path": "trajectories/f4c003cc3c426307-event-00001410-disable_knowledge_policy"
+    }
+  ],
+  "pairing_boundary": "Each prefix is replayed once from the signed source checkpoint to the nominal event tick. Baseline and interventions then load the same event checkpoint; common-boundary and cohort snapshots are captured before the intervention.",
+  "execution_plan_sha256": "f2839146808ab81467ecbc6c5ae69dacc788fafd5285588db518eac9de0301cc"
+}

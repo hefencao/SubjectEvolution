@@ -27,18 +27,23 @@ from .long_run_analysis import load_progress
 from .natural_event_matrix import load_manifest, validate_manifest
 
 
-EXECUTION_PLAN_SCHEMA = "natural-event-execution-plan-v3"
+EXECUTION_PLAN_SCHEMA = "natural-event-execution-plan-v4"
 LEGACY_EXECUTION_PLAN_SCHEMAS = {
     "natural-event-execution-plan-v1",
     "natural-event-execution-plan-v2",
+    "natural-event-execution-plan-v3",
 }
 PREFLIGHT_SCHEMA = "natural-event-execution-preflight-v1"
-TRAJECTORY_MARKER_SCHEMA = "natural-event-trajectory-run-v3"
-LEGACY_TRAJECTORY_MARKER_SCHEMA = "natural-event-trajectory-run-v2"
-RESULT_SCHEMA = "natural-event-paired-intervention-results-v4"
-AGGREGATION_SCHEMA = "natural-event-paired-delta-aggregation-v3"
+TRAJECTORY_MARKER_SCHEMA = "natural-event-trajectory-run-v4"
+LEGACY_TRAJECTORY_MARKER_SCHEMAS = {
+    "natural-event-trajectory-run-v2",
+    "natural-event-trajectory-run-v3",
+}
+RESULT_SCHEMA = "natural-event-paired-intervention-results-v5"
+AGGREGATION_SCHEMA = "natural-event-paired-delta-aggregation-v4"
 COMMON_BOUNDARY_AUDIT_SCHEMA = "checkpoint-frozen-stable-entity-boundary-v1"
-EVENT_COHORT_AUDIT_SCHEMA = "event-region-endpoint-cohort-decomposition-v1"
+EVENT_COHORT_AUDIT_SCHEMA = "event-region-endpoint-cohort-decomposition-v2"
+LEGACY_EVENT_COHORT_AUDIT_SCHEMA = "event-region-endpoint-cohort-decomposition-v1"
 BASELINE = "baseline"
 DELTA_KEYS = (
     "final_alive_region",
@@ -311,6 +316,7 @@ def build_execution_plan(
     payload: dict[str, Any] = {
         "schema": EXECUTION_PLAN_SCHEMA,
         "manifest_schema": str(manifest["schema"]),
+        "intervention_timing": "checkpoint-immediate-v1",
         "manifest_sha256": str(manifest["plan_sha256"]),
         "path_prefixes": [
             {"from": str(old), "to": str(new)} for old, new in path_prefixes
@@ -473,7 +479,7 @@ def _load_resumable_trajectory(
         return None
     marker = json.loads(marker_path.read_text(encoding="utf-8"))
     marker_schema = marker.get("schema")
-    if marker_schema not in {LEGACY_TRAJECTORY_MARKER_SCHEMA, TRAJECTORY_MARKER_SCHEMA}:
+    if marker_schema not in (LEGACY_TRAJECTORY_MARKER_SCHEMAS | {TRAJECTORY_MARKER_SCHEMA}):
         return None
     if str(marker.get("manifest_sha256")) != manifest_sha256:
         return None
@@ -519,6 +525,7 @@ def _write_trajectory_marker(
     marker = {
         "schema": TRAJECTORY_MARKER_SCHEMA,
         "manifest_sha256": str(plan["manifest_sha256"]),
+        "intervention_timing": str(plan.get("intervention_timing", "checkpoint-immediate-v1")),
         "execution_plan_sha256": str(plan["execution_plan_sha256"]),
         "trajectory_id": str(trajectory["trajectory_id"]),
         "checkpoint_sha256": str(trajectory["checkpoint_sha256"]),
@@ -658,13 +665,13 @@ def audit_outcomes(report: dict[str, Any]) -> dict[str, Any]:
         if branch.get("eligible")
     ]
     event_cohort_observed = bool(cohort_summaries) and all(
-        summary.get("event_cohort_schema") == EVENT_COHORT_AUDIT_SCHEMA
+        summary.get("event_cohort_schema") in {EVENT_COHORT_AUDIT_SCHEMA, LEGACY_EVENT_COHORT_AUDIT_SCHEMA}
         for summary in cohort_summaries
     )
     event_cohort_balance_valid = bool(cohort_summaries) and all(
         int(summary.get("endpoint_population_balance_residual", 1)) == 0
         for summary in cohort_summaries
-        if summary.get("event_cohort_schema") == EVENT_COHORT_AUDIT_SCHEMA
+        if summary.get("event_cohort_schema") in {EVENT_COHORT_AUDIT_SCHEMA, LEGACY_EVENT_COHORT_AUDIT_SCHEMA}
     ) and event_cohort_observed
 
     repeated: list[dict[str, Any]] = []
@@ -981,6 +988,7 @@ def execute_plan(
     report = {
         "schema": RESULT_SCHEMA,
         "manifest_sha256": str(plan["manifest_sha256"]),
+        "intervention_timing": str(plan.get("intervention_timing", "checkpoint-immediate-v1")),
         "execution_plan_sha256": str(plan["execution_plan_sha256"]),
         "backend": backend,
         "gpu_semantics_mode": gpu_semantics_mode,

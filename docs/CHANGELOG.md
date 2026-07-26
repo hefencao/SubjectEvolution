@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.28.0
+
+### Intervention timing audit
+
+- 审计用户提供的 v0.27 cohort 结果：72/72 pairs 的干预均早于名义 event tick，42 pairs 提前 30 ticks、30 pairs 提前 60 ticks。
+- 48/72 pairs 在 event tick 的区域 alive 已与 baseline 不同；旧 cohort 没有 identity hashes，其余 pairs 也不能证明实体集合相同。
+- 旧结果保留为 `checkpoint-immediate-v1` 估计量，不再解释为共同事件 cohort 的 post-event 效应。
+
+### Event-timed execution
+
+- 新增 `subject_evolution.natural_event_timed_execution` 和 `natural-event-timed-execution-plan-v1`。
+- 每个 source checkpoint/event tick 只重放一次 shared prefix，并保存 event checkpoint file/state SHA-256。
+- baseline/interventions 从同一个 event checkpoint 开始，common boundary 与 cohort 在干预前捕获。
+- 不同 event tick 不再因 source checkpoint 相同而错误共享已干预 trajectory。
+- 新增 prefix/trajectory markers、hash preflight、断点续跑和 signed plan 模式。
+
+### Cohort identity and synthesis
+
+- event cohort 升级为 `event-region-endpoint-cohort-decomposition-v2`，新增 global/region stable-ID SHA-256。
+- 每个 pair 输出 `shared-event-checkpoint-pairing-v1`，要求 alive count 与两个 identity hash 全部一致。
+- result synthesis 升级为 v2，拒绝混合 checkpoint-immediate 与 event-timed 估计量。
+- 自动生成 18/6/12 shared prefixes 与 72/24/48 post-event trajectories 的三份 event-timed plans。
+- checkpoint-immediate execution 升级为 plan v4、marker v4、results v5，并显式写入 timing mode。
+
+### Compatibility and packaging
+
+- 默认世界动力学不变；v0.27→v0.28 CPU/reference 与 checkpoint 恢复兼容报告见 `docs/v0.28/`。
+- 全量测试 `133 passed, 1 skipped`；新增真实 CPU event-timed smoke pairing 验证。
+- `pyproject.toml` 继续无显式 `wheel`；发行包继续排除 `docs/archive`。
+
 ## 0.27.0
 
 ### Stable-ID event cohort diagnostics

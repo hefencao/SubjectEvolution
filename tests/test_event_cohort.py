@@ -41,6 +41,8 @@ def test_event_cohort_endpoint_decomposition_is_exact() -> None:
     summary = tracker.summaries()["a"]
     assert summary["event_cohort_schema"] == SCHEMA
     assert summary["event_alive_region"] == 3
+    assert len(summary["event_global_ids_sha256"]) == 64
+    assert len(summary["event_region_ids_sha256"]) == 64
     assert summary["final_alive_region_from_cohort_audit"] == 3
     assert summary["final_event_cohort_retained_region"] == 1
     assert summary["final_event_cohort_survived_outside_region"] == 1

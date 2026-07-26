@@ -17,6 +17,7 @@ from typing import Any, Iterable
 
 from .natural_event_execution import (
     EVENT_COHORT_AUDIT_SCHEMA,
+    LEGACY_EVENT_COHORT_AUDIT_SCHEMA,
     RESULT_SCHEMA,
     aggregate_results,
     audit_outcomes,
@@ -25,13 +26,21 @@ from .natural_event_execution import (
     render_execution_plan_markdown,
 )
 from .natural_event_matrix import load_manifest
+from .natural_event_timed_execution import (
+    INTERVENTION_TIMING as EVENT_TIMED_INTERVENTION_TIMING,
+    RESULT_SCHEMA as TIMED_RESULT_SCHEMA,
+    build_timed_execution_plan,
+    render_timed_plan_markdown,
+)
 
 
-SYNTHESIS_SCHEMA = "natural-event-result-synthesis-v1"
+SYNTHESIS_SCHEMA = "natural-event-result-synthesis-v2"
 SUPPORTED_RESULT_SCHEMAS = {
     "natural-event-paired-intervention-results-v2",
     "natural-event-paired-intervention-results-v3",
+    "natural-event-paired-intervention-results-v4",
     RESULT_SCHEMA,
+    TIMED_RESULT_SCHEMA,
 }
 CORE_WORLD_KEYS = (
     "final_alive_region",
@@ -63,8 +72,18 @@ def load_result(path: str | Path) -> dict[str, Any]:
 
 
 def _summary_quality(summary: dict[str, Any]) -> tuple[int, int]:
+    cohort_schema = summary.get("event_cohort_schema")
+    cohort_score = (
+        120
+        if cohort_schema == EVENT_COHORT_AUDIT_SCHEMA
+        else 100
+        if cohort_schema == LEGACY_EVENT_COHORT_AUDIT_SCHEMA
+        else 0
+    )
+    identity_score = 20 if summary.get("event_region_ids_sha256") else 0
     return (
-        int(summary.get("event_cohort_schema") == EVENT_COHORT_AUDIT_SCHEMA) * 100
+        cohort_score
+        + identity_score
         + int(bool(summary.get("reference_boundary_available"))) * 10,
         len(summary),
     )
@@ -200,7 +219,7 @@ def _diagnostic_coverage(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
             bucket = buckets[(event, name)]
             bucket["pairs"] += 1
             bucket["common_boundary"] += int(bool(summary.get("reference_boundary_available")))
-            bucket["event_cohort"] += int(summary.get("event_cohort_schema") == EVENT_COHORT_AUDIT_SCHEMA)
+            bucket["event_cohort"] += int(summary.get("event_cohort_schema") in {EVENT_COHORT_AUDIT_SCHEMA, LEGACY_EVENT_COHORT_AUDIT_SCHEMA})
     return [
         {"event_kind": event, "intervention": name, **counts}
         for (event, name), counts in sorted(buckets.items())
@@ -243,6 +262,100 @@ def _cross_event_replication(aggregation: dict[str, Any]) -> list[dict[str, Any]
     return result
 
 
+def _intervention_timing_audit(
+    reports: Iterable[dict[str, Any]], results: list[dict[str, Any]]
+) -> dict[str, Any]:
+    report_list = list(reports)
+    modes = {
+        str(report.get("intervention_timing") or "checkpoint-immediate-v1")
+        for report in report_list
+    }
+    if len(modes) != 1:
+        raise ValueError(
+            "natural-event reports with different intervention timing estimands "
+            "must not be pooled"
+        )
+    mode = next(iter(modes))
+    pair_count = 0
+    early_pair_count = 0
+    event_alive_mismatch_count = 0
+    identity_proven_count = 0
+    identity_mismatch_count = 0
+    examples: list[dict[str, Any]] = []
+    for item in results:
+        anchor = item.get("anchor", {})
+        event_tick = int(anchor.get("event_tick", -1))
+        baseline = item.get("baseline_region_summary", {})
+        for branch in item.get("branches", []):
+            if not branch.get("eligible"):
+                continue
+            pair_count += 1
+            history_ticks = [
+                int(entry["tick"])
+                for entry in branch.get("intervention_history", [])
+                if entry.get("tick") is not None
+            ]
+            applied_tick = min(history_ticks) if history_ticks else None
+            early = applied_tick is not None and applied_tick < event_tick
+            early_pair_count += int(early)
+            summary = branch.get("region_summary", {})
+            alive_equal = baseline.get("event_alive_region") == summary.get("event_alive_region")
+            if baseline.get("event_alive_region") is not None and not alive_equal:
+                event_alive_mismatch_count += 1
+            global_left = baseline.get("event_global_ids_sha256")
+            global_right = summary.get("event_global_ids_sha256")
+            region_left = baseline.get("event_region_ids_sha256")
+            region_right = summary.get("event_region_ids_sha256")
+            identity_available = all(
+                value is not None
+                for value in (global_left, global_right, region_left, region_right)
+            )
+            identity_equal = bool(
+                identity_available
+                and global_left == global_right
+                and region_left == region_right
+            )
+            identity_proven_count += int(identity_equal)
+            identity_mismatch_count += int(identity_available and not identity_equal)
+            if (early or not alive_equal or (identity_available and not identity_equal)) and len(examples) < 12:
+                examples.append(
+                    {
+                        "anchor_id": str(anchor.get("anchor_id")),
+                        "intervention": str(branch.get("intervention")),
+                        "event_tick": event_tick,
+                        "intervention_tick": applied_tick,
+                        "event_alive_baseline": baseline.get("event_alive_region"),
+                        "event_alive_intervention": summary.get("event_alive_region"),
+                        "event_identity_available": identity_available,
+                        "event_identity_equal": identity_equal,
+                    }
+                )
+    event_timed = mode == EVENT_TIMED_INTERVENTION_TIMING
+    valid = bool(
+        event_timed
+        and pair_count > 0
+        and early_pair_count == 0
+        and identity_proven_count == pair_count
+        and identity_mismatch_count == 0
+    )
+    return {
+        "schema": "natural-event-intervention-timing-audit-v1",
+        "intervention_timing": mode,
+        "pair_count": pair_count,
+        "intervention_before_event_pair_count": early_pair_count,
+        "event_alive_mismatch_pair_count": event_alive_mismatch_count,
+        "event_identity_proven_pair_count": identity_proven_count,
+        "event_identity_mismatch_pair_count": identity_mismatch_count,
+        "common_pre_event_identity_proven": valid,
+        "examples": examples,
+        "interpretation_boundary": (
+            "Checkpoint-immediate branches may change the nominal event exposure and "
+            "event cohort before the selected event tick. Event-timed branches require "
+            "the same stable-ID global and regional cohort hashes before intervention."
+        ),
+    }
+
+
 def build_synthesis(
     reports: Iterable[dict[str, Any]],
     *,
@@ -253,6 +366,7 @@ def build_synthesis(
     manifest_sha = str(report_list[0]["manifest_sha256"])
     if manifest is not None and str(manifest.get("plan_sha256")) != manifest_sha:
         raise ValueError("manifest SHA-256 does not match synthesized results")
+    timing_audit = _intervention_timing_audit(report_list, merged)
     aggregation = aggregate_results(merged)
     diagnostic_coverage = _diagnostic_coverage(merged)
     synthetic_report = {
@@ -321,12 +435,41 @@ def build_synthesis(
     )
     findings.append(
         {
-            "id": "REGIONAL-DEMOGRAPHIC-MECHANISM",
-            "status": "endpoint-cohort-rerun-required" if not outcome["event_cohort"]["observed"] else "decomposed",
-            "evidence": {"event_cohort_observed": outcome["event_cohort"]["observed"]},
+            "id": "PRE-EVENT-PAIRING",
+            "status": (
+                "common-event-state-proven"
+                if timing_audit["common_pre_event_identity_proven"]
+                else "event-timed-rerun-required"
+            ),
+            "evidence": timing_audit,
             "interpretation": (
-                "Regional alive cannot identify survival, migration, or post-event birth components "
-                "until stable-ID event-cohort endpoint decomposition is present."
+                "A branch-specific endpoint cohort is not a paired event cohort when the "
+                "intervention began at the prior checkpoint. Post-event mechanism claims "
+                "require one shared event state and identical stable-ID cohort hashes."
+            ),
+        }
+    )
+    findings.append(
+        {
+            "id": "REGIONAL-DEMOGRAPHIC-MECHANISM",
+            "status": (
+                "decomposed-on-common-event-cohort"
+                if outcome["event_cohort"]["observed"]
+                and timing_audit["common_pre_event_identity_proven"]
+                else "branch-specific-cohorts-not-paired"
+                if outcome["event_cohort"]["observed"]
+                else "endpoint-cohort-rerun-required"
+            ),
+            "evidence": {
+                "event_cohort_observed": outcome["event_cohort"]["observed"],
+                "common_pre_event_identity_proven": timing_audit[
+                    "common_pre_event_identity_proven"
+                ],
+            },
+            "interpretation": (
+                "Endpoint identity accounting separates retained, absent, migrated, and "
+                "post-event-born entities, but causal branch deltas require the same event "
+                "cohort in baseline and intervention."
             ),
         }
     )
@@ -361,6 +504,7 @@ def build_synthesis(
         "diagnostic_coverage": diagnostic_coverage,
         "aggregation": aggregation,
         "outcome_audit": outcome,
+        "intervention_timing_audit": timing_audit,
         "cross_event_replication": cross_event,
         "findings": findings,
         "result_provenance": provenance,
@@ -371,7 +515,7 @@ def build_synthesis(
             "Cross-event agreement remains conditional on naturally occurring, non-randomized events."
         ),
     }
-    if manifest is not None and not outcome["event_cohort"]["observed"]:
+    if manifest is not None and not timing_audit["common_pre_event_identity_proven"]:
         manifest_anchors = list(manifest.get("anchors", []))
 
         def add_followup(
@@ -396,7 +540,7 @@ def build_synthesis(
                 for entry in anchor.get("interventions", [])
             ):
                 return
-            synthesis["followup_plans"][name] = build_execution_plan(
+            synthesis["followup_plans"][name] = build_timed_execution_plan(
                 manifest,
                 event_kinds=event_kinds,
                 interventions=interventions,
@@ -405,17 +549,17 @@ def build_synthesis(
             )
 
         add_followup(
-            "primary_event_cohort_rerun",
+            "event_timed_primary",
             event_kinds=None,
             interventions=PRIMARY_INTERVENTIONS,
         )
         add_followup(
-            "crowding_knowledge_cohort_rerun",
+            "event_timed_crowding_knowledge",
             event_kinds=("crowding",),
             interventions=REMAINING_KNOWLEDGE_INTERVENTIONS,
         )
         add_followup(
-            "remaining_event_knowledge_cohort_rerun",
+            "event_timed_remaining_event_knowledge",
             event_kinds=("mortality", "scarcity"),
             interventions=REMAINING_KNOWLEDGE_INTERVENTIONS,
         )
@@ -434,6 +578,8 @@ def render_markdown(synthesis: dict[str, Any]) -> str:
         f"- Merged eligible pairs: {synthesis['merged_pair_count']}",
         f"- Manifest coverage complete: {coverage['complete']}",
         f"- Event cohort diagnostics observed: {synthesis['outcome_audit']['event_cohort']['observed']}",
+        f"- Intervention timing: `{synthesis['intervention_timing_audit']['intervention_timing']}`",
+        f"- Common pre-event identity proven: {synthesis['intervention_timing_audit']['common_pre_event_identity_proven']}",
         "",
         "## Findings",
         "",
@@ -482,7 +628,8 @@ def render_markdown(synthesis: dict[str, Any]) -> str:
         for name, plan in synthesis["followup_plans"].items():
             lines.append(
                 f"- `{name}`: {plan['selected_anchor_count']} anchors, "
-                f"{plan['trajectory_count']} shared trajectories."
+                f"{plan['prefix_count']} shared prefixes and "
+                f"{plan['trajectory_count']} post-event trajectories."
             )
     lines.extend(["", "## Interpretation boundary", "", synthesis["interpretation_boundary"], ""])
     return "\n".join(lines)
@@ -498,8 +645,9 @@ def write_outputs(synthesis: dict[str, Any], output_dir: str | Path) -> None:
             "schema": plan["schema"],
             "execution_plan_sha256": plan["execution_plan_sha256"],
             "selected_anchor_count": plan["selected_anchor_count"],
+            "prefix_count": plan.get("prefix_count"),
             "trajectory_count": plan["trajectory_count"],
-            "deduplicated_branch_count": plan["deduplicated_branch_count"],
+            "deduplicated_branch_count": plan.get("deduplicated_branch_count", 0),
         }
         for name, plan in plans.items()
     }
@@ -513,8 +661,13 @@ def write_outputs(synthesis: dict[str, Any], output_dir: str | Path) -> None:
         (root / f"{name}_execution_plan.json").write_text(
             json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8"
         )
+        renderer = (
+            render_timed_plan_markdown
+            if plan.get("intervention_timing") == EVENT_TIMED_INTERVENTION_TIMING
+            else render_execution_plan_markdown
+        )
         (root / f"{name}_execution_plan.md").write_text(
-            render_execution_plan_markdown(plan), encoding="utf-8"
+            renderer(plan), encoding="utf-8"
         )
 
 
