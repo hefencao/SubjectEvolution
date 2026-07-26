@@ -707,6 +707,38 @@ bool button(Rectangle rect, const std::string& label, bool enabled = true, bool 
     return !g_launcher_input_blocked && enabled && hovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
 }
 
+enum class ActionIcon {
+    NewFile,
+    SaveFile,
+};
+
+bool icon_button(Rectangle rect, ActionIcon icon, bool enabled = true, bool active = false) {
+    const Vector2 mouse = GetMousePosition();
+    const bool hovered = !g_launcher_input_blocked && enabled && CheckCollisionPointRec(mouse, rect);
+    DrawRectangleRec(
+        rect,
+        !enabled ? Color{36, 42, 48, 255}
+                 : active ? Color{78, 67, 30, 255}
+                          : hovered ? Color{55, 68, 80, 255} : Color{38, 47, 56, 255}
+    );
+    DrawRectangleLinesEx(rect, 1.0F, active ? Fade(ORANGE, 0.85F) : Fade(SKYBLUE, 0.30F));
+    const Color stroke = enabled ? RAYWHITE : GRAY;
+    const float cx = rect.x + rect.width * 0.5F;
+    const float cy = rect.y + rect.height * 0.5F;
+    if (icon == ActionIcon::NewFile) {
+        DrawLine(static_cast<int>(cx - 6.0F), static_cast<int>(cy),
+                 static_cast<int>(cx + 6.0F), static_cast<int>(cy), stroke);
+        DrawLine(static_cast<int>(cx), static_cast<int>(cy - 6.0F),
+                 static_cast<int>(cx), static_cast<int>(cy + 6.0F), stroke);
+    } else {
+        Rectangle disk{cx - 7.0F, cy - 8.0F, 14.0F, 16.0F};
+        DrawRectangleLinesEx(disk, 1.0F, stroke);
+        DrawRectangleLinesEx(Rectangle{disk.x + 3.0F, disk.y + 2.0F, 8.0F, 5.0F}, 1.0F, stroke);
+        DrawRectangleLinesEx(Rectangle{disk.x + 3.0F, disk.y + 10.0F, 8.0F, 4.0F}, 1.0F, stroke);
+    }
+    return !g_launcher_input_blocked && enabled && hovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+}
+
 struct TextEditState {
     std::string active;
 };
@@ -854,7 +886,6 @@ struct LauncherState {
     bool overwrite_partial = false;
     bool extended_open = false;
     bool command_open = false;
-    bool permanent_open = false;
     bool settings_open = false;
     std::string search;
     std::string scalar_search;
@@ -945,6 +976,7 @@ void reset_config_state(
     state.extended_scroll = 0;
     state.selected_scalar = 0;
     state.scalar_edit.clear();
+    state.replace_armed = false;
     state.save_as_name = selected_path.stem().string() + "_modified.json";
     if (const auto seed = scalar_by_path(scalars, {"run.seed", "seed"}); seed.has_value()) {
         state.seed_text = seed->value;
@@ -1057,10 +1089,21 @@ LauncherLayout make_launcher_layout(int width, int height) {
     const float gap = 18.0F;
     const float content_height = std::max(430.0F, static_cast<float>(height) - header_bottom - footer_height - margin);
     const float available = static_cast<float>(width) - margin * 2.0F - gap;
-    const float left = std::clamp(available * 0.36F, 370.0F, 600.0F);
+    const float left = std::clamp(available * 0.38F, 390.0F, 620.0F);
     LauncherLayout layout;
     layout.config_panel = {margin, header_bottom, left, content_height};
-    layout.list_view = {margin + 12.0F, header_bottom + 104.0F, left - 24.0F, content_height - 118.0F};
+    layout.search_field = {margin + 12.0F, header_bottom + 50.0F, left - 24.0F, 32.0F};
+    const float filter_gap = 6.0F;
+    const float filter_width = (layout.search_field.width - filter_gap * 2.0F) / 3.0F;
+    layout.sort_button = {layout.search_field.x, layout.search_field.y + 40.0F, filter_width, 30.0F};
+    layout.tag_button = {layout.sort_button.x + filter_width + filter_gap, layout.sort_button.y, filter_width, 30.0F};
+    layout.favorite_button = {layout.tag_button.x + filter_width + filter_gap, layout.tag_button.y, filter_width, 30.0F};
+    layout.list_view = {
+        margin + 12.0F,
+        layout.favorite_button.y + layout.favorite_button.height + 12.0F,
+        left - 24.0F,
+        content_height - (layout.favorite_button.y + layout.favorite_button.height + 26.0F - header_bottom)
+    };
     layout.details_panel = {margin + left + gap, header_bottom, available - left, content_height};
     layout.details_view = {layout.details_panel.x + 10.0F, layout.details_panel.y + 10.0F, layout.details_panel.width - 20.0F, layout.details_panel.height - 20.0F};
     layout.refresh_button = {layout.config_panel.x + layout.config_panel.width - 118.0F, layout.config_panel.y + 10.0F, 104.0F, 32.0F};
@@ -1564,27 +1607,22 @@ std::optional<LaunchRequest> show_launcher(
                   static_cast<int>(layout.config_panel.y + 16.0F), 14, LIGHTGRAY);
         if (button(layout.refresh_button, "Refresh [R]")) refresh();
 
-        Rectangle search_rect{layout.config_panel.x + 12.0F, layout.config_panel.y + 50.0F,
-                              layout.config_panel.width - 24.0F, 32.0F};
-        if (text_field("config_search", search_rect, state.search, state.text_edit, "Search configurations...")) state_dirty = true;
+        if (text_field("config_search", layout.search_field, state.search, state.text_edit, "Search configurations...")) state_dirty = true;
         persistent.config_search = state.search;
-        Rectangle sort_rect{search_rect.x, search_rect.y + 38.0F, 132.0F, 30.0F};
-        if (button(sort_rect, std::string("Sort: ") + eco::preferences::sort_mode_name(persistent.sort_mode))) {
+        if (button(layout.sort_button, std::string("Sort: ") + eco::preferences::sort_mode_name(persistent.sort_mode))) {
             persistent.sort_mode = eco::preferences::next_sort_mode(persistent.sort_mode);
             eco::preferences::sort_configs(configs, persistent.sort_mode);
             preserve_selection(config_name);
             loaded_config.clear(); state_dirty = true;
         }
         const std::array<std::string, 6> tags{"all", "mvp", "smoke", "long_run", "latent", "other"};
-        Rectangle tag_rect{sort_rect.x + 140.0F, sort_rect.y, 120.0F, 30.0F};
-        if (button(tag_rect, "Tag: " + persistent.tag_filter)) {
+        if (button(layout.tag_button, "Tag: " + persistent.tag_filter)) {
             auto found = std::find(tags.begin(), tags.end(), persistent.tag_filter);
             std::size_t index = found == tags.end() ? 0U : static_cast<std::size_t>(std::distance(tags.begin(), found));
             persistent.tag_filter = tags[(index + 1U) % tags.size()];
             preserve_selection(config_name); loaded_config.clear(); state_dirty = true;
         }
-        Rectangle favorite_filter{tag_rect.x + 128.0F, tag_rect.y, 112.0F, 30.0F};
-        if (button(favorite_filter, persistent.favorites_only ? "★ Favorites" : "☆ Favorites", true, persistent.favorites_only)) {
+        if (button(layout.favorite_button, persistent.favorites_only ? "★ Favorites" : "☆ Favorites", true, persistent.favorites_only)) {
             persistent.favorites_only = !persistent.favorites_only;
             preserve_selection(config_name); loaded_config.clear(); state_dirty = true;
         }
@@ -1623,6 +1661,8 @@ std::optional<LaunchRequest> show_launcher(
         }
         EndScissorMode();
 
+        bool new_config_clicked = false;
+        bool save_config_clicked = false;
         BeginScissorMode(static_cast<int>(layout.details_view.x), static_cast<int>(layout.details_view.y),
                          static_cast<int>(layout.details_view.width), static_cast<int>(layout.details_view.height));
         int x = static_cast<int>(layout.details_view.x + 8.0F);
@@ -1640,22 +1680,39 @@ std::optional<LaunchRequest> show_launcher(
         };
 
         section("Experiment");
-        draw_text(config_name.c_str(), x, y, 14, LIGHTGRAY);
+        const float action_size = 30.0F;
+        const float action_gap = 6.0F;
+        Rectangle save_icon{static_cast<float>(x + width) - action_size, static_cast<float>(y - 5), action_size, action_size};
+        Rectangle new_icon{save_icon.x - action_gap - action_size, save_icon.y, action_size, action_size};
+        draw_text(elide_text(config_name, width - 78, 14).c_str(), x, y, 14, LIGHTGRAY);
+        new_config_clicked = icon_button(new_icon, ActionIcon::NewFile, status.launchable);
+        save_config_clicked = icon_button(save_icon, ActionIcon::SaveFile, status.launchable, state.replace_armed);
         if (!selected_path.empty()) {
-            draw_text(elide_text(selected_path.string(), width, 11).c_str(), x, y + 22, 11, GRAY);
-            draw_text((compact_bytes(status.size_bytes) + "  |  " + status.message).c_str(), x, y + 42, 11,
+            draw_text(elide_text(selected_path.string(), width, 11).c_str(), x, y + 32, 11, GRAY);
+            draw_text((compact_bytes(status.size_bytes) + "  |  " + status.message).c_str(), x, y + 52, 11,
                       status.launchable ? Color{103, 225, 151, 255} : ORANGE);
         }
-        y += 68;
+        y += 80;
         Rectangle mode_rect = label("Mode");
         if (button(mode_rect, state.mode == ExperimentMode::SingleRun ? "Single Run" : "Multi Seed", true, true)) {
             state.mode = state.mode == ExperimentMode::SingleRun ? ExperimentMode::MultiSeed : ExperimentMode::SingleRun;
             if (!selected_path.empty()) reset_config_state(state, selected_path, scalars);
         }
+        draw_text(state.mode == ExperimentMode::SingleRun
+                      ? "Streams one simulation into the runtime viewer."
+                      : "Runs the seed queue sequentially, never in parallel.",
+                  x + 104, y - 3, 10, Color{145, 187, 205, 255});
+        y += 18;
         Rectangle backend_rect = label("Backend");
-        if (button(backend_rect, backends[state.backend] + "  —  " + backend_help[state.backend], true, true)) {
+        std::string backend_label = backends[state.backend];
+        std::transform(backend_label.begin(), backend_label.end(), backend_label.begin(), [](unsigned char c) {
+            return static_cast<char>(std::toupper(c));
+        });
+        if (button(backend_rect, backend_label, true, true)) {
             state.backend = (state.backend + 1U) % backends.size();
         }
+        draw_text(backend_help[state.backend].c_str(), x + 104, y - 3, 10, Color{145, 187, 205, 255});
+        y += 18;
 
         section("Basic overrides");
         Rectangle seed_rect = label(state.mode == ExperimentMode::SingleRun ? "Seed" : "Seeds");
@@ -1735,37 +1792,68 @@ std::optional<LaunchRequest> show_launcher(
             y += 18;
         }
 
-        Rectangle permanent_header{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), 34.0F};
-        if (button(permanent_header, state.permanent_open ? "▼ Permanent config actions" : "▶ Permanent config actions", true, state.permanent_open)) state.permanent_open = !state.permanent_open;
+        section("Config actions");
+        draw_text("New filename", x, y + 8, 12, GRAY);
+        Rectangle name_rect{static_cast<float>(x + 104), static_cast<float>(y), static_cast<float>(width - 104), 32.0F};
+        text_field("save_name", name_rect, state.save_as_name, state.text_edit, "new_config.json");
         y += 42;
-        if (state.permanent_open) {
-            Rectangle name_rect{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width - 164), 32.0F};
-            text_field("save_name", name_rect, state.save_as_name, state.text_edit, "new_config.json");
-            Rectangle save_rect{name_rect.x + name_rect.width + 8.0F, name_rect.y, 156.0F, 32.0F};
-            std::string basic_error;
-            const auto permanent_seed = state.mode == ExperimentMode::SingleRun ? parse_single_seed(state.seed_text, basic_error) : std::optional<std::int64_t>{};
-            basic_error.clear();
-            const auto until_tick = parse_tick(state.tick_text, basic_error);
-            if (button(save_rect, "Save as new", status.launchable)) {
+        y = draw_wrapped_text(
+            "New creates a separate JSON from the current temporary edits. Save permanently replaces the selected JSON; click the save icon twice to confirm.",
+            x, y, width, 10, 17, 3, Color{145, 187, 205, 255}
+        );
+        y += 8;
+
+        std::string basic_error;
+        const auto permanent_seed = state.mode == ExperimentMode::SingleRun
+            ? parse_single_seed(state.seed_text, basic_error)
+            : std::optional<std::int64_t>{};
+        if (basic_error.empty()) {
+            (void)parse_tick(state.tick_text, basic_error);
+        }
+        std::string tick_error;
+        const auto permanent_tick = parse_tick(state.tick_text, tick_error);
+        if (new_config_clicked) {
+            if (state.save_as_name.empty()) {
+                message = "New configuration name cannot be empty.";
+                message_color = ORANGE;
+            } else if (!basic_error.empty() || !permanent_tick.has_value()) {
+                message = !basic_error.empty() ? basic_error : tick_error;
+                message_color = ORANGE;
+            } else {
                 auto destination = config_dir / state.save_as_name;
                 if (destination.extension() != ".json") destination += ".json";
                 std::string save_error;
-                if (save_as_new_config(selected_path, destination, current_override_vector(state), permanent_seed, until_tick, save_error)) {
-                    message = "Saved " + destination.filename().string(); message_color = Color{103, 225, 151, 255}; refresh();
-                } else { message = save_error; message_color = ORANGE; }
-            }
-            y += 40;
-            Rectangle replace_rect{static_cast<float>(x), static_cast<float>(y), 238.0F, 32.0F};
-            if (button(replace_rect, state.replace_armed ? "Confirm replace original" : "Replace original", status.launchable, state.replace_armed)) {
-                if (!state.replace_armed) { state.replace_armed = true; message = "Click again to confirm permanent overwrite."; message_color = ORANGE; }
-                else {
-                    std::string replace_error;
-                    if (replace_original_config(selected_path, current_override_vector(state), permanent_seed, until_tick, true, replace_error)) {
-                        message = "Original configuration replaced."; message_color = Color{103, 225, 151, 255}; state.replace_armed = false; loaded_config.clear(); reload_selected();
-                    } else { message = replace_error; message_color = ORANGE; }
+                if (save_as_new_config(selected_path, destination, current_override_vector(state), permanent_seed, permanent_tick, save_error)) {
+                    message = "Created " + destination.filename().string();
+                    message_color = Color{103, 225, 151, 255};
+                    refresh();
+                } else {
+                    message = save_error;
+                    message_color = ORANGE;
                 }
             }
-            y += 44;
+        }
+        if (save_config_clicked) {
+            if (!state.replace_armed) {
+                state.replace_armed = true;
+                message = "Permanent save armed. Click the save icon again to replace the selected JSON.";
+                message_color = ORANGE;
+            } else if (!basic_error.empty() || !permanent_tick.has_value()) {
+                message = !basic_error.empty() ? basic_error : tick_error;
+                message_color = ORANGE;
+            } else {
+                std::string replace_error;
+                if (replace_original_config(selected_path, current_override_vector(state), permanent_seed, permanent_tick, true, replace_error)) {
+                    message = "Original configuration permanently saved.";
+                    message_color = Color{103, 225, 151, 255};
+                    state.replace_armed = false;
+                    loaded_config.clear();
+                    reload_selected();
+                } else {
+                    message = replace_error;
+                    message_color = ORANGE;
+                }
+            }
         }
 
         section("Recent experiments");

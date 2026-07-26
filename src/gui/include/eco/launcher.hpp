@@ -52,6 +52,10 @@ struct ConfigFileStatus {
 
 struct LauncherLayout {
     Rectangle config_panel{};
+    Rectangle search_field{};
+    Rectangle sort_button{};
+    Rectangle tag_button{};
+    Rectangle favorite_button{};
     Rectangle list_view{};
     Rectangle details_panel{};
     Rectangle details_view{};

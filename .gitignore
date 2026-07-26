@@ -9,3 +9,4 @@ dist/
 src/gui/dep/
 analyses/
 backups/
+**/saves/

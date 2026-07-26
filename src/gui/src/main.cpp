@@ -3,6 +3,7 @@
 #include "eco/ui_font.hpp"
 #include "eco/gui_preferences.hpp"
 #include "eco/multi_seed_monitor.hpp"
+#include "eco/runtime_pacing.hpp"
 #include "eco/renderer.hpp"
 #include "eco/shared_reader.hpp"
 #include "eco/social_loop.hpp"
@@ -180,21 +181,31 @@ void draw_multi_seed_status(
     int exit_code = -1;
     bool history_finalized = false;
     eco::multi_seed::Monitor monitor(request.output_path, request.seeds, request.until_tick);
+    eco::multi_seed::ProgressSnapshot snapshot = monitor.poll(false, -1);
+    auto next_monitor_poll = std::chrono::steady_clock::now();
 
     while (!WindowShouldClose()) {
+        bool process_state_changed = false;
 #if defined(__unix__) || defined(__APPLE__)
         if (!finished) {
             int status = 0;
             const pid_t result = waitpid(child, &status, WNOHANG);
             if (result == child) {
                 finished = true;
+                process_state_changed = true;
                 if (WIFEXITED(status)) exit_code = WEXITSTATUS(status);
                 else if (WIFSIGNALED(status)) exit_code = 128 + WTERMSIG(status);
                 else exit_code = 1;
             }
         }
 #endif
-        const auto snapshot = monitor.poll(finished, exit_code);
+        const auto now = std::chrono::steady_clock::now();
+        if (process_state_changed || now >= next_monitor_poll) {
+            snapshot = monitor.poll(finished, exit_code);
+            next_monitor_poll = now + (finished
+                ? eco::runtime::kFinishedMonitorPollInterval
+                : eco::runtime::kMonitorPollInterval);
+        }
         if (finished && !history_finalized) {
             std::string history_error;
             eco::launcher::append_history(
@@ -221,9 +232,16 @@ void draw_multi_seed_status(
         DrawRectangleRec(bar, Color{31, 40, 48, 255});
         DrawRectangleRec(Rectangle{bar.x, bar.y, bar.width * std::clamp(total, 0.0F, 1.0F), bar.height}, Color{43, 142, 101, 255});
         DrawRectangleLinesEx(bar, 1.0F, Fade(SKYBLUE, 0.35F));
-        DrawText(TextFormat("%d/%d seeds complete   %.1f%%",
+        std::size_t waiting_count = 0;
+        std::size_t failed_count = 0;
+        for (const auto& seed : snapshot.seeds) {
+            waiting_count += seed.status == eco::multi_seed::SeedStatus::Waiting ? 1U : 0U;
+            failed_count += seed.status == eco::multi_seed::SeedStatus::Failed ? 1U : 0U;
+        }
+        DrawText(TextFormat("%d/%d complete   %d waiting   %d failed   %.1f%%",
             static_cast<int>(snapshot.completed_count), static_cast<int>(snapshot.seeds.size()),
-            total * 100.0F), 62, 224, 12, RAYWHITE);
+            static_cast<int>(waiting_count), static_cast<int>(failed_count), total * 100.0F),
+            62, 224, 12, RAYWHITE);
 
         int y = 270;
         const int row_height = 48;
@@ -263,8 +281,9 @@ void draw_multi_seed_status(
         const std::string current_text = snapshot.current_index
             ? "Current seed: " + std::to_string(snapshot.seeds[*snapshot.current_index].seed) +
               "  tick " + std::to_string(snapshot.seeds[*snapshot.current_index].tick) +
-              "/" + std::to_string(request.until_tick)
-            : (finished ? "No active seed." : "Preparing the next seed...");
+              "/" + std::to_string(request.until_tick) +
+              "  alive " + std::to_string(snapshot.seeds[*snapshot.current_index].alive)
+            : (finished ? "No active seed." : "Preparing the next sequential seed...");
         DrawText(current_text.c_str(), 54, info_y, 14, LIGHTGRAY);
         DrawText(finished
             ? (exit_code == 0 ? "Completed; aggregate analysis is ready." : TextFormat("Exited with code %d.", exit_code))
@@ -1320,7 +1339,7 @@ int main(int argc, char** argv) {
     const auto gui_settings = eco::preferences::load_settings(project_root, gui_settings_warning);
     InitWindow(gui_settings.window_width, gui_settings.window_height, "Eco Game Runtime");
     SetWindowMinSize(1024, 700);
-    SetTargetFPS(144);
+    SetTargetFPS(eco::runtime::kLauncherTargetFps);
     eco::ui::set_font_metrics(gui_settings.body_font_size, gui_settings.title_font_size, gui_settings.ui_scale);
     eco::ui::initialize_font(project_root, gui_settings.font_family);
     std::cout << "[eco-gui] UI font: " << eco::ui::font_source() << std::endl;
@@ -1384,6 +1403,7 @@ int main(int argc, char** argv) {
         std::cout << "[eco-gui] viewer stream: " << shared_path << std::endl;
     }
 
+    SetTargetFPS(eco::runtime::kRuntimeTargetFps);
     const std::string runtime_title = viewer_only
         ? "Eco Game Runtime — stream " + session_label
         : "Eco Game Runtime — " + session_label;
@@ -1398,23 +1418,23 @@ int main(int argc, char** argv) {
         [&]() {
             eco::SharedFrameReader reader(shared_path);
             eco::Frame working;
+            eco::runtime::PollBackoff polling_backoff;
 
             while (running.load(std::memory_order_relaxed)) {
-                if (reader.read_latest(working)) {
+                const bool received = reader.read_latest(working);
+                if (received) {
                     {
                         std::lock_guard lock(error_mutex);
                         reader_error.clear();
                     }
                     exchange.publish(working);
                 } else {
-                    {
-                        std::lock_guard lock(error_mutex);
-                        reader_error = reader.last_error();
-                    }
-                    std::this_thread::sleep_for(
-                        std::chrono::milliseconds(2)
-                    );
+                    std::lock_guard lock(error_mutex);
+                    reader_error = reader.last_error();
                 }
+                std::this_thread::sleep_for(
+                    received ? polling_backoff.after_activity() : polling_backoff.after_idle()
+                );
             }
         }
     );
