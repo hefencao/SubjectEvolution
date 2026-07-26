@@ -10,7 +10,7 @@ int main() {
     namespace fs = std::filesystem;
     using namespace eco::launcher;
 
-    const fs::path root = fs::temp_directory_path() / "eco_launcher_v22_test";
+    const fs::path root = fs::temp_directory_path() / "eco_launcher_v24_test";
     std::error_code error;
     fs::remove_all(root, error);
     fs::create_directories(root / "configs", error);
@@ -62,6 +62,39 @@ int main() {
            layout.config_panel.x + layout.config_panel.width + 0.01F);
     assert(layout.details_view.x >= layout.details_panel.x);
     assert(layout.start_button.x + layout.start_button.width <= 1440.0F);
+    assert(layout.settings_button.x + layout.settings_button.width <= 1440.0F);
+    assert(layout.search_field.y + layout.search_field.height <= layout.sort_button.y);
+    assert(layout.sort_button.x + layout.sort_button.width <= layout.tag_button.x);
+    assert(layout.tag_button.x + layout.tag_button.width <= layout.favorite_button.x);
+    assert(layout.favorite_button.x + layout.favorite_button.width <=
+           layout.config_panel.x + layout.config_panel.width + 0.01F);
+    assert(layout.favorite_button.y + layout.favorite_button.height <= layout.list_view.y);
+    assert(layout.list_view.y + layout.list_view.height <=
+           layout.config_panel.y + layout.config_panel.height + 0.01F);
+    assert(layout.details_panel.y + layout.details_panel.height < layout.command_preview.y);
+    assert(layout.command_preview.x + layout.command_preview.width < layout.command_copy_button.x);
+    assert(layout.command_copy_button.x + layout.command_copy_button.width < layout.close_button.x);
+    assert(layout.close_button.x + layout.close_button.width < layout.start_button.x);
+    assert(layout.command_preview.y == layout.command_copy_button.y);
+
+    const LauncherLayout compact = make_launcher_layout(1024, 700);
+    assert(compact.config_panel.x + compact.config_panel.width < compact.details_panel.x);
+    assert(compact.favorite_button.x + compact.favorite_button.width <=
+           compact.config_panel.x + compact.config_panel.width + 0.01F);
+    assert(compact.list_view.height > 0.0F);
+    assert(compact.command_preview.width >= 120.0F);
+    assert(compact.details_panel.y + compact.details_panel.height < compact.command_preview.y);
+    assert(compact.command_preview.x + compact.command_preview.width < compact.command_copy_button.x);
+    assert(compact.command_copy_button.x + compact.command_copy_button.width < compact.close_button.x);
+    assert(compact.close_button.x + compact.close_button.width < compact.start_button.x);
+
+    const LauncherLayout minimum = make_launcher_layout(800, 600);
+    assert(minimum.list_view.height > 0.0F);
+    assert(minimum.details_panel.y + minimum.details_panel.height < minimum.command_preview.y);
+    assert(minimum.command_preview.width >= 120.0F);
+    assert(minimum.command_preview.x + minimum.command_preview.width < minimum.command_copy_button.x);
+    assert(minimum.command_copy_button.x + minimum.command_copy_button.width < minimum.close_button.x);
+    assert(minimum.close_button.x + minimum.close_button.width < minimum.start_button.x);
 
     std::string seed_error;
     const auto seeds = parse_seed_list("10001, 10002,10001,10003", seed_error);

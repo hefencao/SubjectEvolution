@@ -1,4 +1,4 @@
-# Current GUI implementation modules (v23).
+# Current GUI implementation modules (v24).
 # Include this file after the eco_game_runtime target is created:
 #   include("${CMAKE_CURRENT_LIST_DIR}/renderer_sources.cmake")
 #   target_sources(eco_game_runtime PRIVATE ${ECO_RENDERER_MODULE_SOURCES})

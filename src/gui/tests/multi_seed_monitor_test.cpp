@@ -7,7 +7,7 @@
 int main() {
     namespace fs = std::filesystem;
     using namespace eco::multi_seed;
-    const fs::path root = fs::temp_directory_path() / "eco_multi_seed_monitor_v22";
+    const fs::path root = fs::temp_directory_path() / "eco_multi_seed_monitor_v24";
     std::error_code error;
     fs::remove_all(root, error);
     fs::create_directories(root / "seed_10001", error);

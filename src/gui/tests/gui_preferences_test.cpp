@@ -9,7 +9,7 @@
 int main() {
     namespace fs = std::filesystem;
     using namespace eco::preferences;
-    const fs::path root = fs::temp_directory_path() / "eco_gui_preferences_v22";
+    const fs::path root = fs::temp_directory_path() / "eco_gui_preferences_v24";
     std::error_code error;
     fs::remove_all(root, error);
     fs::create_directories(root / "configs", error);

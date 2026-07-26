@@ -28,6 +28,7 @@ using eco::ui::draw_text;
 using eco::ui::measure_text;
 
 bool g_launcher_input_blocked = false;
+std::string g_launcher_tooltip;
 
 struct JsonValue {
     using Object = std::vector<std::pair<std::string, JsonValue>>;
@@ -654,38 +655,6 @@ std::string elide_text(const std::string& text, int max_width, int font_size) {
     return ellipsis;
 }
 
-int draw_wrapped_text(
-    const std::string& text,
-    int x,
-    int y,
-    int max_width,
-    int font_size,
-    int line_height,
-    int max_lines,
-    Color color
-) {
-    std::istringstream words(text);
-    std::string line;
-    std::string word;
-    int lines = 0;
-    while (words >> word && lines < max_lines) {
-        const std::string candidate = line.empty() ? word : line + " " + word;
-        if (!line.empty() && measure_text(candidate.c_str(), font_size) > max_width) {
-            draw_text(elide_text(line, max_width, font_size).c_str(), x, y, font_size, color);
-            y += line_height;
-            ++lines;
-            line = word;
-        } else {
-            line = candidate;
-        }
-    }
-    if (!line.empty() && lines < max_lines) {
-        draw_text(elide_text(line, max_width, font_size).c_str(), x, y, font_size, color);
-        y += line_height;
-    }
-    return y;
-}
-
 bool button(Rectangle rect, const std::string& label, bool enabled = true, bool active = false) {
     const Vector2 mouse = GetMousePosition();
     const bool hovered = !g_launcher_input_blocked && enabled && CheckCollisionPointRec(mouse, rect);
@@ -707,14 +676,48 @@ bool button(Rectangle rect, const std::string& label, bool enabled = true, bool 
     return !g_launcher_input_blocked && enabled && hovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
 }
 
+bool filled_button(Rectangle rect, const std::string& label, bool active, bool enabled = true) {
+    const Vector2 mouse = GetMousePosition();
+    const bool hovered = !g_launcher_input_blocked && enabled && CheckCollisionPointRec(mouse, rect);
+    const Color fill = !enabled ? Color{36, 42, 48, 255}
+        : active ? Color{50, 126, 160, 255}
+        : hovered ? Color{49, 61, 72, 255}
+        : Color{32, 40, 48, 255};
+    DrawRectangleRec(rect, fill);
+    DrawRectangleLinesEx(rect, 1.0F, active ? Fade(SKYBLUE, 0.90F) : Fade(SKYBLUE, 0.18F));
+    const int font_size = rect.height >= 36.0F ? 14 : 13;
+    const std::string shown = elide_text(label, static_cast<int>(rect.width - 14.0F), font_size);
+    const int text_width = measure_text(shown.c_str(), font_size);
+    draw_text(
+        shown.c_str(),
+        static_cast<int>(rect.x + (rect.width - static_cast<float>(text_width)) * 0.5F),
+        static_cast<int>(rect.y + (rect.height - static_cast<float>(font_size)) * 0.5F - 1.0F),
+        font_size,
+        enabled ? RAYWHITE : GRAY
+    );
+    return !g_launcher_input_blocked && enabled && hovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+}
+
 enum class ActionIcon {
     NewFile,
     SaveFile,
+    Refresh,
+    Settings,
+    Copy,
+    Close,
+    Run,
 };
 
-bool icon_button(Rectangle rect, ActionIcon icon, bool enabled = true, bool active = false) {
+bool icon_button(
+    Rectangle rect,
+    ActionIcon icon,
+    bool enabled = true,
+    bool active = false,
+    const char* tooltip = nullptr
+) {
     const Vector2 mouse = GetMousePosition();
     const bool hovered = !g_launcher_input_blocked && enabled && CheckCollisionPointRec(mouse, rect);
+    if (hovered && tooltip != nullptr) g_launcher_tooltip = tooltip;
     DrawRectangleRec(
         rect,
         !enabled ? Color{36, 42, 48, 255}
@@ -730,13 +733,84 @@ bool icon_button(Rectangle rect, ActionIcon icon, bool enabled = true, bool acti
                  static_cast<int>(cx + 6.0F), static_cast<int>(cy), stroke);
         DrawLine(static_cast<int>(cx), static_cast<int>(cy - 6.0F),
                  static_cast<int>(cx), static_cast<int>(cy + 6.0F), stroke);
-    } else {
+    } else if (icon == ActionIcon::SaveFile) {
         Rectangle disk{cx - 7.0F, cy - 8.0F, 14.0F, 16.0F};
         DrawRectangleLinesEx(disk, 1.0F, stroke);
         DrawRectangleLinesEx(Rectangle{disk.x + 3.0F, disk.y + 2.0F, 8.0F, 5.0F}, 1.0F, stroke);
         DrawRectangleLinesEx(Rectangle{disk.x + 3.0F, disk.y + 10.0F, 8.0F, 4.0F}, 1.0F, stroke);
+    } else if (icon == ActionIcon::Refresh) {
+        DrawCircleLines(static_cast<int>(cx), static_cast<int>(cy), 7.0F, stroke);
+        DrawLine(static_cast<int>(cx + 5.0F), static_cast<int>(cy - 6.0F),
+                 static_cast<int>(cx + 9.0F), static_cast<int>(cy - 6.0F), stroke);
+        DrawLine(static_cast<int>(cx + 9.0F), static_cast<int>(cy - 6.0F),
+                 static_cast<int>(cx + 8.0F), static_cast<int>(cy - 2.0F), stroke);
+    } else if (icon == ActionIcon::Settings) {
+        DrawCircleLines(static_cast<int>(cx), static_cast<int>(cy), 5.0F, stroke);
+        DrawCircleLines(static_cast<int>(cx), static_cast<int>(cy), 2.0F, stroke);
+        for (int dx : {-8, 8}) {
+            DrawLine(static_cast<int>(cx + dx), static_cast<int>(cy - 2.0F),
+                     static_cast<int>(cx + dx), static_cast<int>(cy + 2.0F), stroke);
+        }
+        for (int dy : {-8, 8}) {
+            DrawLine(static_cast<int>(cx - 2.0F), static_cast<int>(cy + dy),
+                     static_cast<int>(cx + 2.0F), static_cast<int>(cy + dy), stroke);
+        }
+    } else if (icon == ActionIcon::Copy) {
+        DrawRectangleLinesEx(Rectangle{cx - 7.0F, cy - 7.0F, 11.0F, 13.0F}, 1.0F, stroke);
+        DrawRectangleLinesEx(Rectangle{cx - 3.0F, cy - 3.0F, 11.0F, 13.0F}, 1.0F, stroke);
+    } else if (icon == ActionIcon::Close) {
+        DrawLine(static_cast<int>(cx - 6.0F), static_cast<int>(cy - 6.0F),
+                 static_cast<int>(cx + 6.0F), static_cast<int>(cy + 6.0F), stroke);
+        DrawLine(static_cast<int>(cx + 6.0F), static_cast<int>(cy - 6.0F),
+                 static_cast<int>(cx - 6.0F), static_cast<int>(cy + 6.0F), stroke);
+    } else if (icon == ActionIcon::Run) {
+        DrawTriangle(
+            Vector2{cx - 5.0F, cy - 8.0F},
+            Vector2{cx - 5.0F, cy + 8.0F},
+            Vector2{cx + 8.0F, cy},
+            stroke
+        );
     }
     return !g_launcher_input_blocked && enabled && hovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+}
+
+void draw_launcher_tooltip() {
+    if (g_launcher_tooltip.empty()) return;
+    const Vector2 mouse = GetMousePosition();
+    const int font_size = 11;
+    const float padding = 7.0F;
+    const float width = static_cast<float>(measure_text(g_launcher_tooltip.c_str(), font_size)) + padding * 2.0F;
+    const float height = 25.0F;
+    const float x = std::clamp(mouse.x + 12.0F, 4.0F, static_cast<float>(GetScreenWidth()) - width - 4.0F);
+    const float y = std::clamp(mouse.y + 14.0F, 4.0F, static_cast<float>(GetScreenHeight()) - height - 4.0F);
+    DrawRectangleRec(Rectangle{x, y, width, height}, Color{8, 12, 16, 242});
+    DrawRectangleLinesEx(Rectangle{x, y, width, height}, 1.0F, Fade(SKYBLUE, 0.45F));
+    draw_text(g_launcher_tooltip.c_str(), static_cast<int>(x + padding), static_cast<int>(y + 6.0F), font_size, LIGHTGRAY);
+}
+
+void draw_star_icon(Rectangle rect, bool selected, Color color) {
+    constexpr float pi = 3.14159265358979323846F;
+    const Vector2 center{rect.x + rect.width * 0.5F, rect.y + rect.height * 0.5F};
+    const float outer = std::min(rect.width, rect.height) * 0.34F;
+    const float inner = outer * 0.44F;
+    std::array<Vector2, 10> points{};
+    for (std::size_t index = 0; index < points.size(); ++index) {
+        const float angle = -pi * 0.5F + static_cast<float>(index) * pi / 5.0F;
+        const float radius = index % 2U == 0U ? outer : inner;
+        points[index] = Vector2{
+            center.x + std::cos(angle) * radius,
+            center.y + std::sin(angle) * radius,
+        };
+    }
+    if (selected) {
+        for (std::size_t index = 0; index < points.size(); ++index) {
+            DrawTriangle(center, points[index], points[(index + 1U) % points.size()], color);
+        }
+    } else {
+        for (std::size_t index = 0; index < points.size(); ++index) {
+            DrawLineEx(points[index], points[(index + 1U) % points.size()], 1.2F, color);
+        }
+    }
 }
 
 struct TextEditState {
@@ -885,7 +959,6 @@ struct LauncherState {
     std::string output_text;
     bool overwrite_partial = false;
     bool extended_open = false;
-    bool command_open = false;
     bool settings_open = false;
     std::string search;
     std::string scalar_search;
@@ -1084,10 +1157,10 @@ ConfigFileStatus inspect_config_file(const std::filesystem::path& path) {
 
 LauncherLayout make_launcher_layout(int width, int height) {
     const float margin = std::clamp(width * 0.025F, 24.0F, 42.0F);
-    const float header_bottom = 126.0F;
-    const float footer_height = 82.0F;
+    const float header_bottom = 118.0F;
+    const float footer_height = 126.0F;
     const float gap = 18.0F;
-    const float content_height = std::max(430.0F, static_cast<float>(height) - header_bottom - footer_height - margin);
+    const float content_height = std::max(330.0F, static_cast<float>(height) - header_bottom - footer_height);
     const float available = static_cast<float>(width) - margin * 2.0F - gap;
     const float left = std::clamp(available * 0.38F, 390.0F, 620.0F);
     LauncherLayout layout;
@@ -1106,9 +1179,18 @@ LauncherLayout make_launcher_layout(int width, int height) {
     };
     layout.details_panel = {margin + left + gap, header_bottom, available - left, content_height};
     layout.details_view = {layout.details_panel.x + 10.0F, layout.details_panel.y + 10.0F, layout.details_panel.width - 20.0F, layout.details_panel.height - 20.0F};
-    layout.refresh_button = {layout.config_panel.x + layout.config_panel.width - 118.0F, layout.config_panel.y + 10.0F, 104.0F, 32.0F};
-    layout.start_button = {static_cast<float>(width) - margin - 236.0F, static_cast<float>(height) - footer_height + 17.0F, 236.0F, 48.0F};
-    layout.close_button = {layout.start_button.x - 118.0F, layout.start_button.y, 104.0F, 48.0F};
+    layout.settings_button = {static_cast<float>(width) - margin - 40.0F, 43.0F, 40.0F, 40.0F};
+    layout.refresh_button = {layout.config_panel.x + layout.config_panel.width - 46.0F, layout.config_panel.y + 10.0F, 32.0F, 32.0F};
+    const float action_y = static_cast<float>(height) - 70.0F;
+    layout.start_button = {static_cast<float>(width) - margin - 50.0F, action_y, 50.0F, 50.0F};
+    layout.close_button = {layout.start_button.x - 58.0F, action_y, 50.0F, 50.0F};
+    layout.command_copy_button = {layout.close_button.x - 48.0F, action_y + 7.0F, 36.0F, 36.0F};
+    layout.command_preview = {
+        layout.details_panel.x,
+        action_y + 7.0F,
+        std::max(120.0F, layout.command_copy_button.x - layout.details_panel.x - 10.0F),
+        36.0F
+    };
     return layout;
 }
 
@@ -1357,11 +1439,6 @@ std::optional<LaunchRequest> show_launcher(
     std::vector<std::filesystem::path> configs = std::move(scan.configs);
     eco::preferences::sort_configs(configs, persistent.sort_mode);
     const std::array<std::string, 3> backends{"cpu", "gpu", "auto"};
-    const std::array<std::string, 3> backend_help{
-        "CPU: parity and reproducibility",
-        "GPU: request CUDA acceleration",
-        "AUTO: resolve the available backend",
-    };
     const std::vector<ResolutionChoice> resolutions = resolution_choices();
 
     LauncherState state;
@@ -1590,22 +1667,22 @@ std::optional<LaunchRequest> show_launcher(
             mode_short(state.mode) + "/" + backends[state.backend] + "]";
         SetWindowTitle(window_title.c_str());
         g_launcher_input_blocked = state.settings_open;
+        g_launcher_tooltip.clear();
 
         BeginDrawing();
         ClearBackground(Color{13, 17, 22, 255});
         draw_text("Subject Evolution", 42, 48, 30, RAYWHITE);
         draw_text("Simulation-first experiment launcher", 42, 92, 16, LIGHTGRAY);
-        draw_text((config_name + "  |  " + mode_short(state.mode) + "  |  " + backends[state.backend]).c_str(),
-                  42, 121, 12, Color{145, 187, 205, 255});
-        Rectangle settings_button{static_cast<float>(GetScreenWidth() - 174), 45.0F, 132.0F, 38.0F};
-        if (button(settings_button, "⚙ Settings [G]", true, state.settings_open)) state.settings_open = !state.settings_open;
+        if (icon_button(layout.settings_button, ActionIcon::Settings, true, state.settings_open, "Settings [G]")) {
+            state.settings_open = !state.settings_open;
+        }
 
         DrawRectangleLinesEx(layout.config_panel, 1.0F, Fade(SKYBLUE, 0.28F));
         DrawRectangleLinesEx(layout.details_panel, 1.0F, Fade(SKYBLUE, 0.28F));
         draw_text(TextFormat("Configurations  %d", static_cast<int>(visible.size())),
                   static_cast<int>(layout.config_panel.x + 14.0F),
                   static_cast<int>(layout.config_panel.y + 16.0F), 14, LIGHTGRAY);
-        if (button(layout.refresh_button, "Refresh [R]")) refresh();
+        if (icon_button(layout.refresh_button, ActionIcon::Refresh, true, false, "Refresh configurations [R]")) refresh();
 
         if (text_field("config_search", layout.search_field, state.search, state.text_edit, "Search configurations...")) state_dirty = true;
         persistent.config_search = state.search;
@@ -1622,7 +1699,7 @@ std::optional<LaunchRequest> show_launcher(
             persistent.tag_filter = tags[(index + 1U) % tags.size()];
             preserve_selection(config_name); loaded_config.clear(); state_dirty = true;
         }
-        if (button(layout.favorite_button, persistent.favorites_only ? "★ Favorites" : "☆ Favorites", true, persistent.favorites_only)) {
+        if (button(layout.favorite_button, persistent.favorites_only ? "Favorites: on" : "Favorites", true, persistent.favorites_only)) {
             persistent.favorites_only = !persistent.favorites_only;
             preserve_selection(config_name); loaded_config.clear(); state_dirty = true;
         }
@@ -1642,8 +1719,7 @@ std::optional<LaunchRequest> show_launcher(
             Rectangle star_rect{row_rect.x + 5.0F, row_rect.y + 4.0F, 26.0F, row_rect.height - 8.0F};
             const std::string filename = visible[index].filename().string();
             const bool favorite = persistent.favorites.contains(filename);
-            draw_text(favorite ? "★" : "☆", static_cast<int>(star_rect.x + 3.0F), static_cast<int>(star_rect.y + 3.0F), 13,
-                      favorite ? GOLD : GRAY);
+            draw_star_icon(star_rect, favorite, favorite ? GOLD : GRAY);
             const int age_width = 42;
             draw_text(elide_text(filename, static_cast<int>(row_rect.width - 88.0F), 13).c_str(),
                       static_cast<int>(row_rect.x + 36.0F), static_cast<int>(row_rect.y + 8.0F), 13, LIGHTGRAY);
@@ -1680,39 +1756,80 @@ std::optional<LaunchRequest> show_launcher(
         };
 
         section("Experiment");
-        const float action_size = 30.0F;
-        const float action_gap = 6.0F;
-        Rectangle save_icon{static_cast<float>(x + width) - action_size, static_cast<float>(y - 5), action_size, action_size};
-        Rectangle new_icon{save_icon.x - action_gap - action_size, save_icon.y, action_size, action_size};
-        draw_text(elide_text(config_name, width - 78, 14).c_str(), x, y, 14, LIGHTGRAY);
-        new_config_clicked = icon_button(new_icon, ActionIcon::NewFile, status.launchable);
-        save_config_clicked = icon_button(save_icon, ActionIcon::SaveFile, status.launchable, state.replace_armed);
+        draw_text(elide_text(config_name, width, 14).c_str(), x, y, 14, LIGHTGRAY);
         if (!selected_path.empty()) {
-            draw_text(elide_text(selected_path.string(), width, 11).c_str(), x, y + 32, 11, GRAY);
-            draw_text((compact_bytes(status.size_bytes) + "  |  " + status.message).c_str(), x, y + 52, 11,
+            draw_text(elide_text(selected_path.string(), width, 11).c_str(), x, y + 26, 11, GRAY);
+            draw_text((compact_bytes(status.size_bytes) + "  |  " + status.message).c_str(), x, y + 46, 11,
                       status.launchable ? Color{103, 225, 151, 255} : ORANGE);
         }
-        y += 80;
-        Rectangle mode_rect = label("Mode");
-        if (button(mode_rect, state.mode == ExperimentMode::SingleRun ? "Single Run" : "Multi Seed", true, true)) {
-            state.mode = state.mode == ExperimentMode::SingleRun ? ExperimentMode::MultiSeed : ExperimentMode::SingleRun;
+        y += 72;
+
+        const float file_action_size = 32.0F;
+        const float file_action_gap = 6.0F;
+        Rectangle save_icon{
+            static_cast<float>(x + width) - file_action_size,
+            static_cast<float>(y),
+            file_action_size,
+            file_action_size
+        };
+        Rectangle new_icon{
+            save_icon.x - file_action_gap - file_action_size,
+            save_icon.y,
+            file_action_size,
+            file_action_size
+        };
+        Rectangle name_rect{
+            static_cast<float>(x),
+            static_cast<float>(y),
+            new_icon.x - static_cast<float>(x) - file_action_gap,
+            32.0F
+        };
+        text_field("save_name", name_rect, state.save_as_name, state.text_edit, "new_config.json");
+        new_config_clicked = icon_button(
+            new_icon, ActionIcon::NewFile, status.launchable, false, "Create a new config from current edits"
+        );
+        save_config_clicked = icon_button(
+            save_icon, ActionIcon::SaveFile, status.launchable, state.replace_armed,
+            state.replace_armed ? "Confirm permanent overwrite" : "Permanently save selected config"
+        );
+        y += 41;
+        draw_text(
+            state.replace_armed
+                ? "Permanent overwrite armed; click Save again to confirm."
+                : "New creates another JSON; Save replaces the selected JSON after confirmation.",
+            x, y, 10, state.replace_armed ? ORANGE : Color{145, 187, 205, 255}
+        );
+        y += 27;
+
+        const float control_height = 32.0F;
+        const float control_gap = 6.0F;
+        Rectangle single_rect{static_cast<float>(x), static_cast<float>(y), 88.0F, control_height};
+        Rectangle multi_rect{single_rect.x + single_rect.width + control_gap, single_rect.y, 108.0F, control_height};
+        const float backend_width = 66.0F;
+        const float backend_total = backend_width * 3.0F + control_gap * 2.0F;
+        const bool stacked_profile_controls = static_cast<float>(width) < 430.0F;
+        const float backend_x = stacked_profile_controls
+            ? static_cast<float>(x)
+            : static_cast<float>(x + width) - backend_total;
+        const float backend_y = stacked_profile_controls
+            ? static_cast<float>(y) + control_height + control_gap
+            : static_cast<float>(y);
+        Rectangle cpu_rect{backend_x, static_cast<float>(y), backend_width, control_height};
+        cpu_rect.y = backend_y;
+        Rectangle gpu_rect{cpu_rect.x + backend_width + control_gap, backend_y, backend_width, control_height};
+        Rectangle auto_rect{gpu_rect.x + backend_width + control_gap, backend_y, backend_width, control_height};
+        if (filled_button(single_rect, "Single", state.mode == ExperimentMode::SingleRun)) {
+            state.mode = ExperimentMode::SingleRun;
             if (!selected_path.empty()) reset_config_state(state, selected_path, scalars);
         }
-        draw_text(state.mode == ExperimentMode::SingleRun
-                      ? "Streams one simulation into the runtime viewer."
-                      : "Runs the seed queue sequentially, never in parallel.",
-                  x + 104, y - 3, 10, Color{145, 187, 205, 255});
-        y += 18;
-        Rectangle backend_rect = label("Backend");
-        std::string backend_label = backends[state.backend];
-        std::transform(backend_label.begin(), backend_label.end(), backend_label.begin(), [](unsigned char c) {
-            return static_cast<char>(std::toupper(c));
-        });
-        if (button(backend_rect, backend_label, true, true)) {
-            state.backend = (state.backend + 1U) % backends.size();
+        if (filled_button(multi_rect, "Multi Seed", state.mode == ExperimentMode::MultiSeed)) {
+            state.mode = ExperimentMode::MultiSeed;
+            if (!selected_path.empty()) reset_config_state(state, selected_path, scalars);
         }
-        draw_text(backend_help[state.backend].c_str(), x + 104, y - 3, 10, Color{145, 187, 205, 255});
-        y += 18;
+        if (filled_button(cpu_rect, "CPU", state.backend == 0U)) state.backend = 0U;
+        if (filled_button(gpu_rect, "GPU", state.backend == 1U)) state.backend = 1U;
+        if (filled_button(auto_rect, "AUTO", state.backend == 2U)) state.backend = 2U;
+        y += stacked_profile_controls ? 86 : 48;
 
         section("Basic overrides");
         Rectangle seed_rect = label(state.mode == ExperimentMode::SingleRun ? "Seed" : "Seeds");
@@ -1724,17 +1841,19 @@ std::optional<LaunchRequest> show_launcher(
         text_field("output", output_rect, state.output_text, state.text_edit, "runs/...");
         if (state.mode == ExperimentMode::MultiSeed) {
             Rectangle overwrite_rect{static_cast<float>(x + 104), static_cast<float>(y), 240.0F, 30.0F};
-            if (button(overwrite_rect, state.overwrite_partial ? "✓ overwrite partial runs" : "□ overwrite partial runs", true, state.overwrite_partial)) {
+            if (button(overwrite_rect, state.overwrite_partial ? "overwrite partial runs: on" : "overwrite partial runs: off", true, state.overwrite_partial)) {
                 state.overwrite_partial = !state.overwrite_partial;
             }
             y += 40;
         }
-        draw_text("Temporary edits run directly and write config_resolved.json; the source file is untouched.",
+        draw_text("Temporary overrides apply only to this run; the source JSON stays unchanged.",
                   x, y, 10, Color{145, 187, 205, 255});
         y += 27;
 
         Rectangle extended_header{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), 34.0F};
-        if (button(extended_header, state.extended_open ? "▼ Extended overrides" : "▶ Extended overrides", true, state.extended_open)) state.extended_open = !state.extended_open;
+        if (button(extended_header, state.extended_open ? "Extended overrides [-]" : "Extended overrides [+]", true, state.extended_open)) {
+            state.extended_open = !state.extended_open;
+        }
         y += 42;
         if (state.extended_open) {
             Rectangle filter_rect{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), 32.0F};
@@ -1765,51 +1884,45 @@ std::optional<LaunchRequest> show_launcher(
                     std::string override_error;
                     if (validate_scalar_text(state.scalar_edit, chosen.type, override_error)) {
                         state.overrides[chosen.path] = {chosen.path, state.scalar_edit, chosen.type};
-                        message = "Temporary override set: " + chosen.path; message_color = Color{103, 225, 151, 255};
-                    } else { message = override_error; message_color = ORANGE; }
+                        message = "Temporary override set: " + chosen.path;
+                        message_color = Color{103, 225, 151, 255};
+                    } else {
+                        message = override_error;
+                        message_color = ORANGE;
+                    }
                 }
-                if (button(reset_rect, "Reset")) { state.overrides.erase(chosen.path); state.scalar_edit = chosen.value; }
+                if (button(reset_rect, "Reset")) {
+                    state.overrides.erase(chosen.path);
+                    state.scalar_edit = chosen.value;
+                }
                 y += 44;
             }
         }
 
-        Rectangle command_header{static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), 34.0F};
-        if (button(command_header, state.command_open ? "▼ Command preview" : "▶ Command preview", true, state.command_open)) state.command_open = !state.command_open;
-        y += 42;
-        LaunchRequest preview_request = request_template(project_root, selected_path, python, state, backends, active_resolution());
-        const std::string preview_output = state.output_text.empty() ? "runs/<output>" : state.output_text;
-        preview_request.output_path = preview_output;
-        preview_request.config_path = preview_request.output_path / "config_resolved.json";
-        preview_request.stream_path = preview_request.output_path / "eco_live.bin";
-        preview_request.command = command_preview(preview_request, true);
-        if (state.command_open) {
-            Rectangle copy_rect{static_cast<float>(x + width - 118), static_cast<float>(y), 110.0F, 28.0F};
-            if (button(copy_rect, "Copy command")) { SetClipboardText(preview_request.command.c_str()); message = "Command copied."; message_color = Color{103, 225, 151, 255}; }
-            y = draw_wrapped_text(preview_request.command, x, y + 34, width, 11, 18, 7, Color{145, 187, 205, 255});
-            y += 8;
+        section("Recent experiments");
+        const auto history = recent_history(project_root, static_cast<std::size_t>(settings.recent_experiments));
+        if (history.empty()) {
+            draw_text("No launcher history yet.", x, y, 12, GRAY);
+            y += 20;
         } else {
-            draw_text(elide_text(preview_request.command, width, 10).c_str(), x, y - 5, 10, GRAY);
-            y += 18;
+            for (const auto& line : history) {
+                draw_text(elide_text(line.text, width, 11).c_str(), x, y, 11, LIGHTGRAY);
+                y += 19;
+            }
         }
-
-        section("Config actions");
-        draw_text("New filename", x, y + 8, 12, GRAY);
-        Rectangle name_rect{static_cast<float>(x + 104), static_cast<float>(y), static_cast<float>(width - 104), 32.0F};
-        text_field("save_name", name_rect, state.save_as_name, state.text_edit, "new_config.json");
-        y += 42;
-        y = draw_wrapped_text(
-            "New creates a separate JSON from the current temporary edits. Save permanently replaces the selected JSON; click the save icon twice to confirm.",
-            x, y, width, 10, 17, 3, Color{145, 187, 205, 255}
+        const float content_bottom = static_cast<float>(y) + state.detail_scroll - layout.details_view.y + 14.0F;
+        state.detail_scroll = std::clamp(
+            state.detail_scroll,
+            0.0F,
+            std::max(0.0F, content_bottom - layout.details_view.height)
         );
-        y += 8;
+        EndScissorMode();
 
         std::string basic_error;
         const auto permanent_seed = state.mode == ExperimentMode::SingleRun
             ? parse_single_seed(state.seed_text, basic_error)
             : std::optional<std::int64_t>{};
-        if (basic_error.empty()) {
-            (void)parse_tick(state.tick_text, basic_error);
-        }
+        if (basic_error.empty()) (void)parse_tick(state.tick_text, basic_error);
         std::string tick_error;
         const auto permanent_tick = parse_tick(state.tick_text, tick_error);
         if (new_config_clicked) {
@@ -1823,7 +1936,14 @@ std::optional<LaunchRequest> show_launcher(
                 auto destination = config_dir / state.save_as_name;
                 if (destination.extension() != ".json") destination += ".json";
                 std::string save_error;
-                if (save_as_new_config(selected_path, destination, current_override_vector(state), permanent_seed, permanent_tick, save_error)) {
+                if (save_as_new_config(
+                        selected_path,
+                        destination,
+                        current_override_vector(state),
+                        permanent_seed,
+                        permanent_tick,
+                        save_error
+                    )) {
                     message = "Created " + destination.filename().string();
                     message_color = Color{103, 225, 151, 255};
                     refresh();
@@ -1836,14 +1956,21 @@ std::optional<LaunchRequest> show_launcher(
         if (save_config_clicked) {
             if (!state.replace_armed) {
                 state.replace_armed = true;
-                message = "Permanent save armed. Click the save icon again to replace the selected JSON.";
+                message = "Permanent save armed. Click Save again to replace the selected JSON.";
                 message_color = ORANGE;
             } else if (!basic_error.empty() || !permanent_tick.has_value()) {
                 message = !basic_error.empty() ? basic_error : tick_error;
                 message_color = ORANGE;
             } else {
                 std::string replace_error;
-                if (replace_original_config(selected_path, current_override_vector(state), permanent_seed, permanent_tick, true, replace_error)) {
+                if (replace_original_config(
+                        selected_path,
+                        current_override_vector(state),
+                        permanent_seed,
+                        permanent_tick,
+                        true,
+                        replace_error
+                    )) {
                     message = "Original configuration permanently saved.";
                     message_color = Color{103, 225, 151, 255};
                     state.replace_armed = false;
@@ -1856,30 +1983,72 @@ std::optional<LaunchRequest> show_launcher(
             }
         }
 
-        section("Recent experiments");
-        const auto history = recent_history(project_root, static_cast<std::size_t>(settings.recent_experiments));
-        if (history.empty()) { draw_text("No launcher history yet.", x, y, 12, GRAY); y += 20; }
-        else for (const auto& line : history) { draw_text(elide_text(line.text, width, 11).c_str(), x, y, 11, LIGHTGRAY); y += 19; }
-        const float content_bottom = static_cast<float>(y) + state.detail_scroll - layout.details_view.y + 14.0F;
-        state.detail_scroll = std::clamp(state.detail_scroll, 0.0F, std::max(0.0F, content_bottom - layout.details_view.height));
-        EndScissorMode();
-
-        draw_text(message.c_str(), static_cast<int>(layout.config_panel.x), GetScreenHeight() - 59, 12, message_color);
-        draw_text("Up/Down: config  |  wheel: scroll  |  G: settings  |  Enter: start",
-                  static_cast<int>(layout.config_panel.x), GetScreenHeight() - 34, 10, GRAY);
-        const bool close_clicked = button(layout.close_button, "Close [Esc]");
-
         std::string validation_error;
         std::vector<std::int64_t> seeds;
         std::optional<std::int64_t> single_seed;
-        if (state.mode == ExperimentMode::MultiSeed) seeds = parse_seed_list(state.seeds_text, validation_error);
-        else { single_seed = parse_single_seed(state.seed_text, validation_error); if (single_seed) seeds = {*single_seed}; }
-        const auto tick = validation_error.empty() ? parse_tick(state.tick_text, validation_error) : std::optional<std::uint64_t>{};
+        if (state.mode == ExperimentMode::MultiSeed) {
+            seeds = parse_seed_list(state.seeds_text, validation_error);
+        } else {
+            single_seed = parse_single_seed(state.seed_text, validation_error);
+            if (single_seed) seeds = {*single_seed};
+        }
+        const auto tick = validation_error.empty()
+            ? parse_tick(state.tick_text, validation_error)
+            : std::optional<std::uint64_t>{};
         const bool start_enabled = status.launchable && validation_error.empty() && !selected_path.empty();
-        const bool start_clicked = button(layout.start_button,
-            state.mode == ExperimentMode::SingleRun ? "Start simulation [Enter]" : "Start multi-seed [Enter]",
-            start_enabled, true);
+
+        LaunchRequest preview_request = request_template(
+            project_root, selected_path, python, state, backends, active_resolution()
+        );
+        const std::string preview_output = state.output_text.empty() ? "runs/<output>" : state.output_text;
+        preview_request.output_path = preview_output;
+        preview_request.config_path = preview_request.output_path / "config_resolved.json";
+        preview_request.stream_path = preview_request.output_path / "eco_live.bin";
+        preview_request.command = command_preview(preview_request, true);
+
+        draw_text("Command", static_cast<int>(layout.command_preview.x),
+                  static_cast<int>(layout.command_preview.y - 18.0F), 10, GRAY);
+        DrawRectangleRec(layout.command_preview, Color{13, 20, 27, 255});
+        DrawRectangleLinesEx(layout.command_preview, 1.0F, Fade(SKYBLUE, 0.18F));
+        draw_text(
+            elide_text(preview_request.command, static_cast<int>(layout.command_preview.width - 16.0F), 10).c_str(),
+            static_cast<int>(layout.command_preview.x + 8.0F),
+            static_cast<int>(layout.command_preview.y + 11.0F),
+            10,
+            Color{145, 187, 205, 255}
+        );
+        if (icon_button(
+                layout.command_copy_button,
+                ActionIcon::Copy,
+                true,
+                false,
+                "Copy command"
+            )) {
+            SetClipboardText(preview_request.command.c_str());
+            message = "Command copied.";
+            message_color = Color{103, 225, 151, 255};
+        }
+        const bool close_clicked = icon_button(
+            layout.close_button, ActionIcon::Close, true, false, "Close launcher [Esc]"
+        );
+        const bool start_clicked = icon_button(
+            layout.start_button,
+            ActionIcon::Run,
+            start_enabled,
+            true,
+            state.mode == ExperimentMode::SingleRun ? "Start simulation [Enter]" : "Start sequential multi-seed [Enter]"
+        );
         const bool keyboard_start = IsKeyPressed(KEY_ENTER) && state.text_edit.active.empty() && !state.settings_open;
+
+        draw_text(
+            elide_text(message, static_cast<int>(layout.config_panel.width), 12).c_str(),
+            static_cast<int>(layout.config_panel.x),
+            GetScreenHeight() - 91,
+            12,
+            message_color
+        );
+        draw_text("Up/Down config  |  wheel scroll  |  G settings  |  Enter run  |  Esc close",
+                  static_cast<int>(layout.config_panel.x), GetScreenHeight() - 28, 10, GRAY);
 
         if (state.settings_open) {
             g_launcher_input_blocked = false;
@@ -1900,7 +2069,7 @@ std::optional<LaunchRequest> show_launcher(
                 return std::pair<Rectangle, std::string>{rect, value};
             };
             auto resolution_row = setting_row("Window resolution", resolutions[settings_resolution].custom ? settings_width_text + "x" + settings_height_text : resolutions[settings_resolution].label);
-            if (button(resolution_row.first, resolution_row.second + "  ▼", true, true)) {
+            if (button(resolution_row.first, resolution_row.second + "  next", true, true)) {
                 settings_resolution = (settings_resolution + 1U) % resolutions.size();
                 if (!resolutions[settings_resolution].custom) {
                     settings_width_text = std::to_string(resolutions[settings_resolution].width);
@@ -1955,6 +2124,7 @@ std::optional<LaunchRequest> show_launcher(
             if (button(close, "Close") || IsKeyPressed(KEY_ESCAPE)) state.settings_open = false;
         }
 
+        draw_launcher_tooltip();
         EndDrawing();
         if (close_clicked) { if (state_dirty) save_persistent_state(); return std::nullopt; }
         if ((keyboard_start || start_clicked) && start_enabled) {

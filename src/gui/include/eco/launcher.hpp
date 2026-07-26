@@ -59,7 +59,10 @@ struct LauncherLayout {
     Rectangle list_view{};
     Rectangle details_panel{};
     Rectangle details_view{};
+    Rectangle settings_button{};
     Rectangle refresh_button{};
+    Rectangle command_preview{};
+    Rectangle command_copy_button{};
     Rectangle start_button{};
     Rectangle close_button{};
 };

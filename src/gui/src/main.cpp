@@ -261,12 +261,12 @@ void draw_multi_seed_status(
             Rectangle row_rect{54.0F, static_cast<float>(y), static_cast<float>(GetScreenWidth() - 108), 40.0F};
             DrawRectangleRec(row_rect, current ? Color{26, 60, 76, 255} : Color{18, 25, 31, 255});
             DrawRectangleLinesEx(row_rect, 1.0F, current ? Fade(SKYBLUE, 0.65F) : Fade(SKYBLUE, 0.12F));
-            const char* prefix = "○";
+            const char* prefix = "[ ]";
             Color color = GRAY;
             if (seed.status == eco::multi_seed::SeedStatus::Completed ||
-                seed.status == eco::multi_seed::SeedStatus::SkippedCompleted) { prefix = "✓"; color = Color{103, 225, 151, 255}; }
-            else if (current) { prefix = "▶"; color = SKYBLUE; }
-            else if (failed) { prefix = "×"; color = ORANGE; }
+                seed.status == eco::multi_seed::SeedStatus::SkippedCompleted) { prefix = "[ok]"; color = Color{103, 225, 151, 255}; }
+            else if (current) { prefix = "[>]"; color = SKYBLUE; }
+            else if (failed) { prefix = "[x]"; color = ORANGE; }
             DrawText(TextFormat("%s seed %lld", prefix, static_cast<long long>(seed.seed)), 65, y + 10, 14, color);
             DrawText(TextFormat("tick %llu/%llu   alive %llu   %s",
                 static_cast<unsigned long long>(seed.tick),
@@ -862,7 +862,7 @@ void draw_event_legend(float x, float y) {
         1.0F, Color{255, 174, 48, 255});
     DrawText("harvest", static_cast<int>(x + 174), static_cast<int>(y), 13, LIGHTGRAY);
 
-    DrawText("◇ reproduce", static_cast<int>(x + 260), static_cast<int>(y), 13,
+    DrawText("reproduce", static_cast<int>(x + 260), static_cast<int>(y), 13,
         Color{247, 105, 255, 255});
 }
 

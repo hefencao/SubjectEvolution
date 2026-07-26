@@ -5,7 +5,7 @@
 
 int main() {
     const std::filesystem::path root = std::filesystem::temp_directory_path() /
-        "eco_ui_font_v22_test";
+        "eco_ui_font_v24_test";
     std::error_code error;
     std::filesystem::create_directories(root, error);
     eco::ui::set_font_metrics(18, 32, 1.1F);

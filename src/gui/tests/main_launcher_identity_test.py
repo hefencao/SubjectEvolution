@@ -14,20 +14,36 @@ required = [
     "config_resolved.json",
     "config_runtime_override.json",
     "Extended overrides",
-    "Save as new",
-    "Confirm replace original",
-    "Copy command",
+    "ActionIcon::NewFile",
+    "ActionIcon::SaveFile",
+    "ActionIcon::Settings",
+    "ActionIcon::Refresh",
+    "ActionIcon::Copy",
+    "ActionIcon::Close",
+    "ActionIcon::Run",
+    "layout.command_preview",
     "BeginScissorMode(",
     "clamp_launcher_scroll(",
     "MultiSeed",
 ]
 missing = [token for token in required if token not in combined]
 if missing:
-    raise SystemExit(f"launcher v22 identity/source requirements missing: {missing}")
-for token in ["DejaVuSansMono.ttf", "NotoSansMono-Regular.ttf", "LiberationMono-Regular.ttf", "GetFontDefault()", "LoadFontEx("]:
+    raise SystemExit(f"launcher v24 identity/source requirements missing: {missing}")
+for token in [
+    "DejaVuSansMono.ttf",
+    "NotoSansMono-Regular.ttf",
+    "LiberationMono-Regular.ttf",
+    "GetFontDefault()",
+    "LoadFontEx(",
+]:
     if token not in font:
         raise SystemExit(f"font fallback requirement missing: {token}")
-for token in ["project_root / \"src/saves\"", "gui_settings.json", "gui_state.json", "experiment_history.json"]:
+for token in [
+    'project_root / "src/saves"',
+    "gui_settings.json",
+    "gui_state.json",
+    "experiment_history.json",
+]:
     if token not in prefs:
         raise SystemExit(f"saves persistence requirement missing: {token}")
-print("launcher v22 identity source check: ok")
+print("launcher v24 identity source check: ok")
