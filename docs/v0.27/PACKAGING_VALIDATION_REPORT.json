@@ -1,0 +1,40 @@
+{
+  "schema": "v027-packaging-validation-v1",
+  "version": "0.27.0",
+  "project_file_count_before_archive": 215,
+  "excluded_paths": {
+    "docs/archive": true,
+    ".git": true,
+    "__pycache__": true,
+    ".pytest_cache": true,
+    "*.pyc": true,
+    "build": true,
+    "dist": true,
+    "*.egg-info": true
+  },
+  "pyproject_build_requires": [
+    "setuptools>=68"
+  ],
+  "explicit_wheel_build_requirement": false,
+  "wheel_build_command": "python -m pip wheel . --no-deps --no-build-isolation",
+  "wheel_build_succeeded": true,
+  "wheel_install_validation": "venv --system-site-packages; local wheel installed with --no-deps; version import and console-script --help passed",
+  "full_test_result": "131 passed, 1 skipped",
+  "compatibility": {
+    "v026_v027_non_timing_metric_cells": 1573,
+    "v026_v027_metric_mismatches": 0,
+    "evolution_progress_byte_identical": true,
+    "v026_checkpoint_v027_resume_semantic_state_equal": true
+  },
+  "archive_validation_pending": false,
+  "project_archive_file_count": 216,
+  "zip_integrity_test": true,
+  "tar_integrity_test": true,
+  "zip_forbidden_entry_count": 0,
+  "tar_forbidden_entry_count": 0,
+  "top_level_directory": "subject_evolution_v027_project",
+  "patch_dry_run_against_v026": true,
+  "wheel_sha256": "6d4bfc47ad1c7fee46bf0259d59021f971f52e0dd35384d394c1a9d15ab698c7",
+  "wheel_version_import": "0.27.0",
+  "console_script_help_passed": true
+}

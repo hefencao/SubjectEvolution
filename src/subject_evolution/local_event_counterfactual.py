@@ -233,6 +233,7 @@ def _run_branch(
     gpu_semantics_mode: str | None,
     intervention: str | None,
     common_boundary_audit: bool = False,
+    cohort_requests: list[dict[str, Any]] | tuple[dict[str, Any], ...] | None = None,
 ) -> dict[str, Any]:
     simulation = Simulation.from_checkpoint(
         checkpoint,
@@ -243,6 +244,8 @@ def _run_branch(
     )
     if common_boundary_audit:
         simulation.freeze_local_reference_boundary()
+    if cohort_requests:
+        simulation.configure_event_cohort_diagnostics(cohort_requests)
     if intervention is not None:
         simulation.apply_intervention(intervention)
     world = simulation.run(until_tick=until_tick)
@@ -252,6 +255,7 @@ def _run_branch(
         "scientific_validity": simulation.scientific_validity(),
         "intervention_history": simulation.intervention_history,
         "common_boundary_audit": bool(common_boundary_audit),
+        "event_cohort_summaries": simulation.event_cohort_summaries(),
     }
 
 

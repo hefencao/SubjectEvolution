@@ -340,3 +340,45 @@ def test_long_run_analysis_builds_local_cultural_panel(tmp_path: Path) -> None:
     assert cultural["available"] is True
     assert cultural["total_cross_region_committed"] == 60
     assert cultural["high_scarcity_event_study"]["event_count"] >= 1
+
+
+def test_event_cohort_diagnostics_integrate_with_checkpoint_branch(tmp_path: Path) -> None:
+    cfg = load_config(ROOT / "configs" / "heterogeneous_smoke.json")
+    cfg = replace(
+        cfg,
+        run=replace(
+            cfg.run,
+            ticks=6,
+            checkpoint_period=3,
+            evolution_evaluation_period=3,
+            full_checkpoint_enabled=True,
+            spatial_stress_diagnostics_enabled=True,
+            spatial_stress_diagnostics_schema="spatial-local-stress-diagnostics-v1",
+            spatial_stress_regions_x=2,
+            spatial_stress_regions_y=2,
+        ),
+        world=replace(cfg.world, initial_entities=64, max_entities=96),
+    )
+    source = Simulation(cfg, tmp_path / "source", backend="cpu")
+    source.run(until_tick=3)
+    branch = Simulation.from_checkpoint(
+        tmp_path / "source" / "checkpoint_00000003.sechk",
+        tmp_path / "branch",
+        backend="cpu",
+        until_tick=6,
+    )
+    branch.configure_event_cohort_diagnostics(
+        [
+            {
+                "anchor_id": "integration-anchor",
+                "region_id": 0,
+                "event_tick": 4,
+                "until_tick": 6,
+            }
+        ]
+    )
+    branch.run(until_tick=6)
+    summary = branch.event_cohort_summaries()["integration-anchor"]
+    assert summary["endpoint_population_balance_residual"] == 0
+    assert summary["event_cohort_feedback_to_world"] is False
+    assert summary["final_alive_region_from_cohort_audit"] >= 0

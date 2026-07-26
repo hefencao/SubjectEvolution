@@ -1,0 +1,26 @@
+Subject Evolution v0.27.0 final validation
+==========================================
+
+Full test command:
+  PYTHONPATH=src:. pytest -q
+
+Result:
+  131 passed, 1 skipped in 29.23s
+
+Skipped:
+  Real CUDA/CuPy device-dependent validation.
+
+Compatibility:
+  - v0.26 -> v0.27 default CPU reference, 20 ticks:
+    1573 common non-timing metric cells, 0 mismatches.
+  - evolution_progress.jsonl: byte-identical.
+  - v0.26 tick-10 checkpoint resumed by v0.27 to tick 20:
+    semantic state equal to continuous v0.27 run.
+
+New v0.27 coverage:
+  - stable-ID event cohort endpoint identity and zero balance residual;
+  - slot reuse does not inherit cohort identity;
+  - multiple anchors on one shared trajectory retain independent event ticks/horizons;
+  - plan/marker/results schema compatibility;
+  - multi-result synthesis, richer duplicate preference, pair coverage and follow-up plans;
+  - partial manifests do not force non-existent event-class plans.

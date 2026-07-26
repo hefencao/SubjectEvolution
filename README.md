@@ -1,19 +1,19 @@
-# Subject Evolution v0.26
+# Subject Evolution v0.27
 
 一个以**可审计世界状态、局部交互、遗传策略、动态知识副本和候选主体结构**为核心的演化模拟参考实现。
 
-当前科学基线不引入第二套“生物型危险实体”。环境层只包含资源、权威危险场、死亡痕迹及默认关闭的低耦合标量场插件；具有出生、死亡、策略、关系、记忆或谱系的危险主体，应由现有实体系统分化，而不是在环境模块中复制。
+科学核心继续不引入第二套“生物型危险实体”。环境层只包含资源、权威危险场、死亡痕迹及默认关闭的低耦合标量场插件；具有出生、死亡、策略、关系、记忆或谱系的危险主体，应由现有实体系统分化，而不是在环境模块中复制。
 
-## v0.26 重点
+## v0.27 重点
 
-v0.26 不修改世界规则，主要解决 natural-event 配对实验中的**结果解释与共同测量边界**：
+v0.27 不改变世界动力学，主要补齐自然事件配对实验的两个诊断缺口：
 
-- 从同一 checkpoint 冻结稳定实体 ID 与群组 token，形成 diagnostic-only common boundary；
-- 分享流同时按分支当前标签和 checkpoint-common 标签记账；
-- 槽位复用不会让新生实体继承旧群组身份；
-- natural-event results v3 分离 current-label cohesion、common-boundary cohesion 和 boundary-definition gap；
-- 新增结果审计器，区分 manipulation check、文化机制近端指标、测量耦合指标和下游区域状态；
-- 支持读取 v0.25 results v2 与 execution plan v1，并生成 v0.26 后续执行计划；
+- 新增 stable-ID **event cohort endpoint decomposition**，把区域终点人口变化精确拆为：事件 cohort 留在区域、存活但迁出、死亡/终点缺失、事件时已存在实体迁入、事件后出生且终点仍在区域；
+- 分解恒等式逐 anchor 验证，残差必须为 0；该诊断不反馈策略、行动、关系、群组、生命周期或环境；
+- natural-event execution plan 升级为 v3，trajectory marker 升级为 v3，paired results 升级为 v4；
+- 新增 `subject_evolution.natural_event_result_synthesis`，可合并多个签名结果集、优先采用诊断更完整的重复分支、重新执行 seed-first 聚合，并检查 manifest 覆盖率；
+- 对用户提供的 4 份结果完成综合：18 anchors、72/108 eligible pairs；关闭传播对局部文化根的负向作用在 crowding、mortality、scarcity 三类事件中重复；冻结群组刷新造成的 current-label cohesion 下降主要由边界定义变化解释；
+- 自动生成三份 v3 cohort 复跑计划，覆盖当前主要机制和尚未执行的 scarcity/mortality 知识消融；
 - 发行包继续不包含 `docs/archive`，`pyproject.toml` 保持无显式 `wheel` 构建依赖。
 
 ## 安装
@@ -81,36 +81,46 @@ python -m subject_evolution.natural_event_execution \
 --execute --backend gpu --gpu-semantics-mode strict-reference
 ```
 
-v0.26 默认启用 checkpoint-common boundary audit。若只为历史兼容而明确不需要该诊断，可使用：
+v0.27 默认同时启用：
+
+- checkpoint-common group boundary audit；
+- stable-ID event cohort endpoint audit。
+
+仅为历史兼容而明确关闭时可使用：
 
 ```text
 --no-common-boundary-audit
+--no-event-cohort-audit
 ```
 
-旧 v0.25 trajectory marker 不会被误复用为带共同边界的 v0.26 轨迹；共同边界复跑应使用新输出目录，或明确 `--overwrite-existing`。
+旧 marker 不会被静默复用为带新诊断的轨迹。
 
-### 3. 审计结果并生成后续计划
+### 3. 综合多个结果集
 
 ```bash
-python -m subject_evolution.natural_event_result_audit \
-  --results analyses/natural_event_execution/natural_event_matrix_results.json \
-  --execution-plan analyses/natural_event_execution/natural_event_execution_plan.json \
+python -m subject_evolution.natural_event_result_synthesis \
+  --results analyses/initial_crowding/natural_event_matrix_results.json \
+  --results analyses/common_boundary_rerun \
+  --results analyses/remaining_event_replication \
+  --results analyses/remaining_mechanism_ablation \
   --manifest analyses/natural_event_matrix/natural_event_matrix_manifest.json \
-  --output analyses/natural_event_result_audit
+  --output analyses/natural_event_result_synthesis
 ```
 
-审计器不会重选锚点或执行分支。它验证哈希链、标注结果的解释层级，并可生成：共同边界复跑、剩余事件复制和剩余机制消融计划。
+目录参数会递归发现 `natural_event_matrix_results.json`。综合器按 `(anchor_id, intervention)` 合并，重复分支必须在世界结果字段上兼容；若同一分支存在共同边界或 cohort 诊断更完整的版本，会优先使用更完整版本。
 
-生成的签名计划可直接执行：
+### 4. 执行已签名 follow-up plan
 
 ```bash
 python -m subject_evolution.natural_event_execution \
-  --execution-plan analyses/natural_event_result_audit/common_boundary_rerun_execution_plan.json \
-  --output analyses/common_boundary_rerun \
-  --execute --backend gpu --gpu-semantics-mode strict-reference
+  --execution-plan analyses/natural_event_result_synthesis/primary_event_cohort_rerun_execution_plan.json \
+  --output analyses/primary_event_cohort_rerun \
+  --execute \
+  --backend gpu \
+  --gpu-semantics-mode strict-reference
 ```
 
-使用 `--execution-plan` 时不能再附加路径、锚点、事件或 intervention 过滤；若需修改，必须从原 manifest 重建并产生新的计划哈希。
+使用 `--execution-plan` 时不能再附加路径、锚点、事件、diagnostic 或 intervention 过滤；若需修改，必须从原 manifest 重建并产生新的计划哈希。
 
 ## checkpoint 与单项重放
 
@@ -137,7 +147,7 @@ python -m subject_evolution.replay \
 - CPU reference、GPU strict-reference 和实验性 hybrid-accelerated 路径；
 - 完整 checkpoint、共同前史分支、相位/局部事件配对反事实；
 - 长期遗传、群组、局部压力和文化传播诊断；
-- 暴露盲选 manifest、哈希预检、共享轨迹、断点续跑、共同边界评估与结果审计。
+- 暴露盲选 manifest、哈希预检、共享轨迹、断点续跑、共同边界、event cohort 分解与跨结果综合。
 
 ## 文档
 
@@ -147,6 +157,7 @@ python -m subject_evolution.replay \
 - [架构与提交边界](docs/ARCHITECTURE.md)
 - [v0.24 文档](docs/v0.24/README.md)
 - [v0.25 文档](docs/v0.25/README.md)
-- [v0.26 文档与结果审计](docs/v0.26/README.md)
+- [v0.26 文档](docs/v0.26/README.md)
+- [v0.27 文档与结果综合](docs/v0.27/README.md)
 
 发行压缩包不包含 `docs/archive`。更早的完整历史仍保存在旧版本发行包中。

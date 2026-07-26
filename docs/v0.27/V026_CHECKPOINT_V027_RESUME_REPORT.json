@@ -1,0 +1,6 @@
+{
+  "schema": "v026-checkpoint-v027-resume-compatibility-v1",
+  "source_checkpoint_tick": 10,
+  "final_tick": 20,
+  "semantic_state_equal": true
+}

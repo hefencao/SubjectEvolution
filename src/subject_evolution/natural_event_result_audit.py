@@ -26,6 +26,7 @@ from .natural_event_matrix import load_manifest
 AUDIT_SCHEMA = "natural-event-result-audit-v1"
 SUPPORTED_RESULT_SCHEMAS = {
     "natural-event-paired-intervention-results-v2",
+    "natural-event-paired-intervention-results-v3",
     RESULT_SCHEMA,
 }
 
@@ -107,6 +108,8 @@ def build_result_audit(
         {
             "common_boundary_audit": False,
             "common_boundary_schema": None,
+            "event_cohort_audit": False,
+            "event_cohort_schema": None,
             "feedback_to_world": False,
         },
     )
@@ -137,11 +140,16 @@ def build_result_audit(
     findings.append(
         {
             "id": "TRANSFER-DEMOGRAPHIC-BENEFIT",
-            "status": "not-established",
+            "status": (
+                "cohort-decomposed-not-established"
+                if outcome["event_cohort"]["observed"]
+                else "event-cohort-rerun-required"
+            ),
             "evidence": transfer_alive,
             "interpretation": (
-                "Regional alive did not have a repeated direction across all seeds and is "
-                "also compositional with migration."
+                "Regional alive alone does not identify survival, endpoint absence, migration, "
+                "or post-event births. Stable-ID event-cohort decomposition is required before "
+                "any demographic interpretation."
             ),
         }
     )
@@ -170,7 +178,11 @@ def build_result_audit(
     findings.append(
         {
             "id": "RESOURCE-AFFINITY-CROWDED-REGION-ALIVE",
-            "status": "replication-priority" if affinity_alive is not None else "mixed",
+            "status": (
+                "cohort-decomposition-available"
+                if outcome["event_cohort"]["observed"]
+                else "event-cohort-rerun-required"
+            ),
             "evidence": affinity_alive,
             "interpretation": (
                 "The crowded-region alive count moved in one direction across seeds, but "
@@ -205,7 +217,8 @@ def build_result_audit(
         "interpretation_boundary": (
             "The supplied result covers only its selected execution plan. Directional "
             "agreement across three seeds is descriptive. Naturally occurring event "
-            "exposures are not randomized, and region-level outcomes are not fixed cohorts."
+            "exposures are not randomized. Region-level outcomes require stable-ID endpoint "
+            "cohort decomposition before demographic interpretation."
         ),
     }
 
@@ -223,8 +236,18 @@ def build_result_audit(
                 anchor_ids=anchor_ids,
                 interventions=("freeze-group-refresh",),
                 common_boundary_audit=True,
+                event_cohort_audit=True,
             )
             audit["followup_plans"]["common_boundary_rerun"] = common_plan
+        if not outcome["event_cohort"]["observed"] and interventions:
+            audit["followup_plans"]["event_cohort_rerun"] = build_execution_plan(
+                manifest,
+                path_prefixes=path_prefixes,
+                anchor_ids=anchor_ids,
+                interventions=interventions,
+                common_boundary_audit=True,
+                event_cohort_audit=True,
+            )
         remaining_events = [event for event in all_events if event not in event_kinds]
         if remaining_events and interventions:
             audit["followup_plans"]["remaining_event_replication"] = build_execution_plan(
@@ -233,6 +256,7 @@ def build_result_audit(
                 event_kinds=remaining_events,
                 interventions=interventions,
                 common_boundary_audit=True,
+                event_cohort_audit=True,
             )
         remaining_interventions = [
             name for name in all_interventions if name not in interventions
@@ -244,6 +268,7 @@ def build_result_audit(
                 event_kinds=event_kinds,
                 interventions=remaining_interventions,
                 common_boundary_audit=True,
+                event_cohort_audit=True,
             )
     return audit
 
@@ -262,6 +287,7 @@ def render_audit_markdown(audit: dict[str, Any]) -> str:
         f"- Interventions: {', '.join(coverage['interventions'])}",
         f"- Complete for selected plan: {audit['result_complete_for_execution_plan']}",
         f"- Common boundary observed: {audit['outcome_audit']['common_boundary']['observed']}",
+        f"- Event cohort observed: {audit['outcome_audit']['event_cohort']['observed']}",
         "",
         "## Findings",
         "",

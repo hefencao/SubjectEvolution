@@ -91,6 +91,7 @@ from .lifecycle import (
 )
 from .metrics import MetricsWriter
 from .local_stress import LocalStressDiagnostics
+from .event_cohort import EventCohortDiagnostics
 from .niches import (
     AFFINITY_SCALE,
     RESOURCE_CHANNELS,
@@ -641,6 +642,10 @@ class Simulation:
             if cfg.run.spatial_stress_diagnostics_enabled
             else None
         )
+        # Run-local, diagnostic-only endpoint cohort decomposition used by
+        # preregistered natural-event branches. It is never checkpoint state and
+        # never feeds the world.
+        self.event_cohort_diagnostics: EventCohortDiagnostics | None = None
         self.last_active = np.empty(0, dtype=np.int32)
         self.last_cells = np.empty(0, dtype=np.int32)
         self.last_local_resources = np.empty((0, 4), dtype=np.float32)
@@ -1531,6 +1536,43 @@ class Simulation:
             stable_ids=self.entities.entity_id,
             group_tokens=self.social.group_id,
         )
+
+    def configure_event_cohort_diagnostics(
+        self, requests: list[dict[str, object]] | tuple[dict[str, object], ...]
+    ) -> None:
+        """Enable preregistered endpoint cohort accounting for this run only."""
+
+        if not self.cfg.run.spatial_stress_diagnostics_enabled:
+            raise ValueError(
+                "event cohort diagnostics require spatial stress diagnostics"
+            )
+        self.event_cohort_diagnostics = EventCohortDiagnostics(
+            requests,
+            world_width=self.cfg.world.width,
+            world_height=self.cfg.world.height,
+            regions_x=self.cfg.run.spatial_stress_regions_x,
+            regions_y=self.cfg.run.spatial_stress_regions_y,
+        )
+        self._observe_event_cohort_diagnostics()
+
+    def _observe_event_cohort_diagnostics(self) -> None:
+        tracker = self.event_cohort_diagnostics
+        if tracker is None:
+            return
+        tracker.observe(
+            tick=self.tick,
+            alive=self.entities.alive,
+            stable_ids=self.entities.entity_id,
+            x=self.entities.x,
+            y=self.entities.y,
+        )
+
+    def event_cohort_summaries(self) -> dict[str, dict[str, object]]:
+        tracker = self.event_cohort_diagnostics
+        if tracker is None:
+            return {}
+        tracker.validate_complete()
+        return tracker.summaries()
 
     def apply_intervention(self, intervention: str) -> None:
         """Apply one documented intervention without changing random streams."""
@@ -4590,6 +4632,7 @@ class Simulation:
             for _ in range(target_tick - self.tick):
                 step_started = time.perf_counter()
                 stats = self.step()
+                self._observe_event_cohort_diagnostics()
                 elapsed = time.perf_counter() - step_started
                 last_stats = stats
                 last_step_seconds = elapsed

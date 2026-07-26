@@ -1,0 +1,10 @@
+{
+  "schema": "v026-v027-default-world-compatibility-v1",
+  "ticks": 20,
+  "common_non_timing_metric_cells": 1573,
+  "metric_mismatch_count": 0,
+  "metric_mismatches": [],
+  "byte_identical_files": {
+    "evolution_progress.jsonl": true
+  }
+}

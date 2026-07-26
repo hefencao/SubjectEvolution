@@ -86,3 +86,27 @@ checkpoint stable-ID + group-token snapshot
 ## Result audit boundary
 
 `natural_event_result_audit` 是纯离线工具。它验证结果、执行计划和 manifest 哈希，读取已计算 delta，分类指标并生成后续执行计划；不得修改原 manifest、重新选择锚点或自动将描述性方向升级为因果事实。
+
+## Event-cohort diagnostic boundary
+
+v0.27 在 natural-event 执行器中增加 run-local stable-ID cohort 观察器。每个 anchor 在自己的 `event_tick` 捕获全局和目标区域的 alive stable IDs，在 `until_tick` 只读取最终已提交实体状态，计算终点人口构成。
+
+```text
+event tick stable-ID snapshot
+       ↓
+shared baseline / intervention world trajectory
+       ↓
+anchor-specific horizon state
+       ↓
+retained + survived-outside + absent + existing-in + post-event-born
+       ↓
+endpoint population balance residual = 0
+```
+
+观察器没有世界写接口，不修改 checkpoint payload。共享轨迹可承载多个 anchor 请求，但每个请求的 snapshot tick、region 和 horizon 独立。该分解识别终点身份构成，不记录中间多次迁入迁出，因此不是 pathwise flow ledger。
+
+## Cross-result synthesis boundary
+
+`natural_event_result_synthesis` 是纯离线合并层。它要求全部输入绑定同一 manifest hash，以 anchor/intervention identity 去重，并拒绝核心世界结果不一致的重复分支。诊断完整度只决定在核心结果相同的前提下保留哪份记录。
+
+综合器重新执行 seed-first 聚合、计算 manifest coverage、标注跨事件重复方向并生成新的签名 execution plan；它不得修改原 manifest、补造未执行结果、把自然事件变成随机实验，或从机制近端指标推导人口与主体性结论。

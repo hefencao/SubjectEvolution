@@ -27,13 +27,18 @@ from .long_run_analysis import load_progress
 from .natural_event_matrix import load_manifest, validate_manifest
 
 
-EXECUTION_PLAN_SCHEMA = "natural-event-execution-plan-v2"
-LEGACY_EXECUTION_PLAN_SCHEMA = "natural-event-execution-plan-v1"
+EXECUTION_PLAN_SCHEMA = "natural-event-execution-plan-v3"
+LEGACY_EXECUTION_PLAN_SCHEMAS = {
+    "natural-event-execution-plan-v1",
+    "natural-event-execution-plan-v2",
+}
 PREFLIGHT_SCHEMA = "natural-event-execution-preflight-v1"
-TRAJECTORY_MARKER_SCHEMA = "natural-event-trajectory-run-v2"
-RESULT_SCHEMA = "natural-event-paired-intervention-results-v3"
-AGGREGATION_SCHEMA = "natural-event-paired-delta-aggregation-v2"
+TRAJECTORY_MARKER_SCHEMA = "natural-event-trajectory-run-v3"
+LEGACY_TRAJECTORY_MARKER_SCHEMA = "natural-event-trajectory-run-v2"
+RESULT_SCHEMA = "natural-event-paired-intervention-results-v4"
+AGGREGATION_SCHEMA = "natural-event-paired-delta-aggregation-v3"
 COMMON_BOUNDARY_AUDIT_SCHEMA = "checkpoint-frozen-stable-entity-boundary-v1"
+EVENT_COHORT_AUDIT_SCHEMA = "event-region-endpoint-cohort-decomposition-v1"
 BASELINE = "baseline"
 DELTA_KEYS = (
     "final_alive_region",
@@ -54,6 +59,18 @@ DELTA_KEYS = (
     "post_event_benefit_cross_boundary_region",
     "post_event_reference_benefit_internal_region",
     "post_event_reference_benefit_cross_boundary_region",
+    "event_alive_region",
+    "final_alive_region_from_cohort_audit",
+    "final_event_cohort_retained_region",
+    "final_event_cohort_survived_outside_region",
+    "final_event_cohort_absent",
+    "final_existing_in_migrants_region",
+    "final_post_event_born_region",
+    "endpoint_population_change_region",
+    "endpoint_population_change_reconstructed",
+    "endpoint_population_balance_residual",
+    "event_cohort_survival_fraction",
+    "event_cohort_region_retention_fraction",
 )
 
 
@@ -171,6 +188,7 @@ def build_execution_plan(
     event_kinds: Iterable[str] | None = None,
     interventions: Iterable[str] | None = None,
     common_boundary_audit: bool = True,
+    event_cohort_audit: bool = True,
 ) -> dict[str, Any]:
     """Build a portable, deduplicated execution plan from a signed manifest."""
 
@@ -308,6 +326,10 @@ def build_execution_plan(
             "common_boundary_schema": (
                 COMMON_BOUNDARY_AUDIT_SCHEMA if common_boundary_audit else None
             ),
+            "event_cohort_audit": bool(event_cohort_audit),
+            "event_cohort_schema": (
+                EVENT_COHORT_AUDIT_SCHEMA if event_cohort_audit else None
+            ),
             "feedback_to_world": False,
         },
         "selected_anchor_count": len(selected_anchor_payloads),
@@ -334,10 +356,7 @@ def build_execution_plan(
 
 
 def validate_execution_plan(payload: dict[str, Any]) -> None:
-    if payload.get("schema") not in {
-        LEGACY_EXECUTION_PLAN_SCHEMA,
-        EXECUTION_PLAN_SCHEMA,
-    }:
+    if payload.get("schema") not in (LEGACY_EXECUTION_PLAN_SCHEMAS | {EXECUTION_PLAN_SCHEMA}):
         raise ValueError(f"unsupported execution-plan schema {payload.get('schema')!r}")
     expected = str(payload.get("execution_plan_sha256", ""))
     unsigned = dict(payload)
@@ -446,13 +465,15 @@ def _load_resumable_trajectory(
     intervention: str | None,
     until_tick: int,
     common_boundary_audit: bool,
+    event_cohort_audit: bool,
 ) -> dict[str, Any] | None:
     marker_path = _trajectory_marker_path(output_dir)
     progress_path = output_dir / "evolution_progress.jsonl"
     if not marker_path.is_file() or not progress_path.is_file():
         return None
     marker = json.loads(marker_path.read_text(encoding="utf-8"))
-    if marker.get("schema") != TRAJECTORY_MARKER_SCHEMA:
+    marker_schema = marker.get("schema")
+    if marker_schema not in {LEGACY_TRAJECTORY_MARKER_SCHEMA, TRAJECTORY_MARKER_SCHEMA}:
         return None
     if str(marker.get("manifest_sha256")) != manifest_sha256:
         return None
@@ -467,12 +488,20 @@ def _load_resumable_trajectory(
     )
     if marker.get("common_boundary_schema") != expected_boundary_schema:
         return None
+    if bool(marker.get("event_cohort_audit", False)) != bool(event_cohort_audit):
+        return None
+    expected_cohort_schema = EVENT_COHORT_AUDIT_SCHEMA if event_cohort_audit else None
+    if marker.get("event_cohort_schema") != expected_cohort_schema:
+        return None
+    if event_cohort_audit and marker_schema != TRAJECTORY_MARKER_SCHEMA:
+        return None
     if int(marker.get("completed_until_tick", -1)) < int(until_tick):
         return None
     return {
         "records": load_progress(progress_path),
         "scientific_validity": marker.get("scientific_validity", {}),
         "intervention_history": marker.get("intervention_history", []),
+        "event_cohort_summaries": marker.get("event_cohort_summaries", {}),
         "resumed": True,
         "marker": marker,
     }
@@ -501,6 +530,13 @@ def _write_trajectory_marker(
         "common_boundary_schema": plan.get("diagnostics", {}).get(
             "common_boundary_schema"
         ),
+        "event_cohort_audit": bool(
+            plan.get("diagnostics", {}).get("event_cohort_audit", False)
+        ),
+        "event_cohort_schema": plan.get("diagnostics", {}).get(
+            "event_cohort_schema"
+        ),
+        "event_cohort_summaries": result.get("event_cohort_summaries", {}),
         "completed_until_tick": int(trajectory["until_tick"]),
         "backend": backend,
         "gpu_semantics_mode": gpu_semantics_mode,
@@ -609,6 +645,27 @@ def audit_outcomes(report: dict[str, Any]) -> dict[str, Any]:
         for branch in item.get("branches", [])
         if branch.get("eligible")
     )
+    event_cohort_requested = bool(
+        report.get("diagnostics", {}).get("event_cohort_audit", False)
+    )
+    cohort_summaries = [
+        item.get("baseline_region_summary", {})
+        for item in results
+    ] + [
+        branch.get("region_summary", {})
+        for item in results
+        for branch in item.get("branches", [])
+        if branch.get("eligible")
+    ]
+    event_cohort_observed = bool(cohort_summaries) and all(
+        summary.get("event_cohort_schema") == EVENT_COHORT_AUDIT_SCHEMA
+        for summary in cohort_summaries
+    )
+    event_cohort_balance_valid = bool(cohort_summaries) and all(
+        int(summary.get("endpoint_population_balance_residual", 1)) == 0
+        for summary in cohort_summaries
+        if summary.get("event_cohort_schema") == EVENT_COHORT_AUDIT_SCHEMA
+    ) and event_cohort_observed
 
     repeated: list[dict[str, Any]] = []
     for group in report.get("aggregation", {}).get("groups", []):
@@ -677,7 +734,16 @@ def audit_outcomes(report: dict[str, Any]) -> dict[str, Any]:
         "post_event_new_transferred_roots": "mechanism-proximal cultural state",
         "post_event_lost_transferred_roots": "mechanism-proximal cultural state",
         "final_active_transferred_roots_region": "mechanism-proximal cultural state",
-        "final_alive_region": "downstream region-compositional state",
+        "final_alive_region": "downstream regional endpoint state",
+        "final_event_cohort_retained_region": "event-cohort endpoint retention",
+        "final_event_cohort_survived_outside_region": "event-cohort surviving out-migration",
+        "final_event_cohort_absent": "event-cohort death or endpoint absence",
+        "final_existing_in_migrants_region": "endpoint in-migration by entities alive at event tick",
+        "final_post_event_born_region": "post-event births alive in region at horizon",
+        "endpoint_population_change_region": "regional endpoint population change",
+        "endpoint_population_balance_residual": "cohort decomposition exactness check",
+        "event_cohort_survival_fraction": "event-cohort survival endpoint fraction",
+        "event_cohort_region_retention_fraction": "event-cohort regional retention fraction",
         "final_mortality_region": "downstream region-window state",
         "final_scarcity_region": "downstream environment/population state",
         "final_cohesion_region": "current-label boundary metric",
@@ -687,15 +753,24 @@ def audit_outcomes(report: dict[str, Any]) -> dict[str, Any]:
         "post_event_boundary_definition_gap_region": "measurement-boundary component",
     }
     warnings = [
-        "Regional alive is compositional: it combines survival, birth, death, and migration across the analysis-region boundary.",
         "Transfer commits and transferred-root counts are mechanism-proximal; they are not demographic or subjecthood outcomes.",
     ]
+    if not event_cohort_observed:
+        warnings.insert(
+            0,
+            "Regional alive is compositional: survival, endpoint absence, migration, and post-event births are not separated until an event-cohort audit is available.",
+        )
+    else:
+        warnings.insert(
+            0,
+            "Event-cohort decomposition is an endpoint identity accounting, not a complete pathwise birth/death/migration flow ledger.",
+        )
     if "freeze-group-refresh" in interventions and not common_boundary_observed:
         warnings.append(
             "freeze-group-refresh changes the labels used by current-boundary cohesion; current-label cohesion is measurement-entangled until a common-boundary rerun is available."
         )
     return {
-        "schema": "natural-event-outcome-audit-v1",
+        "schema": "natural-event-outcome-audit-v2",
         "coverage": {
             "anchor_count": len(results),
             "seeds": seeds,
@@ -712,18 +787,37 @@ def audit_outcomes(report: dict[str, Any]) -> dict[str, Any]:
                 else None
             ),
         },
+        "event_cohort": {
+            "requested": event_cohort_requested,
+            "observed": event_cohort_observed,
+            "schema": report.get("diagnostics", {}).get("event_cohort_schema"),
+            "endpoint_balance_valid": event_cohort_balance_valid,
+            "preferred_population_metrics": (
+                [
+                    "final_event_cohort_retained_region",
+                    "final_event_cohort_survived_outside_region",
+                    "final_event_cohort_absent",
+                    "final_existing_in_migrants_region",
+                    "final_post_event_born_region",
+                ]
+                if event_cohort_observed
+                else []
+            ),
+        },
         "manipulation_checks": {
             "disable_knowledge_transfer_zero_region_commits": transfer_zero_commits,
             "freeze_group_refresh_history_valid": freeze_history_valid,
             "neutralize_resource_affinity_history_valid": affinity_history_valid,
+            "event_cohort_endpoint_balance_valid": event_cohort_balance_valid,
         },
         "metric_roles": metric_roles,
         "repeated_seed_directions": repeated,
         "warnings": warnings,
         "interpretation_boundary": (
             "Repeated seed direction is descriptive with three seeds. Common-boundary "
-            "metrics isolate the evaluation partition, but the naturally occurring event "
-            "exposure remains non-randomized."
+            "metrics isolate the evaluation partition, and event-cohort metrics decompose "
+            "endpoint regional population identity. The naturally occurring event exposure "
+            "remains non-randomized."
         ),
     }
 
@@ -755,6 +849,9 @@ def execute_plan(
     common_boundary_audit = bool(
         plan.get("diagnostics", {}).get("common_boundary_audit", False)
     )
+    event_cohort_audit = bool(
+        plan.get("diagnostics", {}).get("event_cohort_audit", False)
+    )
     executed_count = 0
     resumed_count = 0
     for trajectory in plan["trajectories"]:
@@ -768,6 +865,7 @@ def execute_plan(
             intervention=trajectory["intervention"],
             until_tick=int(trajectory["until_tick"]),
             common_boundary_audit=common_boundary_audit,
+            event_cohort_audit=event_cohort_audit,
         )
         if reusable is not None:
             trajectory_results[key] = reusable
@@ -790,6 +888,9 @@ def execute_plan(
             gpu_semantics_mode=gpu_semantics_mode,
             intervention=trajectory["intervention"],
             common_boundary_audit=common_boundary_audit,
+            cohort_requests=(
+                list(trajectory.get("dependencies", [])) if event_cohort_audit else None
+            ),
         )
         marker = _write_trajectory_marker(
             output,
@@ -820,6 +921,9 @@ def execute_plan(
             region=int(anchor["region_id"]),
             event_tick=int(anchor["event_tick"]),
         )
+        baseline_region.update(
+            dict(baseline.get("event_cohort_summaries", {}).get(str(anchor["anchor_id"]), {}))
+        )
         selected_entries = {
             str(entry["intervention"]): entry
             for entry in anchor["interventions_selected"]
@@ -848,6 +952,9 @@ def execute_plan(
                 branch_records,
                 region=int(anchor["region_id"]),
                 event_tick=int(anchor["event_tick"]),
+            )
+            region_summary.update(
+                dict(branch.get("event_cohort_summaries", {}).get(str(anchor["anchor_id"]), {}))
             )
             branches.append(
                 {
@@ -916,6 +1023,8 @@ def render_execution_plan_markdown(plan: dict[str, Any]) -> str:
         f"({plan['deduplication_fraction']:.1%})",
         f"- Common checkpoint boundary audit: "
         f"{bool(plan.get('diagnostics', {}).get('common_boundary_audit', False))}",
+        f"- Event cohort endpoint audit: "
+        f"{bool(plan.get('diagnostics', {}).get('event_cohort_audit', False))}",
         "",
         "| Trajectory | Checkpoint | Intervention | Until tick | Anchors |",
         "|---|---:|---|---:|---:|",
@@ -942,16 +1051,19 @@ def render_results_markdown(report: dict[str, Any]) -> str:
         f"Deduplicated branches: {report['deduplicated_branch_count']}",
         f"Common checkpoint boundary audit: "
         f"{bool(report.get('diagnostics', {}).get('common_boundary_audit', False))}",
+        f"Event cohort endpoint audit: "
+        f"{bool(report.get('diagnostics', {}).get('event_cohort_audit', False))}",
         "",
-        "| Anchor | Intervention | Δ alive | Δ current cohesion | Δ common cohesion | Δ incoming | Δ outgoing | Δ active roots |",
-        "|---|---|---:|---:|---:|---:|---:|---:|",
+        "| Anchor | Intervention | Δ alive | Δ retained | Δ absent | Δ existing in | Δ born in | Δ common cohesion | Δ active roots |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     display_keys = (
         "final_alive_region",
-        "post_event_cohesion_region",
+        "final_event_cohort_retained_region",
+        "final_event_cohort_absent",
+        "final_existing_in_migrants_region",
+        "final_post_event_born_region",
         "post_event_reference_cohesion_region",
-        "post_event_incoming_commits",
-        "post_event_outgoing_commits",
         "final_active_transferred_roots_region",
     )
     for item in report["results"]:
@@ -959,7 +1071,7 @@ def render_results_markdown(report: dict[str, Any]) -> str:
             if not branch["eligible"]:
                 lines.append(
                     f"| {item['anchor']['anchor_id']} | {branch['intervention']} | "
-                    "ineligible | — | — | — | — | — |"
+                    "ineligible | — | — | — | — | — | — | — |"
                 )
                 continue
             values = []
@@ -979,6 +1091,8 @@ def render_results_markdown(report: dict[str, Any]) -> str:
             f"Common boundary observed: {report['outcome_audit']['common_boundary']['observed']}",
             f"Preferred cohesion metric: "
             f"`{report['outcome_audit']['common_boundary']['preferred_cohesion_metric']}`",
+            f"Event cohort observed: {report['outcome_audit']['event_cohort']['observed']}",
+            f"Endpoint balance valid: {report['outcome_audit']['event_cohort']['endpoint_balance_valid']}",
             "",
             *[f"- {warning}" for warning in report['outcome_audit']['warnings']],
             "",
@@ -1049,6 +1163,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Disable checkpoint-frozen common-boundary diagnostics",
     )
+    parser.add_argument(
+        "--no-event-cohort-audit",
+        action="store_true",
+        help="Disable stable-ID endpoint cohort decomposition",
+    )
     parser.add_argument("--overwrite-existing", action="store_true")
     parser.add_argument(
         "--checkpoint-only-preflight",
@@ -1073,7 +1192,7 @@ def main() -> None:
             args.event_kinds,
             args.interventions,
         )
-        if any(filter_values) or args.no_common_boundary_audit:
+        if any(filter_values) or args.no_common_boundary_audit or args.no_event_cohort_audit:
             raise ValueError(
                 "path/filter/diagnostic options cannot modify a signed --execution-plan; "
                 "rebuild it from --manifest instead"
@@ -1089,6 +1208,7 @@ def main() -> None:
             event_kinds=_split_csv(args.event_kinds),
             interventions=_split_csv(args.interventions),
             common_boundary_audit=not args.no_common_boundary_audit,
+            event_cohort_audit=not args.no_event_cohort_audit,
         )
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)

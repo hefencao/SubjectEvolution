@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.27.0
+
+### Stable-ID event cohort diagnostics
+
+- 新增 `event-region-endpoint-cohort-decomposition-v1`，在每个自然事件 tick 冻结全局与目标区域 alive stable entity IDs。
+- 终点区域人口精确拆分为 cohort retained、cohort survived outside、cohort absent、existing in-migrants 与 post-event-born-at-final。
+- 每个 anchor/branch 验证人口恒等式，`endpoint_population_balance_residual` 必须为 0。
+- cohort 状态仅存在于执行期诊断层，不进入 checkpoint 或世界提交；实体身份按 stable ID 而非可复用 slot 判定。
+
+### Natural-event execution v3/v4
+
+- execution plan 升级为 v3，默认同时启用 common-boundary 与 event-cohort audit；兼容读取 v1/v2。
+- trajectory marker 升级为 v3，旧 marker 不会被静默复用为含 cohort 的轨迹。
+- paired results 升级为 v4，aggregation 升级为 v3，人口 delta 增加 cohort component 与 balance audit。
+- 共享 checkpoint 的多个 anchor 可共用最长世界轨迹，但各自 cohort 在自己的 event tick 冻结、在自己的 horizon 截断。
+
+### Cross-result synthesis
+
+- 新增 `subject_evolution.natural_event_result_synthesis`，合并多个同 manifest 结果集并验证重复分支的核心世界结果。
+- 优先采用 cohort/common-boundary 更完整的重复分支，重新执行 seed-first aggregation，并报告 72/108 pair coverage。
+- 用户提供的四份结果确认 transfer-off 对 active transferred roots 的负向作用在 crowding、mortality、scarcity 三类事件中重复。
+- common-boundary 结果表明 freeze-group-refresh 的 current-label cohesion 下降主要由评价边界改变产生。
+- 自动生成 64、16、48 条轨迹的三份 signed cohort follow-up plans。
+
+### Compatibility and packaging
+
+- 默认世界动力学不变；v0.26→v0.27 CPU 20 tick 的 1573 个非计时 metrics 单元零差异，progress byte-identical。
+- v0.26 tick-10 checkpoint 可由 v0.27 恢复到 tick 20，semantic state 与连续 v0.27 一致。
+- `pyproject.toml` 继续使用无显式 `wheel` 的用户版本；发行包继续排除 `docs/archive`。
+
 ## 0.26.0
 
 ### Common-boundary paired diagnostics

@@ -1,0 +1,37 @@
+{
+  "schema": "v027-input-analyses-validation-v1",
+  "archive": "analyses.zip",
+  "archive_sha256": "3b67d5dc448112df8cca48390f959db0c8618dfc31f5287b00b1d3b571f70356",
+  "file_count": 15,
+  "result_sets": [
+    "common_boundary_rerun",
+    "remaining_event_replication",
+    "remaining_mechanism_ablation"
+  ],
+  "source_result_count": 3,
+  "all_preflights_execution_ready": true,
+  "all_preflights_full_audit_ready": true,
+  "manifest_sha256": "737312dd4659807a89323fd275e784b91166fbaa53cdf094b16ca24618091dbb",
+  "merged_with_initial_result": true,
+  "merged_anchor_count": 18,
+  "observed_eligible_pairs": 72,
+  "expected_eligible_pairs": 108,
+  "event_cohort_observed": false,
+  "files": [
+    "analyses/common_boundary_rerun/natural_event_execution_plan.json",
+    "analyses/common_boundary_rerun/natural_event_execution_plan.md",
+    "analyses/common_boundary_rerun/natural_event_execution_preflight.json",
+    "analyses/common_boundary_rerun/natural_event_matrix_results.json",
+    "analyses/common_boundary_rerun/natural_event_matrix_results.md",
+    "analyses/remaining_event_replication/natural_event_execution_plan.json",
+    "analyses/remaining_event_replication/natural_event_execution_plan.md",
+    "analyses/remaining_event_replication/natural_event_execution_preflight.json",
+    "analyses/remaining_event_replication/natural_event_matrix_results.json",
+    "analyses/remaining_event_replication/natural_event_matrix_results.md",
+    "analyses/remaining_mechanism_ablation/natural_event_execution_plan.json",
+    "analyses/remaining_mechanism_ablation/natural_event_execution_plan.md",
+    "analyses/remaining_mechanism_ablation/natural_event_execution_preflight.json",
+    "analyses/remaining_mechanism_ablation/natural_event_matrix_results.json",
+    "analyses/remaining_mechanism_ablation/natural_event_matrix_results.md"
+  ]
+}

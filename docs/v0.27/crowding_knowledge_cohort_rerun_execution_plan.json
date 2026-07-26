@@ -1,0 +1,936 @@
+{
+  "schema": "natural-event-execution-plan-v3",
+  "manifest_schema": "natural-event-paired-intervention-matrix-v1",
+  "manifest_sha256": "737312dd4659807a89323fd275e784b91166fbaa53cdf094b16ca24618091dbb",
+  "path_prefixes": [],
+  "selection": {
+    "anchor_ids": [],
+    "seeds": [],
+    "event_kinds": [
+      "crowding"
+    ],
+    "interventions": [
+      "disable-knowledge-policy",
+      "ablate-working-memory",
+      "bypass-sparse-selection"
+    ]
+  },
+  "diagnostics": {
+    "common_boundary_audit": true,
+    "common_boundary_schema": "checkpoint-frozen-stable-entity-boundary-v1",
+    "event_cohort_audit": true,
+    "event_cohort_schema": "event-region-endpoint-cohort-decomposition-v1",
+    "feedback_to_world": false
+  },
+  "selected_anchor_count": 6,
+  "selected_anchors": [
+    {
+      "anchor_id": "seed_10001-crowding-r14-t270",
+      "run_name": "seed_10001",
+      "seed": 10001,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001",
+      "event_kind": "crowding",
+      "exposure_field": "spatial_local_region_crowding",
+      "region_id": 14,
+      "event_tick": 270,
+      "event_value": 3.2136726842261023,
+      "region_threshold": 2.1071606770318905,
+      "standardized_score": 3.8120617004505273,
+      "alive_region": 112,
+      "checkpoint_tick": 240,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000240.sechk",
+      "checkpoint_sha256": "c38e1a04e2296b8e6105c435a1801be8f0a415a43e6af3e4ab9728953d32459f",
+      "until_tick": 390,
+      "selection_record_index": 8,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000240.sechk",
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10001-crowding-r7-t300",
+      "run_name": "seed_10001",
+      "seed": 10001,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001",
+      "event_kind": "crowding",
+      "exposure_field": "spatial_local_region_crowding",
+      "region_id": 7,
+      "event_tick": 300,
+      "event_value": 3.674871335869322,
+      "region_threshold": 2.2187170670510388,
+      "standardized_score": 3.646146997722144,
+      "alive_region": 160,
+      "checkpoint_tick": 240,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000240.sechk",
+      "checkpoint_sha256": "c38e1a04e2296b8e6105c435a1801be8f0a415a43e6af3e4ab9728953d32459f",
+      "until_tick": 420,
+      "selection_record_index": 9,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000240.sechk",
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10002-crowding-r12-t240",
+      "run_name": "seed_10002",
+      "seed": 10002,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002",
+      "event_kind": "crowding",
+      "exposure_field": "spatial_local_region_crowding",
+      "region_id": 12,
+      "event_tick": 240,
+      "event_value": 3.7169021454735742,
+      "region_threshold": 2.191666166988259,
+      "standardized_score": 3.903043242337222,
+      "alive_region": 117,
+      "checkpoint_tick": 180,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000180.sechk",
+      "checkpoint_sha256": "1118598eda27d6db136428e8e3e685dcd40965105dc73f0303249d7e6a4e81dd",
+      "until_tick": 360,
+      "selection_record_index": 7,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000180.sechk",
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10002-crowding-r15-t330",
+      "run_name": "seed_10002",
+      "seed": 10002,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002",
+      "event_kind": "crowding",
+      "exposure_field": "spatial_local_region_crowding",
+      "region_id": 15,
+      "event_tick": 330,
+      "event_value": 3.834919124643197,
+      "region_threshold": 2.248162739826052,
+      "standardized_score": 3.926035915537362,
+      "alive_region": 147,
+      "checkpoint_tick": 300,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000300.sechk",
+      "checkpoint_sha256": "b536d9f2260c348ee51f3d5949505a5badb5152c93c46c6eb2a7534feb6e3880",
+      "until_tick": 450,
+      "selection_record_index": 10,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000300.sechk",
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10003-crowding-r7-t270",
+      "run_name": "seed_10003",
+      "seed": 10003,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003",
+      "event_kind": "crowding",
+      "exposure_field": "spatial_local_region_crowding",
+      "region_id": 7,
+      "event_tick": 270,
+      "event_value": 3.39852738150023,
+      "region_threshold": 2.1738724727838257,
+      "standardized_score": 3.477810652040381,
+      "alive_region": 146,
+      "checkpoint_tick": 240,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000240.sechk",
+      "checkpoint_sha256": "588cbb7f3214e3b6a633d58bf7b370978807c9b17fa48dd0fd310f6f38dfa056",
+      "until_tick": 390,
+      "selection_record_index": 8,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000240.sechk",
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "anchor_id": "seed_10003-crowding-r2-t300",
+      "run_name": "seed_10003",
+      "seed": 10003,
+      "run_dir": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003",
+      "event_kind": "crowding",
+      "exposure_field": "spatial_local_region_crowding",
+      "region_id": 2,
+      "event_tick": 300,
+      "event_value": 3.4952624839948783,
+      "region_threshold": 2.2197287967494406,
+      "standardized_score": 3.461730550932507,
+      "alive_region": 136,
+      "checkpoint_tick": 240,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000240.sechk",
+      "checkpoint_sha256": "588cbb7f3214e3b6a633d58bf7b370978807c9b17fa48dd0fd310f6f38dfa056",
+      "until_tick": 420,
+      "selection_record_index": 9,
+      "interventions": [
+        {
+          "intervention": "disable-knowledge-transfer",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "freeze-group-refresh",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-resource-affinity",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "neutralize-danger-evidence",
+          "eligible": false,
+          "reason": "danger evidence schema is 'disabled'"
+        }
+      ],
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000240.sechk",
+      "interventions_selected": [
+        {
+          "intervention": "disable-knowledge-policy",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "ablate-working-memory",
+          "eligible": true,
+          "reason": null
+        },
+        {
+          "intervention": "bypass-sparse-selection",
+          "eligible": true,
+          "reason": null
+        }
+      ]
+    }
+  ],
+  "source_files": [
+    {
+      "kind": "progress",
+      "run_name": "seed_10001",
+      "path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/evolution_progress.jsonl",
+      "path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/evolution_progress.jsonl",
+      "expected_sha256": "72506a30575e1a81c42eb948528ce00ef047e9f589ebb3944cdd01898ac1d6f6",
+      "required_for_execution": false,
+      "required_for_full_audit": true
+    },
+    {
+      "kind": "config",
+      "run_name": "seed_10001",
+      "path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/resolved_config.json",
+      "path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/resolved_config.json",
+      "expected_sha256": "bf66d18b3d58141fa8ffed86e8d30c1fe34119a6ed600bc8f5a2ed0a87e3c093",
+      "required_for_execution": false,
+      "required_for_full_audit": true
+    },
+    {
+      "kind": "progress",
+      "run_name": "seed_10002",
+      "path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/evolution_progress.jsonl",
+      "path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/evolution_progress.jsonl",
+      "expected_sha256": "7724753036af36b64013e7a02830a3c7d48b00c3490087d690ba326698e07a23",
+      "required_for_execution": false,
+      "required_for_full_audit": true
+    },
+    {
+      "kind": "config",
+      "run_name": "seed_10002",
+      "path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/resolved_config.json",
+      "path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/resolved_config.json",
+      "expected_sha256": "e5bfbedb77146ba2b0ee0c02c20f1f48d8fe559880225e414af58cd8e0220260",
+      "required_for_execution": false,
+      "required_for_full_audit": true
+    },
+    {
+      "kind": "progress",
+      "run_name": "seed_10003",
+      "path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/evolution_progress.jsonl",
+      "path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/evolution_progress.jsonl",
+      "expected_sha256": "bf0d70c41ca195ba0d5d92d653d47114489c624d2a5c0f98da4a4ef75e2a3fbf",
+      "required_for_execution": false,
+      "required_for_full_audit": true
+    },
+    {
+      "kind": "config",
+      "run_name": "seed_10003",
+      "path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/resolved_config.json",
+      "path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/resolved_config.json",
+      "expected_sha256": "1a82eb62d93657dee1329c8915e0cd5343e05b5e00e390ede65adef1f763b827",
+      "required_for_execution": false,
+      "required_for_full_audit": true
+    }
+  ],
+  "naive_branch_count": 24,
+  "trajectory_count": 16,
+  "deduplicated_branch_count": 8,
+  "deduplication_fraction": 0.3333333333333333,
+  "trajectories": [
+    {
+      "trajectory_id": "1118598eda27d6db-ablate_working_memory",
+      "checkpoint_sha256": "1118598eda27d6db136428e8e3e685dcd40965105dc73f0303249d7e6a4e81dd",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000180.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000180.sechk",
+      "checkpoint_tick": 180,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 360,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-crowding-r12-t240",
+          "seed": 10002,
+          "event_kind": "crowding",
+          "region_id": 12,
+          "event_tick": 240,
+          "until_tick": 360
+        }
+      ],
+      "output_relative_path": "trajectories/1118598eda27d6db-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "1118598eda27d6db-baseline",
+      "checkpoint_sha256": "1118598eda27d6db136428e8e3e685dcd40965105dc73f0303249d7e6a4e81dd",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000180.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000180.sechk",
+      "checkpoint_tick": 180,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 360,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-crowding-r12-t240",
+          "seed": 10002,
+          "event_kind": "crowding",
+          "region_id": 12,
+          "event_tick": 240,
+          "until_tick": 360
+        }
+      ],
+      "output_relative_path": "trajectories/1118598eda27d6db-baseline"
+    },
+    {
+      "trajectory_id": "1118598eda27d6db-bypass_sparse_selection",
+      "checkpoint_sha256": "1118598eda27d6db136428e8e3e685dcd40965105dc73f0303249d7e6a4e81dd",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000180.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000180.sechk",
+      "checkpoint_tick": 180,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 360,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-crowding-r12-t240",
+          "seed": 10002,
+          "event_kind": "crowding",
+          "region_id": 12,
+          "event_tick": 240,
+          "until_tick": 360
+        }
+      ],
+      "output_relative_path": "trajectories/1118598eda27d6db-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "1118598eda27d6db-disable_knowledge_policy",
+      "checkpoint_sha256": "1118598eda27d6db136428e8e3e685dcd40965105dc73f0303249d7e6a4e81dd",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000180.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000180.sechk",
+      "checkpoint_tick": 180,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 360,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-crowding-r12-t240",
+          "seed": 10002,
+          "event_kind": "crowding",
+          "region_id": 12,
+          "event_tick": 240,
+          "until_tick": 360
+        }
+      ],
+      "output_relative_path": "trajectories/1118598eda27d6db-disable_knowledge_policy"
+    },
+    {
+      "trajectory_id": "588cbb7f3214e3b6-ablate_working_memory",
+      "checkpoint_sha256": "588cbb7f3214e3b6a633d58bf7b370978807c9b17fa48dd0fd310f6f38dfa056",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000240.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000240.sechk",
+      "checkpoint_tick": 240,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 420,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-crowding-r2-t300",
+          "seed": 10003,
+          "event_kind": "crowding",
+          "region_id": 2,
+          "event_tick": 300,
+          "until_tick": 420
+        },
+        {
+          "anchor_id": "seed_10003-crowding-r7-t270",
+          "seed": 10003,
+          "event_kind": "crowding",
+          "region_id": 7,
+          "event_tick": 270,
+          "until_tick": 390
+        }
+      ],
+      "output_relative_path": "trajectories/588cbb7f3214e3b6-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "588cbb7f3214e3b6-baseline",
+      "checkpoint_sha256": "588cbb7f3214e3b6a633d58bf7b370978807c9b17fa48dd0fd310f6f38dfa056",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000240.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000240.sechk",
+      "checkpoint_tick": 240,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 420,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-crowding-r2-t300",
+          "seed": 10003,
+          "event_kind": "crowding",
+          "region_id": 2,
+          "event_tick": 300,
+          "until_tick": 420
+        },
+        {
+          "anchor_id": "seed_10003-crowding-r7-t270",
+          "seed": 10003,
+          "event_kind": "crowding",
+          "region_id": 7,
+          "event_tick": 270,
+          "until_tick": 390
+        }
+      ],
+      "output_relative_path": "trajectories/588cbb7f3214e3b6-baseline"
+    },
+    {
+      "trajectory_id": "588cbb7f3214e3b6-bypass_sparse_selection",
+      "checkpoint_sha256": "588cbb7f3214e3b6a633d58bf7b370978807c9b17fa48dd0fd310f6f38dfa056",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000240.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000240.sechk",
+      "checkpoint_tick": 240,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 420,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-crowding-r2-t300",
+          "seed": 10003,
+          "event_kind": "crowding",
+          "region_id": 2,
+          "event_tick": 300,
+          "until_tick": 420
+        },
+        {
+          "anchor_id": "seed_10003-crowding-r7-t270",
+          "seed": 10003,
+          "event_kind": "crowding",
+          "region_id": 7,
+          "event_tick": 270,
+          "until_tick": 390
+        }
+      ],
+      "output_relative_path": "trajectories/588cbb7f3214e3b6-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "588cbb7f3214e3b6-disable_knowledge_policy",
+      "checkpoint_sha256": "588cbb7f3214e3b6a633d58bf7b370978807c9b17fa48dd0fd310f6f38dfa056",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000240.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10003/checkpoint_00000240.sechk",
+      "checkpoint_tick": 240,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 420,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10003-crowding-r2-t300",
+          "seed": 10003,
+          "event_kind": "crowding",
+          "region_id": 2,
+          "event_tick": 300,
+          "until_tick": 420
+        },
+        {
+          "anchor_id": "seed_10003-crowding-r7-t270",
+          "seed": 10003,
+          "event_kind": "crowding",
+          "region_id": 7,
+          "event_tick": 270,
+          "until_tick": 390
+        }
+      ],
+      "output_relative_path": "trajectories/588cbb7f3214e3b6-disable_knowledge_policy"
+    },
+    {
+      "trajectory_id": "b536d9f2260c348e-ablate_working_memory",
+      "checkpoint_sha256": "b536d9f2260c348ee51f3d5949505a5badb5152c93c46c6eb2a7534feb6e3880",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000300.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000300.sechk",
+      "checkpoint_tick": 300,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 450,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-crowding-r15-t330",
+          "seed": 10002,
+          "event_kind": "crowding",
+          "region_id": 15,
+          "event_tick": 330,
+          "until_tick": 450
+        }
+      ],
+      "output_relative_path": "trajectories/b536d9f2260c348e-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "b536d9f2260c348e-baseline",
+      "checkpoint_sha256": "b536d9f2260c348ee51f3d5949505a5badb5152c93c46c6eb2a7534feb6e3880",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000300.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000300.sechk",
+      "checkpoint_tick": 300,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 450,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-crowding-r15-t330",
+          "seed": 10002,
+          "event_kind": "crowding",
+          "region_id": 15,
+          "event_tick": 330,
+          "until_tick": 450
+        }
+      ],
+      "output_relative_path": "trajectories/b536d9f2260c348e-baseline"
+    },
+    {
+      "trajectory_id": "b536d9f2260c348e-bypass_sparse_selection",
+      "checkpoint_sha256": "b536d9f2260c348ee51f3d5949505a5badb5152c93c46c6eb2a7534feb6e3880",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000300.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000300.sechk",
+      "checkpoint_tick": 300,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 450,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-crowding-r15-t330",
+          "seed": 10002,
+          "event_kind": "crowding",
+          "region_id": 15,
+          "event_tick": 330,
+          "until_tick": 450
+        }
+      ],
+      "output_relative_path": "trajectories/b536d9f2260c348e-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "b536d9f2260c348e-disable_knowledge_policy",
+      "checkpoint_sha256": "b536d9f2260c348ee51f3d5949505a5badb5152c93c46c6eb2a7534feb6e3880",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000300.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10002/checkpoint_00000300.sechk",
+      "checkpoint_tick": 300,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 450,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10002-crowding-r15-t330",
+          "seed": 10002,
+          "event_kind": "crowding",
+          "region_id": 15,
+          "event_tick": 330,
+          "until_tick": 450
+        }
+      ],
+      "output_relative_path": "trajectories/b536d9f2260c348e-disable_knowledge_policy"
+    },
+    {
+      "trajectory_id": "c38e1a04e2296b8e-ablate_working_memory",
+      "checkpoint_sha256": "c38e1a04e2296b8e6105c435a1801be8f0a415a43e6af3e4ab9728953d32459f",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000240.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000240.sechk",
+      "checkpoint_tick": 240,
+      "intervention": "ablate-working-memory",
+      "intervention_label": "ablate-working-memory",
+      "until_tick": 420,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-crowding-r14-t270",
+          "seed": 10001,
+          "event_kind": "crowding",
+          "region_id": 14,
+          "event_tick": 270,
+          "until_tick": 390
+        },
+        {
+          "anchor_id": "seed_10001-crowding-r7-t300",
+          "seed": 10001,
+          "event_kind": "crowding",
+          "region_id": 7,
+          "event_tick": 300,
+          "until_tick": 420
+        }
+      ],
+      "output_relative_path": "trajectories/c38e1a04e2296b8e-ablate_working_memory"
+    },
+    {
+      "trajectory_id": "c38e1a04e2296b8e-baseline",
+      "checkpoint_sha256": "c38e1a04e2296b8e6105c435a1801be8f0a415a43e6af3e4ab9728953d32459f",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000240.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000240.sechk",
+      "checkpoint_tick": 240,
+      "intervention": null,
+      "intervention_label": "baseline",
+      "until_tick": 420,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-crowding-r14-t270",
+          "seed": 10001,
+          "event_kind": "crowding",
+          "region_id": 14,
+          "event_tick": 270,
+          "until_tick": 390
+        },
+        {
+          "anchor_id": "seed_10001-crowding-r7-t300",
+          "seed": 10001,
+          "event_kind": "crowding",
+          "region_id": 7,
+          "event_tick": 300,
+          "until_tick": 420
+        }
+      ],
+      "output_relative_path": "trajectories/c38e1a04e2296b8e-baseline"
+    },
+    {
+      "trajectory_id": "c38e1a04e2296b8e-bypass_sparse_selection",
+      "checkpoint_sha256": "c38e1a04e2296b8e6105c435a1801be8f0a415a43e6af3e4ab9728953d32459f",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000240.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000240.sechk",
+      "checkpoint_tick": 240,
+      "intervention": "bypass-sparse-selection",
+      "intervention_label": "bypass-sparse-selection",
+      "until_tick": 420,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-crowding-r14-t270",
+          "seed": 10001,
+          "event_kind": "crowding",
+          "region_id": 14,
+          "event_tick": 270,
+          "until_tick": 390
+        },
+        {
+          "anchor_id": "seed_10001-crowding-r7-t300",
+          "seed": 10001,
+          "event_kind": "crowding",
+          "region_id": 7,
+          "event_tick": 300,
+          "until_tick": 420
+        }
+      ],
+      "output_relative_path": "trajectories/c38e1a04e2296b8e-bypass_sparse_selection"
+    },
+    {
+      "trajectory_id": "c38e1a04e2296b8e-disable_knowledge_policy",
+      "checkpoint_sha256": "c38e1a04e2296b8e6105c435a1801be8f0a415a43e6af3e4ab9728953d32459f",
+      "checkpoint_path_original": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000240.sechk",
+      "checkpoint_path_resolved": "/home/unkloser/projects/SubjectEvolution/runs/mortality_trace_adaptive_groups_multiseed/seed_10001/checkpoint_00000240.sechk",
+      "checkpoint_tick": 240,
+      "intervention": "disable-knowledge-policy",
+      "intervention_label": "disable-knowledge-policy",
+      "until_tick": 420,
+      "dependencies": [
+        {
+          "anchor_id": "seed_10001-crowding-r14-t270",
+          "seed": 10001,
+          "event_kind": "crowding",
+          "region_id": 14,
+          "event_tick": 270,
+          "until_tick": 390
+        },
+        {
+          "anchor_id": "seed_10001-crowding-r7-t300",
+          "seed": 10001,
+          "event_kind": "crowding",
+          "region_id": 7,
+          "event_tick": 300,
+          "until_tick": 420
+        }
+      ],
+      "output_relative_path": "trajectories/c38e1a04e2296b8e-disable_knowledge_policy"
+    }
+  ],
+  "pairing_boundary": "Every intervention comparison uses the baseline trajectory from the same checkpoint hash. A longer shared trajectory may serve multiple anchors only when checkpoint and intervention are identical; region summaries are still computed separately at each anchor's event tick and horizon.",
+  "execution_plan_sha256": "fda5602b76b9b63ff9bea750df1fcb1bf477590da16d957fb807d62686c081bc"
+}

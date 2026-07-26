@@ -122,6 +122,7 @@ def test_execute_plan_resumes_shared_trajectories(tmp_path: Path, monkeypatch) -
         gpu_semantics_mode,
         intervention,
         common_boundary_audit,
+        cohort_requests,
     ):
         calls.append((intervention, until_tick))
         output = Path(output_dir)
@@ -164,10 +165,29 @@ def test_execute_plan_resumes_shared_trajectories(tmp_path: Path, monkeypatch) -
         (output / "evolution_progress.jsonl").write_text(
             "".join(json.dumps(item) + "\n" for item in records), encoding="utf-8"
         )
+        cohort_summaries = {}
+        for request in cohort_requests or ():
+            value = 1 if intervention is None else 2
+            cohort_summaries[str(request["anchor_id"])] = {
+                "event_cohort_schema": execution.EVENT_COHORT_AUDIT_SCHEMA,
+                "event_alive_region": 10,
+                "final_alive_region_from_cohort_audit": 10 + value,
+                "final_event_cohort_retained_region": 7 + value,
+                "final_event_cohort_survived_outside_region": 1,
+                "final_event_cohort_absent": 2 - value,
+                "final_existing_in_migrants_region": 2,
+                "final_post_event_born_region": 1,
+                "endpoint_population_change_region": value,
+                "endpoint_population_change_reconstructed": value,
+                "endpoint_population_balance_residual": 0,
+                "event_cohort_survival_fraction": 0.8 + 0.1 * value,
+                "event_cohort_region_retention_fraction": 0.7 + 0.1 * value,
+            }
         return {
             "records": records,
             "scientific_validity": {"valid": True},
             "intervention_history": [] if intervention is None else [intervention],
+            "event_cohort_summaries": cohort_summaries,
         }
 
     monkeypatch.setattr(execution, "_run_branch", fake_run_branch)
@@ -182,6 +202,14 @@ def test_execute_plan_resumes_shared_trajectories(tmp_path: Path, monkeypatch) -
     assert first["results"][1]["baseline_region_summary"]["final_tick"] == 150
     assert first["results"][0]["branches"][0]["delta"]["final_alive_region"] == 1.0
     assert first["outcome_audit"]["common_boundary"]["observed"] is True
+    assert first["outcome_audit"]["event_cohort"]["observed"] is True
+    assert first["outcome_audit"]["event_cohort"]["endpoint_balance_valid"] is True
+    assert (
+        first["results"][0]["branches"][0]["delta"][
+            "final_event_cohort_retained_region"
+        ]
+        == 1.0
+    )
 
     second = execution.execute_plan(plan, output)
     assert len(calls) == 2
