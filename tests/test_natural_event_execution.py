@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 from subject_evolution import natural_event_execution as execution
 from subject_evolution.natural_event_matrix import SCHEMA, SELECTION_SCHEMA, _canonical_sha256
@@ -112,7 +113,16 @@ def test_execute_plan_resumes_shared_trajectories(tmp_path: Path, monkeypatch) -
     )
     calls: list[tuple[str | None, int]] = []
 
-    def fake_run_branch(checkpoint, output_dir, *, until_tick, backend, gpu_semantics_mode, intervention):
+    def fake_run_branch(
+        checkpoint,
+        output_dir,
+        *,
+        until_tick,
+        backend,
+        gpu_semantics_mode,
+        intervention,
+        common_boundary_audit,
+    ):
         calls.append((intervention, until_tick))
         output = Path(output_dir)
         output.mkdir(parents=True, exist_ok=True)
@@ -124,6 +134,24 @@ def test_execute_plan_resumes_shared_trajectories(tmp_path: Path, monkeypatch) -
                     "tick": tick,
                     "spatial_local_region_alive": [10 + value, 20 + value],
                     "spatial_local_region_boundary_cohesion": [0.2 * value, 0.3 * value],
+                    "spatial_local_reference_boundary_schema": (
+                        execution.COMMON_BOUNDARY_AUDIT_SCHEMA
+                        if common_boundary_audit
+                        else None
+                    ),
+                    "spatial_local_reference_boundary_snapshot_tick": 60,
+                    "spatial_local_region_reference_boundary_cohesion": [
+                        0.25 * value,
+                        0.35 * value,
+                    ],
+                    "spatial_local_region_boundary_definition_gap": [
+                        -0.05 * value,
+                        -0.05 * value,
+                    ],
+                    "spatial_local_region_benefit_internal": [value, value],
+                    "spatial_local_region_benefit_cross_boundary": [value, value],
+                    "spatial_local_region_reference_benefit_internal": [value, value],
+                    "spatial_local_region_reference_benefit_cross_boundary": [value, value],
                     "spatial_local_region_resource_scarcity": [0.8, 0.7],
                     "spatial_local_region_mortality_pressure": [0.1, 0.2],
                     "spatial_local_region_active_transferred_roots": [5 * value, 6 * value],
@@ -153,6 +181,7 @@ def test_execute_plan_resumes_shared_trajectories(tmp_path: Path, monkeypatch) -
     assert first["results"][0]["baseline_region_summary"]["final_tick"] == 120
     assert first["results"][1]["baseline_region_summary"]["final_tick"] == 150
     assert first["results"][0]["branches"][0]["delta"]["final_alive_region"] == 1.0
+    assert first["outcome_audit"]["common_boundary"]["observed"] is True
 
     second = execution.execute_plan(plan, output)
     assert len(calls) == 2
@@ -188,3 +217,59 @@ def test_seed_level_aggregation_averages_anchors_before_sign_count() -> None:
     assert group["seed_level"]["positive"] == 1
     assert group["seed_level"]["negative"] == 1
     assert group["seed_level"]["zero"] == 1
+
+
+def test_outcome_audit_marks_current_cohesion_entangled_without_common_boundary() -> None:
+    report = {
+        "diagnostics": {"common_boundary_audit": False, "common_boundary_schema": None},
+        "results": [
+            {
+                "anchor": {"seed": 10001, "event_kind": "crowding"},
+                "branches": [
+                    {
+                        "intervention": "freeze-group-refresh",
+                        "eligible": True,
+                        "region_summary": {"final_cohesion_region": 0.2},
+                        "intervention_history": [
+                            {
+                                "type": "freeze-group-refresh",
+                                "existing_group_labels_modified": False,
+                            }
+                        ],
+                    }
+                ],
+            }
+        ],
+        "aggregation": {"groups": []},
+    }
+    audit = execution.audit_outcomes(report)
+    assert audit["common_boundary"]["observed"] is False
+    assert any("measurement-entangled" in item for item in audit["warnings"])
+
+
+def test_cli_accepts_prebuilt_signed_execution_plan(tmp_path: Path, monkeypatch) -> None:
+    manifest, actual_root = _manifest(tmp_path)
+    plan = execution.build_execution_plan(
+        manifest,
+        path_prefixes=((Path("/old/machine/runs"), actual_root),),
+        interventions=("freeze-group-refresh",),
+    )
+    plan_path = tmp_path / "plan.json"
+    plan_path.write_text(json.dumps(plan), encoding="utf-8")
+    output = tmp_path / "planned"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "natural_event_execution",
+            "--execution-plan",
+            str(plan_path),
+            "--output",
+            str(output),
+        ],
+    )
+    execution.main()
+    written = json.loads(
+        (output / "natural_event_execution_plan.json").read_text(encoding="utf-8")
+    )
+    assert written["execution_plan_sha256"] == plan["execution_plan_sha256"]

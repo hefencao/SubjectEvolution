@@ -23,6 +23,7 @@ FLOW_COUNT = 5
 
 SCHEMA_STRESS_V1 = "spatial-local-stress-diagnostics-v1"
 SCHEMA_CULTURE_V2 = "spatial-local-stress-culture-diagnostics-v2"
+REFERENCE_BOUNDARY_SCHEMA = "checkpoint-frozen-stable-entity-boundary-v1"
 
 
 def _safe_ratio(numerator: np.ndarray, denominator: np.ndarray) -> np.ndarray:
@@ -93,6 +94,13 @@ class LocalStressDiagnostics:
         self.current_root_presence: set[tuple[int, int]] = set()
         self.previous_root_presence: set[tuple[int, int]] = set()
         self.current_root_holder_presence: set[tuple[int, int, int]] = set()
+        self.reference_boundary_enabled = False
+        self.reference_boundary_snapshot_tick = 0
+        self.reference_boundary_entity_ids = np.zeros(0, dtype=np.uint64)
+        self.reference_boundary_group_tokens = np.zeros(0, dtype=np.uint64)
+        self.reference_benefit_flow = np.zeros(
+            (self.region_count, FLOW_COUNT), dtype=np.float64
+        )
 
     def clone(self) -> "LocalStressDiagnostics":
         return copy.deepcopy(self)
@@ -117,6 +125,49 @@ class LocalStressDiagnostics:
             self.current_root_presence = set()
             self.previous_root_presence = set()
             self.current_root_holder_presence = set()
+        if not hasattr(self, "reference_boundary_enabled"):
+            self.reference_boundary_enabled = False
+            self.reference_boundary_snapshot_tick = 0
+            self.reference_boundary_entity_ids = np.zeros(0, dtype=np.uint64)
+            self.reference_boundary_group_tokens = np.zeros(0, dtype=np.uint64)
+            self.reference_benefit_flow = np.zeros(
+                (self.region_count, FLOW_COUNT), dtype=np.float64
+            )
+
+    def freeze_reference_boundary(
+        self,
+        *,
+        tick: int,
+        alive: np.ndarray,
+        stable_ids: np.ndarray,
+        group_tokens: np.ndarray,
+    ) -> None:
+        """Freeze one diagnostic-only group partition for paired branches.
+
+        Membership is keyed by both physical slot and stable entity ID.  A slot
+        reused after the checkpoint therefore does not inherit the old group.
+        The boundary affects only accounting fields emitted by this tracker.
+        """
+
+        if int(self.observed_ticks) != 0:
+            raise ValueError(
+                "reference boundary requires a checkpoint aligned with the local diagnostic window"
+            )
+
+        alive_values = np.asarray(alive, dtype=bool)
+        ids = np.asarray(stable_ids, dtype=np.uint64)
+        groups = np.asarray(group_tokens, dtype=np.uint64)
+        if any(value.ndim != 1 for value in (alive_values, ids, groups)) or not (
+            alive_values.size == ids.size == groups.size
+        ):
+            raise ValueError("reference boundary arrays must be aligned and one-dimensional")
+        self.reference_boundary_entity_ids = np.zeros(ids.size, dtype=np.uint64)
+        self.reference_boundary_group_tokens = np.zeros(groups.size, dtype=np.uint64)
+        self.reference_boundary_entity_ids[alive_values] = ids[alive_values]
+        self.reference_boundary_group_tokens[alive_values] = groups[alive_values]
+        self.reference_boundary_snapshot_tick = int(tick)
+        self.reference_boundary_enabled = True
+        self.reference_benefit_flow.fill(0.0)
 
     def region_ids(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         px = np.asarray(x, dtype=np.float64)
@@ -181,6 +232,7 @@ class LocalStressDiagnostics:
         owner_indices: np.ndarray,
         target_indices: np.ndarray,
         group_ids: np.ndarray,
+        stable_ids: np.ndarray | None = None,
         amounts: np.ndarray,
         x: np.ndarray,
         y: np.ndarray,
@@ -203,6 +255,49 @@ class LocalStressDiagnostics:
         kinds[~owner_grouped & target_grouped] = FLOW_UNGROUPED_TO_GROUP
         regions = self.region_ids(np.asarray(x)[owners], np.asarray(y)[owners])
         np.add.at(self.benefit_flow, (regions, kinds), values)
+        if self.reference_boundary_enabled:
+            if stable_ids is None:
+                raise ValueError(
+                    "stable IDs are required while the reference boundary is enabled"
+                )
+            current_ids = np.asarray(stable_ids, dtype=np.uint64)
+            if current_ids.ndim != 1 or current_ids.size != self.reference_boundary_entity_ids.size:
+                raise ValueError("stable IDs must match the frozen reference boundary capacity")
+            owner_match = (
+                self.reference_boundary_entity_ids[owners] == current_ids[owners]
+            )
+            target_match = (
+                self.reference_boundary_entity_ids[targets] == current_ids[targets]
+            )
+            reference_owner_groups = np.where(
+                owner_match, self.reference_boundary_group_tokens[owners], 0
+            )
+            reference_target_groups = np.where(
+                target_match, self.reference_boundary_group_tokens[targets], 0
+            )
+            reference_kinds = np.full(owners.size, FLOW_UNBOUNDED, dtype=np.int8)
+            reference_owner_grouped = reference_owner_groups != 0
+            reference_target_grouped = reference_target_groups != 0
+            reference_kinds[
+                reference_owner_grouped
+                & (reference_owner_groups == reference_target_groups)
+            ] = FLOW_INTERNAL
+            reference_kinds[
+                reference_owner_grouped
+                & reference_target_grouped
+                & (reference_owner_groups != reference_target_groups)
+            ] = FLOW_GROUP_TO_GROUP
+            reference_kinds[
+                reference_owner_grouped & ~reference_target_grouped
+            ] = FLOW_GROUP_TO_UNGROUPED
+            reference_kinds[
+                ~reference_owner_grouped & reference_target_grouped
+            ] = FLOW_UNGROUPED_TO_GROUP
+            np.add.at(
+                self.reference_benefit_flow,
+                (regions, reference_kinds),
+                values,
+            )
 
     def observe_transfers(
         self,
@@ -415,6 +510,45 @@ class LocalStressDiagnostics:
             "spatial_local_max_resource_scarcity": float(np.max(scarcity[occupied])) if np.any(occupied) else 0.0,
             "spatial_local_max_crowding": float(np.max(crowding[occupied])) if np.any(occupied) else 0.0,
         }
+        if self.reference_boundary_enabled:
+            reference_internal = self.reference_benefit_flow[:, FLOW_INTERNAL]
+            reference_cross = self.reference_benefit_flow[
+                :, FLOW_GROUP_TO_GROUP:FLOW_UNBOUNDED
+            ].sum(axis=1)
+            reference_unbounded = self.reference_benefit_flow[:, FLOW_UNBOUNDED]
+            reference_boundary = reference_internal + reference_cross
+            reference_total = reference_boundary + reference_unbounded
+            reference_outgoing = (
+                reference_internal
+                + self.reference_benefit_flow[:, FLOW_GROUP_TO_GROUP]
+                + self.reference_benefit_flow[:, FLOW_GROUP_TO_UNGROUPED]
+            )
+            reference_cohesion = _safe_ratio(
+                reference_internal, reference_boundary
+            )
+            reference_valid = reference_boundary > 0.0
+            payload.update(
+                {
+                    "spatial_local_reference_boundary_schema": REFERENCE_BOUNDARY_SCHEMA,
+                    "spatial_local_reference_boundary_snapshot_tick": int(
+                        self.reference_boundary_snapshot_tick
+                    ),
+                    "spatial_local_region_reference_benefit_internal": reference_internal.tolist(),
+                    "spatial_local_region_reference_benefit_cross_boundary": reference_cross.tolist(),
+                    "spatial_local_region_reference_benefit_unbounded": reference_unbounded.tolist(),
+                    "spatial_local_region_reference_boundary_coverage": _safe_ratio(
+                        reference_boundary, reference_total
+                    ).tolist(),
+                    "spatial_local_region_reference_boundary_cohesion": reference_cohesion.tolist(),
+                    "spatial_local_region_reference_outgoing_retention": _safe_ratio(
+                        reference_internal, reference_outgoing
+                    ).tolist(),
+                    "spatial_local_region_reference_cohesion_valid": reference_valid.tolist(),
+                    "spatial_local_region_boundary_definition_gap": (
+                        cohesion - reference_cohesion
+                    ).tolist(),
+                }
+            )
         if self.culture_enabled:
             payload.update(self._culture_payload())
 
@@ -428,6 +562,7 @@ class LocalStressDiagnostics:
         self.births.fill(0)
         self.deaths.fill(0)
         self.benefit_flow.fill(0.0)
+        self.reference_benefit_flow.fill(0.0)
         self.transfer_attempt_flow.fill(0)
         self.transfer_commit_flow.fill(0)
         self.transfer_byte_flow.fill(0)
@@ -438,4 +573,5 @@ __all__ = [
     "LocalStressDiagnostics",
     "SCHEMA_STRESS_V1",
     "SCHEMA_CULTURE_V2",
+    "REFERENCE_BOUNDARY_SCHEMA",
 ]

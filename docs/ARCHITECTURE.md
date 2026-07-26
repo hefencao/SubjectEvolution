@@ -65,3 +65,24 @@ run diagnostics → signed exposure-only manifest
 ```
 
 路径映射只改变文件定位，不改变 manifest。轨迹共享只允许相同 checkpoint SHA-256 和相同 intervention；运行到最大所需 tick 后，各 anchor 仍用自己的 region、event tick 与 horizon 计算结果。完成 marker 必须绑定 manifest hash、checkpoint hash、intervention 和 completed tick。
+
+## Common-boundary evaluation boundary
+
+v0.26 为 paired natural-event trajectory 增加独立评价分区：从共同 checkpoint 冻结稳定实体 ID 与群组 token，后续只对已提交分享流做第二套分类记账。
+
+```text
+same checkpoint
+   ├─ baseline world ───── current labels ─┐
+   │                                      ├─ current-boundary flow
+   └─ intervention world ─ current labels ┘
+
+checkpoint stable-ID + group-token snapshot
+   ├─ baseline committed shares ──────────┐
+   └─ intervention committed shares ──────┴─ common-boundary flow
+```
+
+该分区不拥有世界写权限，不改变群组刷新，不进入行动观察。物理槽和稳定实体 ID 必须同时匹配；新生或复用槽位实体属于共同边界之外。它只修正评价口径，不能消除自然事件选择偏差或区域迁移构成。
+
+## Result audit boundary
+
+`natural_event_result_audit` 是纯离线工具。它验证结果、执行计划和 manifest 哈希，读取已计算 delta，分类指标并生成后续执行计划；不得修改原 manifest、重新选择锚点或自动将描述性方向升级为因果事实。

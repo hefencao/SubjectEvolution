@@ -27,11 +27,13 @@ from .long_run_analysis import load_progress
 from .natural_event_matrix import load_manifest, validate_manifest
 
 
-EXECUTION_PLAN_SCHEMA = "natural-event-execution-plan-v1"
+EXECUTION_PLAN_SCHEMA = "natural-event-execution-plan-v2"
+LEGACY_EXECUTION_PLAN_SCHEMA = "natural-event-execution-plan-v1"
 PREFLIGHT_SCHEMA = "natural-event-execution-preflight-v1"
-TRAJECTORY_MARKER_SCHEMA = "natural-event-trajectory-run-v1"
-RESULT_SCHEMA = "natural-event-paired-intervention-results-v2"
-AGGREGATION_SCHEMA = "natural-event-paired-delta-aggregation-v1"
+TRAJECTORY_MARKER_SCHEMA = "natural-event-trajectory-run-v2"
+RESULT_SCHEMA = "natural-event-paired-intervention-results-v3"
+AGGREGATION_SCHEMA = "natural-event-paired-delta-aggregation-v2"
+COMMON_BOUNDARY_AUDIT_SCHEMA = "checkpoint-frozen-stable-entity-boundary-v1"
 BASELINE = "baseline"
 DELTA_KEYS = (
     "final_alive_region",
@@ -43,6 +45,15 @@ DELTA_KEYS = (
     "post_event_incoming_commits",
     "post_event_new_transferred_roots",
     "post_event_lost_transferred_roots",
+    "final_reference_cohesion_region",
+    "final_boundary_definition_gap_region",
+    "post_event_cohesion_region",
+    "post_event_reference_cohesion_region",
+    "post_event_boundary_definition_gap_region",
+    "post_event_benefit_internal_region",
+    "post_event_benefit_cross_boundary_region",
+    "post_event_reference_benefit_internal_region",
+    "post_event_reference_benefit_cross_boundary_region",
 )
 
 
@@ -159,6 +170,7 @@ def build_execution_plan(
     seeds: Iterable[int] | None = None,
     event_kinds: Iterable[str] | None = None,
     interventions: Iterable[str] | None = None,
+    common_boundary_audit: bool = True,
 ) -> dict[str, Any]:
     """Build a portable, deduplicated execution plan from a signed manifest."""
 
@@ -291,6 +303,13 @@ def build_execution_plan(
             "event_kinds": sorted(str(value) for value in event_kinds or ()),
             "interventions": list(requested_interventions),
         },
+        "diagnostics": {
+            "common_boundary_audit": bool(common_boundary_audit),
+            "common_boundary_schema": (
+                COMMON_BOUNDARY_AUDIT_SCHEMA if common_boundary_audit else None
+            ),
+            "feedback_to_world": False,
+        },
         "selected_anchor_count": len(selected_anchor_payloads),
         "selected_anchors": selected_anchor_payloads,
         "source_files": source_files,
@@ -315,7 +334,10 @@ def build_execution_plan(
 
 
 def validate_execution_plan(payload: dict[str, Any]) -> None:
-    if payload.get("schema") != EXECUTION_PLAN_SCHEMA:
+    if payload.get("schema") not in {
+        LEGACY_EXECUTION_PLAN_SCHEMA,
+        EXECUTION_PLAN_SCHEMA,
+    }:
         raise ValueError(f"unsupported execution-plan schema {payload.get('schema')!r}")
     expected = str(payload.get("execution_plan_sha256", ""))
     unsigned = dict(payload)
@@ -423,6 +445,7 @@ def _load_resumable_trajectory(
     checkpoint_sha256: str,
     intervention: str | None,
     until_tick: int,
+    common_boundary_audit: bool,
 ) -> dict[str, Any] | None:
     marker_path = _trajectory_marker_path(output_dir)
     progress_path = output_dir / "evolution_progress.jsonl"
@@ -436,6 +459,13 @@ def _load_resumable_trajectory(
     if str(marker.get("checkpoint_sha256")) != checkpoint_sha256:
         return None
     if marker.get("intervention") != intervention:
+        return None
+    if bool(marker.get("common_boundary_audit", False)) != bool(common_boundary_audit):
+        return None
+    expected_boundary_schema = (
+        COMMON_BOUNDARY_AUDIT_SCHEMA if common_boundary_audit else None
+    )
+    if marker.get("common_boundary_schema") != expected_boundary_schema:
         return None
     if int(marker.get("completed_until_tick", -1)) < int(until_tick):
         return None
@@ -465,6 +495,12 @@ def _write_trajectory_marker(
         "checkpoint_sha256": str(trajectory["checkpoint_sha256"]),
         "checkpoint_path": str(trajectory["checkpoint_path_resolved"]),
         "intervention": trajectory["intervention"],
+        "common_boundary_audit": bool(
+            plan.get("diagnostics", {}).get("common_boundary_audit", False)
+        ),
+        "common_boundary_schema": plan.get("diagnostics", {}).get(
+            "common_boundary_schema"
+        ),
         "completed_until_tick": int(trajectory["until_tick"]),
         "backend": backend,
         "gpu_semantics_mode": gpu_semantics_mode,
@@ -548,6 +584,150 @@ def aggregate_results(results: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def audit_outcomes(report: dict[str, Any]) -> dict[str, Any]:
+    """Classify paired outcomes by causal distance and measurement dependence."""
+
+    results = list(report.get("results", []))
+    event_kinds = sorted(
+        {str(item.get("anchor", {}).get("event_kind")) for item in results}
+    )
+    seeds = sorted({int(item.get("anchor", {}).get("seed", 0)) for item in results})
+    interventions = sorted(
+        {
+            str(branch.get("intervention"))
+            for item in results
+            for branch in item.get("branches", [])
+            if branch.get("eligible")
+        }
+    )
+    common_boundary_requested = bool(
+        report.get("diagnostics", {}).get("common_boundary_audit", False)
+    )
+    common_boundary_observed = bool(results) and all(
+        bool(branch.get("region_summary", {}).get("reference_boundary_available"))
+        for item in results
+        for branch in item.get("branches", [])
+        if branch.get("eligible")
+    )
+
+    repeated: list[dict[str, Any]] = []
+    for group in report.get("aggregation", {}).get("groups", []):
+        stat = group.get("seed_level", {})
+        count = int(stat.get("count", 0))
+        positive = int(stat.get("positive", 0))
+        negative = int(stat.get("negative", 0))
+        if count >= 3 and (positive == count or negative == count):
+            repeated.append(
+                {
+                    "event_kind": group["event_kind"],
+                    "intervention": group["intervention"],
+                    "metric": group["metric"],
+                    "direction": "positive" if positive == count else "negative",
+                    "seed_count": count,
+                    "mean": stat.get("mean"),
+                }
+            )
+
+    transfer_branches = [
+        branch
+        for item in results
+        for branch in item.get("branches", [])
+        if branch.get("eligible")
+        and branch.get("intervention") == "disable-knowledge-transfer"
+    ]
+    transfer_zero_commits = bool(transfer_branches) and all(
+        int(branch.get("region_summary", {}).get("post_event_incoming_commits", -1)) == 0
+        and int(branch.get("region_summary", {}).get("post_event_outgoing_commits", -1)) == 0
+        for branch in transfer_branches
+    )
+    freeze_branches = [
+        branch
+        for item in results
+        for branch in item.get("branches", [])
+        if branch.get("eligible") and branch.get("intervention") == "freeze-group-refresh"
+    ]
+    freeze_history_valid = bool(freeze_branches) and all(
+        any(
+            entry.get("type") == "freeze-group-refresh"
+            and entry.get("existing_group_labels_modified") is False
+            for entry in branch.get("intervention_history", [])
+        )
+        for branch in freeze_branches
+    )
+    affinity_branches = [
+        branch
+        for item in results
+        for branch in item.get("branches", [])
+        if branch.get("eligible")
+        and branch.get("intervention") == "neutralize-resource-affinity"
+    ]
+    affinity_history_valid = bool(affinity_branches) and all(
+        any(
+            entry.get("type") == "neutralize-resource-affinity"
+            and int(entry.get("genotype_coordinates_modified", -1)) == 0
+            and list(entry.get("effective_affinity_q", [])) == [4096, 4096, 4096, 4096]
+            for entry in branch.get("intervention_history", [])
+        )
+        for branch in affinity_branches
+    )
+
+    metric_roles = {
+        "post_event_incoming_commits": "manipulation-check for transfer interventions",
+        "post_event_outgoing_commits": "manipulation-check for transfer interventions",
+        "post_event_new_transferred_roots": "mechanism-proximal cultural state",
+        "post_event_lost_transferred_roots": "mechanism-proximal cultural state",
+        "final_active_transferred_roots_region": "mechanism-proximal cultural state",
+        "final_alive_region": "downstream region-compositional state",
+        "final_mortality_region": "downstream region-window state",
+        "final_scarcity_region": "downstream environment/population state",
+        "final_cohesion_region": "current-label boundary metric",
+        "post_event_cohesion_region": "current-label cumulative boundary metric",
+        "final_reference_cohesion_region": "checkpoint-common boundary metric",
+        "post_event_reference_cohesion_region": "preferred checkpoint-common cumulative boundary metric",
+        "post_event_boundary_definition_gap_region": "measurement-boundary component",
+    }
+    warnings = [
+        "Regional alive is compositional: it combines survival, birth, death, and migration across the analysis-region boundary.",
+        "Transfer commits and transferred-root counts are mechanism-proximal; they are not demographic or subjecthood outcomes.",
+    ]
+    if "freeze-group-refresh" in interventions and not common_boundary_observed:
+        warnings.append(
+            "freeze-group-refresh changes the labels used by current-boundary cohesion; current-label cohesion is measurement-entangled until a common-boundary rerun is available."
+        )
+    return {
+        "schema": "natural-event-outcome-audit-v1",
+        "coverage": {
+            "anchor_count": len(results),
+            "seeds": seeds,
+            "event_kinds": event_kinds,
+            "interventions": interventions,
+        },
+        "common_boundary": {
+            "requested": common_boundary_requested,
+            "observed": common_boundary_observed,
+            "schema": report.get("diagnostics", {}).get("common_boundary_schema"),
+            "preferred_cohesion_metric": (
+                "post_event_reference_cohesion_region"
+                if common_boundary_observed
+                else None
+            ),
+        },
+        "manipulation_checks": {
+            "disable_knowledge_transfer_zero_region_commits": transfer_zero_commits,
+            "freeze_group_refresh_history_valid": freeze_history_valid,
+            "neutralize_resource_affinity_history_valid": affinity_history_valid,
+        },
+        "metric_roles": metric_roles,
+        "repeated_seed_directions": repeated,
+        "warnings": warnings,
+        "interpretation_boundary": (
+            "Repeated seed direction is descriptive with three seeds. Common-boundary "
+            "metrics isolate the evaluation partition, but the naturally occurring event "
+            "exposure remains non-randomized."
+        ),
+    }
+
+
 def execute_plan(
     plan: dict[str, Any],
     output_dir: str | Path,
@@ -572,6 +752,9 @@ def execute_plan(
         )
 
     trajectory_results: dict[tuple[str, str], dict[str, Any]] = {}
+    common_boundary_audit = bool(
+        plan.get("diagnostics", {}).get("common_boundary_audit", False)
+    )
     executed_count = 0
     resumed_count = 0
     for trajectory in plan["trajectories"]:
@@ -584,6 +767,7 @@ def execute_plan(
             checkpoint_sha256=str(trajectory["checkpoint_sha256"]),
             intervention=trajectory["intervention"],
             until_tick=int(trajectory["until_tick"]),
+            common_boundary_audit=common_boundary_audit,
         )
         if reusable is not None:
             trajectory_results[key] = reusable
@@ -605,6 +789,7 @@ def execute_plan(
             backend=backend,
             gpu_semantics_mode=gpu_semantics_mode,
             intervention=trajectory["intervention"],
+            common_boundary_audit=common_boundary_audit,
         )
         marker = _write_trajectory_marker(
             output,
@@ -697,6 +882,7 @@ def execute_plan(
         "resumed_trajectory_count": resumed_count,
         "deduplicated_branch_count": int(plan["deduplicated_branch_count"]),
         "paired_randomness": True,
+        "diagnostics": dict(plan.get("diagnostics", {})),
         "results": anchor_results,
         "aggregation": aggregate_results(anchor_results),
         "interpretation_boundary": (
@@ -706,6 +892,7 @@ def execute_plan(
             "event exposure itself."
         ),
     }
+    report["outcome_audit"] = audit_outcomes(report)
     (root / "natural_event_matrix_results.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
     )
@@ -727,6 +914,8 @@ def render_execution_plan_markdown(plan: dict[str, Any]) -> str:
         f"- Shared trajectories: {plan['trajectory_count']}",
         f"- Deduplicated branches: {plan['deduplicated_branch_count']} "
         f"({plan['deduplication_fraction']:.1%})",
+        f"- Common checkpoint boundary audit: "
+        f"{bool(plan.get('diagnostics', {}).get('common_boundary_audit', False))}",
         "",
         "| Trajectory | Checkpoint | Intervention | Until tick | Anchors |",
         "|---|---:|---|---:|---:|",
@@ -751,13 +940,16 @@ def render_results_markdown(report: dict[str, Any]) -> str:
         f"Executed trajectories: {report['executed_trajectory_count']}",
         f"Resumed trajectories: {report['resumed_trajectory_count']}",
         f"Deduplicated branches: {report['deduplicated_branch_count']}",
+        f"Common checkpoint boundary audit: "
+        f"{bool(report.get('diagnostics', {}).get('common_boundary_audit', False))}",
         "",
-        "| Anchor | Intervention | Δ alive | Δ cohesion | Δ incoming | Δ outgoing | Δ active roots |",
-        "|---|---|---:|---:|---:|---:|---:|",
+        "| Anchor | Intervention | Δ alive | Δ current cohesion | Δ common cohesion | Δ incoming | Δ outgoing | Δ active roots |",
+        "|---|---|---:|---:|---:|---:|---:|---:|",
     ]
     display_keys = (
         "final_alive_region",
-        "final_cohesion_region",
+        "post_event_cohesion_region",
+        "post_event_reference_cohesion_region",
         "post_event_incoming_commits",
         "post_event_outgoing_commits",
         "final_active_transferred_roots_region",
@@ -767,7 +959,7 @@ def render_results_markdown(report: dict[str, Any]) -> str:
             if not branch["eligible"]:
                 lines.append(
                     f"| {item['anchor']['anchor_id']} | {branch['intervention']} | "
-                    "ineligible | — | — | — | — |"
+                    "ineligible | — | — | — | — | — |"
                 )
                 continue
             values = []
@@ -781,6 +973,14 @@ def render_results_markdown(report: dict[str, Any]) -> str:
             )
     lines.extend(
         [
+            "",
+            "## Outcome audit",
+            "",
+            f"Common boundary observed: {report['outcome_audit']['common_boundary']['observed']}",
+            f"Preferred cohesion metric: "
+            f"`{report['outcome_audit']['common_boundary']['preferred_cohesion_metric']}`",
+            "",
+            *[f"- {warning}" for warning in report['outcome_audit']['warnings']],
             "",
             "## Seed-level directional aggregation",
             "",
@@ -825,7 +1025,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Preflight and execute a signed natural-event intervention manifest"
     )
-    parser.add_argument("--manifest", required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--manifest")
+    source.add_argument(
+        "--execution-plan",
+        help="Execute an already signed v1/v2 execution plan without rebuilding filters",
+    )
     parser.add_argument("--output", required=True)
     parser.add_argument(
         "--path-prefix",
@@ -839,6 +1044,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--event-kinds", help="Comma-separated event filter")
     parser.add_argument("--interventions", help="Comma-separated intervention filter")
     parser.add_argument("--execute", action="store_true")
+    parser.add_argument(
+        "--no-common-boundary-audit",
+        action="store_true",
+        help="Disable checkpoint-frozen common-boundary diagnostics",
+    )
     parser.add_argument("--overwrite-existing", action="store_true")
     parser.add_argument(
         "--checkpoint-only-preflight",
@@ -855,15 +1065,31 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_parser().parse_args()
-    manifest = load_manifest(args.manifest)
-    plan = build_execution_plan(
-        manifest,
-        path_prefixes=parse_path_prefixes(args.path_prefix),
-        anchor_ids=args.anchor_id,
-        seeds=_split_int_csv(args.seeds),
-        event_kinds=_split_csv(args.event_kinds),
-        interventions=_split_csv(args.interventions),
-    )
+    if args.execution_plan:
+        filter_values = (
+            args.path_prefix,
+            args.anchor_id,
+            args.seeds,
+            args.event_kinds,
+            args.interventions,
+        )
+        if any(filter_values) or args.no_common_boundary_audit:
+            raise ValueError(
+                "path/filter/diagnostic options cannot modify a signed --execution-plan; "
+                "rebuild it from --manifest instead"
+            )
+        plan = load_execution_plan(args.execution_plan)
+    else:
+        manifest = load_manifest(args.manifest)
+        plan = build_execution_plan(
+            manifest,
+            path_prefixes=parse_path_prefixes(args.path_prefix),
+            anchor_ids=args.anchor_id,
+            seeds=_split_int_csv(args.seeds),
+            event_kinds=_split_csv(args.event_kinds),
+            interventions=_split_csv(args.interventions),
+            common_boundary_audit=not args.no_common_boundary_audit,
+        )
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
     (output / "natural_event_execution_plan.json").write_text(

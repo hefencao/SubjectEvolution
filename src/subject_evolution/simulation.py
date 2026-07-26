@@ -1518,6 +1518,20 @@ class Simulation:
             )
         return branch
 
+    def freeze_local_reference_boundary(self) -> None:
+        """Freeze a diagnostic-only group partition for paired branch evaluation."""
+
+        if self.local_stress_diagnostics is None:
+            raise RuntimeError(
+                "local reference-boundary evaluation requires spatial stress diagnostics"
+            )
+        self.local_stress_diagnostics.freeze_reference_boundary(
+            tick=self.tick,
+            alive=self.entities.alive,
+            stable_ids=self.entities.entity_id,
+            group_tokens=self.social.group_id,
+        )
+
     def apply_intervention(self, intervention: str) -> None:
         """Apply one documented intervention without changing random streams."""
         spec = resolve_intervention(intervention)
@@ -2241,6 +2255,7 @@ class Simulation:
                 owner_indices=owners,
                 target_indices=targets,
                 group_ids=self.social.group_id,
+                stable_ids=self.entities.entity_id,
                 amounts=amounts,
                 x=self.entities.x,
                 y=self.entities.y,

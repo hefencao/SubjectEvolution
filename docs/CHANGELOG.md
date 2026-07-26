@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.26.0
+
+### Common-boundary paired diagnostics
+
+- 新增 `checkpoint-frozen-stable-entity-boundary-v1`，在应用干预前冻结稳定实体 ID 与群组 token。
+- 局部分享流同时按分支当前标签和 checkpoint-common 标签记账；槽位复用后的新实体不会继承旧群组。
+- 新增 reference internal/cross/unbounded、reference cohesion 与 boundary-definition gap。
+- common boundary 只存在于诊断层，不进入策略、关系、群组、知识、环境或生命周期提交。
+- checkpoint 若未与 local diagnostic window 对齐，拒绝启用共同边界。
+
+### Natural-event results and audit
+
+- execution plan 升级为 v2，默认启用 common-boundary audit；兼容读取 v1。
+- trajectory marker 升级为 v2，防止旧轨迹被误当作含共同边界的新轨迹。
+- paired results 升级为 v3，增加累计 current/reference cohesion 与 outcome audit。
+- 新增 `subject_evolution.natural_event_result_audit`，支持审计 v0.25 results v2 和 v0.26 results v3。
+- 审计器区分操作检验、文化机制近端指标、边界定义指标和下游区域状态，并生成共同边界复跑、剩余事件复制及剩余机制消融计划。
+
+### Input result assessment
+
+- crowding 结果完整覆盖 6 anchors、3 seeds、3 interventions、16 trajectories。
+- transfer-off 后 active transferred roots 三 seed 均下降，seed-level 平均 `-84.33`；支持短期局部文化状态维持，不支持人口收益结论。
+- freeze-group-refresh 的 current-label cohesion 三 seed 均下降 `-0.2103`，但标记为 measurement-entangled，需 8-trajectory common-boundary rerun。
+- neutralize-resource-affinity 的 crowded-region alive 三 seed均增加 `+7.33`，列为跨事件复制优先，不解释为固定 cohort 生存效应。
+
+### Validation
+
+- `126 passed, 1 skipped`；跳过真实 CUDA/CuPy 设备测试。
+- v0.25→v0.26 默认 CPU 20 tick：1570 个共同非计时 metrics 单元零差异。
+- `evolution_progress.jsonl` 与 7 类知识日志 byte-identical。
+- v0.25 tick-10 checkpoint 由 v0.26 恢复至 tick 20，内部 simulation state 与连续 v0.26 一致。
+
 ## 0.25.0
 
 ### Manifest execution

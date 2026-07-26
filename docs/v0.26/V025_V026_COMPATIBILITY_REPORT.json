@@ -1,0 +1,30 @@
+{
+  "schema": "v025-v026-compatibility-report-v1",
+  "versions": {
+    "baseline": "0.25.0",
+    "candidate": "0.26.0"
+  },
+  "config": "v026_compat_config.json",
+  "backend": "cpu",
+  "ticks": 20,
+  "metrics": {
+    "row_count": 5,
+    "common_column_count": 327,
+    "excluded_timing_column_count": 13,
+    "compared_non_timing_cells": 1570,
+    "difference_count": 0
+  },
+  "byte_identical_logs": [
+    "evolution_progress.jsonl",
+    "knowledge_events.jsonl",
+    "knowledge_outcome_updates.csv",
+    "knowledge_policy_contributions.csv",
+    "knowledge_routing_costs.csv",
+    "knowledge_selection_events.csv",
+    "knowledge_transfers.csv",
+    "knowledge_working_memory.csv"
+  ],
+  "default_common_boundary_enabled": false,
+  "world_semantics_changed": false,
+  "note": "v0.26 common-boundary accounting is enabled only by natural-event execution plans unless explicitly requested."
+}

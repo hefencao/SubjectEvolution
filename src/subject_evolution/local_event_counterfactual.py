@@ -232,6 +232,7 @@ def _run_branch(
     backend: str,
     gpu_semantics_mode: str | None,
     intervention: str | None,
+    common_boundary_audit: bool = False,
 ) -> dict[str, Any]:
     simulation = Simulation.from_checkpoint(
         checkpoint,
@@ -240,6 +241,8 @@ def _run_branch(
         until_tick=until_tick,
         gpu_semantics_mode=gpu_semantics_mode,
     )
+    if common_boundary_audit:
+        simulation.freeze_local_reference_boundary()
     if intervention is not None:
         simulation.apply_intervention(intervention)
     world = simulation.run(until_tick=until_tick)
@@ -248,6 +251,7 @@ def _run_branch(
         "records": simulation.evolution_progress.records,
         "scientific_validity": simulation.scientific_validity(),
         "intervention_history": simulation.intervention_history,
+        "common_boundary_audit": bool(common_boundary_audit),
     }
 
 
@@ -269,12 +273,63 @@ def _region_summary(
         value = values[region]
         return float(value) if isinstance(value, (int, float)) else None
 
+    current_internal = sum(
+        region_value(record, "spatial_local_region_benefit_internal") or 0.0
+        for record in usable
+    )
+    current_cross = sum(
+        region_value(record, "spatial_local_region_benefit_cross_boundary") or 0.0
+        for record in usable
+    )
+    reference_internal = sum(
+        region_value(record, "spatial_local_region_reference_benefit_internal") or 0.0
+        for record in usable
+    )
+    reference_cross = sum(
+        region_value(record, "spatial_local_region_reference_benefit_cross_boundary") or 0.0
+        for record in usable
+    )
+    current_boundary = current_internal + current_cross
+    reference_boundary = reference_internal + reference_cross
+
     return {
         "final_tick": int(final["tick"]),
+        "reference_boundary_available": bool(
+            final.get("spatial_local_reference_boundary_schema")
+        ),
+        "reference_boundary_snapshot_tick": (
+            int(final["spatial_local_reference_boundary_snapshot_tick"])
+            if final.get("spatial_local_reference_boundary_schema")
+            else None
+        ),
         "final_alive_region": region_value(final, "spatial_local_region_alive"),
         "final_cohesion_region": region_value(
             final, "spatial_local_region_boundary_cohesion"
         ),
+        "final_reference_cohesion_region": region_value(
+            final, "spatial_local_region_reference_boundary_cohesion"
+        ),
+        "final_boundary_definition_gap_region": region_value(
+            final, "spatial_local_region_boundary_definition_gap"
+        ),
+        "post_event_cohesion_region": (
+            current_internal / current_boundary if current_boundary > 0.0 else None
+        ),
+        "post_event_reference_cohesion_region": (
+            reference_internal / reference_boundary
+            if reference_boundary > 0.0
+            else None
+        ),
+        "post_event_boundary_definition_gap_region": (
+            current_internal / current_boundary
+            - reference_internal / reference_boundary
+            if current_boundary > 0.0 and reference_boundary > 0.0
+            else None
+        ),
+        "post_event_benefit_internal_region": current_internal,
+        "post_event_benefit_cross_boundary_region": current_cross,
+        "post_event_reference_benefit_internal_region": reference_internal,
+        "post_event_reference_benefit_cross_boundary_region": reference_cross,
         "final_scarcity_region": region_value(
             final, "spatial_local_region_resource_scarcity"
         ),

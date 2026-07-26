@@ -1,0 +1,15 @@
+{
+  "schema": "v025-checkpoint-v026-resume-report-v1",
+  "source_version": "0.25.0",
+  "resume_version": "0.26.0",
+  "source_checkpoint_tick": 10,
+  "final_tick": 20,
+  "backend": "cpu",
+  "comparison": "v0.26 continuous run versus v0.26 continuation from v0.25 .sechk",
+  "full_checkpoint_state_difference_count": 0,
+  "legacy_local_stress_state_upgrade": {
+    "missing_reference_boundary_fields_initialized_disabled": true,
+    "world_state_modified": false
+  },
+  "passed": true
+}

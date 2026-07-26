@@ -1,21 +1,20 @@
-# Subject Evolution v0.25
+# Subject Evolution v0.26
 
 一个以**可审计世界状态、局部交互、遗传策略、动态知识副本和候选主体结构**为核心的演化模拟参考实现。
 
 当前科学基线不引入第二套“生物型危险实体”。环境层只包含资源、权威危险场、死亡痕迹及默认关闭的低耦合标量场插件；具有出生、死亡、策略、关系、记忆或谱系的危险主体，应由现有实体系统分化，而不是在环境模块中复制。
 
-## v0.25 重点
+## v0.26 重点
 
-v0.25 不修改世界规则，而是把 v0.24 的自然事件 manifest 推进为可执行实验工作流：
+v0.26 不修改世界规则，主要解决 natural-event 配对实验中的**结果解释与共同测量边界**：
 
-- 从已签名 manifest 构造独立的执行计划，不重新选择锚点；
-- 支持 `OLD=NEW` 路径前缀映射，解决 manifest 中绝对路径跨机器迁移问题；
-- 执行前校验 progress、resolved config 与 checkpoint 的 SHA-256；
-- 相同 checkpoint、相同 intervention 的多个锚点共享一条最长轨迹；
-- 每条轨迹写完成标记，可安全断点续跑；
-- 结果先在 seed 内平均，再跨 seed 汇总方向，避免把同一 seed 的多个锚点当作独立重复；
-- 压缩包不再包含 `docs/archive`，根目录只保留稳定入口文件；
-- `pyproject.toml` 采用项目提供的配置，构建依赖中移除显式 `wheel`。
+- 从同一 checkpoint 冻结稳定实体 ID 与群组 token，形成 diagnostic-only common boundary；
+- 分享流同时按分支当前标签和 checkpoint-common 标签记账；
+- 槽位复用不会让新生实体继承旧群组身份；
+- natural-event results v3 分离 current-label cohesion、common-boundary cohesion 和 boundary-definition gap；
+- 新增结果审计器，区分 manipulation check、文化机制近端指标、测量耦合指标和下游区域状态；
+- 支持读取 v0.25 results v2 与 execution plan v1，并生成 v0.26 后续执行计划；
+- 发行包继续不包含 `docs/archive`，`pyproject.toml` 保持无显式 `wheel` 构建依赖。
 
 ## 安装
 
@@ -50,7 +49,9 @@ python -m subject_evolution.multi_seed \
 
 该配置使用 `gpu_semantics_mode="strict-reference"`。请求 GPU 时会验证设备，但世界语义仍由 CPU reference 路径权威执行；真实 `hybrid-accelerated` 多 tick parity 尚未证明，不能作为科学基线。
 
-## 生成暴露盲选 manifest
+## 自然事件实验工作流
+
+### 1. 生成暴露盲选 manifest
 
 ```bash
 python -m subject_evolution.natural_event_matrix \
@@ -65,9 +66,7 @@ python -m subject_evolution.natural_event_matrix \
 
 锚点选择只读取 tick、区域 alive、稀缺、拥挤、死亡压力和 checkpoint 可用性；凝聚度、传播流、文化根、谱系和动作结果均被排除。
 
-## v0.25 预检与执行 manifest
-
-先只生成执行计划和预检报告：
+### 2. 预检与执行
 
 ```bash
 python -m subject_evolution.natural_event_execution \
@@ -76,43 +75,42 @@ python -m subject_evolution.natural_event_execution \
   --path-prefix /旧项目绝对路径=/当前项目绝对路径
 ```
 
-检查：
+预检通过后增加：
 
 ```text
-natural_event_execution_plan.json
-natural_event_execution_plan.md
-natural_event_execution_preflight.json
+--execute --backend gpu --gpu-semantics-mode strict-reference
 ```
 
-预检通过后执行：
+v0.26 默认启用 checkpoint-common boundary audit。若只为历史兼容而明确不需要该诊断，可使用：
+
+```text
+--no-common-boundary-audit
+```
+
+旧 v0.25 trajectory marker 不会被误复用为带共同边界的 v0.26 轨迹；共同边界复跑应使用新输出目录，或明确 `--overwrite-existing`。
+
+### 3. 审计结果并生成后续计划
+
+```bash
+python -m subject_evolution.natural_event_result_audit \
+  --results analyses/natural_event_execution/natural_event_matrix_results.json \
+  --execution-plan analyses/natural_event_execution/natural_event_execution_plan.json \
+  --manifest analyses/natural_event_matrix/natural_event_matrix_manifest.json \
+  --output analyses/natural_event_result_audit
+```
+
+审计器不会重选锚点或执行分支。它验证哈希链、标注结果的解释层级，并可生成：共同边界复跑、剩余事件复制和剩余机制消融计划。
+
+生成的签名计划可直接执行：
 
 ```bash
 python -m subject_evolution.natural_event_execution \
-  --manifest analyses/natural_event_matrix/natural_event_matrix_manifest.json \
-  --output analyses/natural_event_execution \
-  --path-prefix /旧项目绝对路径=/当前项目绝对路径 \
-  --execute \
-  --backend cpu
+  --execution-plan analyses/natural_event_result_audit/common_boundary_rerun_execution_plan.json \
+  --output analyses/common_boundary_rerun \
+  --execute --backend gpu --gpu-semantics-mode strict-reference
 ```
 
-默认要求 progress、resolved config 和 checkpoint 全部通过哈希审计。仅在已独立保存并验证 manifest、但原 progress/config 不再可用时，才使用：
-
-```text
---checkpoint-only-preflight
-```
-
-已完成轨迹会通过 `natural_event_trajectory.json` 识别并复用。存在不完整目录时默认拒绝覆盖；明确重跑使用 `--overwrite-existing`。
-
-可按 seed、事件、锚点或 intervention 分批执行：
-
-```bash
---seeds 10001,10002
---event-kinds crowding,mortality
---anchor-id seed_10001-crowding-r14-t270
---interventions disable-knowledge-transfer,freeze-group-refresh
-```
-
-每个 intervention 与 baseline 仍从同一个事件前 `.sechk` 出发并使用相同 keyed randomness。自然事件不是随机分配，因此结果识别的是给定锚点后的短期机制消融效应，不是环境暴露本身的随机试验效应。
+使用 `--execution-plan` 时不能再附加路径、锚点、事件或 intervention 过滤；若需修改，必须从原 manifest 重建并产生新的计划哈希。
 
 ## checkpoint 与单项重放
 
@@ -138,7 +136,8 @@ python -m subject_evolution.replay \
 - 固定预算四资源亲和、死亡痕迹观察、adaptive group refresh；
 - CPU reference、GPU strict-reference 和实验性 hybrid-accelerated 路径；
 - 完整 checkpoint、共同前史分支、相位/局部事件配对反事实；
-- 长期遗传、群组、局部压力和文化传播诊断。
+- 长期遗传、群组、局部压力和文化传播诊断；
+- 暴露盲选 manifest、哈希预检、共享轨迹、断点续跑、共同边界评估与结果审计。
 
 ## 文档
 
@@ -147,6 +146,7 @@ python -m subject_evolution.replay \
 - [变更记录](docs/CHANGELOG.md)
 - [架构与提交边界](docs/ARCHITECTURE.md)
 - [v0.24 文档](docs/v0.24/README.md)
-- [v0.25 文档与验证](docs/v0.25/README.md)
+- [v0.25 文档](docs/v0.25/README.md)
+- [v0.26 文档与结果审计](docs/v0.26/README.md)
 
 发行压缩包不包含 `docs/archive`。更早的完整历史仍保存在旧版本发行包中。

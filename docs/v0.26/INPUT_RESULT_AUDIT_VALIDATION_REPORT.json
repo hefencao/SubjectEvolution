@@ -1,0 +1,47 @@
+{
+  "schema": "v026-input-result-audit-validation-v1",
+  "inputs": {
+    "results": {
+      "name": "natural_event_matrix_results.json",
+      "sha256": "8fc493e193a689125987b8387161d76e55216bfa7be86e8a64effd9e8dec5505"
+    },
+    "execution_plan": {
+      "name": "natural_event_execution_plan.json",
+      "sha256": "1259e0ed4d5f4114edb6df8c00f2a3596a7e276d8e95a09a4dfa709132fb273c"
+    },
+    "preflight": {
+      "name": "natural_event_execution_preflight.json",
+      "sha256": "6e127a12e13f9ad59eaf9e5c01aaef13cf83bad7695ee4bf6e0036938e6d8a9f"
+    },
+    "manifest": {
+      "name": "natural_event_matrix_manifest.json",
+      "sha256": "f242e6fc738156858d82e540aa55c879338b6ba1f1f6961a39d343fdb17c550a"
+    }
+  },
+  "result_schema": "natural-event-paired-intervention-results-v2",
+  "result_complete_for_selected_plan": true,
+  "selected_anchors": 6,
+  "selected_seeds": 3,
+  "selected_event_kinds": [
+    "crowding"
+  ],
+  "selected_interventions": [
+    "disable-knowledge-transfer",
+    "freeze-group-refresh",
+    "neutralize-resource-affinity"
+  ],
+  "executed_trajectories": 16,
+  "preflight_execution_ready": true,
+  "preflight_full_audit_ready": true,
+  "manipulation_checks": {
+    "disable_knowledge_transfer_zero_region_commits": true,
+    "freeze_group_refresh_history_valid": true,
+    "neutralize_resource_affinity_history_valid": true
+  },
+  "followup_plan_trajectory_counts": {
+    "common_boundary_rerun": 8,
+    "remaining_event_replication": 48,
+    "remaining_mechanism_ablation": 16
+  },
+  "passed": true
+}

@@ -55,6 +55,47 @@ def test_local_stress_tracker_accounts_regions_and_benefits() -> None:
     assert result["spatial_local_observed_ticks"] == 1
 
 
+def test_reference_boundary_uses_checkpoint_groups_and_stable_ids() -> None:
+    tracker = LocalStressDiagnostics(
+        world_width=8.0,
+        world_height=8.0,
+        regions_x=2,
+        regions_y=2,
+        resource_capacity=(1.0, 1.0, 1.0, 1.0),
+        world_grid_x=4,
+        world_grid_y=4,
+    )
+    x = np.asarray([1.0, 2.0, 6.0], dtype=np.float32)
+    y = np.asarray([1.0, 2.0, 1.0], dtype=np.float32)
+    stable = np.asarray([11, 12, 13], dtype=np.uint64)
+    checkpoint_groups = np.asarray([7, 7, 9], dtype=np.uint64)
+    tracker.freeze_reference_boundary(
+        tick=30,
+        alive=np.asarray([True, True, True]),
+        stable_ids=stable,
+        group_tokens=checkpoint_groups,
+    )
+    current_groups = np.asarray([100, 200, 200], dtype=np.uint64)
+    # Slot 2 is reused by a new entity and must not inherit checkpoint group 9.
+    current_stable = np.asarray([11, 12, 99], dtype=np.uint64)
+    tracker.observe_benefits(
+        owner_indices=np.asarray([0, 2], dtype=np.int32),
+        target_indices=np.asarray([1, 1], dtype=np.int32),
+        group_ids=current_groups,
+        stable_ids=current_stable,
+        amounts=np.asarray([1.0, 2.0]),
+        x=x,
+        y=y,
+    )
+    result = tracker.consume_window()
+    assert result["spatial_local_reference_boundary_snapshot_tick"] == 30
+    assert result["spatial_local_region_boundary_cohesion"][0] == 0.0
+    assert result["spatial_local_region_reference_boundary_cohesion"][0] == 1.0
+    # Reused slot 2 is ungrouped under the reference boundary, so its transfer
+    # to checkpoint member slot 1 is cross-boundary rather than inherited-internal.
+    assert result["spatial_local_region_reference_benefit_cross_boundary"][1] == 2.0
+
+
 def test_spatial_stress_config_is_opt_in() -> None:
     cfg = load_config(ROOT / "configs" / "heterogeneous_smoke.json")
     bad = replace(
@@ -105,6 +146,39 @@ def test_spatial_stress_progress_and_checkpoint_restore(tmp_path: Path) -> None:
     )
     restored.run(until_tick=6)
     assert restored.evolution_progress.records[-1]["spatial_local_observed_ticks"] == 3
+
+
+def test_checkpoint_common_boundary_emits_reference_metrics(tmp_path: Path) -> None:
+    cfg = load_config(ROOT / "configs" / "heterogeneous_smoke.json")
+    cfg = replace(
+        cfg,
+        run=replace(
+            cfg.run,
+            ticks=6,
+            checkpoint_period=3,
+            evolution_evaluation_period=3,
+            full_checkpoint_enabled=True,
+            spatial_stress_diagnostics_enabled=True,
+            spatial_stress_diagnostics_schema="spatial-local-stress-diagnostics-v1",
+            spatial_stress_regions_x=2,
+            spatial_stress_regions_y=2,
+        ),
+        world=replace(cfg.world, initial_entities=64, max_entities=96),
+    )
+    source = Simulation(cfg, tmp_path / "source", backend="cpu")
+    source.run(until_tick=3)
+    restored = Simulation.from_checkpoint(
+        tmp_path / "source" / "checkpoint_00000003.sechk",
+        tmp_path / "paired",
+        backend="cpu",
+        until_tick=6,
+    )
+    restored.freeze_local_reference_boundary()
+    restored.run(until_tick=6)
+    record = restored.evolution_progress.records[-1]
+    assert record["spatial_local_reference_boundary_snapshot_tick"] == 3
+    assert len(record["spatial_local_region_reference_boundary_cohesion"]) == 4
+    assert len(record["spatial_local_region_boundary_definition_gap"]) == 4
 
 
 def test_long_run_analysis_builds_local_spatial_panel(tmp_path: Path) -> None:

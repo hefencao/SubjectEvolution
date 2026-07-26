@@ -1,0 +1,22 @@
+Subject Evolution v0.26.0 final validation
+=========================================
+
+pytest: 128 passed, 1 skipped, 0 failed
+Skipped: real CUDA/CuPy device test unavailable in the build environment.
+
+Validated:
+- checkpoint-frozen stable-entity common group boundary;
+- physical-slot reuse cannot inherit checkpoint group membership;
+- actual checkpoint continuation emits reference-boundary metrics;
+- current/reference cumulative cohesion and boundary-definition-gap summaries;
+- natural-event execution-plan v2 and legacy v1 loading;
+- exact signed-plan execution without silent filtering or path mutation;
+- v0.25 result-schema v2 audit and follow-up-plan generation;
+- outcome-role and manipulation-check classification;
+- default v0.25/v0.26 world-output compatibility;
+- v0.25 full-checkpoint continuation in v0.26.
+
+Scientific boundary:
+Common-boundary diagnostics isolate the evaluation partition used for group-flow
+metrics. They do not randomize naturally occurring event exposure or convert
+region-level alive counts into fixed-cohort survival outcomes.

@@ -1,0 +1,230 @@
+{
+  "schema": "natural-event-result-audit-v1",
+  "result_schema": "natural-event-paired-intervention-results-v2",
+  "manifest_sha256": "737312dd4659807a89323fd275e784b91166fbaa53cdf094b16ca24618091dbb",
+  "execution_plan_sha256": "009234ab099cd65f3ea87646707df5a7a11a3d8172e9110a98a8af89257efc0b",
+  "result_complete_for_execution_plan": true,
+  "coverage": {
+    "anchor_count": 6,
+    "anchor_ids": [
+      "seed_10001-crowding-r14-t270",
+      "seed_10001-crowding-r7-t300",
+      "seed_10002-crowding-r12-t240",
+      "seed_10002-crowding-r15-t330",
+      "seed_10003-crowding-r2-t300",
+      "seed_10003-crowding-r7-t270"
+    ],
+    "seeds": [
+      10001,
+      10002,
+      10003
+    ],
+    "event_kinds": [
+      "crowding"
+    ],
+    "interventions": [
+      "disable-knowledge-transfer",
+      "freeze-group-refresh",
+      "neutralize-resource-affinity"
+    ],
+    "trajectory_count": 16,
+    "executed_trajectory_count": 16,
+    "resumed_trajectory_count": 0
+  },
+  "outcome_audit": {
+    "schema": "natural-event-outcome-audit-v1",
+    "coverage": {
+      "anchor_count": 6,
+      "seeds": [
+        10001,
+        10002,
+        10003
+      ],
+      "event_kinds": [
+        "crowding"
+      ],
+      "interventions": [
+        "disable-knowledge-transfer",
+        "freeze-group-refresh",
+        "neutralize-resource-affinity"
+      ]
+    },
+    "common_boundary": {
+      "requested": false,
+      "observed": false,
+      "schema": null,
+      "preferred_cohesion_metric": null
+    },
+    "manipulation_checks": {
+      "disable_knowledge_transfer_zero_region_commits": true,
+      "freeze_group_refresh_history_valid": true,
+      "neutralize_resource_affinity_history_valid": true
+    },
+    "metric_roles": {
+      "post_event_incoming_commits": "manipulation-check for transfer interventions",
+      "post_event_outgoing_commits": "manipulation-check for transfer interventions",
+      "post_event_new_transferred_roots": "mechanism-proximal cultural state",
+      "post_event_lost_transferred_roots": "mechanism-proximal cultural state",
+      "final_active_transferred_roots_region": "mechanism-proximal cultural state",
+      "final_alive_region": "downstream region-compositional state",
+      "final_mortality_region": "downstream region-window state",
+      "final_scarcity_region": "downstream environment/population state",
+      "final_cohesion_region": "current-label boundary metric",
+      "post_event_cohesion_region": "current-label cumulative boundary metric",
+      "final_reference_cohesion_region": "checkpoint-common boundary metric",
+      "post_event_reference_cohesion_region": "preferred checkpoint-common cumulative boundary metric",
+      "post_event_boundary_definition_gap_region": "measurement-boundary component"
+    },
+    "repeated_seed_directions": [
+      {
+        "event_kind": "crowding",
+        "intervention": "disable-knowledge-transfer",
+        "metric": "final_active_transferred_roots_region",
+        "direction": "negative",
+        "seed_count": 3,
+        "mean": -84.33333333333333
+      },
+      {
+        "event_kind": "crowding",
+        "intervention": "disable-knowledge-transfer",
+        "metric": "final_mortality_region",
+        "direction": "negative",
+        "seed_count": 3,
+        "mean": -0.013460695812408866
+      },
+      {
+        "event_kind": "crowding",
+        "intervention": "disable-knowledge-transfer",
+        "metric": "post_event_incoming_commits",
+        "direction": "negative",
+        "seed_count": 3,
+        "mean": -136.0
+      },
+      {
+        "event_kind": "crowding",
+        "intervention": "disable-knowledge-transfer",
+        "metric": "post_event_lost_transferred_roots",
+        "direction": "negative",
+        "seed_count": 3,
+        "mean": -41.333333333333336
+      },
+      {
+        "event_kind": "crowding",
+        "intervention": "disable-knowledge-transfer",
+        "metric": "post_event_new_transferred_roots",
+        "direction": "negative",
+        "seed_count": 3,
+        "mean": -114.16666666666667
+      },
+      {
+        "event_kind": "crowding",
+        "intervention": "disable-knowledge-transfer",
+        "metric": "post_event_outgoing_commits",
+        "direction": "negative",
+        "seed_count": 3,
+        "mean": -139.16666666666666
+      },
+      {
+        "event_kind": "crowding",
+        "intervention": "freeze-group-refresh",
+        "metric": "final_cohesion_region",
+        "direction": "negative",
+        "seed_count": 3,
+        "mean": -0.21029965846911547
+      },
+      {
+        "event_kind": "crowding",
+        "intervention": "freeze-group-refresh",
+        "metric": "post_event_new_transferred_roots",
+        "direction": "positive",
+        "seed_count": 3,
+        "mean": 4.333333333333333
+      },
+      {
+        "event_kind": "crowding",
+        "intervention": "neutralize-resource-affinity",
+        "metric": "final_alive_region",
+        "direction": "positive",
+        "seed_count": 3,
+        "mean": 7.333333333333333
+      }
+    ],
+    "warnings": [
+      "Regional alive is compositional: it combines survival, birth, death, and migration across the analysis-region boundary.",
+      "Transfer commits and transferred-root counts are mechanism-proximal; they are not demographic or subjecthood outcomes.",
+      "freeze-group-refresh changes the labels used by current-boundary cohesion; current-label cohesion is measurement-entangled until a common-boundary rerun is available."
+    ],
+    "interpretation_boundary": "Repeated seed direction is descriptive with three seeds. Common-boundary metrics isolate the evaluation partition, but the naturally occurring event exposure remains non-randomized."
+  },
+  "findings": [
+    {
+      "id": "TRANSFER-MAINTAINS-LOCAL-CULTURAL-STATE",
+      "status": "supported-mechanism-proximal",
+      "evidence": {
+        "event_kind": "crowding",
+        "intervention": "disable-knowledge-transfer",
+        "metric": "final_active_transferred_roots_region",
+        "direction": "negative",
+        "seed_count": 3,
+        "mean": -84.33333333333333
+      },
+      "interpretation": "Disabling future transfer reduced active transferred roots in the selected regions in the same direction across seeds. This establishes short-horizon maintenance of cultural state, not demographic benefit."
+    },
+    {
+      "id": "TRANSFER-DEMOGRAPHIC-BENEFIT",
+      "status": "not-established",
+      "evidence": null,
+      "interpretation": "Regional alive did not have a repeated direction across all seeds and is also compositional with migration."
+    },
+    {
+      "id": "GROUP-REFRESH-COHESION",
+      "status": "measurement-entangled",
+      "evidence": {
+        "event_kind": "crowding",
+        "intervention": "freeze-group-refresh",
+        "metric": "final_cohesion_region",
+        "direction": "negative",
+        "seed_count": 3,
+        "mean": -0.21029965846911547
+      },
+      "interpretation": "Current-label cohesion uses the labels modified by the intervention. A checkpoint-common boundary is required before attributing the repeated direction to social flow rather than boundary definition."
+    },
+    {
+      "id": "RESOURCE-AFFINITY-CROWDED-REGION-ALIVE",
+      "status": "replication-priority",
+      "evidence": {
+        "event_kind": "crowding",
+        "intervention": "neutralize-resource-affinity",
+        "metric": "final_alive_region",
+        "direction": "positive",
+        "seed_count": 3,
+        "mean": 7.333333333333333
+      },
+      "interpretation": "The crowded-region alive count moved in one direction across seeds, but the metric mixes survival, births, deaths, and migration. Replicate in scarcity and mortality events and add cohort/retention outcomes before claiming an adaptive cost."
+    }
+  ],
+  "interpretation_boundary": "The supplied result covers only its selected execution plan. Directional agreement across three seeds is descriptive. Naturally occurring event exposures are not randomized, and region-level outcomes are not fixed cohorts.",
+  "followup_plan_summaries": {
+    "common_boundary_rerun": {
+      "schema": "natural-event-execution-plan-v2",
+      "execution_plan_sha256": "874fa0d15313f6c8f0bdcc91cfdc9283bf4636e3f3e58130ad55133851887229",
+      "selected_anchor_count": 6,
+      "trajectory_count": 8,
+      "deduplicated_branch_count": 4
+    },
+    "remaining_event_replication": {
+      "schema": "natural-event-execution-plan-v2",
+      "execution_plan_sha256": "77f7bcc8bcabc75950d7d46f72d421a0bb42a0c93a3a88e8f50ec58bf466e246",
+      "selected_anchor_count": 12,
+      "trajectory_count": 48,
+      "deduplicated_branch_count": 0
+    },
+    "remaining_mechanism_ablation": {
+      "schema": "natural-event-execution-plan-v2",
+      "execution_plan_sha256": "44648af6bd96e6783f0544c65a321242da1be4b32691abf368cea8213d2a3b83",
+      "selected_anchor_count": 6,
+      "trajectory_count": 16,
+      "deduplicated_branch_count": 8
+    }
+  }
+}

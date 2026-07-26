@@ -1,0 +1,38 @@
+{
+  "schema": "subject-evolution-v026-packaging-validation-v1",
+  "version": "0.26.0",
+  "project_file_count": 193,
+  "excluded": {
+    "docs_archive": true,
+    "git_metadata": true,
+    "python_caches": true,
+    "pytest_cache": true,
+    "compiled_python": true,
+    "build_directories": true,
+    "egg_info": true
+  },
+  "pyproject": {
+    "explicit_wheel_build_requirement": false,
+    "build_system_requires": [
+      "setuptools>=68"
+    ]
+  },
+  "wheel_build": {
+    "method": "pip wheel --no-deps --no-build-isolation",
+    "reason": "The build environment package index did not expose setuptools for an isolated build; the installed setuptools backend was used.",
+    "filename": "subject_evolution_mvp-0.26.0-py3-none-any.whl",
+    "isolated_install_version": "0.26.0",
+    "console_script_help_verified": true
+  },
+  "tests": {
+    "passed": 128,
+    "skipped": 1,
+    "failed": 0
+  },
+  "archive_validation": {
+    "zip_integrity": true,
+    "tar_readable": true,
+    "zip_contains_docs_archive": false,
+    "tar_contains_docs_archive": false
+  }
+}
