@@ -25,9 +25,12 @@ or outcomes—are the replication unit. The pre-intervention exposure diagnostic
 compares affinity-weighted utility under original and rotated resource fields;
 it is structural provenance, not an additional intervention.
 
-A repeated interaction may authorize a longer environment-matching
-confirmation. It cannot by itself establish stable ecological niches, because
-coexistence, removal and map-scale tests remain outstanding.
+A repeated interaction authorizes a longer environment-matching confirmation
+only when the interaction is also aligned with material preregistered source
+exposure and spans multiple dominant affinity channels. The supplied v0.47 run
+fails that alignment gate. Even an eligible interaction cannot by itself
+establish stable ecological niches, because coexistence, removal and map-scale
+tests remain outstanding.
 
 # SE architecture
 
@@ -115,6 +118,27 @@ neutralization preserves genotype and removes only the selected module
 expression and its proportional maintenance/development cost. Analysis and
 experiments depend on runtime; runtime does not depend on the D2 audit.
 
+## D2-I compositional module boundary
+
+The archived v1 path remains four independent additive slots. The opt-in v2 path adds a fixed acyclic signal graph without adding world ports:
+
+```text
+module 0 signal ─┬─→ module 1 contextual activation
+                 ├─→ module 2 contextual activation
+                 └─→ module 3 contextual activation
+module 1 signal ─┬─→ module 2 contextual activation
+                 └─→ module 3 contextual activation
+module 2 signal ───→ module 3 contextual activation
+
+all four slots still publish bounded zero-sum harvest-request residuals
+```
+
+Six lower-triangular coupling genes are inherited and mutated. A weighted upstream signed signal multiplicatively scales a downstream slot's original contextual activation. The scale is bounded, the graph is feed-forward, and the existing authoritative sum-then-round output order is preserved.
+
+`neutralize-functional-module-coupling-output` disables only the mediated signal graph. It does not remove direct module output, coupling genes, mutation or coupling structure cost. This makes a fresh-population active/neutral comparison a test of reachable composition rather than free gene deletion.
+
+The v2 layer can express hierarchy and joint dependence among modules sharing the harvest port. It still cannot create new sensors, movement, conversion, storage, signalling or social-control functions. A failure after v2 coupling is actively used would therefore locate the next bottleneck at the primitive/output vocabulary rather than automatically at the environment.
+
 ## D2-A bounded module boundary
 
 ```text
@@ -132,9 +156,11 @@ static inherited affinity + contextual residual
 keyed one-channel HARVEST request
 ```
 
-The module layer cannot choose an action, alter resource assimilation, modify
-resource-gradient utility, create a world field, or publish to movement,
-signalling, sharing, memory or social control. This narrow boundary prevents a
+Both v1 and v2 module layers cannot choose an action, alter resource assimilation,
+modify resource-gradient utility, create a world field, or publish to movement,
+signalling, sharing, memory or social control. The v1 path has no inter-module
+signal; v2 adds only bounded feed-forward modulation among the same harvest
+modules. This narrow boundary prevents a
 second unrestricted policy network while testing expression-gated functional
 routing.
 

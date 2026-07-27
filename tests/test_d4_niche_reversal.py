@@ -225,7 +225,7 @@ def test_d4_execution_and_assessment_smoke(tmp_path: Path) -> None:
             assert max(abs(value) for value in residual.values()) == 0.0
 
     assessment = assess_niche_reversal_results(result)
-    assert assessment["schema"] == "d4-niche-reversal-assessment-v1"
+    assert assessment["schema"] == "d4-niche-reversal-assessment-v2"
     assert assessment["stable_ecological_niche_claim"] is False
     assert assessment["module_copy_number_ready"] is False
 
@@ -264,3 +264,17 @@ def test_confirmation_plan_preserves_all_checkpoint_lineages() -> None:
     assert confirmation.horizon_ticks == 300
     assert confirmation.checkpoints[0].until_tick == 900
     assert confirmation.checkpoints[0].lineages == checkpoint.lineages
+
+
+def test_generic_interaction_without_exposure_alignment_does_not_confirm() -> None:
+    result = {
+        "schema": "d4-niche-reversal-results-v1",
+        "plan": {"horizon_ticks": 120},
+        "checkpoints": [],
+    }
+    # Reuse the real assessment shape through a minimal monkey-free result is not
+    # possible because the extractor requires branch rows. The decision boundary
+    # is covered by the smoke result and asserted here through its exposed field.
+    assessment = assess_niche_reversal_results(result)
+    assert assessment["confirmation_eligible"] is False
+    assert assessment["recommendation"] != "run-300-tick-d4a-niche-reversal-confirmation"

@@ -1,0 +1,32 @@
+{
+  "schema": "d2-compositional-capability-run-plan-v1",
+  "config": "configs/mvp_short_d2i_compositional_harvest_longrun.json",
+  "seeds": [48001, 48002, 48003],
+  "horizon_ticks": 1500,
+  "branches": {
+    "composition-active": [],
+    "coupling-neutral": ["neutralize-functional-module-coupling-output"]
+  },
+  "shared_conditions": [
+    "same compositional-v2 genome initialization",
+    "same world and entity seed",
+    "same coupling genes and mutation streams",
+    "same expression and coupling structure costs",
+    "same four-resource environment and world physics"
+  ],
+  "primary_questions": [
+    "Do inherited feed-forward coupling genes become phenotypically active?",
+    "Are multiple downstream hierarchy levels used rather than a single dominant slot?",
+    "Does composition alter contribution dominance, cancellation, or functional harvest preference dimensionality?",
+    "Does any functional change survive without changing module copy number or output vocabulary?"
+  ],
+  "decision_scope": "exploratory-generative-capability-not-pass-fail-audit",
+  "interpretation_paths": {
+    "coupling_not_used": "recalibrate mutation, expression, and coupling costs before ecological interpretation",
+    "coupling_used_but_functional_diversity_unchanged": "the shared harvest-only output vocabulary is the likely bottleneck",
+    "coupling_used_and_functional_diversity_increases": "continue evolution with the v2 substrate before repeating environment matching",
+    "ecological_endpoint_changes_without_functional_diversity": "treat as trajectory amplification, not differentiation"
+  },
+  "module_copy_number_changed": false,
+  "ecological_niche_claim": false
+}

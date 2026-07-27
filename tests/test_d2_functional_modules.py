@@ -11,6 +11,9 @@ from se.analysis.long_run import analyze
 from se.analysis.protocol_audit import build_protocol_audit, render_markdown as render_protocol_markdown
 from se.cfg import load_config, validate_config
 from se.differentiation.functional import (
+    COMPOSITIONAL_FUNCTIONAL_MODULE_SCHEMA,
+    COMPOSITIONAL_INPUT_SCHEMA,
+    COUPLING_SCHEMA,
     FUNCTIONAL_MODULE_SCHEMA,
     GENES_PER_MODULE,
     INPUT_COUNT,
@@ -18,6 +21,7 @@ from se.differentiation.functional import (
     evaluate_contextual_harvest_modules_q,
     functional_module_diagnostics,
     expression_gates_q,
+    functional_module_coupling_count,
     functional_module_energy,
 )
 from se.env.niches import AFFINITY_SCALE
@@ -143,7 +147,7 @@ def test_d2_intervention_persists_through_checkpoint_and_is_analyzed(
     final = report["runs"][0]["functional_module_final"]
     assert final["functional_module_schema"] == FUNCTIONAL_MODULE_SCHEMA
     protocol = build_protocol_audit(CONFIG)
-    assert protocol["schema"] == "structural-measurement-protocol-audit-v15"
+    assert protocol["schema"] == "structural-measurement-protocol-audit-v16"
     functional = protocol["functional_module_protocol"]
     assert functional["action_selection"] is False
     assert functional["new_world_physics"] is False
@@ -217,7 +221,7 @@ def test_d2b_per_module_contribution_and_partial_ablation() -> None:
         evaluation=evaluation,
     )
     assert diagnostics["functional_module_contribution_diagnostic_schema"] == (
-        "functional-module-contribution-audit-v1"
+        "functional-module-contribution-audit-v2"
     )
     assert diagnostics["functional_module_contribution_effective_count"] == pytest.approx(1.0)
     assert diagnostics["functional_module_contribution_share"][0] == pytest.approx(1.0)
@@ -260,3 +264,114 @@ def test_d2b_partial_intervention_persists(tmp_path: Path) -> None:
     )
     assert restored.functional_module_ablation_mask.tolist() == [False, False, True, False]
     assert restored.functional_modules_ablation_enabled is False
+
+
+COMPOSITIONAL_CONFIG = ROOT / "configs" / "d2i_compositional_harvest_smoke.json"
+
+
+def _configured_compositional_genotype():
+    cfg = load_config(COMPOSITIONAL_CONFIG)
+    size = ParametricPolicy.genome_size_for_config(cfg)
+    start = ParametricPolicy.functional_module_gene_start(cfg)
+    genotype = np.zeros((1, size), dtype=np.float32)
+
+    module_0 = start
+    module_1 = start + GENES_PER_MODULE
+    genotype[0, module_0] = 0.9
+    genotype[0, module_0 + 1 + 1] = 1.0  # energy deficit signal
+    # Module 0 has no direct router output: it is useful only through coupling.
+
+    genotype[0, module_1] = 0.9
+    genotype[0, module_1 + 1 + INPUT_COUNT] = 0.2  # contextual bias
+    output = module_1 + 2 + INPUT_COUNT
+    genotype[0, output : output + 4] = (-1.0, 1.0, -1.0, -1.0)
+
+    coupling_start = start + cfg.functional_modules.module_count * GENES_PER_MODULE
+    genotype[0, coupling_start] = 1.0  # module 0 -> module 1
+    return cfg, genotype, start
+
+
+def test_compositional_modules_add_only_six_active_coupling_genes() -> None:
+    cfg, genotype, start = _configured_compositional_genotype()
+    assert cfg.functional_modules.schema == COMPOSITIONAL_FUNCTIONAL_MODULE_SCHEMA
+    assert cfg.functional_modules.input_schema == COMPOSITIONAL_INPUT_SCHEMA
+    assert cfg.functional_modules.coupling_schema == COUPLING_SCHEMA
+    assert functional_module_coupling_count(cfg) == 6
+    assert ParametricPolicy.genome_size_for_config(cfg) == start + 4 * GENES_PER_MODULE + 6
+    assert genotype.shape[1] == ParametricPolicy.genome_size_for_config(cfg)
+
+
+def test_upstream_module_can_have_no_direct_output_but_modulate_downstream() -> None:
+    cfg, genotype, start = _configured_compositional_genotype()
+    base = np.full((1, 4), AFFINITY_SCALE, dtype=np.int32)
+    kwargs = dict(
+        energy=np.asarray([0.1]),
+        integrity=np.asarray([1.0]),
+        material=np.asarray([0.0]),
+        information_store=np.asarray([0.0]),
+        fertility=np.asarray([0.25]),
+        local_resources=np.full((1, 4), 4.0),
+        cfg=cfg,
+        gene_start=start,
+    )
+    active = evaluate_contextual_harvest_modules_q(genotype, base, **kwargs)
+    neutral = evaluate_contextual_harvest_modules_q(
+        genotype, base, coupling_ablated=True, **kwargs
+    )
+    assert np.all(active.module_residual_q[:, 0] == 0)
+    assert active.modulation_q is not None
+    assert active.modulation_q[0, 1] > 0
+    assert active.preference_q[0, 1] > neutral.preference_q[0, 1]
+    assert not np.array_equal(active.preference_q, neutral.preference_q)
+
+    diagnostics = functional_module_diagnostics(
+        genotype,
+        active.preference_q,
+        base,
+        cfg,
+        gene_start=start,
+        evaluation=active,
+    )
+    assert diagnostics["functional_module_compositional_capable"] is True
+    assert diagnostics["functional_module_hierarchy_depth_by_module"] == [0, 1, 2, 3]
+    assert diagnostics["functional_module_coupling_link_count"] == 6
+    assert diagnostics["functional_module_coupling_changed_entity_fraction"] == 1.0
+    assert diagnostics["functional_module_mediated_signal_abs_mean_by_module"][1] > 0.0
+
+
+def test_coupling_neutralization_preserves_structure_cost_and_checkpoint(tmp_path: Path) -> None:
+    cfg = load_config(COMPOSITIONAL_CONFIG)
+    cfg = replace(
+        cfg,
+        run=replace(
+            cfg.run,
+            ticks=4,
+            metrics_period=2,
+            checkpoint_period=99,
+            checkpoint_ticks=(2,),
+            full_checkpoint_enabled=True,
+            evolution_evaluation_period=2,
+        ),
+        world=replace(cfg.world, initial_entities=24, max_entities=32),
+    )
+    validate_config(cfg)
+    output = tmp_path / "source"
+    sim = Simulation(cfg, output, backend="cpu")
+    before = functional_module_energy(
+        sim.entities.genotype[np.flatnonzero(sim.entities.alive)],
+        cfg,
+        gene_start=ParametricPolicy.functional_module_gene_start(cfg),
+    )
+    sim.apply_intervention("neutralize-functional-module-coupling-output")
+    after = functional_module_energy(
+        sim.entities.genotype[np.flatnonzero(sim.entities.alive)],
+        cfg,
+        gene_start=ParametricPolicy.functional_module_gene_start(cfg),
+    )
+    assert np.array_equal(before, after)
+    sim.run(until_tick=2)
+    restored = Simulation.from_checkpoint(
+        output / "checkpoint_00000002.sechk", tmp_path / "restored", until_tick=4
+    )
+    assert restored.functional_module_coupling_ablation_enabled is True
+    restored.run(until_tick=4)

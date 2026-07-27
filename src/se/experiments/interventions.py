@@ -78,6 +78,12 @@ INTERVENTIONS = (
         aliases=("elastic-capacities-off", "capacity-expression-neutral"),
     ),
     InterventionSpec(
+        "neutralize-functional-module-coupling-output",
+        InterventionKind.MODIFY_RULES,
+        "feed-forward-functional-module-signal-coupling-output",
+        aliases=("functional-module-coupling-off", "module-coupling-off"),
+    ),
+    InterventionSpec(
         "neutralize-functional-modules",
         InterventionKind.MODIFY_RULES,
         "expression-gated-contextual-harvest-module-output",

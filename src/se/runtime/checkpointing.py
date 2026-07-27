@@ -244,6 +244,9 @@ class SimulationCheckpointMixin:
             "functional_modules_ablation_enabled": bool(
                 self.functional_modules_ablation_enabled
             ),
+            "functional_module_coupling_ablation_enabled": bool(
+                self.functional_module_coupling_ablation_enabled
+            ),
             "functional_module_ablation_mask": (
                 self.functional_module_ablation_mask.astype(bool).copy()
             ),
@@ -498,6 +501,9 @@ class SimulationCheckpointMixin:
         self.functional_modules_ablation_enabled = bool(
             state.get("functional_modules_ablation_enabled", False)
         )
+        self.functional_module_coupling_ablation_enabled = bool(
+            state.get("functional_module_coupling_ablation_enabled", False)
+        )
         default_module_mask = np.full(
             int(self.cfg.functional_modules.module_count),
             self.functional_modules_ablation_enabled,
@@ -733,6 +739,9 @@ class SimulationCheckpointMixin:
         )
         branch.functional_modules_ablation_enabled = (
             self.functional_modules_ablation_enabled
+        )
+        branch.functional_module_coupling_ablation_enabled = (
+            self.functional_module_coupling_ablation_enabled
         )
         branch.functional_module_ablation_mask = (
             self.functional_module_ablation_mask.copy()

@@ -12,9 +12,14 @@ from ..cfg import load_config
 from se.experiments.natural_event_matrix import load_manifest
 from se.env.partition import SpatialRegionPartition
 from se.policy import ParametricPolicy
+from se.differentiation.functional import (
+    compositional_modules_enabled,
+    functional_module_coupling_count,
+    functional_module_gene_count,
+)
 
 
-SCHEMA = "structural-measurement-protocol-audit-v15"
+SCHEMA = "structural-measurement-protocol-audit-v16"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -242,6 +247,12 @@ def build_protocol_audit(
                 int(ParametricPolicy.functional_module_gene_start(cfg))
                 if cfg.functional_modules.enabled else None
             ),
+            "gene_count": int(functional_module_gene_count(cfg)),
+            "architecture_class": (
+                "feed-forward-compositional"
+                if compositional_modules_enabled(cfg)
+                else "independent-additive"
+            ),
             "input_schema": cfg.functional_modules.input_schema,
             "inputs": [
                 "bias",
@@ -254,6 +265,17 @@ def build_protocol_audit(
             ],
             "output_schema": cfg.functional_modules.output_schema,
             "output_scope": "zero-sum residual over four harvest-channel request weights",
+            "coupling_schema": cfg.functional_modules.coupling_schema,
+            "coupling_link_count": int(functional_module_coupling_count(cfg)),
+            "hierarchy_depth_by_module": list(
+                range(int(cfg.functional_modules.module_count))
+            ),
+            "coupling_semantics": (
+                "lower-slot signals multiplicatively modulate downstream contextual "
+                "activation; direct module routing remains available at every slot"
+                if compositional_modules_enabled(cfg)
+                else "no inter-module signal path; all slot outputs add independently"
+            ),
             "action_selection": False,
             "assimilation_affinity_modified": False,
             "resource_gradient_utility_modified": False,
@@ -266,7 +288,14 @@ def build_protocol_audit(
             "development_energy_per_expression": float(
                 cfg.functional_modules.development_energy_per_expression
             ),
+            "maintenance_energy_per_coupling_weight": float(
+                cfg.functional_modules.maintenance_energy_per_coupling_weight
+            ),
+            "development_energy_per_coupling_weight": float(
+                cfg.functional_modules.development_energy_per_coupling_weight
+            ),
             "neutralization_interventions": {
+                "coupling_output": "neutralize-functional-module-coupling-output",
                 "all_modules": "neutralize-functional-modules",
                 "per_module": [
                     f"neutralize-functional-module-{index}"
@@ -274,14 +303,33 @@ def build_protocol_audit(
                 ],
             },
             "contribution_diagnostics": {
-                "schema": "functional-module-contribution-audit-v1",
+                "schema": "functional-module-contribution-audit-v2",
                 "per_module_gate": True,
                 "per_module_activation": True,
                 "isolated_output_effect": True,
                 "contribution_effective_count": True,
                 "cancellation_fraction": True,
+                "coupling_weight_effective_dimensions": True,
+                "mediated_signal_by_hierarchy_level": True,
+                "amplification_and_suppression": True,
                 "feedback_to_world": False,
             },
+            "architecture_capability_experiment": {
+                "plan_schema": "d2-compositional-capability-plan-v1",
+                "result_schema": "d2-compositional-capability-results-v1",
+                "branches": ["composition-active", "coupling-neutral"],
+                "same_v2_genome_and_mutation_streams": True,
+                "coupling_structure_cost_retained_in_neutral_branch": True,
+                "module_copy_number_changed": False,
+                "ecological_niche_claim": False,
+            },
+            "known_architecture_limit": (
+                "The v1 schema supports parameter differentiation and additive output "
+                "mixtures only. It cannot express an inherited module dependency, a "
+                "weak upstream condition carried by a stronger downstream module, or "
+                "hierarchical behavior among same-port modules. The v2 schema adds that "
+                "bounded compositional capacity but still routes only to harvest ports."
+            ),
             "leave_one_out_protocol": {
                 "plan_schema": "d2-module-leave-one-out-plan-v1",
                 "result_schema": "d2-module-leave-one-out-results-v2",
@@ -457,7 +505,7 @@ def build_protocol_audit(
         "d4_niche_reversal_protocol": {
             "plan_schema": "d4-niche-reversal-plan-v1",
             "result_schema": "d4-niche-reversal-results-v1",
-            "assessment_schema": "d4-niche-reversal-assessment-v1",
+            "assessment_schema": "d4-niche-reversal-assessment-v2",
             "source_gate": "explicit D2-H non-replication stop recommendation",
             "default_screen_horizon_ticks": 120,
             "confirmation_horizon_ticks": 300,
@@ -489,7 +537,11 @@ def build_protocol_audit(
             "minimum_non_dominant_lineage_identities": 2,
             "source_exposure_diagnostic": "pre-intervention affinity-specific utility difference between original and 180-degree-rotated resource geography",
             "source_exposure_is_independent_causal_evidence": False,
-            "screen_can_authorize": "longer environment-matching confirmation only",
+            "screen_can_authorize": (
+                "longer environment-matching confirmation only when repeated interaction "
+                "is also aligned with preregistered source exposure and spans multiple "
+                "dominant affinity channels"
+            ),
             "stable_niche_claim_requires": [
                 "persistent environment-matching interaction",
                 "stable coexistence",
@@ -658,8 +710,14 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         f"- enabled / schema: {payload['functional_module_protocol']['enabled']} / "
         f"`{payload['functional_module_protocol']['schema']}`",
-        f"- module count / gene start: {payload['functional_module_protocol']['module_count']} / "
-        f"{payload['functional_module_protocol']['gene_start']}",
+        f"- module count / gene start / gene count: {payload['functional_module_protocol']['module_count']} / "
+        f"{payload['functional_module_protocol']['gene_start']} / "
+        f"{payload['functional_module_protocol']['gene_count']}",
+        f"- architecture / coupling: {payload['functional_module_protocol']['architecture_class']} / "
+        f"`{payload['functional_module_protocol']['coupling_schema']}` / "
+        f"{payload['functional_module_protocol']['coupling_link_count']} links",
+        f"- hierarchy: {payload['functional_module_protocol']['hierarchy_depth_by_module']}",
+        f"- coupling semantics: {payload['functional_module_protocol']['coupling_semantics']}",
         f"- inputs: {payload['functional_module_protocol']['inputs']}",
         f"- output scope: {payload['functional_module_protocol']['output_scope']}",
         f"- action selection / new physics: "
@@ -667,6 +725,8 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"{payload['functional_module_protocol']['new_world_physics']}",
         f"- neutralization interventions: {payload['functional_module_protocol']['neutralization_interventions']}",
         f"- contribution diagnostics: {payload['functional_module_protocol']['contribution_diagnostics']}",
+        f"- architecture capability experiment: {payload['functional_module_protocol']['architecture_capability_experiment']}",
+        f"- known architecture limit: {payload['functional_module_protocol']['known_architecture_limit']}",
         f"- leave-one-out protocol: {payload['functional_module_protocol']['leave_one_out_protocol']}",
         f"- effect qualification: {payload['functional_module_protocol']['effect_qualification']}",
         f"- lineage-balanced pairs: {payload['functional_module_protocol']['lineage_balanced_pair_protocol']}",

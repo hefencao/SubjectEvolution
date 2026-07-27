@@ -1,10 +1,28 @@
-# SE v0.47
+# SE v0.48
 
-`SE` 是围绕多维环境、可遗传分化、生态位、动态知识与候选主体结构构建的可审计演化模拟参考实现。
+`SE` 是围绕多维环境、可遗传功能组合、生态分化、动态知识与候选主体结构构建的可审计演化模拟参考实现。
+
+## 本轮方向修正
+
+v0.47 的 D4-A 运行出现了重复的 affinity × resource-geography 终点交互，但源谱系的资源暴露差异很小，且没有任何 exposure-aligned outcome。该结果说明分支可以因果分离一般交互，却不能证明已经形成不同资源生态位。v0.48 因此取消 D4-A 的 300-tick 自动确认，不再用“环境不满足 → 回模块审计 → 模块不满足 → 回环境审计”的方式推进。
+
+结构复核发现，旧 `expression-gated-contextual-harvest-v1` 的四个模块都是独立加法项：同一组输入、同一零和采集 residual 端口、无模块间信号、无层级和无联合功能。它能表达参数差异和加法混合，但不足以检验弱模块被强模块携带、组合依赖或同功能模块的层级表现。
+
+v0.48 新增有界组合架构：
+
+- `expression-gated-compositional-harvest-v2`；
+- 四个固定槽位不变；
+- 六个可遗传、可突变且有明确成本的前馈 coupling genes；
+- 低槽位信号可放大或抑制高槽位的上下文激活；
+- 每个模块仍可直接发布采集 residual；
+- 不增加资源、传感器、动作、世界物理、模块复制数或任意 routing；
+- v1 配置继续走原始权威加法路径。
+
+这使同一采集功能的模块能够出现不同层级：上游模块可以直接输出很弱，却通过下游模块产生组合效应。v2 仍只作用于采集请求，因此它是组合功能能力扩展，不是完整具身功能分化。
 
 ## Conda editable 工作流
 
-v0.47 更新版本元数据并新增两个 console entry，升级后需要在目标 Conda 环境执行一次：
+v0.48 更新元数据并新增 `se-d2-compose`，升级后运行一次：
 
 ```bash
 conda activate <your-env>
@@ -18,121 +36,47 @@ make test
 make conda-check
 ```
 
-不再把 wheel 单独安装作为日常开发流程。`make release-check` 仅用于隔离发行物审计。
-
-## 普通模拟入口
+## D2-I 组合能力实验
 
 ```bash
-se --config <CONFIG> --seed 10001 --output <DIR> --backend cpu
-```
-
-```bash
-se-multi \
-  --config configs/mvp_short_d2a_contextual_harvest_longrun.json \
-  --seeds 10001,10002,10003 \
-  --checkpoint-ticks 2400,2640,2760,2820,2880,3000 \
-  --until-tick 3000 \
-  --output runs/d2a_contextual_modules_multiseed \
-  --backend gpu
-```
-
-## D2 结论：停止模块复制路线
-
-D2-B 至 D2-H 依次完成了逐模块消融、跨谱系配对、120/300-tick 持续性、时间中介、遗传创始者重构和重构 checkpoint 中的模块 3 复审。
-
-最新 D2-H 结果为：
-
-- 使用 peak fresh-world seeds `45001`、`45003`；
-- 每个 checkpoint 保留全部 6 条预注册合格谱系；
-- 共执行 12 个 module-3 × lineage 三分支配对；
-- 模块 3 没有形成跨 seed、跨非主导谱系的重复 routed-output 效应；
-- 仅存在表达成本相关信号，不能替代模块输出因果证据；
-- 不生成 300-tick 模块确认计划；
-- 模块复制、删除、任意重联和新 output port 继续阻塞。
-
-因此 v0.47 不再围绕模块复制追加同类实验，主线进入 charter 的 D4 生态位形成阶段。
-
-## D4-A：资源地理 × 遗传亲和反转审计
-
-新增入口：
-
-```bash
-se-d4-niche-reversal
-se-d4-niche-assess
-```
-
-D4-A 从 D2-H 已冻结的两个多谱系 peak checkpoint 建立共享 checkpoint 的 2×2 因子实验：
-
-1. `baseline`：原资源地理，遗传亲和正常表达；
-2. `resource-reversed`：资源地理旋转 180°，亲和正常表达；
-3. `affinity-neutral`：原资源地理，中和亲和表达；
-4. `joint-neutral`：资源地理反转并中和亲和表达。
-
-主要交互为：
-
-```text
-(baseline - resource-reversed)
-- (affinity-neutral - joint-neutral)
-```
-
-正值表示原资源地理相对反转地理的优势中，有一部分只能在遗传亲和表达存在时出现。该差中之差排除了资源反转本身的一般扰动。
-
-`reverse-resource-geography` 只改变资源空间地理：
-
-- 当前四资源字段旋转 180°；
-- 后续季节性再生模板持续旋转；
-- 不修改资源通道身份和 effect matrix；
-- 不修改 hazard 或 mortality trace；
-- 不修改实体、基因型、谱系、模块或随机键。
-
-执行 120-tick 探索性 screen：
-
-```bash
-se-d4-niche-reversal \
-  --plan docs/v0.47/d4_niche_reversal_plan.json \
-  --output analyses/d4a_niche_reversal_120 \
-  --execute \
+se-d2-compose \
+  --config configs/mvp_short_d2i_compositional_harvest_longrun.json \
+  --seeds 48001,48002,48003 \
+  --output analyses/d2i_compositional_capability_1500 \
   --backend gpu \
-  --gpu-semantics-mode strict-reference
+  --until-tick 1500
 ```
 
-评估：
+每个 seed 从相同 v2 初始分布运行两个新群体：
 
-```bash
-se-d4-niche-assess \
-  --results analyses/d4a_niche_reversal_120/d4_niche_reversal_results.json \
-  --output analyses/d4a_niche_reversal_assessment_120
-```
+- `composition-active`：前馈组合正常；
+- `coupling-neutral`：保留相同 coupling genes、突变和结构成本，只关闭组合输出。
 
-若至少两个独立 panel seed、至少两个非主导谱系身份出现同方向的实用 affinity × environment 交互，评估器会生成保持全部 checkpoint-lineage 单元的 300-tick 确认计划。
+该实验不是复制门槛或生态位合格审计，而是回答：演化是否实际利用组合通路、是否形成多层级介导信号、是否降低单模块支配或增加功能采集偏好的有效维度。
 
-D4-A 同时记录每条源谱系的：
+解释顺序：
 
-- 四通道平均遗传亲和；
-- 原资源地理和旋转地理下的局部资源暴露；
-- affinity-specific exposure advantage；
-- endpoint 存活、世界占比、能量、材料、信息和 fertility；
-- 世界层面的资源维度、采集效率和有效谱系指标。
-
-源暴露对齐只是预干预结构诊断，不被当作新的独立因果重复。即便 D4-A 跨 horizon 通过，也只证明资源地理匹配；稳定共存、生态型移除、地图尺度和空间模板检查仍是生态位结论的必要条件。
+1. coupling 未被利用：先校准表达、突变和成本；
+2. coupling 被利用但功能维度不增加：共享的 harvest-only 输出词汇是下一瓶颈；
+3. coupling 被利用且功能差异持续扩大：保留 v2 演化群体，再进行环境匹配实验；
+4. 只有生态终点分支而无功能差异：视为轨迹放大，不视为分化。
 
 ## 当前科学主线
 
-1. **D0：** 正交四资源环境。
-2. **D1：** 可遗传弹性容量与 affinity × capacity 因子设计。
-3. **D2：** 固定模块表达、消融、跨谱系和源群体复审；复制路线已停止。
-4. **D4-A：** 资源地理反转 × 遗传亲和表达的环境匹配因果审计。
-5. **D4-B（受 D4-A 确认结果约束）：** 稳定共存和生态型/表型 cohort 移除。
-6. **D5：** 仅在生态分化得到可重复证据后研究社会形成。
+1. **D0–D1：** 四资源环境、遗传亲和与弹性容量继续作为现有物理基底。
+2. **D2 archived evidence：** 旧 v1 模块的输出、成本和谱系效应已有审计，但不能回答组合架构能力。
+3. **D2-I：** 先验证有界组合模块是否被演化利用，以及同功能模块能否形成层级和联合依赖。
+4. **D4-A deferred：** 上传的 120-tick 结果没有 exposure-aligned differentiation，不执行旧 300-tick confirmation。
+5. **下一结构决策：** 若 v2 被利用但仍无多维功能差异，扩展版本化具身 primitive/output vocabulary；不得机械切回环境反转。
+6. **生态位与社会：** 仅在功能分化和环境匹配形成可重复证据后继续。
 
 ## 文档
 
 - [项目总规范](docs/PROJECT_CHARTER.md)
-- [架构与提交边界](docs/ARCHITECTURE.md)
+- [架构边界](docs/ARCHITECTURE.md)
 - [当前状态](docs/PROJECT_STATUS.md)
 - [科学问题](docs/SCIENTIFIC_ISSUES.md)
-- [D2-H 停止判定](docs/v0.47/D2H_STOP_DECISION.md)
-- [D4-A 设计](docs/v0.47/D4A_NICHE_REVERSAL_DESIGN.md)
-- [生成的 D4-A 计划](docs/v0.47/d4_niche_reversal_plan.md)
-- [下一步运行](docs/v0.47/NEXT_EXPERIMENT.md)
-- [Conda editable 工作流](docs/v0.47/CONDA_EDITABLE_WORKFLOW.md)
+- [结构能力复核](docs/v0.48/CAPABILITY_REASSESSMENT.md)
+- [D2-I 组合模块设计](docs/v0.48/D2I_COMPOSITIONAL_MODULE_DESIGN.md)
+- [D4-A 重新判定](docs/v0.48/D4A_REASSESSMENT.md)
+- [下一步运行](docs/v0.48/NEXT_EXPERIMENT.md)

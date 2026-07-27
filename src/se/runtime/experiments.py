@@ -370,6 +370,26 @@ class SimulationExperimentMixin:
                 "inheritance_modified": False,
                 "future_offspring_expression_neutralized": True,
             }
+        elif normalized == "neutralize-functional-module-coupling-output":
+            if (
+                not self.cfg.functional_modules.enabled
+                or self.cfg.functional_modules.schema
+                != "expression-gated-compositional-harvest-v2"
+            ):
+                raise ValueError(
+                    "neutralize-functional-module-coupling-output requires "
+                    "compositional functional modules"
+                )
+            canonical = "neutralize-functional-module-coupling-output"
+            self.functional_module_coupling_ablation_enabled = True
+            details = {
+                "effective_output": "zero-feed-forward-coupling",
+                "module_context_and_direct_output_preserved": True,
+                "coupling_structure_cost_preserved": True,
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+                "future_offspring_coupling_output_neutralized": True,
+            }
         elif normalized == "neutralize-functional-modules":
             if not self.cfg.functional_modules.enabled:
                 raise ValueError(

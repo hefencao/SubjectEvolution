@@ -1,0 +1,102 @@
+{
+  "schema": "se-authoritative-compatibility-report-v1",
+  "baseline_version": "0.47.0",
+  "candidate_version": "0.48.0",
+  "config": "configs/mvp_small.json",
+  "backend": "cpu",
+  "ticks": 20,
+  "new_feature_state": "compositional-v2 disabled; archived v1/default path",
+  "checkpoint_comparison": {
+    "normalization": {
+      "config.functional_modules.coupling_schema": "disabled",
+      "config.functional_modules.maintenance_energy_per_coupling_weight": 0.0,
+      "config.functional_modules.development_energy_per_coupling_weight": 0.0,
+      "simulation.functional_module_coupling_ablation_enabled": false
+    },
+    "semantic_leaf_count_baseline": 139689,
+    "semantic_leaf_count_candidate": 139689,
+    "common_semantic_leaf_count": 139689,
+    "baseline_only_leaf_count": 0,
+    "candidate_only_leaf_count": 0,
+    "candidate_only_paths": [],
+    "semantic_difference_count": 0,
+    "difference_paths": [],
+    "passed": true
+  },
+  "public_checkpoint_comparison": {
+    "field_count": 13,
+    "fields": [
+      {
+        "field": "energy",
+        "identical": true
+      },
+      {
+        "field": "entity_id",
+        "identical": true
+      },
+      {
+        "field": "generation",
+        "identical": true
+      },
+      {
+        "field": "genotype",
+        "identical": true
+      },
+      {
+        "field": "group_id",
+        "identical": true
+      },
+      {
+        "field": "harvested_resources_total",
+        "identical": true
+      },
+      {
+        "field": "integrity",
+        "identical": true
+      },
+      {
+        "field": "lineage_id",
+        "identical": true
+      },
+      {
+        "field": "lineage_subject_id",
+        "identical": true
+      },
+      {
+        "field": "primary_subject_id",
+        "identical": true
+      },
+      {
+        "field": "tick",
+        "identical": true
+      },
+      {
+        "field": "x",
+        "identical": true
+      },
+      {
+        "field": "y",
+        "identical": true
+      }
+    ],
+    "passed": true
+  },
+  "summary_comparison": {
+    "common_leaf_count": 181,
+    "non_timing_leaf_count": 168,
+    "non_timing_difference_count": 0,
+    "difference_paths": [],
+    "passed": true
+  },
+  "metrics_comparison": {
+    "rows": 3,
+    "common_columns": 178,
+    "non_timing_columns": 166,
+    "non_timing_cells_compared": 498,
+    "non_timing_difference_count": 0,
+    "differences": [],
+    "passed": true
+  },
+  "exact_auxiliary_outputs": [],
+  "passed": true
+}

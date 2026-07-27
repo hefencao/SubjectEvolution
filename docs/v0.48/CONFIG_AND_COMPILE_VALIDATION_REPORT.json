@@ -1,0 +1,893 @@
+{
+  "schema": "config-and-compile-validation-v1",
+  "version": "0.48.0",
+  "config_count": 77,
+  "config_passed": 77,
+  "python_file_count": 143,
+  "python_compile_passed": 143,
+  "passed": true,
+  "configs": [
+    {
+      "path": "configs/d0_orthogonal_env_smoke.json",
+      "passed": true
+    },
+    {
+      "path": "configs/d1_elastic_capacities_smoke.json",
+      "passed": true
+    },
+    {
+      "path": "configs/d1b_selective_harvest_smoke.json",
+      "passed": true
+    },
+    {
+      "path": "configs/d2a_contextual_harvest_smoke.json",
+      "passed": true
+    },
+    {
+      "path": "configs/d2i_compositional_harvest_smoke.json",
+      "passed": true
+    },
+    {
+      "path": "configs/heterogeneous_no_affinity_smoke.json",
+      "passed": true
+    },
+    {
+      "path": "configs/heterogeneous_smoke.json",
+      "passed": true
+    },
+    {
+      "path": "configs/long_run_diagnostics_smoke.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_100k.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_d0_orthogonal_env_longrun.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_d1_elastic_capacities_longrun.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_d1b_selective_harvest_longrun.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_d2a_contextual_harvest_longrun.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_d2i_compositional_harvest_longrun.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_k1_compat.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_k1_legacy.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_k2_control.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_k2_exchange.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_k2_private.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_k3_exchange.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_k3_private.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_k4_boundary.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_k4_candidates.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_k4_high_damage.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_exchange.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_k3_control.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l1_costed.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l1_nocost.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_budget_matched.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_budget_rejection.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_costed.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk2.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk4.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk8.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_culture_120.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_culture_longrun.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_stress_120.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_stress_longrun.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_stress_validation.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_longrun.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_mortality_trace_adaptive_groups_longrun.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_mortality_trace_adaptive_groups_moving_hazards_evidence_longrun.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_longrun.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_no_affinity.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_no_affinity_longrun.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_no_affinity.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_legacy_120.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_nocost.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_mlp_exchange.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_mlp_private.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_latent_private.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_replay.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_subject_structure_multi_env_atlas_longrun.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_v022_adaptive_trace_control_120.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_v022_moving_hazards_inherited_evidence_120.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_v022_moving_hazards_neutral_evidence_120.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_short_v023_synthetic_abiotic_field_plugin_120.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_small.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_small_k1.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_small_k1_none.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_small_k1_private.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_small_k1_zero_cost.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_small_k2.json",
+      "passed": true
+    },
+    {
+      "path": "configs/mvp_small_k2_retest350.json",
+      "passed": true
+    },
+    {
+      "path": "configs/phase_counterfactual_smoke.json",
+      "passed": true
+    },
+    {
+      "path": "configs/smoke_cpu.json",
+      "passed": true
+    },
+    {
+      "path": "configs/v020_compat_v1_60.json",
+      "passed": true
+    },
+    {
+      "path": "configs/v020_local_culture_smoke.json",
+      "passed": true
+    },
+    {
+      "path": "configs/v020_local_culture_validation_120.json",
+      "passed": true
+    },
+    {
+      "path": "configs/v021_control_adaptive_no_trace_120.json",
+      "passed": true
+    },
+    {
+      "path": "configs/v021_control_adaptive_trace_120.json",
+      "passed": true
+    },
+    {
+      "path": "configs/v021_control_periodic_no_trace_120.json",
+      "passed": true
+    },
+    {
+      "path": "configs/v021_control_periodic_trace_120.json",
+      "passed": true
+    }
+  ],
+  "python_files": [
+    {
+      "path": "scripts/verify_conda_editable.py",
+      "passed": true
+    },
+    {
+      "path": "scripts/verify_dist.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/__init__.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/__main__.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/analysis/__init__.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/analysis/d2_effects.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/analysis/d2_lineage_effects.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/analysis/d2_lineage_mediation_effects.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/analysis/d2_source_population_causal_effects.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/analysis/d2_source_population_effects.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/analysis/d4_niche_reversal_effects.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/analysis/long_run.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/analysis/natural_event_result_audit.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/analysis/natural_event_result_synthesis.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/analysis/parity.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/analysis/protocol_audit.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/analysis/structure_env.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/backend.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/cfg.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/checkpointing.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/cmd/__init__.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/cmd/multi_seed.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/cmd/run.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/device_state.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/differentiation/__init__.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/differentiation/capacity.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/differentiation/functional.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/env/__init__.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/env/atlas.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/env/danger_evidence.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/env/diversity.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/env/gpu.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/env/local_stress.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/env/niches.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/env/partition.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/env/process.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/env/spatial.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/env/world.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/event_cohort.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/evolution/__init__.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/evolution/lifecycle.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/evolution/progress.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/execution.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/__init__.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/counterfactual.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/d1_factorial.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/d2_compositional_capability.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/d2_lineage_mediation.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/d2_lineage_pairs.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/d2_module_audit.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/d2_source_population.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/d2_source_population_causal.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/d4_niche_reversal.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/interventions.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/local_event_counterfactual.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/natural_event_execution.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/natural_event_matrix.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/natural_event_timed_execution.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/phase_counterfactual.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/experiments/replay.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/gpu_runtime.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/gui/__init__.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/gui/attachment.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/gui/protocol.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/gui/publisher.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/gui/reader.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/gui/runner.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/information.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/intents.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/knowledge/__init__.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/knowledge/diagnostics.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/knowledge/latent.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/knowledge/logging.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/knowledge/policy.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/knowledge/routing_cost.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/knowledge/storage.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/knowledge/subjects.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/knowledge/system.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/knowledge/types.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/knowledge/working_memory.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/metrics.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/plugins/__init__.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/plugins/moving_gaussian_hazard.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/policy.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/random_api.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/reductions.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/runtime/__init__.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/runtime/checkpointing.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/runtime/experiments.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/runtime/reporting.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/runtime/sim.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/runtime/state.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/subjects/__init__.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/subjects/control.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/subjects/graph.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/subjects/social.py",
+      "passed": true
+    },
+    {
+      "path": "src/se/subjects/succession.py",
+      "passed": true
+    },
+    {
+      "path": "tests/__init__.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_checkpoint_replay.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_cli_overrides.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_d1_capacities.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_d1_factorial_and_demand.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_d2_compositional_capability.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_d2_effect_assessment.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_d2_functional_modules.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_d2_lineage_effect_assessment.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_d2_lineage_mediation.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_d2_lineage_pairs.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_d2_module_audit.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_d2_source_population.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_d2_source_population_causal.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_d4_niche_reversal.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_danger_evidence_moving_hazard.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_env_diversity.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_env_process_plugins.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_event_cohort.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_gui_interface.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_knowledge.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_knowledge_k2.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_knowledge_k3.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_knowledge_k4.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_latent_knowledge.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_latent_router_mlp.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_local_event_counterfactual.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_local_stress.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_long_run_diagnostics.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_memory_selection.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_mortality_trace_group_refresh.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_natural_event_execution.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_natural_event_matrix.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_natural_event_result_audit.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_natural_event_result_synthesis.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_natural_event_timed_execution.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_orthogonal_env.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_package_architecture.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_parity.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_periodic_positions.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_phase_counterfactual.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_protocol_provenance.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_routing_cost.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_selective_harvest.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_structure_env_analysis.py",
+      "passed": true
+    },
+    {
+      "path": "tests/test_subject_structure_atlas.py",
+      "passed": true
+    }
+  ]
+}

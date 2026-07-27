@@ -1,0 +1,289 @@
+{
+  "schema": "d2-compositional-capability-results-v1",
+  "plan": {
+    "schema": "d2-compositional-capability-plan-v1",
+    "seeds": [
+      7
+    ],
+    "horizon_ticks": 30,
+    "branches": {
+      "composition-active": [],
+      "coupling-neutral": [
+        "neutralize-functional-module-coupling-output"
+      ]
+    },
+    "same_v2_genome_in_both_branches": true,
+    "same_initial_population_and_world_seed": true,
+    "coupling_genes_mutate_in_both_branches": true,
+    "coupling_structure_cost_retained_when_neutral": true,
+    "outcome_conditioned_selection": false,
+    "module_copy_number_changed": false,
+    "new_world_physics": false
+  },
+  "completed_seed_count": 1,
+  "pairs": [
+    {
+      "seed": 7,
+      "branches": {
+        "composition-active": {
+          "output": "/mnt/data/v048_d2i_smoke/seed_7/composition-active",
+          "interventions": [],
+          "coupling_output_active": true,
+          "coupling_structure_cost_retained": true,
+          "final": {
+            "alive": 206,
+            "effective_lineages": 194.66055045871562,
+            "largest_lineage_fraction": 0.009708737864077669,
+            "resource_affinity_effective_dimensions": 2.9493512547026635,
+            "environment_resource_effective_dimensions": 3.9722716273479968,
+            "functional_harvest_preference_effective_dimensions": 2.9516656799380363,
+            "functional_module_contribution_effective_count": 3.952917011104044,
+            "functional_module_contribution_dominance": 0.28091444405957744,
+            "functional_module_coupling_weight_effective_dimensions": 5.917918794453758,
+            "functional_module_coupling_changed_entity_fraction": 0.5365853658536586,
+            "functional_module_mediated_signal_abs_mean": 0.00048589939024390244,
+            "functional_module_modulation_abs_mean": 0.011064334032012195,
+            "functional_module_cancellation_fraction": 0.22974145410376545,
+            "functional_module_hierarchy_depth_by_module": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "functional_module_mediated_signal_abs_mean_by_module": [
+              0.0,
+              0.000743140243902439,
+              0.0004632717225609756,
+              0.0007371855945121951
+            ],
+            "functional_module_coupling_amplification_fraction_by_module": [
+              0.0,
+              0.09734513274336283,
+              0.20212765957446807,
+              0.2808988764044944
+            ],
+            "functional_module_coupling_suppression_fraction_by_module": [
+              0.0,
+              0.19469026548672566,
+              0.2978723404255319,
+              0.39325842696629215
+            ]
+          }
+        },
+        "coupling-neutral": {
+          "output": "/mnt/data/v048_d2i_smoke/seed_7/coupling-neutral",
+          "interventions": [
+            "neutralize-functional-module-coupling-output"
+          ],
+          "coupling_output_active": false,
+          "coupling_structure_cost_retained": true,
+          "final": {
+            "alive": 206,
+            "effective_lineages": 194.66055045871562,
+            "largest_lineage_fraction": 0.009708737864077669,
+            "resource_affinity_effective_dimensions": 2.9493512547026635,
+            "environment_resource_effective_dimensions": 3.9722716273479968,
+            "functional_harvest_preference_effective_dimensions": 2.951630767416925,
+            "functional_module_contribution_effective_count": 3.9493246701773863,
+            "functional_module_contribution_dominance": 0.2796551724137931,
+            "functional_module_coupling_weight_effective_dimensions": 5.917918794453758,
+            "functional_module_coupling_changed_entity_fraction": 0.0,
+            "functional_module_mediated_signal_abs_mean": 0.0,
+            "functional_module_modulation_abs_mean": 0.0,
+            "functional_module_cancellation_fraction": 0.23301642178046678,
+            "functional_module_hierarchy_depth_by_module": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "functional_module_mediated_signal_abs_mean_by_module": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "functional_module_coupling_amplification_fraction_by_module": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "functional_module_coupling_suppression_fraction_by_module": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "composition_minus_neutral": {
+        "alive": 0.0,
+        "effective_lineages": 0.0,
+        "largest_lineage_fraction": 0.0,
+        "resource_affinity_effective_dimensions": 0.0,
+        "environment_resource_effective_dimensions": 0.0,
+        "functional_harvest_preference_effective_dimensions": 3.491252111142984e-05,
+        "functional_module_contribution_effective_count": 0.0035923409266578332,
+        "functional_module_contribution_dominance": 0.0012592716457843212,
+        "functional_module_coupling_weight_effective_dimensions": 0.0,
+        "functional_module_coupling_changed_entity_fraction": 0.5365853658536586,
+        "functional_module_mediated_signal_abs_mean": 0.00048589939024390244,
+        "functional_module_modulation_abs_mean": 0.011064334032012195,
+        "functional_module_cancellation_fraction": -0.0032749676767013236
+      }
+    }
+  ],
+  "summary": {
+    "metric_summaries": {
+      "alive": {
+        "values": [
+          0.0
+        ],
+        "mean": 0.0,
+        "median": 0.0,
+        "positive_count": 0,
+        "negative_count": 0,
+        "zero_count": 1
+      },
+      "effective_lineages": {
+        "values": [
+          0.0
+        ],
+        "mean": 0.0,
+        "median": 0.0,
+        "positive_count": 0,
+        "negative_count": 0,
+        "zero_count": 1
+      },
+      "largest_lineage_fraction": {
+        "values": [
+          0.0
+        ],
+        "mean": 0.0,
+        "median": 0.0,
+        "positive_count": 0,
+        "negative_count": 0,
+        "zero_count": 1
+      },
+      "resource_affinity_effective_dimensions": {
+        "values": [
+          0.0
+        ],
+        "mean": 0.0,
+        "median": 0.0,
+        "positive_count": 0,
+        "negative_count": 0,
+        "zero_count": 1
+      },
+      "environment_resource_effective_dimensions": {
+        "values": [
+          0.0
+        ],
+        "mean": 0.0,
+        "median": 0.0,
+        "positive_count": 0,
+        "negative_count": 0,
+        "zero_count": 1
+      },
+      "functional_harvest_preference_effective_dimensions": {
+        "values": [
+          3.491252111142984e-05
+        ],
+        "mean": 3.491252111142984e-05,
+        "median": 3.491252111142984e-05,
+        "positive_count": 1,
+        "negative_count": 0,
+        "zero_count": 0
+      },
+      "functional_module_contribution_effective_count": {
+        "values": [
+          0.0035923409266578332
+        ],
+        "mean": 0.0035923409266578332,
+        "median": 0.0035923409266578332,
+        "positive_count": 1,
+        "negative_count": 0,
+        "zero_count": 0
+      },
+      "functional_module_contribution_dominance": {
+        "values": [
+          0.0012592716457843212
+        ],
+        "mean": 0.0012592716457843212,
+        "median": 0.0012592716457843212,
+        "positive_count": 1,
+        "negative_count": 0,
+        "zero_count": 0
+      },
+      "functional_module_coupling_weight_effective_dimensions": {
+        "values": [
+          0.0
+        ],
+        "mean": 0.0,
+        "median": 0.0,
+        "positive_count": 0,
+        "negative_count": 0,
+        "zero_count": 1
+      },
+      "functional_module_coupling_changed_entity_fraction": {
+        "values": [
+          0.5365853658536586
+        ],
+        "mean": 0.5365853658536586,
+        "median": 0.5365853658536586,
+        "positive_count": 1,
+        "negative_count": 0,
+        "zero_count": 0
+      },
+      "functional_module_mediated_signal_abs_mean": {
+        "values": [
+          0.00048589939024390244
+        ],
+        "mean": 0.00048589939024390244,
+        "median": 0.00048589939024390244,
+        "positive_count": 1,
+        "negative_count": 0,
+        "zero_count": 0
+      },
+      "functional_module_modulation_abs_mean": {
+        "values": [
+          0.011064334032012195
+        ],
+        "mean": 0.011064334032012195,
+        "median": 0.011064334032012195,
+        "positive_count": 1,
+        "negative_count": 0,
+        "zero_count": 0
+      },
+      "functional_module_cancellation_fraction": {
+        "values": [
+          -0.0032749676767013236
+        ],
+        "mean": -0.0032749676767013236,
+        "median": -0.0032749676767013236,
+        "positive_count": 0,
+        "negative_count": 1,
+        "zero_count": 0
+      }
+    },
+    "mechanism_usage": {
+      "rows": [
+        {
+          "seed": 7,
+          "active_mediated_signal": 0.00048589939024390244,
+          "neutral_mediated_signal": 0.0,
+          "active_changed_entity_fraction": 0.5365853658536586,
+          "downstream_levels_with_mediated_signal": 3
+        }
+      ],
+      "active_in_every_seed": true,
+      "neutral_zero_in_every_seed": true,
+      "entity_level_effect_in_every_seed": true,
+      "multiple_hierarchy_levels_used_in_any_seed": true
+    },
+    "decision_scope": "descriptive-generative-capability-not-pass-fail-gate"
+  },
+  "interpretation_boundary": "This paired experiment tests whether inherited feed-forward module coupling changes realized functional variation while holding the v2 genome, coupling genes, mutation process, and coupling structure cost present in both branches. It does not by itself establish ecological differentiation, niche coexistence, or a reason to change module copy number."
+}

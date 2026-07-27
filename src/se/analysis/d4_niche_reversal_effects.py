@@ -19,7 +19,7 @@ from se.experiments.d4_niche_reversal import (
     render_plan_markdown,
 )
 
-ASSESSMENT_SCHEMA = "d4-niche-reversal-assessment-v1"
+ASSESSMENT_SCHEMA = "d4-niche-reversal-assessment-v2"
 INTERACTION = "affinity_environment_interaction"
 EXPOSURE_THRESHOLD = 0.01
 
@@ -308,9 +308,20 @@ def assess_niche_reversal_results(
         float(max(exposures) - min(exposures)) if exposures else 0.0
     )
     exposure_material_count = sum(abs(value) >= EXPOSURE_THRESHOLD for value in exposures)
+    confirmation_eligible = bool(
+        screen_pass
+        and exposure_aligned_outcomes
+        and exposure_material_count >= 2
+        and len(dominant_channels) >= 2
+    )
     if short is None:
-        if screen_pass:
+        if confirmation_eligible:
             recommendation = "run-300-tick-d4a-niche-reversal-confirmation"
+        elif screen_pass:
+            recommendation = (
+                "causal-interaction-without-realized-differentiation-"
+                "redesign-functional-substrate"
+            )
         elif exposure_material_count < 2 or len(dominant_channels) < 2:
             recommendation = "resource-affinity-or-geography-contrast-too-weak-redesign-d4-source"
         else:
@@ -338,6 +349,7 @@ def assess_niche_reversal_results(
         "exposure_aligned_outcomes": exposure_aligned_outcomes,
         "persistent_outcomes": persistent_outcomes,
         "screen_pass": screen_pass,
+        "confirmation_eligible": confirmation_eligible,
         "confirmation_pass": confirmation_pass,
         "ecological_screen_outcomes": ecological_screen,
         "ecological_persistent_outcomes": ecological_persistent,
@@ -351,7 +363,10 @@ def assess_niche_reversal_results(
             "share a checkpoint and keyed random streams. Replication is counted across "
             "independent panel seeds, not across lineages or outcomes. Source exposure "
             "alignment links the intervention to preregistered phenotype-environment "
-            "structure but is not an independent causal intervention. Even a persistent "
+            "structure but is not an independent causal intervention. A generic factorial "
+            "interaction without exposure alignment is not evidence that evolved lineages "
+            "occupy distinct resource niches and does not justify a longer confirmation. "
+            "Even a persistent "
             "D4-A result establishes environment matching only; stable coexistence, "
             "ecotype removal, and map-scale checks are still required before a niche claim."
         ),
@@ -367,6 +382,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"Short horizon: `{report['short_horizon_ticks']}`",
         "",
         f"Screen pass: `{report['screen_pass']}`",
+        f"Confirmation eligible: `{report['confirmation_eligible']}`",
         f"Confirmation pass: `{report['confirmation_pass']}`",
         f"Causal environment matching: `{report['causal_environment_matching_signal']}`",
         f"Exposure-aligned differentiation: `{report['exposure_aligned_differentiation_signal']}`",
@@ -444,7 +460,7 @@ def main() -> None:
         render_markdown(report), encoding="utf-8"
     )
     confirmation_written = False
-    if short is None and report["screen_pass"]:
+    if short is None and report["confirmation_eligible"]:
         plan_path = output / "_embedded_screen_plan.json"
         plan_path.write_text(
             json.dumps(current["plan"], ensure_ascii=False, indent=2), encoding="utf-8"

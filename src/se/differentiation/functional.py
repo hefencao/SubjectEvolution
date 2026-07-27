@@ -1,14 +1,17 @@
-"""D2 contextual harvest modules and D2-B contribution diagnostics.
+"""Bounded contextual and compositional harvest modules.
 
-The modules do not choose actions and do not create new world physics. They
-only map bounded internal/environmental inputs to a zero-sum residual over the
-four already-existing harvest-channel ports. The inherited static affinity
-continues to control assimilation and resource-gradient utility.
+The archived v1 architecture maps each fixed slot independently from bounded
+internal/environmental inputs to a zero-sum residual over the four existing
+harvest ports.  The opt-in v2 architecture preserves those ports and module
+blocks, then adds six inherited lower-slot-to-higher-slot signal couplings.
+Those couplings multiplicatively modulate downstream contextual activation, so
+a module may act as an upstream condition, downstream integrator, amplifier,
+or suppressor without creating a new sensor, action, resource, or world law.
 
-D2-B adds no new world capability. It exposes the exact per-module signals,
-leave-one-module contributions, cancellation, and partial-expression ablation
-needed to decide whether the existing fixed modules have causal function before
-any duplication or routing expansion is considered.
+The fixed acyclic ordering is an explicit operator-basis constraint rather than
+an ecological role label.  Coupling output can be neutralized while retaining
+its inherited structure cost, providing a direct comparison between additive
+and compositional use of the same four module slots.
 """
 
 from __future__ import annotations
@@ -21,9 +24,14 @@ from ..cfg import SimulationConfig
 from ..env.niches import AFFINITY_SCALE, RESOURCE_CHANNELS
 
 FUNCTIONAL_MODULE_SCHEMA = "expression-gated-contextual-harvest-v1"
+COMPOSITIONAL_FUNCTIONAL_MODULE_SCHEMA = (
+    "expression-gated-compositional-harvest-v2"
+)
 INPUT_SCHEMA = "internal-needs-local-resources-v1"
+COMPOSITIONAL_INPUT_SCHEMA = "internal-needs-local-resources-feedforward-v2"
 OUTPUT_SCHEMA = "harvest-channel-zero-sum-residual-v1"
-CONTRIBUTION_DIAGNOSTIC_SCHEMA = "functional-module-contribution-audit-v1"
+COUPLING_SCHEMA = "lower-slot-signal-modulation-v1"
+CONTRIBUTION_DIAGNOSTIC_SCHEMA = "functional-module-contribution-audit-v2"
 INPUT_COUNT = 10
 OUTPUT_COUNT = RESOURCE_CHANNELS
 GENES_PER_MODULE = 1 + INPUT_COUNT + 1 + OUTPUT_COUNT
@@ -47,34 +55,67 @@ class FunctionalModuleEvaluation:
     module_residual_q: np.ndarray
     full_residual_q: np.ndarray
     ablation_mask: np.ndarray
+    context_activation_q: np.ndarray | None = None
+    modulation_q: np.ndarray | None = None
+    coupling_q: np.ndarray | None = None
+    coupling_ablation_enabled: bool = False
 
 
 def functional_modules_enabled(cfg: SimulationConfig) -> bool:
     return bool(
         cfg.functional_modules.enabled
-        and cfg.functional_modules.schema == FUNCTIONAL_MODULE_SCHEMA
+        and cfg.functional_modules.schema
+        in {FUNCTIONAL_MODULE_SCHEMA, COMPOSITIONAL_FUNCTIONAL_MODULE_SCHEMA}
     )
+
+
+def compositional_modules_enabled(cfg: SimulationConfig) -> bool:
+    return bool(
+        functional_modules_enabled(cfg)
+        and cfg.functional_modules.schema == COMPOSITIONAL_FUNCTIONAL_MODULE_SCHEMA
+        and cfg.functional_modules.coupling_schema == COUPLING_SCHEMA
+    )
+
+
+def functional_module_coupling_count(cfg: SimulationConfig) -> int:
+    if not compositional_modules_enabled(cfg):
+        return 0
+    count = int(cfg.functional_modules.module_count)
+    return count * (count - 1) // 2
 
 
 def functional_module_gene_count(cfg: SimulationConfig) -> int:
     if not functional_modules_enabled(cfg):
         return 0
-    return int(cfg.functional_modules.module_count) * GENES_PER_MODULE
+    return (
+        int(cfg.functional_modules.module_count) * GENES_PER_MODULE
+        + functional_module_coupling_count(cfg)
+    )
 
 
 def _blocks(genotype: np.ndarray, cfg: SimulationConfig, gene_start: int):
     values = np.asarray(genotype, dtype=np.float32)
     count = int(cfg.functional_modules.module_count)
-    expected = count * GENES_PER_MODULE
+    base_count = count * GENES_PER_MODULE
+    expected = base_count + functional_module_coupling_count(cfg)
     block = values[:, gene_start : gene_start + expected]
     if block.shape != (values.shape[0], expected):
         raise ValueError("genotype does not contain the configured functional modules")
-    block = block.reshape(values.shape[0], count, GENES_PER_MODULE)
-    gate = block[:, :, 0]
-    inputs = block[:, :, 1 : 1 + INPUT_COUNT]
-    bias = block[:, :, 1 + INPUT_COUNT]
-    outputs = block[:, :, 2 + INPUT_COUNT :]
-    return gate, inputs, bias, outputs
+    modules = block[:, :base_count].reshape(values.shape[0], count, GENES_PER_MODULE)
+    gate = modules[:, :, 0]
+    inputs = modules[:, :, 1 : 1 + INPUT_COUNT]
+    bias = modules[:, :, 1 + INPUT_COUNT]
+    outputs = modules[:, :, 2 + INPUT_COUNT :]
+    coupling = np.zeros((values.shape[0], count, count), dtype=np.float32)
+    if compositional_modules_enabled(cfg):
+        cursor = base_count
+        for target in range(1, count):
+            width = target
+            coupling[:, target, :target] = block[:, cursor : cursor + width]
+            cursor += width
+        if cursor != expected:
+            raise RuntimeError("functional module coupling layout drifted")
+    return gate, inputs, bias, outputs, coupling
 
 
 def _ablation_mask(
@@ -122,7 +163,7 @@ def expression_gates_q(
     values = np.asarray(genotype, dtype=np.float32)
     if not functional_modules_enabled(cfg):
         return np.zeros((values.shape[0], 0), dtype=np.int32)
-    gate, _, _, _ = _blocks(values, cfg, gene_start)
+    gate, _, _, _, _ = _blocks(values, cfg, gene_start)
     threshold = float(cfg.functional_modules.expression_threshold)
     denominator = max(1.0 - threshold, 1e-9)
     expressed = np.clip((gate.astype(np.float64) - threshold) / denominator, 0.0, 1.0)
@@ -209,8 +250,9 @@ def evaluate_contextual_harvest_modules_q(
     ablated: bool = False,
     ablated_modules: Any | None = None,
     row_ablated_modules: Any | None = None,
+    coupling_ablated: bool = False,
 ) -> FunctionalModuleEvaluation:
-    """Evaluate the unchanged D2-A world output and D2-B intermediates."""
+    """Evaluate additive or feed-forward compositional module output."""
 
     base = np.asarray(base_affinity_q, dtype=np.int32)
     if base.ndim != 2 or base.shape[1] != RESOURCE_CHANNELS:
@@ -233,9 +275,13 @@ def evaluate_contextual_harvest_modules_q(
             module_residual_q=empty_residual,
             full_residual_q=np.zeros_like(base, dtype=np.int32),
             ablation_mask=mask,
+            context_activation_q=empty_module.copy(),
+            modulation_q=empty_module.copy(),
+            coupling_q=np.zeros((base.shape[0], count, count), dtype=np.int32),
+            coupling_ablation_enabled=bool(coupling_ablated),
         )
 
-    _, input_gene, bias_gene, output_gene = _blocks(
+    _, input_gene, bias_gene, output_gene, coupling_gene = _blocks(
         np.asarray(genotype, dtype=np.float32), cfg, gene_start
     )
     gates = expression_gates_q(
@@ -256,12 +302,34 @@ def evaluate_contextual_harvest_modules_q(
     ).astype(np.int64)
     input_q = np.rint(np.tanh(input_gene.astype(np.float64)) * Q).astype(np.int64)
     bias_q = np.rint(np.tanh(bias_gene.astype(np.float64)) * Q).astype(np.int64)
-    activation = (
+    context_activation = (
         np.einsum("ni,nmi->nm", features, input_q, dtype=np.int64) // Q
         + bias_q
     )
-    activation = np.clip(activation, -Q, Q)
-    signal = (gates * activation) // Q
+    context_activation = np.clip(context_activation, -Q, Q)
+    activation = context_activation.copy()
+    signal = np.zeros_like(activation, dtype=np.int64)
+    coupling_q = np.rint(
+        np.tanh(coupling_gene.astype(np.float64)) * Q
+    ).astype(np.int64)
+    modulation = np.zeros_like(activation, dtype=np.int64)
+    use_coupling = compositional_modules_enabled(cfg) and not coupling_ablated
+    for module_index in range(count):
+        if use_coupling and module_index > 0:
+            upstream = (
+                coupling_q[:, module_index, :module_index]
+                * signal[:, :module_index]
+            ).sum(axis=1, dtype=np.int64) // Q
+            modulation[:, module_index] = np.clip(upstream, -Q, Q)
+            scale_q = np.clip(Q + modulation[:, module_index], 0, 2 * Q)
+            activation[:, module_index] = np.clip(
+                (context_activation[:, module_index] * scale_q) // Q,
+                -Q,
+                Q,
+            )
+        signal[:, module_index] = (
+            gates[:, module_index] * activation[:, module_index]
+        ) // Q
 
     output_q = np.rint(np.tanh(output_gene.astype(np.float64)) * Q).astype(np.int64)
     centered4 = 4 * output_q - output_q.sum(
@@ -294,6 +362,10 @@ def evaluate_contextual_harvest_modules_q(
         module_residual_q=module_residual.astype(np.int32),
         full_residual_q=full_residual.astype(np.int32),
         ablation_mask=mask,
+        context_activation_q=context_activation.astype(np.int32),
+        modulation_q=modulation.astype(np.int32),
+        coupling_q=coupling_q.astype(np.int32),
+        coupling_ablation_enabled=bool(coupling_ablated),
     )
 
 
@@ -312,6 +384,7 @@ def contextual_harvest_preference_q(
     ablated: bool = False,
     ablated_modules: Any | None = None,
     row_ablated_modules: Any | None = None,
+    coupling_ablated: bool = False,
 ) -> np.ndarray:
     return evaluate_contextual_harvest_modules_q(
         genotype,
@@ -327,6 +400,7 @@ def contextual_harvest_preference_q(
         ablated=ablated,
         ablated_modules=ablated_modules,
         row_ablated_modules=row_ablated_modules,
+        coupling_ablated=coupling_ablated,
     ).preference_q
 
 
@@ -351,12 +425,26 @@ def functional_module_energy(
         ablated_modules=ablated_modules,
         row_ablated_modules=row_ablated_modules,
     ).astype(np.float64) / Q
-    rate = (
+    expression_rate = (
         cfg.functional_modules.development_energy_per_expression
         if development
         else cfg.functional_modules.maintenance_energy_per_expression
     )
-    return gates.sum(axis=1) * float(rate)
+    energy = gates.sum(axis=1) * float(expression_rate)
+    if compositional_modules_enabled(cfg):
+        _, _, _, _, coupling_gene = _blocks(values, cfg, gene_start)
+        coupling_strength = np.abs(
+            np.tanh(coupling_gene.astype(np.float64))
+        )
+        target_gate = gates[:, :, None]
+        active_weight = coupling_strength * target_gate
+        coupling_rate = (
+            cfg.functional_modules.development_energy_per_coupling_weight
+            if development
+            else cfg.functional_modules.maintenance_energy_per_coupling_weight
+        )
+        energy = energy + active_weight.sum(axis=(1, 2)) * float(coupling_rate)
+    return energy
 
 
 def _effective_dimensions(matrix: np.ndarray) -> float:
@@ -416,6 +504,23 @@ def functional_module_diagnostics(
             "functional_module_changed_entity_fraction": 0.0,
             "functional_module_input_weight_effective_dimensions": 0.0,
             "functional_module_output_router_effective_dimensions": 0.0,
+            "functional_module_compositional_capable": bool(
+                compositional_modules_enabled(cfg)
+            ),
+            "functional_module_hierarchy_depth_by_module": list(range(count)),
+            "functional_module_coupling_link_count": int(
+                functional_module_coupling_count(cfg)
+            ),
+            "functional_module_coupling_ablation_enabled": False,
+            "functional_module_coupling_weight_abs_mean": 0.0,
+            "functional_module_coupling_weight_effective_dimensions": 0.0,
+            "functional_module_modulation_abs_mean": 0.0,
+            "functional_module_modulation_abs_mean_by_module": zero_by_module,
+            "functional_module_mediated_signal_abs_mean": 0.0,
+            "functional_module_mediated_signal_abs_mean_by_module": zero_by_module,
+            "functional_module_coupling_changed_entity_fraction": 0.0,
+            "functional_module_coupling_amplification_fraction_by_module": zero_by_module,
+            "functional_module_coupling_suppression_fraction_by_module": zero_by_module,
             "functional_module_dominant_input_counts": [0] * INPUT_COUNT,
             "functional_module_dominant_output_counts": [0] * OUTPUT_COUNT,
             "functional_module_ablation_mask": [False] * count,
@@ -431,7 +536,7 @@ def functional_module_diagnostics(
             "functional_module_contribution_dominance": 0.0,
             "functional_module_cancellation_fraction": 0.0,
         }
-    _, input_gene, _, output_gene = _blocks(values, cfg, gene_start)
+    _, input_gene, _, output_gene, coupling_gene = _blocks(values, cfg, gene_start)
     if evaluation is None:
         gates_q = expression_gates_q(values, cfg, gene_start=gene_start)
         evaluation = FunctionalModuleEvaluation(
@@ -473,6 +578,50 @@ def functional_module_diagnostics(
         dominant_outputs = np.zeros(OUTPUT_COUNT, dtype=np.int64)
         input_dimensions = 0.0
         output_dimensions = 0.0
+
+    context_activation_q = (
+        np.asarray(evaluation.context_activation_q, dtype=np.int64)
+        if evaluation.context_activation_q is not None
+        else np.asarray(evaluation.activation_q, dtype=np.int64)
+    )
+    modulation_q = (
+        np.asarray(evaluation.modulation_q, dtype=np.int64)
+        if evaluation.modulation_q is not None
+        else np.zeros_like(context_activation_q)
+    )
+    context_signal_q = (
+        np.asarray(evaluation.gates_q, dtype=np.int64) * context_activation_q
+    ) // Q
+    mediated_signal_q = np.asarray(evaluation.signal_q, dtype=np.int64) - context_signal_q
+    coupling_values = np.tanh(coupling_gene.astype(np.float64))
+    valid_couplings = []
+    for target in range(1, count):
+        valid_couplings.append(coupling_values[:, target, :target])
+    coupling_matrix = (
+        np.concatenate(valid_couplings, axis=1)
+        if valid_couplings
+        else np.zeros((values.shape[0], 0), dtype=np.float64)
+    )
+    base_abs = np.abs(context_signal_q)
+    final_abs = np.abs(np.asarray(evaluation.signal_q, dtype=np.int64))
+    amplification_fraction = np.zeros(count, dtype=np.float64)
+    suppression_fraction = np.zeros(count, dtype=np.float64)
+    for module_index in range(count):
+        eligible = expressed[:, module_index]
+        denominator_count = int(np.count_nonzero(eligible))
+        if denominator_count:
+            amplification_fraction[module_index] = float(
+                np.count_nonzero(
+                    eligible & (final_abs[:, module_index] > base_abs[:, module_index])
+                )
+                / denominator_count
+            )
+            suppression_fraction[module_index] = float(
+                np.count_nonzero(
+                    eligible & (final_abs[:, module_index] < base_abs[:, module_index])
+                )
+                / denominator_count
+            )
 
     module_residual = np.asarray(evaluation.module_residual_q, dtype=np.int64)
     isolated_abs_mean = np.zeros(count, dtype=np.float64)
@@ -539,6 +688,43 @@ def functional_module_diagnostics(
         "functional_module_output_router_effective_dimensions": float(
             output_dimensions
         ),
+        "functional_module_compositional_capable": bool(
+            compositional_modules_enabled(cfg)
+        ),
+        "functional_module_hierarchy_depth_by_module": list(range(count)),
+        "functional_module_coupling_link_count": int(
+            functional_module_coupling_count(cfg)
+        ),
+        "functional_module_coupling_ablation_enabled": bool(
+            evaluation.coupling_ablation_enabled
+        ),
+        "functional_module_coupling_weight_abs_mean": float(
+            np.abs(coupling_matrix).mean() if coupling_matrix.size else 0.0
+        ),
+        "functional_module_coupling_weight_effective_dimensions": float(
+            _effective_dimensions(coupling_matrix)
+        ),
+        "functional_module_modulation_abs_mean": float(
+            np.abs(modulation_q.astype(np.float64) / Q).mean()
+        ),
+        "functional_module_modulation_abs_mean_by_module": (
+            np.abs(modulation_q.astype(np.float64) / Q).mean(axis=0).tolist()
+        ),
+        "functional_module_mediated_signal_abs_mean": float(
+            np.abs(mediated_signal_q.astype(np.float64) / Q).mean()
+        ),
+        "functional_module_mediated_signal_abs_mean_by_module": (
+            np.abs(mediated_signal_q.astype(np.float64) / Q).mean(axis=0).tolist()
+        ),
+        "functional_module_coupling_changed_entity_fraction": float(
+            np.any(mediated_signal_q != 0, axis=1).mean()
+        ),
+        "functional_module_coupling_amplification_fraction_by_module": (
+            amplification_fraction.tolist()
+        ),
+        "functional_module_coupling_suppression_fraction_by_module": (
+            suppression_fraction.tolist()
+        ),
         "functional_module_dominant_input_counts": dominant_inputs.tolist(),
         "functional_module_dominant_output_counts": dominant_outputs.tolist(),
         "functional_module_ablation_mask": evaluation.ablation_mask.astype(bool).tolist(),
@@ -575,7 +761,10 @@ def functional_module_diagnostics(
 
 
 __all__ = [
+    "COMPOSITIONAL_FUNCTIONAL_MODULE_SCHEMA",
+    "COMPOSITIONAL_INPUT_SCHEMA",
     "CONTRIBUTION_DIAGNOSTIC_SCHEMA",
+    "COUPLING_SCHEMA",
     "FUNCTIONAL_MODULE_SCHEMA",
     "FunctionalModuleEvaluation",
     "GENES_PER_MODULE",
@@ -586,7 +775,9 @@ __all__ = [
     "evaluate_contextual_harvest_modules_q",
     "expression_gates_q",
     "functional_module_diagnostics",
+    "functional_module_coupling_count",
     "functional_module_energy",
     "functional_module_gene_count",
     "functional_modules_enabled",
+    "compositional_modules_enabled",
 ]

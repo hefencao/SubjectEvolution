@@ -422,6 +422,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.capacity_ablation_enabled = False
         self.resource_affinity_ablation_enabled = False
         self.functional_modules_ablation_enabled = False
+        self.functional_module_coupling_ablation_enabled = False
         self.functional_module_ablation_mask = np.zeros(
             int(cfg.functional_modules.module_count), dtype=bool
         )
@@ -1179,6 +1180,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 row_ablated_modules=self.functional_module_lineage_ablation_mask(
                     active, cost=False
                 ),
+                coupling_ablated=self.functional_module_coupling_ablation_enabled,
             )
             active_preference = functional_evaluation.preference_q
             effective_harvest_preference_q[active] = active_preference

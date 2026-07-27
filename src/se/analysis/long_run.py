@@ -534,6 +534,9 @@ def _resolved_config_context(path: str | Path) -> dict[str, Any]:
         "functional_modules_enabled": bool(functional_modules.get("enabled", False)),
         "functional_modules_schema": functional_modules.get("schema", "disabled"),
         "functional_modules_module_count": functional_modules.get("module_count"),
+        "functional_modules_coupling_schema": functional_modules.get(
+            "coupling_schema", "disabled"
+        ),
         "functional_modules_expression_threshold": functional_modules.get("expression_threshold"),
         "functional_modules_max_residual_fraction": functional_modules.get("max_residual_fraction"),
         "requested_backend": manifest.get("requested_backend"),
@@ -1775,12 +1778,16 @@ def render_markdown(report: dict[str, Any]) -> str:
                 f"- entities with changed request weights: {_format(values.get('functional_module_changed_entity_fraction'))}",
                 f"- residual effective dimensions: {_format(values.get('functional_module_residual_effective_dimensions'))}",
                 f"- effective contributing modules / dominance / cancellation: {_format(values.get('functional_module_contribution_effective_count'))} / {_format(values.get('functional_module_contribution_dominance'))} / {_format(values.get('functional_module_cancellation_fraction'))}",
+                f"- coupling schema / links / changed entities: `{context.get('functional_modules_coupling_schema', 'disabled')}` / {values.get('functional_module_coupling_link_count')} / {_format(values.get('functional_module_coupling_changed_entity_fraction'))}",
+                f"- mediated signal / modulation mean: {_format(values.get('functional_module_mediated_signal_abs_mean'), 6)} / {_format(values.get('functional_module_modulation_abs_mean'), 6)}",
+                f"- per-level mediated signal: {values.get('functional_module_mediated_signal_abs_mean_by_module')}",
+                f"- per-level amplification / suppression: {values.get('functional_module_coupling_amplification_fraction_by_module')} / {values.get('functional_module_coupling_suppression_fraction_by_module')}",
                 f"- per-module contribution shares: {values.get('functional_module_contribution_share')}",
                 f"- per-module isolated |residual| means: {values.get('functional_module_isolated_residual_abs_mean_by_module')}",
                 f"- per-module nonzero/silent fractions: {values.get('functional_module_nonzero_entity_fraction_by_module')} / {values.get('functional_module_silent_expressed_fraction_by_module')}",
                 f"- preference mean: {values.get('functional_harvest_preference_mean')}",
                 f"- final maintenance/development energy step: {_format(values.get('functional_module_maintenance_energy_step'), 6)} / {_format(values.get('functional_module_development_energy_step'), 6)}",
-                "- boundary: these modules only alter harvest-channel requests; paired module neutralization is required before interpreting them as adaptive functions.",
+                "- boundary: v1 slots are independent additive terms; v2 adds bounded feed-forward composition but still only alters harvest-channel requests. Neither architecture alone establishes ecological differentiation.",
                 "",
             ])
     if any(run.get("subject_structure_final") for run in report["runs"]):

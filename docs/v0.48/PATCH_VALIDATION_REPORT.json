@@ -1,0 +1,14 @@
+{
+  "schema": "patch-validation-report-v1",
+  "baseline": "se_v047_project.zip",
+  "candidate_version": "0.48.0",
+  "preliminary_patch_check": true,
+  "preliminary_patch_apply": true,
+  "fuzz_or_offset_used": false,
+  "candidate_file_count": 259,
+  "patched_file_count": 259,
+  "content_hash_difference_count": 0,
+  "patched_tree_tests": "223 passed, 1 skipped",
+  "patched_tree_isolated_distribution_validation": true,
+  "passed": true
+}

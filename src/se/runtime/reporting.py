@@ -394,8 +394,16 @@ class SimulationReportingMixin:
                 self.cfg.functional_modules.module_count
                 if self.cfg.functional_modules.enabled else 0
             ),
+            "functional_modules_gene_count": (
+                ParametricPolicy.genome_size_for_config(self.cfg)
+                - ParametricPolicy.functional_module_gene_start(self.cfg)
+                if self.cfg.functional_modules.enabled else 0
+            ),
             "functional_modules_input_schema": self.cfg.functional_modules.input_schema,
             "functional_modules_output_schema": self.cfg.functional_modules.output_schema,
+            "functional_modules_coupling_schema": (
+                self.cfg.functional_modules.coupling_schema
+            ),
             "functional_modules_feedback_scope": (
                 "harvest-channel-request-only"
                 if self.cfg.functional_modules.enabled else None
@@ -575,6 +583,9 @@ class SimulationReportingMixin:
                 ),
                 "functional_modules_ablation_enabled": (
                     self.functional_modules_ablation_enabled
+                ),
+                "functional_module_coupling_ablation_enabled": (
+                    self.functional_module_coupling_ablation_enabled
                 ),
                 "functional_module_ablation_mask": (
                     self.functional_module_ablation_mask.astype(bool).tolist()
@@ -1341,6 +1352,9 @@ class SimulationReportingMixin:
             "functional_modules_schema": self.cfg.functional_modules.schema,
             "functional_modules_ablation_enabled": int(
                 self.functional_modules_ablation_enabled
+            ),
+            "functional_module_coupling_ablation_enabled": int(
+                self.functional_module_coupling_ablation_enabled
             ),
             "functional_module_ablation_mask": (
                 self.functional_module_ablation_mask.astype(bool).tolist()

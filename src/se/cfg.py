@@ -374,19 +374,29 @@ class DifferentiationConfig:
 
 @dataclass(frozen=True)
 class FunctionalModuleConfig:
-    """D2-A bounded contextual modules over existing harvest ports."""
+    """Bounded inherited modules over existing harvest ports.
+
+    The v1 schema is the archived additive D2-A architecture.  The v2 schema
+    adds a fixed acyclic signal bus between the same four slots, allowing later
+    slots to multiplicatively modulate their contextual activation from earlier
+    module signals without adding new sensors, actions, resources, or world
+    physics.
+    """
 
     enabled: bool = False
     schema: str = "disabled"
     module_count: int = 4
     input_schema: str = "internal-needs-local-resources-v1"
     output_schema: str = "harvest-channel-zero-sum-residual-v1"
+    coupling_schema: str = "disabled"
     expression_threshold: float = 0.25
     max_residual_fraction: float = 0.5
     mutation_probability: float = 0.03
     mutation_std: float = 0.16
     maintenance_energy_per_expression: float = 0.0
     development_energy_per_expression: float = 0.0
+    maintenance_energy_per_coupling_weight: float = 0.0
+    development_energy_per_coupling_weight: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -1485,17 +1495,38 @@ def validate_config(cfg: SimulationConfig) -> None:
             raise ValueError("D1 attention maximum exceeds physical attention_slots_per_tick")
 
     fcfg = cfg.functional_modules
-    if fcfg.schema not in {"disabled", "expression-gated-contextual-harvest-v1"}:
+    additive_schema = "expression-gated-contextual-harvest-v1"
+    compositional_schema = "expression-gated-compositional-harvest-v2"
+    if fcfg.schema not in {"disabled", additive_schema, compositional_schema}:
         raise ValueError(
-            "functional_modules.schema must be 'disabled' or "
-            "'expression-gated-contextual-harvest-v1'"
+            "functional_modules.schema must be 'disabled', "
+            "'expression-gated-contextual-harvest-v1', or "
+            "'expression-gated-compositional-harvest-v2'"
         )
-    if fcfg.enabled != (fcfg.schema == "expression-gated-contextual-harvest-v1"):
+    if fcfg.enabled != (fcfg.schema != "disabled"):
         raise ValueError("functional_modules enabled/schema fields must agree")
     if fcfg.module_count != 4:
-        raise ValueError("D2-A functional_modules.module_count must be exactly 4")
-    if fcfg.input_schema != "internal-needs-local-resources-v1":
-        raise ValueError("unknown functional_modules.input_schema")
+        raise ValueError("functional_modules.module_count must be exactly 4")
+    expected_input = (
+        "internal-needs-local-resources-feedforward-v2"
+        if fcfg.schema == compositional_schema
+        else "internal-needs-local-resources-v1"
+    )
+    if fcfg.input_schema != expected_input:
+        raise ValueError(
+            f"functional_modules.input_schema must be {expected_input!r} "
+            f"for schema {fcfg.schema!r}"
+        )
+    expected_coupling = (
+        "lower-slot-signal-modulation-v1"
+        if fcfg.schema == compositional_schema
+        else "disabled"
+    )
+    if fcfg.coupling_schema != expected_coupling:
+        raise ValueError(
+            f"functional_modules.coupling_schema must be {expected_coupling!r} "
+            f"for schema {fcfg.schema!r}"
+        )
     if fcfg.output_schema != "harvest-channel-zero-sum-residual-v1":
         raise ValueError("unknown functional_modules.output_schema")
     if (
@@ -1516,6 +1547,8 @@ def validate_config(cfg: SimulationConfig) -> None:
     functional_costs = (
         fcfg.maintenance_energy_per_expression,
         fcfg.development_energy_per_expression,
+        fcfg.maintenance_energy_per_coupling_weight,
+        fcfg.development_energy_per_coupling_weight,
     )
     if any((not math.isfinite(value) or value < 0.0) for value in functional_costs):
         raise ValueError("functional module costs must be finite and non-negative")

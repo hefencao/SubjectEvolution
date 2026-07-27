@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.48.0
+
+### Functional substrate reassessment and compositional modules
+
+- Reassesses the supplied D4-A result as a repeated generic factorial interaction without exposure-aligned differentiation; the 300-tick confirmation is no longer eligible.
+- Records that the v1 four-module architecture supported independent parameterized additive outputs only and could not represent inherited module dependencies, joint-only functions, weak-upstream/strong-downstream carriage or hierarchy among same-port modules.
+- Adds opt-in `expression-gated-compositional-harvest-v2` with six active inherited lower-to-higher slot coupling genes and a fixed acyclic four-level hierarchy.
+- Upstream signed signals multiplicatively modulate downstream contextual activation while every module retains direct harvest routing.
+- Adds explicit maintenance and development costs for coupling structure.
+- Adds `neutralize-functional-module-coupling-output`, preserving genes, mutation, direct output and coupling cost while removing only mediated output.
+- Upgrades functional diagnostics to `functional-module-contribution-audit-v2` with coupling dimensions, mediated signal, modulation and per-level amplification/suppression.
+- Adds `d2-compositional-capability-plan-v1`, `d2-compositional-capability-results-v1` and `se-d2-compose`.
+- The paired D2-I experiment is descriptive generative-capability analysis, not a module-copy or ecological-niche gate.
+- Preserves the v1 authoritative path and keeps module copy number, arbitrary routing and new world physics unchanged.
+- Upgrades D4 assessment to v2 and protocol audit to v16.
+
+### Packaging
+
+- Complete packages retain only `docs/v0.48` as a version-specific directory.
+
 ## 0.47.0
 
 ### D2 stop decision and D4-A environment matching audit
