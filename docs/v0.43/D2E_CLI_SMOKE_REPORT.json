@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "plan_schema": "d2-lineage-paired-plan-v2",
+  "result_schema": "d2-lineage-paired-results-v2",
+  "executed_pairs": 3,
+  "assessment_schema": "d2-lineage-paired-assessment-v1",
+  "recommendation": "stop-before-longer-lineage-pair-audit"
+}

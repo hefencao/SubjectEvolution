@@ -1,29 +1,24 @@
-# SE v0.42
+# SE v0.43
 
 `SE` 是围绕多维环境、可遗传分化、动态知识与候选主体结构构建的可审计演化模拟参考实现。
 
 ## Conda 本地工作流
 
-升级到 v0.42 后，因为新增 `se-d2-lineage-pairs` 入口，需要在目标环境执行一次：
+v0.43 新增 `se-d2-lineage-assess` 入口，升级后需要在目标环境执行一次：
 
 ```bash
 conda activate <your-env>
 make conda-sync
 ```
 
-之后普通源码修改直接生效，不需要重新安装 wheel。日常测试：
+之后普通源码修改直接生效。日常验证使用：
 
 ```bash
 make test
-```
-
-长跑或交付前：
-
-```bash
 make conda-check
 ```
 
-不要在正常 conda 工作流中设置 `PYTHONPATH=src`；这可能掩盖 stale editable metadata 或旧 console script。
+不要在正常 Conda editable 工作流中设置 `PYTHONPATH=src`，也不要把 wheel 单独安装作为日常开发方式。
 
 ## 主要运行入口
 
@@ -41,32 +36,9 @@ se-multi \
   --backend gpu
 ```
 
-## D2 模块审计
+## D2 模块审计与效应判定
 
-生成 leave-one-module-out 分支：
-
-```bash
-se-d2-audit \
-  --run-dir runs/d2a_contextual_modules_multiseed/seed_10001 \
-  --run-dir runs/d2a_contextual_modules_multiseed/seed_10002 \
-  --run-dir runs/d2a_contextual_modules_multiseed/seed_10003 \
-  --output analyses/d2b_module_audit_120 \
-  --phases peak,trough \
-  --horizon 120 \
-  --execute \
-  --backend gpu \
-  --gpu-semantics-mode strict-reference
-```
-
-120 ticks 完成后，不再人工判断是否需要 300 ticks：
-
-```bash
-se-d2-assess \
-  --results analyses/d2b_module_audit_120/d2_module_audit_results.json \
-  --output analyses/d2c_screen_120
-```
-
-若输出 `run-300-tick-confirmation`，再执行 300 ticks。已有 120/300 结果可直接合并评估：
+`se-d2-audit` 生成共享 checkpoint 的逐模块中和分支；`se-d2-assess` 对 120/300-tick 结果实施实用阈值、重复性、即时足迹和谱系 guard 判定。
 
 ```bash
 se-d2-assess \
@@ -76,11 +48,9 @@ se-d2-assess \
   --refresh-footprints
 ```
 
-`--refresh-footprints` 只读取结果文件引用的源 checkpoint，计算即时、按谱系分解的 HARVEST 接口足迹；不会重跑 120/300-tick 分支。
+## D2-D/D2-E 多谱系配对审计
 
-## D2-D 多谱系配对审计
-
-先从现有 D2-B 结果和其引用的共享 checkpoint 生成计划；默认只选择干预前成员数不少于 8 的最大四个谱系，并要求每个 checkpoint 至少三个合格谱系：
+从 D2-B 源 checkpoint 生成并执行 120-tick 多谱系三分支配对：
 
 ```bash
 se-d2-lineage-pairs \
@@ -93,20 +63,49 @@ se-d2-lineage-pairs \
   --gpu-semantics-mode strict-reference
 ```
 
-每个 checkpoint × module × lineage 使用 `baseline`、`output-neutral`、`expression-neutral` 三个共享随机性分支。谱系保持世界中的自然丰度；只在离线汇总 checkpoint-lineage 配对效应时等权，不奖励、不保护也不补齐多样性。
+D2-E 自动判定是否值得继续，并在通过时生成不按单个谱系响应挑选的 300-tick 计划：
+
+```bash
+se-d2-lineage-assess \
+  --results analyses/d2d_lineage_pairs_120/d2_lineage_pair_results.json \
+  --output analyses/d2e_lineage_pair_assessment
+```
+
+执行生成的确认计划：
+
+```bash
+se-d2-lineage-pairs \
+  --plan analyses/d2e_lineage_pair_assessment/d2_lineage_pair_confirmation_plan.json \
+  --output analyses/d2e_lineage_pairs_300 \
+  --execute \
+  --backend gpu \
+  --gpu-semantics-mode strict-reference
+```
+
+完成后进行跨 horizon 持续性判定：
+
+```bash
+se-d2-lineage-assess \
+  --short-results analyses/d2d_lineage_pairs_120/d2_lineage_pair_results.json \
+  --long-results analyses/d2e_lineage_pairs_300/d2_lineage_pair_results.json \
+  --output analyses/d2e_lineage_pair_persistence
+```
+
+只有 `output_routing_effect` 能通过继续门槛。表达成本退款或总表达差异不能替代输出作用证据。确认计划只筛选模块，并保留该模块在原计划中的全部 checkpoint-lineage 配对。
 
 ## 当前科学主线
 
-1. **D0：** 四资源具有独立外生空间、时间与扩散过程。
-2. **D1-A：** 工作记忆、知识、关系与注意力容量可遗传、计费和消融。
-3. **D1-B：** 固定采集预算下，由遗传 affinity 采样单一资源通道。
-4. **D1-C：** 请求流与实现流分离；共享 checkpoint 的 affinity × capacity 因子实验。
-5. **D2-A：** 四个表达门控上下文模块发布有限零和采集权重残差。
-6. **D2-B：** 独立模块贡献诊断与逐模块消融。
-7. **D2-C：** 数值差异、实用效应、跨 seed 复现、即时足迹与跨谱系证据分层判定。
-8. **D2-D：** 在谱系集中条件下，用共享 checkpoint 的谱系定向三分支配对分离模块输出作用与表达成本退款。
+1. **D0：** 正交四资源环境。
+2. **D1：** 可遗传弹性容量。
+3. **D1-B：** affinity 驱动的单通道选择性采集。
+4. **D1-C：** 请求资源、实际采集资源和 affinity × capacity 因子实验。
+5. **D2-A：** 四个固定布局、可遗传、表达门控的上下文采集模块。
+6. **D2-B：** 逐模块贡献审计和逐模块中和实验。
+7. **D2-C：** 下游效应判定、即时足迹刷新和复制门槛。
+8. **D2-D：** 谱系定向输出/成本三分支配对。
+9. **D2-E：** 非主导谱系跨 seed 复现判定和不挑选响应谱系的 300-tick 确认。
 
-刷新后的 120/300-tick 结果已经显示四个模块均有跨谱系即时足迹，模块 1–3 有重复生态效应；但中位有效谱系仍约为 2.03。模块复制、删除、任意重联和新物理端口继续阻塞，下一步是模块 2/3 的多谱系配对审计。
+用户提供的 120-tick D2-D 结果使模块 2、3 进入 300-tick 确认，但没有建立正向生态收益：模块 2 的重复信号是知识转移根数下降；模块 3 同时表现为目标谱系存活下降和平均能量上升。谱系 guard 仍失败，模块复制、删除、任意重联和新端口继续阻塞。
 
 ## 文档
 
@@ -114,7 +113,8 @@ se-d2-lineage-pairs \
 - [架构与提交边界](docs/ARCHITECTURE.md)
 - [项目状态](docs/PROJECT_STATUS.md)
 - [科学问题](docs/SCIENTIFIC_ISSUES.md)
-- [D2-D 多谱系配对设计](docs/v0.42/D2D_LINEAGE_BALANCED_PAIRING.md)
-- [输入 D2-C 评估与决策](docs/v0.42/ASSESSMENT_DECISION.md)
-- [下一步实验计划](docs/v0.42/NEXT_EXPERIMENT.md)
-- [Conda editable 工作流](docs/v0.42/CONDA_EDITABLE_WORKFLOW.md)
+- [D2-E 判定规则](docs/v0.43/D2E_LINEAGE_PAIR_QUALIFICATION.md)
+- [输入结果自动评估](docs/v0.43/INPUT_D2D_LINEAGE_PAIR_ASSESSMENT.md)
+- [300-tick 确认计划](docs/v0.43/D2E_CONFIRMATION_PLAN.md)
+- [下一步实验](docs/v0.43/NEXT_EXPERIMENT.md)
+- [Conda editable 工作流](docs/v0.43/CONDA_EDITABLE_WORKFLOW.md)

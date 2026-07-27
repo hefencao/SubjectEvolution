@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "se-mvp"
-version = "0.42.0"
+version = "0.43.0"
 description = "Reference implementation for nested-subject existence evolution simulation"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -21,6 +21,7 @@ se-d1-factorial = "se.experiments.d1_factorial:main"
 se-d2-audit = "se.experiments.d2_module_audit:main"
 se-d2-assess = "se.analysis.d2_effects:main"
 se-d2-lineage-pairs = "se.experiments.d2_lineage_pairs:main"
+se-d2-lineage-assess = "se.analysis.d2_lineage_effects:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "ticks": 20,
+  "seed": 12345,
+  "checkpoint_common_arrays": 38,
+  "checkpoint_only_v042": [],
+  "checkpoint_only_v043": [],
+  "checkpoint_array_mismatches": [],
+  "summary_common_numeric_cells": 347,
+  "summary_non_timing_cells_compared": 333,
+  "summary_non_timing_differences": [],
+  "ignored_timing_differences": 12
+}

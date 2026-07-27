@@ -1,0 +1,34 @@
+SE v0.43 final validation
+
+1. Baseline v0.42 before modification
+   199 passed, 1 skipped
+
+2. Final full suite
+   204 passed, 1 skipped
+
+3. Conda editable validation
+   version: 0.43.0
+   modules: 85
+   console entries: 8
+   external-directory CPU smoke: passed
+
+4. Static validation
+   config JSON: 75/75
+   Python files compiled: 129
+
+5. Installed D2-E CLI smoke
+   plan schema: d2-lineage-paired-plan-v2
+   result schema: d2-lineage-paired-results-v2
+   assessment schema: d2-lineage-paired-assessment-v1
+   executed synthetic pairs: 3
+
+6. Supplied 120-tick result
+   recommendation: run-300-tick-lineage-pair-confirmation
+   candidate modules: 2, 3
+   confirmation checkpoint-lineage-module pairs: 48
+   outcome-conditioned pair selection: false
+
+7. v0.42 compatibility
+   20 ticks, seed 12345
+   38/38 checkpoint arrays exactly equal
+   333 common non-timing summary cells exactly equal

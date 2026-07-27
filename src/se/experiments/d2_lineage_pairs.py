@@ -37,8 +37,10 @@ from se.experiments.d2_module_audit import (
 )
 from se.runtime.sim import Simulation
 
-PLAN_SCHEMA = "d2-lineage-paired-plan-v1"
-RESULT_SCHEMA = "d2-lineage-paired-results-v1"
+PLAN_SCHEMA = "d2-lineage-paired-plan-v2"
+PLAN_SCHEMAS = frozenset({"d2-lineage-paired-plan-v1", PLAN_SCHEMA})
+RESULT_SCHEMA = "d2-lineage-paired-results-v2"
+RESULT_SCHEMAS = frozenset({"d2-lineage-paired-results-v1", RESULT_SCHEMA})
 
 BRANCHES = ("baseline", "output-neutral", "expression-neutral")
 EFFECTS = (
@@ -87,6 +89,10 @@ class LineagePairPlan:
     abundance_weighted_inference: bool = False
     branches: tuple[str, ...] = BRANCHES
     effect_decomposition_schema: str = "output-cost-total-additive-v1"
+    confirmation_source_result_schema: str | None = None
+    confirmation_source_horizon_ticks: int | None = None
+    confirmation_selection_rule: str | None = None
+    outcome_conditioned_pair_selection: bool = False
 
 
 def _normalize_modules(values: Iterable[int]) -> tuple[int, ...]:
@@ -267,7 +273,7 @@ def build_lineage_pair_plan(
 
 def load_lineage_pair_plan(path: str | Path) -> LineagePairPlan:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
-    if payload.get("schema") != PLAN_SCHEMA:
+    if payload.get("schema") not in PLAN_SCHEMAS:
         raise ValueError(f"unsupported D2 lineage-pair plan: {payload.get('schema')!r}")
     checkpoints: list[LineagePairCheckpoint] = []
     for item in payload.get("checkpoints", ()):
@@ -295,6 +301,18 @@ def load_lineage_pair_plan(path: str | Path) -> LineagePairPlan:
         branches=tuple(payload.get("branches", BRANCHES)),
         effect_decomposition_schema=str(
             payload.get("effect_decomposition_schema", "output-cost-total-additive-v1")
+        ),
+        confirmation_source_result_schema=payload.get(
+            "confirmation_source_result_schema"
+        ),
+        confirmation_source_horizon_ticks=(
+            int(payload["confirmation_source_horizon_ticks"])
+            if payload.get("confirmation_source_horizon_ticks") is not None
+            else None
+        ),
+        confirmation_selection_rule=payload.get("confirmation_selection_rule"),
+        outcome_conditioned_pair_selection=bool(
+            payload.get("outcome_conditioned_pair_selection", False)
         ),
     )
 
@@ -623,9 +641,24 @@ def render_plan_markdown(plan: LineagePairPlan) -> str:
         f"Post-intervention horizon: **{plan.horizon_ticks} ticks**",
         f"Fixed modules: `{', '.join(map(str, plan.module_indices))}`",
         "",
-        "| Run | Phase | Checkpoint | Active | Effective lineages | Dominant share | Selected | Eligible |",
-        "|---|---|---:|---:|---:|---:|---:|---:|",
     ]
+    if plan.confirmation_source_horizon_ticks is not None:
+        lines.extend(
+            [
+                "## Confirmation design",
+                "",
+                f"Source screen horizon: **{plan.confirmation_source_horizon_ticks} ticks**",
+                f"Selection rule: `{plan.confirmation_selection_rule}`",
+                f"Outcome-conditioned pair selection: **{plan.outcome_conditioned_pair_selection}**",
+                "",
+            ]
+        )
+    lines.extend(
+        [
+            "| Run | Phase | Checkpoint | Active | Effective lineages | Dominant share | Selected | Eligible |",
+            "|---|---|---:|---:|---:|---:|---:|---:|",
+        ]
+    )
     for checkpoint in plan.checkpoints:
         lines.append(
             f"| {checkpoint.run_name} | {checkpoint.phase} | {checkpoint.checkpoint_tick} | "

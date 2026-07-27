@@ -1,5 +1,23 @@
 # SE architecture
 
+## D2-E confirmation-selection boundary
+
+```text
+120-tick lineage-pair results
+        ↓
+practical thresholds applied separately to
+output routing / retained cost / total expression
+        ↓
+same material output direction in
+≥2 seeds and ≥2 non-dominant lineage identities
+        ↓
+module-level continuation decision
+        ↓
+300-tick plan preserves every original pair
+```
+
+Individual checkpoint-lineage pairs are never selected for confirmation by their observed response. A module may pass the 120-tick screen, but its confirmation plan retains dominant and non-dominant pairs from all original checkpoint conditions. Cost-refund and total-expression signals cannot substitute for routed-output evidence.
+
 ## D2-D lineage-conditioned experiment boundary
 
 ```text
@@ -20,7 +38,7 @@ experiment branch and follows same-lineage descendants; it does not alter genes,
 lineage membership, entity IDs, reproduction, mutation, module topology or
 world abundance. Equal lineage weighting occurs only in offline aggregation.
 When no targeted intervention exists, the runtime passes no row mask and uses
-the v0.41 authoritative module path.
+the unchanged authoritative module path.
 
 ## D2-C evidence qualification boundary
 

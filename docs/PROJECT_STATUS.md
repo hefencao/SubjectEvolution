@@ -1,6 +1,6 @@
 # SE project status
 
-Version: **0.42.0**
+Version: **0.43.0**
 
 ## Current causal chain
 
@@ -12,68 +12,40 @@ orthogonal external environment
 → per-module contribution and paired ablation
 → immediate/cross-lineage effect qualification
 → lineage-conditioned paired causal audit
+→ non-dominant cross-seed persistence qualification
 → ecological niches and interactions
 → social organization
 → higher-level candidate subjects
 ```
 
-## Supplied D2-C assessment
+## D2-E supplied-result decision
 
-The supplied 120/300-tick assessment contains six checkpoint conditions. Its
-refreshed immediate footprint is available for every module and is material in
-multiple lineages. Modules 1, 2 and 3 have repeated ecological effects; modules
-2 and 3 have repeated positive extraction-efficiency effects.
+The supplied 120-tick D2-D matrix contains 48 module-lineage paired units over six checkpoint conditions and three seeds. Every checkpoint has four preselected lineages, but the median effective-lineage count is only about `2.2722`; dominant-lineage risk remains true.
 
-This establishes direct cross-lineage reach and repeated downstream action, but
-not a universal adaptive benefit or a copy-number result. Alive count, energy,
-environment dimensions, transfer roots and functional preference dimensions
-still show trade-offs or context dependence.
+The automated routed-output screen finds:
 
-## D2-D
+- module 2: negative `evolution.knowledge_effective_transferred_roots` in two seeds and two non-dominant lineage identities;
+- module 3: negative `target_lineage.alive` in two seeds/two non-dominant identities and positive `target_lineage.mean_energy` in three seeds/three non-dominant identities.
 
-Schemas:
+Both modules therefore qualify for a 300-tick persistence check. Neither has a positive ecological routed-output result at 120 ticks, and neither is a copy-number candidate.
 
-- `d2-lineage-paired-plan-v1`;
-- `d2-lineage-paired-results-v1`;
-- `d2-module-effect-assessment-v2`;
-- `structural-measurement-protocol-audit-v10`.
+## Schemas and entry points
 
-`se-d2-lineage-pairs` selects eligible lineages by pre-intervention membership
-and creates three branches for each checkpoint × fixed module × lineage:
+- `d2-lineage-paired-plan-v2`;
+- `d2-lineage-paired-results-v2`;
+- backward acceptance of lineage-pair v1 plans/results;
+- `d2-lineage-paired-assessment-v1`;
+- `structural-measurement-protocol-audit-v11`;
+- `se-d2-lineage-pairs`;
+- `se-d2-lineage-assess`.
 
-1. baseline output and cost;
-2. output neutralized while cost remains;
-3. output and cost both neutralized.
-
-The exact decomposition separates routed-output effects from expression-cost
-refunds. Genotype, lineage ID, module count, fixed input/output layout and keyed
-randomness are preserved. Treatment follows descendants that retain the same
-genetic lineage ID.
+The generated 300-tick plan selects modules 2 and 3 at module level and preserves every original checkpoint-lineage pair. It does not select only the responsive lineages.
 
 ## Current gate
 
-The supplied result has median effective lineage count `2.0260`, minimum
-`1.5744`, and dominant-lineage risk. Duplication, deletion, arbitrary routing
-and new output ports remain blocked. The next admissible experiment is a
-lineage-balanced paired audit, initially for modules 2 and 3:
-
-```bash
-se-d2-lineage-pairs \
-  --results analyses/d2b_module_audit_300/d2_module_audit_results.json \
-  --output analyses/d2d_lineage_pairs_120 \
-  --modules 2,3 \
-  --horizon 120 \
-  --execute \
-  --backend gpu \
-  --gpu-semantics-mode strict-reference
-```
-
-Ineligible checkpoints are reported and skipped. They are not padded by
-creating, protecting or rewarding lineages.
+Duplication, deletion, arbitrary routing and new output ports remain blocked. Even a positive 300-tick cross-lineage result cannot bypass the failed source-lineage guard; it would justify redesigning the source population or experiment start without rewarding or protecting diversity.
 
 ## Engineering workflow
-
-The preferred local runtime remains conda + editable install:
 
 ```bash
 make conda-sync
@@ -81,5 +53,4 @@ make test
 make conda-check
 ```
 
-v0.42 adds a seventh entry point, `se-d2-lineage-pairs`, so one
-`make conda-sync` is required after upgrading from v0.41.
+v0.43 adds an eighth console entry, so one `make conda-sync` is required after upgrading from v0.42.

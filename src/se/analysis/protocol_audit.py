@@ -14,7 +14,7 @@ from se.env.partition import SpatialRegionPartition
 from se.policy import ParametricPolicy
 
 
-SCHEMA = "structural-measurement-protocol-audit-v10"
+SCHEMA = "structural-measurement-protocol-audit-v11"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -322,8 +322,16 @@ def build_protocol_audit(
                 ],
             },
             "lineage_balanced_pair_protocol": {
-                "plan_schema": "d2-lineage-paired-plan-v1",
-                "result_schema": "d2-lineage-paired-results-v1",
+                "plan_schema": "d2-lineage-paired-plan-v2",
+                "accepted_plan_schemas": [
+                    "d2-lineage-paired-plan-v1",
+                    "d2-lineage-paired-plan-v2",
+                ],
+                "result_schema": "d2-lineage-paired-results-v2",
+                "accepted_result_schemas": [
+                    "d2-lineage-paired-results-v1",
+                    "d2-lineage-paired-results-v2",
+                ],
                 "default_priority_modules": [2, 3],
                 "selection_rule": "largest pre-intervention lineages by membership",
                 "selection_uses_endpoint_response": False,
@@ -340,6 +348,18 @@ def build_protocol_audit(
                 "equal_inferential_weight_per_lineage_pair": True,
                 "abundance_reweighting_inside_world": False,
                 "diversity_protection": False,
+                "effect_assessment": {
+                    "schema": "d2-lineage-paired-assessment-v1",
+                    "continuation_effect": "output_routing_effect",
+                    "minimum_seeds": 2,
+                    "minimum_non_dominant_lineage_identities": 2,
+                    "same_material_direction_required": True,
+                    "cost_only_signal_qualifies": False,
+                    "confirmation_horizon_ticks": 300,
+                    "confirmation_selection_rule": "module-level-screen-preserve-all-preselected-checkpoint-lineage-pairs-v1",
+                    "outcome_conditioned_pair_selection": False,
+                    "copy_number_remains_guarded": True,
+                },
             },
             "preset_role_labels": False,
             "diversity_protection": False,

@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "package_root": "se_v043_project",
+  "file_count": 241,
+  "current_version_docs": [
+    "docs/v0.43"
+  ],
+  "old_version_doc_directories_included": [],
+  "excluded_patterns": [
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    "*.egg-info",
+    "*.pyc",
+    "*.pyo",
+    "build",
+    "dist"
+  ],
+  "daily_workflow": "conda editable install",
+  "artifact_validation": "make release-check passed"
+}

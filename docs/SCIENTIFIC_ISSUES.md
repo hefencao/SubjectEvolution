@@ -10,11 +10,13 @@ Implemented code is not automatically empirical evidence.
 | D2-01 | supported, bounded | D2-A modules produce repeated downstream effects. | Separate direct footprint from endpoint amplification and verify across lineages. |
 | D2-02 | guarded | Expression counts can overstate function when isolated output rounds to zero. | Immediate preference/channel footprint plus silent-expression diagnostics. |
 | D2-03 | guarded | Module outputs cancel or are redundant. | Contribution shares, effective contributor count, cancellation and non-additivity. |
-| D2-04 | blocked | Duplication/deletion or arbitrary routing could amplify one dominant lineage's historical module. | Cross-lineage direct footprint, positive ecological persistence or preregistered phase trade-off, median effective lineages ≥4. |
-| D2-05 | open | Endpoint branch differences can be amplified by deterministic trajectory divergence. | Use practical thresholds and immediate pre-step footprint; do not treat any non-zero endpoint as function. |
-| D2-06 | active, guarded | Source audit checkpoints are lineage-dominated despite cross-lineage immediate footprints. | Shared-checkpoint multi-lineage pairs with pre-intervention selection; separate output effect from expression-cost refund and keep duplication blocked. |
-| D2-07 | open | Fixed ten-input/four-output vocabulary constrains reachable function space. | Compare vocabularies only after D2-C identification. |
+| D2-04 | blocked | Duplication/deletion or arbitrary routing could amplify one dominant lineage's historical module. | Positive cross-lineage ecological persistence plus median effective lineages ≥4; no artificial diversity protection. |
+| D2-05 | guarded | Endpoint branches can diverge deterministically without a practical module effect. | Practical thresholds and same-direction replication; exact non-zero is insufficient. |
+| D2-06 | active | Source checkpoints are lineage-dominated despite cross-lineage immediate footprints. | Shared-checkpoint lineage pairs with pre-intervention selection and output/cost separation. |
+| D2-07 | active, guarded | A 120-tick responsive lineage could be selected post hoc for long confirmation. | Select modules only; preserve every preselected pair for the selected module. |
+| D2-08 | open | Module 2 may reduce knowledge transfer while module 3 trades target-lineage survival for energy. | 300-tick same-pair persistence and short/long sign agreement; do not label adaptive roles. |
+| D2-09 | open | Fixed ten-input/four-output vocabulary constrains reachable function space. | Compare vocabularies only after D2 identification gates. |
 | ENV-01 | guarded | Resource-share vectors are compositional. | Interpret with raw volume, total request scale, environment dimensions and efficiency. |
 | SOC-01 | blocked | Social organization may reflect spatial/genetic sorting rather than higher-level control. | Ecological and module mechanisms must be identifiable before active social-control expansion. |
 | GPU-01 | open | GPU strict-reference validates hardware but remains CPU-authoritative. | Hybrid accelerated multi-tick parity before using accelerated output scientifically. |
-| DEV-01 | guarded | Editable installs can point to another checkout or stale console metadata. | `make conda-check` must prove direct URL, exact source root, seven entries and external smoke. |
+| DEV-01 | guarded | Editable installs can point to another checkout or stale console metadata. | `make conda-check` must prove direct URL, exact source root, eight entries and external smoke. |

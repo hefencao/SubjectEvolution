@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "baseline": "uploaded se_v042_project.zip",
+  "patch_check": "git apply --check",
+  "patch_apply": "git apply",
+  "tree_match": true,
+  "fuzz_or_offset": false,
+  "post_apply_tests": "204 passed, 1 skipped"
+}

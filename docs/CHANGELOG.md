@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.43.0
+
+### D2-E lineage-pair qualification
+
+- Adds `d2-lineage-paired-assessment-v1` and `se-d2-lineage-assess`.
+- Separates routed-output, retained-cost and total-expression evidence under practical thresholds.
+- Requires same-direction routed-output effects in at least two seeds and two non-dominant lineage identities before a 300-tick continuation.
+- Generates `d2-lineage-paired-plan-v2` confirmation plans that select modules but preserve all preselected checkpoint-lineage pairs, preventing responsive-pair cherry-picking.
+- Emits `d2-lineage-paired-results-v2` while accepting v1 plans/results for assessment and execution.
+- Records the supplied 120-tick decision: modules 2 and 3 continue to 300 ticks, but no positive ecological output effect or copy-number readiness is established.
+- Upgrades protocol audit to v11 and adds the eighth console entry.
+
+### Packaging
+
+- Complete packages retain only the current version-specific documentation directory (`docs/v0.43`); durable release history remains in this changelog.
+
 ## 0.42.0
 
 ### D2-D lineage-balanced paired audit

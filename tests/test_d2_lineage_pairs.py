@@ -191,3 +191,63 @@ def test_lineage_pair_plan_and_execution_use_shared_checkpoint(tmp_path: Path) -
         expression_history = row["branches"]["expression-neutral"]["intervention_history"]
         assert output_history[-1]["expression_cost_neutralized"] is False
         assert expression_history[-1]["expression_cost_neutralized"] is True
+
+
+def test_v1_lineage_pair_plan_remains_loadable(tmp_path: Path) -> None:
+    import json
+
+    payload = {
+        "schema": "d2-lineage-paired-plan-v1",
+        "horizon_ticks": 120,
+        "module_indices": [2, 3],
+        "min_lineage_members": 8,
+        "min_lineages_per_checkpoint": 3,
+        "max_lineages_per_checkpoint": 4,
+        "checkpoints": [
+            {
+                "run_name": "seed_test",
+                "phase": "peak",
+                "checkpoint_tick": 100,
+                "checkpoint_path": "/tmp/source.sechk",
+                "until_tick": 220,
+                "active_entities": 100,
+                "effective_lineages": 2.0,
+                "dominant_lineage_fraction": 0.7,
+                "eligible": True,
+                "ineligible_reason": None,
+                "lineages": [
+                    {
+                        "lineage_id": 1,
+                        "members": 70,
+                        "member_fraction": 0.7,
+                        "abundance_rank": 1,
+                    },
+                    {
+                        "lineage_id": 2,
+                        "members": 15,
+                        "member_fraction": 0.15,
+                        "abundance_rank": 2,
+                    },
+                    {
+                        "lineage_id": 3,
+                        "members": 8,
+                        "member_fraction": 0.08,
+                        "abundance_rank": 3,
+                    },
+                ],
+            }
+        ],
+        "lineage_selection_rule": "largest-preintervention-lineages-by-membership-v1",
+        "paired_randomness": True,
+        "genotype_preserved": True,
+        "lineage_membership_preserved": True,
+        "abundance_weighted_inference": False,
+        "branches": ["baseline", "output-neutral", "expression-neutral"],
+        "effect_decomposition_schema": "output-cost-total-additive-v1",
+    }
+    path = tmp_path / "v1_plan.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    plan = load_lineage_pair_plan(path)
+    assert plan.schema == "d2-lineage-paired-plan-v1"
+    assert plan.confirmation_source_horizon_ticks is None
+    assert plan.outcome_conditioned_pair_selection is False
