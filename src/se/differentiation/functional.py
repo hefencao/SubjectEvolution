@@ -94,6 +94,22 @@ def _ablation_mask(
     return mask.copy()
 
 
+def _row_ablation_mask(
+    rows: int,
+    count: int,
+    row_ablated_modules: Any | None,
+) -> np.ndarray | None:
+    if row_ablated_modules is None:
+        return None
+    mask = np.asarray(row_ablated_modules, dtype=bool)
+    if mask.shape != (rows, count):
+        raise ValueError(
+            "functional module row ablation mask must have shape "
+            f"({rows}, {count})"
+        )
+    return mask.copy()
+
+
 def expression_gates_q(
     genotype: Any,
     cfg: SimulationConfig,
@@ -101,6 +117,7 @@ def expression_gates_q(
     gene_start: int,
     ablated: bool = False,
     ablated_modules: Any | None = None,
+    row_ablated_modules: Any | None = None,
 ) -> np.ndarray:
     values = np.asarray(genotype, dtype=np.float32)
     if not functional_modules_enabled(cfg):
@@ -113,8 +130,11 @@ def expression_gates_q(
     mask = _ablation_mask(
         cfg, ablated=ablated, ablated_modules=ablated_modules
     )
+    row_mask = _row_ablation_mask(values.shape[0], result.shape[1], row_ablated_modules)
     if np.any(mask):
         result[:, mask] = 0
+    if row_mask is not None and np.any(row_mask):
+        result[row_mask] = 0
     return result
 
 
@@ -188,6 +208,7 @@ def evaluate_contextual_harvest_modules_q(
     gene_start: int,
     ablated: bool = False,
     ablated_modules: Any | None = None,
+    row_ablated_modules: Any | None = None,
 ) -> FunctionalModuleEvaluation:
     """Evaluate the unchanged D2-A world output and D2-B intermediates."""
 
@@ -198,6 +219,7 @@ def evaluate_contextual_harvest_modules_q(
     mask = _ablation_mask(
         cfg, ablated=ablated, ablated_modules=ablated_modules
     )
+    row_mask = _row_ablation_mask(base.shape[0], count, row_ablated_modules)
     empty_module = np.zeros((base.shape[0], count), dtype=np.int32)
     empty_residual = np.zeros(
         (base.shape[0], count, RESOURCE_CHANNELS), dtype=np.int32
@@ -221,6 +243,7 @@ def evaluate_contextual_harvest_modules_q(
         cfg,
         gene_start=gene_start,
         ablated_modules=mask,
+        row_ablated_modules=row_mask,
     ).astype(np.int64)
     features = contextual_inputs_q(
         energy=energy,
@@ -288,6 +311,7 @@ def contextual_harvest_preference_q(
     gene_start: int,
     ablated: bool = False,
     ablated_modules: Any | None = None,
+    row_ablated_modules: Any | None = None,
 ) -> np.ndarray:
     return evaluate_contextual_harvest_modules_q(
         genotype,
@@ -302,6 +326,7 @@ def contextual_harvest_preference_q(
         gene_start=gene_start,
         ablated=ablated,
         ablated_modules=ablated_modules,
+        row_ablated_modules=row_ablated_modules,
     ).preference_q
 
 
@@ -313,6 +338,7 @@ def functional_module_energy(
     development: bool = False,
     ablated: bool = False,
     ablated_modules: Any | None = None,
+    row_ablated_modules: Any | None = None,
 ) -> np.ndarray:
     values = np.asarray(genotype, dtype=np.float32)
     if not functional_modules_enabled(cfg):
@@ -323,6 +349,7 @@ def functional_module_energy(
         gene_start=gene_start,
         ablated=ablated,
         ablated_modules=ablated_modules,
+        row_ablated_modules=row_ablated_modules,
     ).astype(np.float64) / Q
     rate = (
         cfg.functional_modules.development_energy_per_expression

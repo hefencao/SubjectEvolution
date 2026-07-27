@@ -14,7 +14,7 @@ from se.env.partition import SpatialRegionPartition
 from se.policy import ParametricPolicy
 
 
-SCHEMA = "structural-measurement-protocol-audit-v9"
+SCHEMA = "structural-measurement-protocol-audit-v10"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -304,7 +304,7 @@ def build_protocol_audit(
                 },
             },
             "effect_qualification": {
-                "schema": "d2-module-effect-assessment-v1",
+                "schema": "d2-module-effect-assessment-v2",
                 "numerical_tolerance": 1e-12,
                 "directional_replicates": 4,
                 "minimum_seeds": 2,
@@ -320,6 +320,26 @@ def build_protocol_audit(
                     "positive ecological persistence or preregistered phase tradeoff",
                     "no dominant-lineage guard failure",
                 ],
+            },
+            "lineage_balanced_pair_protocol": {
+                "plan_schema": "d2-lineage-paired-plan-v1",
+                "result_schema": "d2-lineage-paired-results-v1",
+                "default_priority_modules": [2, 3],
+                "selection_rule": "largest pre-intervention lineages by membership",
+                "selection_uses_endpoint_response": False,
+                "branches": [
+                    "baseline",
+                    "output-neutral with expression cost retained",
+                    "expression-neutral with output and expression cost removed",
+                ],
+                "target_scope": "one fixed module within one genetic lineage",
+                "same_lineage_descendants_treated": True,
+                "genotype_preserved": True,
+                "lineage_membership_preserved": True,
+                "paired_randomness": True,
+                "equal_inferential_weight_per_lineage_pair": True,
+                "abundance_reweighting_inside_world": False,
+                "diversity_protection": False,
             },
             "preset_role_labels": False,
             "diversity_protection": False,
@@ -498,6 +518,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- contribution diagnostics: {payload['functional_module_protocol']['contribution_diagnostics']}",
         f"- leave-one-out protocol: {payload['functional_module_protocol']['leave_one_out_protocol']}",
         f"- effect qualification: {payload['functional_module_protocol']['effect_qualification']}",
+        f"- lineage-balanced pairs: {payload['functional_module_protocol']['lineage_balanced_pair_protocol']}",
         f"- boundary: {payload['functional_module_protocol']['interpretation']}",
         "",
         "## Environment atlas",

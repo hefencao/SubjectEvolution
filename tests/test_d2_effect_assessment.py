@@ -170,3 +170,19 @@ def test_single_120_tick_assessment_recommends_long_confirmation() -> None:
     short = _synthetic_results(horizon=120, with_footprint=False, ecological=True)
     report = assess_module_audits(short)
     assert report["recommendation"] == "run-300-tick-confirmation"
+
+
+def test_dominant_lineage_guard_routes_to_lineage_balanced_pairs() -> None:
+    short = _synthetic_results(horizon=120, with_footprint=True, ecological=True)
+    long = _synthetic_results(horizon=300, with_footprint=True, ecological=True)
+    for checkpoint in long["checkpoints"]:
+        checkpoint["branches"]["baseline"]["outcomes"][
+            "evolution.effective_lineages"
+        ] = 2.0
+    report = assess_module_audits(long, short_results=short)
+    assert report["lineage_guard"]["dominant_lineage_risk"] is True
+    assert report["recommendation"] == (
+        "run-lineage-balanced-paired-audit-before-duplication"
+    )
+    assert "module_3_expression_effect" in report["lineage_pair_candidates"]
+    assert report["duplication_candidates"] == []

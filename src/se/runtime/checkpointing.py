@@ -247,6 +247,14 @@ class SimulationCheckpointMixin:
             "functional_module_ablation_mask": (
                 self.functional_module_ablation_mask.astype(bool).copy()
             ),
+            "functional_module_lineage_output_ablation": {
+                int(module): tuple(sorted(int(lineage) for lineage in lineages))
+                for module, lineages in self.functional_module_lineage_output_ablation.items()
+            },
+            "functional_module_lineage_cost_ablation": {
+                int(module): tuple(sorted(int(lineage) for lineage in lineages))
+                for module, lineages in self.functional_module_lineage_cost_ablation.items()
+            },
             "danger_evidence_ablation_enabled": bool(
                 self.danger_evidence_ablation_enabled
             ),
@@ -500,6 +508,31 @@ class SimulationCheckpointMixin:
         self.functional_modules_ablation_enabled = bool(
             np.all(self.functional_module_ablation_mask)
         )
+        self.functional_module_lineage_output_ablation = {
+            int(module): {int(lineage) for lineage in lineages}
+            for module, lineages in dict(
+                state.get("functional_module_lineage_output_ablation", {})
+            ).items()
+        }
+        self.functional_module_lineage_cost_ablation = {
+            int(module): {int(lineage) for lineage in lineages}
+            for module, lineages in dict(
+                state.get("functional_module_lineage_cost_ablation", {})
+            ).items()
+        }
+        module_count = int(self.cfg.functional_modules.module_count)
+        for mapping_name, mapping in (
+            (
+                "functional_module_lineage_output_ablation",
+                self.functional_module_lineage_output_ablation,
+            ),
+            (
+                "functional_module_lineage_cost_ablation",
+                self.functional_module_lineage_cost_ablation,
+            ),
+        ):
+            if any(not 0 <= int(module) < module_count for module in mapping):
+                raise ValueError(f"checkpoint {mapping_name} module index mismatch")
         self.danger_evidence_ablation_enabled = bool(
             state.get("danger_evidence_ablation_enabled", False)
         )
@@ -699,6 +732,12 @@ class SimulationCheckpointMixin:
         )
         branch.functional_module_ablation_mask = (
             self.functional_module_ablation_mask.copy()
+        )
+        branch.functional_module_lineage_output_ablation = copy.deepcopy(
+            self.functional_module_lineage_output_ablation
+        )
+        branch.functional_module_lineage_cost_ablation = copy.deepcopy(
+            self.functional_module_lineage_cost_ablation
         )
         branch.danger_evidence_ablation_enabled = (
             self.danger_evidence_ablation_enabled

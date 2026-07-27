@@ -27,6 +27,7 @@ ENTRY_POINTS = {
     "se-d1-factorial": "se.experiments.d1_factorial:main",
     "se-d2-audit": "se.experiments.d2_module_audit:main",
     "se-d2-assess": "se.analysis.d2_effects:main",
+    "se-d2-lineage-pairs": "se.experiments.d2_lineage_pairs:main",
 }
 
 

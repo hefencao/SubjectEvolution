@@ -1,0 +1,4758 @@
+{
+  "schema": "d2-module-effect-assessment-v1",
+  "short_result_schema": "d2-module-leave-one-out-results-v1",
+  "long_result_schema": "d2-module-leave-one-out-results-v1",
+  "short_horizon_ticks": 120,
+  "long_horizon_ticks": 300,
+  "checkpoint_count": 6,
+  "effect_rules": {
+    "world.alive": {
+      "role": "ecological",
+      "absolute": 2.0,
+      "relative": 0.005
+    },
+    "world.mean_energy": {
+      "role": "process",
+      "absolute": 0.01,
+      "relative": 0.0
+    },
+    "evolution.environment_resource_effective_dimensions": {
+      "role": "ecological",
+      "absolute": 0.02,
+      "relative": 0.0
+    },
+    "derived.harvest_extraction_efficiency_window": {
+      "role": "mechanistic",
+      "absolute": 0.005,
+      "relative": 0.0
+    },
+    "evolution.knowledge_effective_transferred_roots": {
+      "role": "ecological",
+      "absolute": 2.0,
+      "relative": 0.01
+    },
+    "evolution.effective_lineages": {
+      "role": "ecological",
+      "absolute": 0.05,
+      "relative": 0.0
+    },
+    "evolution.functional_harvest_preference_effective_dimensions": {
+      "role": "mechanistic",
+      "absolute": 0.02,
+      "relative": 0.0
+    }
+  },
+  "module_effects": {
+    "all_module_expression_effect": {
+      "classification": "replicated-ecological-effect",
+      "metrics": {
+        "world.alive": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 2.0,
+            "relative": 0.005
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 474.0,
+              "effect": -5.0,
+              "threshold": 2.37,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -7.0,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 472.0,
+              "effect": -13.0,
+              "threshold": 2.36,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 3.0,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 587.0,
+              "effect": -6.0,
+              "threshold": 2.935,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -2.0,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 608.0,
+              "effect": 18.0,
+              "threshold": 3.04,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 453.0,
+              "effect": 5.0,
+              "threshold": 2.265,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -1.0,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 445.0,
+              "effect": -11.0,
+              "threshold": 2.225,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 6,
+          "positive_material_count": 2,
+          "negative_material_count": 4,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": -1,
+          "directional_seed_count": 3,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            },
+            "trough": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 2,
+          "paired_horizon_same_sign_count": 1,
+          "longer_horizon_growth_count": 5
+        },
+        "world.mean_energy": {
+          "role": "process",
+          "rule": {
+            "role": "process",
+            "absolute": 0.01,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 1.4374560117721558,
+              "effect": 0.04248642921447754,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0021747350692749023,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 1.434043049812317,
+              "effect": 0.028075098991394043,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.0123060941696167,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.5004866123199463,
+              "effect": 0.004566550254821777,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.003909587860107422,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.4174596071243286,
+              "effect": -0.06209588050842285,
+              "threshold": 0.01,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.004961490631103516,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 1.4455687999725342,
+              "effect": 0.04278147220611572,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.027902841567993164,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 1.4208446741104126,
+              "effect": -0.02890610694885254,
+              "threshold": 0.01,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0126878023147583,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 5,
+          "positive_material_count": 3,
+          "negative_material_count": 2,
+          "material_seed_count": 3,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 2,
+              "positive_count": 2,
+              "negative_count": 0,
+              "replicated_sign": 1
+            },
+            "trough": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": true,
+          "paired_horizon_material_count": 3,
+          "paired_horizon_same_sign_count": 1,
+          "longer_horizon_growth_count": 5
+        },
+        "evolution.environment_resource_effective_dimensions": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 0.02,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 2.3757134599489205,
+              "effect": 0.14859876844251918,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.05634473799919659,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 2.3580582545339333,
+              "effect": 0.05309690400989586,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.08975855059607118,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.8378544237898677,
+              "effect": -0.08174263425972716,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0174047061976641,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.9350793844576952,
+              "effect": 0.029879782567316715,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.005741275956295588,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 1.8161772522766666,
+              "effect": 0.0746024595845276,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.02949782664890499,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 1.7322502784207865,
+              "effect": -0.052721690206361194,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.009920595299812929,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 6,
+          "positive_material_count": 4,
+          "negative_material_count": 2,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": 1,
+          "directional_seed_count": 3,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 2,
+              "negative_count": 1,
+              "replicated_sign": 1
+            },
+            "trough": {
+              "material_count": 3,
+              "positive_count": 2,
+              "negative_count": 1,
+              "replicated_sign": 1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 3,
+          "paired_horizon_same_sign_count": 2,
+          "longer_horizon_growth_count": 5
+        },
+        "derived.harvest_extraction_efficiency_window": {
+          "role": "mechanistic",
+          "rule": {
+            "role": "mechanistic",
+            "absolute": 0.005,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 0.4199853825119169,
+              "effect": 0.009221752861719501,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.0034133312451215536,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 0.41845192776303086,
+              "effect": 0.006593077117710067,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.00932441195223177,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 0.31637856785516316,
+              "effect": 0.002201926587856451,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.0005324182727851068,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 0.3109725647552535,
+              "effect": 0.0052221168087909775,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.0023493647084883995,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 0.4582834779586376,
+              "effect": 0.0077945494621156075,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.009690816941045954,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 0.46922275331802865,
+              "effect": 0.006999876778040259,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0028272917864680114,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 5,
+          "positive_material_count": 5,
+          "negative_material_count": 0,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": 1,
+          "directional_seed_count": 3,
+          "phase_replication": {
+            "peak": {
+              "material_count": 2,
+              "positive_count": 2,
+              "negative_count": 0,
+              "replicated_sign": 1
+            },
+            "trough": {
+              "material_count": 3,
+              "positive_count": 3,
+              "negative_count": 0,
+              "replicated_sign": 1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 2,
+          "paired_horizon_same_sign_count": 1,
+          "longer_horizon_growth_count": 3
+        },
+        "evolution.knowledge_effective_transferred_roots": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 2.0,
+            "relative": 0.01
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 243.4381778741865,
+              "effect": 0.9463745954979572,
+              "threshold": 2.434381778741865,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 1.148615557039676,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 261.33333333333337,
+              "effect": 12.530120481927753,
+              "threshold": 2.6133333333333337,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -6.54103690641395,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 498.35946462715106,
+              "effect": -61.90537985918263,
+              "threshold": 4.983594646271511,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 6.187490282312638,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 542.641304347826,
+              "effect": -13.677730504720898,
+              "threshold": 5.42641304347826,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.06972830993993284,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 337.61682242990656,
+              "effect": -4.243642686372368,
+              "threshold": 3.376168224299066,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -6.976805954476617,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 321.89781021897795,
+              "effect": -23.434957183398865,
+              "threshold": 3.2189781021897796,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -5.045255474452517,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 5,
+          "positive_material_count": 1,
+          "negative_material_count": 4,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": -1,
+          "directional_seed_count": 2,
+          "phase_replication": {
+            "peak": {
+              "material_count": 2,
+              "positive_count": 0,
+              "negative_count": 2,
+              "replicated_sign": -1
+            },
+            "trough": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 4,
+          "paired_horizon_same_sign_count": 2,
+          "longer_horizon_growth_count": 4
+        },
+        "evolution.effective_lineages": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 0.05,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 2.0879892940782874,
+              "effect": -0.10873248826108117,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.03281967077312409,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 1.964065943753857,
+              "effect": -0.010772652177669206,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.010452772949721911,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.6068392409962737,
+              "effect": -0.020705757869787345,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.03105335376886753,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.5744184263652394,
+              "effect": 0.004929896571558734,
+              "threshold": 0.05,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.024179189583657834,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 3.443624037186824,
+              "effect": 0.20917551014498814,
+              "threshold": 0.05,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.09781609671949631,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 3.399979396665694,
+              "effect": 0.10641333083745552,
+              "threshold": 0.05,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.038544780871013984,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 3,
+          "positive_material_count": 2,
+          "negative_material_count": 1,
+          "material_seed_count": 2,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 2,
+              "positive_count": 1,
+              "negative_count": 1,
+              "replicated_sign": 0
+            },
+            "trough": {
+              "material_count": 1,
+              "positive_count": 1,
+              "negative_count": 0,
+              "replicated_sign": 0
+            }
+          },
+          "phase_conditioned": false,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 1,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 3
+        },
+        "evolution.functional_harvest_preference_effective_dimensions": {
+          "role": "mechanistic",
+          "rule": {
+            "role": "mechanistic",
+            "absolute": 0.02,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 1.257384701298209,
+              "effect": -0.05400455459835296,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.007988952785346726,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 1.196474795331584,
+              "effect": -0.03103291077388537,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.008774888408414672,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.1900421805377945,
+              "effect": -0.04294464652346508,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.004123798192694039,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.1805754232184993,
+              "effect": -0.02902951728751102,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.010252801334145412,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 2.303423444191624,
+              "effect": 0.008120754776943073,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.025752082344880023,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 1.9819545759970472,
+              "effect": -0.04721843368392631,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.016206888032977762,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 5,
+          "positive_material_count": 0,
+          "negative_material_count": 5,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": -1,
+          "directional_seed_count": 3,
+          "phase_replication": {
+            "peak": {
+              "material_count": 2,
+              "positive_count": 0,
+              "negative_count": 2,
+              "replicated_sign": -1
+            },
+            "trough": {
+              "material_count": 3,
+              "positive_count": 0,
+              "negative_count": 3,
+              "replicated_sign": -1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 0,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 5
+        }
+      },
+      "checkpoint_footprint": {
+        "available": true,
+        "rows": [
+          {
+            "run_name": "seed_10001",
+            "phase": "peak",
+            "checkpoint_tick": 2640,
+            "active_entities": 489,
+            "preference_changed_fraction": 0.9918200408997955,
+            "preference_total_variation_mean": 0.0003693313442612474,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 5
+          },
+          {
+            "run_name": "seed_10001",
+            "phase": "trough",
+            "checkpoint_tick": 2820,
+            "active_entities": 463,
+            "preference_changed_fraction": 0.9956803455723542,
+            "preference_total_variation_mean": 0.0003738568102051836,
+            "conditional_harvest_channel_changed_fraction": 0.004319654427645789,
+            "material": true,
+            "material_lineage_count": 4
+          },
+          {
+            "run_name": "seed_10002",
+            "phase": "peak",
+            "checkpoint_tick": 2880,
+            "active_entities": 575,
+            "preference_changed_fraction": 0.928695652173913,
+            "preference_total_variation_mean": 0.0002864937160326087,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 4
+          },
+          {
+            "run_name": "seed_10002",
+            "phase": "trough",
+            "checkpoint_tick": 3000,
+            "active_entities": 582,
+            "preference_changed_fraction": 0.9243986254295533,
+            "preference_total_variation_mean": 0.00027277051788015465,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 3
+          },
+          {
+            "run_name": "seed_10003",
+            "phase": "peak",
+            "checkpoint_tick": 2760,
+            "active_entities": 454,
+            "preference_changed_fraction": 0.9977973568281938,
+            "preference_total_variation_mean": 0.0009406673750688326,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 7
+          },
+          {
+            "run_name": "seed_10003",
+            "phase": "trough",
+            "checkpoint_tick": 2880,
+            "active_entities": 448,
+            "preference_changed_fraction": 0.9977678571428571,
+            "preference_total_variation_mean": 0.0009592601231166295,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 7
+          }
+        ],
+        "material_checkpoint_count": 6,
+        "cross_lineage_checkpoint_count": 6,
+        "material_seed_count": 3,
+        "thresholds": {
+          "preference_changed_fraction": 0.01,
+          "conditional_harvest_channel_changed_fraction": 0.005,
+          "lineage_changed_fraction": 0.05,
+          "min_lineage_members": 8
+        }
+      },
+      "robust_mechanistic": true,
+      "robust_ecological": true,
+      "contextual_ecological": true,
+      "footprint_ready": true,
+      "cross_lineage_footprint": true,
+      "positive_ecological_persistence": true,
+      "duplication_ready": false
+    },
+    "module_0_expression_effect": {
+      "classification": "replicated-context-dependent-effect",
+      "metrics": {
+        "world.alive": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 2.0,
+            "relative": 0.005
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 474.0,
+              "effect": 6.0,
+              "threshold": 2.37,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -4.0,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 472.0,
+              "effect": 1.0,
+              "threshold": 2.36,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -2.0,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 587.0,
+              "effect": -14.0,
+              "threshold": 2.935,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 6.0,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 608.0,
+              "effect": 12.0,
+              "threshold": 3.04,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -7.0,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 453.0,
+              "effect": -3.0,
+              "threshold": 2.265,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 1.0,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 445.0,
+              "effect": -3.0,
+              "threshold": 2.225,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 1.0,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 5,
+          "positive_material_count": 2,
+          "negative_material_count": 3,
+          "material_seed_count": 3,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            },
+            "trough": {
+              "material_count": 2,
+              "positive_count": 1,
+              "negative_count": 1,
+              "replicated_sign": 0
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 3,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 5
+        },
+        "world.mean_energy": {
+          "role": "process",
+          "rule": {
+            "role": "process",
+            "absolute": 0.01,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 1.4374560117721558,
+              "effect": -0.02670907974243164,
+              "threshold": 0.01,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0035483837127685547,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 1.434043049812317,
+              "effect": -0.008710503578186035,
+              "threshold": 0.01,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.01813530921936035,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.5004866123199463,
+              "effect": 0.08870339393615723,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.024217844009399414,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.4174596071243286,
+              "effect": -0.08002710342407227,
+              "threshold": 0.01,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.01933467388153076,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 1.4455687999725342,
+              "effect": -0.018418312072753906,
+              "threshold": 0.01,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0004241466522216797,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 1.4208446741104126,
+              "effect": 0.00951528549194336,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.005672812461853027,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 4,
+          "positive_material_count": 1,
+          "negative_material_count": 3,
+          "material_seed_count": 3,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            },
+            "trough": {
+              "material_count": 1,
+              "positive_count": 0,
+              "negative_count": 1,
+              "replicated_sign": 0
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 2,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 4
+        },
+        "evolution.environment_resource_effective_dimensions": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 0.02,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 2.3757134599489205,
+              "effect": 0.12067949573249459,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.04888285095693412,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 2.3580582545339333,
+              "effect": 0.14339909330636536,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0252327747979324,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.8378544237898677,
+              "effect": -0.059381868015842665,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.009039867154173375,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.9350793844576952,
+              "effect": -0.03818569840829644,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.02292896183837989,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 1.8161772522766666,
+              "effect": -0.002718527957232819,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.020757200759883077,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 1.7322502784207865,
+              "effect": -0.0287676368648222,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.004558157979104305,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 5,
+          "positive_material_count": 2,
+          "negative_material_count": 3,
+          "material_seed_count": 3,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 2,
+              "positive_count": 1,
+              "negative_count": 1,
+              "replicated_sign": 0
+            },
+            "trough": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 3,
+          "paired_horizon_same_sign_count": 2,
+          "longer_horizon_growth_count": 5
+        },
+        "derived.harvest_extraction_efficiency_window": {
+          "role": "mechanistic",
+          "rule": {
+            "role": "mechanistic",
+            "absolute": 0.005,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 0.4199853825119169,
+              "effect": 6.416483594628986e-05,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.0010669900642751862,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 0.41845192776303086,
+              "effect": 0.012156058914658707,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.00024768227668903187,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 0.31637856785516316,
+              "effect": 0.01882852730978879,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0008040148816051973,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 0.3109725647552535,
+              "effect": 0.004493499855998784,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.00010508421122068512,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 0.4582834779586376,
+              "effect": 0.002456711470369022,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.002742955570413652,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 0.46922275331802865,
+              "effect": -0.00033842010060552985,
+              "threshold": 0.005,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.0018673191309517279,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 2,
+          "positive_material_count": 2,
+          "negative_material_count": 0,
+          "material_seed_count": 2,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 1,
+              "positive_count": 1,
+              "negative_count": 0,
+              "replicated_sign": 0
+            },
+            "trough": {
+              "material_count": 1,
+              "positive_count": 1,
+              "negative_count": 0,
+              "replicated_sign": 0
+            }
+          },
+          "phase_conditioned": false,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 0,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 2
+        },
+        "evolution.knowledge_effective_transferred_roots": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 2.0,
+            "relative": 0.01
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 243.4381778741865,
+              "effect": 5.138371297784204,
+              "threshold": 2.434381778741865,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 3.879043214116649,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 261.33333333333337,
+              "effect": 22.86236559139789,
+              "threshold": 2.6133333333333337,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -2.1307499157478276,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 498.35946462715106,
+              "effect": -72.05051754753686,
+              "threshold": 4.983594646271511,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 2.149510187941587,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 542.641304347826,
+              "effect": -1.2466038604706,
+              "threshold": 5.42641304347826,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 6.156023063737052,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 337.61682242990656,
+              "effect": -15.36891732053897,
+              "threshold": 3.376168224299066,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -1.9387845443621359,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 321.89781021897795,
+              "effect": -15.920207799040043,
+              "threshold": 3.2189781021897796,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -1.910710019906901,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 5,
+          "positive_material_count": 2,
+          "negative_material_count": 3,
+          "material_seed_count": 3,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            },
+            "trough": {
+              "material_count": 2,
+              "positive_count": 1,
+              "negative_count": 1,
+              "replicated_sign": 0
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 1,
+          "paired_horizon_same_sign_count": 1,
+          "longer_horizon_growth_count": 5
+        },
+        "evolution.effective_lineages": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 0.05,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 2.0879892940782874,
+              "effect": -0.12593974665758667,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.006544800791942418,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 1.964065943753857,
+              "effect": -0.029347482791921342,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.00556585376359342,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.6068392409962737,
+              "effect": -0.015639119280966618,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.026708163539335805,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.5744184263652394,
+              "effect": 0.012219131786072479,
+              "threshold": 0.05,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.020240232967479566,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 3.443624037186824,
+              "effect": 0.14890987823131674,
+              "threshold": 0.05,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.008866226999271198,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 3.399979396665694,
+              "effect": -0.12040227736784281,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.007400870742290344,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 3,
+          "positive_material_count": 1,
+          "negative_material_count": 2,
+          "material_seed_count": 2,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 2,
+              "positive_count": 1,
+              "negative_count": 1,
+              "replicated_sign": 0
+            },
+            "trough": {
+              "material_count": 1,
+              "positive_count": 0,
+              "negative_count": 1,
+              "replicated_sign": 0
+            }
+          },
+          "phase_conditioned": false,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 0,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 3
+        },
+        "evolution.functional_harvest_preference_effective_dimensions": {
+          "role": "mechanistic",
+          "rule": {
+            "role": "mechanistic",
+            "absolute": 0.02,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 1.257384701298209,
+              "effect": -0.0575214914562614,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.004271310831805097,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 1.196474795331584,
+              "effect": -0.05314946059305692,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.001954200603654588,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.1900421805377945,
+              "effect": -0.04151226263402452,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.007565369573941272,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.1805754232184993,
+              "effect": -0.0065220055063057725,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.007759666076660343,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 2.303423444191624,
+              "effect": 0.1269185617962867,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.0023361485094404166,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 1.9819545759970472,
+              "effect": -0.1797284032941031,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.014464589729466848,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 5,
+          "positive_material_count": 1,
+          "negative_material_count": 4,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": -1,
+          "directional_seed_count": 3,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            },
+            "trough": {
+              "material_count": 2,
+              "positive_count": 0,
+              "negative_count": 2,
+              "replicated_sign": -1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 0,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 5
+        }
+      },
+      "checkpoint_footprint": {
+        "available": true,
+        "rows": [
+          {
+            "run_name": "seed_10001",
+            "phase": "peak",
+            "checkpoint_tick": 2640,
+            "active_entities": 489,
+            "preference_changed_fraction": 0.3210633946830266,
+            "preference_total_variation_mean": 0.00014753283167177913,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 2
+          },
+          {
+            "run_name": "seed_10001",
+            "phase": "trough",
+            "checkpoint_tick": 2820,
+            "active_entities": 463,
+            "preference_changed_fraction": 0.3174946004319654,
+            "preference_total_variation_mean": 0.00014869904157667387,
+            "conditional_harvest_channel_changed_fraction": 0.0021598272138228943,
+            "material": true,
+            "material_lineage_count": 2
+          },
+          {
+            "run_name": "seed_10002",
+            "phase": "peak",
+            "checkpoint_tick": 2880,
+            "active_entities": 575,
+            "preference_changed_fraction": 0.6052173913043478,
+            "preference_total_variation_mean": 0.00013894786005434783,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 2
+          },
+          {
+            "run_name": "seed_10002",
+            "phase": "trough",
+            "checkpoint_tick": 3000,
+            "active_entities": 582,
+            "preference_changed_fraction": 0.6185567010309279,
+            "preference_total_variation_mean": 0.0001245872261597938,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 1
+          },
+          {
+            "run_name": "seed_10003",
+            "phase": "peak",
+            "checkpoint_tick": 2760,
+            "active_entities": 454,
+            "preference_changed_fraction": 0.2753303964757709,
+            "preference_total_variation_mean": 0.00010876088415473568,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 3
+          },
+          {
+            "run_name": "seed_10003",
+            "phase": "trough",
+            "checkpoint_tick": 2880,
+            "active_entities": 448,
+            "preference_changed_fraction": 0.25892857142857145,
+            "preference_total_variation_mean": 0.00010081699916294642,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 3
+          }
+        ],
+        "material_checkpoint_count": 6,
+        "cross_lineage_checkpoint_count": 5,
+        "material_seed_count": 3,
+        "thresholds": {
+          "preference_changed_fraction": 0.01,
+          "conditional_harvest_channel_changed_fraction": 0.005,
+          "lineage_changed_fraction": 0.05,
+          "min_lineage_members": 8
+        }
+      },
+      "robust_mechanistic": true,
+      "robust_ecological": false,
+      "contextual_ecological": true,
+      "footprint_ready": true,
+      "cross_lineage_footprint": true,
+      "positive_ecological_persistence": true,
+      "duplication_ready": false
+    },
+    "module_1_expression_effect": {
+      "classification": "replicated-ecological-effect",
+      "metrics": {
+        "world.alive": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 2.0,
+            "relative": 0.005
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 474.0,
+              "effect": 9.0,
+              "threshold": 2.37,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -4.0,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 472.0,
+              "effect": -7.0,
+              "threshold": 2.36,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 5.0,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 587.0,
+              "effect": 7.0,
+              "threshold": 2.935,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -3.0,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 608.0,
+              "effect": 16.0,
+              "threshold": 3.04,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 3.0,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 453.0,
+              "effect": -12.0,
+              "threshold": 2.265,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 1.0,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 445.0,
+              "effect": -20.0,
+              "threshold": 2.225,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -2.0,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 6,
+          "positive_material_count": 3,
+          "negative_material_count": 3,
+          "material_seed_count": 3,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 2,
+              "negative_count": 1,
+              "replicated_sign": 1
+            },
+            "trough": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": true,
+          "paired_horizon_material_count": 4,
+          "paired_horizon_same_sign_count": 1,
+          "longer_horizon_growth_count": 6
+        },
+        "world.mean_energy": {
+          "role": "process",
+          "rule": {
+            "role": "process",
+            "absolute": 0.01,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 1.4374560117721558,
+              "effect": -0.013500809669494629,
+              "threshold": 0.01,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.004671216011047363,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 1.434043049812317,
+              "effect": 0.011374473571777344,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.007104039192199707,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.5004866123199463,
+              "effect": 0.027173161506652832,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.017153263092041016,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.4174596071243286,
+              "effect": -0.058336496353149414,
+              "threshold": 0.01,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.008520960807800293,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 1.4455687999725342,
+              "effect": 0.03618359565734863,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.01261913776397705,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 1.4208446741104126,
+              "effect": -0.00023055076599121094,
+              "threshold": 0.01,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.00013077259063720703,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 5,
+          "positive_material_count": 3,
+          "negative_material_count": 2,
+          "material_seed_count": 3,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 2,
+              "negative_count": 1,
+              "replicated_sign": 1
+            },
+            "trough": {
+              "material_count": 2,
+              "positive_count": 1,
+              "negative_count": 1,
+              "replicated_sign": 0
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 2,
+          "paired_horizon_same_sign_count": 1,
+          "longer_horizon_growth_count": 5
+        },
+        "evolution.environment_resource_effective_dimensions": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 0.02,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 2.3757134599489205,
+              "effect": 0.1901147189799537,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.03163887238423024,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 2.3580582545339333,
+              "effect": 0.020077931507336277,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.09841450094962934,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.8378544237898677,
+              "effect": 0.059247681985689526,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.026287022746623645,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.9350793844576952,
+              "effect": 0.15514176609886743,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.003515003809019479,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 1.8161772522766666,
+              "effect": -0.06571984835462263,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0030774904821251337,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 1.7322502784207865,
+              "effect": -0.1851807308454101,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.03725811371835097,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 6,
+          "positive_material_count": 4,
+          "negative_material_count": 2,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": 1,
+          "directional_seed_count": 2,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 2,
+              "negative_count": 1,
+              "replicated_sign": 1
+            },
+            "trough": {
+              "material_count": 3,
+              "positive_count": 2,
+              "negative_count": 1,
+              "replicated_sign": 1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 4,
+          "paired_horizon_same_sign_count": 3,
+          "longer_horizon_growth_count": 5
+        },
+        "derived.harvest_extraction_efficiency_window": {
+          "role": "mechanistic",
+          "rule": {
+            "role": "mechanistic",
+            "absolute": 0.005,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 0.4199853825119169,
+              "effect": -0.005388431624697154,
+              "threshold": 0.005,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 4.35676696239895e-05,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 0.41845192776303086,
+              "effect": -0.00392654267132031,
+              "threshold": 0.005,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.006987180104651103,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 0.31637856785516316,
+              "effect": 0.007962657519982819,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.001415787588176065,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 0.3109725647552535,
+              "effect": -0.004341546882555836,
+              "threshold": 0.005,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.00025149628558179815,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 0.4582834779586376,
+              "effect": -0.010252068983942375,
+              "threshold": 0.005,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 3.1685315347473875e-05,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 0.46922275331802865,
+              "effect": 0.0025371908866479997,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.004072935679943546,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 3,
+          "positive_material_count": 1,
+          "negative_material_count": 2,
+          "material_seed_count": 3,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            },
+            "trough": {
+              "material_count": 0,
+              "positive_count": 0,
+              "negative_count": 0,
+              "replicated_sign": 0
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 0,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 3
+        },
+        "evolution.knowledge_effective_transferred_roots": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 2.0,
+            "relative": 0.01
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 243.4381778741865,
+              "effect": -18.313958877950284,
+              "threshold": 2.434381778741865,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.1846621296913611,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 261.33333333333337,
+              "effect": 3.8072562358277082,
+              "threshold": 2.6133333333333337,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -7.483481111988596,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 498.35946462715106,
+              "effect": -42.867808100121806,
+              "threshold": 4.983594646271511,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -3.3445508435933107,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 542.641304347826,
+              "effect": -13.08782366701621,
+              "threshold": 5.42641304347826,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.9219170026880192,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 337.61682242990656,
+              "effect": -25.913426680413636,
+              "threshold": 3.376168224299066,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -3.87805300536985,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 321.89781021897795,
+              "effect": -32.04525027924274,
+              "threshold": 3.2189781021897796,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -6.690300519497612,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 6,
+          "positive_material_count": 1,
+          "negative_material_count": 5,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": -1,
+          "directional_seed_count": 3,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 0,
+              "negative_count": 3,
+              "replicated_sign": -1
+            },
+            "trough": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 3,
+          "paired_horizon_same_sign_count": 2,
+          "longer_horizon_growth_count": 5
+        },
+        "evolution.effective_lineages": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 0.05,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 2.0879892940782874,
+              "effect": -0.054825376856335595,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.01112203133288725,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 1.964065943753857,
+              "effect": -0.07495649570404117,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.003511052982157814,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.6068392409962737,
+              "effect": 0.007599878029789009,
+              "threshold": 0.05,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.0006014497876474234,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.5744184263652394,
+              "effect": 0.029612241216296686,
+              "threshold": 0.05,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.012412607894475292,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 3.443624037186824,
+              "effect": 0.15658066600061593,
+              "threshold": 0.05,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.01431340988724239,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 3.399979396665694,
+              "effect": -0.02666994328137484,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.026349516483074265,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 3,
+          "positive_material_count": 1,
+          "negative_material_count": 2,
+          "material_seed_count": 2,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 2,
+              "positive_count": 1,
+              "negative_count": 1,
+              "replicated_sign": 0
+            },
+            "trough": {
+              "material_count": 1,
+              "positive_count": 0,
+              "negative_count": 1,
+              "replicated_sign": 0
+            }
+          },
+          "phase_conditioned": false,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 0,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 3
+        },
+        "evolution.functional_harvest_preference_effective_dimensions": {
+          "role": "mechanistic",
+          "rule": {
+            "role": "mechanistic",
+            "absolute": 0.02,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 1.257384701298209,
+              "effect": -0.07406803299422404,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.005766757308802717,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 1.196474795331584,
+              "effect": -0.05476716171654772,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.005416368375088743,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.1900421805377945,
+              "effect": -0.040371234741408024,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.0012578370027154229,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.1805754232184993,
+              "effect": -0.010873529515312397,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.0022116976089827656,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 2.303423444191624,
+              "effect": 0.1559096303943024,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.008907380786478125,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 1.9819545759970472,
+              "effect": -0.12143814092381011,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.030337825649085826,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 5,
+          "positive_material_count": 1,
+          "negative_material_count": 4,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": -1,
+          "directional_seed_count": 3,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            },
+            "trough": {
+              "material_count": 2,
+              "positive_count": 0,
+              "negative_count": 2,
+              "replicated_sign": -1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 1,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 5
+        }
+      },
+      "checkpoint_footprint": {
+        "available": true,
+        "rows": [
+          {
+            "run_name": "seed_10001",
+            "phase": "peak",
+            "checkpoint_tick": 2640,
+            "active_entities": 489,
+            "preference_changed_fraction": 0.8445807770961146,
+            "preference_total_variation_mean": 0.00013417749073364008,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 4
+          },
+          {
+            "run_name": "seed_10001",
+            "phase": "trough",
+            "checkpoint_tick": 2820,
+            "active_entities": 463,
+            "preference_changed_fraction": 0.8790496760259179,
+            "preference_total_variation_mean": 0.0001364392801700864,
+            "conditional_harvest_channel_changed_fraction": 0.0021598272138228943,
+            "material": true,
+            "material_lineage_count": 3
+          },
+          {
+            "run_name": "seed_10002",
+            "phase": "peak",
+            "checkpoint_tick": 2880,
+            "active_entities": 575,
+            "preference_changed_fraction": 0.42086956521739133,
+            "preference_total_variation_mean": 5.402938179347826e-05,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 3
+          },
+          {
+            "run_name": "seed_10002",
+            "phase": "trough",
+            "checkpoint_tick": 3000,
+            "active_entities": 582,
+            "preference_changed_fraction": 0.3865979381443299,
+            "preference_total_variation_mean": 5.117724441580756e-05,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 2
+          },
+          {
+            "run_name": "seed_10003",
+            "phase": "peak",
+            "checkpoint_tick": 2760,
+            "active_entities": 454,
+            "preference_changed_fraction": 0.5550660792951542,
+            "preference_total_variation_mean": 0.00021389192421530836,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 4
+          },
+          {
+            "run_name": "seed_10003",
+            "phase": "trough",
+            "checkpoint_tick": 2880,
+            "active_entities": 448,
+            "preference_changed_fraction": 0.5825892857142857,
+            "preference_total_variation_mean": 0.00023160661969866072,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 4
+          }
+        ],
+        "material_checkpoint_count": 6,
+        "cross_lineage_checkpoint_count": 6,
+        "material_seed_count": 3,
+        "thresholds": {
+          "preference_changed_fraction": 0.01,
+          "conditional_harvest_channel_changed_fraction": 0.005,
+          "lineage_changed_fraction": 0.05,
+          "min_lineage_members": 8
+        }
+      },
+      "robust_mechanistic": true,
+      "robust_ecological": true,
+      "contextual_ecological": true,
+      "footprint_ready": true,
+      "cross_lineage_footprint": true,
+      "positive_ecological_persistence": true,
+      "duplication_ready": false
+    },
+    "module_2_expression_effect": {
+      "classification": "replicated-ecological-effect",
+      "metrics": {
+        "world.alive": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 2.0,
+            "relative": 0.005
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 474.0,
+              "effect": 8.0,
+              "threshold": 2.37,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -4.0,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 472.0,
+              "effect": -3.0,
+              "threshold": 2.36,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -1.0,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 587.0,
+              "effect": -19.0,
+              "threshold": 2.935,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 608.0,
+              "effect": 1.0,
+              "threshold": 3.04,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.0,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 453.0,
+              "effect": -6.0,
+              "threshold": 2.265,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 4.0,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 445.0,
+              "effect": -12.0,
+              "threshold": 2.225,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 2.0,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 5,
+          "positive_material_count": 1,
+          "negative_material_count": 4,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": -1,
+          "directional_seed_count": 3,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            },
+            "trough": {
+              "material_count": 2,
+              "positive_count": 0,
+              "negative_count": 2,
+              "replicated_sign": -1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 2,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 5
+        },
+        "world.mean_energy": {
+          "role": "process",
+          "rule": {
+            "role": "process",
+            "absolute": 0.01,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 1.4374560117721558,
+              "effect": -0.01648414134979248,
+              "threshold": 0.01,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0017839670181274414,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 1.434043049812317,
+              "effect": 0.052643775939941406,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.013271093368530273,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.5004866123199463,
+              "effect": 0.04275202751159668,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.00011014938354492188,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.4174596071243286,
+              "effect": -0.0009353160858154297,
+              "threshold": 0.01,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -4.172325134277344e-05,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 1.4455687999725342,
+              "effect": 0.03273153305053711,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0059397220611572266,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 1.4208446741104126,
+              "effect": 0.046192049980163574,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.010521411895751953,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 5,
+          "positive_material_count": 4,
+          "negative_material_count": 1,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": 1,
+          "directional_seed_count": 3,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 2,
+              "negative_count": 1,
+              "replicated_sign": 1
+            },
+            "trough": {
+              "material_count": 2,
+              "positive_count": 2,
+              "negative_count": 0,
+              "replicated_sign": 1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 2,
+          "paired_horizon_same_sign_count": 1,
+          "longer_horizon_growth_count": 5
+        },
+        "evolution.environment_resource_effective_dimensions": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 0.02,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 2.3757134599489205,
+              "effect": 0.061774624378525544,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.023794667030389238,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 2.3580582545339333,
+              "effect": 0.16140010505738056,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.03868367976170406,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.8378544237898677,
+              "effect": -0.05908234489789388,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.00010524244092957602,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.9350793844576952,
+              "effect": 0.011807779227679394,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 4.2443509107537025e-05,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 1.8161772522766666,
+              "effect": 0.0420322582588013,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.012414881334604111,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 1.7322502784207865,
+              "effect": -0.05241210631386406,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0218153875808893,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 5,
+          "positive_material_count": 3,
+          "negative_material_count": 2,
+          "material_seed_count": 3,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 2,
+              "negative_count": 1,
+              "replicated_sign": 1
+            },
+            "trough": {
+              "material_count": 2,
+              "positive_count": 1,
+              "negative_count": 1,
+              "replicated_sign": 0
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 3,
+          "paired_horizon_same_sign_count": 1,
+          "longer_horizon_growth_count": 5
+        },
+        "derived.harvest_extraction_efficiency_window": {
+          "role": "mechanistic",
+          "rule": {
+            "role": "mechanistic",
+            "absolute": 0.005,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 0.4199853825119169,
+              "effect": -0.0018519187646433566,
+              "threshold": 0.005,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.0005889845640059121,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 0.41845192776303086,
+              "effect": 0.006166931470569181,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.001068502381704417,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 0.31637856785516316,
+              "effect": 0.008405268687536327,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -4.180777550494286e-05,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 0.3109725647552535,
+              "effect": 0.0007244149503908281,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -4.271730619564984e-06,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 0.4582834779586376,
+              "effect": 0.013821139924268089,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.011536293233983308,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 0.46922275331802865,
+              "effect": 0.020569964028155197,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 7.353432641510338e-05,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 4,
+          "positive_material_count": 4,
+          "negative_material_count": 0,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": 1,
+          "directional_seed_count": 3,
+          "phase_replication": {
+            "peak": {
+              "material_count": 2,
+              "positive_count": 2,
+              "negative_count": 0,
+              "replicated_sign": 1
+            },
+            "trough": {
+              "material_count": 2,
+              "positive_count": 2,
+              "negative_count": 0,
+              "replicated_sign": 1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 1,
+          "paired_horizon_same_sign_count": 1,
+          "longer_horizon_growth_count": 4
+        },
+        "evolution.knowledge_effective_transferred_roots": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 2.0,
+            "relative": 0.01
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 243.4381778741865,
+              "effect": 3.1008525248850844,
+              "threshold": 2.434381778741865,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 1.0851331516041114,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 261.33333333333337,
+              "effect": -10.079510703363894,
+              "threshold": 2.6133333333333337,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -3.0596387197000467,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 498.35946462715106,
+              "effect": -48.290535372849035,
+              "threshold": 4.983594646271511,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.9198640591282583,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 542.641304347826,
+              "effect": -1.2205437766021987,
+              "threshold": 5.42641304347826,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.0,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 337.61682242990656,
+              "effect": 3.6041182556779177,
+              "threshold": 3.376168224299066,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.35317285989123093,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 321.89781021897795,
+              "effect": -12.1073890877812,
+              "threshold": 3.2189781021897796,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -5.7340641387124265,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 5,
+          "positive_material_count": 2,
+          "negative_material_count": 3,
+          "material_seed_count": 3,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 2,
+              "negative_count": 1,
+              "replicated_sign": 1
+            },
+            "trough": {
+              "material_count": 2,
+              "positive_count": 0,
+              "negative_count": 2,
+              "replicated_sign": -1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": true,
+          "paired_horizon_material_count": 2,
+          "paired_horizon_same_sign_count": 2,
+          "longer_horizon_growth_count": 5
+        },
+        "evolution.effective_lineages": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 0.05,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 2.0879892940782874,
+              "effect": -0.07720503459541206,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.018337844965406802,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 1.964065943753857,
+              "effect": -0.035818827428302,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.002788329225187347,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.6068392409962737,
+              "effect": 0.010077670827395524,
+              "threshold": 0.05,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.0,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.5744184263652394,
+              "effect": -0.001180148771495304,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.0,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 3.443624037186824,
+              "effect": 0.08717419729770715,
+              "threshold": 0.05,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.025493767909350318,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 3.399979396665694,
+              "effect": -0.10543358441824457,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.021886301974499922,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 3,
+          "positive_material_count": 1,
+          "negative_material_count": 2,
+          "material_seed_count": 2,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 2,
+              "positive_count": 1,
+              "negative_count": 1,
+              "replicated_sign": 0
+            },
+            "trough": {
+              "material_count": 1,
+              "positive_count": 0,
+              "negative_count": 1,
+              "replicated_sign": 0
+            }
+          },
+          "phase_conditioned": false,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 0,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 3
+        },
+        "evolution.functional_harvest_preference_effective_dimensions": {
+          "role": "mechanistic",
+          "rule": {
+            "role": "mechanistic",
+            "absolute": 0.02,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 1.257384701298209,
+              "effect": -0.009855892636294605,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.00489096149079038,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 1.196474795331584,
+              "effect": -0.045486926845572206,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.00071034843381379,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.1900421805377945,
+              "effect": -0.023822810217996482,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.00011271100560383829,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.1805754232184993,
+              "effect": 5.263103178609896e-05,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 4.995616742653475e-05,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 2.303423444191624,
+              "effect": 0.036484672923939865,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.025445603949748374,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 1.9819545759970472,
+              "effect": -0.16369864278422042,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.015480674577336817,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 4,
+          "positive_material_count": 1,
+          "negative_material_count": 3,
+          "material_seed_count": 3,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 2,
+              "positive_count": 1,
+              "negative_count": 1,
+              "replicated_sign": 0
+            },
+            "trough": {
+              "material_count": 2,
+              "positive_count": 0,
+              "negative_count": 2,
+              "replicated_sign": -1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 1,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 4
+        }
+      },
+      "checkpoint_footprint": {
+        "available": true,
+        "rows": [
+          {
+            "run_name": "seed_10001",
+            "phase": "peak",
+            "checkpoint_tick": 2640,
+            "active_entities": 489,
+            "preference_changed_fraction": 0.3394683026584867,
+            "preference_total_variation_mean": 7.064600907464212e-05,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 4
+          },
+          {
+            "run_name": "seed_10001",
+            "phase": "trough",
+            "checkpoint_tick": 2820,
+            "active_entities": 463,
+            "preference_changed_fraction": 0.34773218142548595,
+            "preference_total_variation_mean": 7.026293365280778e-05,
+            "conditional_harvest_channel_changed_fraction": 0.0021598272138228943,
+            "material": true,
+            "material_lineage_count": 3
+          },
+          {
+            "run_name": "seed_10002",
+            "phase": "peak",
+            "checkpoint_tick": 2880,
+            "active_entities": 575,
+            "preference_changed_fraction": 0.02608695652173913,
+            "preference_total_variation_mean": 8.810292119565217e-06,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 0
+          },
+          {
+            "run_name": "seed_10002",
+            "phase": "trough",
+            "checkpoint_tick": 3000,
+            "active_entities": 582,
+            "preference_changed_fraction": 0.018900343642611683,
+            "preference_total_variation_mean": 1.2584568298969072e-05,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 0
+          },
+          {
+            "run_name": "seed_10003",
+            "phase": "peak",
+            "checkpoint_tick": 2760,
+            "active_entities": 454,
+            "preference_changed_fraction": 0.8766519823788547,
+            "preference_total_variation_mean": 0.00022827686192180617,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 6
+          },
+          {
+            "run_name": "seed_10003",
+            "phase": "trough",
+            "checkpoint_tick": 2880,
+            "active_entities": 448,
+            "preference_changed_fraction": 0.8950892857142857,
+            "preference_total_variation_mean": 0.00022711072649274553,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 6
+          }
+        ],
+        "material_checkpoint_count": 6,
+        "cross_lineage_checkpoint_count": 4,
+        "material_seed_count": 3,
+        "thresholds": {
+          "preference_changed_fraction": 0.01,
+          "conditional_harvest_channel_changed_fraction": 0.005,
+          "lineage_changed_fraction": 0.05,
+          "min_lineage_members": 8
+        }
+      },
+      "robust_mechanistic": true,
+      "robust_ecological": true,
+      "contextual_ecological": true,
+      "footprint_ready": true,
+      "cross_lineage_footprint": true,
+      "positive_ecological_persistence": true,
+      "duplication_ready": false
+    },
+    "module_3_expression_effect": {
+      "classification": "replicated-ecological-effect",
+      "metrics": {
+        "world.alive": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 2.0,
+            "relative": 0.005
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 474.0,
+              "effect": 2.0,
+              "threshold": 2.37,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 1.0,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 472.0,
+              "effect": -3.0,
+              "threshold": 2.36,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 5.0,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 587.0,
+              "effect": -5.0,
+              "threshold": 2.935,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 4.0,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 608.0,
+              "effect": 14.0,
+              "threshold": 3.04,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -9.0,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 453.0,
+              "effect": -16.0,
+              "threshold": 2.265,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 4.0,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 445.0,
+              "effect": -6.0,
+              "threshold": 2.225,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 1.0,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 5,
+          "positive_material_count": 1,
+          "negative_material_count": 4,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": -1,
+          "directional_seed_count": 3,
+          "phase_replication": {
+            "peak": {
+              "material_count": 2,
+              "positive_count": 0,
+              "negative_count": 2,
+              "replicated_sign": -1
+            },
+            "trough": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 4,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 4
+        },
+        "world.mean_energy": {
+          "role": "process",
+          "rule": {
+            "role": "process",
+            "absolute": 0.01,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 1.4374560117721558,
+              "effect": -0.003133535385131836,
+              "threshold": 0.01,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 4.780292510986328e-05,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 1.434043049812317,
+              "effect": 0.006615996360778809,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.007493376731872559,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.5004866123199463,
+              "effect": 0.0035762786865234375,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.020619869232177734,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.4174596071243286,
+              "effect": -0.02712833881378174,
+              "threshold": 0.01,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.023210763931274414,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 1.4455687999725342,
+              "effect": 0.08125710487365723,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.02178347110748291,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 1.4208446741104126,
+              "effect": 0.0056722164154052734,
+              "threshold": 0.01,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.00527191162109375,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 2,
+          "positive_material_count": 1,
+          "negative_material_count": 1,
+          "material_seed_count": 2,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 1,
+              "positive_count": 1,
+              "negative_count": 0,
+              "replicated_sign": 0
+            },
+            "trough": {
+              "material_count": 1,
+              "positive_count": 0,
+              "negative_count": 1,
+              "replicated_sign": 0
+            }
+          },
+          "phase_conditioned": false,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 2,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 2
+        },
+        "evolution.environment_resource_effective_dimensions": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 0.02,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 2.3757134599489205,
+              "effect": 0.05505271585074656,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.022681892310943308,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 2.3580582545339333,
+              "effect": 0.1562635651810309,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0810354214115212,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.8378544237898677,
+              "effect": 0.06348558565490947,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.0007118332961912888,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.9350793844576952,
+              "effect": 0.05308690711623609,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.024393934392233474,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 1.8161772522766666,
+              "effect": -0.03128921530808926,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.0050295340355970275,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 1.7322502784207865,
+              "effect": -0.053396629757798575,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0255234062836045,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 6,
+          "positive_material_count": 4,
+          "negative_material_count": 2,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": 1,
+          "directional_seed_count": 2,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 2,
+              "negative_count": 1,
+              "replicated_sign": 1
+            },
+            "trough": {
+              "material_count": 3,
+              "positive_count": 2,
+              "negative_count": 1,
+              "replicated_sign": 1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 4,
+          "paired_horizon_same_sign_count": 2,
+          "longer_horizon_growth_count": 6
+        },
+        "derived.harvest_extraction_efficiency_window": {
+          "role": "mechanistic",
+          "rule": {
+            "role": "mechanistic",
+            "absolute": 0.005,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 0.4199853825119169,
+              "effect": 0.0036321170272171632,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.0008591945385377775,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 0.41845192776303086,
+              "effect": 0.011761836187092478,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.005897718356802195,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 0.31637856785516316,
+              "effect": 0.006743836856115071,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0017316069254464383,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 0.3109725647552535,
+              "effect": 0.003008839174081901,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.001393741913553903,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 0.4582834779586376,
+              "effect": 0.010339519187613166,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 2.702960392358955e-05,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 0.46922275331802865,
+              "effect": 0.007815652491833525,
+              "threshold": 0.005,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0023267347802661265,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 4,
+          "positive_material_count": 4,
+          "negative_material_count": 0,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": 1,
+          "directional_seed_count": 3,
+          "phase_replication": {
+            "peak": {
+              "material_count": 2,
+              "positive_count": 2,
+              "negative_count": 0,
+              "replicated_sign": 1
+            },
+            "trough": {
+              "material_count": 2,
+              "positive_count": 2,
+              "negative_count": 0,
+              "replicated_sign": 1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 1,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 4
+        },
+        "evolution.knowledge_effective_transferred_roots": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 2.0,
+            "relative": 0.01
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 243.4381778741865,
+              "effect": 15.505974484355988,
+              "threshold": 2.434381778741865,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 4.612809200573423,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 261.33333333333337,
+              "effect": 9.333333333333314,
+              "threshold": 2.6133333333333337,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -6.332464327648296,
+              "short_material": true,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 498.35946462715106,
+              "effect": -34.18255938657103,
+              "threshold": 4.983594646271511,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -7.849930431325902,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 542.641304347826,
+              "effect": -9.46492919036541,
+              "threshold": 5.42641304347826,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -15.471582181259578,
+              "short_material": true,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 337.61682242990656,
+              "effect": -8.88317757009338,
+              "threshold": 3.376168224299066,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -2.3361802291830713,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 321.89781021897795,
+              "effect": -9.707595186427397,
+              "threshold": 3.2189781021897796,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -2.298038239263974,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 6,
+          "positive_material_count": 2,
+          "negative_material_count": 4,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": -1,
+          "directional_seed_count": 2,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            },
+            "trough": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 4,
+          "paired_horizon_same_sign_count": 3,
+          "longer_horizon_growth_count": 5
+        },
+        "evolution.effective_lineages": {
+          "role": "ecological",
+          "rule": {
+            "role": "ecological",
+            "absolute": 0.05,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 2.0879892940782874,
+              "effect": -0.05841608580879676,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.001548804469932108,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 1.964065943753857,
+              "effect": -0.02495860775141079,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.003511052982157814,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.6068392409962737,
+              "effect": -0.035955625269769476,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": -0.0202726766966983,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.5744184263652394,
+              "effect": -0.013731082114829984,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.034315156620104315,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 3.443624037186824,
+              "effect": 0.0034545005972623777,
+              "threshold": 0.05,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": false,
+              "short_effect": 0.02391187548160678,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 3.399979396665694,
+              "effect": -0.05575379621899623,
+              "threshold": 0.05,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.01262934634867463,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 2,
+          "positive_material_count": 0,
+          "negative_material_count": 2,
+          "material_seed_count": 2,
+          "directionally_replicated": false,
+          "directional_sign": 0,
+          "directional_seed_count": 0,
+          "phase_replication": {
+            "peak": {
+              "material_count": 1,
+              "positive_count": 0,
+              "negative_count": 1,
+              "replicated_sign": 0
+            },
+            "trough": {
+              "material_count": 1,
+              "positive_count": 0,
+              "negative_count": 1,
+              "replicated_sign": 0
+            }
+          },
+          "phase_conditioned": false,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 0,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 2
+        },
+        "evolution.functional_harvest_preference_effective_dimensions": {
+          "role": "mechanistic",
+          "rule": {
+            "role": "mechanistic",
+            "absolute": 0.02,
+            "relative": 0.0
+          },
+          "rows": [
+            {
+              "run_name": "seed_10001",
+              "phase": "peak",
+              "checkpoint_tick": 2640,
+              "baseline": 1.257384701298209,
+              "effect": -0.041323661150088675,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -4.516431627399342e-05,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10001",
+              "phase": "trough",
+              "checkpoint_tick": 2820,
+              "baseline": 1.196474795331584,
+              "effect": -0.048770071961716344,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.006288391927149473,
+              "short_material": false,
+              "same_sign_across_horizons": false
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "peak",
+              "checkpoint_tick": 2880,
+              "baseline": 1.1900421805377945,
+              "effect": -0.04059133741435539,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.0030904071197954686,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10002",
+              "phase": "trough",
+              "checkpoint_tick": 3000,
+              "baseline": 1.1805754232184993,
+              "effect": 0.021147041994128424,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0024599006088783515,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "peak",
+              "checkpoint_tick": 2760,
+              "baseline": 2.303423444191624,
+              "effect": 0.08244025873396632,
+              "threshold": 0.02,
+              "sign": 1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": 0.0021342119721809993,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            },
+            {
+              "run_name": "seed_10003",
+              "phase": "trough",
+              "checkpoint_tick": 2880,
+              "baseline": 1.9819545759970472,
+              "effect": -0.24179903319334994,
+              "threshold": 0.02,
+              "sign": -1,
+              "numerically_nonzero": true,
+              "material": true,
+              "short_effect": -0.010241088028814627,
+              "short_material": false,
+              "same_sign_across_horizons": true
+            }
+          ],
+          "numerically_nonzero_count": 6,
+          "material_count": 6,
+          "positive_material_count": 2,
+          "negative_material_count": 4,
+          "material_seed_count": 3,
+          "directionally_replicated": true,
+          "directional_sign": -1,
+          "directional_seed_count": 3,
+          "phase_replication": {
+            "peak": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            },
+            "trough": {
+              "material_count": 3,
+              "positive_count": 1,
+              "negative_count": 2,
+              "replicated_sign": -1
+            }
+          },
+          "phase_conditioned": true,
+          "phase_reversal": false,
+          "paired_horizon_material_count": 0,
+          "paired_horizon_same_sign_count": 0,
+          "longer_horizon_growth_count": 6
+        }
+      },
+      "checkpoint_footprint": {
+        "available": true,
+        "rows": [
+          {
+            "run_name": "seed_10001",
+            "phase": "peak",
+            "checkpoint_tick": 2640,
+            "active_entities": 489,
+            "preference_changed_fraction": 0.8220858895705522,
+            "preference_total_variation_mean": 0.00017611575760480573,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 4
+          },
+          {
+            "run_name": "seed_10001",
+            "phase": "trough",
+            "checkpoint_tick": 2820,
+            "active_entities": 463,
+            "preference_changed_fraction": 0.8531317494600432,
+            "preference_total_variation_mean": 0.00018218269100971922,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 4
+          },
+          {
+            "run_name": "seed_10002",
+            "phase": "peak",
+            "checkpoint_tick": 2880,
+            "active_entities": 575,
+            "preference_changed_fraction": 0.8626086956521739,
+            "preference_total_variation_mean": 0.0002463697350543478,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 3
+          },
+          {
+            "run_name": "seed_10002",
+            "phase": "trough",
+            "checkpoint_tick": 3000,
+            "active_entities": 582,
+            "preference_changed_fraction": 0.8780068728522337,
+            "preference_total_variation_mean": 0.0002335486133483677,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 3
+          },
+          {
+            "run_name": "seed_10003",
+            "phase": "peak",
+            "checkpoint_tick": 2760,
+            "active_entities": 454,
+            "preference_changed_fraction": 0.788546255506608,
+            "preference_total_variation_mean": 0.0005591304291712555,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 6
+          },
+          {
+            "run_name": "seed_10003",
+            "phase": "trough",
+            "checkpoint_tick": 2880,
+            "active_entities": 448,
+            "preference_changed_fraction": 0.7901785714285714,
+            "preference_total_variation_mean": 0.0005705697195870536,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+            "material": true,
+            "material_lineage_count": 6
+          }
+        ],
+        "material_checkpoint_count": 6,
+        "cross_lineage_checkpoint_count": 6,
+        "material_seed_count": 3,
+        "thresholds": {
+          "preference_changed_fraction": 0.01,
+          "conditional_harvest_channel_changed_fraction": 0.005,
+          "lineage_changed_fraction": 0.05,
+          "min_lineage_members": 8
+        }
+      },
+      "robust_mechanistic": true,
+      "robust_ecological": true,
+      "contextual_ecological": true,
+      "footprint_ready": true,
+      "cross_lineage_footprint": true,
+      "positive_ecological_persistence": true,
+      "duplication_ready": false
+    }
+  },
+  "lineage_guard": {
+    "median_effective_lineages": 2.026027618916072,
+    "minimum_effective_lineages": 1.5744184263652394,
+    "dominant_lineage_risk": true,
+    "threshold": 4.0
+  },
+  "short_screen_long_horizon_candidates": [
+    "all_module_expression_effect",
+    "module_0_expression_effect",
+    "module_1_expression_effect",
+    "module_2_expression_effect",
+    "module_3_expression_effect"
+  ],
+  "duplication_candidates": [],
+  "recommendation": "module-duplication-remains-blocked",
+  "interpretation_boundary": "A numerical difference is not automatically a practical effect. Practical thresholds screen deterministic paired branches; replication and direct checkpoint footprint are separate requirements. Endpoint sign changes may reflect genuine context dependence or amplified trajectory divergence. Duplication remains blocked when footprint is unavailable, effects are not cross-lineage, or the source population is lineage-dominated."
+}

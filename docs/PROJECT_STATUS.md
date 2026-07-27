@@ -1,6 +1,6 @@
 # SE project status
 
-Version: **0.41.0**
+Version: **0.42.0**
 
 ## Current causal chain
 
@@ -11,64 +11,65 @@ orthogonal external environment
 → bounded contextual harvest modules
 → per-module contribution and paired ablation
 → immediate/cross-lineage effect qualification
+→ lineage-conditioned paired causal audit
 → ecological niches and interactions
 → social organization
 → higher-level candidate subjects
 ```
 
-## Supplied D2-B audit result
+## Supplied D2-C assessment
 
-The supplied archive contains three seeds × peak/trough checkpoints at 120 and
-300 ticks. Under the v0.41 practical thresholds, the 120-tick result correctly
-qualifies for a 300-tick confirmation.
+The supplied 120/300-tick assessment contains six checkpoint conditions. Its
+refreshed immediate footprint is available for every module and is material in
+multiple lineages. Modules 1, 2 and 3 have repeated ecological effects; modules
+2 and 3 have repeated positive extraction-efficiency effects.
 
-At 300 ticks:
+This establishes direct cross-lineage reach and repeated downstream action, but
+not a universal adaptive benefit or a copy-number result. Alive count, energy,
+environment dimensions, transfer roots and functional preference dimensions
+still show trade-offs or context dependence.
 
-- total module expression has a repeated positive extraction-efficiency effect;
-- modules 2 and 3 have repeated positive extraction-efficiency effects;
-- modules 1 and 3 repeatedly reduce effective transferred roots;
-- modules 2 and 3 often reduce alive count while improving efficiency or
-  environment dimensions;
-- module 0 is mainly path/context dependent;
-- functional preference dimensionality often decreases under expression.
-
-These are non-trivial downstream effects, not a universal adaptive benefit.
-
-## D2-C
+## D2-D
 
 Schemas:
 
-- `d2-module-leave-one-out-results-v2`;
-- `d2-module-immediate-footprint-v1`;
-- `d2-module-effect-assessment-v1`.
+- `d2-lineage-paired-plan-v1`;
+- `d2-lineage-paired-results-v1`;
+- `d2-module-effect-assessment-v2`;
+- `structural-measurement-protocol-audit-v10`.
 
-`se-d2-assess` now defines the previously unclear standard:
+`se-d2-lineage-pairs` selects eligible lineages by pre-intervention membership
+and creates three branches for each checkpoint × fixed module × lineage:
 
-1. exact deterministic non-zero;
-2. practical outcome threshold;
-3. same-direction or phase-conditioned replication across seeds;
-4. immediate fixed-interface footprint;
-5. cross-lineage footprint and lineage-dominance guard.
+1. baseline output and cost;
+2. output neutralized while cost remains;
+3. output and cost both neutralized.
 
-A 120-tick result automatically recommends either a 300-tick confirmation or a
-stop/redesign. Existing v0.40 result JSON is accepted. Footprints can be
-refreshed from source checkpoints without rerunning branches.
+The exact decomposition separates routed-output effects from expression-cost
+refunds. Genotype, lineage ID, module count, fixed input/output layout and keyed
+randomness are preserved. Treatment follows descendants that retain the same
+genetic lineage ID.
 
 ## Current gate
 
-The supplied 300-tick results have median effective lineage count near `2.03`
-and minimum near `1.57`. Their v1 result schema also lacks immediate footprint.
-Module duplication and new ports remain blocked.
-
-Next action:
+The supplied result has median effective lineage count `2.0260`, minimum
+`1.5744`, and dominant-lineage risk. Duplication, deletion, arbitrary routing
+and new output ports remain blocked. The next admissible experiment is a
+lineage-balanced paired audit, initially for modules 2 and 3:
 
 ```bash
-se-d2-assess \
-  --short-results analyses/d2b_module_audit_120/d2_module_audit_results.json \
-  --long-results analyses/d2b_module_audit_300/d2_module_audit_results.json \
-  --output analyses/d2c_effect_assessment \
-  --refresh-footprints
+se-d2-lineage-pairs \
+  --results analyses/d2b_module_audit_300/d2_module_audit_results.json \
+  --output analyses/d2d_lineage_pairs_120 \
+  --modules 2,3 \
+  --horizon 120 \
+  --execute \
+  --backend gpu \
+  --gpu-semantics-mode strict-reference
 ```
+
+Ineligible checkpoints are reported and skipped. They are not padded by
+creating, protecting or rewarding lineages.
 
 ## Engineering workflow
 
@@ -80,5 +81,5 @@ make test
 make conda-check
 ```
 
-v0.41 adds a sixth entry point, `se-d2-assess`, so one `make conda-sync` is
-required after upgrading from v0.40.
+v0.42 adds a seventh entry point, `se-d2-lineage-pairs`, so one
+`make conda-sync` is required after upgrading from v0.41.

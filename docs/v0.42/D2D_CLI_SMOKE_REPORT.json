@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "entry_point": "se-d2-lineage-pairs",
+  "plan_schema": "d2-lineage-paired-plan-v1",
+  "result_schema": "d2-lineage-paired-results-v1",
+  "selected_lineages": 3,
+  "modules": [
+    2,
+    3
+  ],
+  "executed_pair_count": 6,
+  "expected_pair_count": 6,
+  "all_decomposition_residuals_zero": true,
+  "source_checkpoint_reused": true
+}

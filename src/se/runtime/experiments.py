@@ -130,6 +130,109 @@ from .state import EntityState, StepStats, _wrap_periodic_float32
 class SimulationExperimentMixin:
     """Counterfactual intervention and fixed-cohort experiment hooks."""
 
+    def functional_module_lineage_ablation_mask(
+        self,
+        rows: np.ndarray,
+        *,
+        cost: bool,
+    ) -> np.ndarray | None:
+        """Return a row-wise module mask for preregistered lineage branches.
+
+        The mapping is empty in normal simulations.  A true cell means that the
+        corresponding fixed module is neutralized only for entities carrying
+        that genetic lineage ID.  ``cost=False`` controls routed output;
+        ``cost=True`` controls expression-energy charging.
+        """
+
+        selected = np.asarray(rows, dtype=np.int32)
+        mapping = (
+            self.functional_module_lineage_cost_ablation
+            if cost
+            else self.functional_module_lineage_output_ablation
+        )
+        if not mapping:
+            return None
+        count = int(self.cfg.functional_modules.module_count)
+        result = np.zeros((selected.size, count), dtype=bool)
+        if selected.size == 0:
+            return result
+        lineage_ids = self.entities.lineage_id[selected].astype(np.uint64, copy=False)
+        for module_index, targets in mapping.items():
+            if not targets:
+                continue
+            target_ids = np.asarray(sorted(targets), dtype=np.uint64)
+            result[:, int(module_index)] = np.isin(lineage_ids, target_ids)
+        return result
+
+    def apply_functional_module_lineage_intervention(
+        self,
+        *,
+        module_index: int,
+        lineage_id: int,
+        neutralize_cost: bool,
+    ) -> None:
+        """Neutralize one fixed D2 module for one genetic lineage.
+
+        This is an experiment-only phenotype intervention.  It preserves the
+        genotype, lineage ID, stable IDs and keyed randomness.  Descendants of
+        the same genetic lineage remain under the treatment for the branch.
+        """
+
+        if not self.cfg.functional_modules.enabled:
+            raise ValueError(
+                "lineage-targeted module neutralization requires functional modules"
+            )
+        module_index = int(module_index)
+        count = int(self.cfg.functional_modules.module_count)
+        if not 0 <= module_index < count:
+            raise ValueError(
+                f"functional module index {module_index} is outside configured range"
+            )
+        lineage_id = int(lineage_id)
+        if lineage_id < 0:
+            raise ValueError("lineage_id must be non-negative")
+        active = np.flatnonzero(self.entities.alive).astype(np.int32)
+        members = int(
+            np.count_nonzero(
+                self.entities.lineage_id[active] == np.uint64(lineage_id)
+            )
+        )
+        if members == 0:
+            raise ValueError(
+                f"lineage {lineage_id} has no living members at intervention tick"
+            )
+        self.functional_module_lineage_output_ablation.setdefault(
+            module_index, set()
+        ).add(lineage_id)
+        if neutralize_cost:
+            self.functional_module_lineage_cost_ablation.setdefault(
+                module_index, set()
+            ).add(lineage_id)
+        intervention_type = (
+            "neutralize-functional-module-expression-for-lineage"
+            if neutralize_cost
+            else "neutralize-functional-module-output-for-lineage"
+        )
+        self.intervention_history.append(
+            {
+                "tick": self.tick,
+                "type": intervention_type,
+                "kind": "modify-rules",
+                "target_scope": "fixed-functional-module-within-genetic-lineage",
+                "direct_action_control": False,
+                "experiment_mode": self.experiment_mode.value,
+                "module_index": module_index,
+                "lineage_id": lineage_id,
+                "living_members_at_intervention": members,
+                "effective_output": "zero-residual-for-target-lineage",
+                "expression_cost_neutralized": bool(neutralize_cost),
+                "genotype_coordinates_modified": 0,
+                "lineage_membership_modified": False,
+                "inheritance_modified": False,
+                "future_same-lineage_offspring_treated": True,
+            }
+        )
+
     def freeze_local_reference_boundary(self) -> None:
         """Freeze a diagnostic-only group partition for paired branch evaluation."""
 

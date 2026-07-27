@@ -1,5 +1,27 @@
 # SE architecture
 
+## D2-D lineage-conditioned experiment boundary
+
+```text
+shared checkpoint + pre-intervention lineage census
+├── baseline: output + expression cost
+├── target lineage output-neutral: no routed residual, cost retained
+└── target lineage expression-neutral: no routed residual, no cost
+
+paired decomposition
+├── output effect = baseline − output-neutral
+├── retained-cost effect = output-neutral − expression-neutral
+└── total effect = baseline − expression-neutral
+```
+
+The target is a genetic lineage ID already present at the checkpoint. Selection
+uses membership only, not endpoint response. Treatment state belongs to the
+experiment branch and follows same-lineage descendants; it does not alter genes,
+lineage membership, entity IDs, reproduction, mutation, module topology or
+world abundance. Equal lineage weighting occurs only in offline aggregation.
+When no targeted intervention exists, the runtime passes no row mask and uses
+the v0.41 authoritative module path.
+
 ## D2-C evidence qualification boundary
 
 ```text

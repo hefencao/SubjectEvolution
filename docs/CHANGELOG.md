@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.42.0
+
+### D2-D lineage-balanced paired audit
+
+- Routes the supplied D2-C result to a multi-lineage paired design because immediate cross-lineage footprint is present while the dominant-lineage guard still fails.
+- Adds experiment-only lineage-targeted neutralization of one fixed module's routed output, with an independent option to neutralize its expression-energy cost.
+- Adds `d2-lineage-paired-plan-v1`, `d2-lineage-paired-results-v1` and `se-d2-lineage-pairs`.
+- Uses pre-intervention lineage membership for selection, keeps natural abundance inside the world and applies equal weight only to offline paired contrasts.
+- Persists targeted treatments across checkpoints and same-lineage descendants without editing genotype, lineage IDs, copy number or routing vocabulary.
+- Upgrades D2 effect assessment to v2 and protocol audit to v10; duplication remains blocked.
+
+### Validation and workflow
+
+- Editable validation now checks seven console entries.
+- Upgrading from v0.41 requires one `make conda-sync`; ordinary source edits remain editable.
+- New-feature-disabled compatibility is validated against the uploaded v0.41 baseline.
+
 ## 0.41.0
 
 ### D2-C effect qualification

@@ -1,0 +1,13 @@
+{
+  "schema": "se-source-patch-validation-v1",
+  "baseline": "uploaded se_v041_project(1).zip",
+  "candidate_version": "0.42.0",
+  "patch": "se_v041_to_v042.patch",
+  "apply_root": "freshly extracted se_v041_project",
+  "strip_components": 1,
+  "dry_run_passed": true,
+  "apply_passed": true,
+  "fuzz_or_offset_used": false,
+  "patched_tree_content_matches_candidate": true,
+  "passed": true
+}

@@ -23,7 +23,7 @@ from se.experiments.d2_module_audit import (
     checkpoint_functional_footprint,
 )
 
-ASSESSMENT_SCHEMA = "d2-module-effect-assessment-v1"
+ASSESSMENT_SCHEMA = "d2-module-effect-assessment-v2"
 
 
 @dataclass(frozen=True)
@@ -325,6 +325,7 @@ def assess_module_audits(
     )
     module_results: dict[str, Any] = {}
     duplication_candidates: list[str] = []
+    lineage_pair_candidates: list[str] = []
     long_horizon_candidates: list[str] = []
     for effect_name in _effect_names():
         metrics = {
@@ -374,6 +375,15 @@ def assess_module_audits(
         )
         if duplication_ready:
             duplication_candidates.append(effect_name)
+        lineage_pair_ready = bool(
+            effect_name != "all_module_expression_effect"
+            and cross_lineage
+            and robust_mechanistic
+            and positive_persistence
+            and (robust_ecological or contextual_ecological)
+        )
+        if lineage_pair_ready:
+            lineage_pair_candidates.append(effect_name)
 
         if robust_ecological:
             classification = "replicated-ecological-effect"
@@ -404,6 +414,7 @@ def assess_module_audits(
             "footprint_ready": footprint_ready,
             "cross_lineage_footprint": cross_lineage,
             "positive_ecological_persistence": positive_persistence,
+            "lineage_pair_ready": lineage_pair_ready,
             "duplication_ready": duplication_ready,
         }
 
@@ -439,6 +450,8 @@ def assess_module_audits(
         )
     elif not footprints:
         recommendation = "refresh-immediate-footprints-before-duplication-decision"
+    elif lineage_guard["dominant_lineage_risk"] and lineage_pair_candidates:
+        recommendation = "run-lineage-balanced-paired-audit-before-duplication"
     else:
         recommendation = (
             "module-duplication-remains-blocked"
@@ -458,6 +471,7 @@ def assess_module_audits(
         "module_effects": module_results,
         "lineage_guard": lineage_guard,
         "short_screen_long_horizon_candidates": sorted(set(long_horizon_candidates)),
+        "lineage_pair_candidates": sorted(set(lineage_pair_candidates)),
         "duplication_candidates": duplication_candidates,
         "recommendation": recommendation,
         "interpretation_boundary": (
@@ -466,7 +480,9 @@ def assess_module_audits(
             "checkpoint footprint are separate requirements. Endpoint sign changes may "
             "reflect genuine context dependence or amplified trajectory divergence. "
             "Duplication remains blocked when footprint is unavailable, effects are not "
-            "cross-lineage, or the source population is lineage-dominated."
+            "cross-lineage, or the source population is lineage-dominated. When direct "
+            "cross-lineage effects exist but the lineage guard fails, the next admissible "
+            "step is a lineage-balanced paired audit, not module copy-number expansion."
         ),
     }
     return report
@@ -500,8 +516,8 @@ def render_assessment_markdown(report: dict[str, Any]) -> str:
     lines.extend(
         [
             "",
-            "| Effect | Classification | Mechanistic | Ecological | Contextual | Footprint | Cross-lineage | Duplication |",
-            "|---|---|---:|---:|---:|---:|---:|---:|",
+            "| Effect | Classification | Mechanistic | Ecological | Contextual | Footprint | Cross-lineage | Lineage-pair | Duplication |",
+            "|---|---|---:|---:|---:|---:|---:|---:|---:|",
         ]
     )
     for name, value in report["module_effects"].items():
@@ -509,7 +525,8 @@ def render_assessment_markdown(report: dict[str, Any]) -> str:
             f"| `{name}` | {value['classification']} | "
             f"{value['robust_mechanistic']} | {value['robust_ecological']} | "
             f"{value['contextual_ecological']} | {value['footprint_ready']} | "
-            f"{value['cross_lineage_footprint']} | {value['duplication_ready']} |"
+            f"{value['cross_lineage_footprint']} | {value['lineage_pair_ready']} | "
+            f"{value['duplication_ready']} |"
         )
     lines.extend(["", "## Replicated outcome directions", ""] )
     for name, value in report["module_effects"].items():
@@ -537,6 +554,8 @@ def render_assessment_markdown(report: dict[str, Any]) -> str:
             "## Recommendation",
             "",
             f"`{report['recommendation']}`",
+            "",
+            f"Lineage-pair candidates: `{', '.join(report.get('lineage_pair_candidates', ())) or 'none'}`",
             "",
             report["interpretation_boundary"],
             "",

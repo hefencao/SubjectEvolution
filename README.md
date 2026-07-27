@@ -1,10 +1,10 @@
-# SE v0.41
+# SE v0.42
 
 `SE` 是围绕多维环境、可遗传分化、动态知识与候选主体结构构建的可审计演化模拟参考实现。
 
 ## Conda 本地工作流
 
-升级到 v0.41 后，因为新增 `se-d2-assess` 入口，需要在目标环境执行一次：
+升级到 v0.42 后，因为新增 `se-d2-lineage-pairs` 入口，需要在目标环境执行一次：
 
 ```bash
 conda activate <your-env>
@@ -78,6 +78,23 @@ se-d2-assess \
 
 `--refresh-footprints` 只读取结果文件引用的源 checkpoint，计算即时、按谱系分解的 HARVEST 接口足迹；不会重跑 120/300-tick 分支。
 
+## D2-D 多谱系配对审计
+
+先从现有 D2-B 结果和其引用的共享 checkpoint 生成计划；默认只选择干预前成员数不少于 8 的最大四个谱系，并要求每个 checkpoint 至少三个合格谱系：
+
+```bash
+se-d2-lineage-pairs \
+  --results analyses/d2b_module_audit_300/d2_module_audit_results.json \
+  --output analyses/d2d_lineage_pairs_120 \
+  --modules 2,3 \
+  --horizon 120 \
+  --execute \
+  --backend gpu \
+  --gpu-semantics-mode strict-reference
+```
+
+每个 checkpoint × module × lineage 使用 `baseline`、`output-neutral`、`expression-neutral` 三个共享随机性分支。谱系保持世界中的自然丰度；只在离线汇总 checkpoint-lineage 配对效应时等权，不奖励、不保护也不补齐多样性。
+
 ## 当前科学主线
 
 1. **D0：** 四资源具有独立外生空间、时间与扩散过程。
@@ -87,8 +104,9 @@ se-d2-assess \
 5. **D2-A：** 四个表达门控上下文模块发布有限零和采集权重残差。
 6. **D2-B：** 独立模块贡献诊断与逐模块消融。
 7. **D2-C：** 数值差异、实用效应、跨 seed 复现、即时足迹与跨谱系证据分层判定。
+8. **D2-D：** 在谱系集中条件下，用共享 checkpoint 的谱系定向三分支配对分离模块输出作用与表达成本退款。
 
-当前 120/300-tick 结果支持模块具有实际下游作用，但源群体谱系集中且旧结果缺少即时足迹。模块复制、删除、任意重联和新物理端口继续阻塞。
+刷新后的 120/300-tick 结果已经显示四个模块均有跨谱系即时足迹，模块 1–3 有重复生态效应；但中位有效谱系仍约为 2.03。模块复制、删除、任意重联和新物理端口继续阻塞，下一步是模块 2/3 的多谱系配对审计。
 
 ## 文档
 
@@ -96,7 +114,7 @@ se-d2-assess \
 - [架构与提交边界](docs/ARCHITECTURE.md)
 - [项目状态](docs/PROJECT_STATUS.md)
 - [科学问题](docs/SCIENTIFIC_ISSUES.md)
-- [D2-C 判定标准](docs/v0.41/D2C_EFFECT_QUALIFICATION.md)
-- [输入 audit 结果评估](docs/v0.41/INPUT_D2B_AUDIT_ASSESSMENT.md)
-- [下一步实验计划](docs/v0.41/LONG_RUN_PLAN.md)
-- [Conda editable 工作流](docs/v0.41/CONDA_EDITABLE_WORKFLOW.md)
+- [D2-D 多谱系配对设计](docs/v0.42/D2D_LINEAGE_BALANCED_PAIRING.md)
+- [输入 D2-C 评估与决策](docs/v0.42/ASSESSMENT_DECISION.md)
+- [下一步实验计划](docs/v0.42/NEXT_EXPERIMENT.md)
+- [Conda editable 工作流](docs/v0.42/CONDA_EDITABLE_WORKFLOW.md)

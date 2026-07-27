@@ -1,11 +1,11 @@
 {
   "passed": true,
-  "project": "/home/unkloser/projects/SubjectEvolution",
-  "python": "/home/unkloser/anaconda3/envs/se/bin/python",
-  "conda_prefix": "/home/unkloser/anaconda3/envs/se",
+  "project": "/mnt/data/se_v041_work",
+  "python": "/opt/pyvenv/bin/python",
+  "conda_prefix": null,
   "version": "0.41.0",
-  "package_path": "/home/unkloser/projects/SubjectEvolution/src/se/__init__.py",
-  "editable_root": "/home/unkloser/projects/SubjectEvolution",
+  "package_path": "/mnt/data/se_v041_work/src/se/__init__.py",
+  "editable_root": "/mnt/data/se_v041_work",
   "module_count": 83,
   "entry_points": {
     "se": "se.cmd.run:main",
@@ -17,13 +17,13 @@
   },
   "smoke": {
     "command": [
-      "/home/unkloser/anaconda3/envs/se/bin/python",
+      "/opt/pyvenv/bin/python",
       "-m",
       "se",
       "--config",
-      "/tmp/se-conda-smoke-j7he74iv/smoke.json",
+      "/tmp/se-conda-smoke-2mxj48q9/smoke.json",
       "--output",
-      "/tmp/se-conda-smoke-j7he74iv/run",
+      "/tmp/se-conda-smoke-2mxj48q9/run",
       "--backend",
       "cpu",
       "--until-tick",
@@ -31,8 +31,8 @@
     ],
     "output_exists": true,
     "stdout_tail": [
-      "tick=      1 alive=    200 groups=    0 E=1.785 step=0.066s window_avg=0.066s wall=0.1s",
-      "tick=      2 alive=    200 groups=    0 E=1.774 step=0.070s window_avg=0.071s wall=0.1s"
+      "tick=      1 alive=    200 groups=    0 E=1.785 step=0.090s window_avg=0.090s wall=0.1s",
+      "tick=      2 alive=    200 groups=    0 E=1.774 step=0.105s window_avg=0.107s wall=0.2s"
     ]
   }
 }

@@ -579,6 +579,14 @@ class SimulationReportingMixin:
                 "functional_module_ablation_mask": (
                     self.functional_module_ablation_mask.astype(bool).tolist()
                 ),
+                "functional_module_lineage_output_ablation": {
+                    str(module): sorted(int(lineage) for lineage in lineages)
+                    for module, lineages in self.functional_module_lineage_output_ablation.items()
+                },
+                "functional_module_lineage_cost_ablation": {
+                    str(module): sorted(int(lineage) for lineage in lineages)
+                    for module, lineages in self.functional_module_lineage_cost_ablation.items()
+                },
                 "knowledge_policy_residual_schema": (
                     self.cfg.knowledge.policy_residual_schema
                     if self.cfg.knowledge.policy_influence_enabled
@@ -1336,6 +1344,18 @@ class SimulationReportingMixin:
             ),
             "functional_module_ablation_mask": (
                 self.functional_module_ablation_mask.astype(bool).tolist()
+            ),
+            "functional_module_lineage_output_ablation_count": int(
+                sum(
+                    len(lineages)
+                    for lineages in self.functional_module_lineage_output_ablation.values()
+                )
+            ),
+            "functional_module_lineage_cost_ablation_count": int(
+                sum(
+                    len(lineages)
+                    for lineages in self.functional_module_lineage_cost_ablation.values()
+                )
             ),
             "functional_module_maintenance_energy_step": (
                 stats.functional_module_maintenance_energy

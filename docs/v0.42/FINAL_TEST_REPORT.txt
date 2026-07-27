@@ -1,0 +1,47 @@
+SE v0.42.0 final validation
+Date: 2026-07-27
+Baseline: uploaded se_v041_project(1).zip
+
+1. Full test suite
+   Command: make test
+   Result: 199 passed, 1 skipped
+
+2. Configuration validation
+   Command: load every configs/*.json with se.cfg.load_config
+   Result: 75/75 passed
+
+3. Python syntax validation
+   Command: python -m py_compile over src, scripts and tests
+   Result: passed
+
+4. Editable synchronization
+   Command: CONDA_PREFIX=/opt/pyvenv make conda-sync
+   Result: passed
+   Version: 0.42.0
+   Imported modules: 84
+   Console entries: 7
+
+5. Editable delivery check
+   Command: CONDA_PREFIX=/opt/pyvenv make conda-check
+   Result: passed
+   Test result inside conda-check: 199 passed, 1 skipped
+   External-directory smoke: passed (CPU, 2 ticks)
+
+6. D2-D installed-entry smoke
+   Command: se-d2-lineage-pairs on one synthetic shared checkpoint
+   Result: passed
+   Selected lineages: 3
+   Modules: 2,3
+   Executed paired units: 6/6
+   Decomposition residual: zero for every reported outcome
+
+7. v0.41 compatibility with the new mechanism disabled
+   Config: configs/d2a_contextual_harvest_smoke.json
+   Backend/ticks: CPU / 20
+   Common authoritative state: byte-identical after excluding the two new empty checkpoint fields
+   State SHA-256 (both): a909acf34dbf2dafadff7eddb9d5897ce8d53a61edc2d89de59f2b40c765b4af
+   Common non-timing final metrics: 345, zero differences
+   Candidate-only diagnostics: two inactive lineage-ablation counters, both zero
+
+Environment limitation:
+The execution container exposes /opt/pyvenv but no conda, mamba or micromamba executable. The exact Makefile editable checks were exercised with CONDA_PREFIX=/opt/pyvenv because the active Python is inside that prefix. This validates editable metadata, source root, entries, imports and external smoke, but it is not evidence that a real Conda executable was invoked in this container.

@@ -143,7 +143,7 @@ def test_d2_intervention_persists_through_checkpoint_and_is_analyzed(
     final = report["runs"][0]["functional_module_final"]
     assert final["functional_module_schema"] == FUNCTIONAL_MODULE_SCHEMA
     protocol = build_protocol_audit(CONFIG)
-    assert protocol["schema"] == "structural-measurement-protocol-audit-v9"
+    assert protocol["schema"] == "structural-measurement-protocol-audit-v10"
     functional = protocol["functional_module_protocol"]
     assert functional["action_selection"] is False
     assert functional["new_world_physics"] is False
@@ -153,8 +153,11 @@ def test_d2_intervention_persists_through_checkpoint_and_is_analyzed(
         "d2-module-leave-one-out-results-v2"
     )
     assert functional["effect_qualification"]["schema"] == (
-        "d2-module-effect-assessment-v1"
+        "d2-module-effect-assessment-v2"
     )
+    lineage_pairs = functional["lineage_balanced_pair_protocol"]
+    assert lineage_pairs["result_schema"] == "d2-lineage-paired-results-v1"
+    assert lineage_pairs["diversity_protection"] is False
 
 
 def test_d2b_per_module_contribution_and_partial_ablation() -> None:

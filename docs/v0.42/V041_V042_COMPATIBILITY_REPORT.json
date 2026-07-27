@@ -1,0 +1,22 @@
+{
+  "schema": "se-version-authoritative-compatibility-v1",
+  "baseline": "uploaded-se-v0.41.0",
+  "candidate": "se-v0.42.0",
+  "config": "configs/d2a_contextual_harvest_smoke.json",
+  "backend": "cpu",
+  "ticks": 20,
+  "new_mechanism_active": false,
+  "authoritative_state_common_schema_sha256_old": "a909acf34dbf2dafadff7eddb9d5897ce8d53a61edc2d89de59f2b40c765b4af",
+  "authoritative_state_common_schema_sha256_new": "a909acf34dbf2dafadff7eddb9d5897ce8d53a61edc2d89de59f2b40c765b4af",
+  "authoritative_state_byte_identical": true,
+  "authoritative_state_bytes": 2817877,
+  "common_non_timing_final_metric_count": 345,
+  "common_non_timing_final_metric_differences": {},
+  "candidate_only_diagnostic_metrics": [
+    "functional_module_lineage_cost_ablation_count",
+    "functional_module_lineage_output_ablation_count"
+  ],
+  "baseline_only_diagnostic_metrics": [],
+  "passed": true,
+  "interpretation": "The two v0.42-only metrics report inactive lineage-targeted experiment mappings. They do not feed the world or alter common v0.41 metrics."
+}

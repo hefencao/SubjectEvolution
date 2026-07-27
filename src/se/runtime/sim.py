@@ -424,6 +424,11 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.functional_module_ablation_mask = np.zeros(
             int(cfg.functional_modules.module_count), dtype=bool
         )
+        # Experimental lineage-targeted D2 ablations are empty on the
+        # authoritative path. They are populated only by the paired lineage
+        # audit and never modify genotype or lineage membership.
+        self.functional_module_lineage_output_ablation: dict[int, set[int]] = {}
+        self.functional_module_lineage_cost_ablation: dict[int, set[int]] = {}
         self.danger_evidence_ablation_enabled = False
         self.knowledge_policy_ablation_enabled = False
         self.knowledge_transfer_ablation_enabled = False
@@ -1170,6 +1175,9 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 gene_start=ParametricPolicy.functional_module_gene_start(cfg),
                 ablated=self.functional_modules_ablation_enabled,
                 ablated_modules=self.functional_module_ablation_mask,
+                row_ablated_modules=self.functional_module_lineage_ablation_mask(
+                    active, cost=False
+                ),
             )
             active_preference = functional_evaluation.preference_q
             effective_harvest_preference_q[active] = active_preference
@@ -1659,6 +1667,9 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                         development=True,
                         ablated=self.functional_modules_ablation_enabled,
                         ablated_modules=self.functional_module_ablation_mask,
+                        row_ablated_modules=self.functional_module_lineage_ablation_mask(
+                            newborns, cost=True
+                        ),
                     )
                     refund = module_development_full - module_development_effective
                     if np.any(refund):
@@ -1953,6 +1964,9 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 development=False,
                 ablated=self.functional_modules_ablation_enabled,
                 ablated_modules=self.functional_module_ablation_mask,
+                row_ablated_modules=self.functional_module_lineage_ablation_mask(
+                    current_active, cost=True
+                ),
             )
             stats.functional_module_maintenance_energy = float(
                 module_cost.sum(dtype=np.float64)

@@ -1,0 +1,9 @@
+{
+  "schema": "se-config-validation-v1",
+  "version": "0.42.0",
+  "config_glob": "configs/*.json",
+  "config_count": 75,
+  "loader": "se.cfg.load_config",
+  "passed": true,
+  "failures": []
+}

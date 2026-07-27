@@ -1,0 +1,21 @@
+{
+  "schema": "se-clean-project-package-validation-v1",
+  "version": "0.42.0",
+  "archive": "se_v042_project.zip",
+  "root_directory": "se_v042_project",
+  "excluded": [
+    ".pytest_cache",
+    "__pycache__",
+    "*.pyc",
+    "*.pyo",
+    "*.egg-info",
+    ".git",
+    "build",
+    "dist"
+  ],
+  "single_root_directory": true,
+  "forbidden_generated_paths_present": false,
+  "archive_extracts_successfully": true,
+  "extracted_tree_content_matches_staged_tree": true,
+  "passed": true
+}
