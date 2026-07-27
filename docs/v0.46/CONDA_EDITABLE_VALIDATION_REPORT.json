@@ -1,0 +1,46 @@
+{
+  "passed": true,
+  "project": "/home/unkloser/projects/SubjectEvolution",
+  "python": "/home/unkloser/anaconda3/envs/se/bin/python",
+  "conda_prefix": "/home/unkloser/anaconda3/envs/se",
+  "version": "0.46.0",
+  "package_path": "/home/unkloser/projects/SubjectEvolution/src/se/__init__.py",
+  "editable_root": "/home/unkloser/projects/SubjectEvolution",
+  "module_count": 91,
+  "entry_points": {
+    "se": "se.cmd.run:main",
+    "se-d1-factorial": "se.experiments.d1_factorial:main",
+    "se-d2-assess": "se.analysis.d2_effects:main",
+    "se-d2-audit": "se.experiments.d2_module_audit:main",
+    "se-d2-lineage-assess": "se.analysis.d2_lineage_effects:main",
+    "se-d2-lineage-mediate": "se.experiments.d2_lineage_mediation:main",
+    "se-d2-lineage-mediate-assess": "se.analysis.d2_lineage_mediation_effects:main",
+    "se-d2-lineage-pairs": "se.experiments.d2_lineage_pairs:main",
+    "se-d2-source-causal": "se.experiments.d2_source_population_causal:main",
+    "se-d2-source-causal-assess": "se.analysis.d2_source_population_causal_effects:main",
+    "se-d2-source-population": "se.experiments.d2_source_population:main",
+    "se-d2-source-population-assess": "se.analysis.d2_source_population_effects:main",
+    "se-gui": "se.gui.runner:main",
+    "se-multi": "se.cmd.multi_seed:main"
+  },
+  "smoke": {
+    "command": [
+      "/home/unkloser/anaconda3/envs/se/bin/python",
+      "-m",
+      "se",
+      "--config",
+      "/tmp/se-conda-smoke-h1i4jb50/smoke.json",
+      "--output",
+      "/tmp/se-conda-smoke-h1i4jb50/run",
+      "--backend",
+      "cpu",
+      "--until-tick",
+      "2"
+    ],
+    "output_exists": true,
+    "stdout_tail": [
+      "tick=      1 alive=    200 groups=    0 E=1.785 step=0.065s window_avg=0.065s wall=0.1s",
+      "tick=      2 alive=    200 groups=    0 E=1.774 step=0.067s window_avg=0.068s wall=0.1s"
+    ]
+  }
+}

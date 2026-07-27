@@ -33,6 +33,8 @@ ENTRY_POINTS = {
     "se-d2-lineage-mediate-assess": "se.analysis.d2_lineage_mediation_effects:main",
     "se-d2-source-population": "se.experiments.d2_source_population:main",
     "se-d2-source-population-assess": "se.analysis.d2_source_population_effects:main",
+    "se-d2-source-causal": "se.experiments.d2_source_population_causal:main",
+    "se-d2-source-causal-assess": "se.analysis.d2_source_population_causal_effects:main",
 }
 
 

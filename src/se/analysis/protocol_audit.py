@@ -14,7 +14,7 @@ from se.env.partition import SpatialRegionPartition
 from se.policy import ParametricPolicy
 
 
-SCHEMA = "structural-measurement-protocol-audit-v13"
+SCHEMA = "structural-measurement-protocol-audit-v14"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -390,7 +390,7 @@ def build_protocol_audit(
                 "source_population_reconstitution": {
                     "plan_schema": "d2-source-population-plan-v1",
                     "result_schema": "d2-source-population-results-v1",
-                    "assessment_schema": "d2-source-population-assessment-v1",
+                    "assessment_schema": "d2-source-population-assessment-v2",
                     "arms": [
                         "natural-abundance-control",
                         "equal-lineage-reconstitution",
@@ -413,9 +413,36 @@ def build_protocol_audit(
                         "maximum_dominant_lineage_fraction": 0.5,
                         "minimum_lineages_above_member_floor": 4,
                         "minimum_expressed_lineages_per_candidate_module": 4,
-                        "minimum_qualified_panel_seeds_per_phase": 2,
-                        "minimum_qualified_phases": 2,
+                        "minimum_observed_panel_seeds_for_exploratory_decision": 3,
+                        "minimum_qualified_panel_seeds_per_exploratory_phase": 2,
+                        "major_conclusion_minimum_seeds_per_phase": 10,
+                        "uncertainty_interval": "two-sided-wilson-95-v1",
                     },
+                    "charter_interpretation": {
+                        "ten_seed_floor_applies_to_major_conclusions": True,
+                        "ten_seed_floor_applies_to_every_exploratory_audit": False,
+                        "three_seed_paired_gate_allowed": True,
+                    },
+                    "copy_number_remains_guarded": True,
+                },
+                "source_population_causal_reaudit": {
+                    "plan_schema": "d2-source-population-causal-plan-v1",
+                    "result_schema": "d2-source-population-causal-results-v1",
+                    "assessment_schema": "d2-source-population-causal-assessment-v1",
+                    "module_indices": [3],
+                    "default_screen_horizon_ticks": 120,
+                    "confirmation_horizon_ticks": 300,
+                    "checkpoint_selection": "phase-qualified equal-lineage final checkpoints only",
+                    "lineage_selection": "all lineages passing preregistered member and expression floors",
+                    "branches": [
+                        "baseline",
+                        "output-neutral with expression cost retained",
+                        "expression-neutral with output and expression cost removed",
+                    ],
+                    "response_conditioned_panel_selection": False,
+                    "response_conditioned_lineage_selection": False,
+                    "general_source_population_claim": False,
+                    "module_copy_number_changed": False,
                     "copy_number_remains_guarded": True,
                 },
             },

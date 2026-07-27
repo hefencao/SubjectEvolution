@@ -1,0 +1,20 @@
+{
+  "schema": "v045-v046-authoritative-compatibility-v1",
+  "passed": true,
+  "baseline_version": "0.45.0",
+  "candidate_version": "0.46.0",
+  "ticks": 20,
+  "state_leaf_count_v045": 12678,
+  "state_leaf_count_v046": 12678,
+  "common_state_leaf_count": 12678,
+  "only_v045_count": 0,
+  "only_v046_count": 0,
+  "different_state_leaf_count": 0,
+  "only_v045": [],
+  "only_v046": [],
+  "different_state_leaves": [],
+  "non_timing_result_json_equal": true,
+  "non_timing_result_sha256_v045": "2277cfce74c6b4814054eb91068f67c330c94f5ee49209a7a268977fef05924e",
+  "non_timing_result_sha256_v046": "2277cfce74c6b4814054eb91068f67c330c94f5ee49209a7a268977fef05924e",
+  "nan_comparison": "equal-nan"
+}

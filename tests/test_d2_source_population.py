@@ -207,7 +207,7 @@ def test_source_population_execution_builds_paired_fresh_worlds(tmp_path: Path) 
 def _qualification_results(equal_pass: bool = True) -> dict:
     panels = []
     for phase in ("peak", "trough"):
-        for seed in (1, 2):
+        for seed in (1, 2, 3):
             arms = {}
             for arm_name in ("natural-abundance-control", "equal-lineage-reconstitution"):
                 qualifies = equal_pass and arm_name == "equal-lineage-reconstitution"
@@ -243,16 +243,23 @@ def _qualification_results(equal_pass: bool = True) -> dict:
     }
 
 
-def test_assessment_requires_two_seeds_in_two_phases_and_never_releases_copy_number() -> None:
+def test_assessment_separates_exploratory_gate_from_major_conclusion() -> None:
     report = assess_source_population_results(_qualification_results())
     assert report["schema"] == ASSESSMENT_SCHEMA
-    assert report["source_population_ready"] is True
+    assert report["exploratory_causal_reaudit_ready"] is True
+    assert report["all_phases_exploratory_ready"] is True
+    assert report["major_conclusion_seed_floor_met"] is False
+    assert report["source_population_ready"] is False
     assert report["module_copy_number_ready"] is False
     assert report["qualified_phases"] == ["peak", "trough"]
     assert report["recommendation"] == (
-        "source-population-qualified-freeze-checkpoints-before-copy-number-audit"
+        "freeze-qualified-phase-checkpoints-for-exploratory-module-3-reaudit"
     )
+    assert report["charter_interpretation"][
+        "every_exploratory_audit_requires_ten_seeds"
+    ] is False
 
     failed = assess_source_population_results(_qualification_results(False))
+    assert failed["exploratory_causal_reaudit_ready"] is False
     assert failed["source_population_ready"] is False
     assert failed["module_copy_number_ready"] is False

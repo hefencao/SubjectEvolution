@@ -1,0 +1,8 @@
+{
+  "schema": "config-and-python-validation-v1",
+  "passed": true,
+  "config_count": 75,
+  "config_failures": [],
+  "python_file_count": 138,
+  "python_compile_failures": []
+}

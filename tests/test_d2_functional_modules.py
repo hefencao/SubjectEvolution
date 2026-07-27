@@ -143,7 +143,7 @@ def test_d2_intervention_persists_through_checkpoint_and_is_analyzed(
     final = report["runs"][0]["functional_module_final"]
     assert final["functional_module_schema"] == FUNCTIONAL_MODULE_SCHEMA
     protocol = build_protocol_audit(CONFIG)
-    assert protocol["schema"] == "structural-measurement-protocol-audit-v13"
+    assert protocol["schema"] == "structural-measurement-protocol-audit-v14"
     functional = protocol["functional_module_protocol"]
     assert functional["action_selection"] is False
     assert functional["new_world_physics"] is False
@@ -167,6 +167,15 @@ def test_d2_intervention_persists_through_checkpoint_and_is_analyzed(
     assert mediation["offsets_are_independent_replicates"] is False
     assert mediation["mean_energy_alone_qualifies_as_ecological_benefit"] is False
     assert mediation["outcome_conditioned_pair_selection"] is False
+    source_population = lineage_pairs["source_population_reconstitution"]
+    assert source_population["assessment_schema"] == "d2-source-population-assessment-v2"
+    assert source_population["charter_interpretation"][
+        "ten_seed_floor_applies_to_every_exploratory_audit"
+    ] is False
+    causal_reaudit = lineage_pairs["source_population_causal_reaudit"]
+    assert causal_reaudit["plan_schema"] == "d2-source-population-causal-plan-v1"
+    assert causal_reaudit["module_copy_number_changed"] is False
+    assert causal_reaudit["response_conditioned_lineage_selection"] is False
     assert lineage_pairs["diversity_protection"] is False
 
 

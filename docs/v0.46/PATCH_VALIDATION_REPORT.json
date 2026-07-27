@@ -1,0 +1,25 @@
+{
+  "schema": "patch-validation-v1",
+  "passed": true,
+  "baseline": "se_v045_project.zip",
+  "target_version": "0.46.0-corrected-reissue",
+  "supersedes_unexecuted_candidate": "0.46.0-previous",
+  "changed_path_count": 51,
+  "git_apply_check_passed": true,
+  "git_apply_passed": true,
+  "fuzz_or_offset_used": false,
+  "content_comparison": {
+    "passed": true,
+    "candidate_file_count": 250,
+    "applied_file_count": 250,
+    "only_candidate": [],
+    "only_applied": [],
+    "hash_mismatches": []
+  },
+  "pytest": "213 passed, 1 skipped",
+  "isolated_distribution_validation": {
+    "passed": true,
+    "reported_wheel": "se_mvp-0.46.0-py3-none-any.whl",
+    "note": "The validator emitted its passed JSON before the combined host call was terminated after output completion."
+  }
+}

@@ -1,10 +1,10 @@
-# SE v0.45
+# SE v0.46
 
 `SE` 是围绕多维环境、可遗传分化、动态知识与候选主体结构构建的可审计演化模拟参考实现。
 
 ## Conda 本地工作流
 
-v0.45 新增两个 D2-G console entry，升级后需要在目标环境执行一次：
+v0.46 新增两个 D2-H console entry，并升级 D2-G 评估语义；升级后需要在目标环境执行一次：
 
 ```bash
 conda activate <your-env>
@@ -136,7 +136,49 @@ se-d2-source-population-assess \
   --output analyses/d2g_source_population_assessment
 ```
 
-自然丰度对照和等谱系重构臂使用相同总创始者数、同一新世界 seed 和唯一供体基因型。等谱系只发生在 tick 0；之后没有谱系奖励、保护、空间保留或繁殖干预。只有 600-tick 无保护 burn-in 在两个相位、每个相位至少两个新 seed 上通过谱系与模块表达门槛，才可冻结为后续共享 checkpoint。
+自然丰度对照和等谱系重构臂使用相同总创始者数、同一新世界 seed 和唯一供体基因型。等谱系只发生在 tick 0；之后没有谱系奖励、保护、空间保留或繁殖干预。
+
+v0.46 明确区分探索性实验门控与主要结论。`PROJECT_CHARTER.md` 的 10-seed 下限约束主要结论，并不要求每个探索性审计都先运行 10 seeds。当前 3-seed 配对结果中，peak 等谱系臂为 2/3、自然丰度对照为 0/3；trough 为 1/3 与 0/3。该结果足以把 peak 路由到下一次探索性共享 checkpoint 因果复审，但置信区间很宽，不能宣称一般源群体已确证。
+
+## D2-H 重设计源群体中的模块 3 因果复审
+
+先使用 v0.46 重新评估 D2-G：
+
+```bash
+se-d2-source-population-assess \
+  --results analyses/d2g_source_population_burnin/d2_source_population_results.json \
+  --output analyses/d2g_source_population_assessment_v2
+```
+
+从评估和原始结果生成 120-tick 计划：
+
+```bash
+se-d2-source-causal \
+  --assessment analyses/d2g_source_population_assessment_v2/d2_source_population_assessment.json \
+  --results analyses/d2g_source_population_burnin/d2_source_population_results.json \
+  --output analyses/d2h_source_population_causal_120
+```
+
+执行：
+
+```bash
+se-d2-source-causal \
+  --plan analyses/d2h_source_population_causal_120/d2_source_population_causal_plan.json \
+  --output analyses/d2h_source_population_causal_120 \
+  --execute \
+  --backend gpu \
+  --gpu-semantics-mode strict-reference
+```
+
+评估 120-tick 结果，并在满足预注册 routed-output 重复性时自动生成 300-tick 确认计划：
+
+```bash
+se-d2-source-causal-assess \
+  --results analyses/d2h_source_population_causal_120/d2_source_population_causal_results.json \
+  --output analyses/d2h_source_population_causal_assessment_120
+```
+
+D2-H 仅使用 peak 中通过既有绝对 guard 的两个等谱系 checkpoint（fresh-world seeds 45001、45003），保留其中全部 6 条成员与表达合格谱系。面板和谱系均不按 D2-G 响应幅度筛选。每个 module-lineage 对仍使用 baseline、output-neutral、expression-neutral 三分支，复制数和 routing vocabulary 均不改变。
 
 ## 当前科学主线
 
@@ -150,9 +192,10 @@ se-d2-source-population-assess \
 8. **D2-D：** 谱系定向输出/成本三分支配对。
 9. **D2-E：** 非主导谱系跨 seed、跨 horizon 持续性判定。
 10. **D2-F：** routed-output 的采集/共享—能量—繁殖—存活时间中介审计。
-11. **D2-G：** 跨源 seed 的遗传创始者面板、自然丰度对照和无保护 burn-in 资格审计。
+11. **D2-G：** 跨源 seed 的遗传创始者面板、自然丰度对照和无保护 burn-in 探索性资格审计。
+12. **D2-H：** 在 phase-qualified 重设计 checkpoint 中重新估计模块 3 的 routed-output 与表达成本因果效应。
 
-模块复制、删除、任意重联和新端口继续阻塞。D2-G 只改变显式实验的 tick-zero 遗传起点；普通世界路径不读取面板谱系，也不提供持续多样性保护。
+模块复制、删除、任意重联和新端口继续阻塞。D2-G 只改变显式实验的 tick-zero 遗传起点；D2-H 只在冻结 checkpoint 的实验分支中中和既有模块输出/成本。普通世界路径不读取面板谱系，也不提供持续多样性保护。
 
 ## 文档
 
@@ -161,7 +204,8 @@ se-d2-source-population-assess \
 - [项目状态](docs/PROJECT_STATUS.md)
 - [科学问题](docs/SCIENTIFIC_ISSUES.md)
 
-- [D2-G 源群体重构](docs/v0.45/D2G_SOURCE_POPULATION.md)
-- [生成的 D2-G 计划](docs/v0.45/D2G_SOURCE_POPULATION_PLAN.md)
-- [下一步运行](docs/v0.45/NEXT_EXPERIMENT.md)
-- [Conda editable 工作流](docs/v0.45/CONDA_EDITABLE_WORKFLOW.md)
+- [D2-H 设计与证据边界](docs/v0.46/D2H_SOURCE_POPULATION_CAUSAL_REAUDIT.md)
+- [D2-G v2 真实评估](docs/v0.46/D2G_EXPLORATORY_ASSESSMENT.md)
+- [生成的 D2-H 计划](docs/v0.46/D2H_SOURCE_POPULATION_CAUSAL_PLAN.md)
+- [下一步运行](docs/v0.46/NEXT_EXPERIMENT.md)
+- [Conda editable 工作流](docs/v0.46/CONDA_EDITABLE_WORKFLOW.md)

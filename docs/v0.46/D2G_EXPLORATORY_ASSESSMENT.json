@@ -1,0 +1,1188 @@
+{
+  "schema": "d2-source-population-assessment-v2",
+  "result_schema": "d2-source-population-results-v1",
+  "burn_in_ticks": 600,
+  "candidate_module_indices": [
+    3
+  ],
+  "evidence_scope": "exploratory-stage-gate",
+  "charter_interpretation": {
+    "major_conclusions_require_at_least_ten_seeds": true,
+    "every_exploratory_audit_requires_ten_seeds": false,
+    "three_seed_paired_audit_can_gate_next_experiment": true,
+    "generalization_claim_allowed_at_current_sample_size": false
+  },
+  "qualification_rule": {
+    "minimum_effective_lineages": 4.0,
+    "maximum_dominant_lineage_fraction": 0.5,
+    "minimum_lineages_above_member_floor": 4,
+    "lineage_member_floor": 8,
+    "minimum_expressed_lineages_per_candidate_module": 4,
+    "minimum_observed_panel_seeds_for_exploratory_decision": 3,
+    "minimum_qualified_panel_seeds_per_exploratory_phase": 2,
+    "minimum_phases_for_general_source_population": 2,
+    "major_conclusion_minimum_seeds_per_phase": 10,
+    "uncertainty_interval": "two-sided-wilson-95-v1",
+    "equalization_at_tick_zero_is_not_evidence": true,
+    "ongoing_lineage_protection_allowed": false
+  },
+  "panels": [
+    {
+      "panel_name": "peak_seed_45001",
+      "phase": "peak",
+      "panel_seed": 45001,
+      "arms": {
+        "natural-abundance-control": {
+          "final_snapshot": {
+            "offset_ticks": 600,
+            "alive": 532,
+            "lineage_count": 6,
+            "effective_lineages": 2.3621158757448795,
+            "dominant_lineage_fraction": 0.6165413533834586,
+            "eligible_panel_lineage_count": 5,
+            "panel_lineage_counts": [
+              {
+                "panel_lineage_id": 6273021383814955239,
+                "members": 82
+              },
+              {
+                "panel_lineage_id": 9023138044078233047,
+                "members": 36
+              },
+              {
+                "panel_lineage_id": 5940149970201285654,
+                "members": 328
+              },
+              {
+                "panel_lineage_id": 42791552092449092,
+                "members": 22
+              },
+              {
+                "panel_lineage_id": 9032458484605812416,
+                "members": 61
+              },
+              {
+                "panel_lineage_id": 1742414855197043560,
+                "members": 3
+              }
+            ],
+            "candidate_module_expression": {
+              "module_3": {
+                "expressed_eligible_lineage_count": 5,
+                "lineages": [
+                  {
+                    "panel_lineage_id": 6273021383814955239,
+                    "members": 82,
+                    "mean_expression": 0.2916974323551829,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9023138044078233047,
+                    "members": 36,
+                    "mean_expression": 0.03323025173611111,
+                    "expressed_fraction": 0.9722222222222222
+                  },
+                  {
+                    "panel_lineage_id": 5940149970201285654,
+                    "members": 328,
+                    "mean_expression": 0.13212697098894818,
+                    "expressed_fraction": 0.9878048780487805
+                  },
+                  {
+                    "panel_lineage_id": 42791552092449092,
+                    "members": 22,
+                    "mean_expression": 0.23134543678977273,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9032458484605812416,
+                    "members": 61,
+                    "mean_expression": 0.1713506980020492,
+                    "expressed_fraction": 0.9672131147540983
+                  },
+                  {
+                    "panel_lineage_id": 1742414855197043560,
+                    "members": 3,
+                    "mean_expression": 0.349365234375,
+                    "expressed_fraction": 1.0
+                  }
+                ]
+              }
+            }
+          },
+          "module_expressed_eligible_lineage_counts": {
+            "module_3": 5
+          },
+          "passes_effective_lineage_guard": false,
+          "passes_dominant_share_guard": false,
+          "passes_member_floor": true,
+          "passes_module_expression_floor": true,
+          "qualified": false
+        },
+        "equal-lineage-reconstitution": {
+          "final_snapshot": {
+            "offset_ticks": 600,
+            "alive": 504,
+            "lineage_count": 6,
+            "effective_lineages": 4.0688130706391155,
+            "dominant_lineage_fraction": 0.4166666666666667,
+            "eligible_panel_lineage_count": 6,
+            "panel_lineage_counts": [
+              {
+                "panel_lineage_id": 6273021383814955239,
+                "members": 76
+              },
+              {
+                "panel_lineage_id": 9023138044078233047,
+                "members": 60
+              },
+              {
+                "panel_lineage_id": 5940149970201285654,
+                "members": 210
+              },
+              {
+                "panel_lineage_id": 42791552092449092,
+                "members": 49
+              },
+              {
+                "panel_lineage_id": 9032458484605812416,
+                "members": 72
+              },
+              {
+                "panel_lineage_id": 1742414855197043560,
+                "members": 37
+              }
+            ],
+            "candidate_module_expression": {
+              "module_3": {
+                "expressed_eligible_lineage_count": 6,
+                "lineages": [
+                  {
+                    "panel_lineage_id": 6273021383814955239,
+                    "members": 76,
+                    "mean_expression": 0.2977455540707237,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9023138044078233047,
+                    "members": 60,
+                    "mean_expression": 0.033426920572916664,
+                    "expressed_fraction": 0.9833333333333333
+                  },
+                  {
+                    "panel_lineage_id": 5940149970201285654,
+                    "members": 210,
+                    "mean_expression": 0.15930408296130952,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 42791552092449092,
+                    "members": 49,
+                    "mean_expression": 0.22173449457908162,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9032458484605812416,
+                    "members": 72,
+                    "mean_expression": 0.16929117838541666,
+                    "expressed_fraction": 0.9861111111111112
+                  },
+                  {
+                    "panel_lineage_id": 1742414855197043560,
+                    "members": 37,
+                    "mean_expression": 0.349365234375,
+                    "expressed_fraction": 1.0
+                  }
+                ]
+              }
+            }
+          },
+          "module_expressed_eligible_lineage_counts": {
+            "module_3": 6
+          },
+          "passes_effective_lineage_guard": true,
+          "passes_dominant_share_guard": true,
+          "passes_member_floor": true,
+          "passes_module_expression_floor": true,
+          "qualified": true
+        }
+      }
+    },
+    {
+      "panel_name": "peak_seed_45002",
+      "phase": "peak",
+      "panel_seed": 45002,
+      "arms": {
+        "natural-abundance-control": {
+          "final_snapshot": {
+            "offset_ticks": 600,
+            "alive": 541,
+            "lineage_count": 6,
+            "effective_lineages": 2.1734975010953597,
+            "dominant_lineage_fraction": 0.6506469500924215,
+            "eligible_panel_lineage_count": 6,
+            "panel_lineage_counts": [
+              {
+                "panel_lineage_id": 6273021383814955239,
+                "members": 81
+              },
+              {
+                "panel_lineage_id": 9023138044078233047,
+                "members": 24
+              },
+              {
+                "panel_lineage_id": 5940149970201285654,
+                "members": 352
+              },
+              {
+                "panel_lineage_id": 42791552092449092,
+                "members": 15
+              },
+              {
+                "panel_lineage_id": 9032458484605812416,
+                "members": 57
+              },
+              {
+                "panel_lineage_id": 1742414855197043560,
+                "members": 12
+              }
+            ],
+            "candidate_module_expression": {
+              "module_3": {
+                "expressed_eligible_lineage_count": 6,
+                "lineages": [
+                  {
+                    "panel_lineage_id": 6273021383814955239,
+                    "members": 81,
+                    "mean_expression": 0.2846016589506173,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9023138044078233047,
+                    "members": 24,
+                    "mean_expression": 0.0341796875,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 5940149970201285654,
+                    "members": 352,
+                    "mean_expression": 0.12030445445667613,
+                    "expressed_fraction": 0.9914772727272727
+                  },
+                  {
+                    "panel_lineage_id": 42791552092449092,
+                    "members": 15,
+                    "mean_expression": 0.22190755208333332,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9032458484605812416,
+                    "members": 57,
+                    "mean_expression": 0.18611653645833334,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 1742414855197043560,
+                    "members": 12,
+                    "mean_expression": 0.3214314778645833,
+                    "expressed_fraction": 1.0
+                  }
+                ]
+              }
+            }
+          },
+          "module_expressed_eligible_lineage_counts": {
+            "module_3": 6
+          },
+          "passes_effective_lineage_guard": false,
+          "passes_dominant_share_guard": false,
+          "passes_member_floor": true,
+          "passes_module_expression_floor": true,
+          "qualified": false
+        },
+        "equal-lineage-reconstitution": {
+          "final_snapshot": {
+            "offset_ticks": 600,
+            "alive": 490,
+            "lineage_count": 6,
+            "effective_lineages": 3.727219100251483,
+            "dominant_lineage_fraction": 0.4489795918367347,
+            "eligible_panel_lineage_count": 6,
+            "panel_lineage_counts": [
+              {
+                "panel_lineage_id": 6273021383814955239,
+                "members": 80
+              },
+              {
+                "panel_lineage_id": 9023138044078233047,
+                "members": 48
+              },
+              {
+                "panel_lineage_id": 5940149970201285654,
+                "members": 220
+              },
+              {
+                "panel_lineage_id": 42791552092449092,
+                "members": 53
+              },
+              {
+                "panel_lineage_id": 9032458484605812416,
+                "members": 61
+              },
+              {
+                "panel_lineage_id": 1742414855197043560,
+                "members": 28
+              }
+            ],
+            "candidate_module_expression": {
+              "module_3": {
+                "expressed_eligible_lineage_count": 6,
+                "lineages": [
+                  {
+                    "panel_lineage_id": 6273021383814955239,
+                    "members": 80,
+                    "mean_expression": 0.277935791015625,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9023138044078233047,
+                    "members": 48,
+                    "mean_expression": 0.032755533854166664,
+                    "expressed_fraction": 0.9583333333333334
+                  },
+                  {
+                    "panel_lineage_id": 5940149970201285654,
+                    "members": 220,
+                    "mean_expression": 0.12140336470170454,
+                    "expressed_fraction": 0.9954545454545455
+                  },
+                  {
+                    "panel_lineage_id": 42791552092449092,
+                    "members": 53,
+                    "mean_expression": 0.2212466833726415,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9032458484605812416,
+                    "members": 61,
+                    "mean_expression": 0.18254514600409835,
+                    "expressed_fraction": 0.9836065573770492
+                  },
+                  {
+                    "panel_lineage_id": 1742414855197043560,
+                    "members": 28,
+                    "mean_expression": 0.349365234375,
+                    "expressed_fraction": 1.0
+                  }
+                ]
+              }
+            }
+          },
+          "module_expressed_eligible_lineage_counts": {
+            "module_3": 6
+          },
+          "passes_effective_lineage_guard": false,
+          "passes_dominant_share_guard": true,
+          "passes_member_floor": true,
+          "passes_module_expression_floor": true,
+          "qualified": false
+        }
+      }
+    },
+    {
+      "panel_name": "peak_seed_45003",
+      "phase": "peak",
+      "panel_seed": 45003,
+      "arms": {
+        "natural-abundance-control": {
+          "final_snapshot": {
+            "offset_ticks": 600,
+            "alive": 525,
+            "lineage_count": 6,
+            "effective_lineages": 2.267492081773683,
+            "dominant_lineage_fraction": 0.6342857142857142,
+            "eligible_panel_lineage_count": 6,
+            "panel_lineage_counts": [
+              {
+                "panel_lineage_id": 6273021383814955239,
+                "members": 79
+              },
+              {
+                "panel_lineage_id": 9023138044078233047,
+                "members": 34
+              },
+              {
+                "panel_lineage_id": 5940149970201285654,
+                "members": 333
+              },
+              {
+                "panel_lineage_id": 42791552092449092,
+                "members": 17
+              },
+              {
+                "panel_lineage_id": 9032458484605812416,
+                "members": 54
+              },
+              {
+                "panel_lineage_id": 1742414855197043560,
+                "members": 8
+              }
+            ],
+            "candidate_module_expression": {
+              "module_3": {
+                "expressed_eligible_lineage_count": 6,
+                "lineages": [
+                  {
+                    "panel_lineage_id": 6273021383814955239,
+                    "members": 79,
+                    "mean_expression": 0.29948637757120256,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9023138044078233047,
+                    "members": 34,
+                    "mean_expression": 0.03718118106617647,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 5940149970201285654,
+                    "members": 333,
+                    "mean_expression": 0.124682543871997,
+                    "expressed_fraction": 0.993993993993994
+                  },
+                  {
+                    "panel_lineage_id": 42791552092449092,
+                    "members": 17,
+                    "mean_expression": 0.216796875,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9032458484605812416,
+                    "members": 54,
+                    "mean_expression": 0.17435709635416666,
+                    "expressed_fraction": 0.9629629629629629
+                  },
+                  {
+                    "panel_lineage_id": 1742414855197043560,
+                    "members": 8,
+                    "mean_expression": 0.349365234375,
+                    "expressed_fraction": 1.0
+                  }
+                ]
+              }
+            }
+          },
+          "module_expressed_eligible_lineage_counts": {
+            "module_3": 6
+          },
+          "passes_effective_lineage_guard": false,
+          "passes_dominant_share_guard": false,
+          "passes_member_floor": true,
+          "passes_module_expression_floor": true,
+          "qualified": false
+        },
+        "equal-lineage-reconstitution": {
+          "final_snapshot": {
+            "offset_ticks": 600,
+            "alive": 483,
+            "lineage_count": 6,
+            "effective_lineages": 4.324250681198911,
+            "dominant_lineage_fraction": 0.38923395445134573,
+            "eligible_panel_lineage_count": 6,
+            "panel_lineage_counts": [
+              {
+                "panel_lineage_id": 6273021383814955239,
+                "members": 72
+              },
+              {
+                "panel_lineage_id": 9023138044078233047,
+                "members": 68
+              },
+              {
+                "panel_lineage_id": 5940149970201285654,
+                "members": 188
+              },
+              {
+                "panel_lineage_id": 42791552092449092,
+                "members": 56
+              },
+              {
+                "panel_lineage_id": 9032458484605812416,
+                "members": 69
+              },
+              {
+                "panel_lineage_id": 1742414855197043560,
+                "members": 30
+              }
+            ],
+            "candidate_module_expression": {
+              "module_3": {
+                "expressed_eligible_lineage_count": 6,
+                "lineages": [
+                  {
+                    "panel_lineage_id": 6273021383814955239,
+                    "members": 72,
+                    "mean_expression": 0.2878960503472222,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9023138044078233047,
+                    "members": 68,
+                    "mean_expression": 0.033648322610294115,
+                    "expressed_fraction": 0.9558823529411765
+                  },
+                  {
+                    "panel_lineage_id": 5940149970201285654,
+                    "members": 188,
+                    "mean_expression": 0.1273375166223404,
+                    "expressed_fraction": 0.9946808510638298
+                  },
+                  {
+                    "panel_lineage_id": 42791552092449092,
+                    "members": 56,
+                    "mean_expression": 0.21948678152901785,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9032458484605812416,
+                    "members": 69,
+                    "mean_expression": 0.18140356091485507,
+                    "expressed_fraction": 0.9710144927536232
+                  },
+                  {
+                    "panel_lineage_id": 1742414855197043560,
+                    "members": 30,
+                    "mean_expression": 0.346923828125,
+                    "expressed_fraction": 1.0
+                  }
+                ]
+              }
+            }
+          },
+          "module_expressed_eligible_lineage_counts": {
+            "module_3": 6
+          },
+          "passes_effective_lineage_guard": true,
+          "passes_dominant_share_guard": true,
+          "passes_member_floor": true,
+          "passes_module_expression_floor": true,
+          "qualified": true
+        }
+      }
+    },
+    {
+      "panel_name": "trough_seed_45001",
+      "phase": "trough",
+      "panel_seed": 45001,
+      "arms": {
+        "natural-abundance-control": {
+          "final_snapshot": {
+            "offset_ticks": 600,
+            "alive": 527,
+            "lineage_count": 6,
+            "effective_lineages": 2.070518507473814,
+            "dominant_lineage_fraction": 0.6717267552182163,
+            "eligible_panel_lineage_count": 5,
+            "panel_lineage_counts": [
+              {
+                "panel_lineage_id": 6273021383814955239,
+                "members": 73
+              },
+              {
+                "panel_lineage_id": 9023138044078233047,
+                "members": 27
+              },
+              {
+                "panel_lineage_id": 5940149970201285654,
+                "members": 354
+              },
+              {
+                "panel_lineage_id": 42791552092449092,
+                "members": 21
+              },
+              {
+                "panel_lineage_id": 9032458484605812416,
+                "members": 48
+              },
+              {
+                "panel_lineage_id": 1742414855197043560,
+                "members": 4
+              }
+            ],
+            "candidate_module_expression": {
+              "module_3": {
+                "expressed_eligible_lineage_count": 5,
+                "lineages": [
+                  {
+                    "panel_lineage_id": 6273021383814955239,
+                    "members": 73,
+                    "mean_expression": 0.2729358411815068,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9023138044078233047,
+                    "members": 27,
+                    "mean_expression": 0.04517505787037037,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 5940149970201285654,
+                    "members": 354,
+                    "mean_expression": 0.1406539658368644,
+                    "expressed_fraction": 0.9858757062146892
+                  },
+                  {
+                    "panel_lineage_id": 42791552092449092,
+                    "members": 21,
+                    "mean_expression": 0.20086960565476192,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9032458484605812416,
+                    "members": 48,
+                    "mean_expression": 0.17233784993489584,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 1742414855197043560,
+                    "members": 4,
+                    "mean_expression": 0.349365234375,
+                    "expressed_fraction": 1.0
+                  }
+                ]
+              }
+            }
+          },
+          "module_expressed_eligible_lineage_counts": {
+            "module_3": 5
+          },
+          "passes_effective_lineage_guard": false,
+          "passes_dominant_share_guard": false,
+          "passes_member_floor": true,
+          "passes_module_expression_floor": true,
+          "qualified": false
+        },
+        "equal-lineage-reconstitution": {
+          "final_snapshot": {
+            "offset_ticks": 600,
+            "alive": 495,
+            "lineage_count": 6,
+            "effective_lineages": 3.9842111253841517,
+            "dominant_lineage_fraction": 0.42424242424242425,
+            "eligible_panel_lineage_count": 6,
+            "panel_lineage_counts": [
+              {
+                "panel_lineage_id": 6273021383814955239,
+                "members": 71
+              },
+              {
+                "panel_lineage_id": 9023138044078233047,
+                "members": 58
+              },
+              {
+                "panel_lineage_id": 5940149970201285654,
+                "members": 210
+              },
+              {
+                "panel_lineage_id": 42791552092449092,
+                "members": 61
+              },
+              {
+                "panel_lineage_id": 9032458484605812416,
+                "members": 67
+              },
+              {
+                "panel_lineage_id": 1742414855197043560,
+                "members": 28
+              }
+            ],
+            "candidate_module_expression": {
+              "module_3": {
+                "expressed_eligible_lineage_count": 6,
+                "lineages": [
+                  {
+                    "panel_lineage_id": 6273021383814955239,
+                    "members": 71,
+                    "mean_expression": 0.2807514029489437,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9023138044078233047,
+                    "members": 58,
+                    "mean_expression": 0.03437331627155173,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 5940149970201285654,
+                    "members": 210,
+                    "mean_expression": 0.13385881696428573,
+                    "expressed_fraction": 0.9952380952380953
+                  },
+                  {
+                    "panel_lineage_id": 42791552092449092,
+                    "members": 61,
+                    "mean_expression": 0.21263047515368852,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9032458484605812416,
+                    "members": 67,
+                    "mean_expression": 0.16512651585820895,
+                    "expressed_fraction": 0.9402985074626866
+                  },
+                  {
+                    "panel_lineage_id": 1742414855197043560,
+                    "members": 28,
+                    "mean_expression": 0.35306222098214285,
+                    "expressed_fraction": 1.0
+                  }
+                ]
+              }
+            }
+          },
+          "module_expressed_eligible_lineage_counts": {
+            "module_3": 6
+          },
+          "passes_effective_lineage_guard": false,
+          "passes_dominant_share_guard": true,
+          "passes_member_floor": true,
+          "passes_module_expression_floor": true,
+          "qualified": false
+        }
+      }
+    },
+    {
+      "panel_name": "trough_seed_45002",
+      "phase": "trough",
+      "panel_seed": 45002,
+      "arms": {
+        "natural-abundance-control": {
+          "final_snapshot": {
+            "offset_ticks": 600,
+            "alive": 551,
+            "lineage_count": 6,
+            "effective_lineages": 2.1010595229032725,
+            "dominant_lineage_fraction": 0.6642468239564429,
+            "eligible_panel_lineage_count": 5,
+            "panel_lineage_counts": [
+              {
+                "panel_lineage_id": 6273021383814955239,
+                "members": 82
+              },
+              {
+                "panel_lineage_id": 9023138044078233047,
+                "members": 27
+              },
+              {
+                "panel_lineage_id": 5940149970201285654,
+                "members": 366
+              },
+              {
+                "panel_lineage_id": 42791552092449092,
+                "members": 19
+              },
+              {
+                "panel_lineage_id": 9032458484605812416,
+                "members": 52
+              },
+              {
+                "panel_lineage_id": 1742414855197043560,
+                "members": 5
+              }
+            ],
+            "candidate_module_expression": {
+              "module_3": {
+                "expressed_eligible_lineage_count": 5,
+                "lineages": [
+                  {
+                    "panel_lineage_id": 6273021383814955239,
+                    "members": 82,
+                    "mean_expression": 0.2820211270960366,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9023138044078233047,
+                    "members": 27,
+                    "mean_expression": 0.0341796875,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 5940149970201285654,
+                    "members": 366,
+                    "mean_expression": 0.12052342149077869,
+                    "expressed_fraction": 0.9890710382513661
+                  },
+                  {
+                    "panel_lineage_id": 42791552092449092,
+                    "members": 19,
+                    "mean_expression": 0.21993215460526316,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9032458484605812416,
+                    "members": 52,
+                    "mean_expression": 0.18036827674278846,
+                    "expressed_fraction": 0.9615384615384616
+                  },
+                  {
+                    "panel_lineage_id": 1742414855197043560,
+                    "members": 5,
+                    "mean_expression": 0.349365234375,
+                    "expressed_fraction": 1.0
+                  }
+                ]
+              }
+            }
+          },
+          "module_expressed_eligible_lineage_counts": {
+            "module_3": 5
+          },
+          "passes_effective_lineage_guard": false,
+          "passes_dominant_share_guard": false,
+          "passes_member_floor": true,
+          "passes_module_expression_floor": true,
+          "qualified": false
+        },
+        "equal-lineage-reconstitution": {
+          "final_snapshot": {
+            "offset_ticks": 600,
+            "alive": 485,
+            "lineage_count": 6,
+            "effective_lineages": 3.7244485963551144,
+            "dominant_lineage_fraction": 0.4515463917525773,
+            "eligible_panel_lineage_count": 6,
+            "panel_lineage_counts": [
+              {
+                "panel_lineage_id": 6273021383814955239,
+                "members": 64
+              },
+              {
+                "panel_lineage_id": 9023138044078233047,
+                "members": 67
+              },
+              {
+                "panel_lineage_id": 5940149970201285654,
+                "members": 219
+              },
+              {
+                "panel_lineage_id": 42791552092449092,
+                "members": 41
+              },
+              {
+                "panel_lineage_id": 9032458484605812416,
+                "members": 63
+              },
+              {
+                "panel_lineage_id": 1742414855197043560,
+                "members": 31
+              }
+            ],
+            "candidate_module_expression": {
+              "module_3": {
+                "expressed_eligible_lineage_count": 6,
+                "lineages": [
+                  {
+                    "panel_lineage_id": 6273021383814955239,
+                    "members": 64,
+                    "mean_expression": 0.2827720642089844,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9023138044078233047,
+                    "members": 67,
+                    "mean_expression": 0.033159398320895525,
+                    "expressed_fraction": 0.9701492537313433
+                  },
+                  {
+                    "panel_lineage_id": 5940149970201285654,
+                    "members": 219,
+                    "mean_expression": 0.122574200913242,
+                    "expressed_fraction": 0.9863013698630136
+                  },
+                  {
+                    "panel_lineage_id": 42791552092449092,
+                    "members": 41,
+                    "mean_expression": 0.21091368140243902,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9032458484605812416,
+                    "members": 63,
+                    "mean_expression": 0.17605639260912698,
+                    "expressed_fraction": 0.9841269841269841
+                  },
+                  {
+                    "panel_lineage_id": 1742414855197043560,
+                    "members": 31,
+                    "mean_expression": 0.349365234375,
+                    "expressed_fraction": 1.0
+                  }
+                ]
+              }
+            }
+          },
+          "module_expressed_eligible_lineage_counts": {
+            "module_3": 6
+          },
+          "passes_effective_lineage_guard": false,
+          "passes_dominant_share_guard": true,
+          "passes_member_floor": true,
+          "passes_module_expression_floor": true,
+          "qualified": false
+        }
+      }
+    },
+    {
+      "panel_name": "trough_seed_45003",
+      "phase": "trough",
+      "panel_seed": 45003,
+      "arms": {
+        "natural-abundance-control": {
+          "final_snapshot": {
+            "offset_ticks": 600,
+            "alive": 553,
+            "lineage_count": 6,
+            "effective_lineages": 2.1376425111317707,
+            "dominant_lineage_fraction": 0.6600361663652803,
+            "eligible_panel_lineage_count": 5,
+            "panel_lineage_counts": [
+              {
+                "panel_lineage_id": 6273021383814955239,
+                "members": 74
+              },
+              {
+                "panel_lineage_id": 9023138044078233047,
+                "members": 28
+              },
+              {
+                "panel_lineage_id": 5940149970201285654,
+                "members": 365
+              },
+              {
+                "panel_lineage_id": 42791552092449092,
+                "members": 27
+              },
+              {
+                "panel_lineage_id": 9032458484605812416,
+                "members": 53
+              },
+              {
+                "panel_lineage_id": 1742414855197043560,
+                "members": 6
+              }
+            ],
+            "candidate_module_expression": {
+              "module_3": {
+                "expressed_eligible_lineage_count": 5,
+                "lineages": [
+                  {
+                    "panel_lineage_id": 6273021383814955239,
+                    "members": 74,
+                    "mean_expression": 0.29009844805743246,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9023138044078233047,
+                    "members": 28,
+                    "mean_expression": 0.03490339006696429,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 5940149970201285654,
+                    "members": 365,
+                    "mean_expression": 0.11159166309931506,
+                    "expressed_fraction": 0.9863013698630136
+                  },
+                  {
+                    "panel_lineage_id": 42791552092449092,
+                    "members": 27,
+                    "mean_expression": 0.216796875,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9032458484605812416,
+                    "members": 53,
+                    "mean_expression": 0.18297188237028303,
+                    "expressed_fraction": 0.9811320754716981
+                  },
+                  {
+                    "panel_lineage_id": 1742414855197043560,
+                    "members": 6,
+                    "mean_expression": 0.349365234375,
+                    "expressed_fraction": 1.0
+                  }
+                ]
+              }
+            }
+          },
+          "module_expressed_eligible_lineage_counts": {
+            "module_3": 5
+          },
+          "passes_effective_lineage_guard": false,
+          "passes_dominant_share_guard": false,
+          "passes_member_floor": true,
+          "passes_module_expression_floor": true,
+          "qualified": false
+        },
+        "equal-lineage-reconstitution": {
+          "final_snapshot": {
+            "offset_ticks": 600,
+            "alive": 498,
+            "lineage_count": 6,
+            "effective_lineages": 4.3815412882937,
+            "dominant_lineage_fraction": 0.3815261044176707,
+            "eligible_panel_lineage_count": 6,
+            "panel_lineage_counts": [
+              {
+                "panel_lineage_id": 6273021383814955239,
+                "members": 77
+              },
+              {
+                "panel_lineage_id": 9023138044078233047,
+                "members": 72
+              },
+              {
+                "panel_lineage_id": 5940149970201285654,
+                "members": 190
+              },
+              {
+                "panel_lineage_id": 42791552092449092,
+                "members": 58
+              },
+              {
+                "panel_lineage_id": 9032458484605812416,
+                "members": 72
+              },
+              {
+                "panel_lineage_id": 1742414855197043560,
+                "members": 29
+              }
+            ],
+            "candidate_module_expression": {
+              "module_3": {
+                "expressed_eligible_lineage_count": 6,
+                "lineages": [
+                  {
+                    "panel_lineage_id": 6273021383814955239,
+                    "members": 77,
+                    "mean_expression": 0.28584745332792205,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9023138044078233047,
+                    "members": 72,
+                    "mean_expression": 0.03291151258680555,
+                    "expressed_fraction": 0.9583333333333334
+                  },
+                  {
+                    "panel_lineage_id": 5940149970201285654,
+                    "members": 190,
+                    "mean_expression": 0.13819515830592105,
+                    "expressed_fraction": 0.9789473684210527
+                  },
+                  {
+                    "panel_lineage_id": 42791552092449092,
+                    "members": 58,
+                    "mean_expression": 0.22020221578663793,
+                    "expressed_fraction": 1.0
+                  },
+                  {
+                    "panel_lineage_id": 9032458484605812416,
+                    "members": 72,
+                    "mean_expression": 0.1809115939670139,
+                    "expressed_fraction": 0.9861111111111112
+                  },
+                  {
+                    "panel_lineage_id": 1742414855197043560,
+                    "members": 29,
+                    "mean_expression": 0.3501481681034483,
+                    "expressed_fraction": 1.0
+                  }
+                ]
+              }
+            }
+          },
+          "module_expressed_eligible_lineage_counts": {
+            "module_3": 6
+          },
+          "passes_effective_lineage_guard": true,
+          "passes_dominant_share_guard": true,
+          "passes_member_floor": true,
+          "passes_module_expression_floor": true,
+          "qualified": true
+        }
+      }
+    }
+  ],
+  "phases": {
+    "peak": {
+      "observed_panel_seeds": [
+        45001,
+        45002,
+        45003
+      ],
+      "observed_panel_seed_count": 3,
+      "equal_lineage_qualified_seeds": [
+        45001,
+        45003
+      ],
+      "natural_abundance_qualified_seeds": [],
+      "equal_lineage_seed_count": 2,
+      "natural_abundance_seed_count": 0,
+      "equal_lineage_pass_fraction": 0.6666666666666666,
+      "natural_abundance_pass_fraction": 0.0,
+      "equal_lineage_wilson_95_interval": [
+        0.2076596008020477,
+        0.9385080552796037
+      ],
+      "natural_abundance_wilson_95_interval": [
+        5.551115123125783e-17,
+        0.5614970317550454
+      ],
+      "paired_equalization_advantage_seed_count": 2,
+      "exploratory_phase_ready": true,
+      "major_conclusion_seed_floor_met": false
+    },
+    "trough": {
+      "observed_panel_seeds": [
+        45001,
+        45002,
+        45003
+      ],
+      "observed_panel_seed_count": 3,
+      "equal_lineage_qualified_seeds": [
+        45003
+      ],
+      "natural_abundance_qualified_seeds": [],
+      "equal_lineage_seed_count": 1,
+      "natural_abundance_seed_count": 0,
+      "equal_lineage_pass_fraction": 0.3333333333333333,
+      "natural_abundance_pass_fraction": 0.0,
+      "equal_lineage_wilson_95_interval": [
+        0.06149194472039621,
+        0.7923403991979522
+      ],
+      "natural_abundance_wilson_95_interval": [
+        5.551115123125783e-17,
+        0.5614970317550454
+      ],
+      "paired_equalization_advantage_seed_count": 1,
+      "exploratory_phase_ready": false,
+      "major_conclusion_seed_floor_met": false
+    }
+  },
+  "qualified_phases": [
+    "peak"
+  ],
+  "exploratory_qualified_phases": [
+    "peak"
+  ],
+  "exploratory_causal_reaudit_ready": true,
+  "all_phases_exploratory_ready": false,
+  "major_conclusion_seed_floor_met": false,
+  "major_conclusion_evaluated": false,
+  "source_population_ready": false,
+  "module_copy_number_ready": false,
+  "recommendation": "freeze-qualified-phase-checkpoints-for-exploratory-module-3-reaudit",
+  "interpretation_boundary": "D2-G asks whether a genotype-only founder redesign can produce guarded multi-lineage checkpoints worth another causal experiment. Three paired fresh-world seeds can support that exploratory gate when at least two agree, but the wide binomial interval is retained and no general source-population claim is made. Only phase-qualified equal-lineage checkpoints may enter the next shared-checkpoint module-3 re-audit. Module copy number remains blocked."
+}

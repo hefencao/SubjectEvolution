@@ -1,6 +1,6 @@
 # SE project status
 
-Version: **0.45.0**
+Version: **0.46.0**
 
 ## Current causal chain
 
@@ -9,41 +9,61 @@ orthogonal external environment
 → inherited affinity-routed requests
 → inherited elastic capacities
 → bounded contextual harvest modules
-→ per-module contribution and paired ablation
-→ immediate/cross-lineage effect qualification
-→ lineage-conditioned paired causal audit
-→ cross-seed/cross-horizon persistence qualification
+→ paired module and lineage interventions
 → temporal flow-energy-demography mediation
-→ source-population reconstitution and unprotected qualification
+→ genotype-only source-population reconstitution
+→ phase-specific causal re-estimation in redesigned checkpoints
 → ecological niches and interactions
 → social organization
 → higher-level candidate subjects
 ```
 
-## Supplied D2-F decision
+## Charter interpretation used in v0.46
 
-The supplied temporal mediation result contains a bounded module-3 routed-output chain, but not a stable copy-number justification. Mean energy first shows repeated positive effects at 120 ticks, total lineage energy at 180 ticks, shared-energy receipt at 180/240 ticks and harvested energy at 240 ticks. Births, descendants, fertility and age reverse direction across offsets. The source persistent mean-energy expectation is not reproduced at the final 300-tick offset.
+`PROJECT_CHARTER.md` states that **major conclusions** require at least ten random seeds in the exploratory stage. It does not state that every exploratory audit or every next-step gate must run ten seeds.
 
-Median effective lineages remain about `2.2722`, with a median dominant share about `0.6053`. The causal signal therefore has to be re-estimated in a less concentrated source population before any copy-number experiment.
+v0.46 therefore separates:
 
-## D2-G implementation
+1. **exploratory experiment routing** — a paired three-seed audit may justify a lower-risk next causal experiment when preregistered hard guards and at least two independent seeds agree;
+2. **general source-population claims** — the current n=3 result is too imprecise and remains phase-specific;
+3. **copy-number decisions** — still blocked regardless of the exploratory routing decision.
 
-v0.45 adds source-population plan, result and assessment layers:
+## Supplied D2-G result
 
-- `d2-source-population-plan-v1`;
-- `d2-source-population-results-v1`;
-- `d2-source-population-assessment-v1`;
-- `se-d2-source-population`;
-- `se-d2-source-population-assess`;
-- `structural-measurement-protocol-audit-v13`.
+After 600 ticks of ordinary dynamics without ongoing lineage protection:
 
-For each peak/trough donor phase, the supplied plan takes the two largest pre-intervention lineages from each of three independent source runs. Six unique genetic lineages enter each fresh-world panel. The equal-lineage arm uses 48 unique donors per lineage; the natural-abundance control uses the same 288-founder total allocated by original abundance.
+- peak equal-lineage arm: 2/3 qualified;
+- peak natural-abundance control: 0/3 qualified;
+- trough equal-lineage arm: 1/3 qualified;
+- trough natural-abundance control: 0/3 qualified.
 
-Only genotype is transferred. Physiology, age, generation, knowledge, social state and position are reset. No lineage-aware rule remains active after tick zero. Qualification is evaluated after 600 ticks in three new world seeds per phase.
+The peak equal-lineage pass fraction has a wide two-sided 95% Wilson interval of approximately `[0.208, 0.939]`. The result is not a precise population-level estimate, but the paired 2/3 versus 0/3 pattern and the preregistered absolute guards are sufficient for a phase-specific exploratory module-3 re-audit.
+
+## D2-H implementation
+
+v0.46 adds:
+
+- `d2-source-population-assessment-v2`;
+- `d2-source-population-causal-plan-v1`;
+- `d2-source-population-causal-results-v1`;
+- `d2-source-population-causal-assessment-v1`;
+- `se-d2-source-causal`;
+- `se-d2-source-causal-assess`;
+- `structural-measurement-protocol-audit-v14`.
+
+The generated 120-tick plan selects only peak fresh-world seeds `45001` and `45003`, because they passed the preregistered D2-G guards. It retains all six member- and expression-qualified panel lineages in each checkpoint. It does not select lineages by response magnitude.
+
+Each module-lineage pair uses:
+
+- baseline;
+- output-neutral with expression cost retained;
+- expression-neutral with output and expression cost removed.
+
+The first run is a 120-tick screen. A 300-tick confirmation plan is generated only if routed-output effects repeat under the existing practical-effect and cross-seed rules.
 
 ## Current gate
 
-Duplication, deletion, arbitrary routing and new output ports remain blocked. D2-G can only qualify frozen multi-lineage source checkpoints. A later shared-checkpoint experiment must first reproduce module 3's baseline output/cost effect in those redesigned populations before copy number can be manipulated.
+Module duplication, deletion, arbitrary routing and new output ports remain blocked. A positive D2-H result would establish only phase-specific exploratory causal persistence in redesigned checkpoints. Higher-confidence replication, ecological persistence and an independently preregistered copy-number design would still be required.
 
 ## Engineering workflow
 
@@ -53,4 +73,4 @@ make test
 make conda-check
 ```
 
-v0.45 changes version metadata and adds two console entries, so one `make conda-sync` is required after upgrading from v0.44.
+v0.46 changes version metadata and adds two console entries, so one `make conda-sync` is required after upgrading from v0.45.

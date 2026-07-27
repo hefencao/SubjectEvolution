@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.46.0
+
+### D2-H phase-specific source-population causal re-audit
+
+- Clarifies that the charter's ten-seed floor applies to major conclusions, not every exploratory audit.
+- Upgrades D2-G assessment to `d2-source-population-assessment-v2` with explicit evidence scope, Wilson intervals and separate exploratory/generalization gates.
+- Reassesses the supplied result as peak 2/3 versus natural 0/3, trough 1/3 versus natural 0/3; only peak may continue.
+- Adds `d2-source-population-causal-plan-v1`, `d2-source-population-causal-results-v1` and `d2-source-population-causal-assessment-v1`.
+- Adds `se-d2-source-causal` and `se-d2-source-causal-assess`.
+- Generates a 120-tick module-3 screen from the two qualified peak checkpoints and retains all six eligible lineages in each checkpoint.
+- Reuses baseline/output-neutral/expression-neutral branches and preserves output/cost decomposition.
+- Generates a 300-tick confirmation plan only after a repeated routed-output screen effect.
+- Keeps general source-population claims and module copy number blocked.
+- Upgrades protocol audit to v14 and adds the thirteenth and fourteenth console entries.
+
+### Packaging
+
+- Complete packages retain only `docs/v0.46` as a version-specific directory.
+
 ## 0.45.0
 
 ### D2-G source-population reconstitution

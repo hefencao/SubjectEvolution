@@ -1,0 +1,156 @@
+{
+  "schema": "d2-source-population-causal-plan-v1",
+  "stage": "120-tick-exploratory-screen",
+  "source_assessment_schema": "d2-source-population-assessment-v2",
+  "source_assessment_sha256": "8360ada8666f80cff201df3b2af5f25357daf68f530acd1cf38645ad80b3140f",
+  "source_result_schema": "d2-source-population-results-v1",
+  "source_result_sha256": "ff7fd6509e5f027c70c0a28be6e309c89a25564a44dc73c74b56279f1778e66a",
+  "evidence_scope": "phase-specific-exploratory-causal-reaudit",
+  "selected_phases": [
+    "peak"
+  ],
+  "selected_panel_seeds": [
+    45001,
+    45003
+  ],
+  "horizon_ticks": 120,
+  "module_indices": [
+    3
+  ],
+  "min_lineage_members": 8,
+  "min_lineages_per_checkpoint": 4,
+  "max_lineages_per_checkpoint": 6,
+  "lineage_pair_plan": {
+    "schema": "d2-lineage-paired-plan-v2",
+    "horizon_ticks": 120,
+    "module_indices": [
+      3
+    ],
+    "min_lineage_members": 8,
+    "min_lineages_per_checkpoint": 4,
+    "max_lineages_per_checkpoint": 6,
+    "checkpoints": [
+      {
+        "run_name": "peak_seed_45001",
+        "phase": "peak",
+        "checkpoint_tick": 600,
+        "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/analyses/d2g_source_population_burnin/execution/peak_seed_45001/equal-lineage-reconstitution/checkpoint_00000600.sechk",
+        "until_tick": 720,
+        "active_entities": 504,
+        "effective_lineages": 4.0688130706391155,
+        "dominant_lineage_fraction": 0.4166666666666667,
+        "eligible": true,
+        "ineligible_reason": null,
+        "lineages": [
+          {
+            "lineage_id": 5940149970201285654,
+            "members": 210,
+            "member_fraction": 0.4166666666666667,
+            "abundance_rank": 1
+          },
+          {
+            "lineage_id": 6273021383814955239,
+            "members": 76,
+            "member_fraction": 0.15079365079365079,
+            "abundance_rank": 2
+          },
+          {
+            "lineage_id": 9032458484605812416,
+            "members": 72,
+            "member_fraction": 0.14285714285714285,
+            "abundance_rank": 3
+          },
+          {
+            "lineage_id": 9023138044078233047,
+            "members": 60,
+            "member_fraction": 0.11904761904761904,
+            "abundance_rank": 4
+          },
+          {
+            "lineage_id": 42791552092449092,
+            "members": 49,
+            "member_fraction": 0.09722222222222222,
+            "abundance_rank": 5
+          },
+          {
+            "lineage_id": 1742414855197043560,
+            "members": 37,
+            "member_fraction": 0.07341269841269842,
+            "abundance_rank": 6
+          }
+        ]
+      },
+      {
+        "run_name": "peak_seed_45003",
+        "phase": "peak",
+        "checkpoint_tick": 600,
+        "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/analyses/d2g_source_population_burnin/execution/peak_seed_45003/equal-lineage-reconstitution/checkpoint_00000600.sechk",
+        "until_tick": 720,
+        "active_entities": 483,
+        "effective_lineages": 4.324250681198911,
+        "dominant_lineage_fraction": 0.38923395445134573,
+        "eligible": true,
+        "ineligible_reason": null,
+        "lineages": [
+          {
+            "lineage_id": 5940149970201285654,
+            "members": 188,
+            "member_fraction": 0.38923395445134573,
+            "abundance_rank": 1
+          },
+          {
+            "lineage_id": 6273021383814955239,
+            "members": 72,
+            "member_fraction": 0.14906832298136646,
+            "abundance_rank": 2
+          },
+          {
+            "lineage_id": 9032458484605812416,
+            "members": 69,
+            "member_fraction": 0.14285714285714285,
+            "abundance_rank": 3
+          },
+          {
+            "lineage_id": 9023138044078233047,
+            "members": 68,
+            "member_fraction": 0.14078674948240166,
+            "abundance_rank": 4
+          },
+          {
+            "lineage_id": 42791552092449092,
+            "members": 56,
+            "member_fraction": 0.11594202898550725,
+            "abundance_rank": 5
+          },
+          {
+            "lineage_id": 1742414855197043560,
+            "members": 30,
+            "member_fraction": 0.062111801242236024,
+            "abundance_rank": 6
+          }
+        ]
+      }
+    ],
+    "lineage_selection_rule": "all-final-checkpoint-lineages-passing-preregistered-member-and-expression-floors-v1",
+    "paired_randomness": true,
+    "genotype_preserved": true,
+    "lineage_membership_preserved": true,
+    "abundance_weighted_inference": false,
+    "branches": [
+      "baseline",
+      "output-neutral",
+      "expression-neutral"
+    ],
+    "effect_decomposition_schema": "output-cost-total-additive-v1",
+    "confirmation_source_result_schema": null,
+    "confirmation_source_horizon_ticks": null,
+    "confirmation_selection_rule": null,
+    "outcome_conditioned_pair_selection": false
+  },
+  "selection_rule": "phase-qualified-equal-lineage-final-checkpoints; preserve-all-member-and-expression-eligible-lineages-v1",
+  "response_conditioned_panel_selection": false,
+  "response_conditioned_lineage_selection": false,
+  "general_source_population_claim": false,
+  "module_copy_number_changed": false,
+  "routing_vocabulary_changed": false
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "package-archive-validation-v1",
+  "passed": true,
+  "project_version": "0.46.0",
+  "corrected_reissue": true,
+  "source_file_count": 252,
+  "extracted_file_count": 252,
+  "content_hash_comparison_passed": true,
+  "forbidden_content_absent": true,
+  "version_document_directories": [
+    "v0.46"
+  ],
+  "extracted_tree_pytest": "213 passed, 1 skipped",
+  "distribution_validation": {
+    "candidate_release_check_passed": true,
+    "patch_replay_tree_validator_reported_passed": true,
+    "archive_content_identical_to_validated_candidate": true,
+    "note": "An additional combined validator call on the extracted preliminary archive was terminated by the tool host after the extracted test suite passed; the byte-identical candidate and patch replay trees had already passed isolated distribution validation."
+  }
+}

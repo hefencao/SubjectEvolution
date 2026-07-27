@@ -1,0 +1,12 @@
+{
+  "schema": "d2h-installed-cli-smoke-v1",
+  "passed": true,
+  "plan_schema": "d2-source-population-causal-plan-v1",
+  "result_schema": "d2-source-population-causal-results-v1",
+  "assessment_schema": "d2-source-population-causal-assessment-v1",
+  "executed_checkpoint_count": 2,
+  "executed_pair_count": 8,
+  "max_decomposition_residual": 0.0,
+  "module_copy_number_ready": false,
+  "confirmation_plan_written": false
+}
