@@ -1,6 +1,6 @@
 # SE project status
 
-Version: **0.39.0**
+Version: **0.40.0**
 
 ## Current causal chain
 
@@ -9,64 +9,70 @@ orthogonal external environment
 → inherited affinity-routed requests
 → inherited elastic capacities
 → bounded contextual harvest modules
+→ measured module contribution and paired ablation
 → ecological niches and interactions
 → social organization
 → higher-level candidate subjects
 ```
 
-## D1 paired evidence
+## D2-A 3000-tick evidence
 
-The supplied six shared-checkpoint factorial comparisons cover three seeds and
-peak/trough phases. Affinity expression has the same direction in all six:
+Three v0.39 runs completed 3000 ticks. Resource fields remain approximately
+`1.85–2.12` dimensional and elastic capacities `2.76–2.99` dimensional.
+Modules are structurally expressed (`2.56–2.76` of four slots on average) and
+change final preference for `92.6–99.8%` of entities.
 
-- final alive: `+57, +59, +143, +146, +58, +80`;
-- mean energy: positive in all six;
-- resource-environment effective dimensions: positive in all six;
-- effective transferred roots: positive in all six;
-- immediate extraction efficiency: negative in all six.
+However:
 
-The affinity effect therefore cannot be reduced to a free increase in immediate
-harvest efficiency. Capacity expression remains path-dependent: alive effects
-are mixed, energy is mostly lower, resource dimensions are lower in five of six
-comparisons, and transferred-root effects differ by seed.
+- mean absolute residual is only `0.000136–0.000485`;
+- residual magnitude declines in two seeds;
+- functional preference dimensions decline in all three;
+- effective lineages fall to `1.72–3.48`;
+- the largest lineage occupies `49.6–74.6%` of survivors;
+- final strategy dimensions fall to `1.91–4.02`.
 
-These are local 120-tick expression contrasts selected from observed population
-phases. They support a bounded D2 test, not universal adaptive necessity.
+Structural expression therefore does not yet justify duplication or a new organ
+claim.
 
-## D2-A
+## D2-B
 
-Schema: `expression-gated-contextual-harvest-v1`.
+Schema: `functional-module-contribution-audit-v1`.
 
-Four inherited modules read a fixed ten-value input vocabulary: bias, five
-internal deficits, and four normalized local resource values. They publish only
-a zero-sum residual over the existing four harvest-channel request weights.
-Static resource affinity still controls assimilation and gradient utility.
-Modules do not choose HARVEST, do not create a new resource/action, and do not
-read lineage, group label, rarity, or analysis output.
+Ordinary progress now separates each fixed module's gate, activation, isolated
+residual, non-zero fraction, silent-expression fraction and contribution share.
+It also reports effective contributor count, contribution dominance and
+cancellation between isolated outputs and the authoritative summed residual.
 
-The 300-tick shared-initial-state smoke shows that module neutralization exactly
-recovers the D1-B endpoint. Expressed modules change request weights for 82.7%
-of final entities. Relative to the neutralized branch, expression changes alive
-`115→127`, resource dimensions `1.825→1.713`, extraction efficiency
-`0.871→0.816`, and effective transferred roots `17.0→20.17`. The trade-off is
-real but not yet interpretable as adaptation.
+New paired interventions neutralize one module slot at a time while preserving
+genotype. `se-d2-audit` runs baseline, all-neutral and four leave-one-out branches
+from identical checkpoints and reports individual expression effects plus
+non-additivity.
+
+The 30-tick integration smoke validates branching and attribution. It does not
+show a survival effect and is not scientific evidence of module utility.
 
 ## Engineering workflow
 
-- `se --seed` overrides a config seed without editing JSON.
-- `se` and `se-multi` accept comma-separated `--checkpoint-ticks`.
-- restored runs can also schedule future exact checkpoints.
-- `se-d1-factorial --plan` reuses an existing signed/inspected plan without
-  rerunning phase detection.
-- `make release-check` is disposable and does not modify the caller's shell.
-- `make release-env` creates `.release-env/venv`, performs the same isolated
-  validation, and leaves all console scripts available.
-- short multi-seed smoke runs no longer fail solely because the first
-  evolution-progress window has not yet been emitted.
+The preferred local runtime is a conda environment with an editable install:
+
+```bash
+make conda-sync
+make test
+make conda-check
+```
+
+Source edits become visible immediately. Reinstall is required only after
+metadata, entry-point, dependency, version, package-layout or checkout-path
+changes. `conda-sync` uses `--no-build-isolation` so an offline conda environment
+uses its installed build tools instead of trying to download a temporary build
+environment.
+
+Artifact wheel/sdist validation remains optional for release transfer and is no
+longer the local execution model.
 
 ## Next gate
 
-Run D2-A for three seeds × 3000 ticks, then pair baseline with
-`neutralize-functional-modules` at at least peak and trough checkpoints. Do not
-enter module duplication or arbitrary output routing unless at least two seeds
-show persistent non-zero residual topology and repeatable downstream effects.
+Execute D2-B for three seeds × peak/trough checkpoints at 120 ticks, then repeat
+non-zero effects at 300 ticks. Module duplication remains blocked unless at
+least two seeds show repeatable, context-dependent downstream effects that are
+not explained only by expression-cost refunds or lineage fixation.

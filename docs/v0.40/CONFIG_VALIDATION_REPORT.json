@@ -1,0 +1,458 @@
+{
+  "schema": "config-validation-v1",
+  "version": "0.40.0",
+  "count": 75,
+  "passed": true,
+  "results": [
+    {
+      "path": "configs/d0_orthogonal_env_smoke.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/d1_elastic_capacities_smoke.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 60
+    },
+    {
+      "path": "configs/d1b_selective_harvest_smoke.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 60
+    },
+    {
+      "path": "configs/d2a_contextual_harvest_smoke.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 60
+    },
+    {
+      "path": "configs/heterogeneous_no_affinity_smoke.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/heterogeneous_smoke.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/long_run_diagnostics_smoke.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_100k.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 10000
+    },
+    {
+      "path": "configs/mvp_short_d0_orthogonal_env_longrun.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 1500
+    },
+    {
+      "path": "configs/mvp_short_d1_elastic_capacities_longrun.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 1500
+    },
+    {
+      "path": "configs/mvp_short_d1b_selective_harvest_longrun.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 1500
+    },
+    {
+      "path": "configs/mvp_short_d2a_contextual_harvest_longrun.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 3000
+    },
+    {
+      "path": "configs/mvp_short_k1_compat.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 50
+    },
+    {
+      "path": "configs/mvp_short_k1_legacy.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 50
+    },
+    {
+      "path": "configs/mvp_short_k2_control.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_k2_exchange.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 50
+    },
+    {
+      "path": "configs/mvp_short_k2_private.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 50
+    },
+    {
+      "path": "configs/mvp_short_k3_exchange.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_k3_private.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_k4_boundary.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_k4_candidates.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_k4_high_damage.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 20
+    },
+    {
+      "path": "configs/mvp_short_latent_exchange.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_latent_k3_control.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_latent_l1_costed.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_latent_l1_nocost.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_budget_matched.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_budget_rejection.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 10
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_costed.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk2.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk4.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk8.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_culture_120.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_culture_longrun.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 1500
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_stress_120.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_stress_longrun.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 1500
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_stress_validation.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_longrun.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 3000
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_mortality_trace_adaptive_groups_longrun.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 1500
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_mortality_trace_adaptive_groups_moving_hazards_evidence_longrun.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 1500
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_longrun.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 3000
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_no_affinity.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_no_affinity_longrun.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 3000
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_heterogeneous_no_affinity.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_memory_topk_inherited_legacy_120.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/mvp_short_latent_l2_nocost.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_latent_mlp_exchange.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_latent_mlp_private.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_latent_private.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/mvp_short_replay.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 20
+    },
+    {
+      "path": "configs/mvp_short_subject_structure_multi_env_atlas_longrun.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 1500
+    },
+    {
+      "path": "configs/mvp_short_v022_adaptive_trace_control_120.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/mvp_short_v022_moving_hazards_inherited_evidence_120.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/mvp_short_v022_moving_hazards_neutral_evidence_120.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/mvp_short_v023_synthetic_abiotic_field_plugin_120.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/mvp_small.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 500
+    },
+    {
+      "path": "configs/mvp_small_k1.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 500
+    },
+    {
+      "path": "configs/mvp_small_k1_none.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 500
+    },
+    {
+      "path": "configs/mvp_small_k1_private.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 500
+    },
+    {
+      "path": "configs/mvp_small_k1_zero_cost.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 500
+    },
+    {
+      "path": "configs/mvp_small_k2.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 500
+    },
+    {
+      "path": "configs/mvp_small_k2_retest350.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 350
+    },
+    {
+      "path": "configs/phase_counterfactual_smoke.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 60
+    },
+    {
+      "path": "configs/smoke_cpu.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 6
+    },
+    {
+      "path": "configs/v020_compat_v1_60.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 60
+    },
+    {
+      "path": "configs/v020_local_culture_smoke.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 30
+    },
+    {
+      "path": "configs/v020_local_culture_validation_120.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/v021_control_adaptive_no_trace_120.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/v021_control_adaptive_trace_120.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/v021_control_periodic_no_trace_120.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    },
+    {
+      "path": "configs/v021_control_periodic_trace_120.json",
+      "passed": true,
+      "seed": 10001,
+      "ticks": 120
+    }
+  ]
+}

@@ -244,6 +244,9 @@ class SimulationCheckpointMixin:
             "functional_modules_ablation_enabled": bool(
                 self.functional_modules_ablation_enabled
             ),
+            "functional_module_ablation_mask": (
+                self.functional_module_ablation_mask.astype(bool).copy()
+            ),
             "danger_evidence_ablation_enabled": bool(
                 self.danger_evidence_ablation_enabled
             ),
@@ -483,6 +486,20 @@ class SimulationCheckpointMixin:
         self.functional_modules_ablation_enabled = bool(
             state.get("functional_modules_ablation_enabled", False)
         )
+        default_module_mask = np.full(
+            int(self.cfg.functional_modules.module_count),
+            self.functional_modules_ablation_enabled,
+            dtype=bool,
+        )
+        self.functional_module_ablation_mask = np.asarray(
+            state.get("functional_module_ablation_mask", default_module_mask),
+            dtype=bool,
+        ).copy()
+        if self.functional_module_ablation_mask.shape != default_module_mask.shape:
+            raise ValueError("checkpoint functional module ablation mask shape mismatch")
+        self.functional_modules_ablation_enabled = bool(
+            np.all(self.functional_module_ablation_mask)
+        )
         self.danger_evidence_ablation_enabled = bool(
             state.get("danger_evidence_ablation_enabled", False)
         )
@@ -679,6 +696,9 @@ class SimulationCheckpointMixin:
         )
         branch.functional_modules_ablation_enabled = (
             self.functional_modules_ablation_enabled
+        )
+        branch.functional_module_ablation_mask = (
+            self.functional_module_ablation_mask.copy()
         )
         branch.danger_evidence_ablation_enabled = (
             self.danger_evidence_ablation_enabled

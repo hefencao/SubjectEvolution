@@ -8,13 +8,15 @@ import numpy as np
 import pytest
 
 from se.analysis.long_run import analyze
-from se.analysis.protocol_audit import build_protocol_audit
+from se.analysis.protocol_audit import build_protocol_audit, render_markdown as render_protocol_markdown
 from se.cfg import load_config, validate_config
 from se.differentiation.functional import (
     FUNCTIONAL_MODULE_SCHEMA,
     GENES_PER_MODULE,
     INPUT_COUNT,
     contextual_harvest_preference_q,
+    evaluate_contextual_harvest_modules_q,
+    functional_module_diagnostics,
     expression_gates_q,
     functional_module_energy,
 )
@@ -137,12 +139,96 @@ def test_d2_intervention_persists_through_checkpoint_and_is_analyzed(
     restored.run(until_tick=6)
 
     report = analyze([source / "evolution_progress.jsonl"])
-    assert report["schema"] == "multi-seed-long-run-analysis-v14"
+    assert report["schema"] == "multi-seed-long-run-analysis-v15"
     final = report["runs"][0]["functional_module_final"]
     assert final["functional_module_schema"] == FUNCTIONAL_MODULE_SCHEMA
     protocol = build_protocol_audit(CONFIG)
-    assert protocol["schema"] == "structural-measurement-protocol-audit-v7"
+    assert protocol["schema"] == "structural-measurement-protocol-audit-v8"
     functional = protocol["functional_module_protocol"]
     assert functional["action_selection"] is False
     assert functional["new_world_physics"] is False
-    assert functional["neutralization_intervention"] == "neutralize-functional-modules"
+    assert functional["neutralization_interventions"]["all_modules"] == "neutralize-functional-modules"
+    assert functional["contribution_diagnostics"]["feedback_to_world"] is False
+
+
+def test_d2b_per_module_contribution_and_partial_ablation() -> None:
+    cfg, genotype, start = _configured_genotype()
+    base = np.full((1, 4), AFFINITY_SCALE, dtype=np.int32)
+    kwargs = dict(
+        energy=np.asarray([0.1]),
+        integrity=np.asarray([1.0]),
+        material=np.asarray([0.0]),
+        information_store=np.asarray([0.0]),
+        fertility=np.asarray([0.25]),
+        local_resources=np.full((1, 4), 4.0),
+        cfg=cfg,
+        gene_start=start,
+    )
+    evaluation = evaluate_contextual_harvest_modules_q(
+        genotype, base, **kwargs
+    )
+    direct = contextual_harvest_preference_q(genotype, base, **kwargs)
+    assert np.array_equal(evaluation.preference_q, direct)
+    assert evaluation.module_residual_q.shape == (1, 4, 4)
+    assert np.any(evaluation.module_residual_q[:, 0] != 0)
+    assert np.all(evaluation.module_residual_q[:, 1:] == 0)
+
+    mask = np.asarray([True, False, False, False])
+    ablated = evaluate_contextual_harvest_modules_q(
+        genotype, base, ablated_modules=mask, **kwargs
+    )
+    assert np.array_equal(ablated.preference_q, base)
+    assert ablated.ablation_mask.tolist() == mask.tolist()
+
+    diagnostics = functional_module_diagnostics(
+        genotype,
+        evaluation.preference_q,
+        base,
+        cfg,
+        gene_start=start,
+        evaluation=evaluation,
+    )
+    assert diagnostics["functional_module_contribution_diagnostic_schema"] == (
+        "functional-module-contribution-audit-v1"
+    )
+    assert diagnostics["functional_module_contribution_effective_count"] == pytest.approx(1.0)
+    assert diagnostics["functional_module_contribution_share"][0] == pytest.approx(1.0)
+    assert diagnostics["functional_module_nonzero_entity_fraction_by_module"][0] == 1.0
+    assert diagnostics["functional_module_nonzero_entity_fraction_by_module"][1:] == [0.0, 0.0, 0.0]
+
+    full_cost = functional_module_energy(genotype, cfg, gene_start=start)
+    partial_cost = functional_module_energy(
+        genotype, cfg, gene_start=start, ablated_modules=mask
+    )
+    assert full_cost[0] > 0.0
+    assert partial_cost[0] == 0.0
+
+
+def test_d2b_partial_intervention_persists(tmp_path: Path) -> None:
+    cfg = load_config(CONFIG)
+    cfg = replace(
+        cfg,
+        run=replace(
+            cfg.run,
+            ticks=4,
+            checkpoint_period=99,
+            checkpoint_ticks=(2,),
+            full_checkpoint_enabled=True,
+            evolution_evaluation_period=2,
+        ),
+        world=replace(cfg.world, initial_entities=24, max_entities=32),
+    )
+    sim = Simulation(cfg, tmp_path / "source", backend="cpu")
+    genotype_before = sim.entities.genotype.copy()
+    sim.apply_intervention("neutralize-functional-module-2")
+    assert sim.functional_modules_ablation_enabled is False
+    assert sim.functional_module_ablation_mask.tolist() == [False, False, True, False]
+    assert np.array_equal(sim.entities.genotype, genotype_before)
+    sim.run(until_tick=2)
+    restored = Simulation.from_checkpoint(
+        tmp_path / "source" / "checkpoint_00000002.sechk",
+        tmp_path / "restored",
+        until_tick=4,
+    )
+    assert restored.functional_module_ablation_mask.tolist() == [False, False, True, False]
+    assert restored.functional_modules_ablation_enabled is False

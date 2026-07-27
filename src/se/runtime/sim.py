@@ -30,7 +30,7 @@ from se.differentiation.capacity import (
     capacity_maintenance_energy,
 )
 from se.differentiation.functional import (
-    contextual_harvest_preference_q,
+    evaluate_contextual_harvest_modules_q,
     functional_module_diagnostics,
     functional_module_energy,
 )
@@ -421,6 +421,9 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.capacity_ablation_enabled = False
         self.resource_affinity_ablation_enabled = False
         self.functional_modules_ablation_enabled = False
+        self.functional_module_ablation_mask = np.zeros(
+            int(cfg.functional_modules.module_count), dtype=bool
+        )
         self.danger_evidence_ablation_enabled = False
         self.knowledge_policy_ablation_enabled = False
         self.knowledge_transfer_ablation_enabled = False
@@ -1154,7 +1157,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             raise RuntimeError("effective resource affinity was not prepared")
         effective_harvest_preference_q = effective_resource_affinity_q.copy()
         if cfg.functional_modules.enabled:
-            active_preference = contextual_harvest_preference_q(
+            functional_evaluation = evaluate_contextual_harvest_modules_q(
                 ent.genotype[active],
                 effective_resource_affinity_q[active],
                 energy=ent.energy[active],
@@ -1166,7 +1169,9 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 cfg=cfg,
                 gene_start=ParametricPolicy.functional_module_gene_start(cfg),
                 ablated=self.functional_modules_ablation_enabled,
+                ablated_modules=self.functional_module_ablation_mask,
             )
+            active_preference = functional_evaluation.preference_q
             effective_harvest_preference_q[active] = active_preference
             if evaluation_due:
                 functional_context_metrics = functional_module_diagnostics(
@@ -1175,6 +1180,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     effective_resource_affinity_q[active],
                     cfg,
                     gene_start=ParametricPolicy.functional_module_gene_start(cfg),
+                    evaluation=functional_evaluation,
                 )
 
         if self.local_stress_diagnostics is not None:
@@ -1640,21 +1646,29 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                         cfg.entities.max_energy,
                     ).astype(np.float32)
                 if cfg.functional_modules.enabled:
-                    module_development = functional_module_energy(
+                    module_development_full = functional_module_energy(
                         ent.genotype[newborns],
                         cfg,
                         gene_start=ParametricPolicy.functional_module_gene_start(cfg),
                         development=True,
                     )
-                    if self.functional_modules_ablation_enabled:
+                    module_development_effective = functional_module_energy(
+                        ent.genotype[newborns],
+                        cfg,
+                        gene_start=ParametricPolicy.functional_module_gene_start(cfg),
+                        development=True,
+                        ablated=self.functional_modules_ablation_enabled,
+                        ablated_modules=self.functional_module_ablation_mask,
+                    )
+                    refund = module_development_full - module_development_effective
+                    if np.any(refund):
                         ent.energy[newborns] = np.minimum(
-                            ent.energy[newborns].astype(np.float64) + module_development,
+                            ent.energy[newborns].astype(np.float64) + refund,
                             cfg.entities.max_energy,
                         ).astype(np.float32)
-                    else:
-                        stats.functional_module_development_energy = float(
-                            module_development.sum(dtype=np.float64)
-                        )
+                    stats.functional_module_development_energy = float(
+                        module_development_effective.sum(dtype=np.float64)
+                    )
                 # Recovery is a treatment of the selected living cohort, not
                 # a hereditary trait in the current experiment.
                 self.autonomy_restored[newborns] = False
@@ -1931,12 +1945,14 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 capacity_cost.sum(dtype=np.float64)
             )
             cost = cost.astype(np.float64) + capacity_cost
-        if cfg.functional_modules.enabled and not self.functional_modules_ablation_enabled:
+        if cfg.functional_modules.enabled:
             module_cost = functional_module_energy(
                 ent.genotype[current_active],
                 cfg,
                 gene_start=ParametricPolicy.functional_module_gene_start(cfg),
                 development=False,
+                ablated=self.functional_modules_ablation_enabled,
+                ablated_modules=self.functional_module_ablation_mask,
             )
             stats.functional_module_maintenance_energy = float(
                 module_cost.sum(dtype=np.float64)

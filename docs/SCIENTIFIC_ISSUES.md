@@ -4,15 +4,17 @@ Implemented code is not automatically empirical evidence.
 
 | ID | Status | Issue | Required evidence |
 |---|---|---|---|
-| D0-01 | improved, open | Entity demand still reduces the no-entity resource dimensionality. | Report external fields, requested composition and realized extraction separately under D2-A. |
-| D1-01 | supported locally | Affinity expression increases alive, energy, resource dimensions and cultural roots in all six supplied branches while lowering immediate efficiency. | Repeat on an independent trajectory/config; do not generalize six local contrasts to necessity. |
-| D1-02 | open | Capacity expression is strongly path-dependent and may trade resource dimensionality for population/knowledge effects. | Capacity-bound sensitivity and longer paired horizons; report each capacity independently. |
-| D1-03 | guarded | Population-scale covariance can dominate raw request volumes. | Use per-window request shares and explicit request provenance, never realized volume as demand. |
-| D2-01 | active exploratory | Contextual modules may duplicate existing policy capacity or merely add small stochastic perturbations. | Multi-seed module-neutral branches, residual magnitude/topology, costs, and downstream effects. |
-| D2-02 | open | Fixed ten-input/four-output vocabulary constrains reachable function space. | Treat conclusions as architecture-dependent; compare vocabularies only after D2-A is identifiable. |
-| D2-03 | blocked | Module duplication, deletion, rerouting and new physical ports can manufacture novelty if introduced early. | Require stable D2-A expression effects and homologous module diagnostics before structural mutation. |
-| D2-04 | guarded | Higher survival in the 300-tick smoke coincides with lower resource dimensions and extraction efficiency. | Do not label modules adaptive; repeat across seeds/phases and inspect mechanism-specific trade-offs. |
-| ENV-01 | open | Share vectors are compositional. | Interpret shares jointly with raw volume, environment dimensions, efficiency and paired interventions. |
-| GPU-01 | open | GPU strict-reference validates hardware but still executes CPU-authoritative world semantics. | Validate hybrid accelerated multi-tick parity separately from scientific conclusions. |
-| REL-01 | guarded | Disposable artifact verification does not install commands into the current shell. | Use `make release-env` or explicitly install the verified wheel; confirm `se.__file__` is in site-packages. |
-| REL-02 | guarded | Source tests can hide missing sdist/wheel files and old installs. | Every release must build wheel from sdist, force-reinstall over prior wheel, import outside source, and execute single/multi-seed smoke. |
+| D0-01 | improved, open | Entity demand still reduces no-entity resource dimensionality. | Continue reporting external fields, requested composition and realized extraction separately. |
+| D1-01 | supported locally | Affinity expression has repeated local effects but not universal necessity. | Independent trajectories and longer paired horizons. |
+| D1-02 | open | Capacity effects remain path-dependent and may trade energy/resource dimensions for knowledge or social capacity. | Capacity-specific neutralization and bounds sensitivity. |
+| D2-01 | measured, open | D2-A modules are widely expressed but authoritative residuals remain very small. | D2-B leave-one-out effects at multiple seeds/phases and horizons. |
+| D2-02 | guarded | Expression counts can overstate function when isolated output rounds to zero. | Report expressed-but-silent fraction and isolated contribution magnitude. |
+| D2-03 | guarded | Multiple module outputs can cancel or be redundant. | Contribution shares, effective contributor count, cancellation and non-additivity. |
+| D2-04 | blocked | Duplication/deletion or arbitrary rerouting could manufacture novelty before function is identifiable. | Stable homologous module effects in at least two seeds; no single-lineage historical accident. |
+| D2-05 | open | Effective lineages and strategy dimensions collapse strongly by tick 3000. | Determine whether module effects repeat across surviving lineages/configurations; do not infer convergent evolution from one dominant lineage. |
+| D2-06 | open | Fixed ten-input/four-output vocabulary constrains reachable function space. | Treat all conclusions as architecture-dependent; compare vocabularies only after D2-B identification. |
+| ENV-01 | guarded | Resource-share vectors are compositional. | Interpret with raw volume, total request scale, environment dimensions and efficiency. |
+| SOC-01 | blocked | Social organization may reflect spatial/genetic sorting rather than higher-level control. | Ecological and module mechanisms must be identifiable before active social-control expansion. |
+| GPU-01 | open | GPU strict-reference validates hardware but remains CPU-authoritative. | Hybrid accelerated multi-tick parity before using accelerated output scientifically. |
+| DEV-01 | guarded | Editable installs can point to another checkout or stale console metadata. | `make conda-check` must prove `direct_url.json`, exact source root, entry points and external smoke. |
+| DEV-02 | guarded | Build isolation may fail in offline conda environments. | Maintain build tools in the conda env and use editable `--no-build-isolation`; artifact builds remain separate. |

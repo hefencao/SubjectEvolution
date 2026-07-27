@@ -84,6 +84,30 @@ INTERVENTIONS = (
         aliases=("functional-modules-off", "module-expression-neutral"),
     ),
     InterventionSpec(
+        "neutralize-functional-module-0",
+        InterventionKind.MODIFY_RULES,
+        "expression-gated-contextual-harvest-module-0-output",
+        aliases=("functional-module-0-off", "module-0-expression-neutral"),
+    ),
+    InterventionSpec(
+        "neutralize-functional-module-1",
+        InterventionKind.MODIFY_RULES,
+        "expression-gated-contextual-harvest-module-1-output",
+        aliases=("functional-module-1-off", "module-1-expression-neutral"),
+    ),
+    InterventionSpec(
+        "neutralize-functional-module-2",
+        InterventionKind.MODIFY_RULES,
+        "expression-gated-contextual-harvest-module-2-output",
+        aliases=("functional-module-2-off", "module-2-expression-neutral"),
+    ),
+    InterventionSpec(
+        "neutralize-functional-module-3",
+        InterventionKind.MODIFY_RULES,
+        "expression-gated-contextual-harvest-module-3-output",
+        aliases=("functional-module-3-off", "module-3-expression-neutral"),
+    ),
+    InterventionSpec(
         "neutralize-resource-affinity",
         InterventionKind.MODIFY_RULES,
         "inherited-four-resource-affinity-expression",

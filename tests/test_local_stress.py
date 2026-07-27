@@ -217,7 +217,7 @@ def test_long_run_analysis_builds_local_spatial_panel(tmp_path: Path) -> None:
     path.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
     report = analyze([path])
     spatial = report["runs"][0]["spatial_local_analysis"]
-    assert report["schema"] == "multi-seed-long-run-analysis-v14"
+    assert report["schema"] == "multi-seed-long-run-analysis-v15"
     assert spatial["available"] is True
     assert spatial["region_count"] == 2
     assert spatial["max_local_to_global_mortality_ratio"] > 1.0

@@ -1,42 +1,39 @@
-# SE v0.39
+# SE v0.40
 
 `SE` 是围绕多维环境、可遗传分化、动态知识与候选主体结构构建的可审计演化模拟参考实现。
 
-## 安装与发行验证
+## Conda 本地工作流
 
-`make release-check` 使用一次性 venv，只验证发行包，结束后不会修改当前 zsh 的 `PATH`。因此它通过后，当前 shell 中仍可能没有 `se-d1-factorial`。
-
-需要保留可运行环境时使用：
+本地不再为每次源码修改重新安装 wheel。激活目标 conda 环境后，对当前 checkout 做一次 editable 安装：
 
 ```bash
-make release-env \
-  PREVIOUS_WHEEL=/path/to/se_mvp-0.38.0-py3-none-any.whl
-source .release-env/venv/bin/activate
+conda activate <your-env>
+make conda-sync
 ```
 
-也可以不激活，直接运行：
+普通源码修改会立即生效。仅在修改 `pyproject.toml`、console scripts、依赖、版本或移动项目目录后重新执行 `make conda-sync`。
+
+日常测试：
 
 ```bash
-.release-env/venv/bin/se-d1-factorial --help
+make test
 ```
 
-`release-env` 会完成源码测试、sdist→wheel 构建、旧 wheel 覆盖安装、源码树外导入、全模块导入、CLI、单 seed、多 seed 精确 checkpoint 与短程模拟验证。
-
-## 单次与多 seed 运行
-
-单次运行可直接覆盖 seed，并指定多个精确 checkpoint：
+长跑或交付前：
 
 ```bash
-se \
-  --config configs/d2a_contextual_harvest_smoke.json \
-  --seed 10001 \
-  --checkpoint-ticks 120,240,360 \
-  --until-tick 360 \
-  --output runs/d2a_seed_10001 \
-  --backend cpu
+make conda-check
 ```
 
-多 seed 会为每个 seed 写出同一组 checkpoint：
+`conda-check` 会确认当前 Python 属于 `CONDA_PREFIX`、`se` 来自该 checkout、安装为 editable、五个入口与 metadata 一致，并在源码树外执行 smoke。不要在正常运行时再设置 `PYTHONPATH=src`。
+
+Wheel/sdist 仍可用作发布产物，但 `make release-check` 只审计产物，不是本地运行环境。
+
+## 主要运行入口
+
+```bash
+se --config <CONFIG> --seed 10001 --output <DIR> --backend cpu
+```
 
 ```bash
 se-multi \
@@ -44,15 +41,11 @@ se-multi \
   --seeds 10001,10002,10003 \
   --checkpoint-ticks 2400,2640,2760,2820,2880,3000 \
   --until-tick 3000 \
-  --output runs/d2a_multiseed \
+  --output runs/d2a_contextual_modules_multiseed \
   --backend gpu
 ```
 
-每个 seed 写出 checkpoint tick 的并集；某个 seed 暂时不需要的额外 checkpoint 不影响世界语义。
-
 ## D1 因子实验
-
-自动选择人口周期：
 
 ```bash
 se-d1-factorial \
@@ -67,16 +60,24 @@ se-d1-factorial \
   --gpu-semantics-mode strict-reference
 ```
 
-已有计划可直接复用，不再重新检测周期：
+## D2-B 模块贡献审计
+
+3000-tick D2-A 结果显示模块广泛表达，但最终残差很小，同时有效谱系和策略维度明显下降。因此 v0.40 不增加模块复制或新端口，而是先区分结构表达与因果贡献。
 
 ```bash
-se-d1-factorial \
-  --plan analyses/d1_factorial/d1_factorial_plan.json \
-  --output analyses/d1_factorial_rerun \
+se-d2-audit \
+  --run-dir runs/d2a_contextual_modules_multiseed/seed_10001 \
+  --run-dir runs/d2a_contextual_modules_multiseed/seed_10002 \
+  --run-dir runs/d2a_contextual_modules_multiseed/seed_10003 \
+  --output analyses/d2b_module_audit \
+  --phases peak,trough \
+  --horizon 120 \
   --execute \
   --backend gpu \
   --gpu-semantics-mode strict-reference
 ```
+
+每个 checkpoint 运行：baseline、全模块中和和四个逐模块中和分支，并报告单模块效应、总模块效应、非加性和取消程度。
 
 ## 当前科学主线
 
@@ -84,20 +85,10 @@ se-d1-factorial \
 2. **D1-A：** 工作记忆、知识、关系与注意力容量可独立遗传、计费和消融。
 3. **D1-B：** 固定采集预算下，由遗传 affinity 采样单一资源通道。
 4. **D1-C：** 请求流与实现流分离；共享 checkpoint 的 affinity × capacity 因子实验。
-5. **D2-A：** 四个表达门控的上下文模块，只向既有四个采集端口发布零和权重残差；不选择动作、不改变同化、不新增物理。
+5. **D2-A：** 四个表达门控上下文模块发布有限零和采集权重残差。
+6. **D2-B：** 独立模块贡献诊断与共享 checkpoint 的 leave-one-module-out 因果审计。
 
-D2-A 是受限探索机制。进入更一般的模块复制、重联或新具身端口前，必须先通过多 seed 长跑和 `neutralize-functional-modules` 配对验证。
-
-## 规范导入
-
-```python
-from se.cfg import load_config
-from se.env.world import Environment
-from se.differentiation import FUNCTIONAL_MODULE_SCHEMA
-from se.knowledge import KnowledgeSystem
-from se.subjects.graph import CandidateSubjectGraph
-from se.runtime.sim import Simulation
-```
+模块复制、删除、任意重联和新物理端口继续阻塞，直到 D2-B 在多个 seed/phase 中识别出可重复、非纯成本的模块效应。
 
 ## 文档
 
@@ -105,10 +96,8 @@ from se.runtime.sim import Simulation
 - [架构与提交边界](docs/ARCHITECTURE.md)
 - [项目状态](docs/PROJECT_STATUS.md)
 - [科学问题](docs/SCIENTIFIC_ISSUES.md)
-- [发行环境与 checkpoint 工作流](docs/v0.39/WORKFLOW_AND_RELEASE_ENV.md)
-- [D1 因子结果评估](docs/v0.39/INPUT_D1_FACTORIAL_ASSESSMENT.md)
-- [D2-A 机制](docs/v0.39/D2A_CONTEXTUAL_FUNCTIONAL_MODULES.md)
-- [D2-A 配对 smoke](docs/v0.39/D2A_PAIRED_SMOKE_REPORT.md)
-- [下一轮长跑计划](docs/v0.39/LONG_RUN_PLAN.md)
-
-历史版本详细材料保留在对应发行包中，不重复放入当前源码包。
+- [Conda editable 工作流](docs/v0.40/CONDA_EDITABLE_WORKFLOW.md)
+- [D2-A 3000-tick 结果评估](docs/v0.40/INPUT_D2A_LONG_RUN_ASSESSMENT.md)
+- [D2-B 模块贡献审计](docs/v0.40/D2B_MODULE_CONTRIBUTION_AUDIT.md)
+- [D2-B smoke](docs/v0.40/D2B_PAIRED_SMOKE_REPORT.md)
+- [下一轮配对计划](docs/v0.40/LONG_RUN_PLAN.md)

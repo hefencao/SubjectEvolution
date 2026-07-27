@@ -1,0 +1,656 @@
+{
+  "schema": "d2b-paired-smoke-summary-v1",
+  "source_result_schema": "d2-module-leave-one-out-results-v1",
+  "source_run": "v040_d2b_source",
+  "source_until_tick": 180,
+  "horizon_ticks": 30,
+  "phases": [
+    "peak",
+    "trough"
+  ],
+  "checkpoint_count": 2,
+  "selected_aggregate_effects": {
+    "all_module_expression_effect": {
+      "derived.harvest_extraction_efficiency_window": {
+        "count": 2,
+        "mean": -5.007023795577936e-09,
+        "min": -1.0014047591155872e-08,
+        "max": 0.0,
+        "std": 5.007023795577936e-09,
+        "same_nonzero_sign": true
+      },
+      "evolution.capacity_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.effective_lineages": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.environment_resource_effective_dimensions": {
+        "count": 2,
+        "mean": -0.0007619991224752098,
+        "min": -0.0015239982449504197,
+        "max": 0.0,
+        "std": 0.0007619991224752098,
+        "same_nonzero_sign": true
+      },
+      "evolution.functional_harvest_preference_effective_dimensions": {
+        "count": 2,
+        "mean": 5.617897595677768e-05,
+        "min": -0.0006744069148232334,
+        "max": 0.0007867648667367888,
+        "std": 0.0007305858907800111,
+        "same_nonzero_sign": false
+      },
+      "evolution.functional_module_cancellation_fraction": {
+        "count": 2,
+        "mean": 0.17932857282448128,
+        "min": 0.16361167684996603,
+        "max": 0.19504546879899654,
+        "std": 0.015716895974515255,
+        "same_nonzero_sign": true
+      },
+      "evolution.functional_module_contribution_effective_count": {
+        "count": 2,
+        "mean": 3.820564387995689,
+        "min": 3.670732561046754,
+        "max": 3.9703962149446244,
+        "std": 0.14983182694893515,
+        "same_nonzero_sign": true
+      },
+      "evolution.functional_module_residual_abs_mean": {
+        "count": 2,
+        "mean": 0.00034977935772250975,
+        "min": 0.00031697249212184875,
+        "max": 0.00038258622332317075,
+        "std": 3.2806865600661e-05,
+        "same_nonzero_sign": true
+      },
+      "evolution.knowledge_effective_transferred_roots": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.resource_affinity_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.strategy_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "world.alive": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "world.mean_energy": {
+        "count": 2,
+        "mean": -0.0010625720024108887,
+        "min": -0.0010809898376464844,
+        "max": -0.001044154167175293,
+        "std": 1.8417835235595703e-05,
+        "same_nonzero_sign": true
+      }
+    },
+    "module_0_expression_effect": {
+      "derived.harvest_extraction_efficiency_window": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.capacity_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.effective_lineages": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.environment_resource_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.functional_harvest_preference_effective_dimensions": {
+        "count": 2,
+        "mean": 0.00029949943214657715,
+        "min": 5.2441614092568756e-05,
+        "max": 0.0005465572502005855,
+        "std": 0.0002470578180540084,
+        "same_nonzero_sign": true
+      },
+      "evolution.functional_module_cancellation_fraction": {
+        "count": 2,
+        "mean": 0.06149729745571464,
+        "min": 0.05220584130619943,
+        "max": 0.07078875360522985,
+        "std": 0.00929145614951521,
+        "same_nonzero_sign": true
+      },
+      "evolution.functional_module_contribution_effective_count": {
+        "count": 2,
+        "mean": 0.9841420088269843,
+        "min": 0.9740388658898098,
+        "max": 0.9942451517641588,
+        "std": 0.010103142937174514,
+        "same_nonzero_sign": true
+      },
+      "evolution.functional_module_residual_abs_mean": {
+        "count": 2,
+        "mean": 6.114649318187643e-05,
+        "min": 5.872710412289917e-05,
+        "max": 6.356588224085369e-05,
+        "std": 2.41938905897726e-06,
+        "same_nonzero_sign": true
+      },
+      "evolution.knowledge_effective_transferred_roots": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.resource_affinity_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.strategy_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "world.alive": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "world.mean_energy": {
+        "count": 2,
+        "mean": -0.00035768747329711914,
+        "min": -0.00040793418884277344,
+        "max": -0.00030744075775146484,
+        "std": 5.02467155456543e-05,
+        "same_nonzero_sign": true
+      }
+    },
+    "module_1_expression_effect": {
+      "derived.harvest_extraction_efficiency_window": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.capacity_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.effective_lineages": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.environment_resource_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.functional_harvest_preference_effective_dimensions": {
+        "count": 2,
+        "mean": -0.0003378940718681278,
+        "min": -0.0004189801384533176,
+        "max": -0.000256808005282938,
+        "std": 8.10860665851898e-05,
+        "same_nonzero_sign": true
+      },
+      "evolution.functional_module_cancellation_fraction": {
+        "count": 2,
+        "mean": 0.006554467417607623,
+        "min": -0.01961014507489245,
+        "max": 0.032719079910107696,
+        "std": 0.026164612492500072,
+        "same_nonzero_sign": false
+      },
+      "evolution.functional_module_contribution_effective_count": {
+        "count": 2,
+        "mean": 0.9385370897422327,
+        "min": 0.8920386420788624,
+        "max": 0.985035537405603,
+        "std": 0.0464984476633703,
+        "same_nonzero_sign": true
+      },
+      "evolution.functional_module_residual_abs_mean": {
+        "count": 2,
+        "mean": 0.00010411003911854376,
+        "min": 9.512552400914634e-05,
+        "max": 0.00011309455422794118,
+        "std": 8.984515109397418e-06,
+        "same_nonzero_sign": true
+      },
+      "evolution.knowledge_effective_transferred_roots": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.resource_affinity_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.strategy_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "world.alive": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "world.mean_energy": {
+        "count": 2,
+        "mean": -0.0002993941307067871,
+        "min": -0.00030601024627685547,
+        "max": -0.00029277801513671875,
+        "std": 6.616115570068359e-06,
+        "same_nonzero_sign": true
+      }
+    },
+    "module_2_expression_effect": {
+      "derived.harvest_extraction_efficiency_window": {
+        "count": 2,
+        "mean": -5.007023795577936e-09,
+        "min": -1.0014047591155872e-08,
+        "max": 0.0,
+        "std": 5.007023795577936e-09,
+        "same_nonzero_sign": true
+      },
+      "evolution.capacity_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.effective_lineages": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.environment_resource_effective_dimensions": {
+        "count": 2,
+        "mean": -0.0007619991224752098,
+        "min": -0.0015239982449504197,
+        "max": 0.0,
+        "std": 0.0007619991224752098,
+        "same_nonzero_sign": true
+      },
+      "evolution.functional_harvest_preference_effective_dimensions": {
+        "count": 2,
+        "mean": 5.874804552985502e-05,
+        "min": -0.0006932721763517335,
+        "max": 0.0008107682674114436,
+        "std": 0.0007520202218815886,
+        "same_nonzero_sign": false
+      },
+      "evolution.functional_module_cancellation_fraction": {
+        "count": 2,
+        "mean": 0.049243902793280225,
+        "min": 0.042779978144591335,
+        "max": 0.055707827441969116,
+        "std": 0.00646392464868889,
+        "same_nonzero_sign": true
+      },
+      "evolution.functional_module_contribution_effective_count": {
+        "count": 2,
+        "mean": 0.8613401349155361,
+        "min": 0.7384968152331792,
+        "max": 0.9841834545978929,
+        "std": 0.12284331968235684,
+        "same_nonzero_sign": true
+      },
+      "evolution.functional_module_residual_abs_mean": {
+        "count": 2,
+        "mean": 4.6632035293156916e-05,
+        "min": 2.8209525997899168e-05,
+        "max": 6.505454458841466e-05,
+        "std": 1.842250929525775e-05,
+        "same_nonzero_sign": true
+      },
+      "evolution.knowledge_effective_transferred_roots": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.resource_affinity_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.strategy_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "world.alive": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "world.mean_energy": {
+        "count": 2,
+        "mean": -0.00018018484115600586,
+        "min": -0.0002263784408569336,
+        "max": -0.00013399124145507812,
+        "std": 4.6193599700927734e-05,
+        "same_nonzero_sign": true
+      }
+    },
+    "module_3_expression_effect": {
+      "derived.harvest_extraction_efficiency_window": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.capacity_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.effective_lineages": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.environment_resource_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.functional_harvest_preference_effective_dimensions": {
+        "count": 2,
+        "mean": -1.5333364879799305e-05,
+        "min": -0.00013490356780687662,
+        "max": 0.00010423683804727801,
+        "std": 0.00011957020292707732,
+        "same_nonzero_sign": false
+      },
+      "evolution.functional_module_cancellation_fraction": {
+        "count": 2,
+        "mean": 0.05692547347038379,
+        "min": 0.039234485401806296,
+        "max": 0.07461646153896129,
+        "std": 0.017690988068577496,
+        "same_nonzero_sign": true
+      },
+      "evolution.functional_module_contribution_effective_count": {
+        "count": 2,
+        "mean": 0.9959790271100044,
+        "min": 0.9950440451889344,
+        "max": 0.9969140090310744,
+        "std": 0.0009349819210699994,
+        "same_nonzero_sign": true
+      },
+      "evolution.functional_module_residual_abs_mean": {
+        "count": 2,
+        "mean": 7.92231074022597e-05,
+        "min": 7.18060661764706e-05,
+        "max": 8.66401486280488e-05,
+        "std": 7.4170412257890995e-06,
+        "same_nonzero_sign": true
+      },
+      "evolution.knowledge_effective_transferred_roots": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.resource_affinity_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.strategy_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "world.alive": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "world.mean_energy": {
+        "count": 2,
+        "mean": -0.0002741813659667969,
+        "min": -0.0002969503402709961,
+        "max": -0.00025141239166259766,
+        "std": 2.276897430419922e-05,
+        "same_nonzero_sign": true
+      }
+    },
+    "module_nonadditivity": {
+      "derived.harvest_extraction_efficiency_window": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.capacity_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.effective_lineages": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.environment_resource_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.functional_harvest_preference_effective_dimensions": {
+        "count": 2,
+        "mean": 5.115893502827262e-05,
+        "min": 2.6191717588108787e-05,
+        "max": 7.612615246843646e-05,
+        "std": 2.4967217440163836e-05,
+        "same_nonzero_sign": true
+      },
+      "evolution.functional_module_cancellation_fraction": {
+        "count": 2,
+        "mean": 0.005107431687495001,
+        "min": -0.0034046775601164203,
+        "max": 0.013619540935106422,
+        "std": 0.008512109247611421,
+        "same_nonzero_sign": false
+      },
+      "evolution.functional_module_contribution_effective_count": {
+        "count": 2,
+        "mean": 0.040566127400931684,
+        "min": 0.010018062145895179,
+        "max": 0.07111419265596819,
+        "std": 0.030548065255036505,
+        "same_nonzero_sign": true
+      },
+      "evolution.functional_module_residual_abs_mean": {
+        "count": 2,
+        "mean": 5.866768272667295e-05,
+        "min": 4.513524159663866e-05,
+        "max": 7.220012385670725e-05,
+        "std": 1.3532441130034294e-05,
+        "same_nonzero_sign": true
+      },
+      "evolution.knowledge_effective_transferred_roots": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.resource_affinity_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "evolution.strategy_effective_dimensions": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "world.alive": {
+        "count": 2,
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "std": 0.0,
+        "same_nonzero_sign": false
+      },
+      "world.mean_energy": {
+        "count": 2,
+        "mean": 4.887580871582031e-05,
+        "min": 2.384185791015625e-07,
+        "max": 9.751319885253906e-05,
+        "std": 4.863739013671875e-05,
+        "same_nonzero_sign": true
+      }
+    }
+  },
+  "interpretation": [
+    "all and per-module interventions executed from shared checkpoints",
+    "short horizon effects are dominated by explicit expression cost and tiny preference changes",
+    "no alive difference was observed in this smoke",
+    "the smoke validates attribution mechanics, not adaptive importance"
+  ]
+}

@@ -286,7 +286,7 @@ print(json.dumps({{'version': version, 'package_path': str(package_path), 'modul
         )
 
     help_outputs: dict[str, str] = {}
-    for command in ("se", "se-multi", "se-gui", "se-d1-factorial"):
+    for command in ("se", "se-multi", "se-gui", "se-d1-factorial", "se-d2-audit"):
         result = _run(
             [_venv_script(env_root, command), "--help"],
             cwd=work_root,

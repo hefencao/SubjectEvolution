@@ -1,0 +1,119 @@
+{
+  "schema": "v039-v040-compatibility-v1",
+  "config": "configs/d2a_contextual_harvest_smoke.json",
+  "backend": "cpu",
+  "until_tick": 60,
+  "metrics": {
+    "rows": 7,
+    "common_fields": 357,
+    "excluded_timing_fields": [
+      "conflict_seconds",
+      "device_commit_seconds",
+      "environment_seconds",
+      "evolution_evaluation_seconds",
+      "graph_seconds",
+      "observation_seconds",
+      "policy_seconds",
+      "spatial_seconds",
+      "step_seconds",
+      "validation_seconds",
+      "wall_elapsed_seconds",
+      "window_seconds",
+      "window_seconds_per_tick"
+    ],
+    "non_timing_fields": 344,
+    "cells_compared": 2408,
+    "differences": []
+  },
+  "byte_outputs": {
+    "environment_atlas.jsonl": {
+      "identical": true,
+      "old_size": 34439,
+      "new_size": 34439,
+      "sha256": "6f42f9026e04619febb9744ac8c55abad2dfca3a63dfb8e990552fbd76e1a067"
+    },
+    "environment_atlas_summary.json": {
+      "identical": true,
+      "old_size": 32542,
+      "new_size": 32542,
+      "sha256": "9d98babdc18db76079b326c9d02797f1e98fe3149de97f2d480f39726fd98b25"
+    },
+    "knowledge_events.jsonl": {
+      "identical": true,
+      "old_size": 46843,
+      "new_size": 46843,
+      "sha256": "d397b14fecbdcf372437992d5b28b54ea2a3890b4ee6792221b251dd4ecb8276"
+    },
+    "knowledge_outcome_updates.csv": {
+      "identical": true,
+      "old_size": 412694,
+      "new_size": 412694,
+      "sha256": "a98fb3ac8f7e05dbc16575eeb877b864a18b828684085d6c214dc12273689d9a"
+    },
+    "knowledge_policy_contributions.csv": {
+      "identical": true,
+      "old_size": 10577184,
+      "new_size": 10577184,
+      "sha256": "0ff2a1fb9ba8e412b1c6a2a4ae30422c3423e4f37d396237c02fc350c56bc245"
+    },
+    "knowledge_routing_costs.csv": {
+      "identical": true,
+      "old_size": 550174,
+      "new_size": 550174,
+      "sha256": "4752408234d43c7aef428ed4fa6ad6d288b8b96a8f0ea5c92b65888c32f6d4b3"
+    },
+    "knowledge_selection_events.csv": {
+      "identical": true,
+      "old_size": 399244,
+      "new_size": 399244,
+      "sha256": "d6f57860b2878dc7b1773bdd8a4c030e31d10b5fc53ab140cf7543bbd4284f58"
+    },
+    "knowledge_transfers.csv": {
+      "identical": true,
+      "old_size": 3310,
+      "new_size": 3310,
+      "sha256": "dc073df03403ff6559835b6fc5123b9f201efbdded9c432cf471b1d8bd19f8e4"
+    },
+    "knowledge_working_memory.csv": {
+      "identical": true,
+      "old_size": 1212597,
+      "new_size": 1212597,
+      "sha256": "93ffb54218fa789932a8d69ca675bfd28942ec69737035ccbc5c28dd691b0f19"
+    },
+    "subject_structure_transitions.jsonl": {
+      "identical": true,
+      "old_size": 751,
+      "new_size": 751,
+      "sha256": "6f7261eb19bfc902d06044f6be75f0d2c47df59916a339768cc462b0c348ad8f"
+    },
+    "subject_structure_summary.json": {
+      "identical": true,
+      "old_size": 1318,
+      "new_size": 1318,
+      "sha256": "6000e4dabeabfcf91c00bab855cf278d9472d4ba5f1315b4403cd3075b8ed42e"
+    }
+  },
+  "npz_checkpoints": {
+    "30": {
+      "common_arrays": 38,
+      "different_arrays": [],
+      "old_only": [],
+      "new_only": []
+    },
+    "60": {
+      "common_arrays": 38,
+      "different_arrays": [],
+      "old_only": [],
+      "new_only": []
+    }
+  },
+  "passed": true,
+  "v039_checkpoint_resume": {
+    "checkpoint": "checkpoint_00000060.sechk",
+    "loaded_by_version": "0.40.0",
+    "until_tick": 70,
+    "final_tick": 70,
+    "passed": true,
+    "note": "functional_module_ablation_mask defaults to the historical all-enabled state when absent"
+  }
+}

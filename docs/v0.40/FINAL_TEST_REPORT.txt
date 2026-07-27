@@ -1,0 +1,29 @@
+SE v0.40 final validation
+==========================
+
+Full test suite:
+  190 passed, 1 skipped
+  skipped: real CUDA/CuPy device test unavailable in this environment
+
+Config validation:
+  75 / 75 passed
+
+Installed/editable validation:
+  package version: 0.40.0
+  imported modules: 82
+  console scripts: se, se-multi, se-gui, se-d1-factorial, se-d2-audit
+  exact editable checkout: passed
+  source-tree-external smoke: passed
+  actual conda executable: unavailable in validation container; user-side
+  `make conda-check` remains required in the target conda environment
+
+Scientific/CLI integration:
+  long-run analysis schema v15: passed
+  protocol audit schema v8 and Markdown rendering: passed
+  D2 leave-one-out planning/execution smoke: passed
+
+Compatibility with v0.39 when no D2-B intervention is active:
+  common non-timing metrics cells: 2408
+  differences: 0
+  byte-identical selected output files: 11 / 11
+  exact common checkpoint arrays: 38 / 38 at tick 30 and tick 60

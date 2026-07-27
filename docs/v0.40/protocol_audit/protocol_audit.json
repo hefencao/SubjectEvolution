@@ -1,0 +1,413 @@
+{
+  "schema": "structural-measurement-protocol-audit-v8",
+  "config_path": "/mnt/data/se_v040_project/configs/mvp_short_d2a_contextual_harvest_longrun.json",
+  "group_label_protocol": {
+    "label_schema": "trusted-directed-fixed-round-min-label-v1",
+    "edge_rule": "directed relation slot is eligible when target is alive and materialized trust is at least trust_group_threshold",
+    "successful_share_relation_rule": "forward full trust gain plus reciprocal half-gain; thresholded directions may still differ after history and decay",
+    "propagation_rule": "initialize label as physical slot index; for each fixed round, replace an entity label by the minimum of its current label and labels reachable through eligible outgoing relation slots",
+    "propagation_rounds": 8,
+    "trust_threshold": 0.12,
+    "minimum_members": 6,
+    "group_token_rule": "stable entity ID at the propagated minimum root slot; components below minimum members receive token 0 and remain ungrouped",
+    "exact_component_claim": false,
+    "interpretation": "finite-round directed minimum-label propagation is an approximate candidate-group measurement, not a subject-existence verdict",
+    "refresh": {
+      "mode": "adaptive-topology-v1",
+      "period": 50,
+      "minimum_period": 100,
+      "maximum_period": 300,
+      "adaptive_triggers": [
+        "initial snapshot",
+        "topology-relevant relation change after minimum period",
+        "predicted trust-threshold decay crossing after minimum period",
+        "maximum staleness"
+      ]
+    }
+  },
+  "subject_structure_protocol": {
+    "enabled": true,
+    "schema": "stable-membership-subject-succession-v1",
+    "identity_key": "stable entity ID membership",
+    "transition_rule": "connect previous and current candidate groups when they share at least one stable entity ID; classify zero/one/multiple overlap relations as formation, persistence, split, merge, or dissolution",
+    "feedback_to_world": false,
+    "interpretation": "membership succession among candidate social structures; not an ontological identity theorem, arbitrary nesting graph, or subjecthood score"
+  },
+  "spatial_region_protocol": {
+    "schema": "normalized-fixed-count-grid-v1",
+    "mapping": "row-major-y-then-x",
+    "boundary_convention": "half-open except clipped outer boundary",
+    "regions_x": 4,
+    "regions_y": 4,
+    "region_count": 16,
+    "world_width": 128.0,
+    "world_height": 128.0,
+    "world_grid_x": 32,
+    "world_grid_y": 32,
+    "normalized_region_width": 0.25,
+    "normalized_region_height": 0.25,
+    "physical_region_width": 32.0,
+    "physical_region_height": 32.0,
+    "world_cells_per_region_x": 8.0,
+    "world_cells_per_region_y": 8.0,
+    "world_grid_aligned": true,
+    "feedback_to_world": false,
+    "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+    "partition_sha256": "80ca3a910af4d035ebdcc1b9fb961d80675113ed6ff16e84a7c3b5f30a34c3f9"
+  },
+  "resource_environment_protocol": {
+    "schema": "orthogonal-four-resource-niche-v1",
+    "channel_count": 4,
+    "resource_capacities": [
+      8.0,
+      8.0,
+      8.0,
+      8.0
+    ],
+    "resource_regeneration": [
+      0.018,
+      0.018,
+      0.018,
+      0.018
+    ],
+    "resource_effect_matrix": [
+      [
+        0.52,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.03,
+        0.018,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.03,
+        0.24,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.018,
+        0.0,
+        0.24
+      ]
+    ],
+    "harvest_allocation_schema": "affinity-sampled-exclusive-harvest-v1",
+    "harvest_channel_multipliers": [
+      0.65,
+      0.65,
+      0.65,
+      0.65
+    ],
+    "harvest_budget_semantics": "fixed total extraction budget spent on one channel sampled from inherited affinity with state-free keyed randomness",
+    "independent_cycle_periods": [
+      173,
+      257,
+      349,
+      431
+    ],
+    "cycle_amplitudes": [
+      0.5,
+      0.5,
+      0.5,
+      0.5
+    ],
+    "primary_wave_vectors": [
+      [
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        1.0
+      ],
+      [
+        1.0,
+        -1.0
+      ]
+    ],
+    "secondary_wave_vectors": [
+      [
+        2.0,
+        1.0
+      ],
+      [
+        1.0,
+        2.0
+      ],
+      [
+        2.0,
+        -1.0
+      ],
+      [
+        1.0,
+        -2.0
+      ]
+    ],
+    "primary_wave_amplitudes": [
+      0.25,
+      0.25,
+      0.25,
+      0.25
+    ],
+    "secondary_wave_amplitudes": [
+      0.1,
+      0.1,
+      0.1,
+      0.1
+    ],
+    "diffusion_rates": [
+      0.002,
+      0.004,
+      0.006,
+      0.008
+    ],
+    "entity_aware": false,
+    "environment_generation_entity_aware": false,
+    "harvest_demand_entity_aware": true,
+    "harvest_request_observation": {
+      "schema": "explicit-requested-harvest-window-v1",
+      "requested_before_environment_allocation": true,
+      "realized_after_environment_allocation": true,
+      "scale_composition_separation": true
+    },
+    "lineage_aware": false,
+    "group_aware": false,
+    "diversity_protection": false,
+    "interpretation": "fixed four-channel physical interface with independently configured spatial, temporal, and diffusion dynamics; configuration can create environmental axes but does not guarantee evolved ecological differentiation"
+  },
+  "d1_factorial_protocol": {
+    "schema": "d1-affinity-capacity-factorial-plan-v1",
+    "branches": {
+      "baseline": [],
+      "affinity-neutral": [
+        "neutralize-resource-affinity"
+      ],
+      "capacity-neutral": [
+        "neutralize-elastic-capacities"
+      ],
+      "combined-neutral": [
+        "neutralize-resource-affinity",
+        "neutralize-elastic-capacities"
+      ]
+    },
+    "paired_randomness": true,
+    "genotype_preserved": true,
+    "effect_sign": "expressed phenotype minus neutralized branch",
+    "interaction": "baseline - affinity-neutral - capacity-neutral + combined-neutral",
+    "interpretation": "local checkpoint-phase effects over a fixed horizon; not universal necessity"
+  },
+  "differentiation_capacity_protocol": {
+    "enabled": true,
+    "schema": "inherited-elastic-capacities-v1",
+    "fixed_physical_layout": {
+      "working_memory_dimensions": 4,
+      "knowledge_bytes": 512,
+      "relation_slots": 8,
+      "knowledge_attention_slots": 2
+    },
+    "effective_capacity_bounds": {
+      "working_memory_dimensions": [
+        0,
+        4
+      ],
+      "knowledge_bytes": [
+        0,
+        512
+      ],
+      "relation_slots": [
+        0,
+        8
+      ],
+      "knowledge_attention_slots": [
+        0,
+        2
+      ]
+    },
+    "knowledge_quantum_bytes": 32,
+    "gene_layout": {
+      "start": 535,
+      "count": 4,
+      "mapping": "clip inherited float gene to [-1,1], map monotonically to an integer capacity level, then mask a fixed physical tensor layout"
+    },
+    "mutation": {
+      "probability": 0.03,
+      "std": 0.16
+    },
+    "maintenance_energy": {
+      "per_working_memory_dimension": 1e-05,
+      "per_knowledge_byte": 1e-07,
+      "per_relation_slot": 5e-06,
+      "per_attention_slot": 1e-05
+    },
+    "development_energy": {
+      "per_working_memory_dimension": 0.002,
+      "per_knowledge_byte": 1e-05,
+      "per_relation_slot": 0.001,
+      "per_attention_slot": 0.002
+    },
+    "world_feedback": true,
+    "preset_role_labels": false,
+    "diversity_protection": false,
+    "interpretation": "four inherited capacities alter the usable scale and explicit cost of existing memory, knowledge, relationship, and attention mechanisms; they do not add a predefined ecological role or guarantee adaptive differentiation"
+  },
+  "functional_module_protocol": {
+    "enabled": true,
+    "schema": "expression-gated-contextual-harvest-v1",
+    "module_count": 4,
+    "gene_start": 539,
+    "input_schema": "internal-needs-local-resources-v1",
+    "inputs": [
+      "bias",
+      "energy deficit",
+      "integrity deficit",
+      "material deficit",
+      "information-store deficit",
+      "fertility deficit",
+      "four local normalized resource channels"
+    ],
+    "output_schema": "harvest-channel-zero-sum-residual-v1",
+    "output_scope": "zero-sum residual over four harvest-channel request weights",
+    "action_selection": false,
+    "assimilation_affinity_modified": false,
+    "resource_gradient_utility_modified": false,
+    "new_world_physics": false,
+    "expression_threshold": 0.0,
+    "maximum_residual_fraction": 0.5,
+    "maintenance_energy_per_expression": 8e-05,
+    "development_energy_per_expression": 0.008,
+    "neutralization_interventions": {
+      "all_modules": "neutralize-functional-modules",
+      "per_module": [
+        "neutralize-functional-module-0",
+        "neutralize-functional-module-1",
+        "neutralize-functional-module-2",
+        "neutralize-functional-module-3"
+      ]
+    },
+    "contribution_diagnostics": {
+      "schema": "functional-module-contribution-audit-v1",
+      "per_module_gate": true,
+      "per_module_activation": true,
+      "isolated_output_effect": true,
+      "contribution_effective_count": true,
+      "cancellation_fraction": true,
+      "feedback_to_world": false
+    },
+    "leave_one_out_protocol": {
+      "schema": "d2-module-leave-one-out-plan-v1",
+      "branches": [
+        "baseline",
+        "all-modules-neutral",
+        "module-0-neutral",
+        "module-1-neutral",
+        "module-2-neutral",
+        "module-3-neutral"
+      ],
+      "paired_randomness": true,
+      "genotype_preserved": true
+    },
+    "preset_role_labels": false,
+    "diversity_protection": false,
+    "interpretation": "a bounded D2-A test of inherited input-expression-output routing within the already validated resource-acquisition interface; not a general organ generator or a claim of new physical functionality"
+  },
+  "environment_atlas_protocol": {
+    "enabled": true,
+    "schema": "multiscale-subject-environment-atlas-v2",
+    "scales": [
+      {
+        "schema": "normalized-fixed-count-grid-v1",
+        "mapping": "row-major-y-then-x",
+        "boundary_convention": "half-open except clipped outer boundary",
+        "regions_x": 2,
+        "regions_y": 2,
+        "region_count": 4,
+        "world_width": 128.0,
+        "world_height": 128.0,
+        "world_grid_x": 32,
+        "world_grid_y": 32,
+        "normalized_region_width": 0.5,
+        "normalized_region_height": 0.5,
+        "physical_region_width": 64.0,
+        "physical_region_height": 64.0,
+        "world_cells_per_region_x": 16.0,
+        "world_cells_per_region_y": 16.0,
+        "world_grid_aligned": true,
+        "feedback_to_world": false,
+        "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+        "partition_sha256": "e44cf1d76a49a7081e676977301038cd524d39a839a4594fc74f7ac2d14827cd"
+      },
+      {
+        "schema": "normalized-fixed-count-grid-v1",
+        "mapping": "row-major-y-then-x",
+        "boundary_convention": "half-open except clipped outer boundary",
+        "regions_x": 4,
+        "regions_y": 4,
+        "region_count": 16,
+        "world_width": 128.0,
+        "world_height": 128.0,
+        "world_grid_x": 32,
+        "world_grid_y": 32,
+        "normalized_region_width": 0.25,
+        "normalized_region_height": 0.25,
+        "physical_region_width": 32.0,
+        "physical_region_height": 32.0,
+        "world_cells_per_region_x": 8.0,
+        "world_cells_per_region_y": 8.0,
+        "world_grid_aligned": true,
+        "feedback_to_world": false,
+        "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+        "partition_sha256": "80ca3a910af4d035ebdcc1b9fb961d80675113ed6ff16e84a7c3b5f30a34c3f9"
+      },
+      {
+        "schema": "normalized-fixed-count-grid-v1",
+        "mapping": "row-major-y-then-x",
+        "boundary_convention": "half-open except clipped outer boundary",
+        "regions_x": 8,
+        "regions_y": 8,
+        "region_count": 64,
+        "world_width": 128.0,
+        "world_height": 128.0,
+        "world_grid_x": 32,
+        "world_grid_y": 32,
+        "normalized_region_width": 0.125,
+        "normalized_region_height": 0.125,
+        "physical_region_width": 16.0,
+        "physical_region_height": 16.0,
+        "world_cells_per_region_x": 4.0,
+        "world_cells_per_region_y": 4.0,
+        "world_grid_aligned": true,
+        "feedback_to_world": false,
+        "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+        "partition_sha256": "0fdbb1f57edbe87a4e6a7e2929f4614d1637a26822bfa8a314c3936571dbb876"
+      }
+    ],
+    "signature": [
+      "four capacity-normalized resource means",
+      "hazard mean",
+      "mortality-trace mean"
+    ],
+    "resource_only_metrics": [
+      "resource effective dimensions",
+      "resource channel correlation matrix",
+      "mean/max absolute resource channel correlation"
+    ],
+    "subject_exposure_association": "between-label share of realized regional signature variance for genetic lineages and observed social groups",
+    "feedback_to_world": false,
+    "interpretation": "descriptive multiscale environment heterogeneity and exposure segregation; not environmental causation or subjecthood"
+  },
+  "anchor_protocol": null,
+  "audit_sha256": "51cad9df8e0b3c26522e50ecece82c81a40cdb94bc603f79b98e4a1b25e6a5b1"
+}

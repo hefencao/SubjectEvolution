@@ -274,8 +274,36 @@ class SimulationExperimentMixin:
                 )
             canonical = "neutralize-functional-modules"
             self.functional_modules_ablation_enabled = True
+            self.functional_module_ablation_mask[:] = True
             details = {
                 "effective_output": "zero-residual",
+                "ablated_modules": list(range(int(self.cfg.functional_modules.module_count))),
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+                "future_offspring_expression_neutralized": True,
+            }
+        elif normalized.startswith("neutralize-functional-module-"):
+            if not self.cfg.functional_modules.enabled:
+                raise ValueError(
+                    f"{normalized} requires enabled functional modules"
+                )
+            try:
+                module_index = int(normalized.rsplit("-", 1)[1])
+            except ValueError as exc:
+                raise ValueError(f"invalid functional module intervention: {normalized}") from exc
+            if not 0 <= module_index < int(self.cfg.functional_modules.module_count):
+                raise ValueError(
+                    f"functional module index {module_index} is outside configured range"
+                )
+            canonical = f"neutralize-functional-module-{module_index}"
+            self.functional_module_ablation_mask[module_index] = True
+            self.functional_modules_ablation_enabled = bool(
+                np.all(self.functional_module_ablation_mask)
+            )
+            details = {
+                "effective_output": "zero-residual-for-selected-module",
+                "ablated_module": module_index,
+                "ablation_mask": self.functional_module_ablation_mask.astype(bool).tolist(),
                 "genotype_coordinates_modified": 0,
                 "inheritance_modified": False,
                 "future_offspring_expression_neutralized": True,

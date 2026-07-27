@@ -576,6 +576,9 @@ class SimulationReportingMixin:
                 "functional_modules_ablation_enabled": (
                     self.functional_modules_ablation_enabled
                 ),
+                "functional_module_ablation_mask": (
+                    self.functional_module_ablation_mask.astype(bool).tolist()
+                ),
                 "knowledge_policy_residual_schema": (
                     self.cfg.knowledge.policy_residual_schema
                     if self.cfg.knowledge.policy_influence_enabled
@@ -1330,6 +1333,9 @@ class SimulationReportingMixin:
             "functional_modules_schema": self.cfg.functional_modules.schema,
             "functional_modules_ablation_enabled": int(
                 self.functional_modules_ablation_enabled
+            ),
+            "functional_module_ablation_mask": (
+                self.functional_module_ablation_mask.astype(bool).tolist()
             ),
             "functional_module_maintenance_energy_step": (
                 stats.functional_module_maintenance_energy

@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.40.0
+
+### D2-B module contribution audit
+
+- Adds observation-only per-module gate, activation, isolated residual, silence, contribution-share, dominance and cancellation diagnostics while preserving the D2-A authoritative sum/rounding path.
+- Adds per-module expression-neutralization interventions and checkpoint persistence.
+- Adds `se-d2-audit` for shared-checkpoint baseline, all-neutral and four leave-one-module-out branches with non-additivity contrasts.
+- Upgrades long-run analysis to v15 and protocol audit to v8.
+- Blocks module duplication/new ports after the supplied 3000-tick runs show small residuals and strong lineage/strategy collapse.
+
+### Conda editable workflow
+
+- Makes `make conda-sync` / `make conda-check` the preferred local workflow.
+- Verifies exact checkout, editable `direct_url.json`, metadata/version, all modules, five console scripts and source-tree-external smoke.
+- Uses `--no-build-isolation` for restricted/offline conda environments; wheel/sdist validation remains optional release auditing.
+
+### Validation
+
+- Full tests and compatibility results are recorded under `docs/v0.40/`.
+
 ## 0.39.0
 
 ### Workflow and artifact execution

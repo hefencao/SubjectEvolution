@@ -976,6 +976,15 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
     functional_changed_fraction = _array(
         records, "functional_module_changed_entity_fraction"
     )
+    functional_contribution_count = _array(
+        records, "functional_module_contribution_effective_count"
+    )
+    functional_contribution_dominance = _array(
+        records, "functional_module_contribution_dominance"
+    )
+    functional_cancellation = _array(
+        records, "functional_module_cancellation_fraction"
+    )
 
     raw_correlations = {
         "mortality_vs_same_window_cohesion": _pearson(mortality, cohesion),
@@ -1308,6 +1317,15 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
             "functional_module_changed_entity_fraction": _slope_per_1000_ticks(
                 ticks, functional_changed_fraction
             ),
+            "functional_module_contribution_effective_count": _slope_per_1000_ticks(
+                ticks, functional_contribution_count
+            ),
+            "functional_module_contribution_dominance": _slope_per_1000_ticks(
+                ticks, functional_contribution_dominance
+            ),
+            "functional_module_cancellation_fraction": _slope_per_1000_ticks(
+                ticks, functional_cancellation
+            ),
         },
         "capacity_correlations_observational": (
             capacity_correlations if capacity_final else {}
@@ -1453,7 +1471,7 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         if value["available_runs"] >= 3 and value["same_nonzero_sign"]
     ]
     return {
-        "schema": "multi-seed-long-run-analysis-v14",
+        "schema": "multi-seed-long-run-analysis-v15",
         "analyzer_version": __version__,
         "input_runtime_versions": sorted(
             {
@@ -1756,6 +1774,10 @@ def render_markdown(report: dict[str, Any]) -> str:
                 f"- module residual mean/max |share|: {_format(values.get('functional_module_residual_abs_mean'), 6)} / {_format(values.get('functional_module_residual_abs_max'), 6)}",
                 f"- entities with changed request weights: {_format(values.get('functional_module_changed_entity_fraction'))}",
                 f"- residual effective dimensions: {_format(values.get('functional_module_residual_effective_dimensions'))}",
+                f"- effective contributing modules / dominance / cancellation: {_format(values.get('functional_module_contribution_effective_count'))} / {_format(values.get('functional_module_contribution_dominance'))} / {_format(values.get('functional_module_cancellation_fraction'))}",
+                f"- per-module contribution shares: {values.get('functional_module_contribution_share')}",
+                f"- per-module isolated |residual| means: {values.get('functional_module_isolated_residual_abs_mean_by_module')}",
+                f"- per-module nonzero/silent fractions: {values.get('functional_module_nonzero_entity_fraction_by_module')} / {values.get('functional_module_silent_expressed_fraction_by_module')}",
                 f"- preference mean: {values.get('functional_harvest_preference_mean')}",
                 f"- final maintenance/development energy step: {_format(values.get('functional_module_maintenance_energy_step'), 6)} / {_format(values.get('functional_module_development_energy_step'), 6)}",
                 "- boundary: these modules only alter harvest-channel requests; paired module neutralization is required before interpreting them as adaptive functions.",

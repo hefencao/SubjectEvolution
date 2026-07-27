@@ -1,0 +1,15 @@
+{
+  "schema": "packaging-validation-v1",
+  "version": "0.40.0",
+  "project_file_count": 237,
+  "single_top_level_archive_directory": "se_v040_project",
+  "forbidden_entries": [],
+  "expected_artifacts": [
+    "se_v040_project.zip",
+    "se_v040_project.tar.gz",
+    "se_v040.patch",
+    "se_mvp-0.40.0-py3-none-any.whl",
+    "se_mvp-0.40.0.tar.gz"
+  ],
+  "passed": true
+}

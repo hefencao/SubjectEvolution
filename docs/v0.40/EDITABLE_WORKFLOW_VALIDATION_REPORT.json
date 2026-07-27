@@ -1,0 +1,37 @@
+{
+  "passed": true,
+  "project": "/mnt/data/se_v040_project",
+  "python": "/opt/pyvenv/bin/python",
+  "conda_prefix": null,
+  "version": "0.40.0",
+  "package_path": "/mnt/data/se_v040_project/src/se/__init__.py",
+  "editable_root": "/mnt/data/se_v040_project",
+  "module_count": 82,
+  "entry_points": {
+    "se": "se.cmd.run:main",
+    "se-d1-factorial": "se.experiments.d1_factorial:main",
+    "se-d2-audit": "se.experiments.d2_module_audit:main",
+    "se-gui": "se.gui.runner:main",
+    "se-multi": "se.cmd.multi_seed:main"
+  },
+  "smoke": {
+    "command": [
+      "/opt/pyvenv/bin/python",
+      "-m",
+      "se",
+      "--config",
+      "/tmp/se-conda-smoke-bpl17cl6/smoke.json",
+      "--output",
+      "/tmp/se-conda-smoke-bpl17cl6/run",
+      "--backend",
+      "cpu",
+      "--until-tick",
+      "2"
+    ],
+    "output_exists": true,
+    "stdout_tail": [
+      "tick=      1 alive=    200 groups=    0 E=1.785 step=0.092s window_avg=0.092s wall=0.1s",
+      "tick=      2 alive=    200 groups=    0 E=1.774 step=0.108s window_avg=0.111s wall=0.2s"
+    ]
+  }
+}

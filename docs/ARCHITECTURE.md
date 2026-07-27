@@ -1,5 +1,26 @@
 # SE architecture
 
+## D2-B contribution and intervention boundary
+
+```text
+authoritative D2-A module evaluation
+├── unchanged summed raw output + final quantization → world
+└── isolated per-module diagnostics → progress only
+
+shared checkpoint
+├── baseline
+├── all modules neutral
+├── module 0 neutral
+├── module 1 neutral
+├── module 2 neutral
+└── module 3 neutral
+```
+
+Per-module diagnostic rounding never feeds the authoritative preference. Partial
+neutralization preserves genotype and removes only the selected module
+expression and its proportional maintenance/development cost. Analysis and
+experiments depend on runtime; runtime does not depend on the D2 audit.
+
 ## D2-A bounded module boundary
 
 ```text
@@ -92,24 +113,17 @@ analysis / experiments → runtime + domains
 runtime + domains ✕→ analysis / experiments / gui
 ```
 
-## Release boundary
+## Local development boundary
 
-`release-check` validates a disposable venv and intentionally leaves the caller
-unchanged. `release-env` validates the same sdist-derived wheel in a persistent
-`.release-env/venv`. Neither Make nor a child process can activate a venv in the
-parent zsh; the user must `source .release-env/venv/bin/activate` or invoke the
-script by its explicit path.
+The normal local runtime is an activated conda environment with one editable
+installation of the current checkout. `make conda-sync` installs with
+`--no-build-isolation`, then proves that `direct_url.json`, package imports,
+metadata and console scripts all refer to the exact checkout. Ordinary source
+edits require no reinstall. `make conda-check` adds tests and an external smoke
+with an empty `PYTHONPATH`.
 
-The artifact verifier:
-
-1. builds an sdist;
-2. builds the wheel from that sdist;
-3. installs an optional prior wheel;
-4. force-reinstalls the candidate;
-5. clears source/user paths and runs outside the checkout;
-6. imports every installed module;
-7. validates all console scripts;
-8. executes single- and multi-seed exact-checkpoint smoke runs.
+Wheel/sdist validation remains a release-transfer audit and is not the local
+runtime environment.
 
 ## Backends and GUI
 

@@ -14,7 +14,7 @@ from se.env.partition import SpatialRegionPartition
 from se.policy import ParametricPolicy
 
 
-SCHEMA = "structural-measurement-protocol-audit-v7"
+SCHEMA = "structural-measurement-protocol-audit-v8"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -266,7 +266,35 @@ def build_protocol_audit(
             "development_energy_per_expression": float(
                 cfg.functional_modules.development_energy_per_expression
             ),
-            "neutralization_intervention": "neutralize-functional-modules",
+            "neutralization_interventions": {
+                "all_modules": "neutralize-functional-modules",
+                "per_module": [
+                    f"neutralize-functional-module-{index}"
+                    for index in range(int(cfg.functional_modules.module_count))
+                ],
+            },
+            "contribution_diagnostics": {
+                "schema": "functional-module-contribution-audit-v1",
+                "per_module_gate": True,
+                "per_module_activation": True,
+                "isolated_output_effect": True,
+                "contribution_effective_count": True,
+                "cancellation_fraction": True,
+                "feedback_to_world": False,
+            },
+            "leave_one_out_protocol": {
+                "schema": "d2-module-leave-one-out-plan-v1",
+                "branches": [
+                    "baseline",
+                    "all-modules-neutral",
+                    *[
+                        f"module-{index}-neutral"
+                        for index in range(int(cfg.functional_modules.module_count))
+                    ],
+                ],
+                "paired_randomness": True,
+                "genotype_preserved": True,
+            },
             "preset_role_labels": False,
             "diversity_protection": False,
             "interpretation": (
@@ -440,7 +468,9 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- action selection / new physics: "
         f"{payload['functional_module_protocol']['action_selection']} / "
         f"{payload['functional_module_protocol']['new_world_physics']}",
-        f"- neutralization: `{payload['functional_module_protocol']['neutralization_intervention']}`",
+        f"- neutralization interventions: {payload['functional_module_protocol']['neutralization_interventions']}",
+        f"- contribution diagnostics: {payload['functional_module_protocol']['contribution_diagnostics']}",
+        f"- leave-one-out protocol: {payload['functional_module_protocol']['leave_one_out_protocol']}",
         f"- boundary: {payload['functional_module_protocol']['interpretation']}",
         "",
         "## Environment atlas",
