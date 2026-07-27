@@ -14,9 +14,10 @@ Implemented code is not automatically empirical evidence.
 | D2-05 | guarded | Endpoint branches can diverge deterministically without a practical module effect. | Practical thresholds and same-direction replication; exact non-zero is insufficient. |
 | D2-06 | active | Source checkpoints are lineage-dominated despite cross-lineage immediate footprints. | Shared-checkpoint lineage pairs with pre-intervention selection and output/cost separation. |
 | D2-07 | active, guarded | A 120-tick responsive lineage could be selected post hoc for long confirmation. | Select modules only; preserve every preselected pair for the selected module. |
-| D2-08 | open | Module 2 may reduce knowledge transfer while module 3 trades target-lineage survival for energy. | 300-tick same-pair persistence and short/long sign agreement; do not label adaptive roles. |
+| D2-08 | resolved for continuation | Module 2 may reduce knowledge transfer while module 3 trades target-lineage survival for energy. | Module 2 did not persist; module 3 retained only positive target-lineage mean energy across horizons. |
+| D2-10 | active | A higher mean energy among survivors may reflect harvest input, energy-stock growth, demographic selection or survivor conditioning. | Multi-offset shared-branch mediation with total energy, harvest/share flows, source survivors, descendants, births and deaths by cause. |
 | D2-09 | open | Fixed ten-input/four-output vocabulary constrains reachable function space. | Compare vocabularies only after D2 identification gates. |
 | ENV-01 | guarded | Resource-share vectors are compositional. | Interpret with raw volume, total request scale, environment dimensions and efficiency. |
 | SOC-01 | blocked | Social organization may reflect spatial/genetic sorting rather than higher-level control. | Ecological and module mechanisms must be identifiable before active social-control expansion. |
 | GPU-01 | open | GPU strict-reference validates hardware but remains CPU-authoritative. | Hybrid accelerated multi-tick parity before using accelerated output scientifically. |
-| DEV-01 | guarded | Editable installs can point to another checkout or stale console metadata. | `make conda-check` must prove direct URL, exact source root, eight entries and external smoke. |
+| DEV-01 | guarded | Editable installs can point to another checkout or stale console metadata. | `make conda-check` must prove direct URL, exact source root, ten entries and external smoke. |

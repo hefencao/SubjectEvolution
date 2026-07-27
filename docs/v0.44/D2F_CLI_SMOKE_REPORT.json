@@ -1,0 +1,24 @@
+{
+  "assessment_schema": "d2-lineage-mediation-assessment-v1",
+  "checkpoint_count": 1,
+  "commands": [
+    "se-d2-lineage-mediate (plan)",
+    "se-d2-lineage-mediate (execute)",
+    "se-d2-lineage-mediate-assess"
+  ],
+  "executed_pair_count": 1,
+  "generated_at_utc": "2026-07-27T09:26:38.281176+00:00",
+  "maximum_absolute_decomposition_residual": 0.0,
+  "module_indices": [
+    3
+  ],
+  "observation_offsets": [
+    1,
+    2
+  ],
+  "passed": true,
+  "plan_schema": "d2-lineage-mediation-plan-v1",
+  "result_schema": "d2-lineage-mediation-results-v1",
+  "schema": "d2f-cli-smoke-report-v1",
+  "transcript": "$ se-d2-lineage-mediate --assessment ... --source-plan ... --observation-offsets 1,2\n{\"passed\": true, \"plan_schema\": \"d2-lineage-mediation-plan-v1\", \"modules\": [3], \"checkpoint_count\": 1, \"pair_count\": 1, \"executed\": false}\n$ se-d2-lineage-mediate --plan ... --execute --backend cpu\ntick=      2 alive=     20 groups=    0 E=1.804 step=0.028s window_avg=0.028s wall=0.0s\ntick=      3 alive=     20 groups=    0 E=1.778 step=0.020s window_avg=0.022s wall=0.0s\ntick=      2 alive=     20 groups=    0 E=1.804 step=0.028s window_avg=0.028s wall=0.0s\ntick=      3 alive=     20 groups=    0 E=1.778 step=0.020s window_avg=0.021s wall=0.0s\ntick=      2 alive=     20 groups=    0 E=1.804 step=0.028s window_avg=0.028s wall=0.0s\ntick=      3 alive=     20 groups=    0 E=1.778 step=0.021s window_avg=0.022s wall=0.1s\n{\"passed\": true, \"plan_schema\": \"d2-lineage-mediation-plan-v1\", \"modules\": [3], \"checkpoint_count\": 1, \"pair_count\": 1, \"executed\": true}\n$ se-d2-lineage-mediate-assess --results ...\n{\"passed\": true, \"recommendation\": \"stop-temporal-mediation-claim\"}\n"
+}

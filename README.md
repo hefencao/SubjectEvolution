@@ -1,10 +1,10 @@
-# SE v0.43
+# SE v0.44
 
 `SE` 是围绕多维环境、可遗传分化、动态知识与候选主体结构构建的可审计演化模拟参考实现。
 
 ## Conda 本地工作流
 
-v0.43 新增 `se-d2-lineage-assess` 入口，升级后需要在目标环境执行一次：
+v0.44 新增两个 D2-F console entry，升级后需要在目标环境执行一次：
 
 ```bash
 conda activate <your-env>
@@ -36,7 +36,7 @@ se-multi \
   --backend gpu
 ```
 
-## D2 模块审计与效应判定
+## D2-B/C 模块审计与效应判定
 
 `se-d2-audit` 生成共享 checkpoint 的逐模块中和分支；`se-d2-assess` 对 120/300-tick 结果实施实用阈值、重复性、即时足迹和谱系 guard 判定。
 
@@ -48,9 +48,7 @@ se-d2-assess \
   --refresh-footprints
 ```
 
-## D2-D/D2-E 多谱系配对审计
-
-从 D2-B 源 checkpoint 生成并执行 120-tick 多谱系三分支配对：
+## D2-D/E 多谱系配对审计
 
 ```bash
 se-d2-lineage-pairs \
@@ -63,27 +61,6 @@ se-d2-lineage-pairs \
   --gpu-semantics-mode strict-reference
 ```
 
-D2-E 自动判定是否值得继续，并在通过时生成不按单个谱系响应挑选的 300-tick 计划：
-
-```bash
-se-d2-lineage-assess \
-  --results analyses/d2d_lineage_pairs_120/d2_lineage_pair_results.json \
-  --output analyses/d2e_lineage_pair_assessment
-```
-
-执行生成的确认计划：
-
-```bash
-se-d2-lineage-pairs \
-  --plan analyses/d2e_lineage_pair_assessment/d2_lineage_pair_confirmation_plan.json \
-  --output analyses/d2e_lineage_pairs_300 \
-  --execute \
-  --backend gpu \
-  --gpu-semantics-mode strict-reference
-```
-
-完成后进行跨 horizon 持续性判定：
-
 ```bash
 se-d2-lineage-assess \
   --short-results analyses/d2d_lineage_pairs_120/d2_lineage_pair_results.json \
@@ -91,7 +68,47 @@ se-d2-lineage-assess \
   --output analyses/d2e_lineage_pair_persistence
 ```
 
-只有 `output_routing_effect` 能通过继续门槛。表达成本退款或总表达差异不能替代输出作用证据。确认计划只筛选模块，并保留该模块在原计划中的全部 checkpoint-lineage 配对。
+本次 300-tick 判定中，模块 2 的 120-tick 输出信号没有跨 horizon 持续；模块 3 仅保留目标谱系平均能量的正向 routed-output 效应。存活效应在 120 与 300 ticks 之间反向，因此不能把平均能量提升直接解释为生态收益。
+
+## D2-F 时间中介审计
+
+从已确认的 D2-E 评估和原 300-tick 计划生成 D2-F 计划：
+
+```bash
+se-d2-lineage-mediate \
+  --assessment analyses/d2e_lineage_pair_persistence/d2_lineage_pair_assessment.json \
+  --source-plan analyses/d2e_lineage_pair_assessment/d2_lineage_pair_confirmation_plan.json \
+  --output analyses/d2f_lineage_mediation_plan
+```
+
+默认保留模块 3 在 6 个 checkpoint 中的全部 24 个预选谱系配对，并在 30、60、120、180、240、300 ticks 采样。执行：
+
+```bash
+se-d2-lineage-mediate \
+  --plan analyses/d2f_lineage_mediation_plan/d2_lineage_mediation_plan.json \
+  --output analyses/d2f_lineage_mediation_trajectory \
+  --execute \
+  --backend gpu \
+  --gpu-semantics-mode strict-reference
+```
+
+完成后判定中介链：
+
+```bash
+se-d2-lineage-mediate-assess \
+  --results analyses/d2f_lineage_mediation_trajectory/d2_lineage_mediation_results.json \
+  --output analyses/d2f_lineage_mediation_assessment
+```
+
+D2-F 同时报告：
+
+- 平均能量、总能量与能量分位数；
+- 源成员幸存、存活后代、出生与按原因死亡；
+- 生育度和繁殖就绪数量；
+- 干预后的累计采集能量与共享能量；
+- routed-output、保留表达成本和总表达三类效应。
+
+多个时间点是同一配对单元的重复观测，不能增加 seed 或谱系复制数。平均能量只有在总能量、输入流和人口转换同时报告后才可解释。
 
 ## 当前科学主线
 
@@ -103,9 +120,10 @@ se-d2-lineage-assess \
 6. **D2-B：** 逐模块贡献审计和逐模块中和实验。
 7. **D2-C：** 下游效应判定、即时足迹刷新和复制门槛。
 8. **D2-D：** 谱系定向输出/成本三分支配对。
-9. **D2-E：** 非主导谱系跨 seed 复现判定和不挑选响应谱系的 300-tick 确认。
+9. **D2-E：** 非主导谱系跨 seed、跨 horizon 持续性判定。
+10. **D2-F：** routed-output 的采集/共享—能量—繁殖—存活时间中介审计。
 
-用户提供的 120-tick D2-D 结果使模块 2、3 进入 300-tick 确认，但没有建立正向生态收益：模块 2 的重复信号是知识转移根数下降；模块 3 同时表现为目标谱系存活下降和平均能量上升。谱系 guard 仍失败，模块复制、删除、任意重联和新端口继续阻塞。
+模块复制、删除、任意重联和新端口继续阻塞。D2-F 只增加实验观察，不给多样性奖励，不预设生态角色，不修改世界中的模块数量或路由词汇。
 
 ## 文档
 
@@ -113,8 +131,8 @@ se-d2-lineage-assess \
 - [架构与提交边界](docs/ARCHITECTURE.md)
 - [项目状态](docs/PROJECT_STATUS.md)
 - [科学问题](docs/SCIENTIFIC_ISSUES.md)
-- [D2-E 判定规则](docs/v0.43/D2E_LINEAGE_PAIR_QUALIFICATION.md)
-- [输入结果自动评估](docs/v0.43/INPUT_D2D_LINEAGE_PAIR_ASSESSMENT.md)
-- [300-tick 确认计划](docs/v0.43/D2E_CONFIRMATION_PLAN.md)
-- [下一步实验](docs/v0.43/NEXT_EXPERIMENT.md)
-- [Conda editable 工作流](docs/v0.43/CONDA_EDITABLE_WORKFLOW.md)
+- [D2-F 设计与当前判定](docs/v0.44/D2F_TEMPORAL_MEDIATION.md)
+- [输入的 300-tick 评估](docs/v0.44/INPUT_D2E_LINEAGE_PAIR_ASSESSMENT.md)
+- [生成的 D2-F 计划](docs/v0.44/D2F_MEDIATION_PLAN.md)
+- [下一步运行](docs/v0.44/NEXT_EXPERIMENT.md)
+- [Conda editable 工作流](docs/v0.44/CONDA_EDITABLE_WORKFLOW.md)

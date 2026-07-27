@@ -6,6 +6,7 @@ import hashlib
 import json
 import platform
 from pathlib import Path
+from typing import Callable
 import sys
 import time
 import numpy as np
@@ -2180,12 +2181,22 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         return stats
 
 
-    def run(self, until_tick: int | None = None) -> dict[str, float | int]:
+    def run(
+        self,
+        until_tick: int | None = None,
+        *,
+        tick_observer: Callable[["Simulation", StepStats | None], None] | None = None,
+    ) -> dict[str, float | int]:
         """Advance to an absolute tick and finalize this run's outputs.
 
         ``until_tick`` is absolute rather than a step count so a simulation
         can be advanced to a counterfactual branch point with ``step()`` and
         then finish at the configured horizon without extending the run.
+
+        ``tick_observer`` is an experiment-only, read-only observation hook. It
+        is called once at the starting checkpoint with ``stats=None`` and after
+        every authoritative step. The default remains ``None`` and therefore
+        cannot change historical trajectories or runtime semantics.
         """
         target_tick = self.cfg.run.ticks if until_tick is None else int(until_tick)
         if target_tick < self.tick:
@@ -2203,10 +2214,14 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         if self.gpu_runtime is not None:
             self._defer_gpu_field_sync = True
         try:
+            if tick_observer is not None:
+                tick_observer(self, None)
             for _ in range(target_tick - self.tick):
                 step_started = time.perf_counter()
                 stats = self.step()
                 self._observe_event_cohort_diagnostics()
+                if tick_observer is not None:
+                    tick_observer(self, stats)
                 elapsed = time.perf_counter() - step_started
                 last_stats = stats
                 last_step_seconds = elapsed

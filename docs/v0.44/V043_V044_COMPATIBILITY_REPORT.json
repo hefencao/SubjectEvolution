@@ -1,0 +1,18 @@
+{
+  "authoritative_state_difference_count": 0,
+  "authoritative_state_leaf_count_v043": 8340,
+  "authoritative_state_leaf_count_v044": 8340,
+  "backend": "cpu",
+  "baseline_version": "0.43.0",
+  "candidate_version": "0.44.0",
+  "common_authoritative_state_leaf_count": 8340,
+  "common_non_timing_summary_metric_count": 347,
+  "generated_at_utc": "2026-07-27T09:24:35.092100+00:00",
+  "new_feature_state": "disabled (no tick_observer)",
+  "non_timing_summary_difference_count": 0,
+  "passed": true,
+  "schema": "se-authoritative-trajectory-compatibility-v1",
+  "state_differences": [],
+  "summary_differences": [],
+  "ticks": 20
+}

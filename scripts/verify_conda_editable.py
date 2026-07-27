@@ -29,6 +29,8 @@ ENTRY_POINTS = {
     "se-d2-assess": "se.analysis.d2_effects:main",
     "se-d2-lineage-pairs": "se.experiments.d2_lineage_pairs:main",
     "se-d2-lineage-assess": "se.analysis.d2_lineage_effects:main",
+    "se-d2-lineage-mediate": "se.experiments.d2_lineage_mediation:main",
+    "se-d2-lineage-mediate-assess": "se.analysis.d2_lineage_mediation_effects:main",
 }
 
 

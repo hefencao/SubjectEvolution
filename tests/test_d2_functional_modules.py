@@ -143,7 +143,7 @@ def test_d2_intervention_persists_through_checkpoint_and_is_analyzed(
     final = report["runs"][0]["functional_module_final"]
     assert final["functional_module_schema"] == FUNCTIONAL_MODULE_SCHEMA
     protocol = build_protocol_audit(CONFIG)
-    assert protocol["schema"] == "structural-measurement-protocol-audit-v11"
+    assert protocol["schema"] == "structural-measurement-protocol-audit-v12"
     functional = protocol["functional_module_protocol"]
     assert functional["action_selection"] is False
     assert functional["new_world_physics"] is False
@@ -161,6 +161,12 @@ def test_d2_intervention_persists_through_checkpoint_and_is_analyzed(
         "d2-lineage-paired-assessment-v1"
     )
     assert lineage_pairs["effect_assessment"]["outcome_conditioned_pair_selection"] is False
+    mediation = lineage_pairs["temporal_mediation_audit"]
+    assert mediation["plan_schema"] == "d2-lineage-mediation-plan-v1"
+    assert mediation["assessment_schema"] == "d2-lineage-mediation-assessment-v1"
+    assert mediation["offsets_are_independent_replicates"] is False
+    assert mediation["mean_energy_alone_qualifies_as_ecological_benefit"] is False
+    assert mediation["outcome_conditioned_pair_selection"] is False
     assert lineage_pairs["diversity_protection"] is False
 
 

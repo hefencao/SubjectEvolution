@@ -1,0 +1,13 @@
+{
+  "schema": "se-patch-validation-v1",
+  "baseline": "se_v043_project.zip",
+  "candidate_version": "0.44.0",
+  "git_apply_check_passed": true,
+  "git_apply_passed": true,
+  "fuzz_or_offset_used": false,
+  "candidate_file_count_before_validation_reports": 245,
+  "applied_tree_file_count_before_validation_reports": 245,
+  "content_difference_count": 0,
+  "patched_tree_test_result": "208 passed, 1 skipped",
+  "passed": true
+}

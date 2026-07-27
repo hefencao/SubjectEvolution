@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.44.0
+
+### D2-F temporal mediation audit
+
+- Records the supplied 120/300-tick decision: module 2 does not persist across horizons; module 3 retains positive `target_lineage.mean_energy`, while no positive ecological routed-output outcome is confirmed.
+- Adds `d2-lineage-mediation-plan-v1`, `d2-lineage-mediation-results-v1` and `d2-lineage-mediation-assessment-v1`.
+- Adds `se-d2-lineage-mediate` and `se-d2-lineage-mediate-assess`.
+- Generates a module-level plan for module 3 that preserves all six checkpoints and all 24 preselected lineage pairs.
+- Samples 30/60/120/180/240/300-tick trajectories within one branch execution and treats offsets as repeated observations rather than replicates.
+- Adds a read-only `Simulation.run` tick observer whose default-disabled path preserves authoritative trajectories.
+- Separates mean energy from total energy, source survivors, descendants, births, deaths by cause, fertility, reproduction readiness, harvested energy and shared-energy receipts.
+- Keeps routed-output, retained-cost and total-expression effects separate and keeps all copy-number/routing expansion blocked.
+- Upgrades protocol audit to v12 and adds the ninth and tenth console entries.
+
+### Packaging
+
+- Complete packages retain only the current version-specific documentation directory (`docs/v0.44`).
+
 ## 0.43.0
 
 ### D2-E lineage-pair qualification

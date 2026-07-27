@@ -1,0 +1,267 @@
+{
+  "schema": "d2-lineage-mediation-plan-v1",
+  "source_assessment_schema": "d2-lineage-paired-assessment-v1",
+  "source_assessment_sha256": "855e5a5f189085ca4a0e489feb77d43ba55284339fa62381b7330e2a0e50207a",
+  "source_persistent_output_expectations": {
+    "module_3": {
+      "target_lineage.mean_energy": 1
+    }
+  },
+  "source_plan_schema": "d2-lineage-paired-plan-v2",
+  "source_plan_horizon_ticks": 300,
+  "module_indices": [
+    3
+  ],
+  "observation_offsets": [
+    30,
+    60,
+    120,
+    180,
+    240,
+    300
+  ],
+  "checkpoints": [
+    {
+      "run_name": "seed_10001",
+      "phase": "peak",
+      "checkpoint_tick": 2640,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10001/checkpoint_00002640.sechk",
+      "until_tick": 2940,
+      "active_entities": 489,
+      "effective_lineages": 2.3380200439990224,
+      "dominant_lineage_fraction": 0.5971370143149284,
+      "eligible": true,
+      "ineligible_reason": null,
+      "lineages": [
+        {
+          "lineage_id": 52,
+          "members": 292,
+          "member_fraction": 0.5971370143149284,
+          "abundance_rank": 1
+        },
+        {
+          "lineage_id": 159,
+          "members": 128,
+          "member_fraction": 0.261758691206544,
+          "abundance_rank": 2
+        },
+        {
+          "lineage_id": 292,
+          "members": 14,
+          "member_fraction": 0.028629856850715747,
+          "abundance_rank": 3
+        },
+        {
+          "lineage_id": 339,
+          "members": 14,
+          "member_fraction": 0.028629856850715747,
+          "abundance_rank": 4
+        }
+      ]
+    },
+    {
+      "run_name": "seed_10001",
+      "phase": "trough",
+      "checkpoint_tick": 2820,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10001/checkpoint_00002820.sechk",
+      "until_tick": 3120,
+      "active_entities": 463,
+      "effective_lineages": 2.206373058594675,
+      "dominant_lineage_fraction": 0.6133909287257019,
+      "eligible": true,
+      "ineligible_reason": null,
+      "lineages": [
+        {
+          "lineage_id": 52,
+          "members": 284,
+          "member_fraction": 0.6133909287257019,
+          "abundance_rank": 1
+        },
+        {
+          "lineage_id": 159,
+          "members": 127,
+          "member_fraction": 0.27429805615550756,
+          "abundance_rank": 2
+        },
+        {
+          "lineage_id": 292,
+          "members": 11,
+          "member_fraction": 0.023758099352051837,
+          "abundance_rank": 3
+        },
+        {
+          "lineage_id": 339,
+          "members": 11,
+          "member_fraction": 0.023758099352051837,
+          "abundance_rank": 4
+        }
+      ]
+    },
+    {
+      "run_name": "seed_10002",
+      "phase": "peak",
+      "checkpoint_tick": 2880,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10002/checkpoint_00002880.sechk",
+      "until_tick": 3180,
+      "active_entities": 575,
+      "effective_lineages": 1.945093217397443,
+      "dominant_lineage_fraction": 0.6921739130434783,
+      "eligible": true,
+      "ineligible_reason": null,
+      "lineages": [
+        {
+          "lineage_id": 92,
+          "members": 398,
+          "member_fraction": 0.6921739130434783,
+          "abundance_rank": 1
+        },
+        {
+          "lineage_id": 91,
+          "members": 103,
+          "member_fraction": 0.1791304347826087,
+          "abundance_rank": 2
+        },
+        {
+          "lineage_id": 219,
+          "members": 22,
+          "member_fraction": 0.03826086956521739,
+          "abundance_rank": 3
+        },
+        {
+          "lineage_id": 258,
+          "members": 18,
+          "member_fraction": 0.03130434782608696,
+          "abundance_rank": 4
+        }
+      ]
+    },
+    {
+      "run_name": "seed_10002",
+      "phase": "trough",
+      "checkpoint_tick": 3000,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10002/checkpoint_00003000.sechk",
+      "until_tick": 3300,
+      "active_entities": 582,
+      "effective_lineages": 1.7153187825998886,
+      "dominant_lineage_fraction": 0.7457044673539519,
+      "eligible": true,
+      "ineligible_reason": null,
+      "lineages": [
+        {
+          "lineage_id": 92,
+          "members": 434,
+          "member_fraction": 0.7457044673539519,
+          "abundance_rank": 1
+        },
+        {
+          "lineage_id": 91,
+          "members": 92,
+          "member_fraction": 0.15807560137457044,
+          "abundance_rank": 2
+        },
+        {
+          "lineage_id": 219,
+          "members": 19,
+          "member_fraction": 0.03264604810996564,
+          "abundance_rank": 3
+        },
+        {
+          "lineage_id": 258,
+          "members": 15,
+          "member_fraction": 0.02577319587628866,
+          "abundance_rank": 4
+        }
+      ]
+    },
+    {
+      "run_name": "seed_10003",
+      "phase": "peak",
+      "checkpoint_tick": 2760,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10003/checkpoint_00002760.sechk",
+      "until_tick": 3060,
+      "active_entities": 454,
+      "effective_lineages": 3.7664644397339373,
+      "dominant_lineage_fraction": 0.473568281938326,
+      "eligible": true,
+      "ineligible_reason": null,
+      "lineages": [
+        {
+          "lineage_id": 385,
+          "members": 215,
+          "member_fraction": 0.473568281938326,
+          "abundance_rank": 1
+        },
+        {
+          "lineage_id": 313,
+          "members": 55,
+          "member_fraction": 0.1211453744493392,
+          "abundance_rank": 2
+        },
+        {
+          "lineage_id": 214,
+          "members": 54,
+          "member_fraction": 0.11894273127753303,
+          "abundance_rank": 3
+        },
+        {
+          "lineage_id": 139,
+          "members": 37,
+          "member_fraction": 0.08149779735682819,
+          "abundance_rank": 4
+        }
+      ]
+    },
+    {
+      "run_name": "seed_10003",
+      "phase": "trough",
+      "checkpoint_tick": 2880,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10003/checkpoint_00002880.sechk",
+      "until_tick": 3180,
+      "active_entities": 448,
+      "effective_lineages": 3.528427270489785,
+      "dominant_lineage_fraction": 0.49330357142857145,
+      "eligible": true,
+      "ineligible_reason": null,
+      "lineages": [
+        {
+          "lineage_id": 385,
+          "members": 221,
+          "member_fraction": 0.49330357142857145,
+          "abundance_rank": 1
+        },
+        {
+          "lineage_id": 313,
+          "members": 56,
+          "member_fraction": 0.125,
+          "abundance_rank": 2
+        },
+        {
+          "lineage_id": 214,
+          "members": 52,
+          "member_fraction": 0.11607142857142858,
+          "abundance_rank": 3
+        },
+        {
+          "lineage_id": 139,
+          "members": 31,
+          "member_fraction": 0.06919642857142858,
+          "abundance_rank": 4
+        }
+      ]
+    }
+  ],
+  "branches": [
+    "baseline",
+    "output-neutral",
+    "expression-neutral"
+  ],
+  "effect_decomposition_schema": "output-cost-total-additive-v1",
+  "trajectory_schema": "lineage-energy-demography-mediation-trajectory-v1",
+  "selection_rule": "module-level-confirmed-output-preserve-all-preselected-checkpoint-lineage-pairs-v1",
+  "outcome_conditioned_pair_selection": false,
+  "preserves_all_source_pairs_for_selected_modules": true,
+  "genotype_preserved": true,
+  "lineage_membership_preserved": true,
+  "copy_number_changed": false,
+  "routing_vocabulary_changed": false
+}

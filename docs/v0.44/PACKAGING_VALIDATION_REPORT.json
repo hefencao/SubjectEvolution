@@ -1,0 +1,12 @@
+{
+  "candidate_version": "0.44.0",
+  "file_count": 247,
+  "forbidden_artifact_count": 0,
+  "forbidden_artifacts": [],
+  "old_version_document_directories_present": false,
+  "passed": true,
+  "schema": "se-clean-package-tree-validation-v1",
+  "version_specific_document_directories": [
+    "docs/v0.44"
+  ]
+}

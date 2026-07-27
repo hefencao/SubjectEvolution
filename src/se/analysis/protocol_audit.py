@@ -14,7 +14,7 @@ from se.env.partition import SpatialRegionPartition
 from se.policy import ParametricPolicy
 
 
-SCHEMA = "structural-measurement-protocol-audit-v11"
+SCHEMA = "structural-measurement-protocol-audit-v12"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -357,6 +357,33 @@ def build_protocol_audit(
                     "cost_only_signal_qualifies": False,
                     "confirmation_horizon_ticks": 300,
                     "confirmation_selection_rule": "module-level-screen-preserve-all-preselected-checkpoint-lineage-pairs-v1",
+                    "outcome_conditioned_pair_selection": False,
+                    "copy_number_remains_guarded": True,
+                },
+                "temporal_mediation_audit": {
+                    "plan_schema": "d2-lineage-mediation-plan-v1",
+                    "result_schema": "d2-lineage-mediation-results-v1",
+                    "assessment_schema": "d2-lineage-mediation-assessment-v1",
+                    "selection_rule": "module-level-confirmed-output-preserve-all-preselected-checkpoint-lineage-pairs-v1",
+                    "default_observation_offsets": [30, 60, 120, 180, 240, 300],
+                    "branches": [
+                        "baseline",
+                        "output-neutral with expression cost retained",
+                        "expression-neutral with output and expression cost removed",
+                    ],
+                    "read_only_tick_observer": True,
+                    "measured_mediators": [
+                        "target-lineage energy stock and quartiles",
+                        "source survivors and living descendants",
+                        "births and deaths by cause",
+                        "fertility and reproduction readiness",
+                        "post-intervention harvested energy",
+                        "post-intervention shared energy received",
+                    ],
+                    "offsets_are_independent_replicates": False,
+                    "minimum_seeds_per_offset": 2,
+                    "minimum_non_dominant_lineage_identities_per_offset": 2,
+                    "mean_energy_alone_qualifies_as_ecological_benefit": False,
                     "outcome_conditioned_pair_selection": False,
                     "copy_number_remains_guarded": True,
                 },
