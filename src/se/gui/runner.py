@@ -119,7 +119,13 @@ def run(
     with realtime_publisher_session(
         simulation, publisher, publish_initial=publish_initial
     ):
-        return simulation.run(until_tick=until_tick)
+        result = simulation.run(until_tick=until_tick)
+        # ``every_ticks`` controls intermediate observation cost, but the native
+        # viewer and protocol manifest must always finish on the authoritative
+        # simulation tick even when the interval does not divide the run length.
+        if publisher.sequence == 0 or publisher.last_tick != int(simulation.tick):
+            publisher.publish(simulation)
+        return result
 
 
 def main() -> None:

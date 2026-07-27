@@ -115,7 +115,7 @@ pid_t launch_simulation(
     storage.push_back(request.python);
     storage.push_back("-m");
     if (request.mode == eco::launcher::ExperimentMode::MultiSeed) {
-        storage.push_back("subject_evolution.multi_seed");
+        storage.push_back("se.cmd.multi_seed");
         storage.push_back("--config");
         storage.push_back(request.config_path.string());
         storage.push_back("--seeds");
@@ -133,15 +133,21 @@ pid_t launch_simulation(
         storage.push_back(std::to_string(request.until_tick));
         if (request.overwrite_partial) storage.push_back("--overwrite-partial");
     } else {
-        storage.push_back("subject_evolution.gui_interface.run_simulation");
+        storage.push_back("se.gui.runner");
         storage.push_back("--config");
         storage.push_back(request.config_path.string());
         storage.push_back("--output");
         storage.push_back(request.output_path.string());
         storage.push_back("--stream");
         storage.push_back(request.stream_path.string());
+        storage.push_back("--manifest");
+        storage.push_back(request.manifest_path.string());
         storage.push_back("--backend");
         storage.push_back(request.backend);
+        if (request.until_tick > 0U) {
+            storage.push_back("--until-tick");
+            storage.push_back(std::to_string(request.until_tick));
+        }
     }
 
     std::vector<char*> arguments;

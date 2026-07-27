@@ -175,6 +175,7 @@ bool SharedFrameReader::read_latest(Frame& output) {
 
         if (slot_before.sequence_begin != sequence ||
             slot_before.sequence_end != sequence ||
+            (slot_before.flags & 1U) == 0U ||
             slot_before.entity_count > before.max_entities) {
             continue;
         }

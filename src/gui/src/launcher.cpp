@@ -1098,6 +1098,7 @@ LaunchRequest request_template(
         ? project_root / "runs/<output>"
         : std::filesystem::path(state.output_text);
     request.stream_path = request.output_path / "eco_live.bin";
+    request.manifest_path = request.output_path / "eco_live.bin.json";
     request.overwrite_partial = state.overwrite_partial;
     request.command = command_preview(request, true);
     (void)stem;
@@ -1342,7 +1343,7 @@ std::string command_preview(const LaunchRequest& request, bool template_paths) {
     std::ostringstream command;
     command << request.python << " -m ";
     if (request.mode == ExperimentMode::MultiSeed) {
-        command << "subject_evolution.multi_seed"
+        command << "se.cmd.multi_seed"
                 << " --config \"" << config << "\""
                 << " --seeds " << join_seeds(request.seeds)
                 << " --output \"" << output << "\""
@@ -1350,11 +1351,13 @@ std::string command_preview(const LaunchRequest& request, bool template_paths) {
         if (request.until_tick > 0U) command << " --until-tick " << request.until_tick;
         if (request.overwrite_partial) command << " --overwrite-partial";
     } else {
-        command << "subject_evolution.gui_interface.run_simulation"
+        command << "se.gui.runner"
                 << " --config \"" << config << "\""
                 << " --output \"" << output << "\""
                 << " --stream \"" << request.stream_path.string() << "\""
+                << " --manifest \"" << request.manifest_path.string() << "\""
                 << " --backend " << request.backend;
+        if (request.until_tick > 0U) command << " --until-tick " << request.until_tick;
     }
     (void)template_paths;
     return command.str();
@@ -1380,6 +1383,7 @@ bool prepare_launch_request(LaunchRequest& request, std::string& error) {
     }
     request.config_path = request.output_path / "config_resolved.json";
     request.stream_path = request.output_path / "eco_live.bin";
+    request.manifest_path = request.output_path / "eco_live.bin.json";
     request.command = command_preview(request, false);
     request.history_id = timestamp_suffix();
     return true;
@@ -2140,6 +2144,7 @@ std::optional<LaunchRequest> show_launcher(
             request.overwrite_partial = state.overwrite_partial;
             request.output_path = resolve_output_template(project_root, state.output_text, selected_path.stem().string());
             request.stream_path = request.output_path / "eco_live.bin";
+    request.manifest_path = request.output_path / "eco_live.bin.json";
             request.config_path = request.output_path / "config_resolved.json";
             std::string prepare_error;
             if (!prepare_launch_request(request, prepare_error)) { message = prepare_error; message_color = ORANGE; continue; }

@@ -94,5 +94,29 @@
     "output": "/home/unkloser/projects/SubjectEvolution/runs/multi_heterogeneous_no_affinity_smoke_1784988683152",
     "status": "finished",
     "exit_code": 0
+  },
+  {
+    "id": "1785168675317",
+    "timestamp": "1785168675317",
+    "config": "mvp_100k.json",
+    "mode": "single",
+    "backend": "auto",
+    "seeds": "10001",
+    "until_tick": 10000,
+    "output": "/home/unkloser/projects/SubjectEvolution/runs/gui_mvp_100k_1785168675316",
+    "status": "started",
+    "exit_code": -1
+  },
+  {
+    "id": "1785168675317",
+    "timestamp": "1785168707253",
+    "config": "mvp_100k.json",
+    "mode": "single",
+    "backend": "auto",
+    "seeds": "10001",
+    "until_tick": 10000,
+    "output": "/home/unkloser/projects/SubjectEvolution/runs/gui_mvp_100k_1785168675316",
+    "status": "stopped",
+    "exit_code": 0
   }
 ]

@@ -113,6 +113,12 @@ class BridgeLayout:
         )
 
 
+def default_manifest_path(stream_path: str | Path) -> Path:
+    """Return the canonical protocol sidecar path for one stream file."""
+    stream = Path(stream_path)
+    return stream.with_name(stream.name + ".json")
+
+
 def entity_field_manifest() -> list[dict[str, object]]:
     fields: list[dict[str, object]] = []
     for name in ENTITY_DTYPE.names or ():
@@ -206,6 +212,7 @@ __all__ = [
     "SLOT_HEADER_SIZE",
     "VERSION",
     "build_manifest",
+    "default_manifest_path",
     "entity_field_manifest",
     "write_manifest",
 ]

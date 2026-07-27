@@ -28,6 +28,7 @@ struct LaunchRequest {
     std::filesystem::path config_path;
     std::filesystem::path output_path;
     std::filesystem::path stream_path;
+    std::filesystem::path manifest_path;
     std::string python = "python3";
     std::string backend = "cpu";
     ExperimentMode mode = ExperimentMode::SingleRun;
