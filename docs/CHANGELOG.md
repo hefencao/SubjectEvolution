@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.45.0
+
+### D2-G source-population reconstitution
+
+- Records the supplied D2-F result as a transient flow–energy–demography chain whose original 300-tick mean-energy endpoint is not reproduced at the final mediation offset.
+- Adds `d2-source-population-plan-v1`, `d2-source-population-results-v1` and `d2-source-population-assessment-v1`.
+- Adds `se-d2-source-population` and `se-d2-source-population-assess`.
+- Builds peak/trough founder panels from the two largest pre-intervention lineages in each of three independent source runs; lineage-specific responses are never used for donor selection.
+- Transfers genotype only from unique living donors without replacement and resets physiology, age, knowledge, social state and spatial placement in a fresh world.
+- Pairs a natural-abundance control with an equal-lineage reconstitution using the same total founder count and fresh-world seed.
+- Adds no ongoing diversity reward, protection, spatial reservation or lineage-aware reproduction rule.
+- Requires unprotected burn-in qualification across at least two fresh seeds in both donor phases, while keeping module copy number blocked.
+- Upgrades protocol audit to v13 and adds the eleventh and twelfth console entries.
+
+### Packaging
+
+- Complete packages retain only the current version-specific documentation directory (`docs/v0.45`).
+
+
 ## 0.44.0
 
 ### D2-F temporal mediation audit

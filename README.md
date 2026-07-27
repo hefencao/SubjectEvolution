@@ -1,10 +1,10 @@
-# SE v0.44
+# SE v0.45
 
 `SE` 是围绕多维环境、可遗传分化、动态知识与候选主体结构构建的可审计演化模拟参考实现。
 
 ## Conda 本地工作流
 
-v0.44 新增两个 D2-F console entry，升级后需要在目标环境执行一次：
+v0.45 新增两个 D2-G console entry，升级后需要在目标环境执行一次：
 
 ```bash
 conda activate <your-env>
@@ -110,6 +110,34 @@ D2-F 同时报告：
 
 多个时间点是同一配对单元的重复观测，不能增加 seed 或谱系复制数。平均能量只有在总能量、输入流和人口转换同时报告后才可解释。
 
+## D2-G 源群体重构与资格审计
+
+D2-F 显示模块 3 存在短暂的流量—能量—人口转换，但原 300-tick 终点未在最终偏移复现，源 checkpoint 仍由少数谱系主导。D2-G 不复制模块，而是从三个独立源 seed 的预干预谱系构建新的遗传创始者面板。
+
+```bash
+se-d2-source-population \
+  --assessment analyses/d2f_lineage_mediation_assessment/d2_lineage_mediation_assessment.json \
+  --mediation-results analyses/d2f_lineage_mediation_trajectory/d2_lineage_mediation_results.json \
+  --output analyses/d2g_source_population_plan
+```
+
+```bash
+se-d2-source-population \
+  --plan analyses/d2g_source_population_plan/d2_source_population_plan.json \
+  --output analyses/d2g_source_population_burnin \
+  --execute \
+  --backend gpu \
+  --gpu-semantics-mode strict-reference
+```
+
+```bash
+se-d2-source-population-assess \
+  --results analyses/d2g_source_population_burnin/d2_source_population_results.json \
+  --output analyses/d2g_source_population_assessment
+```
+
+自然丰度对照和等谱系重构臂使用相同总创始者数、同一新世界 seed 和唯一供体基因型。等谱系只发生在 tick 0；之后没有谱系奖励、保护、空间保留或繁殖干预。只有 600-tick 无保护 burn-in 在两个相位、每个相位至少两个新 seed 上通过谱系与模块表达门槛，才可冻结为后续共享 checkpoint。
+
 ## 当前科学主线
 
 1. **D0：** 正交四资源环境。
@@ -122,8 +150,9 @@ D2-F 同时报告：
 8. **D2-D：** 谱系定向输出/成本三分支配对。
 9. **D2-E：** 非主导谱系跨 seed、跨 horizon 持续性判定。
 10. **D2-F：** routed-output 的采集/共享—能量—繁殖—存活时间中介审计。
+11. **D2-G：** 跨源 seed 的遗传创始者面板、自然丰度对照和无保护 burn-in 资格审计。
 
-模块复制、删除、任意重联和新端口继续阻塞。D2-F 只增加实验观察，不给多样性奖励，不预设生态角色，不修改世界中的模块数量或路由词汇。
+模块复制、删除、任意重联和新端口继续阻塞。D2-G 只改变显式实验的 tick-zero 遗传起点；普通世界路径不读取面板谱系，也不提供持续多样性保护。
 
 ## 文档
 
@@ -131,8 +160,8 @@ D2-F 同时报告：
 - [架构与提交边界](docs/ARCHITECTURE.md)
 - [项目状态](docs/PROJECT_STATUS.md)
 - [科学问题](docs/SCIENTIFIC_ISSUES.md)
-- [D2-F 设计与当前判定](docs/v0.44/D2F_TEMPORAL_MEDIATION.md)
-- [输入的 300-tick 评估](docs/v0.44/INPUT_D2E_LINEAGE_PAIR_ASSESSMENT.md)
-- [生成的 D2-F 计划](docs/v0.44/D2F_MEDIATION_PLAN.md)
-- [下一步运行](docs/v0.44/NEXT_EXPERIMENT.md)
-- [Conda editable 工作流](docs/v0.44/CONDA_EDITABLE_WORKFLOW.md)
+
+- [D2-G 源群体重构](docs/v0.45/D2G_SOURCE_POPULATION.md)
+- [生成的 D2-G 计划](docs/v0.45/D2G_SOURCE_POPULATION_PLAN.md)
+- [下一步运行](docs/v0.45/NEXT_EXPERIMENT.md)
+- [Conda editable 工作流](docs/v0.45/CONDA_EDITABLE_WORKFLOW.md)

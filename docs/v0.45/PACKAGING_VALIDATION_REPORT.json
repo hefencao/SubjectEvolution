@@ -1,0 +1,15 @@
+{
+  "schema": "se-clean-project-tree-validation-v1",
+  "generated_at_utc": "2026-07-27T10:36:18.400790+00:00",
+  "project_version": "0.45.0",
+  "expected_file_count_including_this_report": 250,
+  "version_document_directories": [
+    "v0.45"
+  ],
+  "forbidden_path_count": 0,
+  "forbidden_paths": [],
+  "old_version_document_directories_present": false,
+  "raw_input_assessment_json_duplicated": false,
+  "passed": true,
+  "note": "The delivery archive is built from this tree under a se_v045_project root and is extracted and hash-compared after creation."
+}

@@ -1,0 +1,776 @@
+{
+  "schema": "d2-source-population-plan-v1",
+  "source_assessment_schema": "d2-lineage-mediation-assessment-v1",
+  "source_assessment_sha256": "9bbb0e7dd513f350544fe308c4d7a8a6de9c7f16133275793c591dfb0024f8dc",
+  "source_result_schema": "d2-lineage-mediation-results-v1",
+  "source_result_sha256": "ab61c6ac803f169332279c7b214c888a0dca9e44d3faf65bf231892e30e2c833",
+  "candidate_module_indices": [
+    3
+  ],
+  "source_endpoint_reproduced": false,
+  "transient_causal_chain_supported": true,
+  "panel_seeds": [
+    45001,
+    45002,
+    45003
+  ],
+  "phases": [
+    "peak",
+    "trough"
+  ],
+  "lineages_per_run": 2,
+  "max_founders_per_lineage": 48,
+  "min_lineage_members": 8,
+  "burn_in_ticks": 600,
+  "observation_offsets": [
+    0,
+    120,
+    300,
+    600
+  ],
+  "panels": [
+    {
+      "panel_name": "peak_seed_45001",
+      "phase": "peak",
+      "panel_seed": 45001,
+      "total_founders": 288,
+      "equal_founders_per_lineage": 48,
+      "donors": [
+        {
+          "run_name": "seed_10001",
+          "phase": "peak",
+          "checkpoint_tick": 2640,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10001/checkpoint_00002640.sechk",
+          "source_lineage_id": 52,
+          "source_members": 292,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 6273021383814955239
+        },
+        {
+          "run_name": "seed_10001",
+          "phase": "peak",
+          "checkpoint_tick": 2640,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10001/checkpoint_00002640.sechk",
+          "source_lineage_id": 159,
+          "source_members": 128,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 9023138044078233047
+        },
+        {
+          "run_name": "seed_10002",
+          "phase": "peak",
+          "checkpoint_tick": 2880,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10002/checkpoint_00002880.sechk",
+          "source_lineage_id": 92,
+          "source_members": 398,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 5940149970201285654
+        },
+        {
+          "run_name": "seed_10002",
+          "phase": "peak",
+          "checkpoint_tick": 2880,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10002/checkpoint_00002880.sechk",
+          "source_lineage_id": 91,
+          "source_members": 103,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 42791552092449092
+        },
+        {
+          "run_name": "seed_10003",
+          "phase": "peak",
+          "checkpoint_tick": 2760,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10003/checkpoint_00002760.sechk",
+          "source_lineage_id": 385,
+          "source_members": 215,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 9032458484605812416
+        },
+        {
+          "run_name": "seed_10003",
+          "phase": "peak",
+          "checkpoint_tick": 2760,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10003/checkpoint_00002760.sechk",
+          "source_lineage_id": 313,
+          "source_members": 55,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 1742414855197043560
+        }
+      ],
+      "natural_allocations": [
+        {
+          "panel_lineage_id": 6273021383814955239,
+          "founder_count": 71
+        },
+        {
+          "panel_lineage_id": 9023138044078233047,
+          "founder_count": 31
+        },
+        {
+          "panel_lineage_id": 5940149970201285654,
+          "founder_count": 96
+        },
+        {
+          "panel_lineage_id": 42791552092449092,
+          "founder_count": 25
+        },
+        {
+          "panel_lineage_id": 9032458484605812416,
+          "founder_count": 52
+        },
+        {
+          "panel_lineage_id": 1742414855197043560,
+          "founder_count": 13
+        }
+      ],
+      "equal_allocations": [
+        {
+          "panel_lineage_id": 6273021383814955239,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 9023138044078233047,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 5940149970201285654,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 42791552092449092,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 9032458484605812416,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 1742414855197043560,
+          "founder_count": 48
+        }
+      ]
+    },
+    {
+      "panel_name": "peak_seed_45002",
+      "phase": "peak",
+      "panel_seed": 45002,
+      "total_founders": 288,
+      "equal_founders_per_lineage": 48,
+      "donors": [
+        {
+          "run_name": "seed_10001",
+          "phase": "peak",
+          "checkpoint_tick": 2640,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10001/checkpoint_00002640.sechk",
+          "source_lineage_id": 52,
+          "source_members": 292,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 6273021383814955239
+        },
+        {
+          "run_name": "seed_10001",
+          "phase": "peak",
+          "checkpoint_tick": 2640,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10001/checkpoint_00002640.sechk",
+          "source_lineage_id": 159,
+          "source_members": 128,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 9023138044078233047
+        },
+        {
+          "run_name": "seed_10002",
+          "phase": "peak",
+          "checkpoint_tick": 2880,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10002/checkpoint_00002880.sechk",
+          "source_lineage_id": 92,
+          "source_members": 398,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 5940149970201285654
+        },
+        {
+          "run_name": "seed_10002",
+          "phase": "peak",
+          "checkpoint_tick": 2880,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10002/checkpoint_00002880.sechk",
+          "source_lineage_id": 91,
+          "source_members": 103,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 42791552092449092
+        },
+        {
+          "run_name": "seed_10003",
+          "phase": "peak",
+          "checkpoint_tick": 2760,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10003/checkpoint_00002760.sechk",
+          "source_lineage_id": 385,
+          "source_members": 215,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 9032458484605812416
+        },
+        {
+          "run_name": "seed_10003",
+          "phase": "peak",
+          "checkpoint_tick": 2760,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10003/checkpoint_00002760.sechk",
+          "source_lineage_id": 313,
+          "source_members": 55,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 1742414855197043560
+        }
+      ],
+      "natural_allocations": [
+        {
+          "panel_lineage_id": 6273021383814955239,
+          "founder_count": 71
+        },
+        {
+          "panel_lineage_id": 9023138044078233047,
+          "founder_count": 31
+        },
+        {
+          "panel_lineage_id": 5940149970201285654,
+          "founder_count": 96
+        },
+        {
+          "panel_lineage_id": 42791552092449092,
+          "founder_count": 25
+        },
+        {
+          "panel_lineage_id": 9032458484605812416,
+          "founder_count": 52
+        },
+        {
+          "panel_lineage_id": 1742414855197043560,
+          "founder_count": 13
+        }
+      ],
+      "equal_allocations": [
+        {
+          "panel_lineage_id": 6273021383814955239,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 9023138044078233047,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 5940149970201285654,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 42791552092449092,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 9032458484605812416,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 1742414855197043560,
+          "founder_count": 48
+        }
+      ]
+    },
+    {
+      "panel_name": "peak_seed_45003",
+      "phase": "peak",
+      "panel_seed": 45003,
+      "total_founders": 288,
+      "equal_founders_per_lineage": 48,
+      "donors": [
+        {
+          "run_name": "seed_10001",
+          "phase": "peak",
+          "checkpoint_tick": 2640,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10001/checkpoint_00002640.sechk",
+          "source_lineage_id": 52,
+          "source_members": 292,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 6273021383814955239
+        },
+        {
+          "run_name": "seed_10001",
+          "phase": "peak",
+          "checkpoint_tick": 2640,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10001/checkpoint_00002640.sechk",
+          "source_lineage_id": 159,
+          "source_members": 128,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 9023138044078233047
+        },
+        {
+          "run_name": "seed_10002",
+          "phase": "peak",
+          "checkpoint_tick": 2880,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10002/checkpoint_00002880.sechk",
+          "source_lineage_id": 92,
+          "source_members": 398,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 5940149970201285654
+        },
+        {
+          "run_name": "seed_10002",
+          "phase": "peak",
+          "checkpoint_tick": 2880,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10002/checkpoint_00002880.sechk",
+          "source_lineage_id": 91,
+          "source_members": 103,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 42791552092449092
+        },
+        {
+          "run_name": "seed_10003",
+          "phase": "peak",
+          "checkpoint_tick": 2760,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10003/checkpoint_00002760.sechk",
+          "source_lineage_id": 385,
+          "source_members": 215,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 9032458484605812416
+        },
+        {
+          "run_name": "seed_10003",
+          "phase": "peak",
+          "checkpoint_tick": 2760,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10003/checkpoint_00002760.sechk",
+          "source_lineage_id": 313,
+          "source_members": 55,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 1742414855197043560
+        }
+      ],
+      "natural_allocations": [
+        {
+          "panel_lineage_id": 6273021383814955239,
+          "founder_count": 71
+        },
+        {
+          "panel_lineage_id": 9023138044078233047,
+          "founder_count": 31
+        },
+        {
+          "panel_lineage_id": 5940149970201285654,
+          "founder_count": 96
+        },
+        {
+          "panel_lineage_id": 42791552092449092,
+          "founder_count": 25
+        },
+        {
+          "panel_lineage_id": 9032458484605812416,
+          "founder_count": 52
+        },
+        {
+          "panel_lineage_id": 1742414855197043560,
+          "founder_count": 13
+        }
+      ],
+      "equal_allocations": [
+        {
+          "panel_lineage_id": 6273021383814955239,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 9023138044078233047,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 5940149970201285654,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 42791552092449092,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 9032458484605812416,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 1742414855197043560,
+          "founder_count": 48
+        }
+      ]
+    },
+    {
+      "panel_name": "trough_seed_45001",
+      "phase": "trough",
+      "panel_seed": 45001,
+      "total_founders": 288,
+      "equal_founders_per_lineage": 48,
+      "donors": [
+        {
+          "run_name": "seed_10001",
+          "phase": "trough",
+          "checkpoint_tick": 2820,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10001/checkpoint_00002820.sechk",
+          "source_lineage_id": 52,
+          "source_members": 284,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 6273021383814955239
+        },
+        {
+          "run_name": "seed_10001",
+          "phase": "trough",
+          "checkpoint_tick": 2820,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10001/checkpoint_00002820.sechk",
+          "source_lineage_id": 159,
+          "source_members": 127,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 9023138044078233047
+        },
+        {
+          "run_name": "seed_10002",
+          "phase": "trough",
+          "checkpoint_tick": 3000,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10002/checkpoint_00003000.sechk",
+          "source_lineage_id": 92,
+          "source_members": 434,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 5940149970201285654
+        },
+        {
+          "run_name": "seed_10002",
+          "phase": "trough",
+          "checkpoint_tick": 3000,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10002/checkpoint_00003000.sechk",
+          "source_lineage_id": 91,
+          "source_members": 92,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 42791552092449092
+        },
+        {
+          "run_name": "seed_10003",
+          "phase": "trough",
+          "checkpoint_tick": 2880,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10003/checkpoint_00002880.sechk",
+          "source_lineage_id": 385,
+          "source_members": 221,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 9032458484605812416
+        },
+        {
+          "run_name": "seed_10003",
+          "phase": "trough",
+          "checkpoint_tick": 2880,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10003/checkpoint_00002880.sechk",
+          "source_lineage_id": 313,
+          "source_members": 56,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 1742414855197043560
+        }
+      ],
+      "natural_allocations": [
+        {
+          "panel_lineage_id": 6273021383814955239,
+          "founder_count": 67
+        },
+        {
+          "panel_lineage_id": 9023138044078233047,
+          "founder_count": 30
+        },
+        {
+          "panel_lineage_id": 5940149970201285654,
+          "founder_count": 103
+        },
+        {
+          "panel_lineage_id": 42791552092449092,
+          "founder_count": 22
+        },
+        {
+          "panel_lineage_id": 9032458484605812416,
+          "founder_count": 53
+        },
+        {
+          "panel_lineage_id": 1742414855197043560,
+          "founder_count": 13
+        }
+      ],
+      "equal_allocations": [
+        {
+          "panel_lineage_id": 6273021383814955239,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 9023138044078233047,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 5940149970201285654,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 42791552092449092,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 9032458484605812416,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 1742414855197043560,
+          "founder_count": 48
+        }
+      ]
+    },
+    {
+      "panel_name": "trough_seed_45002",
+      "phase": "trough",
+      "panel_seed": 45002,
+      "total_founders": 288,
+      "equal_founders_per_lineage": 48,
+      "donors": [
+        {
+          "run_name": "seed_10001",
+          "phase": "trough",
+          "checkpoint_tick": 2820,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10001/checkpoint_00002820.sechk",
+          "source_lineage_id": 52,
+          "source_members": 284,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 6273021383814955239
+        },
+        {
+          "run_name": "seed_10001",
+          "phase": "trough",
+          "checkpoint_tick": 2820,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10001/checkpoint_00002820.sechk",
+          "source_lineage_id": 159,
+          "source_members": 127,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 9023138044078233047
+        },
+        {
+          "run_name": "seed_10002",
+          "phase": "trough",
+          "checkpoint_tick": 3000,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10002/checkpoint_00003000.sechk",
+          "source_lineage_id": 92,
+          "source_members": 434,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 5940149970201285654
+        },
+        {
+          "run_name": "seed_10002",
+          "phase": "trough",
+          "checkpoint_tick": 3000,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10002/checkpoint_00003000.sechk",
+          "source_lineage_id": 91,
+          "source_members": 92,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 42791552092449092
+        },
+        {
+          "run_name": "seed_10003",
+          "phase": "trough",
+          "checkpoint_tick": 2880,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10003/checkpoint_00002880.sechk",
+          "source_lineage_id": 385,
+          "source_members": 221,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 9032458484605812416
+        },
+        {
+          "run_name": "seed_10003",
+          "phase": "trough",
+          "checkpoint_tick": 2880,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10003/checkpoint_00002880.sechk",
+          "source_lineage_id": 313,
+          "source_members": 56,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 1742414855197043560
+        }
+      ],
+      "natural_allocations": [
+        {
+          "panel_lineage_id": 6273021383814955239,
+          "founder_count": 67
+        },
+        {
+          "panel_lineage_id": 9023138044078233047,
+          "founder_count": 30
+        },
+        {
+          "panel_lineage_id": 5940149970201285654,
+          "founder_count": 103
+        },
+        {
+          "panel_lineage_id": 42791552092449092,
+          "founder_count": 22
+        },
+        {
+          "panel_lineage_id": 9032458484605812416,
+          "founder_count": 53
+        },
+        {
+          "panel_lineage_id": 1742414855197043560,
+          "founder_count": 13
+        }
+      ],
+      "equal_allocations": [
+        {
+          "panel_lineage_id": 6273021383814955239,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 9023138044078233047,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 5940149970201285654,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 42791552092449092,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 9032458484605812416,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 1742414855197043560,
+          "founder_count": 48
+        }
+      ]
+    },
+    {
+      "panel_name": "trough_seed_45003",
+      "phase": "trough",
+      "panel_seed": 45003,
+      "total_founders": 288,
+      "equal_founders_per_lineage": 48,
+      "donors": [
+        {
+          "run_name": "seed_10001",
+          "phase": "trough",
+          "checkpoint_tick": 2820,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10001/checkpoint_00002820.sechk",
+          "source_lineage_id": 52,
+          "source_members": 284,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 6273021383814955239
+        },
+        {
+          "run_name": "seed_10001",
+          "phase": "trough",
+          "checkpoint_tick": 2820,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10001/checkpoint_00002820.sechk",
+          "source_lineage_id": 159,
+          "source_members": 127,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 9023138044078233047
+        },
+        {
+          "run_name": "seed_10002",
+          "phase": "trough",
+          "checkpoint_tick": 3000,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10002/checkpoint_00003000.sechk",
+          "source_lineage_id": 92,
+          "source_members": 434,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 5940149970201285654
+        },
+        {
+          "run_name": "seed_10002",
+          "phase": "trough",
+          "checkpoint_tick": 3000,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10002/checkpoint_00003000.sechk",
+          "source_lineage_id": 91,
+          "source_members": 92,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 42791552092449092
+        },
+        {
+          "run_name": "seed_10003",
+          "phase": "trough",
+          "checkpoint_tick": 2880,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10003/checkpoint_00002880.sechk",
+          "source_lineage_id": 385,
+          "source_members": 221,
+          "source_abundance_rank": 1,
+          "panel_lineage_id": 9032458484605812416
+        },
+        {
+          "run_name": "seed_10003",
+          "phase": "trough",
+          "checkpoint_tick": 2880,
+          "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/runs/d2a_contextual_modules_multiseed/seed_10003/checkpoint_00002880.sechk",
+          "source_lineage_id": 313,
+          "source_members": 56,
+          "source_abundance_rank": 2,
+          "panel_lineage_id": 1742414855197043560
+        }
+      ],
+      "natural_allocations": [
+        {
+          "panel_lineage_id": 6273021383814955239,
+          "founder_count": 67
+        },
+        {
+          "panel_lineage_id": 9023138044078233047,
+          "founder_count": 30
+        },
+        {
+          "panel_lineage_id": 5940149970201285654,
+          "founder_count": 103
+        },
+        {
+          "panel_lineage_id": 42791552092449092,
+          "founder_count": 22
+        },
+        {
+          "panel_lineage_id": 9032458484605812416,
+          "founder_count": 53
+        },
+        {
+          "panel_lineage_id": 1742414855197043560,
+          "founder_count": 13
+        }
+      ],
+      "equal_allocations": [
+        {
+          "panel_lineage_id": 6273021383814955239,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 9023138044078233047,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 5940149970201285654,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 42791552092449092,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 9032458484605812416,
+          "founder_count": 48
+        },
+        {
+          "panel_lineage_id": 1742414855197043560,
+          "founder_count": 48
+        }
+      ]
+    }
+  ],
+  "arms": [
+    "natural-abundance-control",
+    "equal-lineage-reconstitution"
+  ],
+  "lineage_selection_rule": "cross-run-top-preintervention-lineages-by-abundance-without-response-selection-v1",
+  "founder_sampling_rule": "unique-genotype-only-donors-without-replacement-v1",
+  "unique_donors_without_replacement": true,
+  "genotype_only_transfer": true,
+  "donor_physiology_reset": true,
+  "donor_knowledge_reset": true,
+  "donor_social_state_reset": true,
+  "random_spatial_assignment": true,
+  "ongoing_lineage_protection": false,
+  "lineage_aware_world_rules": false,
+  "module_copy_number_changed": false,
+  "routing_vocabulary_changed": false,
+  "outcome_conditioned_lineage_selection": false
+}

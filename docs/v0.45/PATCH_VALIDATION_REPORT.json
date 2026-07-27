@@ -1,0 +1,20 @@
+{
+  "schema": "se-patch-validation-v1",
+  "generated_at_utc": "2026-07-27T10:36:06.347440+00:00",
+  "baseline_version": "0.44.0",
+  "candidate_version": "0.45.0",
+  "baseline_source": "clean se_v044_project.zip extraction",
+  "git_apply_check_passed": true,
+  "git_apply_passed": true,
+  "fuzz_or_offset_used": false,
+  "changed_file_count": 111,
+  "candidate_file_count_before_validation_reports": 250,
+  "patched_file_count_before_validation_reports": 250,
+  "missing_files": [],
+  "extra_files": [],
+  "content_mismatches": [],
+  "patched_tree_test_result": "211 passed, 1 skipped",
+  "patched_tree_isolated_distribution_validation_passed": true,
+  "passed": true,
+  "note": "The report records the final patch shape. The patch was regenerated with this report included, replayed against a fresh v0.44 extraction, hash-compared across all 250 files, tested, and distribution-validated."
+}

@@ -1,0 +1,17 @@
+{
+  "schema": "d2g-cli-smoke-v1",
+  "passed": true,
+  "plan_schema": "d2-source-population-plan-v1",
+  "result_schema": "d2-source-population-results-v1",
+  "assessment_schema": "d2-source-population-assessment-v1",
+  "executed_panel_count": 1,
+  "executed_arm_count": 2,
+  "trajectory_offsets": [
+    0,
+    1,
+    2
+  ],
+  "founder_manifests_unique_within_arm": true,
+  "assessment_recommendation": "source-population-redesign-failed-do-not-test-copy-number",
+  "module_copy_number_ready": false
+}

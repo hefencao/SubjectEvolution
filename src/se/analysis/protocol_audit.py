@@ -14,7 +14,7 @@ from se.env.partition import SpatialRegionPartition
 from se.policy import ParametricPolicy
 
 
-SCHEMA = "structural-measurement-protocol-audit-v12"
+SCHEMA = "structural-measurement-protocol-audit-v13"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -385,6 +385,37 @@ def build_protocol_audit(
                     "minimum_non_dominant_lineage_identities_per_offset": 2,
                     "mean_energy_alone_qualifies_as_ecological_benefit": False,
                     "outcome_conditioned_pair_selection": False,
+                    "copy_number_remains_guarded": True,
+                },
+                "source_population_reconstitution": {
+                    "plan_schema": "d2-source-population-plan-v1",
+                    "result_schema": "d2-source-population-results-v1",
+                    "assessment_schema": "d2-source-population-assessment-v1",
+                    "arms": [
+                        "natural-abundance-control",
+                        "equal-lineage-reconstitution",
+                    ],
+                    "selection_rule": "cross-run top pre-intervention lineages by abundance; no response-conditioned lineage selection",
+                    "founder_transfer": "genotype only from unique living donors without replacement",
+                    "reset_state": [
+                        "physiology",
+                        "age and generation",
+                        "knowledge",
+                        "social state",
+                        "spatial position",
+                    ],
+                    "same_total_founders_across_arms": True,
+                    "ongoing_lineage_protection": False,
+                    "lineage_aware_world_rules": False,
+                    "module_copy_number_changed": False,
+                    "qualification": {
+                        "minimum_effective_lineages": 4.0,
+                        "maximum_dominant_lineage_fraction": 0.5,
+                        "minimum_lineages_above_member_floor": 4,
+                        "minimum_expressed_lineages_per_candidate_module": 4,
+                        "minimum_qualified_panel_seeds_per_phase": 2,
+                        "minimum_qualified_phases": 2,
+                    },
                     "copy_number_remains_guarded": True,
                 },
             },
