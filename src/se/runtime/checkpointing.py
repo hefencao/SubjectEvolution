@@ -241,6 +241,9 @@ class SimulationCheckpointMixin:
             "resource_affinity_ablation_enabled": bool(
                 self.resource_affinity_ablation_enabled
             ),
+            "functional_modules_ablation_enabled": bool(
+                self.functional_modules_ablation_enabled
+            ),
             "danger_evidence_ablation_enabled": bool(
                 self.danger_evidence_ablation_enabled
             ),
@@ -477,6 +480,9 @@ class SimulationCheckpointMixin:
         self.resource_affinity_ablation_enabled = bool(
             state.get("resource_affinity_ablation_enabled", False)
         )
+        self.functional_modules_ablation_enabled = bool(
+            state.get("functional_modules_ablation_enabled", False)
+        )
         self.danger_evidence_ablation_enabled = bool(
             state.get("danger_evidence_ablation_enabled", False)
         )
@@ -515,6 +521,7 @@ class SimulationCheckpointMixin:
         backend: str = "cpu",
         until_tick: int | None = None,
         gpu_semantics_mode: str | None = None,
+        checkpoint_ticks: tuple[int, ...] | None = None,
     ) -> "Simulation":
         """Create a fresh run from a trusted full-world checkpoint bundle."""
         metadata, record = read_checkpoint_bundle(checkpoint)
@@ -532,6 +539,14 @@ class SimulationCheckpointMixin:
             if gpu_semantics_mode not in {"strict-reference", "hybrid-accelerated"}:
                 raise ValueError("invalid gpu_semantics_mode for restored run")
             run_overrides["gpu_semantics_mode"] = gpu_semantics_mode
+        if checkpoint_ticks is not None:
+            normalized_ticks = tuple(sorted(set(int(value) for value in checkpoint_ticks)))
+            if any(value < checkpoint_tick for value in normalized_ticks):
+                raise ValueError(
+                    "checkpoint_ticks for a restored run cannot precede the source checkpoint"
+                )
+            run_overrides["checkpoint_ticks"] = normalized_ticks
+            run_overrides["full_checkpoint_enabled"] = True
         if run_overrides:
             cfg = replace(cfg, run=replace(cfg.run, **run_overrides))
         simulation = cls(cfg, output_dir, backend=backend)
@@ -661,6 +676,9 @@ class SimulationCheckpointMixin:
         branch.capacity_ablation_enabled = self.capacity_ablation_enabled
         branch.resource_affinity_ablation_enabled = (
             self.resource_affinity_ablation_enabled
+        )
+        branch.functional_modules_ablation_enabled = (
+            self.functional_modules_ablation_enabled
         )
         branch.danger_evidence_ablation_enabled = (
             self.danger_evidence_ablation_enabled

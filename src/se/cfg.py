@@ -35,6 +35,9 @@ class RunConfig:
     # Full-world bundles are opt-in because they are larger than the legacy
     # analysis-only NPZ snapshots.  When enabled they use checkpoint_period.
     full_checkpoint_enabled: bool = False
+    # Optional exact checkpoint ticks. These complement checkpoint_period and
+    # are especially useful for phase-matched multi-seed experiments.
+    checkpoint_ticks: tuple[int, ...] = ()
     # Optional observational diagnostics for long multi-seed runs.  These
     # fields never feed back into policy or world state and are disabled by
     # default so archived evolution_progress JSONL remains unchanged.
@@ -370,6 +373,23 @@ class DifferentiationConfig:
 
 
 @dataclass(frozen=True)
+class FunctionalModuleConfig:
+    """D2-A bounded contextual modules over existing harvest ports."""
+
+    enabled: bool = False
+    schema: str = "disabled"
+    module_count: int = 4
+    input_schema: str = "internal-needs-local-resources-v1"
+    output_schema: str = "harvest-channel-zero-sum-residual-v1"
+    expression_threshold: float = 0.25
+    max_residual_fraction: float = 0.5
+    mutation_probability: float = 0.03
+    mutation_std: float = 0.16
+    maintenance_energy_per_expression: float = 0.0
+    development_energy_per_expression: float = 0.0
+
+
+@dataclass(frozen=True)
 class PolicyConfig:
     temperature: float
     partner_samples: int
@@ -423,6 +443,7 @@ class SimulationConfig:
     information: InformationConfig
     knowledge: KnowledgeConfig
     differentiation: DifferentiationConfig
+    functional_modules: FunctionalModuleConfig
     policy: PolicyConfig
     social: SocialConfig
     control: ControlConfig
@@ -462,6 +483,9 @@ def load_config(path: str | Path) -> SimulationConfig:
                 "trajectory_subject_ids": tuple(_require(raw, "run").get("trajectory_subject_ids", ())),
                 "gpu_harvest_conflict_planner": _require(raw, "run").get(
                     "gpu_harvest_conflict_planner", True
+                ),
+                "checkpoint_ticks": tuple(
+                    int(value) for value in _require(raw, "run").get("checkpoint_ticks", ())
                 ),
                 "environment_atlas_scales": tuple(
                     tuple(int(value) for value in scale)
@@ -647,6 +671,7 @@ def load_config(path: str | Path) -> SimulationConfig:
             }
         ),
         differentiation=DifferentiationConfig(**raw.get("differentiation", {})),
+        functional_modules=FunctionalModuleConfig(**raw.get("functional_modules", {})),
         policy=PolicyConfig(**policy_raw),
         social=SocialConfig(**_require(raw, "social")),
         control=ControlConfig(**raw.get("control", {})),
@@ -671,6 +696,12 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("world width and height must be finite and positive")
     if cfg.run.ticks <= 0:
         raise ValueError("ticks must be positive")
+    if any(int(value) < 0 for value in cfg.run.checkpoint_ticks):
+        raise ValueError("run.checkpoint_ticks must be non-negative")
+    if tuple(sorted(set(int(value) for value in cfg.run.checkpoint_ticks))) != tuple(
+        int(value) for value in cfg.run.checkpoint_ticks
+    ):
+        raise ValueError("run.checkpoint_ticks must be sorted and unique")
     if not isinstance(cfg.run.gpu_harvest_conflict_planner, bool):
         raise ValueError("run.gpu_harvest_conflict_planner must be a boolean")
     if cfg.run.experiment_mode not in {"scientific", "entertainment"}:
@@ -1452,6 +1483,47 @@ def validate_config(cfg: SimulationConfig) -> None:
             raise ValueError("D1 relation maximum exceeds physical relation_slots")
         if dcfg.attention_max_slots > cfg.knowledge.attention_slots_per_tick:
             raise ValueError("D1 attention maximum exceeds physical attention_slots_per_tick")
+
+    fcfg = cfg.functional_modules
+    if fcfg.schema not in {"disabled", "expression-gated-contextual-harvest-v1"}:
+        raise ValueError(
+            "functional_modules.schema must be 'disabled' or "
+            "'expression-gated-contextual-harvest-v1'"
+        )
+    if fcfg.enabled != (fcfg.schema == "expression-gated-contextual-harvest-v1"):
+        raise ValueError("functional_modules enabled/schema fields must agree")
+    if fcfg.module_count != 4:
+        raise ValueError("D2-A functional_modules.module_count must be exactly 4")
+    if fcfg.input_schema != "internal-needs-local-resources-v1":
+        raise ValueError("unknown functional_modules.input_schema")
+    if fcfg.output_schema != "harvest-channel-zero-sum-residual-v1":
+        raise ValueError("unknown functional_modules.output_schema")
+    if (
+        not math.isfinite(fcfg.expression_threshold)
+        or fcfg.expression_threshold < 0.0
+        or fcfg.expression_threshold >= 1.0
+    ):
+        raise ValueError("functional_modules.expression_threshold must be in [0, 1)")
+    if (
+        not math.isfinite(fcfg.max_residual_fraction)
+        or fcfg.max_residual_fraction <= 0.0
+        or fcfg.max_residual_fraction > 1.0
+    ):
+        raise ValueError("functional_modules.max_residual_fraction must be in (0, 1]")
+    _probability("functional_modules.mutation_probability", fcfg.mutation_probability)
+    if not math.isfinite(fcfg.mutation_std) or fcfg.mutation_std < 0.0:
+        raise ValueError("functional_modules.mutation_std must be finite and non-negative")
+    functional_costs = (
+        fcfg.maintenance_energy_per_expression,
+        fcfg.development_energy_per_expression,
+    )
+    if any((not math.isfinite(value) or value < 0.0) for value in functional_costs):
+        raise ValueError("functional module costs must be finite and non-negative")
+    if fcfg.enabled:
+        if cfg.entities.resource_affinity_schema != "normalized-four-resource-affinity-v1":
+            raise ValueError("D2-A functional modules require inherited resource affinity")
+        if cfg.entities.harvest_allocation_schema != "affinity-sampled-exclusive-harvest-v1":
+            raise ValueError("D2-A functional modules require selective harvest allocation")
 
     if cfg.policy.temperature <= 0:
         raise ValueError("policy.temperature must be positive")

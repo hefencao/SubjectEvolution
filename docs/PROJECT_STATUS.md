@@ -1,75 +1,72 @@
 # SE project status
 
-Version: **0.38.0**
+Version: **0.39.0**
 
-## Current focus
+## Current causal chain
 
 ```text
 orthogonal external environment
-→ phenotype-routed resource requests
-→ inherited capacity differentiation
-→ paired expression interventions
+→ inherited affinity-routed requests
+→ inherited elastic capacities
+→ bounded contextual harvest modules
 → ecological niches and interactions
 → social organization
 → higher-level candidate subjects
 ```
 
-## D1-B three-seed evidence
+## D1 paired evidence
 
-The supplied v0.37 analysis contains three 1500-tick runs. Final population is
-462, 458 and 418. Global resource effective dimensions remain 1.737–2.004,
-above the old D1 uniform-demand endpoint of roughly 1.27. Capacity effective
-dimensions remain 3.456–3.761.
+The supplied six shared-checkpoint factorial comparisons cover three seeds and
+peak/trough phases. Affinity expression has the same direction in all six:
 
-Working memory is almost fully used, knowledge utilization is 0.929–0.938 and
-relation utilization is 0.724–0.786. D1 capacities therefore have non-trivial
-range and are connected to active mechanisms.
+- final alive: `+57, +59, +143, +146, +58, +80`;
+- mean energy: positive in all six;
+- resource-environment effective dimensions: positive in all six;
+- effective transferred roots: positive in all six;
+- immediate extraction efficiency: negative in all six.
 
-The old demand panel used realized channel volume. Its near-one temporal
-dimension is dominated by population and HARVEST action-count scale, so it
-cannot determine whether requested channel composition differentiated.
+The affinity effect therefore cannot be reduced to a free increase in immediate
+harvest efficiency. Capacity expression remains path-dependent: alive effects
+are mixed, energy is mostly lower, resource dimensions are lower in five of six
+comparisons, and transferred-root effects differ by seed.
 
-## v0.38 D1-C
+These are local 120-tick expression contrasts selected from observed population
+phases. They support a bounded D2 test, not universal adaptive necessity.
 
-The authoritative runtime now records per-window requested resource amounts
-before environment allocation, separately from realized extraction after field
-availability and conflict resolution.
+## D2-A
 
-Long-run schema `multi-seed-long-run-analysis-v13` reports:
+Schema: `expression-gated-contextual-harvest-v1`.
 
-- raw requested and realized channel volumes;
-- per-window channel shares with common scale removed;
-- explicit/inferred/unavailable request observation provenance;
-- extraction efficiency;
-- refusal to reconstruct old selective requests from realized-only records.
+Four inherited modules read a fixed ten-value input vocabulary: bias, five
+internal deficits, and four normalized local resource values. They publish only
+a zero-sum residual over the existing four harvest-channel request weights.
+Static resource affinity still controls assimilation and gradient utility.
+Modules do not choose HARVEST, do not create a new resource/action, and do not
+read lineage, group label, rarity, or analysis output.
 
-The new `se-d1-factorial` command executes four branches from a shared trusted
-checkpoint:
+The 300-tick shared-initial-state smoke shows that module neutralization exactly
+recovers the D1-B endpoint. Expressed modules change request weights for 82.7%
+of final entities. Relative to the neutralized branch, expression changes alive
+`115→127`, resource dimensions `1.825→1.713`, extraction efficiency
+`0.871→0.816`, and effective transferred roots `17.0→20.17`. The trade-off is
+real but not yet interpretable as adaptation.
 
-- baseline;
-- affinity-neutral;
-- capacity-neutral;
-- combined-neutral.
+## Engineering workflow
 
-It publishes affinity-expression, capacity-expression and interaction contrasts
-for each selected phase and fixed horizon. These are local paired effects, not
-universal subject or fitness claims.
+- `se --seed` overrides a config seed without editing JSON.
+- `se` and `se-multi` accept comma-separated `--checkpoint-ticks`.
+- restored runs can also schedule future exact checkpoints.
+- `se-d1-factorial --plan` reuses an existing signed/inspected plan without
+  rerunning phase detection.
+- `make release-check` is disposable and does not modify the caller's shell.
+- `make release-env` creates `.release-env/venv`, performs the same isolated
+  validation, and leaves all console scripts available.
+- short multi-seed smoke runs no longer fail solely because the first
+  evolution-progress window has not yet been emitted.
 
-## Release reliability
+## Next gate
 
-`make release-check` now combines the source test suite with disposable-venv
-distribution validation. The candidate wheel is built from an sdist, installed
-after an older wheel with `--force-reinstall`, and executed outside the source
-tree with `PYTHONPATH` and user site disabled.
-
-## Gate for D2
-
-D2 remains blocked until a v0.38 rerun and paired branches show all of:
-
-1. explicit requested-channel composition has non-trivial temporal variation in
-   at least two seeds;
-2. capacity use remains non-trivial;
-3. affinity and/or capacity expression changes downstream outcomes in matched
-   checkpoint branches;
-4. observed effects are not only population-scale or extraction-efficiency
-   artifacts.
+Run D2-A for three seeds × 3000 ticks, then pair baseline with
+`neutralize-functional-modules` at at least peak and trough checkpoints. Do not
+enter module duplication or arbitrary output routing unless at least two seeds
+show persistent non-zero residual topology and repeatable downstream effects.

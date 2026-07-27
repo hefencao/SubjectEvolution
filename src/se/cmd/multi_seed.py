@@ -32,6 +32,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="cpu")
     parser.add_argument("--until-tick", type=int)
     parser.add_argument(
+        "--checkpoint-ticks",
+        help="Comma-separated exact ticks written as full .sechk checkpoints for every seed.",
+    )
+    parser.add_argument(
         "--overwrite-partial",
         action="store_true",
         help="Delete and restart an incomplete seed directory.",
@@ -65,31 +69,71 @@ def main() -> None:
     args = build_parser().parse_args()
     seeds = parse_seeds(args.seeds)
     base = load_config(args.config)
+    checkpoint_ticks: tuple[int, ...] = ()
+    if args.checkpoint_ticks:
+        checkpoint_ticks = tuple(
+            sorted(set(int(item.strip()) for item in args.checkpoint_ticks.split(",") if item.strip()))
+        )
+        if not checkpoint_ticks or checkpoint_ticks[0] < 0:
+            raise ValueError("checkpoint-ticks must contain non-negative integers")
     target_tick = base.run.ticks if args.until_tick is None else int(args.until_tick)
     if target_tick < 0:
         raise ValueError("until-tick must be non-negative")
+    if checkpoint_ticks and checkpoint_ticks[-1] > target_tick:
+        raise ValueError(
+            f"checkpoint-ticks includes {checkpoint_ticks[-1]} beyond final tick {target_tick}"
+        )
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
     progress_paths: list[Path] = []
     index: list[dict[str, object]] = []
     for seed in seeds:
-        run_cfg = replace(base, run=replace(base.run, seed=seed, ticks=target_tick))
+        run_cfg = replace(
+            base,
+            run=replace(
+                base.run,
+                seed=seed,
+                ticks=target_tick,
+                checkpoint_ticks=checkpoint_ticks or base.run.checkpoint_ticks,
+                full_checkpoint_enabled=(
+                    True if checkpoint_ticks else base.run.full_checkpoint_enabled
+                ),
+            ),
+        )
         run_dir = output / f"seed_{seed}"
         completed_tick = _completed_tick(run_dir) if run_dir.exists() else None
         if completed_tick is not None and completed_tick >= target_tick:
             progress = run_dir / "evolution_progress.jsonl"
-            progress_paths.append(progress)
-            final_records = []
-            with progress.open("r", encoding="utf-8") as handle:
-                final_records = [json.loads(line) for line in handle if line.strip()]
+            final_tick = int(completed_tick)
+            alive = 0
+            progress_value: str | None = None
+            if progress.is_file():
+                progress_paths.append(progress)
+                with progress.open("r", encoding="utf-8") as handle:
+                    final_records = [
+                        json.loads(line) for line in handle if line.strip()
+                    ]
+                if final_records:
+                    final_tick = int(final_records[-1]["tick"])
+                    alive = int(final_records[-1].get("alive", 0))
+                progress_value = str(progress)
+            else:
+                summary = run_dir / "summary.json"
+                if summary.is_file():
+                    payload = json.loads(summary.read_text(encoding="utf-8"))
+                    alive = int(payload.get("alive", 0))
             index.append(
                 {
                     "seed": seed,
                     "output": str(run_dir),
-                    "final_tick": int(final_records[-1]["tick"]),
-                    "alive": int(final_records[-1].get("alive", 0)),
-                    "evolution_progress": str(progress),
-                    "status": "skipped-completed",
+                    "final_tick": final_tick,
+                    "alive": alive,
+                    "evolution_progress": progress_value,
+                    "status": (
+                        "skipped-completed"
+                        if progress_value is not None
+                        else "skipped-completed-no-progress"
+                    ),
                 }
             )
             (output / "multi_seed_index.json").write_text(
@@ -109,27 +153,57 @@ def main() -> None:
         simulation = Simulation(run_cfg, run_dir, backend=args.backend)
         final = simulation.run(until_tick=target_tick)
         progress = run_dir / "evolution_progress.jsonl"
-        progress_paths.append(progress)
+        progress_value: str | None = None
+        if progress.is_file():
+            progress_paths.append(progress)
+            progress_value = str(progress)
         index.append(
             {
                 "seed": seed,
                 "output": str(run_dir),
                 "final_tick": target_tick,
                 "alive": int(final.get("alive", 0)),
-                "evolution_progress": str(progress),
-                "status": "completed",
+                "evolution_progress": progress_value,
+                "status": "completed" if progress_value else "completed-no-progress",
             }
         )
         (output / "multi_seed_index.json").write_text(
             json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8"
         )
-    report = analyze(progress_paths)
+    missing_progress = [
+        item["seed"] for item in index if item.get("evolution_progress") is None
+    ]
+    if progress_paths:
+        report = analyze(progress_paths)
+        report["requested_seed_count"] = len(seeds)
+        report["missing_progress_seeds"] = missing_progress
+        markdown = render_markdown(report)
+        if missing_progress:
+            markdown += (
+                "\n> Warning: no evolution progress was produced for seeds "
+                + ", ".join(str(value) for value in missing_progress)
+                + "; the aggregate includes only available progress streams.\n"
+            )
+    else:
+        report = {
+            "schema": "multi-seed-analysis-unavailable-v1",
+            "requested_seed_count": len(seeds),
+            "run_count": 0,
+            "missing_progress_seeds": missing_progress,
+            "reason": (
+                "runs completed before the first evolution-evaluation window; "
+                "world outputs and exact checkpoints remain valid"
+            ),
+        }
+        markdown = (
+            "# Multi-seed analysis unavailable\n\n"
+            + report["reason"]
+            + "\n"
+        )
     (output / "long_run_analysis.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    (output / "long_run_analysis.md").write_text(
-        render_markdown(report), encoding="utf-8"
-    )
+    (output / "long_run_analysis.md").write_text(markdown, encoding="utf-8")
 
 
 if __name__ == "__main__":

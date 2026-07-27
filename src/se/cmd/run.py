@@ -21,6 +21,11 @@ def build_parser() -> argparse.ArgumentParser:
             "checkpoint. Do not load untrusted checkpoint files."
         ),
     )
+    parser.add_argument("--seed", type=int, help="Override run.seed for a config-based run.")
+    parser.add_argument(
+        "--checkpoint-ticks",
+        help="Comma-separated exact ticks at which full .sechk checkpoints are written.",
+    )
     parser.add_argument(
         "--until-tick",
         type=int,
@@ -97,6 +102,25 @@ def main() -> None:
         parser.error("provide exactly one of --config or --resume-checkpoint")
     if args.resume_checkpoint and args.experiment_mode is not None:
         parser.error("--experiment-mode cannot change a restored world")
+    if args.resume_checkpoint and args.seed is not None:
+        parser.error("--seed cannot change a restored world")
+
+    checkpoint_ticks: tuple[int, ...] | None = None
+    if args.checkpoint_ticks:
+        try:
+            checkpoint_ticks = tuple(
+                sorted(
+                    set(
+                        int(item.strip())
+                        for item in args.checkpoint_ticks.split(",")
+                        if item.strip()
+                    )
+                )
+            )
+        except ValueError as exc:
+            parser.error(f"invalid --checkpoint-ticks: {exc}")
+        if not checkpoint_ticks or checkpoint_ticks[0] < 0:
+            parser.error("--checkpoint-ticks must contain non-negative integers")
 
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
@@ -109,20 +133,31 @@ def main() -> None:
             backend=args.backend,
             until_tick=args.until_tick,
             gpu_semantics_mode=args.gpu_semantics_mode,
+            checkpoint_ticks=checkpoint_ticks,
         )
         cfg = simulation.cfg
     else:
         config_path = Path(args.config)
         cfg = load_config(config_path)
         run_overrides = {}
+        if args.seed is not None:
+            run_overrides["seed"] = int(args.seed)
         if args.experiment_mode is not None:
             run_overrides["experiment_mode"] = args.experiment_mode
         if args.gpu_semantics_mode is not None:
             run_overrides["gpu_semantics_mode"] = args.gpu_semantics_mode
+        if checkpoint_ticks is not None:
+            run_overrides["checkpoint_ticks"] = checkpoint_ticks
+            run_overrides["full_checkpoint_enabled"] = True
         if args.until_tick is not None:
             if args.until_tick < 0:
                 parser.error("--until-tick must be non-negative")
             run_overrides["ticks"] = args.until_tick
+        target_tick = int(run_overrides.get("ticks", cfg.run.ticks))
+        if checkpoint_ticks and checkpoint_ticks[-1] > target_tick:
+            parser.error(
+                f"--checkpoint-ticks includes {checkpoint_ticks[-1]} beyond final tick {target_tick}"
+            )
         if run_overrides:
             cfg = replace(cfg, run=replace(cfg.run, **run_overrides))
         simulation_output = output / "baseline" if args.counterfactual else output

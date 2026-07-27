@@ -225,7 +225,7 @@ def build_phase_plan(
     )
     if not complete_cycle and not allow_incomplete_cycle:
         raise ValueError(
-            "no complete ecological cycle was detected; rerun with a longer source "
+            "no complete trough-to-peak-to-trough population cycle was detected; rerun with a longer source "
             "trajectory or explicitly set allow_incomplete_cycle=True for a smoke test"
         )
     checkpoints = discover_checkpoints(root)

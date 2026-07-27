@@ -8,6 +8,7 @@ import numpy as np
 from .backend import backend_from_array
 from .cfg import SimulationConfig
 from .differentiation.capacity import capacity_gene_count
+from .differentiation.functional import functional_module_gene_count
 from .information import InformationObservation
 from se.knowledge import OUTCOME_WIDTH
 from se.knowledge.policy import KnowledgePolicyPlan
@@ -169,8 +170,16 @@ class ParametricPolicy:
         return cls.core_genome_size_for_config(cfg)
 
     @classmethod
+    def functional_module_gene_start(cls, cfg: SimulationConfig) -> int:
+        return cls.capacity_gene_start(cfg) + capacity_gene_count(cfg)
+
+    @classmethod
     def genome_size_for_config(cls, cfg: SimulationConfig) -> int:
-        return cls.core_genome_size_for_config(cfg) + capacity_gene_count(cfg)
+        return (
+            cls.core_genome_size_for_config(cfg)
+            + capacity_gene_count(cfg)
+            + functional_module_gene_count(cfg)
+        )
 
     @classmethod
     def outcome_preferences_from_genotype(cls, genotype: Any) -> Any:

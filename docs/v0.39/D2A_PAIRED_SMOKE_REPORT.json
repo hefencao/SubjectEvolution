@@ -1,0 +1,66 @@
+{
+  "schema": "d2a-paired-smoke-v1",
+  "seed": 10001,
+  "final_tick": 300,
+  "baseline": {
+    "alive": 127,
+    "environment_resource_effective_dimensions": 1.7133240581408054,
+    "harvest_extraction_efficiency_window": 0.8156186772795945,
+    "knowledge_effective_transferred_roots": 20.166666666666668,
+    "capacity_effective_dimensions": 3.859936887562448,
+    "functional_module_residual_abs_mean": 0.00027970441683070865,
+    "functional_module_residual_abs_max": 0.00457763671875,
+    "functional_module_changed_entity_fraction": 0.8267716535433071,
+    "functional_module_expressed_mean": 1.763779527559055,
+    "functional_module_gate_mean": 0.08479273037647637
+  },
+  "neutralized_from_tick_0": {
+    "alive": 115,
+    "environment_resource_effective_dimensions": 1.8247825975544776,
+    "harvest_extraction_efficiency_window": 0.8712884480533746,
+    "knowledge_effective_transferred_roots": 17.0,
+    "capacity_effective_dimensions": 3.853228023432437,
+    "functional_module_residual_abs_mean": 0.0,
+    "functional_module_residual_abs_max": 0.0,
+    "functional_module_changed_entity_fraction": 0.0,
+    "functional_module_expressed_mean": 1.8521739130434782,
+    "functional_module_gate_mean": 0.08950248386548913
+  },
+  "neutralized_from_tick_150": {
+    "alive": 124,
+    "environment_resource_effective_dimensions": 1.7320578972660772,
+    "harvest_extraction_efficiency_window": 0.8320387765410232,
+    "knowledge_effective_transferred_roots": 21.000000000000007,
+    "capacity_effective_dimensions": 3.842924734626922,
+    "functional_module_residual_abs_mean": 0.0,
+    "functional_module_residual_abs_max": 0.0,
+    "functional_module_changed_entity_fraction": 0.0,
+    "functional_module_expressed_mean": 1.768,
+    "functional_module_gate_mean": 0.08620654296875
+  },
+  "tick0_expression_effect": {
+    "alive": 12.0,
+    "environment_resource_effective_dimensions": -0.11145853941367223,
+    "harvest_extraction_efficiency_window": -0.0556697707737801,
+    "knowledge_effective_transferred_roots": 3.166666666666668,
+    "capacity_effective_dimensions": 0.0067088641300108165,
+    "functional_module_residual_abs_mean": 0.00027970441683070865,
+    "functional_module_residual_abs_max": 0.00457763671875,
+    "functional_module_changed_entity_fraction": 0.8267716535433071,
+    "functional_module_expressed_mean": -0.08839438548442313,
+    "functional_module_gate_mean": -0.004709753489012758
+  },
+  "tick150_expression_effect": {
+    "alive": 3.0,
+    "environment_resource_effective_dimensions": -0.018733839125271823,
+    "harvest_extraction_efficiency_window": -0.016420099261428733,
+    "knowledge_effective_transferred_roots": -0.8333333333333393,
+    "capacity_effective_dimensions": 0.017012152935525826,
+    "functional_module_residual_abs_mean": 0.00027970441683070865,
+    "functional_module_residual_abs_max": 0.00457763671875,
+    "functional_module_changed_entity_fraction": 0.8267716535433071,
+    "functional_module_expressed_mean": -0.004220472440944922,
+    "functional_module_gate_mean": -0.0014138125922736194
+  },
+  "interpretation": "mechanism participation and trade-off only; not adaptive necessity"
+}

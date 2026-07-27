@@ -12,6 +12,7 @@ from se.experiments.d1_factorial import (
     build_factorial_plan,
     execute_factorial_plan,
     factorial_effects,
+    load_factorial_plan,
 )
 from se.runtime.sim import Simulation
 
@@ -184,3 +185,19 @@ def test_factorial_plan_executes_four_paired_branches(tmp_path: Path) -> None:
         assert branch["world"]["tick"] == plan.checkpoints[0].until_tick
     assert "affinity_expression_effect" in checkpoint["effects"]
     assert (tmp_path / "factorial" / "d1_factorial_results.json").is_file()
+
+
+def test_factorial_plan_can_be_reused_without_phase_redetection(tmp_path: Path) -> None:
+    cfg = _small_cfg(ticks=20)
+    source = tmp_path / "source-reuse"
+    Simulation(cfg, source, backend="cpu").run(until_tick=20)
+    plan = build_factorial_plan(
+        [source],
+        horizon_ticks=5,
+        phases=("peak",),
+        allow_incomplete_cycle=True,
+    )
+    path = tmp_path / "plan.json"
+    path.write_text(json.dumps(__import__("dataclasses").asdict(plan)), encoding="utf-8")
+    loaded = load_factorial_plan(path)
+    assert loaded == plan

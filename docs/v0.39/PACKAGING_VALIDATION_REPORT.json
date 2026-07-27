@@ -1,0 +1,14 @@
+{
+  "schema": "packaging-validation-v1",
+  "version": "0.39.0",
+  "project_file_count": 231,
+  "zip_file_count": 231,
+  "tar_file_count": 231,
+  "single_top_level_directory": true,
+  "top_level_directory": "se_v039_project",
+  "forbidden_entries": [],
+  "wheel_present": true,
+  "sdist_present": true,
+  "isolated_wheel_validation_passed": true,
+  "passed": true
+}

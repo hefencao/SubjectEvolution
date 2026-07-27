@@ -96,6 +96,7 @@ class ActionResolutionSnapshot:
     primary_subject_id: np.ndarray
     free_slot_count: int
     resource_affinity_q: np.ndarray | None = None
+    harvest_preference_q: np.ndarray | None = None
 
 
 @dataclass(frozen=True)
@@ -270,8 +271,12 @@ class DeterministicActionConflictResolver:
             if not selective_harvest_enabled(self.cfg)
             else (
                 None
-                if snapshot.resource_affinity_q is None
-                else snapshot.resource_affinity_q[harvester_indices]
+                if (snapshot.harvest_preference_q is None and snapshot.resource_affinity_q is None)
+                else (
+                    snapshot.harvest_preference_q[harvester_indices]
+                    if snapshot.harvest_preference_q is not None
+                    else snapshot.resource_affinity_q[harvester_indices]
+                )
             )
         )
         channel_draws = (

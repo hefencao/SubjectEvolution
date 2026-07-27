@@ -79,6 +79,35 @@ class FactorialPlan:
     observational_phase_selection: bool = True
 
 
+def load_factorial_plan(path: str | Path) -> FactorialPlan:
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    if payload.get("schema") != PLAN_SCHEMA:
+        raise ValueError(f"unsupported factorial plan schema: {payload.get('schema')!r}")
+    checkpoints = tuple(
+        FactorialCheckpoint(**item) for item in payload.get("checkpoints", ())
+    )
+    if not checkpoints:
+        raise ValueError("factorial plan contains no checkpoints")
+    branches = {
+        str(name): tuple(values)
+        for name, values in dict(payload.get("branches", {})).items()
+    }
+    if branches != BRANCH_INTERVENTIONS:
+        raise ValueError("factorial plan branch definitions do not match this runtime")
+    return FactorialPlan(
+        schema=payload["schema"],
+        horizon_ticks=int(payload["horizon_ticks"]),
+        phases=tuple(payload["phases"]),
+        checkpoints=checkpoints,
+        branches=branches,
+        paired_randomness=bool(payload.get("paired_randomness", True)),
+        genotype_preserved=bool(payload.get("genotype_preserved", True)),
+        observational_phase_selection=bool(
+            payload.get("observational_phase_selection", True)
+        ),
+    )
+
+
 def _normalize_phases(phases: Iterable[str]) -> tuple[str, ...]:
     normalized: list[str] = []
     for value in phases:
@@ -393,7 +422,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Plan or execute paired D1 affinity × capacity factorial branches"
     )
-    parser.add_argument("--run-dir", action="append", required=True)
+    parser.add_argument("--run-dir", action="append")
+    parser.add_argument(
+        "--plan",
+        help="Execute or copy an existing d1_factorial_plan.json without re-detecting phases.",
+    )
     parser.add_argument("--output", required=True)
     parser.add_argument("--horizon", type=int, default=120)
     parser.add_argument("--phases", default=",".join(PHASES))
@@ -412,13 +445,18 @@ def main() -> None:
     args = build_parser().parse_args()
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
-    plan = build_factorial_plan(
-        args.run_dir,
-        horizon_ticks=args.horizon,
-        phases=_parse_csv(args.phases),
-        min_phase_tick=args.min_phase_tick,
-        allow_incomplete_cycle=args.allow_incomplete_cycle,
-    )
+    if bool(args.plan) == bool(args.run_dir):
+        raise ValueError("provide exactly one of --plan or one or more --run-dir values")
+    if args.plan:
+        plan = load_factorial_plan(args.plan)
+    else:
+        plan = build_factorial_plan(
+            args.run_dir,
+            horizon_ticks=args.horizon,
+            phases=_parse_csv(args.phases),
+            min_phase_tick=args.min_phase_tick,
+            allow_incomplete_cycle=args.allow_incomplete_cycle,
+        )
     (output / "d1_factorial_plan.json").write_text(
         json.dumps(asdict(plan), ensure_ascii=False, indent=2), encoding="utf-8"
     )

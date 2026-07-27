@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.39.0
+
+### Workflow and artifact execution
+
+- Adds `se --seed` and exact comma-separated `--checkpoint-ticks` to single and multi-seed runs.
+- Adds persistent `make release-env`; disposable `release-check` now explicitly states that it does not modify the caller PATH.
+- Extends installed-artifact validation with single/multi-seed exact-checkpoint smoke tests.
+- Adds `se-d1-factorial --plan` and corrects phase terminology to an observed population cycle.
+
+### D2-A contextual functional modules
+
+- Adds four fixed-layout inherited expression/input/bias/output modules.
+- Modules publish only a zero-sum residual over existing harvest request ports; they do not choose actions, modify assimilation or add world physics.
+- Adds expression maintenance/development costs, module neutralization, checkpoint persistence and topology/residual diagnostics.
+- Long-run analysis upgrades to v14 and protocol audit to v7.
+
+### Evidence boundary
+
+- Records the supplied six-checkpoint D1 factorial result: affinity expression has consistent survival/resource/cultural effects despite lower immediate extraction efficiency; capacity and interaction effects remain path-dependent.
+- D2-A enters as a bounded exploratory mechanism; structural module mutation remains blocked.
+
+
 ## 0.37.0
 
 ### D1-B phenotype-routed resource demand

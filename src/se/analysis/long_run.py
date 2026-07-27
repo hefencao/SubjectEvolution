@@ -395,6 +395,7 @@ def _resolved_config_context(path: str | Path) -> dict[str, Any]:
     run = config.get("run", {}) if isinstance(config, dict) else {}
     social = config.get("social", {}) if isinstance(config, dict) else {}
     differentiation = config.get("differentiation", {}) if isinstance(config, dict) else {}
+    functional_modules = config.get("functional_modules", {}) if isinstance(config, dict) else {}
     world = config.get("world", {}) if isinstance(config, dict) else {}
     manifest_path = progress.parent / "run_manifest.json"
     manifest: dict[str, Any] = {}
@@ -530,6 +531,11 @@ def _resolved_config_context(path: str | Path) -> dict[str, Any]:
         },
         "differentiation_mutation_probability": differentiation.get("mutation_probability"),
         "differentiation_mutation_std": differentiation.get("mutation_std"),
+        "functional_modules_enabled": bool(functional_modules.get("enabled", False)),
+        "functional_modules_schema": functional_modules.get("schema", "disabled"),
+        "functional_modules_module_count": functional_modules.get("module_count"),
+        "functional_modules_expression_threshold": functional_modules.get("expression_threshold"),
+        "functional_modules_max_residual_fraction": functional_modules.get("max_residual_fraction"),
         "requested_backend": manifest.get("requested_backend"),
         "execution_backend": manifest.get("execution_backend"),
         "gpu_semantics_mode": manifest.get("gpu_semantics_mode"),
@@ -960,6 +966,16 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
     capacity_relations = _array(records, "capacity_relation_slots_mean")
     capacity_attention = _array(records, "capacity_knowledge_attention_slots_mean")
     environment_resource_dims = _array(records, "environment_resource_effective_dimensions")
+    functional_expressed = _array(records, "functional_module_expressed_mean")
+    functional_preference_dims = _array(
+        records, "functional_harvest_preference_effective_dimensions"
+    )
+    functional_residual_abs = _array(
+        records, "functional_module_residual_abs_mean"
+    )
+    functional_changed_fraction = _array(
+        records, "functional_module_changed_entity_fraction"
+    )
 
     raw_correlations = {
         "mortality_vs_same_window_cohesion": _pearson(mortality, cohesion),
@@ -1104,6 +1120,12 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
         for key, value in final.items()
         if str(key).startswith("capacity_") or key == "differentiation_schema"
     }
+    functional_module_final = {
+        key: value
+        for key, value in final.items()
+        if str(key).startswith("functional_module_")
+        or str(key).startswith("functional_harvest_")
+    }
     if (
         config_context.get("differentiation_enabled")
         and config_context.get("differentiation_schema")
@@ -1113,6 +1135,11 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
         raise ValueError(
             f"{path} enables D1 elastic capacities but contains no capacity_* "
             "progress fields; do not analyze it as a complete D1 run"
+        )
+    if config_context.get("functional_modules_enabled") and not functional_module_final:
+        raise ValueError(
+            f"{path} enables D2-A functional modules but contains no functional_module_* "
+            "progress fields; do not analyze it as a complete D2-A run"
         )
     return {
         "path": str(path),
@@ -1145,6 +1172,7 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
         "environment_atlas_final": environment_atlas_final,
         "resource_environment_final": resource_environment_final,
         "capacity_final": capacity_final,
+        "functional_module_final": functional_module_final,
         "danger_direct_weight_mean_final": (
             float(final["danger_direct_weight_mean"])
             if "danger_direct_weight_mean" in final else None
@@ -1268,6 +1296,18 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
             "capacity_knowledge_attention_slots_mean": _slope_per_1000_ticks(
                 ticks, capacity_attention
             ),
+            "functional_module_expressed_mean": _slope_per_1000_ticks(
+                ticks, functional_expressed
+            ),
+            "functional_harvest_preference_effective_dimensions": (
+                _slope_per_1000_ticks(ticks, functional_preference_dims)
+            ),
+            "functional_module_residual_abs_mean": _slope_per_1000_ticks(
+                ticks, functional_residual_abs
+            ),
+            "functional_module_changed_entity_fraction": _slope_per_1000_ticks(
+                ticks, functional_changed_fraction
+            ),
         },
         "capacity_correlations_observational": (
             capacity_correlations if capacity_final else {}
@@ -1380,6 +1420,26 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         aggregate["capacity_effective_dimensions_final"] = _aggregate_numeric(
             [float(value) for value in capacity_values]
         )
+    functional_values = [
+        run.get("functional_module_final", {}).get(
+            "functional_harvest_preference_effective_dimensions"
+        )
+        for run in runs
+    ]
+    if functional_values and all(value is not None for value in functional_values):
+        aggregate["functional_harvest_preference_effective_dimensions_final"] = (
+            _aggregate_numeric([float(value) for value in functional_values])
+        )
+    residual_values = [
+        run.get("functional_module_final", {}).get(
+            "functional_module_residual_abs_mean"
+        )
+        for run in runs
+    ]
+    if residual_values and all(value is not None for value in residual_values):
+        aggregate["functional_module_residual_abs_mean_final"] = _aggregate_numeric(
+            [float(value) for value in residual_values]
+        )
     consistency = _sign_consistency(runs)
     local_consistency = _local_sign_consistency(runs)
     robust = [
@@ -1393,7 +1453,7 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         if value["available_runs"] >= 3 and value["same_nonzero_sign"]
     ]
     return {
-        "schema": "multi-seed-long-run-analysis-v13",
+        "schema": "multi-seed-long-run-analysis-v14",
         "analyzer_version": __version__,
         "input_runtime_versions": sorted(
             {
@@ -1678,6 +1738,27 @@ def render_markdown(report: dict[str, Any]) -> str:
                 lines.append(f"  - `{key}`: {_format(value)}")
             lines.extend([
                 "- boundary: capacity–outcome correlations can reflect shared selection and demographic drift; paired capacity-expression interventions are required for causal claims.",
+                "",
+            ])
+    if any(run.get("functional_module_final") for run in report["runs"]):
+        lines.extend(["## D2-A contextual functional modules", ""])
+        for run in report["runs"]:
+            values = run.get("functional_module_final", {})
+            if not values:
+                continue
+            context = run.get("config_context", {})
+            lines.extend([
+                f"### {run['run_name']}",
+                f"- schema: `{values.get('functional_module_schema', context.get('functional_modules_schema', 'disabled'))}`",
+                f"- expressed modules mean/fraction: {_format(values.get('functional_module_expressed_mean'))} / {_format(values.get('functional_module_expressed_fraction'))}",
+                f"- gate mean/std/effective dimensions: {_format(values.get('functional_module_gate_mean'))} / {_format(values.get('functional_module_gate_std'))} / {_format(values.get('functional_module_gate_effective_dimensions'))}",
+                f"- contextual harvest-preference effective dimensions: {_format(values.get('functional_harvest_preference_effective_dimensions'))}",
+                f"- module residual mean/max |share|: {_format(values.get('functional_module_residual_abs_mean'), 6)} / {_format(values.get('functional_module_residual_abs_max'), 6)}",
+                f"- entities with changed request weights: {_format(values.get('functional_module_changed_entity_fraction'))}",
+                f"- residual effective dimensions: {_format(values.get('functional_module_residual_effective_dimensions'))}",
+                f"- preference mean: {values.get('functional_harvest_preference_mean')}",
+                f"- final maintenance/development energy step: {_format(values.get('functional_module_maintenance_energy_step'), 6)} / {_format(values.get('functional_module_development_energy_step'), 6)}",
+                "- boundary: these modules only alter harvest-channel requests; paired module neutralization is required before interpreting them as adaptive functions.",
                 "",
             ])
     if any(run.get("subject_structure_final") for run in report["runs"]):

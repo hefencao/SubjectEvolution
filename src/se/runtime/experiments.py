@@ -267,6 +267,19 @@ class SimulationExperimentMixin:
                 "inheritance_modified": False,
                 "future_offspring_expression_neutralized": True,
             }
+        elif normalized == "neutralize-functional-modules":
+            if not self.cfg.functional_modules.enabled:
+                raise ValueError(
+                    "neutralize-functional-modules requires enabled functional modules"
+                )
+            canonical = "neutralize-functional-modules"
+            self.functional_modules_ablation_enabled = True
+            details = {
+                "effective_output": "zero-residual",
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+                "future_offspring_expression_neutralized": True,
+            }
         elif normalized == "neutralize-resource-affinity":
             if (
                 self.cfg.entities.resource_affinity_schema

@@ -125,7 +125,7 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
             "pyproject.toml",
             "README.md",
             "MANIFEST.in",
-            "configs/d1b_selective_harvest_smoke.json",
+            "configs/d2a_contextual_harvest_smoke.json",
             "docs/PROJECT_CHARTER.md",
             "scripts/verify_dist.py",
             "src/se/__init__.py",
@@ -150,7 +150,7 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
                 f"sdist contains forbidden files: {forbidden_sdist_paths[:10]}"
             )
         config_member = archive.getmember(
-            f"{sdist_root}/configs/d1b_selective_harvest_smoke.json"
+            f"{sdist_root}/configs/d2a_contextual_harvest_smoke.json"
         )
         config_payload = archive.extractfile(config_member)
         if config_payload is None:
@@ -242,9 +242,10 @@ import pathlib
 import pkgutil
 import se
 project = pathlib.Path({str(project)!r}).resolve()
+source_root = (project / 'src').resolve()
 venv_root = pathlib.Path({str(env_root)!r}).resolve()
 package_path = pathlib.Path(se.__file__).resolve()
-if project == package_path or project in package_path.parents:
+if source_root == package_path or source_root in package_path.parents:
     raise SystemExit(f'installed import leaked to source tree: {{package_path}}')
 if venv_root not in package_path.parents:
     raise SystemExit(f'installed import did not come from candidate venv: {{package_path}}')
@@ -305,6 +306,10 @@ print(json.dumps({{'version': version, 'package_path': str(package_path), 'modul
             run_dir,
             "--backend",
             "cpu",
+            "--seed",
+            "424242",
+            "--checkpoint-ticks",
+            ",".join(str(value) for value in range(1, int(args.until_tick) + 1)),
             "--until-tick",
             str(args.until_tick),
         ],
@@ -313,6 +318,42 @@ print(json.dumps({{'version': version, 'package_path': str(package_path), 'modul
     )
     if not (run_dir / "metrics.csv").is_file():
         raise RuntimeError("installed-wheel smoke did not produce metrics.csv")
+    resolved_smoke = json.loads(
+        (run_dir / "resolved_config.json").read_text(encoding="utf-8")
+    )
+    if int(resolved_smoke["run"]["seed"]) != 424242:
+        raise RuntimeError("installed se --seed override was not applied")
+    for tick in range(1, int(args.until_tick) + 1):
+        if not (run_dir / f"checkpoint_{tick:08d}.sechk").is_file():
+            raise RuntimeError(f"installed se did not write exact checkpoint tick {tick}")
+
+    multi_dir = work_root / "multi-smoke"
+    multi = _run(
+        [
+            _venv_script(env_root, "se-multi"),
+            "--config",
+            external_config,
+            "--seeds",
+            "101,202",
+            "--output",
+            multi_dir,
+            "--backend",
+            "cpu",
+            "--checkpoint-ticks",
+            ",".join(str(value) for value in range(1, int(args.until_tick) + 1)),
+            "--until-tick",
+            str(args.until_tick),
+        ],
+        cwd=work_root,
+        env=clean_env,
+    )
+    for seed in (101, 202):
+        seed_dir = multi_dir / f"seed_{seed}"
+        for tick in range(1, int(args.until_tick) + 1):
+            if not (seed_dir / f"checkpoint_{tick:08d}.sechk").is_file():
+                raise RuntimeError(
+                    f"installed se-multi did not write checkpoint {tick} for seed {seed}"
+                )
 
     installed_version = _run(
         [python, "-c", "import importlib.metadata as m; print(m.version('se-mvp'))"],
@@ -341,6 +382,10 @@ print(json.dumps({{'version': version, 'package_path': str(package_path), 'modul
         "system_site_packages": not args.strict,
         "source_tree_excluded": True,
         "force_reinstall": True,
+        "persistent_environment": bool(args.work_dir),
+        "venv_root": str(env_root),
+        "venv_python": str(python),
+        "console_script_dir": str(_venv_script(env_root, "se").parent),
         "probe": probe_payload,
         "console_scripts": help_outputs,
         "source_smoke_config": str(config),
@@ -357,6 +402,8 @@ print(json.dumps({{'version': version, 'package_path': str(package_path), 'modul
             not args.strict and pip_check.returncode != 0
         ),
         "smoke_output": smoke.stdout,
+        "multi_seed_smoke_output": multi.stdout,
+        "multi_seed_smoke_output_dir": str(multi_dir),
         "passed": True,
     }
     report_path = (
@@ -366,10 +413,13 @@ print(json.dumps({{'version': version, 'package_path': str(package_path), 'modul
     )
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({"passed": True, "report": str(report_path), "wheel": str(wheel)}))
+    print(json.dumps({"passed": True, "report": str(report_path), "wheel": str(wheel), "venv": str(env_root)}))
 
     if args.keep or args.work_dir:
         print(f"kept validation workspace: {work_root}")
+        print(f"verified console scripts: {_venv_script(env_root, 'se').parent}")
+        if os.name != "nt":
+            print(f"activate with: source {env_root / 'bin' / 'activate'}")
     elif cleanup and holder is not None:
         holder.cleanup()
     return report
@@ -378,7 +428,7 @@ print(json.dumps({{'version': version, 'package_path': str(package_path), 'modul
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project", default=".")
-    parser.add_argument("--config", default="configs/d1b_selective_harvest_smoke.json")
+    parser.add_argument("--config", default="configs/d2a_contextual_harvest_smoke.json")
     parser.add_argument("--until-tick", type=int, default=2)
     parser.add_argument("--previous-wheel")
     parser.add_argument("--strict", action="store_true")

@@ -384,6 +384,25 @@ class SimulationReportingMixin:
             "differentiation_feedback_to_world": self.cfg.differentiation.enabled,
             "differentiation_role_labels": False,
             "differentiation_diversity_protection": False,
+            "functional_modules_enabled": self.cfg.functional_modules.enabled,
+            "functional_modules_schema": self.cfg.functional_modules.schema,
+            "functional_modules_gene_start": (
+                ParametricPolicy.functional_module_gene_start(self.cfg)
+                if self.cfg.functional_modules.enabled else None
+            ),
+            "functional_modules_module_count": (
+                self.cfg.functional_modules.module_count
+                if self.cfg.functional_modules.enabled else 0
+            ),
+            "functional_modules_input_schema": self.cfg.functional_modules.input_schema,
+            "functional_modules_output_schema": self.cfg.functional_modules.output_schema,
+            "functional_modules_feedback_scope": (
+                "harvest-channel-request-only"
+                if self.cfg.functional_modules.enabled else None
+            ),
+            "functional_modules_action_selection": False,
+            "functional_modules_new_world_physics": False,
+            "functional_modules_diversity_protection": False,
             "knowledge_candidate_tracking": self.cfg.knowledge.candidate_tracking_enabled,
             "knowledge_candidate_schema": (
                 self.cfg.knowledge.candidate_schema
@@ -405,6 +424,10 @@ class SimulationReportingMixin:
         if not self.cfg.differentiation.enabled:
             for key in tuple(manifest):
                 if key.startswith("differentiation_"):
+                    manifest.pop(key)
+        if not self.cfg.functional_modules.enabled:
+            for key in tuple(manifest):
+                if key.startswith("functional_modules_"):
                     manifest.pop(key)
         if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
             manifest["environment_resource_dynamics"] = {
@@ -549,6 +572,9 @@ class SimulationReportingMixin:
                 ),
                 "resource_affinity_ablation_enabled": (
                     self.resource_affinity_ablation_enabled
+                ),
+                "functional_modules_ablation_enabled": (
+                    self.functional_modules_ablation_enabled
                 ),
                 "knowledge_policy_residual_schema": (
                     self.cfg.knowledge.policy_residual_schema
@@ -1300,6 +1326,16 @@ class SimulationReportingMixin:
             ),
             "resource_affinity_ablation_enabled": int(
                 self.resource_affinity_ablation_enabled
+            ),
+            "functional_modules_schema": self.cfg.functional_modules.schema,
+            "functional_modules_ablation_enabled": int(
+                self.functional_modules_ablation_enabled
+            ),
+            "functional_module_maintenance_energy_step": (
+                stats.functional_module_maintenance_energy
+            ),
+            "functional_module_development_energy_step": (
+                stats.functional_module_development_energy
             ),
             "danger_evidence_ablation_enabled": int(
                 self.danger_evidence_ablation_enabled

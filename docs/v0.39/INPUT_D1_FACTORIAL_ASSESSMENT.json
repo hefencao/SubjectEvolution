@@ -1,0 +1,411 @@
+{
+  "schema": "input-d1-factorial-assessment-v1",
+  "source_schema": "d1-affinity-capacity-factorial-results-v1",
+  "checkpoint_count": 6,
+  "run_phase_pairs": [
+    {
+      "run_name": "seed_10001",
+      "phase": "peak",
+      "checkpoint_tick": 2400,
+      "until_tick": 2520
+    },
+    {
+      "run_name": "seed_10001",
+      "phase": "trough",
+      "checkpoint_tick": 2640,
+      "until_tick": 2760
+    },
+    {
+      "run_name": "seed_10002",
+      "phase": "peak",
+      "checkpoint_tick": 2880,
+      "until_tick": 3000
+    },
+    {
+      "run_name": "seed_10002",
+      "phase": "trough",
+      "checkpoint_tick": 3000,
+      "until_tick": 3120
+    },
+    {
+      "run_name": "seed_10003",
+      "phase": "peak",
+      "checkpoint_tick": 2760,
+      "until_tick": 2880
+    },
+    {
+      "run_name": "seed_10003",
+      "phase": "trough",
+      "checkpoint_tick": 2820,
+      "until_tick": 2940
+    }
+  ],
+  "effects": {
+    "affinity_expression_effect": {
+      "world.alive": {
+        "values": [
+          57.0,
+          59.0,
+          143.0,
+          146.0,
+          58.0,
+          80.0
+        ],
+        "count": 6,
+        "mean": 90.5,
+        "min": 57.0,
+        "max": 146.0,
+        "positive_count": 6,
+        "negative_count": 0,
+        "same_nonzero_sign": true
+      },
+      "world.mean_energy": {
+        "values": [
+          0.07319271564483643,
+          0.14148128032684326,
+          0.1881316900253296,
+          0.180137038230896,
+          0.09658336639404297,
+          0.04690873622894287
+        ],
+        "count": 6,
+        "mean": 0.12107247114181519,
+        "min": 0.04690873622894287,
+        "max": 0.1881316900253296,
+        "positive_count": 6,
+        "negative_count": 0,
+        "same_nonzero_sign": true
+      },
+      "evolution.environment_resource_effective_dimensions": {
+        "values": [
+          0.11250144223108816,
+          0.24652522813862165,
+          0.22528750084881066,
+          0.12239852067258195,
+          0.0541255541066572,
+          0.05156323710322863
+        ],
+        "count": 6,
+        "mean": 0.13540024718349805,
+        "min": 0.05156323710322863,
+        "max": 0.24652522813862165,
+        "positive_count": 6,
+        "negative_count": 0,
+        "same_nonzero_sign": true
+      },
+      "evolution.capacity_effective_dimensions": {
+        "values": [
+          -0.030036085495481313,
+          0.005788505972632585,
+          0.007899533293896699,
+          0.058504714804894054,
+          -0.0917088072919583,
+          -0.05933937093582431
+        ],
+        "count": 6,
+        "mean": -0.01814858494197343,
+        "min": -0.0917088072919583,
+        "max": 0.058504714804894054,
+        "positive_count": 3,
+        "negative_count": 3,
+        "same_nonzero_sign": false
+      },
+      "evolution.knowledge_effective_transferred_roots": {
+        "values": [
+          14.997193466758745,
+          10.471407842300948,
+          47.379235058304175,
+          52.081373348460716,
+          15.850201337896408,
+          23.175022461814876
+        ],
+        "count": 6,
+        "mean": 27.32573891925598,
+        "min": 10.471407842300948,
+        "max": 52.081373348460716,
+        "positive_count": 6,
+        "negative_count": 0,
+        "same_nonzero_sign": true
+      },
+      "derived.harvest_extraction_efficiency_window": {
+        "values": [
+          -0.023119253763737635,
+          -0.004696738804820577,
+          -0.021641812924698245,
+          -0.025958719868692026,
+          -0.0058637870596431885,
+          -0.0060355615953320285
+        ],
+        "count": 6,
+        "mean": -0.014552645669487283,
+        "min": -0.025958719868692026,
+        "max": -0.004696738804820577,
+        "positive_count": 0,
+        "negative_count": 6,
+        "same_nonzero_sign": true
+      },
+      "evolution.resource_affinity_effective_dimensions": {
+        "values": [
+          -0.061458808803089404,
+          -0.060899128895195,
+          -0.003230795543498921,
+          -0.018182548472060356,
+          -0.030882719128815683,
+          -0.03100212685449577
+        ],
+        "count": 6,
+        "mean": -0.03427602128285919,
+        "min": -0.061458808803089404,
+        "max": -0.003230795543498921,
+        "positive_count": 0,
+        "negative_count": 6,
+        "same_nonzero_sign": true
+      }
+    },
+    "capacity_expression_effect": {
+      "world.alive": {
+        "values": [
+          7.0,
+          -2.0,
+          -1.0,
+          1.0,
+          49.0,
+          31.0
+        ],
+        "count": 6,
+        "mean": 14.166666666666666,
+        "min": -2.0,
+        "max": 49.0,
+        "positive_count": 4,
+        "negative_count": 2,
+        "same_nonzero_sign": false
+      },
+      "world.mean_energy": {
+        "values": [
+          -0.052157044410705566,
+          0.008685588836669922,
+          -0.01961839199066162,
+          0.01293337345123291,
+          -0.10066103935241699,
+          -0.07184314727783203
+        ],
+        "count": 6,
+        "mean": -0.03711011012395223,
+        "min": -0.10066103935241699,
+        "max": 0.01293337345123291,
+        "positive_count": 2,
+        "negative_count": 4,
+        "same_nonzero_sign": false
+      },
+      "evolution.environment_resource_effective_dimensions": {
+        "values": [
+          -0.060144767306141045,
+          -0.06802158316229923,
+          0.05671307524102831,
+          -0.05733126610678885,
+          -0.15561846873400698,
+          -0.20125046090945453
+        ],
+        "count": 6,
+        "mean": -0.08094224516294372,
+        "min": -0.20125046090945453,
+        "max": 0.05671307524102831,
+        "positive_count": 1,
+        "negative_count": 5,
+        "same_nonzero_sign": false
+      },
+      "evolution.capacity_effective_dimensions": {
+        "values": [
+          3.1873035969757675,
+          3.1742699187397108,
+          3.1157438656837817,
+          3.12138779465545,
+          3.2676763619963243,
+          3.2696659164131257
+        ],
+        "count": 6,
+        "mean": 3.189341242410693,
+        "min": 3.1157438656837817,
+        "max": 3.2696659164131257,
+        "positive_count": 6,
+        "negative_count": 0,
+        "same_nonzero_sign": true
+      },
+      "evolution.knowledge_effective_transferred_roots": {
+        "values": [
+          -8.273132335371372,
+          -10.99549241150038,
+          46.32548381452318,
+          37.44483671668138,
+          16.99884691039813,
+          2.4404921469567284
+        ],
+        "count": 6,
+        "mean": 13.990172473614612,
+        "min": -10.99549241150038,
+        "max": 46.32548381452318,
+        "positive_count": 4,
+        "negative_count": 2,
+        "same_nonzero_sign": false
+      },
+      "derived.harvest_extraction_efficiency_window": {
+        "values": [
+          -0.0033691952490317867,
+          0.010837202524097866,
+          0.0013939099266095378,
+          -0.0013058355923591947,
+          -0.04953453690108267,
+          -0.06427128939420751
+        ],
+        "count": 6,
+        "mean": -0.017708290780995627,
+        "min": -0.06427128939420751,
+        "max": 0.010837202524097866,
+        "positive_count": 2,
+        "negative_count": 4,
+        "same_nonzero_sign": false
+      },
+      "evolution.resource_affinity_effective_dimensions": {
+        "values": [
+          0.000631824997215924,
+          -0.006411607783054052,
+          -0.0020086396221628,
+          -0.038475699687745335,
+          -0.009560286437954701,
+          -0.038722137679242596
+        ],
+        "count": 6,
+        "mean": -0.01575775770215726,
+        "min": -0.038722137679242596,
+        "max": 0.000631824997215924,
+        "positive_count": 1,
+        "negative_count": 5,
+        "same_nonzero_sign": false
+      }
+    },
+    "interaction_effect": {
+      "world.alive": {
+        "values": [
+          -5.0,
+          -12.0,
+          -14.0,
+          -5.0,
+          18.0,
+          15.0
+        ],
+        "count": 6,
+        "mean": -0.5,
+        "min": -14.0,
+        "max": 18.0,
+        "positive_count": 2,
+        "negative_count": 4,
+        "same_nonzero_sign": false
+      },
+      "world.mean_energy": {
+        "values": [
+          -0.04935598373413086,
+          0.061666011810302734,
+          -0.01720714569091797,
+          0.039806246757507324,
+          -0.09033334255218506,
+          -0.07958745956420898
+        ],
+        "count": 6,
+        "mean": -0.02250194549560547,
+        "min": -0.09033334255218506,
+        "max": 0.061666011810302734,
+        "positive_count": 2,
+        "negative_count": 4,
+        "same_nonzero_sign": false
+      },
+      "evolution.environment_resource_effective_dimensions": {
+        "values": [
+          -0.06096045207878609,
+          0.09547292333495339,
+          0.025791270649251352,
+          -0.11544738592588777,
+          -0.05257547952364128,
+          -0.08558630680189427
+        ],
+        "count": 6,
+        "mean": -0.032217571724334114,
+        "min": -0.11544738592588777,
+        "max": 0.09547292333495339,
+        "positive_count": 2,
+        "negative_count": 4,
+        "same_nonzero_sign": false
+      },
+      "evolution.capacity_effective_dimensions": {
+        "values": [
+          -0.030036085495481313,
+          0.005788505972632585,
+          0.007899533293896699,
+          0.058504714804894054,
+          -0.0917088072919583,
+          -0.05933937093582431
+        ],
+        "count": 6,
+        "mean": -0.01814858494197343,
+        "min": -0.0917088072919583,
+        "max": 0.058504714804894054,
+        "positive_count": 3,
+        "negative_count": 3,
+        "same_nonzero_sign": false
+      },
+      "evolution.knowledge_effective_transferred_roots": {
+        "values": [
+          -7.256822978528987,
+          -11.935822158149108,
+          -0.9770563635524923,
+          1.4273449124418676,
+          -2.7647551838427944,
+          -11.901691406228792
+        ],
+        "count": 6,
+        "mean": -5.568133862976718,
+        "min": -11.935822158149108,
+        "max": 1.4273449124418676,
+        "positive_count": 1,
+        "negative_count": 5,
+        "same_nonzero_sign": false
+      },
+      "derived.harvest_extraction_efficiency_window": {
+        "values": [
+          -0.009504601878655039,
+          0.02344645536147183,
+          0.0014877189336041097,
+          0.001786627346007097,
+          0.0013814265542103632,
+          -0.005940763946161498
+        ],
+        "count": 6,
+        "mean": 0.0021094770617461436,
+        "min": -0.009504601878655039,
+        "max": 0.02344645536147183,
+        "positive_count": 4,
+        "negative_count": 2,
+        "same_nonzero_sign": false
+      },
+      "evolution.resource_affinity_effective_dimensions": {
+        "values": [
+          -0.022372002837266924,
+          0.00921078614018156,
+          -0.007727483428509929,
+          -0.04246113107147398,
+          -0.03846408433142301,
+          -0.040261396746563705
+        ],
+        "count": 6,
+        "mean": -0.02367921871250933,
+        "min": -0.04246113107147398,
+        "max": 0.00921078614018156,
+        "positive_count": 1,
+        "negative_count": 5,
+        "same_nonzero_sign": false
+      }
+    }
+  },
+  "decision": "enter-bounded-d2a-contextual-harvest-only",
+  "capacity_interpretation": "path-dependent; remain under D1 paired investigation",
+  "structural_mutation_gate": "blocked"
+}

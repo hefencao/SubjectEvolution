@@ -879,8 +879,12 @@ class HybridGpuRuntime:
             if not selective_harvest_enabled(self.cfg)
             else (
                 None
-                if snapshot.resource_affinity_q is None
-                else snapshot.resource_affinity_q[intents.carrier_index[host_rows]]
+                if (snapshot.harvest_preference_q is None and snapshot.resource_affinity_q is None)
+                else (
+                    snapshot.harvest_preference_q[intents.carrier_index[host_rows]]
+                    if snapshot.harvest_preference_q is not None
+                    else snapshot.resource_affinity_q[intents.carrier_index[host_rows]]
+                )
             )
         )
         channel_draws = (

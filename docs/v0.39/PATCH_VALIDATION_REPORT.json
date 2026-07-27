@@ -1,0 +1,13 @@
+{
+  "schema": "patch-validation-v1",
+  "base_version": "0.38.0",
+  "target_version": "0.39.0",
+  "dry_run_passed": true,
+  "apply_passed": true,
+  "applied_file_count": 231,
+  "target_file_count": 231,
+  "missing": [],
+  "extra": [],
+  "changed": [],
+  "passed": true
+}

@@ -78,6 +78,12 @@ INTERVENTIONS = (
         aliases=("elastic-capacities-off", "capacity-expression-neutral"),
     ),
     InterventionSpec(
+        "neutralize-functional-modules",
+        InterventionKind.MODIFY_RULES,
+        "expression-gated-contextual-harvest-module-output",
+        aliases=("functional-modules-off", "module-expression-neutral"),
+    ),
+    InterventionSpec(
         "neutralize-resource-affinity",
         InterventionKind.MODIFY_RULES,
         "inherited-four-resource-affinity-expression",

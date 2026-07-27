@@ -1,12 +1,39 @@
 # SE architecture
 
-## D1-C request/realization boundary
+## D2-A bounded module boundary
+
+```text
+fixed inherited module tensor
+  ├─ expression gate
+  ├─ ten fixed inputs
+  │    bias + five body deficits + four local resources
+  ├─ bounded transform weights
+  └─ four-output router
+            ↓
+zero-sum harvest-request residual
+            ↓
+static inherited affinity + contextual residual
+            ↓
+keyed one-channel HARVEST request
+```
+
+The module layer cannot choose an action, alter resource assimilation, modify
+resource-gradient utility, create a world field, or publish to movement,
+signalling, sharing, memory or social control. This narrow boundary prevents a
+second unrestricted policy network while testing expression-gated functional
+routing.
+
+`neutralize-functional-modules` preserves genotype and returns the effective
+request weights to static affinity. Module maintenance and development costs are
+charged only when expression is active.
+
+## Request/realization boundary
 
 ```text
 external resource fields
   └─ generated without entity, lineage or group feedback
 
-HARVEST policy + inherited resource affinity
+HARVEST action + static affinity + optional D2 contextual residual
   └─ requested_harvest_resources[entity, channel]
        ├─ recorded before environment allocation
        └─ fixed total request budget
@@ -15,20 +42,12 @@ conflict/environment resolution
   └─ harvested_resources[entity, channel]
        ├─ limited by local availability and competing requests
        └─ committed to body and environment state
-
-progress / offline analysis
-  ├─ raw requested and realized volume
-  ├─ per-window channel composition
-  ├─ extraction efficiency
-  └─ explicit observation provenance
 ```
 
-Requested resources are causal intents. Realized resources are environment- and
-competition-limited outcomes. They must not be substituted for one another.
-Older selective runs without explicit request fields remain usable for other
-metrics, but requested-channel composition is marked unavailable.
+Requested resources are causal intents. Realized resources are constrained
+outcomes and must not be substituted for requests.
 
-## D1 factorial experiment boundary
+## D1 factorial boundary
 
 ```text
 shared trusted checkpoint
@@ -38,34 +57,24 @@ shared trusted checkpoint
 └── neutralize both
 ```
 
-All branches preserve genotype, stable IDs, checkpoint state and keyed random
-streams. For outcome `y`:
-
-```text
-affinity effect = baseline - affinity-neutral
-capacity effect = baseline - capacity-neutral
-interaction = baseline - affinity-neutral - capacity-neutral + combined-neutral
-```
-
-Phase selection is observational and the horizon is finite. The executor
-identifies local expression effects, not universal necessity.
+An existing `d1_factorial_plan.json` can be reused with `--plan`, avoiding a new
+observational phase-selection pass.
 
 ## Package layout
 
 ```text
 se/
-├── analysis/        # offline analysis and audits
-├── cmd/             # CLI implementations
-├── env/             # authoritative environment domain
-├── differentiation/ # inherited phenotype-capacity mechanisms
-├── evolution/       # lifecycle and evolution progress
-├── experiments/     # replay and counterfactual execution
-├── gui/             # observation-only shared-frame interface
-├── knowledge/       # knowledge storage, routing, memory and diagnostics
-├── runtime/         # authoritative state, step/run, checkpoint and reports
-├── subjects/        # social relations, subject graph and succession
-├── cfg.py
-└── shared infrastructure
+├── analysis/
+├── cmd/
+├── differentiation/
+├── env/
+├── evolution/
+├── experiments/
+├── gui/
+├── knowledge/
+├── runtime/
+├── subjects/
+└── cfg.py + shared infrastructure
 ```
 
 ## Dependency direction
@@ -83,47 +92,28 @@ analysis / experiments → runtime + domains
 runtime + domains ✕→ analysis / experiments / gui
 ```
 
-## Authoritative world loop
+## Release boundary
 
-```text
-versioned cfg
-    ↓
-env / information / spatial / social snapshots
-    ↓
-read-only observations
-    ↓
-body policy + knowledge residual + capacity-masked mechanisms
-    ↓
-control proposal → arbitration → action intent
-    ↓
-read-only conflict resolution plan
-    ↓
-controlled commit
-    ↓
-entity / env / relation / lifecycle / knowledge / subject updates
-    ↓
-metrics / logs / checkpoint / offline analysis
-```
+`release-check` validates a disposable venv and intentionally leaves the caller
+unchanged. `release-env` validates the same sdist-derived wheel in a persistent
+`.release-env/venv`. Neither Make nor a child process can activate a venv in the
+parent zsh; the user must `source .release-env/venv/bin/activate` or invoke the
+script by its explicit path.
 
-Only versioned commit stages mutate authoritative state.
+The artifact verifier:
 
-## Distribution validation boundary
-
-Source tests intentionally import from `src`, so they are not sufficient to
-validate an artifact. `scripts/verify_dist.py` builds an sdist, builds the wheel
-from the sdist, installs into a disposable venv, switches outside the source
-tree, clears Python path/user-site visibility, imports every installed module,
-runs `pip check`, validates all console scripts and performs a short simulation.
-
-The optional strict mode installs dependencies only from a supplied wheelhouse.
-This keeps release validation reproducible without making network access a
-runtime requirement.
+1. builds an sdist;
+2. builds the wheel from that sdist;
+3. installs an optional prior wheel;
+4. force-reinstalls the candidate;
+5. clears source/user paths and runs outside the checkout;
+6. imports every installed module;
+7. validates all console scripts;
+8. executes single- and multi-seed exact-checkpoint smoke runs.
 
 ## Backends and GUI
 
 - `cpu`: authoritative reference semantics.
-- `gpu` + `strict-reference`: device validation with CPU reference world.
-- `gpu` + `hybrid-accelerated`: selected device stages; full parity remains a
-  separate gate.
-- `se.gui`: one-way observation stream only; it cannot write world state or
-  create authoritative checkpoints.
+- `gpu` + `strict-reference`: GPU availability validation with CPU-authoritative world.
+- `gpu` + `hybrid-accelerated`: experimental accelerated stages; parity remains separate.
+- `se.gui`: observation-only shared-frame publication.

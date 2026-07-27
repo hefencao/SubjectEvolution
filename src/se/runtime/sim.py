@@ -29,6 +29,11 @@ from se.differentiation.capacity import (
     capacity_development_energy,
     capacity_maintenance_energy,
 )
+from se.differentiation.functional import (
+    contextual_harvest_preference_q,
+    functional_module_diagnostics,
+    functional_module_energy,
+)
 from se.env.danger_evidence import (
     DANGER_EVIDENCE_SCALE,
     danger_evidence_diagnostics,
@@ -415,6 +420,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.freeze_genotype = False
         self.capacity_ablation_enabled = False
         self.resource_affinity_ablation_enabled = False
+        self.functional_modules_ablation_enabled = False
         self.danger_evidence_ablation_enabled = False
         self.knowledge_policy_ablation_enabled = False
         self.knowledge_transfer_ablation_enabled = False
@@ -642,6 +648,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         flow_totals = benefit_flow_totals(owner_groups, target_groups, amounts)
         stats.benefit_flow_energy += flow_totals
         self.benefit_flow_energy_total += flow_totals
+
         if self.local_stress_diagnostics is not None:
             self.local_stress_diagnostics.observe_benefits(
                 owner_indices=owners,
@@ -796,6 +803,8 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         working_memory_actual_outcomes: np.ndarray | None = None
         working_memory_update_result: WorkingMemoryUpdateResult | None = None
         effective_resource_affinity_q: np.ndarray | None = None
+        effective_harvest_preference_q: np.ndarray | None = None
+        functional_context_metrics: dict[str, object] = {}
         effective_danger_evidence_q: np.ndarray | None = None
         policy_energy = ent.energy
         if self.gpu_runtime is None:
@@ -1141,6 +1150,33 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             stats.observation_seconds = prepared.observation_seconds
             stats.policy_seconds = prepared.policy_seconds
 
+        if effective_resource_affinity_q is None:
+            raise RuntimeError("effective resource affinity was not prepared")
+        effective_harvest_preference_q = effective_resource_affinity_q.copy()
+        if cfg.functional_modules.enabled:
+            active_preference = contextual_harvest_preference_q(
+                ent.genotype[active],
+                effective_resource_affinity_q[active],
+                energy=ent.energy[active],
+                integrity=ent.integrity[active],
+                material=ent.material[active],
+                information_store=ent.information_store[active],
+                fertility=ent.fertility[active],
+                local_resources=local_resources,
+                cfg=cfg,
+                gene_start=ParametricPolicy.functional_module_gene_start(cfg),
+                ablated=self.functional_modules_ablation_enabled,
+            )
+            effective_harvest_preference_q[active] = active_preference
+            if evaluation_due:
+                functional_context_metrics = functional_module_diagnostics(
+                    ent.genotype[active],
+                    active_preference,
+                    effective_resource_affinity_q[active],
+                    cfg,
+                    gene_start=ParametricPolicy.functional_module_gene_start(cfg),
+                )
+
         if self.local_stress_diagnostics is not None:
             local_hazard = (
                 self.gpu_runtime.hazard_for_cells(cells)
@@ -1227,11 +1263,13 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 actual_context_metrics = {
                     "actual_context_available": False,
                     "actual_context_observation_tick": int(self.tick),
+                    **functional_context_metrics,
                 }
             else:
                 actual_context_metrics = {
                     "actual_context_available": True,
                     "actual_context_observation_tick": int(self.tick),
+                    **functional_context_metrics,
                     **actual_context_policy_diagnostics(
                         active,
                         ent.entity_id,
@@ -1352,6 +1390,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             primary_subject_id=ent.primary_subject_id,
             free_slot_count=len(ent.free_slots),
             resource_affinity_q=effective_resource_affinity_q,
+            harvest_preference_q=effective_harvest_preference_q,
         )
         harvest_allocator = (
             self.gpu_runtime.resolve_harvest
@@ -1600,6 +1639,22 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                         0.0,
                         cfg.entities.max_energy,
                     ).astype(np.float32)
+                if cfg.functional_modules.enabled:
+                    module_development = functional_module_energy(
+                        ent.genotype[newborns],
+                        cfg,
+                        gene_start=ParametricPolicy.functional_module_gene_start(cfg),
+                        development=True,
+                    )
+                    if self.functional_modules_ablation_enabled:
+                        ent.energy[newborns] = np.minimum(
+                            ent.energy[newborns].astype(np.float64) + module_development,
+                            cfg.entities.max_energy,
+                        ).astype(np.float32)
+                    else:
+                        stats.functional_module_development_energy = float(
+                            module_development.sum(dtype=np.float64)
+                        )
                 # Recovery is a treatment of the selected living cohort, not
                 # a hereditary trait in the current experiment.
                 self.autonomy_restored[newborns] = False
@@ -1876,6 +1931,17 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 capacity_cost.sum(dtype=np.float64)
             )
             cost = cost.astype(np.float64) + capacity_cost
+        if cfg.functional_modules.enabled and not self.functional_modules_ablation_enabled:
+            module_cost = functional_module_energy(
+                ent.genotype[current_active],
+                cfg,
+                gene_start=ParametricPolicy.functional_module_gene_start(cfg),
+                development=False,
+            )
+            stats.functional_module_maintenance_energy = float(
+                module_cost.sum(dtype=np.float64)
+            )
+            cost = cost.astype(np.float64) + module_cost
         ent.energy[current_active] -= cost.astype(np.float32)
         ent.integrity[current_active] -= (hazard * 0.0015).astype(np.float32)
         starving = ent.energy[current_active] < 0.0
@@ -2139,7 +2205,9 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     # its average includes the non-step costs users observe.
                     window_started = reported_at
                     window_start_tick = self.tick
-                if self.tick % self.cfg.run.checkpoint_period == 0:
+                periodic_checkpoint = self.tick % self.cfg.run.checkpoint_period == 0
+                exact_checkpoint = self.tick in self.cfg.run.checkpoint_ticks
+                if periodic_checkpoint or exact_checkpoint:
                     self._checkpoint()
                 if not np.any(self.entities.alive):
                     break

@@ -14,7 +14,7 @@ from se.env.partition import SpatialRegionPartition
 from se.policy import ParametricPolicy
 
 
-SCHEMA = "structural-measurement-protocol-audit-v6"
+SCHEMA = "structural-measurement-protocol-audit-v7"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -234,6 +234,47 @@ def build_protocol_audit(
                 "predefined ecological role or guarantee adaptive differentiation"
             ),
         },
+        "functional_module_protocol": {
+            "enabled": bool(cfg.functional_modules.enabled),
+            "schema": cfg.functional_modules.schema,
+            "module_count": int(cfg.functional_modules.module_count),
+            "gene_start": (
+                int(ParametricPolicy.functional_module_gene_start(cfg))
+                if cfg.functional_modules.enabled else None
+            ),
+            "input_schema": cfg.functional_modules.input_schema,
+            "inputs": [
+                "bias",
+                "energy deficit",
+                "integrity deficit",
+                "material deficit",
+                "information-store deficit",
+                "fertility deficit",
+                "four local normalized resource channels",
+            ],
+            "output_schema": cfg.functional_modules.output_schema,
+            "output_scope": "zero-sum residual over four harvest-channel request weights",
+            "action_selection": False,
+            "assimilation_affinity_modified": False,
+            "resource_gradient_utility_modified": False,
+            "new_world_physics": False,
+            "expression_threshold": float(cfg.functional_modules.expression_threshold),
+            "maximum_residual_fraction": float(cfg.functional_modules.max_residual_fraction),
+            "maintenance_energy_per_expression": float(
+                cfg.functional_modules.maintenance_energy_per_expression
+            ),
+            "development_energy_per_expression": float(
+                cfg.functional_modules.development_energy_per_expression
+            ),
+            "neutralization_intervention": "neutralize-functional-modules",
+            "preset_role_labels": False,
+            "diversity_protection": False,
+            "interpretation": (
+                "a bounded D2-A test of inherited input-expression-output routing within "
+                "the already validated resource-acquisition interface; not a general organ "
+                "generator or a claim of new physical functionality"
+            ),
+        },
         "environment_atlas_protocol": {
             "enabled": bool(cfg.run.environment_atlas_diagnostics_enabled),
             "schema": cfg.run.environment_atlas_diagnostics_schema,
@@ -387,6 +428,20 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- expression effect sign: {payload['d1_factorial_protocol']['effect_sign']}",
         f"- interaction contrast: {payload['d1_factorial_protocol']['interaction']}",
         f"- boundary: {payload['d1_factorial_protocol']['interpretation']}",
+        "",
+        "## D2-A contextual functional modules",
+        "",
+        f"- enabled / schema: {payload['functional_module_protocol']['enabled']} / "
+        f"`{payload['functional_module_protocol']['schema']}`",
+        f"- module count / gene start: {payload['functional_module_protocol']['module_count']} / "
+        f"{payload['functional_module_protocol']['gene_start']}",
+        f"- inputs: {payload['functional_module_protocol']['inputs']}",
+        f"- output scope: {payload['functional_module_protocol']['output_scope']}",
+        f"- action selection / new physics: "
+        f"{payload['functional_module_protocol']['action_selection']} / "
+        f"{payload['functional_module_protocol']['new_world_physics']}",
+        f"- neutralization: `{payload['functional_module_protocol']['neutralization_intervention']}`",
+        f"- boundary: {payload['functional_module_protocol']['interpretation']}",
         "",
         "## Environment atlas",
         "",

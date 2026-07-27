@@ -13,6 +13,10 @@ from ..differentiation.capacity import (
     capacity_phenotype,
     neutral_capacity_phenotype,
 )
+from ..differentiation.functional import (
+    functional_module_energy,
+    functional_module_gene_count,
+)
 from se.evolution.progress import BENEFIT_FLOW_COUNT, BenefitFlowKind
 from se.knowledge import KnowledgeStepStats
 from se.evolution.lifecycle import BirthAllocationPlan, DeathCause, DeathEventPlan
@@ -59,6 +63,8 @@ class StepStats:
     shared_energy: float = 0.0
     capacity_maintenance_energy: float = 0.0
     capacity_development_energy: float = 0.0
+    functional_module_maintenance_energy: float = 0.0
+    functional_module_development_energy: float = 0.0
     benefit_flow_energy: np.ndarray = field(
         default_factory=lambda: np.zeros(BENEFIT_FLOW_COUNT, dtype=np.float64)
     )
@@ -356,18 +362,24 @@ class EntityState:
         )
         capacity_start = ParametricPolicy.capacity_gene_start(self.cfg)
         capacity_stop = capacity_start + capacity_gene_count(self.cfg)
+        functional_start = ParametricPolicy.functional_module_gene_start(self.cfg)
+        functional_stop = functional_start + functional_module_gene_count(self.cfg)
         for trait in range(self.genotype_size):
             capacity_trait = capacity_start <= trait < capacity_stop
-            mutation_probability = (
-                self.cfg.differentiation.mutation_probability
-                if capacity_trait
-                else self.cfg.policy.mutation_probability
-            )
-            trait_mutation_std = (
-                (0.0 if mutation_std is not None else self.cfg.differentiation.mutation_std)
-                if capacity_trait
-                else mutation_stddev
-            )
+            functional_trait = functional_start <= trait < functional_stop
+            if capacity_trait:
+                mutation_probability = self.cfg.differentiation.mutation_probability
+                trait_mutation_std = (
+                    0.0 if mutation_std is not None else self.cfg.differentiation.mutation_std
+                )
+            elif functional_trait:
+                mutation_probability = self.cfg.functional_modules.mutation_probability
+                trait_mutation_std = (
+                    0.0 if mutation_std is not None else self.cfg.functional_modules.mutation_std
+                )
+            else:
+                mutation_probability = self.cfg.policy.mutation_probability
+                trait_mutation_std = mutation_stddev
             mutate = bernoulli(
                 mut_ctx,
                 ids,
@@ -396,6 +408,17 @@ class EntityState:
             )
             self.energy[slots] = np.maximum(
                 self.energy[slots].astype(np.float64) - development_cost,
+                0.0,
+            ).astype(np.float32)
+        if self.cfg.functional_modules.enabled:
+            module_cost = functional_module_energy(
+                self.genotype[slots],
+                self.cfg,
+                gene_start=ParametricPolicy.functional_module_gene_start(self.cfg),
+                development=True,
+            )
+            self.energy[slots] = np.maximum(
+                self.energy[slots].astype(np.float64) - module_cost,
                 0.0,
             ).astype(np.float32)
         return parents, slots
