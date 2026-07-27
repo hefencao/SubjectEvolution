@@ -1,19 +1,17 @@
-# SE v0.40
+# SE v0.41
 
 `SE` 是围绕多维环境、可遗传分化、动态知识与候选主体结构构建的可审计演化模拟参考实现。
 
 ## Conda 本地工作流
 
-本地不再为每次源码修改重新安装 wheel。激活目标 conda 环境后，对当前 checkout 做一次 editable 安装：
+升级到 v0.41 后，因为新增 `se-d2-assess` 入口，需要在目标环境执行一次：
 
 ```bash
 conda activate <your-env>
 make conda-sync
 ```
 
-普通源码修改会立即生效。仅在修改 `pyproject.toml`、console scripts、依赖、版本或移动项目目录后重新执行 `make conda-sync`。
-
-日常测试：
+之后普通源码修改直接生效，不需要重新安装 wheel。日常测试：
 
 ```bash
 make test
@@ -25,9 +23,7 @@ make test
 make conda-check
 ```
 
-`conda-check` 会确认当前 Python 属于 `CONDA_PREFIX`、`se` 来自该 checkout、安装为 editable、五个入口与 metadata 一致，并在源码树外执行 smoke。不要在正常运行时再设置 `PYTHONPATH=src`。
-
-Wheel/sdist 仍可用作发布产物，但 `make release-check` 只审计产物，不是本地运行环境。
+不要在正常 conda 工作流中设置 `PYTHONPATH=src`；这可能掩盖 stale editable metadata 或旧 console script。
 
 ## 主要运行入口
 
@@ -45,31 +41,16 @@ se-multi \
   --backend gpu
 ```
 
-## D1 因子实验
+## D2 模块审计
 
-```bash
-se-d1-factorial \
-  --run-dir runs/d1c_multiseed/seed_10001 \
-  --run-dir runs/d1c_multiseed/seed_10002 \
-  --run-dir runs/d1c_multiseed/seed_10003 \
-  --output analyses/d1_factorial \
-  --phases peak,trough \
-  --horizon 120 \
-  --execute \
-  --backend gpu \
-  --gpu-semantics-mode strict-reference
-```
-
-## D2-B 模块贡献审计
-
-3000-tick D2-A 结果显示模块广泛表达，但最终残差很小，同时有效谱系和策略维度明显下降。因此 v0.40 不增加模块复制或新端口，而是先区分结构表达与因果贡献。
+生成 leave-one-module-out 分支：
 
 ```bash
 se-d2-audit \
   --run-dir runs/d2a_contextual_modules_multiseed/seed_10001 \
   --run-dir runs/d2a_contextual_modules_multiseed/seed_10002 \
   --run-dir runs/d2a_contextual_modules_multiseed/seed_10003 \
-  --output analyses/d2b_module_audit \
+  --output analyses/d2b_module_audit_120 \
   --phases peak,trough \
   --horizon 120 \
   --execute \
@@ -77,18 +58,37 @@ se-d2-audit \
   --gpu-semantics-mode strict-reference
 ```
 
-每个 checkpoint 运行：baseline、全模块中和和四个逐模块中和分支，并报告单模块效应、总模块效应、非加性和取消程度。
+120 ticks 完成后，不再人工判断是否需要 300 ticks：
+
+```bash
+se-d2-assess \
+  --results analyses/d2b_module_audit_120/d2_module_audit_results.json \
+  --output analyses/d2c_screen_120
+```
+
+若输出 `run-300-tick-confirmation`，再执行 300 ticks。已有 120/300 结果可直接合并评估：
+
+```bash
+se-d2-assess \
+  --short-results analyses/d2b_module_audit_120/d2_module_audit_results.json \
+  --long-results analyses/d2b_module_audit_300/d2_module_audit_results.json \
+  --output analyses/d2c_effect_assessment \
+  --refresh-footprints
+```
+
+`--refresh-footprints` 只读取结果文件引用的源 checkpoint，计算即时、按谱系分解的 HARVEST 接口足迹；不会重跑 120/300-tick 分支。
 
 ## 当前科学主线
 
 1. **D0：** 四资源具有独立外生空间、时间与扩散过程。
-2. **D1-A：** 工作记忆、知识、关系与注意力容量可独立遗传、计费和消融。
+2. **D1-A：** 工作记忆、知识、关系与注意力容量可遗传、计费和消融。
 3. **D1-B：** 固定采集预算下，由遗传 affinity 采样单一资源通道。
 4. **D1-C：** 请求流与实现流分离；共享 checkpoint 的 affinity × capacity 因子实验。
 5. **D2-A：** 四个表达门控上下文模块发布有限零和采集权重残差。
-6. **D2-B：** 独立模块贡献诊断与共享 checkpoint 的 leave-one-module-out 因果审计。
+6. **D2-B：** 独立模块贡献诊断与逐模块消融。
+7. **D2-C：** 数值差异、实用效应、跨 seed 复现、即时足迹与跨谱系证据分层判定。
 
-模块复制、删除、任意重联和新物理端口继续阻塞，直到 D2-B 在多个 seed/phase 中识别出可重复、非纯成本的模块效应。
+当前 120/300-tick 结果支持模块具有实际下游作用，但源群体谱系集中且旧结果缺少即时足迹。模块复制、删除、任意重联和新物理端口继续阻塞。
 
 ## 文档
 
@@ -96,8 +96,7 @@ se-d2-audit \
 - [架构与提交边界](docs/ARCHITECTURE.md)
 - [项目状态](docs/PROJECT_STATUS.md)
 - [科学问题](docs/SCIENTIFIC_ISSUES.md)
-- [Conda editable 工作流](docs/v0.40/CONDA_EDITABLE_WORKFLOW.md)
-- [D2-A 3000-tick 结果评估](docs/v0.40/INPUT_D2A_LONG_RUN_ASSESSMENT.md)
-- [D2-B 模块贡献审计](docs/v0.40/D2B_MODULE_CONTRIBUTION_AUDIT.md)
-- [D2-B smoke](docs/v0.40/D2B_PAIRED_SMOKE_REPORT.md)
-- [下一轮配对计划](docs/v0.40/LONG_RUN_PLAN.md)
+- [D2-C 判定标准](docs/v0.41/D2C_EFFECT_QUALIFICATION.md)
+- [输入 audit 结果评估](docs/v0.41/INPUT_D2B_AUDIT_ASSESSMENT.md)
+- [下一步实验计划](docs/v0.41/LONG_RUN_PLAN.md)
+- [Conda editable 工作流](docs/v0.41/CONDA_EDITABLE_WORKFLOW.md)

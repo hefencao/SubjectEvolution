@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "se-mvp"
-version = "0.40.0"
+version = "0.41.0"
 description = "Reference implementation for nested-subject existence evolution simulation"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -19,6 +19,7 @@ se-multi = "se.cmd.multi_seed:main"
 se-gui = "se.gui.runner:main"
 se-d1-factorial = "se.experiments.d1_factorial:main"
 se-d2-audit = "se.experiments.d2_module_audit:main"
+se-d2-assess = "se.analysis.d2_effects:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

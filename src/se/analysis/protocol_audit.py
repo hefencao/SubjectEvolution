@@ -14,7 +14,7 @@ from se.env.partition import SpatialRegionPartition
 from se.policy import ParametricPolicy
 
 
-SCHEMA = "structural-measurement-protocol-audit-v8"
+SCHEMA = "structural-measurement-protocol-audit-v9"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -283,7 +283,8 @@ def build_protocol_audit(
                 "feedback_to_world": False,
             },
             "leave_one_out_protocol": {
-                "schema": "d2-module-leave-one-out-plan-v1",
+                "plan_schema": "d2-module-leave-one-out-plan-v1",
+                "result_schema": "d2-module-leave-one-out-results-v2",
                 "branches": [
                     "baseline",
                     "all-modules-neutral",
@@ -294,6 +295,31 @@ def build_protocol_audit(
                 ],
                 "paired_randomness": True,
                 "genotype_preserved": True,
+                "immediate_footprint": {
+                    "schema": "d2-module-immediate-footprint-v1",
+                    "conditional_action": "HARVEST",
+                    "pre_step": True,
+                    "lineage_resolved": True,
+                    "feedback_to_world": False,
+                },
+            },
+            "effect_qualification": {
+                "schema": "d2-module-effect-assessment-v1",
+                "numerical_tolerance": 1e-12,
+                "directional_replicates": 4,
+                "minimum_seeds": 2,
+                "footprint_preference_changed_fraction": 0.01,
+                "footprint_channel_changed_fraction": 0.005,
+                "minimum_lineage_members": 8,
+                "lineage_guard_effective_count": 4.0,
+                "duplication_requires": [
+                    "practical downstream magnitude",
+                    "replication across at least two seeds",
+                    "immediate checkpoint footprint",
+                    "cross-lineage footprint",
+                    "positive ecological persistence or preregistered phase tradeoff",
+                    "no dominant-lineage guard failure",
+                ],
             },
             "preset_role_labels": False,
             "diversity_protection": False,
@@ -471,6 +497,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- neutralization interventions: {payload['functional_module_protocol']['neutralization_interventions']}",
         f"- contribution diagnostics: {payload['functional_module_protocol']['contribution_diagnostics']}",
         f"- leave-one-out protocol: {payload['functional_module_protocol']['leave_one_out_protocol']}",
+        f"- effect qualification: {payload['functional_module_protocol']['effect_qualification']}",
         f"- boundary: {payload['functional_module_protocol']['interpretation']}",
         "",
         "## Environment atlas",

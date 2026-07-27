@@ -1,0 +1,18 @@
+{
+  "schema": "se-packaging-validation-v1",
+  "version": "0.41.0",
+  "project_file_count": 234,
+  "single_top_level_directory_required": true,
+  "top_level_directory": "se_v041_project",
+  "forbidden_entries": [],
+  "docs_archive_present": false,
+  "wheel_required_for_local_workflow": false,
+  "local_workflow": "conda editable install",
+  "artifacts_expected": [
+    "se_v041_project.zip",
+    "se_v041_project.tar.gz",
+    "se_v041.patch",
+    "se_v041_validation_bundle.zip",
+    "se_v041_SHA256SUMS.txt"
+  ]
+}

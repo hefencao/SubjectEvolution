@@ -13,15 +13,28 @@ from dataclasses import asdict, dataclass
 import json
 import math
 from pathlib import Path
+import tempfile
 from typing import Any, Iterable, Sequence
 
 import numpy as np
 
+from se.differentiation.functional import evaluate_contextual_harvest_modules_q
+from se.env.niches import (
+    AFFINITY_SCALE,
+    RESOURCE_CHANNELS,
+    harvest_request_rates,
+    resource_affinity_quantized,
+)
 from se.experiments.phase_counterfactual import PHASES, build_phase_plan
+from se.policy import ParametricPolicy
+from se.random_api import RandomContext, Stream, uniform01
 from se.runtime.sim import Simulation
 
 PLAN_SCHEMA = "d2-module-leave-one-out-plan-v1"
-RESULT_SCHEMA = "d2-module-leave-one-out-results-v1"
+RESULT_SCHEMA = "d2-module-leave-one-out-results-v2"
+RESULT_SCHEMAS = {"d2-module-leave-one-out-results-v1", RESULT_SCHEMA}
+FOOTPRINT_SCHEMA = "d2-module-immediate-footprint-v1"
+MAX_FOOTPRINT_LINEAGES = 8
 MODULE_COUNT = 4
 
 BRANCH_INTERVENTIONS: dict[str, tuple[str, ...]] = {
@@ -166,6 +179,188 @@ def build_module_audit_plan(
         branches=dict(BRANCH_INTERVENTIONS),
     )
 
+
+
+def _preference_footprint(
+    baseline_preference_q: np.ndarray,
+    neutral_preference_q: np.ndarray,
+    baseline_rates: np.ndarray,
+    neutral_rates: np.ndarray,
+    rows: np.ndarray | None = None,
+) -> dict[str, float | int]:
+    selected = (
+        np.arange(baseline_preference_q.shape[0], dtype=np.int32)
+        if rows is None
+        else np.asarray(rows, dtype=np.int32)
+    )
+    if selected.size == 0:
+        return {
+            "members": 0,
+            "preference_changed_fraction": 0.0,
+            "preference_total_variation_mean": 0.0,
+            "conditional_harvest_channel_changed_fraction": 0.0,
+        }
+    baseline = np.asarray(baseline_preference_q[selected], dtype=np.float64)
+    neutral = np.asarray(neutral_preference_q[selected], dtype=np.float64)
+    baseline_share = baseline / baseline.sum(axis=1, keepdims=True)
+    neutral_share = neutral / neutral.sum(axis=1, keepdims=True)
+    baseline_channel = np.argmax(baseline_rates[selected], axis=1)
+    neutral_channel = np.argmax(neutral_rates[selected], axis=1)
+    return {
+        "members": int(selected.size),
+        "preference_changed_fraction": float(
+            np.any(baseline_preference_q[selected] != neutral_preference_q[selected], axis=1).mean()
+        ),
+        "preference_total_variation_mean": float(
+            (0.5 * np.abs(baseline_share - neutral_share).sum(axis=1)).mean()
+        ),
+        "conditional_harvest_channel_changed_fraction": float(
+            (baseline_channel != neutral_channel).mean()
+        ),
+    }
+
+
+def checkpoint_functional_footprint(
+    checkpoint_path: str | Path,
+    *,
+    max_lineages: int = MAX_FOOTPRINT_LINEAGES,
+) -> dict[str, Any]:
+    """Measure immediate module effects at a shared checkpoint without stepping.
+
+    Every living entity is evaluated under the same keyed harvest-channel draw
+    conditional on choosing HARVEST.  This isolates the direct interface
+    footprint from later trajectory amplification.
+    """
+
+    with tempfile.TemporaryDirectory(prefix="se-d2-footprint-") as temporary:
+        simulation = Simulation.from_checkpoint(
+            checkpoint_path,
+            Path(temporary) / "load",
+            backend="cpu",
+        )
+        cfg = simulation.cfg
+        ent = simulation.entities
+        active = simulation.spatial.build(ent.x, ent.y, ent.alive)
+        if active.size == 0 or not cfg.functional_modules.enabled:
+            return {
+                "schema": FOOTPRINT_SCHEMA,
+                "checkpoint_tick": int(simulation.tick),
+                "active_entities": int(active.size),
+                "effects": {},
+                "lineage_scope": [],
+            }
+        cells = simulation.spatial.entity_cells[active]
+        local_resources = simulation.environment.cell_values(cells)
+        affinity_all = (
+            np.full(
+                (ent.alive.size, RESOURCE_CHANNELS),
+                AFFINITY_SCALE,
+                dtype=np.int32,
+            )
+            if simulation.resource_affinity_ablation_enabled
+            else resource_affinity_quantized(ent.genotype, cfg)
+        )
+        affinity = affinity_all[active]
+        current_mask = np.asarray(
+            simulation.functional_module_ablation_mask, dtype=bool
+        ).copy()
+
+        def preference(mask: np.ndarray) -> np.ndarray:
+            return evaluate_contextual_harvest_modules_q(
+                ent.genotype[active],
+                affinity,
+                energy=ent.energy[active],
+                integrity=ent.integrity[active],
+                material=ent.material[active],
+                information_store=ent.information_store[active],
+                fertility=ent.fertility[active],
+                local_resources=local_resources,
+                cfg=cfg,
+                gene_start=ParametricPolicy.functional_module_gene_start(cfg),
+                ablated_modules=mask,
+            ).preference_q
+
+        baseline_preference = preference(current_mask)
+        draws = uniform01(
+            RandomContext(
+                cfg.run.seed,
+                int(simulation.tick),
+                phase=42,
+                stream=Stream.HARVEST_CHANNEL,
+            ),
+            ent.entity_id[active],
+            draw_index=0,
+        )
+        baseline_rates = harvest_request_rates(
+            baseline_preference,
+            cfg,
+            rows=int(active.size),
+            channel_draws=draws,
+        )
+
+        lineage_ids = ent.lineage_id[active].astype(np.uint64, copy=False)
+        unique, counts = np.unique(lineage_ids, return_counts=True)
+        order = np.lexsort((unique, -counts))[: max(int(max_lineages), 0)]
+        lineage_scope = [
+            {"lineage_id": int(unique[index]), "members": int(counts[index])}
+            for index in order
+        ]
+
+        masks: dict[str, np.ndarray] = {
+            "all_module_expression_effect": np.ones_like(current_mask, dtype=bool),
+        }
+        for module_index in range(MODULE_COUNT):
+            mask = current_mask.copy()
+            mask[module_index] = True
+            masks[f"module_{module_index}_expression_effect"] = mask
+
+        effects: dict[str, Any] = {}
+        for effect_name, mask in masks.items():
+            neutral_preference = preference(mask)
+            neutral_rates = harvest_request_rates(
+                neutral_preference,
+                cfg,
+                rows=int(active.size),
+                channel_draws=draws,
+            )
+            summary = _preference_footprint(
+                baseline_preference,
+                neutral_preference,
+                baseline_rates,
+                neutral_rates,
+            )
+            lineages: list[dict[str, Any]] = []
+            for lineage in lineage_scope:
+                rows = np.flatnonzero(lineage_ids == np.uint64(lineage["lineage_id"]))
+                lineages.append(
+                    {
+                        "lineage_id": lineage["lineage_id"],
+                        **_preference_footprint(
+                            baseline_preference,
+                            neutral_preference,
+                            baseline_rates,
+                            neutral_rates,
+                            rows,
+                        ),
+                    }
+                )
+            effects[effect_name] = {**summary, "lineages": lineages}
+
+        return {
+            "schema": FOOTPRINT_SCHEMA,
+            "checkpoint_tick": int(simulation.tick),
+            "run_seed": int(cfg.run.seed),
+            "active_entities": int(active.size),
+            "reference_backend": "cpu",
+            "conditional_action": "HARVEST",
+            "lineage_scope": lineage_scope,
+            "effects": effects,
+            "interpretation_boundary": (
+                "Immediate footprints evaluate the fixed harvest interface before "
+                "branch stepping. They establish direct causal reach, not fitness or "
+                "long-horizon ecological benefit."
+            ),
+        }
 
 def _flatten_numeric(prefix: str, value: Any) -> dict[str, float]:
     result: dict[str, float] = {}
@@ -326,6 +521,9 @@ def execute_module_audit_plan(
         checkpoint_results.append(
             {
                 "checkpoint": asdict(item),
+                "checkpoint_footprint": checkpoint_functional_footprint(
+                    item.checkpoint_path
+                ),
                 "branches": branches,
                 "effects": module_audit_effects(branch_numeric),
             }
@@ -339,9 +537,10 @@ def execute_module_audit_plan(
         "aggregate_effects": _aggregate_effects(checkpoint_results),
         "interpretation_boundary": (
             "Leave-one-module effects are paired local contrasts from observationally "
-            "selected checkpoints. The all-module effect tests total expressed function; "
-            "individual effects and non-additivity identify local redundancy or interaction. "
-            "They do not justify duplication, universal necessity, or a new organ claim."
+            "selected checkpoints. Immediate checkpoint footprints separate direct "
+            "harvest-interface reach from later trajectory amplification. Individual "
+            "effects and non-additivity identify local redundancy or interaction. They "
+            "do not justify duplication, universal necessity, or a new organ claim."
         ),
     }
     (root / "d2_module_audit_results.json").write_text(
@@ -406,6 +605,24 @@ def render_results_markdown(report: dict[str, Any]) -> str:
                     f"| {item['run_name']} | {item['phase']} | {effect_name} | "
                     f"`{outcome}` | {values[outcome]:+.6f} |"
                 )
+    lines.extend(
+        [
+            "",
+            "## Immediate checkpoint footprint",
+            "",
+            "| Run | Phase | Effect | Preference changed | Channel changed | Mean TV |",
+            "|---|---|---|---:|---:|---:|",
+        ]
+    )
+    for checkpoint in report["checkpoints"]:
+        item = checkpoint["checkpoint"]
+        for effect_name, values in checkpoint.get("checkpoint_footprint", {}).get("effects", {}).items():
+            lines.append(
+                f"| {item['run_name']} | {item['phase']} | {effect_name} | "
+                f"{values['preference_changed_fraction']:.6f} | "
+                f"{values['conditional_harvest_channel_changed_fraction']:.6f} | "
+                f"{values['preference_total_variation_mean']:.8f} |"
+            )
     lines.extend(
         [
             "",

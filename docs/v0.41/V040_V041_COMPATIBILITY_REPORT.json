@@ -1,0 +1,35 @@
+{
+  "schema": "v040-v041-compatibility-v1",
+  "baseline_version": "0.40.0",
+  "candidate_version": "0.41.0",
+  "config": "configs/d2a_contextual_harvest_smoke.json",
+  "until_tick": 60,
+  "metrics": {
+    "rows": 7,
+    "common_non_timing_cells": 2415,
+    "metric_differences": [],
+    "metric_difference_count": 0,
+    "byte_equal": {
+      "knowledge_outcome_updates.csv": true,
+      "knowledge_policy_contributions.csv": true,
+      "knowledge_routing_costs.csv": true,
+      "knowledge_selection_events.csv": true,
+      "knowledge_transfers.csv": true,
+      "knowledge_working_memory.csv": true,
+      "environment_atlas.jsonl": true,
+      "environment_atlas_summary.json": true,
+      "subject_structure_summary.json": true
+    }
+  },
+  "checkpoints": {
+    "30": {
+      "common_arrays": 38,
+      "differences": []
+    },
+    "60": {
+      "common_arrays": 38,
+      "differences": []
+    }
+  },
+  "conclusion": "No authoritative simulation change was detected. D2-C footprint and effect assessment are audit-only and do not feed the world."
+}

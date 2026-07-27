@@ -1,5 +1,28 @@
 # SE architecture
 
+## D2-C evidence qualification boundary
+
+```text
+shared checkpoint
+├── immediate full-expression preference/channel
+├── immediate all-neutral preference/channel
+├── immediate per-module-neutral preference/channel
+└── top-lineage footprint summaries
+
+120-tick paired endpoints
+        +
+300-tick paired endpoints
+        ↓
+outcome thresholds + seed/phase replication + lineage guard
+        ↓
+stop / refresh footprint / future copy-number candidate
+```
+
+Immediate footprint is evaluated before branch stepping and never feeds the
+world. Endpoint contrasts remain separate from direct action-interface reach.
+A module is not duplication-ready solely because a deterministic endpoint is
+non-zero.
+
 ## D2-B contribution and intervention boundary
 
 ```text
@@ -16,7 +39,7 @@ shared checkpoint
 └── module 3 neutral
 ```
 
-Per-module diagnostic rounding never feeds the authoritative preference. Partial
+Per-module diagnostic rounding and immediate-footprint evaluation never feed the authoritative preference. Partial
 neutralization preserves genotype and removes only the selected module
 expression and its proportional maintenance/development cost. Analysis and
 experiments depend on runtime; runtime does not depend on the D2 audit.
@@ -118,7 +141,7 @@ runtime + domains ✕→ analysis / experiments / gui
 The normal local runtime is an activated conda environment with one editable
 installation of the current checkout. `make conda-sync` installs with
 `--no-build-isolation`, then proves that `direct_url.json`, package imports,
-metadata and console scripts all refer to the exact checkout. Ordinary source
+metadata and all six console scripts refer to the exact checkout. Ordinary source
 edits require no reinstall. `make conda-check` adds tests and an external smoke
 with an empty `PYTHONPATH`.
 

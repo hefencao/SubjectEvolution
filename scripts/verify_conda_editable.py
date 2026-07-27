@@ -26,6 +26,7 @@ ENTRY_POINTS = {
     "se-gui": "se.gui.runner:main",
     "se-d1-factorial": "se.experiments.d1_factorial:main",
     "se-d2-audit": "se.experiments.d2_module_audit:main",
+    "se-d2-assess": "se.analysis.d2_effects:main",
 }
 
 

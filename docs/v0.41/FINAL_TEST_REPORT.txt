@@ -1,0 +1,13 @@
+SE v0.41 final test report
+
+........................................................................ [ 36%]
+........................................................................ [ 73%]
+.................s..................................                     [100%]
+195 passed, 1 skipped in 19.90s
+
+Configs: 75/75 valid
+Import audit: 83 modules, 0 failures
+Editable workflow: passed without CONDA_PREFIX; actual --require-conda must run in the user conda environment.
+Console entries: se, se-multi, se-gui, se-d1-factorial, se-d2-audit, se-d2-assess
+v0.40/v0.41 common non-timing metric cells: 2415, differences: 0
+Checkpoint arrays: 38/38 equal at ticks 30 and 60

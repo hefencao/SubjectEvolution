@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.41.0
+
+### D2-C effect qualification
+
+- Adds explicit numerical, practical, replication, immediate-footprint and cross-lineage evidence levels.
+- Adds `d2-module-leave-one-out-results-v2` with pre-step conditional-HARVEST footprint and top-lineage summaries.
+- Adds `se-d2-assess` for automatic 120-tick continuation decisions and combined 120/300-tick qualification.
+- Accepts v0.40 result JSON and can refresh footprints from referenced checkpoints without rerunning branches.
+- Adds a dominant-lineage guard and keeps module duplication/new ports blocked for the supplied audit.
+
+### Workflow
+
+- Conda editable validation now checks six console entries.
+- Upgrading from v0.40 requires one `make conda-sync`; ordinary source edits still require no wheel install.
+
 ## 0.40.0
 
 ### D2-B module contribution audit
