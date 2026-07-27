@@ -2293,6 +2293,9 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             "freeze_genotype": self.freeze_genotype,
             "capacity_ablation_enabled": self.capacity_ablation_enabled,
             "environment_spatial_reversed": self.environment.spatial_reversed,
+            "environment_resource_spatial_reversed": bool(
+                getattr(self.environment, "resource_spatial_reversed", False)
+            ),
             "mortality_trace_schema": self.cfg.environment.mortality_trace_schema,
             "environment_process": dict(
                 self.environment.environment_process_metadata

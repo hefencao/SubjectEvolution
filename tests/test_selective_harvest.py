@@ -128,7 +128,7 @@ def test_selective_harvest_is_published_and_analyzed(tmp_path: Path) -> None:
 
 def test_protocol_audit_records_selective_budget() -> None:
     report = build_protocol_audit(CONFIG)
-    assert report["schema"] == "structural-measurement-protocol-audit-v14"
+    assert report["schema"] == "structural-measurement-protocol-audit-v15"
     resource = report["resource_environment_protocol"]
     assert resource["harvest_allocation_schema"] == SELECTIVE_HARVEST_SCHEMA
     assert "one channel" in resource["harvest_budget_semantics"]

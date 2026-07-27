@@ -14,7 +14,7 @@ from se.env.partition import SpatialRegionPartition
 from se.policy import ParametricPolicy
 
 
-SCHEMA = "structural-measurement-protocol-audit-v14"
+SCHEMA = "structural-measurement-protocol-audit-v15"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -454,6 +454,52 @@ def build_protocol_audit(
                 "generator or a claim of new physical functionality"
             ),
         },
+        "d4_niche_reversal_protocol": {
+            "plan_schema": "d4-niche-reversal-plan-v1",
+            "result_schema": "d4-niche-reversal-results-v1",
+            "assessment_schema": "d4-niche-reversal-assessment-v1",
+            "source_gate": "explicit D2-H non-replication stop recommendation",
+            "default_screen_horizon_ticks": 120,
+            "confirmation_horizon_ticks": 300,
+            "checkpoint_selection": "all phase-qualified redesigned-source checkpoints retained from D2-H",
+            "lineage_selection": "all preregistered source-checkpoint lineages; no response-conditioned pruning",
+            "branches": {
+                "baseline": [],
+                "resource-reversed": ["reverse-resource-geography"],
+                "affinity-neutral": ["neutralize-resource-affinity"],
+                "joint-neutral": [
+                    "reverse-resource-geography",
+                    "neutralize-resource-affinity",
+                ],
+            },
+            "primary_interaction": "(baseline - resource-reversed) - (affinity-neutral - joint-neutral)",
+            "resource_reversal": {
+                "rotation_degrees": 180,
+                "current_resource_fields_rotated": True,
+                "future_seasonal_template_rotated": True,
+                "resource_identity_changed": False,
+                "resource_effect_matrix_changed": False,
+                "hazard_changed": False,
+                "mortality_trace_changed": False,
+            },
+            "paired_randomness": True,
+            "genotype_preserved": True,
+            "lineage_membership_preserved": True,
+            "minimum_independent_panel_seeds": 2,
+            "minimum_non_dominant_lineage_identities": 2,
+            "source_exposure_diagnostic": "pre-intervention affinity-specific utility difference between original and 180-degree-rotated resource geography",
+            "source_exposure_is_independent_causal_evidence": False,
+            "screen_can_authorize": "longer environment-matching confirmation only",
+            "stable_niche_claim_requires": [
+                "persistent environment-matching interaction",
+                "stable coexistence",
+                "ecotype or phenotype-cohort removal",
+                "map-scale and spatial-template checks",
+            ],
+            "module_copy_number_changed": False,
+            "routing_vocabulary_changed": False,
+            "diversity_protection": False,
+        },
         "environment_atlas_protocol": {
             "enabled": bool(cfg.run.environment_atlas_diagnostics_enabled),
             "schema": cfg.run.environment_atlas_diagnostics_schema,
@@ -625,6 +671,22 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- effect qualification: {payload['functional_module_protocol']['effect_qualification']}",
         f"- lineage-balanced pairs: {payload['functional_module_protocol']['lineage_balanced_pair_protocol']}",
         f"- boundary: {payload['functional_module_protocol']['interpretation']}",
+        "",
+        "## D4-A resource geography × inherited affinity reversal",
+        "",
+        f"- plan / result / assessment: `{payload['d4_niche_reversal_protocol']['plan_schema']}` / "
+        f"`{payload['d4_niche_reversal_protocol']['result_schema']}` / "
+        f"`{payload['d4_niche_reversal_protocol']['assessment_schema']}`",
+        f"- source gate: {payload['d4_niche_reversal_protocol']['source_gate']}",
+        f"- branches: {payload['d4_niche_reversal_protocol']['branches']}",
+        f"- interaction: {payload['d4_niche_reversal_protocol']['primary_interaction']}",
+        f"- resource reversal: {payload['d4_niche_reversal_protocol']['resource_reversal']}",
+        f"- paired randomness / genotype / lineage preserved: "
+        f"{payload['d4_niche_reversal_protocol']['paired_randomness']} / "
+        f"{payload['d4_niche_reversal_protocol']['genotype_preserved']} / "
+        f"{payload['d4_niche_reversal_protocol']['lineage_membership_preserved']}",
+        f"- source exposure: {payload['d4_niche_reversal_protocol']['source_exposure_diagnostic']}",
+        f"- niche claim requires: {payload['d4_niche_reversal_protocol']['stable_niche_claim_requires']}",
         "",
         "## Environment atlas",
         "",

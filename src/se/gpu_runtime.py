@@ -286,6 +286,9 @@ class HybridGpuRuntime:
         """Seed the device mirror from an existing CPU world snapshot."""
         xp = self.backend.xp
         self.environment.spatial_reversed = bool(environment.spatial_reversed)
+        self.environment.resource_spatial_reversed = bool(
+            getattr(environment, "resource_spatial_reversed", environment.spatial_reversed)
+        )
         self.environment.resources = self._upload(environment.resources, dtype=xp.float32, copy=True)
         self.environment.capacity = self._upload(environment.capacity, dtype=xp.float32, copy=True)
         self.environment.regeneration = self._upload(environment.regeneration, dtype=xp.float32, copy=True)
@@ -300,6 +303,9 @@ class HybridGpuRuntime:
     def sync_to_host(self, environment: Any, information: InformationSystem) -> None:
         """Expose the current device fields to CPU-only inspection and cloning."""
         environment.spatial_reversed = self.environment.spatial_reversed
+        environment.resource_spatial_reversed = (
+            self.environment.resource_spatial_reversed
+        )
         environment.resources = self._download(self.environment.resources).astype(np.float32, copy=False)
         environment.capacity = self._download(self.environment.capacity).astype(np.float32, copy=False)
         environment.regeneration = self._download(self.environment.regeneration).astype(np.float32, copy=False)
@@ -310,6 +316,10 @@ class HybridGpuRuntime:
         information.field = self._download(self.information_field.field).astype(np.float32, copy=False)
         information.source = self._download(self.information_field.source).astype(np.float32, copy=False)
         information.age = self._download(self.information_field.age).astype(np.uint16, copy=False)
+
+    def reverse_resource_environment(self) -> None:
+        """Apply resource-only spatial reversal to authoritative device fields."""
+        self.environment.reverse_resource_spatial_orientation()
 
     def reverse_environment(self) -> None:
         """Apply the configured spatial reversal to authoritative device fields."""

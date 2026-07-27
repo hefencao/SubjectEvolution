@@ -1,0 +1,115 @@
+{
+  "schema": "se-authoritative-compatibility-report-v1",
+  "baseline_version": "0.46.0",
+  "candidate_version": "0.47.0",
+  "config": "configs/mvp_small.json",
+  "backend": "cpu",
+  "ticks": 20,
+  "new_feature_state": "disabled",
+  "checkpoint_comparison": {
+    "normalization": [
+      "v0.46 missing environment.resource_spatial_reversed normalized to false"
+    ],
+    "semantic_leaf_count_v046": 9797,
+    "semantic_leaf_count_v047": 9797,
+    "semantic_difference_count": 0,
+    "passed": true
+  },
+  "summary_comparison": {
+    "common_leaf_count": 363,
+    "excluded_timing_leaf_count": 13,
+    "non_timing_leaf_count": 350,
+    "non_timing_difference_count": 0,
+    "passed": true
+  },
+  "metrics_comparison": {
+    "rows": 3,
+    "common_columns": 360,
+    "excluded_timing_columns": [
+      "conflict_seconds",
+      "device_commit_seconds",
+      "environment_seconds",
+      "evolution_evaluation_seconds",
+      "graph_seconds",
+      "observation_seconds",
+      "policy_seconds",
+      "spatial_seconds",
+      "step_seconds",
+      "validation_seconds",
+      "wall_elapsed_seconds",
+      "window_seconds",
+      "window_seconds_per_tick"
+    ],
+    "non_timing_cells_compared": 1041,
+    "non_timing_difference_count": 0,
+    "passed": true
+  },
+  "exact_auxiliary_outputs": [
+    {
+      "file": "environment_atlas.jsonl",
+      "identical": true,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "environment_atlas_summary.json",
+      "identical": true,
+      "sha256": "71fbe480f1f60d10c4cd1ea95395fba9412a248562f4fca5e57a9382b299a231"
+    },
+    {
+      "file": "knowledge_events.jsonl",
+      "identical": true,
+      "sha256": "c208c13f27a9c2ac0bc68492af8f769f1675b9740ad65dbb8ddb433b85572777"
+    },
+    {
+      "file": "knowledge_outcome_updates.csv",
+      "identical": true,
+      "sha256": "1b0e220f2cdb81cc03efbf1b9d1597b6e7f910e62cb780ec4dce57fff2f82f5d"
+    },
+    {
+      "file": "knowledge_policy_contributions.csv",
+      "identical": true,
+      "sha256": "569150aeb393107ea262fc31fb035e75b9eddc36a26e2b7e2aa2ddeb96d90eb7"
+    },
+    {
+      "file": "knowledge_routing_costs.csv",
+      "identical": true,
+      "sha256": "7ece97324767d37be9bdc64a850a00e8e1511d88fc644444a8e765a3a2cd94a9"
+    },
+    {
+      "file": "knowledge_selection_events.csv",
+      "identical": true,
+      "sha256": "901e58ece223607b241f4011d0ca4eeef23418a662d48193d108ad4479859cf1"
+    },
+    {
+      "file": "knowledge_transfers.csv",
+      "identical": true,
+      "sha256": "32d66e86bbd60679b0300c4ea429b299af13b344719cf3f4ae7f3f86f994bc4c"
+    },
+    {
+      "file": "knowledge_working_memory.csv",
+      "identical": true,
+      "sha256": "59956f7fd2e3bf4ffb5aa19af0cd39c4bf58a488b25100cf805eac5501206865"
+    },
+    {
+      "file": "scientific_validity.json",
+      "identical": true,
+      "sha256": "4faab3a0b016ae7a388b2e5bb54b68ab77d52b6bf9832485d3b654f16bb8d420"
+    },
+    {
+      "file": "subject_structure_summary.json",
+      "identical": true,
+      "sha256": "6000e4dabeabfcf91c00bab855cf278d9472d4ba5f1315b4403cd3075b8ed42e"
+    },
+    {
+      "file": "subject_structure_transitions.jsonl",
+      "identical": true,
+      "sha256": "6f7261eb19bfc902d06044f6be75f0d2c47df59916a339768cc462b0c348ad8f"
+    }
+  ],
+  "run_metadata_expected_differences": [
+    "project version 0.46.0 -> 0.47.0",
+    "timing measurements",
+    "new disabled diagnostic interventions.environment_resource_spatial_reversed=false"
+  ],
+  "passed": true
+}

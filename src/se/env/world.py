@@ -25,6 +25,7 @@ class Environment:
     def __init__(self, cfg: SimulationConfig) -> None:
         self.cfg = cfg
         self.spatial_reversed = False
+        self.resource_spatial_reversed = False
         self.environment_process = build_environment_process(cfg.environment)
         self.environment_process_metadata = environment_process_metadata(cfg.environment)
         gx, gy = cfg.world.grid_x, cfg.world.grid_y
@@ -94,22 +95,29 @@ class Environment:
     def _seasonal_multiplier(self, tick: int) -> np.ndarray:
         phase = 2.0 * np.pi * tick / max(self.cfg.environment.season_period, 1)
         if self.cfg.environment.schema == "legacy-four-channel-v1":
-            return 1.0 + self.cfg.environment.season_amplitude * np.sin(
+            result = 1.0 + self.cfg.environment.season_amplitude * np.sin(
                 phase + np.arange(self.RESOURCE_CHANNELS)[:, None, None] * 1.3
             )
-        gx, gy = self.cfg.world.grid_x, self.cfg.world.grid_y
-        yy, xx = np.mgrid[0:gy, 0:gx]
-        if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
-            xnorm, ynorm = self._normalized_grid(xx, yy)
-            return orthogonal_seasonal_multiplier(
-                self.cfg.environment,
-                xnorm,
-                ynorm,
-                tick=tick,
-                xp=np,
-            )
-        local_phase = phase + self._heterogeneous_phase_grid(xx, yy)
-        return 1.0 + self.cfg.environment.season_amplitude * np.sin(local_phase)
+        else:
+            gx, gy = self.cfg.world.grid_x, self.cfg.world.grid_y
+            yy, xx = np.mgrid[0:gy, 0:gx]
+            if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
+                xnorm, ynorm = self._normalized_grid(xx, yy)
+                result = orthogonal_seasonal_multiplier(
+                    self.cfg.environment,
+                    xnorm,
+                    ynorm,
+                    tick=tick,
+                    xp=np,
+                )
+            else:
+                local_phase = phase + self._heterogeneous_phase_grid(xx, yy)
+                result = 1.0 + self.cfg.environment.season_amplitude * np.sin(local_phase)
+        return (
+            result[:, ::-1, ::-1].copy()
+            if self.resource_spatial_reversed
+            else result
+        )
 
     def _hazard_pattern(self, tick: int) -> np.ndarray:
         gx, gy = self.cfg.world.grid_x, self.cfg.world.grid_y
@@ -161,9 +169,21 @@ class Environment:
         result = np.clip(h, 0.0, 1.0).astype(np.float32)
         return result[::-1, ::-1].copy() if self.spatial_reversed else result
 
+    def reverse_resource_spatial_orientation(self) -> None:
+        """Rotate only resource geography by 180 degrees persistently.
+
+        Resource identity, channel effects, capacities, regeneration rates, hazard,
+        mortality trace, entities, and inherited affinity remain unchanged.  Future
+        seasonal regeneration is rotated with the current field so the intervention
+        does not decay back toward the original template.
+        """
+
+        self.resources = self.resources[:, ::-1, ::-1].copy()
+        self.resource_spatial_reversed = not self.resource_spatial_reversed
+
     def reverse_spatial_orientation(self) -> None:
         """Rotate resource and hazard geography by 180 degrees persistently."""
-        self.resources = self.resources[:, ::-1, ::-1].copy()
+        self.reverse_resource_spatial_orientation()
         self.hazard = self.hazard[::-1, ::-1].copy()
         self.mortality_trace = self.mortality_trace[::-1, ::-1].copy()
         self.spatial_reversed = not self.spatial_reversed

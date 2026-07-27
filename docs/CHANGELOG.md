@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.47.0
+
+### D2 stop decision and D4-A environment matching audit
+
+- Records the supplied D2-H result: module 3 does not replicate across the two qualified redesigned-source peak checkpoints and no 300-tick module confirmation is generated.
+- Closes the module-copy route while retaining the existing fixed modules as part of the background world.
+- Adds a persistent resource-only `reverse-resource-geography` intervention; it rotates current resource fields and future seasonal regeneration while leaving hazard, mortality trace, resource identities and resource effects unchanged.
+- Adds `d4-niche-reversal-plan-v1`, `d4-niche-reversal-results-v1` and `d4-niche-reversal-assessment-v1`.
+- Adds `se-d4-niche-reversal` and `se-d4-niche-assess`.
+- Implements a shared-checkpoint 2×2 resource-geography × affinity-expression factorial and a closed difference-in-differences decomposition.
+- Retains all preregistered lineages from both qualified peak checkpoints and uses panel seeds, not lineages, as independent replicates.
+- Adds pre-intervention affinity-specific exposure diagnostics without treating them as independent causal evidence.
+- Generates a longer confirmation plan only after repeated practical interaction effects; stable ecological-niche claims remain blocked pending coexistence, removal and map-scale tests.
+- Upgrades protocol audit to v15 and adds the fifteenth and sixteenth console entries.
+
+### Packaging
+
+- Complete packages retain only `docs/v0.47` as a version-specific directory.
+
 ## 0.46.0
 
 ### D2-H phase-specific source-population causal re-audit

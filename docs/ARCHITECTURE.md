@@ -1,3 +1,34 @@
+## D4-A resource-geography × inherited-affinity boundary
+
+```text
+shared redesigned-source checkpoint
+├── baseline
+├── resource geography reversed 180°
+├── inherited affinity expression neutralized
+└── both interventions
+
+interaction
+= (baseline − resource-reversed)
+  − (affinity-neutral − joint-neutral)
+```
+
+The resource-only reversal rotates the current four-channel resource fields and
+the future seasonal regeneration template. It does not rotate hazard or
+mortality trace, relabel resource channels, change the resource effect matrix,
+move entities, edit genotype, or alter lineage membership. The affinity
+neutralization preserves genotype and only replaces the expressed affinity with
+the fixed uniform vector.
+
+All checkpoint branches reuse the same keyed random streams. Each planned
+lineage is summarized in every branch, but independent panel seeds—not lineages
+or outcomes—are the replication unit. The pre-intervention exposure diagnostic
+compares affinity-weighted utility under original and rotated resource fields;
+it is structural provenance, not an additional intervention.
+
+A repeated interaction may authorize a longer environment-matching
+confirmation. It cannot by itself establish stable ecological niches, because
+coexistence, removal and map-scale tests remain outstanding.
+
 # SE architecture
 
 ## D2-E confirmation-selection boundary

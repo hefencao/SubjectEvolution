@@ -478,6 +478,19 @@ class SimulationExperimentMixin:
         elif normalized == "freeze-genotype":
             canonical = "freeze-genotype"
             self.freeze_genotype = True
+        elif normalized == "reverse-resource-geography":
+            canonical = "reverse-resource-geography"
+            self.environment.reverse_resource_spatial_orientation()
+            if self.gpu_runtime is not None:
+                self.gpu_runtime.reverse_resource_environment()
+            details = {
+                "rotation_degrees": 180,
+                "resource_identity_permuted": False,
+                "resource_effects_modified": False,
+                "hazard_modified": False,
+                "entity_state_modified": False,
+                "future_seasonal_template_reversed": True,
+            }
         elif normalized == "reverse-environment":
             canonical = "reverse-environment"
             self.environment.reverse_spatial_orientation()

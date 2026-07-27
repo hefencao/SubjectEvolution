@@ -1,0 +1,22 @@
+{
+  "schema": "patch-validation-report-v1",
+  "baseline": "corrected-v0.46.0-project-package",
+  "candidate": "v0.47.0",
+  "preliminary_patch": "v0.46-to-v0.47",
+  "git_apply_check": true,
+  "git_apply": true,
+  "fuzz_or_offset": false,
+  "candidate_file_count": 252,
+  "applied_file_count": 252,
+  "missing_files": [],
+  "extra_files": [],
+  "different_files": [],
+  "pytest": {
+    "passed": 218,
+    "skipped": 1,
+    "failed": 0
+  },
+  "isolated_release_check": true,
+  "passed": true,
+  "note": "The final patch is regenerated after adding this report and is validated again from a fresh corrected-v0.46 package."
+}

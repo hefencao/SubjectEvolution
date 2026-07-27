@@ -332,6 +332,10 @@ class SimulationCheckpointMixin:
             self.environment.mortality_trace = np.zeros(
                 (self.cfg.world.grid_y, self.cfg.world.grid_x), dtype=np.float32
             )
+        if not hasattr(self.environment, "resource_spatial_reversed"):
+            self.environment.resource_spatial_reversed = bool(
+                getattr(self.environment, "spatial_reversed", False)
+            )
         self.information = copy.deepcopy(state["information"])
         self.information.cfg = self.cfg
         self.signal_scheduler = copy.deepcopy(state["signal_scheduler"])

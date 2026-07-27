@@ -1,69 +1,61 @@
 # SE project status
 
-Version: **0.46.0**
+Version: **0.47.0**
 
 ## Current causal chain
 
 ```text
 orthogonal external environment
-→ inherited affinity-routed requests
-→ inherited elastic capacities
+→ inherited affinity-routed requests and elastic capacities
 → bounded contextual harvest modules
-→ paired module and lineage interventions
-→ temporal flow-energy-demography mediation
-→ genotype-only source-population reconstitution
-→ phase-specific causal re-estimation in redesigned checkpoints
-→ ecological niches and interactions
+→ paired module, lineage, mediation and source-population interventions
+→ module-copy route rejected after redesigned-source non-replication
+→ resource-geography × inherited-affinity causal reversal
+→ ecological coexistence and removal tests
 → social organization
 → higher-level candidate subjects
 ```
 
-## Charter interpretation used in v0.46
+## Supplied D2-H result
 
-`PROJECT_CHARTER.md` states that **major conclusions** require at least ten random seeds in the exploratory stage. It does not state that every exploratory audit or every next-step gate must run ten seeds.
+The supplied 120-tick redesigned-source re-audit used two independently qualified peak checkpoints (`45001`, `45003`) and retained all six preregistered lineages in each checkpoint.
 
-v0.46 therefore separates:
+Module 3 did not produce a repeated routed-output effect across both panel seeds and non-dominant lineage identities. Material effects were sparse or directionally inconsistent. A repeated retained-expression-cost effect cannot substitute for routed output.
 
-1. **exploratory experiment routing** — a paired three-seed audit may justify a lower-risk next causal experiment when preregistered hard guards and at least two independent seeds agree;
-2. **general source-population claims** — the current n=3 result is too imprecise and remains phase-specific;
-3. **copy-number decisions** — still blocked regardless of the exploratory routing decision.
+Decision:
 
-## Supplied D2-G result
+```text
+module-3-not-replicated-in-redesigned-source-population-stop-before-copy-number
+```
 
-After 600 ticks of ordinary dynamics without ongoing lineage protection:
+No 300-tick module confirmation is admissible. Module duplication, deletion, arbitrary routing and new output ports remain blocked.
 
-- peak equal-lineage arm: 2/3 qualified;
-- peak natural-abundance control: 0/3 qualified;
-- trough equal-lineage arm: 1/3 qualified;
-- trough natural-abundance control: 0/3 qualified.
+## D4-A implementation
 
-The peak equal-lineage pass fraction has a wide two-sided 95% Wilson interval of approximately `[0.208, 0.939]`. The result is not a precise population-level estimate, but the paired 2/3 versus 0/3 pattern and the preregistered absolute guards are sufficient for a phase-specific exploratory module-3 re-audit.
+v0.47 adds:
 
-## D2-H implementation
+- `reverse-resource-geography`, a resource-only persistent 180-degree spatial reversal;
+- `d4-niche-reversal-plan-v1`;
+- `d4-niche-reversal-results-v1`;
+- `d4-niche-reversal-assessment-v1`;
+- `se-d4-niche-reversal`;
+- `se-d4-niche-assess`;
+- `structural-measurement-protocol-audit-v15`.
 
-v0.46 adds:
-
-- `d2-source-population-assessment-v2`;
-- `d2-source-population-causal-plan-v1`;
-- `d2-source-population-causal-results-v1`;
-- `d2-source-population-causal-assessment-v1`;
-- `se-d2-source-causal`;
-- `se-d2-source-causal-assess`;
-- `structural-measurement-protocol-audit-v14`.
-
-The generated 120-tick plan selects only peak fresh-world seeds `45001` and `45003`, because they passed the preregistered D2-G guards. It retains all six member- and expression-qualified panel lineages in each checkpoint. It does not select lineages by response magnitude.
-
-Each module-lineage pair uses:
+The generated plan uses the same two qualified peak checkpoints and all twelve preregistered checkpoint-lineage units. Each checkpoint runs four branches:
 
 - baseline;
-- output-neutral with expression cost retained;
-- expression-neutral with output and expression cost removed.
+- resource geography reversed;
+- affinity expression neutralized;
+- both interventions together.
 
-The first run is a 120-tick screen. A 300-tick confirmation plan is generated only if routed-output effects repeat under the existing practical-effect and cross-seed rules.
+The primary effect is the affinity × resource-geography difference in differences. Resource identity, effect matrix, hazard, mortality trace, genotype, lineage membership, modules and keyed random streams remain unchanged.
 
-## Current gate
+## Evidence boundary
 
-Module duplication, deletion, arbitrary routing and new output ports remain blocked. A positive D2-H result would establish only phase-specific exploratory causal persistence in redesigned checkpoints. Higher-confidence replication, ecological persistence and an independently preregistered copy-number design would still be required.
+A 120-tick D4-A screen may authorize a longer confirmation only when an interaction of practical magnitude repeats across at least two independent panel seeds and at least two non-dominant lineage identities.
+
+A persistent D4-A result would establish environment matching, not a complete ecological niche. Stable coexistence, phenotype/ecotype removal, spatial-template or map-scale checks, and broader seed support remain required.
 
 ## Engineering workflow
 
@@ -73,4 +65,4 @@ make test
 make conda-check
 ```
 
-v0.46 changes version metadata and adds two console entries, so one `make conda-sync` is required after upgrading from v0.45.
+v0.47 changes version metadata and adds two console entries, so one `make conda-sync` is required after upgrading from v0.46.

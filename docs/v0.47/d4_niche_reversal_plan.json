@@ -1,0 +1,131 @@
+{
+  "schema": "d4-niche-reversal-plan-v1",
+  "stage": "120-tick-exploratory-screen",
+  "source_plan_schema": "d2-source-population-causal-plan-v1",
+  "source_plan_sha256": "20d7713d7e04f6b7c2edcb3bad7561308ce6fea8564d61839ece1e637b0d299c",
+  "source_assessment_schema": "d2-source-population-causal-assessment-v1",
+  "source_assessment_sha256": "3b4ee69126d7ca04cfe05875d71efb5cd20c2b6fed713278fcaef788a24521f3",
+  "source_recommendation": "module-3-not-replicated-in-redesigned-source-population-stop-before-copy-number",
+  "evidence_scope": "phase-specific-exploratory-environment-matching-audit",
+  "horizon_ticks": 120,
+  "checkpoints": [
+    {
+      "run_name": "peak_seed_45001",
+      "phase": "peak",
+      "panel_seed": 45001,
+      "checkpoint_tick": 600,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/analyses/d2g_source_population_burnin/execution/peak_seed_45001/equal-lineage-reconstitution/checkpoint_00000600.sechk",
+      "until_tick": 720,
+      "active_entities": 504,
+      "effective_lineages": 4.0688130706391155,
+      "dominant_lineage_fraction": 0.4166666666666667,
+      "lineages": [
+        {
+          "lineage_id": 5940149970201285654,
+          "members": 210,
+          "member_fraction": 0.4166666666666667,
+          "abundance_rank": 1
+        },
+        {
+          "lineage_id": 6273021383814955239,
+          "members": 76,
+          "member_fraction": 0.15079365079365079,
+          "abundance_rank": 2
+        },
+        {
+          "lineage_id": 9032458484605812416,
+          "members": 72,
+          "member_fraction": 0.14285714285714285,
+          "abundance_rank": 3
+        },
+        {
+          "lineage_id": 9023138044078233047,
+          "members": 60,
+          "member_fraction": 0.11904761904761904,
+          "abundance_rank": 4
+        },
+        {
+          "lineage_id": 42791552092449092,
+          "members": 49,
+          "member_fraction": 0.09722222222222222,
+          "abundance_rank": 5
+        },
+        {
+          "lineage_id": 1742414855197043560,
+          "members": 37,
+          "member_fraction": 0.07341269841269842,
+          "abundance_rank": 6
+        }
+      ]
+    },
+    {
+      "run_name": "peak_seed_45003",
+      "phase": "peak",
+      "panel_seed": 45003,
+      "checkpoint_tick": 600,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/analyses/d2g_source_population_burnin/execution/peak_seed_45003/equal-lineage-reconstitution/checkpoint_00000600.sechk",
+      "until_tick": 720,
+      "active_entities": 483,
+      "effective_lineages": 4.324250681198911,
+      "dominant_lineage_fraction": 0.38923395445134573,
+      "lineages": [
+        {
+          "lineage_id": 5940149970201285654,
+          "members": 188,
+          "member_fraction": 0.38923395445134573,
+          "abundance_rank": 1
+        },
+        {
+          "lineage_id": 6273021383814955239,
+          "members": 72,
+          "member_fraction": 0.14906832298136646,
+          "abundance_rank": 2
+        },
+        {
+          "lineage_id": 9032458484605812416,
+          "members": 69,
+          "member_fraction": 0.14285714285714285,
+          "abundance_rank": 3
+        },
+        {
+          "lineage_id": 9023138044078233047,
+          "members": 68,
+          "member_fraction": 0.14078674948240166,
+          "abundance_rank": 4
+        },
+        {
+          "lineage_id": 42791552092449092,
+          "members": 56,
+          "member_fraction": 0.11594202898550725,
+          "abundance_rank": 5
+        },
+        {
+          "lineage_id": 1742414855197043560,
+          "members": 30,
+          "member_fraction": 0.062111801242236024,
+          "abundance_rank": 6
+        }
+      ]
+    }
+  ],
+  "branches": [
+    "baseline",
+    "resource-reversed",
+    "affinity-neutral",
+    "joint-neutral"
+  ],
+  "resource_intervention": "reverse-resource-geography",
+  "phenotype_intervention": "neutralize-resource-affinity",
+  "factorial_schema": "resource-geography-by-affinity-expression-2x2-v1",
+  "source_selection_response_conditioned": false,
+  "lineage_selection_response_conditioned": false,
+  "paired_randomness": true,
+  "genotype_preserved": true,
+  "lineage_membership_preserved": true,
+  "hazard_modified": false,
+  "module_copy_number_changed": false,
+  "routing_vocabulary_changed": false,
+  "ecological_niche_claim": false,
+  "confirmation_source_result_schema": null,
+  "confirmation_source_horizon_ticks": null
+}

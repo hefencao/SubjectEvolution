@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "result_schema": "d4-niche-reversal-results-v1",
+  "assessment_schema": "d4-niche-reversal-assessment-v1",
+  "executed_checkpoints": 2,
+  "executed_lineages": 6,
+  "max_factorial_residual": 0.0,
+  "resource_reversal_hazard_unchanged": true,
+  "stable_ecological_niche_claim": false,
+  "module_copy_number_ready": false
+}

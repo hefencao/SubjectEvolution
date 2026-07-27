@@ -144,6 +144,12 @@ INTERVENTIONS = (
         aliases=("freeze-genetic-expression",),
     ),
     InterventionSpec(
+        "reverse-resource-geography",
+        InterventionKind.MODIFY_ENVIRONMENT,
+        "resource-spatial-fields-and-future-seasonal-template",
+        aliases=("resource-geography-reversal", "resource-spatial-reversal"),
+    ),
+    InterventionSpec(
         "reverse-environment",
         InterventionKind.MODIFY_ENVIRONMENT,
         "resource-and-danger-spatial-fields",

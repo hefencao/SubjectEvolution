@@ -1,26 +1,26 @@
-# SE v0.46
+# SE v0.47
 
-`SE` 是围绕多维环境、可遗传分化、动态知识与候选主体结构构建的可审计演化模拟参考实现。
+`SE` 是围绕多维环境、可遗传分化、生态位、动态知识与候选主体结构构建的可审计演化模拟参考实现。
 
-## Conda 本地工作流
+## Conda editable 工作流
 
-v0.46 新增两个 D2-H console entry，并升级 D2-G 评估语义；升级后需要在目标环境执行一次：
+v0.47 更新版本元数据并新增两个 console entry，升级后需要在目标 Conda 环境执行一次：
 
 ```bash
 conda activate <your-env>
 make conda-sync
 ```
 
-之后普通源码修改直接生效。日常验证使用：
+日常验证：
 
 ```bash
 make test
 make conda-check
 ```
 
-不要在正常 Conda editable 工作流中设置 `PYTHONPATH=src`，也不要把 wheel 单独安装作为日常开发方式。
+不再把 wheel 单独安装作为日常开发流程。`make release-check` 仅用于隔离发行物审计。
 
-## 主要运行入口
+## 普通模拟入口
 
 ```bash
 se --config <CONFIG> --seed 10001 --output <DIR> --backend cpu
@@ -36,176 +36,103 @@ se-multi \
   --backend gpu
 ```
 
-## D2-B/C 模块审计与效应判定
+## D2 结论：停止模块复制路线
 
-`se-d2-audit` 生成共享 checkpoint 的逐模块中和分支；`se-d2-assess` 对 120/300-tick 结果实施实用阈值、重复性、即时足迹和谱系 guard 判定。
+D2-B 至 D2-H 依次完成了逐模块消融、跨谱系配对、120/300-tick 持续性、时间中介、遗传创始者重构和重构 checkpoint 中的模块 3 复审。
+
+最新 D2-H 结果为：
+
+- 使用 peak fresh-world seeds `45001`、`45003`；
+- 每个 checkpoint 保留全部 6 条预注册合格谱系；
+- 共执行 12 个 module-3 × lineage 三分支配对；
+- 模块 3 没有形成跨 seed、跨非主导谱系的重复 routed-output 效应；
+- 仅存在表达成本相关信号，不能替代模块输出因果证据；
+- 不生成 300-tick 模块确认计划；
+- 模块复制、删除、任意重联和新 output port 继续阻塞。
+
+因此 v0.47 不再围绕模块复制追加同类实验，主线进入 charter 的 D4 生态位形成阶段。
+
+## D4-A：资源地理 × 遗传亲和反转审计
+
+新增入口：
 
 ```bash
-se-d2-assess \
-  --short-results analyses/d2b_module_audit_120/d2_module_audit_results.json \
-  --long-results analyses/d2b_module_audit_300/d2_module_audit_results.json \
-  --output analyses/d2c_effect_assessment \
-  --refresh-footprints
+se-d4-niche-reversal
+se-d4-niche-assess
 ```
 
-## D2-D/E 多谱系配对审计
+D4-A 从 D2-H 已冻结的两个多谱系 peak checkpoint 建立共享 checkpoint 的 2×2 因子实验：
+
+1. `baseline`：原资源地理，遗传亲和正常表达；
+2. `resource-reversed`：资源地理旋转 180°，亲和正常表达；
+3. `affinity-neutral`：原资源地理，中和亲和表达；
+4. `joint-neutral`：资源地理反转并中和亲和表达。
+
+主要交互为：
+
+```text
+(baseline - resource-reversed)
+- (affinity-neutral - joint-neutral)
+```
+
+正值表示原资源地理相对反转地理的优势中，有一部分只能在遗传亲和表达存在时出现。该差中之差排除了资源反转本身的一般扰动。
+
+`reverse-resource-geography` 只改变资源空间地理：
+
+- 当前四资源字段旋转 180°；
+- 后续季节性再生模板持续旋转；
+- 不修改资源通道身份和 effect matrix；
+- 不修改 hazard 或 mortality trace；
+- 不修改实体、基因型、谱系、模块或随机键。
+
+执行 120-tick 探索性 screen：
 
 ```bash
-se-d2-lineage-pairs \
-  --results analyses/d2b_module_audit_300/d2_module_audit_results.json \
-  --output analyses/d2d_lineage_pairs_120 \
-  --modules 2,3 \
-  --horizon 120 \
+se-d4-niche-reversal \
+  --plan docs/v0.47/d4_niche_reversal_plan.json \
+  --output analyses/d4a_niche_reversal_120 \
   --execute \
   --backend gpu \
   --gpu-semantics-mode strict-reference
 ```
 
-```bash
-se-d2-lineage-assess \
-  --short-results analyses/d2d_lineage_pairs_120/d2_lineage_pair_results.json \
-  --long-results analyses/d2e_lineage_pairs_300/d2_lineage_pair_results.json \
-  --output analyses/d2e_lineage_pair_persistence
-```
-
-本次 300-tick 判定中，模块 2 的 120-tick 输出信号没有跨 horizon 持续；模块 3 仅保留目标谱系平均能量的正向 routed-output 效应。存活效应在 120 与 300 ticks 之间反向，因此不能把平均能量提升直接解释为生态收益。
-
-## D2-F 时间中介审计
-
-从已确认的 D2-E 评估和原 300-tick 计划生成 D2-F 计划：
+评估：
 
 ```bash
-se-d2-lineage-mediate \
-  --assessment analyses/d2e_lineage_pair_persistence/d2_lineage_pair_assessment.json \
-  --source-plan analyses/d2e_lineage_pair_assessment/d2_lineage_pair_confirmation_plan.json \
-  --output analyses/d2f_lineage_mediation_plan
+se-d4-niche-assess \
+  --results analyses/d4a_niche_reversal_120/d4_niche_reversal_results.json \
+  --output analyses/d4a_niche_reversal_assessment_120
 ```
 
-默认保留模块 3 在 6 个 checkpoint 中的全部 24 个预选谱系配对，并在 30、60、120、180、240、300 ticks 采样。执行：
+若至少两个独立 panel seed、至少两个非主导谱系身份出现同方向的实用 affinity × environment 交互，评估器会生成保持全部 checkpoint-lineage 单元的 300-tick 确认计划。
 
-```bash
-se-d2-lineage-mediate \
-  --plan analyses/d2f_lineage_mediation_plan/d2_lineage_mediation_plan.json \
-  --output analyses/d2f_lineage_mediation_trajectory \
-  --execute \
-  --backend gpu \
-  --gpu-semantics-mode strict-reference
-```
+D4-A 同时记录每条源谱系的：
 
-完成后判定中介链：
+- 四通道平均遗传亲和；
+- 原资源地理和旋转地理下的局部资源暴露；
+- affinity-specific exposure advantage；
+- endpoint 存活、世界占比、能量、材料、信息和 fertility；
+- 世界层面的资源维度、采集效率和有效谱系指标。
 
-```bash
-se-d2-lineage-mediate-assess \
-  --results analyses/d2f_lineage_mediation_trajectory/d2_lineage_mediation_results.json \
-  --output analyses/d2f_lineage_mediation_assessment
-```
-
-D2-F 同时报告：
-
-- 平均能量、总能量与能量分位数；
-- 源成员幸存、存活后代、出生与按原因死亡；
-- 生育度和繁殖就绪数量；
-- 干预后的累计采集能量与共享能量；
-- routed-output、保留表达成本和总表达三类效应。
-
-多个时间点是同一配对单元的重复观测，不能增加 seed 或谱系复制数。平均能量只有在总能量、输入流和人口转换同时报告后才可解释。
-
-## D2-G 源群体重构与资格审计
-
-D2-F 显示模块 3 存在短暂的流量—能量—人口转换，但原 300-tick 终点未在最终偏移复现，源 checkpoint 仍由少数谱系主导。D2-G 不复制模块，而是从三个独立源 seed 的预干预谱系构建新的遗传创始者面板。
-
-```bash
-se-d2-source-population \
-  --assessment analyses/d2f_lineage_mediation_assessment/d2_lineage_mediation_assessment.json \
-  --mediation-results analyses/d2f_lineage_mediation_trajectory/d2_lineage_mediation_results.json \
-  --output analyses/d2g_source_population_plan
-```
-
-```bash
-se-d2-source-population \
-  --plan analyses/d2g_source_population_plan/d2_source_population_plan.json \
-  --output analyses/d2g_source_population_burnin \
-  --execute \
-  --backend gpu \
-  --gpu-semantics-mode strict-reference
-```
-
-```bash
-se-d2-source-population-assess \
-  --results analyses/d2g_source_population_burnin/d2_source_population_results.json \
-  --output analyses/d2g_source_population_assessment
-```
-
-自然丰度对照和等谱系重构臂使用相同总创始者数、同一新世界 seed 和唯一供体基因型。等谱系只发生在 tick 0；之后没有谱系奖励、保护、空间保留或繁殖干预。
-
-v0.46 明确区分探索性实验门控与主要结论。`PROJECT_CHARTER.md` 的 10-seed 下限约束主要结论，并不要求每个探索性审计都先运行 10 seeds。当前 3-seed 配对结果中，peak 等谱系臂为 2/3、自然丰度对照为 0/3；trough 为 1/3 与 0/3。该结果足以把 peak 路由到下一次探索性共享 checkpoint 因果复审，但置信区间很宽，不能宣称一般源群体已确证。
-
-## D2-H 重设计源群体中的模块 3 因果复审
-
-先使用 v0.46 重新评估 D2-G：
-
-```bash
-se-d2-source-population-assess \
-  --results analyses/d2g_source_population_burnin/d2_source_population_results.json \
-  --output analyses/d2g_source_population_assessment_v2
-```
-
-从评估和原始结果生成 120-tick 计划：
-
-```bash
-se-d2-source-causal \
-  --assessment analyses/d2g_source_population_assessment_v2/d2_source_population_assessment.json \
-  --results analyses/d2g_source_population_burnin/d2_source_population_results.json \
-  --output analyses/d2h_source_population_causal_120
-```
-
-执行：
-
-```bash
-se-d2-source-causal \
-  --plan analyses/d2h_source_population_causal_120/d2_source_population_causal_plan.json \
-  --output analyses/d2h_source_population_causal_120 \
-  --execute \
-  --backend gpu \
-  --gpu-semantics-mode strict-reference
-```
-
-评估 120-tick 结果，并在满足预注册 routed-output 重复性时自动生成 300-tick 确认计划：
-
-```bash
-se-d2-source-causal-assess \
-  --results analyses/d2h_source_population_causal_120/d2_source_population_causal_results.json \
-  --output analyses/d2h_source_population_causal_assessment_120
-```
-
-D2-H 仅使用 peak 中通过既有绝对 guard 的两个等谱系 checkpoint（fresh-world seeds 45001、45003），保留其中全部 6 条成员与表达合格谱系。面板和谱系均不按 D2-G 响应幅度筛选。每个 module-lineage 对仍使用 baseline、output-neutral、expression-neutral 三分支，复制数和 routing vocabulary 均不改变。
+源暴露对齐只是预干预结构诊断，不被当作新的独立因果重复。即便 D4-A 跨 horizon 通过，也只证明资源地理匹配；稳定共存、生态型移除、地图尺度和空间模板检查仍是生态位结论的必要条件。
 
 ## 当前科学主线
 
 1. **D0：** 正交四资源环境。
-2. **D1：** 可遗传弹性容量。
-3. **D1-B：** affinity 驱动的单通道选择性采集。
-4. **D1-C：** 请求资源、实际采集资源和 affinity × capacity 因子实验。
-5. **D2-A：** 四个固定布局、可遗传、表达门控的上下文采集模块。
-6. **D2-B：** 逐模块贡献审计和逐模块中和实验。
-7. **D2-C：** 下游效应判定、即时足迹刷新和复制门槛。
-8. **D2-D：** 谱系定向输出/成本三分支配对。
-9. **D2-E：** 非主导谱系跨 seed、跨 horizon 持续性判定。
-10. **D2-F：** routed-output 的采集/共享—能量—繁殖—存活时间中介审计。
-11. **D2-G：** 跨源 seed 的遗传创始者面板、自然丰度对照和无保护 burn-in 探索性资格审计。
-12. **D2-H：** 在 phase-qualified 重设计 checkpoint 中重新估计模块 3 的 routed-output 与表达成本因果效应。
-
-模块复制、删除、任意重联和新端口继续阻塞。D2-G 只改变显式实验的 tick-zero 遗传起点；D2-H 只在冻结 checkpoint 的实验分支中中和既有模块输出/成本。普通世界路径不读取面板谱系，也不提供持续多样性保护。
+2. **D1：** 可遗传弹性容量与 affinity × capacity 因子设计。
+3. **D2：** 固定模块表达、消融、跨谱系和源群体复审；复制路线已停止。
+4. **D4-A：** 资源地理反转 × 遗传亲和表达的环境匹配因果审计。
+5. **D4-B（受 D4-A 确认结果约束）：** 稳定共存和生态型/表型 cohort 移除。
+6. **D5：** 仅在生态分化得到可重复证据后研究社会形成。
 
 ## 文档
 
-- [项目立项](docs/PROJECT_CHARTER.md)
+- [项目总规范](docs/PROJECT_CHARTER.md)
 - [架构与提交边界](docs/ARCHITECTURE.md)
-- [项目状态](docs/PROJECT_STATUS.md)
+- [当前状态](docs/PROJECT_STATUS.md)
 - [科学问题](docs/SCIENTIFIC_ISSUES.md)
-
-- [D2-H 设计与证据边界](docs/v0.46/D2H_SOURCE_POPULATION_CAUSAL_REAUDIT.md)
-- [D2-G v2 真实评估](docs/v0.46/D2G_EXPLORATORY_ASSESSMENT.md)
-- [生成的 D2-H 计划](docs/v0.46/D2H_SOURCE_POPULATION_CAUSAL_PLAN.md)
-- [下一步运行](docs/v0.46/NEXT_EXPERIMENT.md)
-- [Conda editable 工作流](docs/v0.46/CONDA_EDITABLE_WORKFLOW.md)
+- [D2-H 停止判定](docs/v0.47/D2H_STOP_DECISION.md)
+- [D4-A 设计](docs/v0.47/D4A_NICHE_REVERSAL_DESIGN.md)
+- [生成的 D4-A 计划](docs/v0.47/d4_niche_reversal_plan.md)
+- [下一步运行](docs/v0.47/NEXT_EXPERIMENT.md)
+- [Conda editable 工作流](docs/v0.47/CONDA_EDITABLE_WORKFLOW.md)

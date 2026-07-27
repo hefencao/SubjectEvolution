@@ -14,13 +14,17 @@ Implemented code is not automatically empirical evidence.
 | D2-05 | guarded | Endpoint branches can diverge deterministically without a practical module effect. | Practical thresholds and same-direction replication; exact non-zero is insufficient. |
 | D2-06 | improved, open | Original source checkpoints were lineage-dominated. | Re-estimate module effects in redesigned multi-lineage checkpoints. |
 | D2-07 | guarded | Responsive checkpoint-lineage pairs could be selected post hoc. | Select phases/panels only by preregistered source-population guards and preserve every eligible lineage. |
-| D2-08 | resolved for continuation | Module 2 did not persist; module 3 retained only bounded process effects. | Continue only module 3 in redesigned checkpoints. |
+| D2-08 | resolved | Module 2 did not persist; module 3 retained only bounded process effects in the original source population. | Redesigned-source re-audit completed; do not reopen the copy route without new evidence. |
 | D2-10 | transient, guarded | Module 3 altered flow, energy and demography without a stable original endpoint. | Shared-checkpoint output/cost re-estimation after source-population redesign. |
 | D2-11 | exploratory peak pass | Tick-zero equalization can manufacture diversity if treated as the outcome. | Genotype-only transfer, natural-abundance controls, 600-tick unprotected burn-in and explicit uncertainty. |
 | D2-12 | active | The 2/3 peak result may be overgeneralized. | Treat it as a phase-specific experiment gate; retain Wilson uncertainty and do not claim a general source population. |
-| D2-13 | active | Redesigned populations may no longer express the same module-3 causal effect. | D2-H 120-tick screen and response-blind 300-tick confirmation if warranted. |
-| D2-09 | open | Fixed ten-input/four-output vocabulary constrains reachable function space. | Compare vocabularies only after D2 identification gates. |
+| D2-13 | resolved negative | Module 3 did not replicate across the two qualified redesigned-source peak checkpoints. | Stop before copy number; no 300-tick module confirmation. |
+| D2-09 | deferred | Fixed ten-input/four-output vocabulary constrains reachable function space. | Do not expand vocabulary while fixed-module output lacks redesigned-source replication. |
+| D4-01 | active | Affinity differences may correlate with resource geography without causally conditioning persistence. | Shared-checkpoint resource-geography × affinity-expression factorial. |
+| D4-02 | guarded | A uniform response to reversal could reflect general adaptation rather than multiple niches. | Report lineage-resolved interaction, pre-intervention exposure and dominant affinity channels. |
+| D4-03 | blocked | Environment matching alone does not establish stable ecological niches. | Cross-horizon persistence, coexistence, phenotype/ecotype removal and map-scale checks. |
+| D4-04 | guarded | Reversing hazard with resources would confound the resource-matching test. | Use resource-only persistent reversal; hazard and mortality trace must remain identical at intervention. |
 | ENV-01 | guarded | Resource-share vectors are compositional. | Interpret with raw volume, total request scale, environment dimensions and efficiency. |
 | SOC-01 | blocked | Social organization may reflect spatial/genetic sorting rather than higher-level control. | Ecological and module mechanisms must be identifiable before active social-control expansion. |
 | GPU-01 | open | GPU strict-reference validates hardware but remains CPU-authoritative. | Hybrid accelerated multi-tick parity before using accelerated output scientifically. |
-| DEV-01 | guarded | Editable installs can point to another checkout or stale console metadata. | `make conda-check` must prove direct URL, exact source root, fourteen entries and external smoke. |
+| DEV-01 | guarded | Editable installs can point to another checkout or stale console metadata. | `make conda-check` must prove direct URL, exact source root, sixteen entries and external smoke. |
