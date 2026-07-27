@@ -26,7 +26,6 @@ from .protocol import (
     SLOT_HEADER_SIZE,
     VERSION,
     build_manifest,
-    default_manifest_path,
     write_manifest,
 )
 
@@ -57,10 +56,8 @@ class SharedFramePublisher:
         self.manifest_path = (
             Path(manifest_path)
             if manifest_path is not None
-            else default_manifest_path(self.path)
+            else self.path.with_name(self.path.name + ".json")
         )
-        if self.path.resolve() == self.manifest_path.resolve():
-            raise ValueError("manifest path must be different from the shared frame stream")
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
         self._file = self.path.open("w+b")

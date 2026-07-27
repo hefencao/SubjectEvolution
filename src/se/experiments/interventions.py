@@ -84,6 +84,12 @@ INTERVENTIONS = (
         aliases=("functional-module-coupling-off", "module-coupling-off"),
     ),
     InterventionSpec(
+        "neutralize-functional-module-embodied-output",
+        InterventionKind.MODIFY_RULES,
+        "locomotion-signal-repair-functional-module-output",
+        aliases=("functional-module-embodied-off", "module-embodied-off"),
+    ),
+    InterventionSpec(
         "neutralize-functional-modules",
         InterventionKind.MODIFY_RULES,
         "expression-gated-contextual-harvest-module-output",

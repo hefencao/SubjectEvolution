@@ -22,7 +22,7 @@ conda-sync:
 
 conda-check: conda-sync
 	$(PYTHON) -m pytest -q
-	$(PYTHON) scripts/verify_conda_editable.py --project . --require-conda --smoke --report docs/v0.48/CONDA_EDITABLE_VALIDATION_REPORT.json
+	$(PYTHON) scripts/verify_conda_editable.py --project . --require-conda --smoke --report docs/v0.49/CONDA_EDITABLE_VALIDATION_REPORT.json
 
 verify-dist:
 	$(PYTHON) scripts/verify_dist.py --project . $(if $(PREVIOUS_WHEEL),--previous-wheel $(PREVIOUS_WHEEL),)

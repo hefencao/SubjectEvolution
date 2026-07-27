@@ -1,0 +1,21 @@
+{
+  "schema": "v048-v049-patch-validation-v1",
+  "baseline": "se_v048_project.zip",
+  "target_version": "0.49.0",
+  "git_apply_check": true,
+  "actual_apply": true,
+  "fuzz_or_offset": false,
+  "candidate_and_applied_tree_match": true,
+  "compared_file_count_before_report_inclusion": 259,
+  "tests": {
+    "passed": 229,
+    "skipped": 1,
+    "failed": 0,
+    "execution": "three independent complete-file pytest groups because the host terminated one long-lived pytest process"
+  },
+  "isolated_distribution_validation": true,
+  "notes": [
+    "No product assertion was bypassed or converted into a test-only workaround.",
+    "The final patch is regenerated after including this report and replayed once more from a fresh v0.48 extraction."
+  ]
+}

@@ -14,12 +14,13 @@ from se.env.partition import SpatialRegionPartition
 from se.policy import ParametricPolicy
 from se.differentiation.functional import (
     compositional_modules_enabled,
+    embodied_outputs_enabled,
     functional_module_coupling_count,
     functional_module_gene_count,
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v16"
+SCHEMA = "structural-measurement-protocol-audit-v17"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -249,9 +250,13 @@ def build_protocol_audit(
             ),
             "gene_count": int(functional_module_gene_count(cfg)),
             "architecture_class": (
-                "feed-forward-compositional"
-                if compositional_modules_enabled(cfg)
-                else "independent-additive"
+                "feed-forward-compositional-embodied"
+                if embodied_outputs_enabled(cfg)
+                else (
+                    "feed-forward-compositional"
+                    if compositional_modules_enabled(cfg)
+                    else "independent-additive"
+                )
             ),
             "input_schema": cfg.functional_modules.input_schema,
             "inputs": [
@@ -264,7 +269,13 @@ def build_protocol_audit(
                 "four local normalized resource channels",
             ],
             "output_schema": cfg.functional_modules.output_schema,
-            "output_scope": "zero-sum residual over four harvest-channel request weights",
+            "output_scope": (
+                "zero-sum residual over four harvest-channel request weights plus "
+                "bounded locomotion-power, field-signal-power, and material-to-integrity "
+                "repair outputs"
+                if embodied_outputs_enabled(cfg)
+                else "zero-sum residual over four harvest-channel request weights"
+            ),
             "coupling_schema": cfg.functional_modules.coupling_schema,
             "coupling_link_count": int(functional_module_coupling_count(cfg)),
             "hierarchy_depth_by_module": list(
@@ -279,7 +290,17 @@ def build_protocol_audit(
             "action_selection": False,
             "assimilation_affinity_modified": False,
             "resource_gradient_utility_modified": False,
-            "new_world_physics": False,
+            "new_world_physics": bool(embodied_outputs_enabled(cfg)),
+            "embodied_output_semantics": {
+                "enabled": bool(embodied_outputs_enabled(cfg)),
+                "schema": cfg.functional_modules.output_schema,
+                "locomotion": "bounded multiplier on existing movement speed with quadratic movement-energy accounting",
+                "field_signal": "bounded multiplier on existing field-signal strength with quadratic signal-energy accounting",
+                "repair": "positive drive converts explicitly debited material and energy into bounded integrity restoration",
+                "new_action_kind": False,
+                "resource_or_energy_created": False,
+                "preset_ecological_role": False,
+            },
             "expression_threshold": float(cfg.functional_modules.expression_threshold),
             "maximum_residual_fraction": float(cfg.functional_modules.max_residual_fraction),
             "maintenance_energy_per_expression": float(
@@ -294,8 +315,15 @@ def build_protocol_audit(
             "development_energy_per_coupling_weight": float(
                 cfg.functional_modules.development_energy_per_coupling_weight
             ),
+            "maintenance_energy_per_embodied_weight": float(
+                cfg.functional_modules.maintenance_energy_per_embodied_weight
+            ),
+            "development_energy_per_embodied_weight": float(
+                cfg.functional_modules.development_energy_per_embodied_weight
+            ),
             "neutralization_interventions": {
                 "coupling_output": "neutralize-functional-module-coupling-output",
+                "embodied_output": "neutralize-functional-module-embodied-output",
                 "all_modules": "neutralize-functional-modules",
                 "per_module": [
                     f"neutralize-functional-module-{index}"
@@ -303,7 +331,11 @@ def build_protocol_audit(
                 ],
             },
             "contribution_diagnostics": {
-                "schema": "functional-module-contribution-audit-v2",
+                "schema": (
+                    "functional-module-contribution-audit-v3"
+                    if embodied_outputs_enabled(cfg)
+                    else "functional-module-contribution-audit-v2"
+                ),
                 "per_module_gate": True,
                 "per_module_activation": True,
                 "isolated_output_effect": True,
@@ -312,6 +344,8 @@ def build_protocol_audit(
                 "coupling_weight_effective_dimensions": True,
                 "mediated_signal_by_hierarchy_level": True,
                 "amplification_and_suppression": True,
+                "embodied_output_effective_dimensions": bool(embodied_outputs_enabled(cfg)),
+                "combined_output_basis_effective_dimensions": bool(embodied_outputs_enabled(cfg)),
                 "feedback_to_world": False,
             },
             "architecture_capability_experiment": {
@@ -323,12 +357,23 @@ def build_protocol_audit(
                 "module_copy_number_changed": False,
                 "ecological_niche_claim": False,
             },
+            "embodied_capability_experiment": {
+                "plan_schema": "d2-embodied-capability-plan-v1",
+                "result_schema": "d2-embodied-capability-results-v1",
+                "branches": ["embodied-active", "embodied-neutral"],
+                "same_v3_genome_and_mutation_streams": True,
+                "harvest_and_coupling_output_active_in_both_branches": True,
+                "embodied_router_structure_cost_retained_in_neutral_branch": True,
+                "module_copy_number_changed": False,
+                "ecological_niche_claim": False,
+            },
             "known_architecture_limit": (
-                "The v1 schema supports parameter differentiation and additive output "
-                "mixtures only. It cannot express an inherited module dependency, a "
-                "weak upstream condition carried by a stronger downstream module, or "
-                "hierarchical behavior among same-port modules. The v2 schema adds that "
-                "bounded compositional capacity but still routes only to harvest ports."
+                "The v1 schema supports only independent additive harvest routing. The v2 "
+                "schema adds inherited hierarchy and joint dependence but the completed "
+                "three-seed capability run showed that this hierarchy was absorbed into the "
+                "same harvest vocabulary. The v3 schema adds three conserved embodied "
+                "primitives, but remains a fixed four-slot acyclic graph and does not add "
+                "dynamic topology, arbitrary ports, or a stable niche claim."
             ),
             "leave_one_out_protocol": {
                 "plan_schema": "d2-module-leave-one-out-plan-v1",
@@ -726,6 +771,8 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- neutralization interventions: {payload['functional_module_protocol']['neutralization_interventions']}",
         f"- contribution diagnostics: {payload['functional_module_protocol']['contribution_diagnostics']}",
         f"- architecture capability experiment: {payload['functional_module_protocol']['architecture_capability_experiment']}",
+        f"- embodied capability experiment: {payload['functional_module_protocol']['embodied_capability_experiment']}",
+        f"- embodied semantics: {payload['functional_module_protocol']['embodied_output_semantics']}",
         f"- known architecture limit: {payload['functional_module_protocol']['known_architecture_limit']}",
         f"- leave-one-out protocol: {payload['functional_module_protocol']['leave_one_out_protocol']}",
         f"- effect qualification: {payload['functional_module_protocol']['effect_qualification']}",

@@ -1,0 +1,44 @@
+{
+  "passed": true,
+  "schema": "d2-embodied-capability-results-v1",
+  "installed_entry": "se-d2-embody",
+  "version": "0.49.0",
+  "completed_seed_count": 1,
+  "primitive_usage": {
+    "rows": [
+      {
+        "seed": 49001,
+        "active_changed_entity_fraction": 0.905,
+        "neutral_changed_entity_fraction": 0.0,
+        "active_output_effective_dimensions": 2.763797391571382,
+        "active_output_basis_effective_dimensions": 2.7793522331774048,
+        "neutral_output_basis_effective_dimensions": 2.826864629197813,
+        "active_output_basis_port_count": 7,
+        "neutral_output_basis_port_count": 4,
+        "repair_material_total": 0.087431640625,
+        "movement_energy_delta_total": -0.0015684123337269783,
+        "signal_energy_delta_total": -0.0023987989872689686
+      }
+    ],
+    "active_output_in_every_seed": true,
+    "neutral_output_zero_in_every_seed": true,
+    "output_basis_expanded_in_every_seed": true,
+    "combined_dimension_increased_in_every_seed": false,
+    "repair_used_in_any_seed": true,
+    "movement_power_used_in_any_seed": true,
+    "signal_power_used_in_any_seed": true
+  },
+  "active_output_basis_port_count": 7,
+  "neutral_output_basis_port_count": 4,
+  "active_combined_output_dimensions": 2.7793522331774048,
+  "neutral_combined_output_dimensions": 2.826864629197813,
+  "stdout_tail": [
+    "tick=      1 alive=    200 groups=    0 E=1.807 step=0.207s window_avg=0.207s wall=0.2s",
+    "tick=     10 alive=    200 groups=    0 E=1.764 step=0.176s window_avg=0.139s wall=1.5s",
+    "tick=     12 alive=    200 groups=    0 E=1.735 step=0.096s window_avg=0.109s wall=1.7s",
+    "tick=      1 alive=    200 groups=    0 E=1.807 step=0.183s window_avg=0.183s wall=0.2s",
+    "tick=     10 alive=    200 groups=    0 E=1.768 step=0.171s window_avg=0.133s wall=1.4s",
+    "tick=     12 alive=    200 groups=    0 E=1.744 step=0.089s window_avg=0.107s wall=1.6s",
+    "{\"passed\": true, \"schema\": \"d2-embodied-capability-results-v1\", \"completed_seed_count\": 1, \"primitive_usage\": {\"rows\": [{\"seed\": 49001, \"active_changed_entity_fraction\": 0.905, \"neutral_changed_entity_fraction\": 0.0, \"active_output_effective_dimensions\": 2.763797391571382, \"active_output_basis_effective_dimensions\": 2.7793522331774048, \"neutral_output_basis_effective_dimensions\": 2.826864629197813, \"active_output_basis_port_count\": 7, \"neutral_output_basis_port_count\": 4, \"repair_material_total\": 0.087431640625, \"movement_energy_delta_total\": -0.0015684123337269783, \"signal_energy_delta_total\": -0.0023987989872689686}], \"active_output_in_every_seed\": true, \"neutral_output_zero_in_every_seed\": true, \"output_basis_expanded_in_every_seed\": true, \"combined_dimension_increased_in_every_seed\": false, \"repair_used_in_any_seed\": true, \"movement_power_used_in_any_seed\": true, \"signal_power_used_in_any_seed\": true}}"
+  ]
+}

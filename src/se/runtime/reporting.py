@@ -1356,6 +1356,9 @@ class SimulationReportingMixin:
             "functional_module_coupling_ablation_enabled": int(
                 self.functional_module_coupling_ablation_enabled
             ),
+            "functional_module_embodied_output_ablation_enabled": int(
+                self.functional_module_embodied_output_ablation_enabled
+            ),
             "functional_module_ablation_mask": (
                 self.functional_module_ablation_mask.astype(bool).tolist()
             ),
@@ -1376,6 +1379,36 @@ class SimulationReportingMixin:
             ),
             "functional_module_development_energy_step": (
                 stats.functional_module_development_energy
+            ),
+            "functional_module_movement_energy_delta_step": (
+                stats.functional_module_movement_energy
+            ),
+            "functional_module_signal_energy_delta_step": (
+                stats.functional_module_signal_energy
+            ),
+            "functional_module_repair_energy_step": (
+                stats.functional_module_repair_energy
+            ),
+            "functional_module_repair_material_step": (
+                stats.functional_module_repair_material
+            ),
+            "functional_module_repair_integrity_step": (
+                stats.functional_module_repair_integrity
+            ),
+            "functional_module_movement_energy_delta_total": (
+                self.total_functional_module_movement_energy_delta
+            ),
+            "functional_module_signal_energy_delta_total": (
+                self.total_functional_module_signal_energy_delta
+            ),
+            "functional_module_repair_energy_total": (
+                self.total_functional_module_repair_energy
+            ),
+            "functional_module_repair_material_total": (
+                self.total_functional_module_repair_material
+            ),
+            "functional_module_repair_integrity_total": (
+                self.total_functional_module_repair_integrity
             ),
             "danger_evidence_ablation_enabled": int(
                 self.danger_evidence_ablation_enabled

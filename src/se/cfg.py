@@ -377,10 +377,9 @@ class FunctionalModuleConfig:
     """Bounded inherited modules over existing harvest ports.
 
     The v1 schema is the archived additive D2-A architecture.  The v2 schema
-    adds a fixed acyclic signal bus between the same four slots, allowing later
-    slots to multiplicatively modulate their contextual activation from earlier
-    module signals without adding new sensors, actions, resources, or world
-    physics.
+    adds a fixed acyclic signal bus between the same four slots.  The v3 schema
+    retains that hierarchy and adds versioned locomotion, field-signal, and
+    material-to-integrity repair output primitives.
     """
 
     enabled: bool = False
@@ -397,6 +396,13 @@ class FunctionalModuleConfig:
     development_energy_per_expression: float = 0.0
     maintenance_energy_per_coupling_weight: float = 0.0
     development_energy_per_coupling_weight: float = 0.0
+    maintenance_energy_per_embodied_weight: float = 0.0
+    development_energy_per_embodied_weight: float = 0.0
+    max_movement_speed_fraction: float = 0.0
+    max_signal_strength_fraction: float = 0.0
+    repair_material_per_tick: float = 0.0
+    repair_integrity_per_material: float = 0.0
+    repair_energy_per_material: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -1497,11 +1503,15 @@ def validate_config(cfg: SimulationConfig) -> None:
     fcfg = cfg.functional_modules
     additive_schema = "expression-gated-contextual-harvest-v1"
     compositional_schema = "expression-gated-compositional-harvest-v2"
-    if fcfg.schema not in {"disabled", additive_schema, compositional_schema}:
+    embodied_schema = "expression-gated-compositional-embodied-v3"
+    if fcfg.schema not in {
+        "disabled", additive_schema, compositional_schema, embodied_schema
+    }:
         raise ValueError(
             "functional_modules.schema must be 'disabled', "
-            "'expression-gated-contextual-harvest-v1', or "
-            "'expression-gated-compositional-harvest-v2'"
+            "'expression-gated-contextual-harvest-v1', "
+            "'expression-gated-compositional-harvest-v2', or "
+            "'expression-gated-compositional-embodied-v3'"
         )
     if fcfg.enabled != (fcfg.schema != "disabled"):
         raise ValueError("functional_modules enabled/schema fields must agree")
@@ -1509,7 +1519,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("functional_modules.module_count must be exactly 4")
     expected_input = (
         "internal-needs-local-resources-feedforward-v2"
-        if fcfg.schema == compositional_schema
+        if fcfg.schema in {compositional_schema, embodied_schema}
         else "internal-needs-local-resources-v1"
     )
     if fcfg.input_schema != expected_input:
@@ -1519,7 +1529,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         )
     expected_coupling = (
         "lower-slot-signal-modulation-v1"
-        if fcfg.schema == compositional_schema
+        if fcfg.schema in {compositional_schema, embodied_schema}
         else "disabled"
     )
     if fcfg.coupling_schema != expected_coupling:
@@ -1527,8 +1537,16 @@ def validate_config(cfg: SimulationConfig) -> None:
             f"functional_modules.coupling_schema must be {expected_coupling!r} "
             f"for schema {fcfg.schema!r}"
         )
-    if fcfg.output_schema != "harvest-channel-zero-sum-residual-v1":
-        raise ValueError("unknown functional_modules.output_schema")
+    expected_output = (
+        "harvest-locomotion-signal-repair-v1"
+        if fcfg.schema == embodied_schema
+        else "harvest-channel-zero-sum-residual-v1"
+    )
+    if fcfg.output_schema != expected_output:
+        raise ValueError(
+            f"functional_modules.output_schema must be {expected_output!r} "
+            f"for schema {fcfg.schema!r}"
+        )
     if (
         not math.isfinite(fcfg.expression_threshold)
         or fcfg.expression_threshold < 0.0
@@ -1549,9 +1567,49 @@ def validate_config(cfg: SimulationConfig) -> None:
         fcfg.development_energy_per_expression,
         fcfg.maintenance_energy_per_coupling_weight,
         fcfg.development_energy_per_coupling_weight,
+        fcfg.maintenance_energy_per_embodied_weight,
+        fcfg.development_energy_per_embodied_weight,
+        fcfg.max_movement_speed_fraction,
+        fcfg.max_signal_strength_fraction,
+        fcfg.repair_material_per_tick,
+        fcfg.repair_integrity_per_material,
+        fcfg.repair_energy_per_material,
     )
     if any((not math.isfinite(value) or value < 0.0) for value in functional_costs):
-        raise ValueError("functional module costs must be finite and non-negative")
+        raise ValueError(
+            "functional module costs and embodied limits must be finite and non-negative"
+        )
+    if fcfg.max_movement_speed_fraction > 0.75:
+        raise ValueError(
+            "functional_modules.max_movement_speed_fraction cannot exceed 0.75"
+        )
+    if fcfg.max_signal_strength_fraction > 1.0:
+        raise ValueError(
+            "functional_modules.max_signal_strength_fraction cannot exceed 1.0"
+        )
+    embodied_values = (
+        fcfg.max_movement_speed_fraction,
+        fcfg.max_signal_strength_fraction,
+        fcfg.repair_material_per_tick,
+        fcfg.repair_integrity_per_material,
+        fcfg.repair_energy_per_material,
+        fcfg.maintenance_energy_per_embodied_weight,
+        fcfg.development_energy_per_embodied_weight,
+    )
+    if fcfg.schema != embodied_schema and any(value != 0.0 for value in embodied_values):
+        raise ValueError(
+            "embodied functional-module settings require the v3 embodied schema"
+        )
+    if fcfg.schema == embodied_schema and (
+        fcfg.max_movement_speed_fraction <= 0.0
+        or fcfg.max_signal_strength_fraction <= 0.0
+        or fcfg.repair_material_per_tick <= 0.0
+        or fcfg.repair_integrity_per_material <= 0.0
+        or fcfg.repair_energy_per_material <= 0.0
+    ):
+        raise ValueError(
+            "v3 embodied modules require positive movement, signal, and repair semantics"
+        )
     if fcfg.enabled:
         if cfg.entities.resource_affinity_schema != "normalized-four-resource-affinity-v1":
             raise ValueError("D2-A functional modules require inherited resource affinity")

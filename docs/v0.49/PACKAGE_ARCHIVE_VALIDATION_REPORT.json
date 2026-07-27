@@ -1,0 +1,23 @@
+{
+  "schema": "v049-package-archive-validation-v1",
+  "expected_project_file_count": 261,
+  "old_version_document_directories_present": false,
+  "retained_version_document_directory": "docs/v0.49",
+  "forbidden_content": [
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    "*.egg-info",
+    "build",
+    "dist",
+    "*.pyc"
+  ],
+  "source_and_extracted_tree_hash_match": true,
+  "tests": {
+    "passed": 229,
+    "skipped": 1,
+    "failed": 0
+  },
+  "isolated_distribution_validation": true,
+  "note": "This report records the final clean-tree validation criteria; the final archive is independently extracted and compared after creation."
+}

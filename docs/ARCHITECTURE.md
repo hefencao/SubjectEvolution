@@ -251,3 +251,11 @@ runtime environment.
 - `gpu` + `strict-reference`: GPU availability validation with CPU-authoritative world.
 - `gpu` + `hybrid-accelerated`: experimental accelerated stages; parity remains separate.
 - `se.gui`: observation-only shared-frame publication.
+
+## D2-J compositional embodied output boundary
+
+The opt-in v3 layer retains the fixed four-slot feed-forward module graph and the archived harvest residual. Each slot adds three inherited router coordinates for locomotion power, field-signal power, and repair drive.
+
+Locomotion and field-signal outputs modulate existing world interfaces and pay use costs. Repair explicitly debits material and energy before restoring integrity. The module layer still does not select an action, invent a sensor, assign an ecological role, or alter module copy number.
+
+`neutralize-functional-module-embodied-output` removes only effective publication to the three embodied ports. Genes, mutation, expression, coupling, harvest routing, and embodied-router structural cost remain present. Combined output-basis diagnostics are observational and never feed policy or world state.

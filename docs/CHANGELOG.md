@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.49.0
+
+### Compositional embodied output basis
+
+- Interprets the completed three-seed D2-I run as evidence that feed-forward composition is used but compressed inside the four-harvest-port vocabulary.
+- Adds opt-in `expression-gated-compositional-embodied-v3` and `harvest-locomotion-signal-repair-v1`.
+- Adds inherited, mutable, explicitly costed locomotion-power, field-signal-power, and repair-drive routers to each fixed module.
+- Adds conserved movement, signal, and material/energy repair semantics without action selection or preset ecological roles.
+- Adds output-only `neutralize-functional-module-embodied-output`, checkpoint persistence, cumulative accounting, combined output-basis diagnostics, and `se-d2-embody`.
+- Preserves v1/v2 authoritative behavior when v3 is disabled.
+- Complete packages retain only `docs/v0.49` as a version-specific directory.
+
 ## 0.48.0
 
 ### Functional substrate reassessment and compositional modules

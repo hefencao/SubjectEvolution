@@ -189,6 +189,21 @@ class SimulationCheckpointMixin:
             "total_reproduction_rejected_other": int(
                 self.total_reproduction_rejected_other
             ),
+            "total_functional_module_movement_energy_delta": float(
+                self.total_functional_module_movement_energy_delta
+            ),
+            "total_functional_module_signal_energy_delta": float(
+                self.total_functional_module_signal_energy_delta
+            ),
+            "total_functional_module_repair_energy": float(
+                self.total_functional_module_repair_energy
+            ),
+            "total_functional_module_repair_material": float(
+                self.total_functional_module_repair_material
+            ),
+            "total_functional_module_repair_integrity": float(
+                self.total_functional_module_repair_integrity
+            ),
             "evolution_progress": self.evolution_progress.snapshot_state(),
             "local_stress_diagnostics": (
                 self.local_stress_diagnostics.snapshot_state()
@@ -246,6 +261,9 @@ class SimulationCheckpointMixin:
             ),
             "functional_module_coupling_ablation_enabled": bool(
                 self.functional_module_coupling_ablation_enabled
+            ),
+            "functional_module_embodied_output_ablation_enabled": bool(
+                self.functional_module_embodied_output_ablation_enabled
             ),
             "functional_module_ablation_mask": (
                 self.functional_module_ablation_mask.astype(bool).copy()
@@ -411,6 +429,21 @@ class SimulationCheckpointMixin:
         self.total_reproduction_rejected_other = int(
             state["total_reproduction_rejected_other"]
         )
+        self.total_functional_module_movement_energy_delta = float(
+            state.get("total_functional_module_movement_energy_delta", 0.0)
+        )
+        self.total_functional_module_signal_energy_delta = float(
+            state.get("total_functional_module_signal_energy_delta", 0.0)
+        )
+        self.total_functional_module_repair_energy = float(
+            state.get("total_functional_module_repair_energy", 0.0)
+        )
+        self.total_functional_module_repair_material = float(
+            state.get("total_functional_module_repair_material", 0.0)
+        )
+        self.total_functional_module_repair_integrity = float(
+            state.get("total_functional_module_repair_integrity", 0.0)
+        )
         self.evolution_progress.restore_state(state["evolution_progress"])
         local_state = state.get("local_stress_diagnostics")
         if local_state is not None:
@@ -503,6 +536,9 @@ class SimulationCheckpointMixin:
         )
         self.functional_module_coupling_ablation_enabled = bool(
             state.get("functional_module_coupling_ablation_enabled", False)
+        )
+        self.functional_module_embodied_output_ablation_enabled = bool(
+            state.get("functional_module_embodied_output_ablation_enabled", False)
         )
         default_module_mask = np.full(
             int(self.cfg.functional_modules.module_count),
@@ -691,6 +727,21 @@ class SimulationCheckpointMixin:
         branch.total_reproduction_rejected_other = (
             self.total_reproduction_rejected_other
         )
+        branch.total_functional_module_movement_energy_delta = (
+            self.total_functional_module_movement_energy_delta
+        )
+        branch.total_functional_module_signal_energy_delta = (
+            self.total_functional_module_signal_energy_delta
+        )
+        branch.total_functional_module_repair_energy = (
+            self.total_functional_module_repair_energy
+        )
+        branch.total_functional_module_repair_material = (
+            self.total_functional_module_repair_material
+        )
+        branch.total_functional_module_repair_integrity = (
+            self.total_functional_module_repair_integrity
+        )
         branch.evolution_progress = self.evolution_progress.clone(branch.output_dir)
         branch.local_stress_diagnostics = (
             self.local_stress_diagnostics.clone()
@@ -742,6 +793,9 @@ class SimulationCheckpointMixin:
         )
         branch.functional_module_coupling_ablation_enabled = (
             self.functional_module_coupling_ablation_enabled
+        )
+        branch.functional_module_embodied_output_ablation_enabled = (
+            self.functional_module_embodied_output_ablation_enabled
         )
         branch.functional_module_ablation_mask = (
             self.functional_module_ablation_mask.copy()

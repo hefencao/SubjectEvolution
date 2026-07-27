@@ -1,0 +1,47 @@
+{
+  "schema": "v048-v049-authoritative-compatibility-v1",
+  "config": "d2i_compositional_harvest_smoke.json",
+  "seed": 48999,
+  "ticks": 20,
+  "backend": "cpu",
+  "checkpoint": {
+    "common_array_count": 38,
+    "common_scalar_leaf_count": 163528,
+    "mismatch_count": 0,
+    "mismatches": [],
+    "new_only_arrays": [],
+    "old_only_arrays": []
+  },
+  "summary": {
+    "common_non_timing_non_v3_leaf_count": 350,
+    "mismatch_count": 0,
+    "mismatches": []
+  },
+  "metrics": {
+    "row_count": 3,
+    "common_non_timing_non_v3_column_count": 347,
+    "cell_count": 1041,
+    "mismatch_count": 0,
+    "mismatches": []
+  },
+  "auxiliary_files": {
+    "exact_count": 12,
+    "exact_files": [
+      "environment_atlas.jsonl",
+      "environment_atlas_summary.json",
+      "knowledge_events.jsonl",
+      "knowledge_outcome_updates.csv",
+      "knowledge_policy_contributions.csv",
+      "knowledge_routing_costs.csv",
+      "knowledge_selection_events.csv",
+      "knowledge_transfers.csv",
+      "knowledge_working_memory.csv",
+      "scientific_validity.json",
+      "subject_structure_summary.json",
+      "subject_structure_transitions.jsonl"
+    ],
+    "different_files": []
+  },
+  "passed": true,
+  "boundary": "v3 is disabled by the v2 baseline config; new v3 diagnostics and version/timing metadata are excluded from the common authoritative comparison."
+}

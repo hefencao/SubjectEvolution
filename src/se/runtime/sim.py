@@ -31,6 +31,8 @@ from se.differentiation.capacity import (
     capacity_maintenance_energy,
 )
 from se.differentiation.functional import (
+    EMBODIED_OUTPUT_COUNT,
+    embodied_outputs_enabled,
     evaluate_contextual_harvest_modules_q,
     functional_module_diagnostics,
     functional_module_energy,
@@ -134,11 +136,11 @@ from se.env.spatial import SpatialIndex
 from se.subjects.graph import CandidateSubjectGraph
 
 
-
 from .checkpointing import SimulationCheckpointMixin
 from .experiments import SimulationExperimentMixin
 from .reporting import SimulationReportingMixin
 from .state import EntityState, StepStats, _wrap_periodic_float32
+from .embodied import apply_material_repair, embodied_power_multipliers, movement_cost_with_power
 
 
 class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, SimulationReportingMixin):
@@ -310,6 +312,11 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.total_reproduction_rejected_capacity = 0
         self.total_reproduction_rejected_resource = 0
         self.total_reproduction_rejected_other = 0
+        self.total_functional_module_movement_energy_delta = 0.0
+        self.total_functional_module_signal_energy_delta = 0.0
+        self.total_functional_module_repair_energy = 0.0
+        self.total_functional_module_repair_material = 0.0
+        self.total_functional_module_repair_integrity = 0.0
         morphology_indices, morphology_names = active_morphology_traits(cfg)
         self.evolution_progress = EvolutionProgressTracker(
             self.output_dir,
@@ -423,6 +430,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.resource_affinity_ablation_enabled = False
         self.functional_modules_ablation_enabled = False
         self.functional_module_coupling_ablation_enabled = False
+        self.functional_module_embodied_output_ablation_enabled = False
         self.functional_module_ablation_mask = np.zeros(
             int(cfg.functional_modules.module_count), dtype=bool
         )
@@ -688,13 +696,23 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         cells: np.ndarray,
         local_resources: np.ndarray,
         target_indices: np.ndarray,
-    ) -> tuple[SignalEmissionPlan, int]:
+        strength_multiplier: np.ndarray | None = None,
+    ) -> tuple[SignalEmissionPlan, int, float]:
         if actors.size == 0:
-            return SignalEmissionPlan(()), 0
+            return SignalEmissionPlan(()), 0, 0.0
         ent = self.entities
         actor_cells = cells
+        multiplier = (
+            np.ones(actors.size, dtype=np.float32)
+            if strength_multiplier is None
+            else np.asarray(strength_multiplier, dtype=np.float32)
+        )
+        if multiplier.shape != (actors.size,):
+            raise ValueError("signal strength multiplier must match actors")
         resource_signal = public_resource_signal(local_resources, self.cfg)
-        strengths_resource = np.clip(resource_signal, 0.0, 2.0) * 0.15
+        strengths_resource = (
+            np.clip(resource_signal, 0.0, 2.0) * 0.15 * multiplier
+        )
         actor_evidence_q = (
             (
                 np.full(
@@ -713,9 +731,9 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             if self.gpu_runtime is not None
             else self.environment.danger_for_cells(actor_cells, actor_evidence_q)
         )
-        strengths_danger = hazard * 0.15
+        strengths_danger = hazard * 0.15 * multiplier
         group_member = self.social.group_id[actors] != 0
-        strengths_social = group_member.astype(np.float32) * 0.12
+        strengths_social = group_member.astype(np.float32) * 0.12 * multiplier
         signal_plan = SignalEmissionPlan(
             batches=(
                 SignalEmissionBatch(0, actor_cells, strengths_resource, emitter="actor-resource"),
@@ -723,7 +741,11 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 SignalEmissionBatch(2, actor_cells, strengths_social, emitter="actor-social"),
             )
         )
-        ent.energy[actors] -= self.cfg.entities.signal_cost
+        signal_energy = (
+            float(self.cfg.entities.signal_cost)
+            * np.square(multiplier.astype(np.float64))
+        )
+        ent.energy[actors] -= signal_energy.astype(np.float32)
         valid_target = (target_indices >= 0) & ent.alive[target_indices]
         safe_targets = np.where(valid_target, target_indices, 0)
         payloads = np.stack(
@@ -739,7 +761,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 self.cfg.run.seed,
                 self.tick,
             )
-        return signal_plan, direct_messages
+        return signal_plan, direct_messages, float(signal_energy.sum(dtype=np.float64))
 
     def _flush_signal_emissions(self, plan: SignalEmissionPlan | None = None) -> None:
         """Commit channel batches whose modeled delivery cadence is due now."""
@@ -814,6 +836,11 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         working_memory_update_result: WorkingMemoryUpdateResult | None = None
         effective_resource_affinity_q: np.ndarray | None = None
         effective_harvest_preference_q: np.ndarray | None = None
+        effective_embodied_output_q = np.zeros(
+            (ent.alive.size, EMBODIED_OUTPUT_COUNT), dtype=np.int32
+        )
+        movement_speed_multiplier = np.ones(ent.alive.size, dtype=np.float32)
+        signal_strength_multiplier = np.ones(ent.alive.size, dtype=np.float32)
         functional_context_metrics: dict[str, object] = {}
         effective_danger_evidence_q: np.ndarray | None = None
         policy_energy = ent.energy
@@ -1181,9 +1208,21 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     active, cost=False
                 ),
                 coupling_ablated=self.functional_module_coupling_ablation_enabled,
+                embodied_ablated=(
+                    self.functional_module_embodied_output_ablation_enabled
+                ),
             )
             active_preference = functional_evaluation.preference_q
             effective_harvest_preference_q[active] = active_preference
+            if functional_evaluation.embodied_output_q is not None:
+                active_embodied_q = np.asarray(
+                    functional_evaluation.embodied_output_q, dtype=np.int32
+                )
+                effective_embodied_output_q[active] = active_embodied_q
+                if embodied_outputs_enabled(cfg):
+                    movement, signal = embodied_power_multipliers(active_embodied_q, cfg)
+                    movement_speed_multiplier[active] = movement
+                    signal_strength_multiplier[active] = signal
             if evaluation_due:
                 functional_context_metrics = functional_module_diagnostics(
                     ent.genotype[active],
@@ -1480,7 +1519,10 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         movable_actions = np.isin(intents.action, [Action.MOVE_RESOURCE, Action.MOVE_SOCIAL, Action.FLEE])
         movable_rows = np.flatnonzero(movable_actions & resolutions.success)
         movers = intents.carrier_index[movable_rows]
-        speed = (0.35 + 0.10 * np.clip(ent.genotype[movers, 5], -1.0, 1.0)).astype(np.float32)
+        base_speed = (
+            0.35 + 0.10 * np.clip(ent.genotype[movers, 5], -1.0, 1.0)
+        ).astype(np.float32)
+        speed = base_speed * movement_speed_multiplier[movers]
         ent.vx[movers] = intents.direction_x[movable_rows] * speed
         ent.vy[movers] = intents.direction_y[movable_rows] * speed
         ent.x[movers] += ent.vx[movers]
@@ -1564,11 +1606,24 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         if signal_rows.size:
             signal_actors = intents.carrier_index[signal_rows]
             signal_observation_rows = np.searchsorted(active, signal_actors)
-            signal_plan, stats.direct_messages = self._emit_signals(
+            (
+                signal_plan,
+                stats.direct_messages,
+                signal_energy,
+            ) = self._emit_signals(
                 signal_actors,
                 cells[signal_observation_rows],
                 local_resources[signal_observation_rows],
                 intents.target_index[signal_rows],
+                signal_strength_multiplier[signal_actors],
+            )
+            signal_energy_delta = float(
+                signal_energy
+                - signal_actors.size * float(cfg.entities.signal_cost)
+            )
+            stats.functional_module_signal_energy = 0.0 if abs(signal_energy_delta) < 1.0e-12 else signal_energy_delta
+            self.total_functional_module_signal_energy_delta += (
+                stats.functional_module_signal_energy
             )
             stats.signals = int(signal_actors.size)
         self._flush_signal_emissions(signal_plan)
@@ -1619,6 +1674,17 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     getattr(knowledge_stats, field_name)
                     + getattr(transfer_stats, field_name),
                 )
+
+        if embodied_outputs_enabled(cfg) and active.size:
+            repair = apply_material_repair(
+                ent, active, effective_embodied_output_q[active], cfg
+            )
+            stats.functional_module_repair_material = repair.material
+            stats.functional_module_repair_energy = repair.energy
+            stats.functional_module_repair_integrity = repair.integrity
+            self.total_functional_module_repair_material += repair.material
+            self.total_functional_module_repair_energy += repair.energy
+            self.total_functional_module_repair_integrity += repair.integrity
 
         accepted_parents = np.empty(0, dtype=np.int32)
         newborns = np.empty(0, dtype=np.int32)
@@ -1946,7 +2012,17 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     getattr(knowledge_stats, field_name)
                     + getattr(maintenance_stats, field_name),
                 )
-        cost = cfg.entities.maintenance_cost + moved_now[current_active] * cfg.entities.movement_cost
+        movement_cost, stats.functional_module_movement_energy = (
+            movement_cost_with_power(
+                moved_now[current_active],
+                movement_speed_multiplier[current_active],
+                cfg.entities.movement_cost,
+            )
+        )
+        self.total_functional_module_movement_energy_delta += (
+            stats.functional_module_movement_energy
+        )
+        cost = float(cfg.entities.maintenance_cost) + movement_cost
         if cfg.differentiation.enabled:
             capacity_cost = np.asarray(
                 capacity_maintenance_energy(

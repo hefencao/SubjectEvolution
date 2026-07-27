@@ -1,17 +1,18 @@
-"""Bounded contextual and compositional harvest modules.
+"""Bounded contextual, compositional, and embodied functional modules.
 
 The archived v1 architecture maps each fixed slot independently from bounded
-internal/environmental inputs to a zero-sum residual over the four existing
-harvest ports.  The opt-in v2 architecture preserves those ports and module
-blocks, then adds six inherited lower-slot-to-higher-slot signal couplings.
-Those couplings multiplicatively modulate downstream contextual activation, so
-a module may act as an upstream condition, downstream integrator, amplifier,
-or suppressor without creating a new sensor, action, resource, or world law.
+internal/environmental inputs to a zero-sum residual over the four harvest
+ports.  The opt-in v2 architecture adds six inherited lower-slot-to-higher-slot
+signal couplings while retaining that single output vocabulary.
 
-The fixed acyclic ordering is an explicit operator-basis constraint rather than
-an ecological role label.  Coupling output can be neutralized while retaining
-its inherited structure cost, providing a direct comparison between additive
-and compositional use of the same four module slots.
+The v3 architecture keeps the same fixed four-slot acyclic signal graph but
+adds three versioned embodied output primitives: locomotion power, field-signal
+power, and material-to-integrity repair drive.  These are existing or explicit
+world interfaces with conservation/cost semantics, not named ecological roles.
+The extension lets one inherited module combination control several physically
+different consequences instead of only rearranging one harvest preference
+vector.  Embodied output can be neutralized while genes, coupling, expression,
+and structural costs remain present.
 """
 
 from __future__ import annotations
@@ -27,14 +28,23 @@ FUNCTIONAL_MODULE_SCHEMA = "expression-gated-contextual-harvest-v1"
 COMPOSITIONAL_FUNCTIONAL_MODULE_SCHEMA = (
     "expression-gated-compositional-harvest-v2"
 )
+EMBODIED_FUNCTIONAL_MODULE_SCHEMA = (
+    "expression-gated-compositional-embodied-v3"
+)
 INPUT_SCHEMA = "internal-needs-local-resources-v1"
 COMPOSITIONAL_INPUT_SCHEMA = "internal-needs-local-resources-feedforward-v2"
 OUTPUT_SCHEMA = "harvest-channel-zero-sum-residual-v1"
+EMBODIED_OUTPUT_SCHEMA = "harvest-locomotion-signal-repair-v1"
 COUPLING_SCHEMA = "lower-slot-signal-modulation-v1"
 CONTRIBUTION_DIAGNOSTIC_SCHEMA = "functional-module-contribution-audit-v2"
+EMBODIED_CONTRIBUTION_DIAGNOSTIC_SCHEMA = "functional-module-contribution-audit-v3"
 INPUT_COUNT = 10
 OUTPUT_COUNT = RESOURCE_CHANNELS
+EMBODIED_OUTPUT_NAMES = ("locomotion_power", "signal_power", "repair_drive")
+EMBODIED_OUTPUT_COUNT = len(EMBODIED_OUTPUT_NAMES)
+# Historical constant retained for readers/tests of the v1/v2 layout.
 GENES_PER_MODULE = 1 + INPUT_COUNT + 1 + OUTPUT_COUNT
+EMBODIED_GENES_PER_MODULE = GENES_PER_MODULE + EMBODIED_OUTPUT_COUNT
 Q = 4096
 
 
@@ -59,22 +69,43 @@ class FunctionalModuleEvaluation:
     modulation_q: np.ndarray | None = None
     coupling_q: np.ndarray | None = None
     coupling_ablation_enabled: bool = False
+    embodied_output_q: np.ndarray | None = None
+    module_embodied_output_q: np.ndarray | None = None
+    embodied_output_ablation_enabled: bool = False
 
 
 def functional_modules_enabled(cfg: SimulationConfig) -> bool:
     return bool(
         cfg.functional_modules.enabled
         and cfg.functional_modules.schema
-        in {FUNCTIONAL_MODULE_SCHEMA, COMPOSITIONAL_FUNCTIONAL_MODULE_SCHEMA}
+        in {
+            FUNCTIONAL_MODULE_SCHEMA,
+            COMPOSITIONAL_FUNCTIONAL_MODULE_SCHEMA,
+            EMBODIED_FUNCTIONAL_MODULE_SCHEMA,
+        }
     )
 
 
 def compositional_modules_enabled(cfg: SimulationConfig) -> bool:
     return bool(
         functional_modules_enabled(cfg)
-        and cfg.functional_modules.schema == COMPOSITIONAL_FUNCTIONAL_MODULE_SCHEMA
+        and cfg.functional_modules.schema
+        in {COMPOSITIONAL_FUNCTIONAL_MODULE_SCHEMA, EMBODIED_FUNCTIONAL_MODULE_SCHEMA}
         and cfg.functional_modules.coupling_schema == COUPLING_SCHEMA
     )
+
+
+
+def embodied_outputs_enabled(cfg: SimulationConfig) -> bool:
+    return bool(
+        compositional_modules_enabled(cfg)
+        and cfg.functional_modules.schema == EMBODIED_FUNCTIONAL_MODULE_SCHEMA
+        and cfg.functional_modules.output_schema == EMBODIED_OUTPUT_SCHEMA
+    )
+
+
+def functional_module_genes_per_module(cfg: SimulationConfig) -> int:
+    return EMBODIED_GENES_PER_MODULE if embodied_outputs_enabled(cfg) else GENES_PER_MODULE
 
 
 def functional_module_coupling_count(cfg: SimulationConfig) -> int:
@@ -88,7 +119,7 @@ def functional_module_gene_count(cfg: SimulationConfig) -> int:
     if not functional_modules_enabled(cfg):
         return 0
     return (
-        int(cfg.functional_modules.module_count) * GENES_PER_MODULE
+        int(cfg.functional_modules.module_count) * functional_module_genes_per_module(cfg)
         + functional_module_coupling_count(cfg)
     )
 
@@ -96,16 +127,27 @@ def functional_module_gene_count(cfg: SimulationConfig) -> int:
 def _blocks(genotype: np.ndarray, cfg: SimulationConfig, gene_start: int):
     values = np.asarray(genotype, dtype=np.float32)
     count = int(cfg.functional_modules.module_count)
-    base_count = count * GENES_PER_MODULE
+    genes_per_module = functional_module_genes_per_module(cfg)
+    base_count = count * genes_per_module
     expected = base_count + functional_module_coupling_count(cfg)
     block = values[:, gene_start : gene_start + expected]
     if block.shape != (values.shape[0], expected):
         raise ValueError("genotype does not contain the configured functional modules")
-    modules = block[:, :base_count].reshape(values.shape[0], count, GENES_PER_MODULE)
+    modules = block[:, :base_count].reshape(values.shape[0], count, genes_per_module)
     gate = modules[:, :, 0]
     inputs = modules[:, :, 1 : 1 + INPUT_COUNT]
     bias = modules[:, :, 1 + INPUT_COUNT]
-    outputs = modules[:, :, 2 + INPUT_COUNT :]
+    output_start = 2 + INPUT_COUNT
+    harvest_outputs = modules[:, :, output_start : output_start + OUTPUT_COUNT]
+    embodied_outputs = np.zeros(
+        (values.shape[0], count, EMBODIED_OUTPUT_COUNT), dtype=np.float32
+    )
+    if embodied_outputs_enabled(cfg):
+        embodied_outputs = modules[
+            :,
+            :,
+            output_start + OUTPUT_COUNT : output_start + OUTPUT_COUNT + EMBODIED_OUTPUT_COUNT,
+        ]
     coupling = np.zeros((values.shape[0], count, count), dtype=np.float32)
     if compositional_modules_enabled(cfg):
         cursor = base_count
@@ -115,7 +157,7 @@ def _blocks(genotype: np.ndarray, cfg: SimulationConfig, gene_start: int):
             cursor += width
         if cursor != expected:
             raise RuntimeError("functional module coupling layout drifted")
-    return gate, inputs, bias, outputs, coupling
+    return gate, inputs, bias, harvest_outputs, embodied_outputs, coupling
 
 
 def _ablation_mask(
@@ -163,7 +205,7 @@ def expression_gates_q(
     values = np.asarray(genotype, dtype=np.float32)
     if not functional_modules_enabled(cfg):
         return np.zeros((values.shape[0], 0), dtype=np.int32)
-    gate, _, _, _, _ = _blocks(values, cfg, gene_start)
+    gate, _, _, _, _, _ = _blocks(values, cfg, gene_start)
     threshold = float(cfg.functional_modules.expression_threshold)
     denominator = max(1.0 - threshold, 1e-9)
     expressed = np.clip((gate.astype(np.float64) - threshold) / denominator, 0.0, 1.0)
@@ -251,6 +293,7 @@ def evaluate_contextual_harvest_modules_q(
     ablated_modules: Any | None = None,
     row_ablated_modules: Any | None = None,
     coupling_ablated: bool = False,
+    embodied_ablated: bool = False,
 ) -> FunctionalModuleEvaluation:
     """Evaluate additive or feed-forward compositional module output."""
 
@@ -279,11 +322,23 @@ def evaluate_contextual_harvest_modules_q(
             modulation_q=empty_module.copy(),
             coupling_q=np.zeros((base.shape[0], count, count), dtype=np.int32),
             coupling_ablation_enabled=bool(coupling_ablated),
+            embodied_output_q=np.zeros(
+                (base.shape[0], EMBODIED_OUTPUT_COUNT), dtype=np.int32
+            ),
+            module_embodied_output_q=np.zeros(
+                (base.shape[0], count, EMBODIED_OUTPUT_COUNT), dtype=np.int32
+            ),
+            embodied_output_ablation_enabled=bool(embodied_ablated),
         )
 
-    _, input_gene, bias_gene, output_gene, coupling_gene = _blocks(
-        np.asarray(genotype, dtype=np.float32), cfg, gene_start
-    )
+    (
+        _,
+        input_gene,
+        bias_gene,
+        output_gene,
+        embodied_output_gene,
+        coupling_gene,
+    ) = _blocks(np.asarray(genotype, dtype=np.float32), cfg, gene_start)
     gates = expression_gates_q(
         genotype,
         cfg,
@@ -354,6 +409,24 @@ def evaluate_contextual_harvest_modules_q(
         routed.astype(np.float64) * strength_q / denominator
     ).astype(np.int64)
     module_residual = np.clip(module_residual, -strength_q, strength_q)
+
+    module_embodied = np.zeros(
+        (base.shape[0], count, EMBODIED_OUTPUT_COUNT), dtype=np.int64
+    )
+    embodied_output = np.zeros(
+        (base.shape[0], EMBODIED_OUTPUT_COUNT), dtype=np.int64
+    )
+    if embodied_outputs_enabled(cfg) and not embodied_ablated:
+        embodied_router_q = np.rint(
+            np.tanh(embodied_output_gene.astype(np.float64)) * Q
+        ).astype(np.int64)
+        module_embodied = (signal[:, :, None] * embodied_router_q) // Q
+        embodied_output = np.rint(
+            module_embodied.sum(axis=1, dtype=np.int64).astype(np.float64)
+            / max(count, 1)
+        ).astype(np.int64)
+        embodied_output = np.clip(embodied_output, -Q, Q)
+
     return FunctionalModuleEvaluation(
         preference_q=preference,
         gates_q=gates.astype(np.int32),
@@ -366,6 +439,9 @@ def evaluate_contextual_harvest_modules_q(
         modulation_q=modulation.astype(np.int32),
         coupling_q=coupling_q.astype(np.int32),
         coupling_ablation_enabled=bool(coupling_ablated),
+        embodied_output_q=embodied_output.astype(np.int32),
+        module_embodied_output_q=module_embodied.astype(np.int32),
+        embodied_output_ablation_enabled=bool(embodied_ablated),
     )
 
 
@@ -385,6 +461,7 @@ def contextual_harvest_preference_q(
     ablated_modules: Any | None = None,
     row_ablated_modules: Any | None = None,
     coupling_ablated: bool = False,
+    embodied_ablated: bool = False,
 ) -> np.ndarray:
     return evaluate_contextual_harvest_modules_q(
         genotype,
@@ -401,6 +478,7 @@ def contextual_harvest_preference_q(
         ablated_modules=ablated_modules,
         row_ablated_modules=row_ablated_modules,
         coupling_ablated=coupling_ablated,
+        embodied_ablated=embodied_ablated,
     ).preference_q
 
 
@@ -432,7 +510,9 @@ def functional_module_energy(
     )
     energy = gates.sum(axis=1) * float(expression_rate)
     if compositional_modules_enabled(cfg):
-        _, _, _, _, coupling_gene = _blocks(values, cfg, gene_start)
+        _, _, _, _, embodied_output_gene, coupling_gene = _blocks(
+            values, cfg, gene_start
+        )
         coupling_strength = np.abs(
             np.tanh(coupling_gene.astype(np.float64))
         )
@@ -444,6 +524,17 @@ def functional_module_energy(
             else cfg.functional_modules.maintenance_energy_per_coupling_weight
         )
         energy = energy + active_weight.sum(axis=(1, 2)) * float(coupling_rate)
+    if embodied_outputs_enabled(cfg):
+        if 'embodied_output_gene' not in locals():
+            _, _, _, _, embodied_output_gene, _ = _blocks(values, cfg, gene_start)
+        router_strength = np.abs(np.tanh(embodied_output_gene.astype(np.float64)))
+        active_router = router_strength * gates[:, :, None]
+        embodied_rate = (
+            cfg.functional_modules.development_energy_per_embodied_weight
+            if development
+            else cfg.functional_modules.maintenance_energy_per_embodied_weight
+        )
+        energy = energy + active_router.sum(axis=(1, 2)) * float(embodied_rate)
     return energy
 
 
@@ -491,7 +582,9 @@ def functional_module_diagnostics(
         return {
             "functional_module_schema": cfg.functional_modules.schema,
             "functional_module_contribution_diagnostic_schema": (
-                CONTRIBUTION_DIAGNOSTIC_SCHEMA
+                EMBODIED_CONTRIBUTION_DIAGNOSTIC_SCHEMA
+                if embodied_outputs_enabled(cfg)
+                else CONTRIBUTION_DIAGNOSTIC_SCHEMA
             ),
             "functional_module_active_entities": int(values.shape[0]),
             "functional_module_expressed_mean": 0.0,
@@ -507,6 +600,25 @@ def functional_module_diagnostics(
             "functional_module_compositional_capable": bool(
                 compositional_modules_enabled(cfg)
             ),
+            "functional_module_embodied_capable": bool(
+                embodied_outputs_enabled(cfg)
+            ),
+            "functional_module_embodied_output_schema": (
+                cfg.functional_modules.output_schema
+            ),
+            "functional_embodied_output_effective_dimensions": 0.0,
+            "functional_output_basis_effective_dimensions": 0.0,
+            "functional_output_basis_active_port_count": 0,
+            "functional_output_basis_std_by_port": [0.0] * (OUTPUT_COUNT + EMBODIED_OUTPUT_COUNT),
+            "functional_output_basis_port_names": [
+                *[f"harvest_residual_{index}" for index in range(OUTPUT_COUNT)],
+                *EMBODIED_OUTPUT_NAMES,
+            ],
+            "functional_embodied_output_changed_entity_fraction": 0.0,
+            "functional_embodied_output_mean": [0.0] * EMBODIED_OUTPUT_COUNT,
+            "functional_embodied_output_std": [0.0] * EMBODIED_OUTPUT_COUNT,
+            "functional_embodied_output_abs_mean_by_port": [0.0] * EMBODIED_OUTPUT_COUNT,
+            "functional_embodied_output_names": list(EMBODIED_OUTPUT_NAMES),
             "functional_module_hierarchy_depth_by_module": list(range(count)),
             "functional_module_coupling_link_count": int(
                 functional_module_coupling_count(cfg)
@@ -536,7 +648,14 @@ def functional_module_diagnostics(
             "functional_module_contribution_dominance": 0.0,
             "functional_module_cancellation_fraction": 0.0,
         }
-    _, input_gene, _, output_gene, coupling_gene = _blocks(values, cfg, gene_start)
+    (
+        _,
+        input_gene,
+        _,
+        output_gene,
+        embodied_output_gene,
+        coupling_gene,
+    ) = _blocks(values, cfg, gene_start)
     if evaluation is None:
         gates_q = expression_gates_q(values, cfg, gene_start=gene_start)
         evaluation = FunctionalModuleEvaluation(
@@ -658,10 +777,28 @@ def functional_module_diagnostics(
         if raw_individual_abs > 0.0
         else 0.0
     )
+    embodied_q = (
+        np.zeros((values.shape[0], EMBODIED_OUTPUT_COUNT), dtype=np.int32)
+        if evaluation.embodied_output_q is None
+        else np.asarray(evaluation.embodied_output_q, dtype=np.int32)
+    )
+    embodied = embodied_q.astype(np.float64) / Q
+    embodied_router = np.tanh(embodied_output_gene.astype(np.float64)).reshape(
+        values.shape[0], -1
+    )
+    output_basis = np.concatenate((residual_shares, embodied), axis=1)
+    output_basis_std = output_basis.std(axis=0)
+    output_basis_names = [
+        *[f"harvest_residual_{index}" for index in range(OUTPUT_COUNT)],
+        *EMBODIED_OUTPUT_NAMES,
+    ]
+
     return {
         "functional_module_schema": cfg.functional_modules.schema,
         "functional_module_contribution_diagnostic_schema": (
-            CONTRIBUTION_DIAGNOSTIC_SCHEMA
+            EMBODIED_CONTRIBUTION_DIAGNOSTIC_SCHEMA
+            if embodied_outputs_enabled(cfg)
+            else CONTRIBUTION_DIAGNOSTIC_SCHEMA
         ),
         "functional_module_active_entities": int(values.shape[0]),
         "functional_module_expressed_mean": float(expressed.sum(axis=1).mean()),
@@ -691,6 +828,34 @@ def functional_module_diagnostics(
         "functional_module_compositional_capable": bool(
             compositional_modules_enabled(cfg)
         ),
+        "functional_module_embodied_capable": bool(embodied_outputs_enabled(cfg)),
+        "functional_module_embodied_output_schema": cfg.functional_modules.output_schema,
+        "functional_module_embodied_output_ablation_enabled": bool(
+            evaluation.embodied_output_ablation_enabled
+        ),
+        "functional_module_embodied_router_effective_dimensions": float(
+            _effective_dimensions(embodied_router)
+        ),
+        "functional_embodied_output_effective_dimensions": float(
+            _effective_dimensions(embodied)
+        ),
+        "functional_output_basis_effective_dimensions": float(
+            _effective_dimensions(output_basis)
+        ),
+        "functional_output_basis_active_port_count": int(
+            np.count_nonzero(output_basis_std > 1.0e-6)
+        ),
+        "functional_output_basis_std_by_port": output_basis_std.tolist(),
+        "functional_output_basis_port_names": output_basis_names,
+        "functional_embodied_output_changed_entity_fraction": float(
+            np.any(embodied_q != 0, axis=1).mean()
+        ),
+        "functional_embodied_output_mean": embodied.mean(axis=0).tolist(),
+        "functional_embodied_output_std": embodied.std(axis=0).tolist(),
+        "functional_embodied_output_abs_mean_by_port": (
+            np.abs(embodied).mean(axis=0).tolist()
+        ),
+        "functional_embodied_output_names": list(EMBODIED_OUTPUT_NAMES),
         "functional_module_hierarchy_depth_by_module": list(range(count)),
         "functional_module_coupling_link_count": int(
             functional_module_coupling_count(cfg)
@@ -763,7 +928,13 @@ def functional_module_diagnostics(
 __all__ = [
     "COMPOSITIONAL_FUNCTIONAL_MODULE_SCHEMA",
     "COMPOSITIONAL_INPUT_SCHEMA",
+    "EMBODIED_FUNCTIONAL_MODULE_SCHEMA",
+    "EMBODIED_OUTPUT_SCHEMA",
+    "EMBODIED_OUTPUT_NAMES",
+    "EMBODIED_OUTPUT_COUNT",
+    "EMBODIED_GENES_PER_MODULE",
     "CONTRIBUTION_DIAGNOSTIC_SCHEMA",
+    "EMBODIED_CONTRIBUTION_DIAGNOSTIC_SCHEMA",
     "COUPLING_SCHEMA",
     "FUNCTIONAL_MODULE_SCHEMA",
     "FunctionalModuleEvaluation",
@@ -778,6 +949,8 @@ __all__ = [
     "functional_module_coupling_count",
     "functional_module_energy",
     "functional_module_gene_count",
+    "functional_module_genes_per_module",
+    "embodied_outputs_enabled",
     "functional_modules_enabled",
     "compositional_modules_enabled",
 ]

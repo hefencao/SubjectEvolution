@@ -373,8 +373,10 @@ class SimulationExperimentMixin:
         elif normalized == "neutralize-functional-module-coupling-output":
             if (
                 not self.cfg.functional_modules.enabled
-                or self.cfg.functional_modules.schema
-                != "expression-gated-compositional-harvest-v2"
+                or self.cfg.functional_modules.schema not in {
+                    "expression-gated-compositional-harvest-v2",
+                    "expression-gated-compositional-embodied-v3",
+                }
             ):
                 raise ValueError(
                     "neutralize-functional-module-coupling-output requires "
@@ -389,6 +391,26 @@ class SimulationExperimentMixin:
                 "genotype_coordinates_modified": 0,
                 "inheritance_modified": False,
                 "future_offspring_coupling_output_neutralized": True,
+            }
+        elif normalized == "neutralize-functional-module-embodied-output":
+            if (
+                not self.cfg.functional_modules.enabled
+                or self.cfg.functional_modules.schema
+                != "expression-gated-compositional-embodied-v3"
+            ):
+                raise ValueError(
+                    "neutralize-functional-module-embodied-output requires "
+                    "v3 embodied functional modules"
+                )
+            canonical = "neutralize-functional-module-embodied-output"
+            self.functional_module_embodied_output_ablation_enabled = True
+            details = {
+                "effective_output": "zero-locomotion-signal-repair-modulation",
+                "harvest_and_coupling_output_preserved": True,
+                "embodied_router_structure_cost_preserved": True,
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+                "future_offspring_embodied_output_neutralized": True,
             }
         elif normalized == "neutralize-functional-modules":
             if not self.cfg.functional_modules.enabled:

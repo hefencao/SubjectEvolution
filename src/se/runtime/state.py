@@ -65,6 +65,11 @@ class StepStats:
     capacity_development_energy: float = 0.0
     functional_module_maintenance_energy: float = 0.0
     functional_module_development_energy: float = 0.0
+    functional_module_movement_energy: float = 0.0
+    functional_module_signal_energy: float = 0.0
+    functional_module_repair_energy: float = 0.0
+    functional_module_repair_material: float = 0.0
+    functional_module_repair_integrity: float = 0.0
     benefit_flow_energy: np.ndarray = field(
         default_factory=lambda: np.zeros(BENEFIT_FLOW_COUNT, dtype=np.float64)
     )

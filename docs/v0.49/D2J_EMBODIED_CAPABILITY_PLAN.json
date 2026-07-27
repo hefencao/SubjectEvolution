@@ -1,0 +1,23 @@
+{
+  "schema": "d2-embodied-capability-plan-v1",
+  "config": "configs/mvp_short_d2j_embodied_modules_longrun.json",
+  "seeds": [49001, 49002, 49003],
+  "horizon_ticks": 1500,
+  "branches": {
+    "embodied-active": [],
+    "embodied-neutral": ["neutralize-functional-module-embodied-output"]
+  },
+  "same_v3_genome_in_both_branches": true,
+  "same_initial_population_and_world_seed": true,
+  "coupling_and_embodied_genes_mutate_in_both_branches": true,
+  "harvest_and_coupling_output_active_in_both_branches": true,
+  "embodied_router_structure_cost_retained_when_neutral": true,
+  "outcome_conditioned_selection": false,
+  "module_copy_number_changed": false,
+  "versioned_world_primitive_extension": true,
+  "world_primitives": [
+    "locomotion-power-modulation",
+    "field-signal-power-modulation",
+    "material-to-integrity-repair"
+  ]
+}
