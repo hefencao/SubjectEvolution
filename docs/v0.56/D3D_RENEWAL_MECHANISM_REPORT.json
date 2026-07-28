@@ -1,0 +1,19 @@
+{
+  "schema": "d3d-renewal-mechanism-comparison-v1",
+  "seed": 56011,
+  "horizon_ticks": 300,
+  "paired_initial_population_and_random_stream": true,
+  "v1": {
+    "alive": 116,
+    "environment_resource_effective_dimensions": 2.680813098874753,
+    "environment_resource_channel_mean_abs_correlation": 0.3533452544340712,
+    "environment_resource_channel_max_abs_correlation": 0.4755153105867056
+  },
+  "v2": {
+    "alive": 125,
+    "environment_resource_effective_dimensions": 3.1672289765218924,
+    "environment_resource_channel_mean_abs_correlation": 0.12534230412209862,
+    "environment_resource_channel_max_abs_correlation": 0.19800542327688891
+  },
+  "interpretation": "Mechanism smoke only; one paired seed is not a general ecological conclusion."
+}

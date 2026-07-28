@@ -21,13 +21,17 @@ from ..cfg import EnvironmentConfig, SimulationConfig, load_config
 
 
 ORTHOGONAL_ENVIRONMENT_SCHEMA = "orthogonal-four-resource-niche-v1"
+PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA = "orthogonal-four-resource-renewal-v2"
 RESOURCE_DIVERSITY_AUDIT_SCHEMA = "resource-environment-diversity-audit-v1"
 RESOURCE_CHANNELS = 4
 
 
 def orthogonal_environment_enabled(config: EnvironmentConfig | SimulationConfig) -> bool:
     environment = config.environment if isinstance(config, SimulationConfig) else config
-    return environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA
+    return environment.schema in {
+        ORTHOGONAL_ENVIRONMENT_SCHEMA,
+        PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
+    }
 
 
 def normalized_grid(xx: Any, yy: Any, *, grid_x: int, grid_y: int, xp: Any) -> tuple[Any, Any]:
@@ -74,6 +78,63 @@ def orthogonal_base_pattern(
         0.50
         + primary_amplitude * xp.sin(primary + offsets)
         + secondary_amplitude * xp.cos(secondary - 0.5 * offsets)
+    )
+    return xp.clip(pattern, 0.05, 0.95)
+
+
+def persistent_orthogonal_renewal_enabled(
+    config: EnvironmentConfig | SimulationConfig,
+) -> bool:
+    environment = config.environment if isinstance(config, SimulationConfig) else config
+    return environment.schema == PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA
+
+
+def orthogonal_renewal_target_fraction(
+    environment: EnvironmentConfig,
+    xnorm: Any,
+    ynorm: Any,
+    *,
+    tick: int,
+    xp: Any,
+) -> Any:
+    """Return a moving channel-specific external renewal target.
+
+    The v1 orthogonal schema only used its spatial pattern for initialization;
+    logistic regeneration then drove every cell toward the same channel
+    capacity.  The v2 schema treats those same role-free wave parameters as a
+    continuously moving external source/sink target.  At tick zero this target
+    equals :func:`orthogonal_base_pattern`, so the new contract changes renewal
+    rather than the initial world.
+    """
+
+    primary = _wave_phase(environment.resource_primary_wave_vectors, xnorm, ynorm, xp)
+    secondary = _wave_phase(
+        environment.resource_secondary_wave_vectors, xnorm, ynorm, xp
+    )
+    offsets = xp.asarray(
+        environment.resource_temporal_phase_offsets, dtype=xp.float64
+    )[:, None, None]
+    periods = xp.asarray(environment.resource_cycle_periods, dtype=xp.float64)
+    temporal = 2.0 * xp.pi * float(tick) / periods
+    temporal = temporal[:, None, None]
+    primary_amplitude = xp.asarray(
+        environment.resource_primary_wave_amplitudes, dtype=xp.float64
+    )[:, None, None]
+    secondary_amplitude = xp.asarray(
+        environment.resource_secondary_wave_amplitudes, dtype=xp.float64
+    )[:, None, None]
+    cycle_amplitude = xp.asarray(
+        environment.resource_cycle_amplitudes, dtype=xp.float64
+    )[:, None, None]
+    amplitude_modulation = 1.0 + cycle_amplitude * xp.sin(temporal)
+    pattern = (
+        0.50
+        + primary_amplitude
+        * amplitude_modulation
+        * xp.sin(primary + offsets + temporal)
+        + secondary_amplitude
+        * amplitude_modulation
+        * xp.cos(secondary - 0.5 * offsets - 0.6180339887498948 * temporal)
     )
     return xp.clip(pattern, 0.05, 0.95)
 
@@ -348,11 +409,14 @@ if __name__ == "__main__":  # pragma: no cover
 
 __all__ = [
     "ORTHOGONAL_ENVIRONMENT_SCHEMA",
+    "PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA",
     "RESOURCE_DIVERSITY_AUDIT_SCHEMA",
     "build_resource_diversity_audit",
     "diffuse_resource_fields",
     "orthogonal_base_pattern",
     "orthogonal_environment_enabled",
+    "orthogonal_renewal_target_fraction",
+    "persistent_orthogonal_renewal_enabled",
     "orthogonal_seasonal_multiplier",
     "resource_field_diversity_metrics",
     "temporal_resource_diversity_metrics",

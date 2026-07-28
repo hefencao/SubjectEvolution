@@ -1,0 +1,17 @@
+{
+  "schema": "editable-bytecode-collision-validation-v1",
+  "passed": true,
+  "root_cause": "timestamp-based pyc validity uses source byte length and integer-second mtime; same-length version edits can reuse stale bytecode after patch/extraction mtime preservation",
+  "regression_test": "tests/test_bytecode_cleanup.py reproduces imported 0.53.0 after source changes to 0.55.0 with identical size and mtime, then verifies cleanup imports 0.55.0",
+  "conda_sync_result": {
+    "version": "0.56.0",
+    "source_version": "0.56.0",
+    "package_path": "/mnt/data/work_v056/candidate/src/se/__init__.py",
+    "editable_root": "/mnt/data/work_v056/candidate",
+    "module_count": 111,
+    "entry_count": 26
+  },
+  "pre_install_cleanup": true,
+  "pre_verify_cleanup": true,
+  "loaded_module_purge_before_import": true
+}

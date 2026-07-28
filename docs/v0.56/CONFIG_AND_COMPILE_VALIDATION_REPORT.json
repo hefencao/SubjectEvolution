@@ -1,0 +1,8 @@
+{
+  "schema": "config-and-compile-validation-v1",
+  "passed": true,
+  "json_config_count": 90,
+  "python_file_count": 175,
+  "runtime_sim_lines": 2482,
+  "protocol_audit_schema": "structural-measurement-protocol-audit-v24"
+}

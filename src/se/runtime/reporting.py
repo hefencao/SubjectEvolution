@@ -43,6 +43,9 @@ from se.env.world import Environment
 from se.env.physiology import field_metrics as physiology_field_metrics
 from se.env.diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
+    PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
+    orthogonal_environment_enabled,
+    persistent_orthogonal_renewal_enabled,
     resource_field_diversity_metrics,
 )
 from se.env.process import build_environment_process, environment_process_metadata
@@ -163,6 +166,7 @@ class SimulationReportingMixin:
                 in {
                     "spatially-asynchronous-multiniche-v1",
                     ORTHOGONAL_ENVIRONMENT_SCHEMA,
+                    PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
                 }
             ),
             "environment_process": dict(
@@ -446,9 +450,9 @@ class SimulationReportingMixin:
             for key in tuple(manifest):
                 if key.startswith("functional_modules_"):
                     manifest.pop(key)
-        if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
+        if orthogonal_environment_enabled(self.cfg):
             manifest["environment_resource_dynamics"] = {
-                "schema": ORTHOGONAL_ENVIRONMENT_SCHEMA,
+                "schema": self.cfg.environment.schema,
                 "cycle_periods": list(self.cfg.environment.resource_cycle_periods),
                 "cycle_amplitudes": list(
                     self.cfg.environment.resource_cycle_amplitudes
@@ -474,6 +478,10 @@ class SimulationReportingMixin:
                 "lineage_feedback": False,
                 "group_feedback": False,
             }
+            if persistent_orthogonal_renewal_enabled(self.cfg):
+                manifest["environment_resource_dynamics"]["renewal_contract"] = (
+                    "moving-target-source-sink-v2"
+                )
             manifest["environment_resource_diversity_initial"] = (
                 resource_field_diversity_metrics(
                     self.environment.resources,
@@ -1027,7 +1035,7 @@ class SimulationReportingMixin:
                     knowledge_bytes_used=knowledge_bytes_used,
                 )
             )
-        if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
+        if orthogonal_environment_enabled(self.cfg):
             diversity = resource_field_diversity_metrics(
                 resource_fields, self.cfg.environment.resource_capacity
             )
@@ -1254,7 +1262,7 @@ class SimulationReportingMixin:
             resource_field_diversity_metrics(
                 metric_resource_fields, self.cfg.environment.resource_capacity
             )
-            if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA
+            if orthogonal_environment_enabled(self.cfg)
             else None
         )
         autonomy_cohort_size = int(self.autonomy_recovery_cohort_ids.size)

@@ -9,6 +9,8 @@ points, dependencies, or moving the checkout to another path.
 from __future__ import annotations
 
 import argparse
+import ast
+import importlib
 import importlib.metadata as metadata
 import json
 import os
@@ -18,6 +20,8 @@ import subprocess
 import sys
 import tempfile
 import tomllib
+
+from clean_project_bytecode import clean as clean_project_bytecode
 
 DIST_NAME = "se-mvp"
 ENTRY_POINTS = {
@@ -44,6 +48,7 @@ ENTRY_POINTS = {
     "se-d3-conservative-intake": "se.experiments.d3_conservative_intake:main",
     "se-d3-conservative-intake-assess": "se.analysis.d3_conservative_intake_effects:main",
     "se-d3-external-recycling": "se.experiments.d3_external_recycling:main",
+    "se-d3-resource-renewal": "se.experiments.d3_persistent_resource_renewal:main",
     "se-d4-niche-reversal": "se.experiments.d4_niche_reversal:main",
     "se-d4-niche-assess": "se.analysis.d4_niche_reversal_effects:main",
 }
@@ -68,6 +73,11 @@ def verify(project: Path, *, require_conda: bool, smoke: bool) -> dict[str, obje
             f"current Python is outside CONDA_PREFIX: {sys.executable} vs {conda_prefix}"
         )
 
+    bytecode_cleanup = clean_project_bytecode(project)
+    for module_name in tuple(sys.modules):
+        if module_name == "se" or module_name.startswith("se."):
+            sys.modules.pop(module_name, None)
+    importlib.invalidate_caches()
     import se
 
     package_path = Path(se.__file__).resolve()
@@ -76,10 +86,27 @@ def verify(project: Path, *, require_conda: bool, smoke: bool) -> dict[str, obje
             f"SE is not imported from this editable checkout: {package_path}"
         )
     installed_version = metadata.version(DIST_NAME)
-    if installed_version != expected_version or se.__version__ != expected_version:
+    source_tree = ast.parse((source_root / "se" / "__init__.py").read_text(encoding="utf-8"))
+    source_version = None
+    for node in source_tree.body:
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id == "__version__":
+                    value = ast.literal_eval(node.value)
+                    if isinstance(value, str):
+                        source_version = value
+    if source_version is None:
+        raise RuntimeError("source package __version__ is missing")
+    if (
+        installed_version != expected_version
+        or source_version != expected_version
+        or se.__version__ != expected_version
+    ):
         raise RuntimeError(
             "version mismatch: "
-            f"pyproject={expected_version}, metadata={installed_version}, package={se.__version__}"
+            f"pyproject={expected_version}, metadata={installed_version}, "
+            f"source={source_version}, imported_package={se.__version__}, "
+            f"package_path={package_path}"
         )
 
     dist = metadata.distribution(DIST_NAME)
@@ -166,6 +193,8 @@ def verify(project: Path, *, require_conda: bool, smoke: bool) -> dict[str, obje
         "conda_prefix": str(conda_prefix) if conda_prefix else None,
         "version": expected_version,
         "package_path": str(package_path),
+        "source_version": source_version,
+        "bytecode_cleanup": bytecode_cleanup,
         "editable_root": str(editable_root),
         "module_count": len(modules),
         "entry_points": installed_entries,

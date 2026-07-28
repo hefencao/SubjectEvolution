@@ -11,6 +11,7 @@ from typing import Any
 from ..cfg import load_config
 from se.experiments.natural_event_matrix import load_manifest
 from se.env.partition import SpatialRegionPartition
+from se.env.diversity import persistent_orthogonal_renewal_enabled
 from se.policy import ParametricPolicy
 from se.differentiation.functional import (
     compositional_modules_enabled,
@@ -29,7 +30,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v23"
+SCHEMA = "structural-measurement-protocol-audit-v24"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -490,6 +491,21 @@ def build_protocol_audit(
                     and len(set(cfg.physiology.resource_conversion_per_tick)) <= 1
                     and len(set(cfg.physiology.resource_store_decay_per_tick)) <= 1
                 ),
+                "persistent_resource_renewal_enabled": bool(
+                    persistent_orthogonal_renewal_enabled(cfg)
+                ),
+                "resource_renewal_schema": (
+                    "moving-target-source-sink-v2"
+                    if persistent_orthogonal_renewal_enabled(cfg)
+                    else "capacity-logistic-initial-pattern-v1"
+                ),
+                "resource_renewal_target_entity_feedback": False,
+                "resource_renewal_target_lineage_feedback": False,
+                "resource_renewal_open_system_fluxes": (
+                    ["source", "sink"]
+                    if persistent_orthogonal_renewal_enabled(cfg)
+                    else ["source"]
+                ),
                 "preset_resource_role": False,
                 "diversity_reward_or_protection": False,
             },
@@ -530,6 +546,19 @@ def build_protocol_audit(
                 "release_limited_by_resource_capacity": True,
                 "named_decomposer_or_scavenger_roles": False,
                 "stable_trophic_claim": False,
+            },
+            "persistent_resource_renewal_experiment": {
+                "plan_schema": "d3-persistent-resource-renewal-plan-v1",
+                "result_schema": "d3-persistent-resource-renewal-results-v1",
+                "single_active_population_per_seed": True,
+                "moving_target_reuses_role_free_channel_waves": True,
+                "source_and_sink_recorded_separately": True,
+                "external_resource_ledger": (
+                    "initial + renewal source + residue release = harvest + renewal sink + final"
+                ),
+                "entity_lineage_and_group_feedback": False,
+                "named_resource_roles": False,
+                "stable_niche_claim": False,
             },
             "expression_threshold": float(cfg.functional_modules.expression_threshold),
             "maximum_residual_fraction": float(cfg.functional_modules.max_residual_fraction),
@@ -644,9 +673,11 @@ def build_protocol_audit(
                 "pair adds inherited bounded raw-resource storage and delayed conversion but retains "
                 "archived post-harvest overflow loss. The v6 functional / v5 physiology pair constrains "
                 "environmental extraction by inherited free store room before commit, so rejected raw "
-                "resource remains external. It still lacks detritus recycling, spatial separation of "
-                "collection and processing, trophic transfer, a completed food chain, dynamic topology "
-                "and stable niche proof."
+                "resource remains external. Resource-v6 adds identity-preserving external residue recycling. "
+                "The v2 orthogonal renewal schema keeps channel-specific moving source/sink opportunities active "
+                "instead of using orthogonal geometry only at initialization. It still lacks explicit coupling "
+                "between collection location and processing throughput, trophic transfer, a completed food chain, "
+                "dynamic topology and stable niche proof."
             ),
             "leave_one_out_protocol": {
                 "plan_schema": "d2-module-leave-one-out-plan-v1",
@@ -1054,6 +1085,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- resource metabolism experiment: {payload['functional_module_protocol']['resource_metabolism_experiment']}",
         f"- conservative intake experiment: {payload['functional_module_protocol']['conservative_intake_experiment']}",
         f"- external recycling experiment: {payload['functional_module_protocol']['external_recycling_experiment']}",
+        f"- persistent resource renewal experiment: {payload['functional_module_protocol']['persistent_resource_renewal_experiment']}",
         f"- known architecture limit: {payload['functional_module_protocol']['known_architecture_limit']}",
         f"- leave-one-out protocol: {payload['functional_module_protocol']['leave_one_out_protocol']}",
         f"- effect qualification: {payload['functional_module_protocol']['effect_qualification']}",

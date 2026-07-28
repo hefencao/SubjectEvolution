@@ -10,10 +10,13 @@ from .process import build_environment_process, environment_process_metadata
 from .recycling import initialize_resource_residue, update_resource_recycling
 from .diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
+    PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
     diffuse_resource_fields,
     normalized_grid as diversity_normalized_grid,
     orthogonal_base_pattern,
     orthogonal_seasonal_multiplier,
+    orthogonal_renewal_target_fraction,
+    persistent_orthogonal_renewal_enabled,
     resource_field_diversity_metrics,
 )
 from .niches import AFFINITY_SCALE, RESOURCE_CHANNELS
@@ -42,7 +45,10 @@ class Environment:
                 yy[None, :, :]
                 * np.asarray([0.08, 0.13, 0.06, 0.10])[:, None, None]
             )
-        elif cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
+        elif cfg.environment.schema in {
+            ORTHOGONAL_ENVIRONMENT_SCHEMA,
+            PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
+        }:
             xnorm, ynorm = self._normalized_grid(xx, yy)
             base_pattern = orthogonal_base_pattern(
                 cfg.environment, xnorm, ynorm, xp=np
@@ -54,6 +60,22 @@ class Environment:
         self.regeneration = np.asarray(
             cfg.environment.resource_regeneration, dtype=np.float32
         )[:, None, None]
+        if persistent_orthogonal_renewal_enabled(cfg):
+            self.initial_resource_total = self.resources.sum(
+                axis=(1, 2), dtype=np.float64
+            )
+            self.resource_renewal_source_step = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
+            self.resource_renewal_sink_step = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
+            self.total_resource_renewal_source = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
+            self.total_resource_renewal_sink = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
         self.hazard = self._hazard_pattern(0)
         self.mortality_trace = np.zeros((gy, gx), dtype=np.float32)
         initialize_resource_residue(self)
@@ -122,6 +144,34 @@ class Environment:
             if self.resource_spatial_reversed
             else result
         )
+
+    def _resource_renewal_target(self, tick: int) -> np.ndarray:
+        gx, gy = self.cfg.world.grid_x, self.cfg.world.grid_y
+        yy, xx = np.mgrid[0:gy, 0:gx]
+        xnorm, ynorm = self._normalized_grid(xx, yy)
+        fraction = orthogonal_renewal_target_fraction(
+            self.cfg.environment, xnorm, ynorm, tick=tick, xp=np
+        )
+        if self.resource_spatial_reversed:
+            fraction = fraction[:, ::-1, ::-1].copy()
+        return (self.capacity * fraction).astype(np.float32)
+
+    def _update_persistent_resource_renewal(self, tick: int) -> np.ndarray:
+        target = self._resource_renewal_target(tick)
+        delta = self.regeneration * (target - self.resources)
+        source = np.maximum(delta, 0.0).astype(np.float32)
+        sink = np.maximum(-delta, 0.0).astype(np.float32)
+        self.resource_renewal_source_step = source.sum(
+            axis=(1, 2), dtype=np.float64
+        )
+        self.resource_renewal_sink_step = sink.sum(
+            axis=(1, 2), dtype=np.float64
+        )
+        self.total_resource_renewal_source += self.resource_renewal_source_step
+        self.total_resource_renewal_sink += self.resource_renewal_sink_step
+        return np.clip(
+            self.resources + source - sink, 0.0, self.capacity
+        ).astype(np.float32)
 
     def _hazard_pattern(self, tick: int) -> np.ndarray:
         gx, gy = self.cfg.world.grid_x, self.cfg.world.grid_y
@@ -332,14 +382,20 @@ class Environment:
 
     def update(self, tick: int) -> None:
         update_resource_recycling(self)
-        seasonal = self._seasonal_multiplier(tick)
-        growth = self.regeneration * seasonal * (
-            1.0 - self.resources / np.maximum(self.capacity, 1e-6)
-        )
-        resources = np.clip(
-            self.resources + growth, 0.0, self.capacity
-        ).astype(np.float32)
-        if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
+        if persistent_orthogonal_renewal_enabled(self.cfg):
+            resources = self._update_persistent_resource_renewal(tick)
+        else:
+            seasonal = self._seasonal_multiplier(tick)
+            growth = self.regeneration * seasonal * (
+                1.0 - self.resources / np.maximum(self.capacity, 1e-6)
+            )
+            resources = np.clip(
+                self.resources + growth, 0.0, self.capacity
+            ).astype(np.float32)
+        if self.cfg.environment.schema in {
+            ORTHOGONAL_ENVIRONMENT_SCHEMA,
+            PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
+        }:
             resources = diffuse_resource_fields(
                 resources, self.cfg.environment.resource_diffusion_rates, xp=np
             )

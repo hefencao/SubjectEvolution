@@ -1,0 +1,66 @@
+{
+  "schema": "v055-v056-legacy-v1-compatibility-v1",
+  "baseline_version": "0.55.0",
+  "candidate_version": "0.56.0",
+  "config": "v0.55 D3-C resource-v6 with orthogonal-four-resource-niche-v1",
+  "seed": 55999,
+  "horizon_ticks": 60,
+  "thin_checkpoint": {
+    "common_arrays": 50,
+    "values_compared": 453105,
+    "differences": 0,
+    "different_arrays": []
+  },
+  "full_checkpoint_state": {
+    "baseline_sha256": "c385614a7f16e6bb41c8107a26dabe64b4759479e5ad42b7f073468fb2cd74b1",
+    "candidate_sha256": "c385614a7f16e6bb41c8107a26dabe64b4759479e5ad42b7f073468fb2cd74b1",
+    "identical": true
+  },
+  "json_outputs": {
+    "summary.json": {
+      "common_non_timing_leaves": 654,
+      "differences": 0,
+      "first_differences": []
+    },
+    "run_metadata.json": {
+      "common_non_timing_leaves": 3767,
+      "differences": 0,
+      "first_differences": []
+    },
+    "run_manifest.json": {
+      "common_non_timing_leaves": 257,
+      "differences": 0,
+      "first_differences": []
+    },
+    "scientific_validity.json": {
+      "common_non_timing_leaves": 157,
+      "differences": 0,
+      "first_differences": []
+    },
+    "subject_structure_summary.json": {
+      "common_non_timing_leaves": 30,
+      "differences": 0,
+      "first_differences": []
+    },
+    "environment_atlas_summary.json": {
+      "common_non_timing_leaves": 849,
+      "differences": 0,
+      "first_differences": []
+    }
+  },
+  "common_non_timing_json_leaves": 5714,
+  "json_differences": 0,
+  "metrics": {
+    "rows": 4,
+    "common_non_timing_columns": 522,
+    "cells_compared": 2088,
+    "differences": 0,
+    "first_differences": []
+  },
+  "auxiliary_files": {
+    "compared": 12,
+    "byte_differences": []
+  },
+  "passed": true,
+  "interpretation": "The new renewal contract is opt-in; v0.55 environment-v1/resource-v6 authoritative state and common non-timing outputs remain unchanged."
+}

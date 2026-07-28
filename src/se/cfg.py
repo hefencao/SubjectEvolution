@@ -1022,11 +1022,13 @@ def validate_config(cfg: SimulationConfig) -> None:
         "legacy-four-channel-v1",
         "spatially-asynchronous-multiniche-v1",
         "orthogonal-four-resource-niche-v1",
+        "orthogonal-four-resource-renewal-v2",
     }:
         raise ValueError(
             "environment.schema must be 'legacy-four-channel-v1', "
             "'spatially-asynchronous-multiniche-v1', or "
-            "'orthogonal-four-resource-niche-v1'"
+            "'orthogonal-four-resource-niche-v1', or "
+            "'orthogonal-four-resource-renewal-v2'"
         )
     for name, values in (
         ("resource_temporal_phase_offsets", cfg.environment.resource_temporal_phase_offsets),
@@ -1063,7 +1065,10 @@ def validate_config(cfg: SimulationConfig) -> None:
             for vector in vectors
         ):
             raise ValueError(f"environment.{name} must be shaped [4, 2] with finite values")
-    if cfg.environment.schema == "orthogonal-four-resource-niche-v1":
+    if cfg.environment.schema in {
+        "orthogonal-four-resource-niche-v1",
+        "orthogonal-four-resource-renewal-v2",
+    }:
         if any(int(value) <= 0 for value in cfg.environment.resource_cycle_periods):
             raise ValueError("orthogonal resource cycle periods must be positive")
         if any(
@@ -1305,6 +1310,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         and cfg.environment.schema not in {
             "spatially-asynchronous-multiniche-v1",
             "orthogonal-four-resource-niche-v1",
+            "orthogonal-four-resource-renewal-v2",
         }
     ):
         raise ValueError("resource affinity requires a heterogeneous environment schema")

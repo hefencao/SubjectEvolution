@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.56.0
+
+### Persistent resource opportunity and bytecode-safe editable verification
+
+- Interprets the supplied D3-C run as a closed identity-preserving raw-material cycle in all three seeds.
+- Identifies long-run resource-field convergence: about `1.11`–`1.19` effective dimensions and `0.88`–`0.92` mean absolute channel correlation.
+- Adds opt-in `orthogonal-four-resource-renewal-v2` and `moving-target-source-sink-v2`.
+- Reuses the existing unnamed channel wave vectors, amplitudes, periods and phases as a continuously moving external target rather than adding resource roles.
+- Records abiotic renewal source and sink separately and closes an open external-resource ledger together with D3-C residue release and harvest.
+- Adds `se-d3-resource-renewal`, D3-D config, protocol audit v24, CPU/simulated-device parity, checkpoint/GPU synchronization and tests.
+- Reproduces the repeated `conda-sync` mismatch as a timestamp-based stale `.pyc` collision for same-length version edits with preserved second-level mtime.
+- Clears project bytecode before editable installation and verification, and compares pyproject, static source AST, installed metadata, imported package value and editable root.
+- Preserves v1 environment and resource-v6 recycling behavior exactly when persistent renewal is disabled.
+- Adds no named resource role, population feedback, diversity reward, lineage protection or ecological claim.
+- Complete packages retain only `docs/v0.56` as a version-specific directory.
+
 ## 0.55.0
 
 ### Scale-aware intake assessment and external raw-material recycling

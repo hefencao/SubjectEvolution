@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from typing import Any
 
+import numpy as np
+
 from ..backend import Backend, resolve_backend
 from ..cfg import SimulationConfig
 from .danger_evidence import DANGER_EVIDENCE_SCALE
@@ -17,10 +19,13 @@ from .process import build_environment_process, environment_process_metadata
 from .recycling import initialize_resource_residue, update_resource_recycling
 from .diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
+    PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
     diffuse_resource_fields,
     normalized_grid as diversity_normalized_grid,
     orthogonal_base_pattern,
     orthogonal_seasonal_multiplier,
+    orthogonal_renewal_target_fraction,
+    persistent_orthogonal_renewal_enabled,
     resource_field_diversity_metrics,
 )
 from ..information import (
@@ -53,7 +58,10 @@ class DeviceEnvironment:
             frequencies_y = xp.asarray([0.08, 0.13, 0.06, 0.10], dtype=xp.float64)[:, None, None]
             base_pattern = 0.55 + 0.20 * xp.sin(xx[None, :, :] * frequencies_x)
             base_pattern += 0.15 * xp.cos(yy[None, :, :] * frequencies_y)
-        elif cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
+        elif cfg.environment.schema in {
+            ORTHOGONAL_ENVIRONMENT_SCHEMA,
+            PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
+        }:
             xnorm, ynorm = self._normalized_grid(xx, yy)
             base_pattern = orthogonal_base_pattern(
                 cfg.environment, xnorm, ynorm, xp=xp
@@ -63,6 +71,22 @@ class DeviceEnvironment:
         self.resources = xp.clip(capacities * base_pattern, 0.0, capacities).astype(xp.float32)
         self.capacity = capacities.astype(xp.float32)
         self.regeneration = xp.asarray(cfg.environment.resource_regeneration, dtype=xp.float32)[:, None, None]
+        if persistent_orthogonal_renewal_enabled(cfg):
+            self.initial_resource_total = self.backend.to_numpy(
+                self.resources.sum(axis=(1, 2), dtype=xp.float64)
+            ).astype(np.float64)
+            self.resource_renewal_source_step = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
+            self.resource_renewal_sink_step = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
+            self.total_resource_renewal_source = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
+            self.total_resource_renewal_sink = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
         self.hazard = self._hazard_pattern(0)
         self.mortality_trace = xp.zeros((gy, gx), dtype=xp.float32)
         initialize_resource_residue(self)
@@ -126,6 +150,36 @@ class DeviceEnvironment:
             if self.resource_spatial_reversed
             else result
         )
+
+    def _resource_renewal_target(self, tick: int) -> Any:
+        xp = self.backend.xp
+        gx, gy = self.cfg.world.grid_x, self.cfg.world.grid_y
+        yy, xx = xp.mgrid[0:gy, 0:gx]
+        xnorm, ynorm = self._normalized_grid(xx, yy)
+        fraction = orthogonal_renewal_target_fraction(
+            self.cfg.environment, xnorm, ynorm, tick=tick, xp=xp
+        )
+        if self.resource_spatial_reversed:
+            fraction = fraction[:, ::-1, ::-1].copy()
+        return (self.capacity * fraction).astype(xp.float32)
+
+    def _update_persistent_resource_renewal(self, tick: int) -> Any:
+        xp = self.backend.xp
+        target = self._resource_renewal_target(tick)
+        delta = self.regeneration * (target - self.resources)
+        source = xp.maximum(delta, xp.float32(0.0)).astype(xp.float32)
+        sink = xp.maximum(-delta, xp.float32(0.0)).astype(xp.float32)
+        self.resource_renewal_source_step = self.backend.to_numpy(
+            source.sum(axis=(1, 2), dtype=xp.float64)
+        ).astype(np.float64)
+        self.resource_renewal_sink_step = self.backend.to_numpy(
+            sink.sum(axis=(1, 2), dtype=xp.float64)
+        ).astype(np.float64)
+        self.total_resource_renewal_source += self.resource_renewal_source_step
+        self.total_resource_renewal_sink += self.resource_renewal_sink_step
+        return xp.clip(
+            self.resources + source - sink, xp.float32(0.0), self.capacity
+        ).astype(xp.float32)
 
     def _hazard_pattern(self, tick: int) -> Any:
         xp = self.backend.xp
@@ -292,10 +346,16 @@ class DeviceEnvironment:
     def update(self, tick: int) -> None:
         update_resource_recycling(self)
         xp = self.backend.xp
-        seasonal = self._seasonal_multiplier(tick)
-        growth = self.regeneration * seasonal * (1.0 - self.resources / xp.maximum(self.capacity, 1e-6))
-        resources = xp.clip(self.resources + growth, 0.0, self.capacity).astype(xp.float32)
-        if self.cfg.environment.schema == ORTHOGONAL_ENVIRONMENT_SCHEMA:
+        if persistent_orthogonal_renewal_enabled(self.cfg):
+            resources = self._update_persistent_resource_renewal(tick)
+        else:
+            seasonal = self._seasonal_multiplier(tick)
+            growth = self.regeneration * seasonal * (1.0 - self.resources / xp.maximum(self.capacity, 1e-6))
+            resources = xp.clip(self.resources + growth, 0.0, self.capacity).astype(xp.float32)
+        if self.cfg.environment.schema in {
+            ORTHOGONAL_ENVIRONMENT_SCHEMA,
+            PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
+        }:
             resources = diffuse_resource_fields(
                 resources, self.cfg.environment.resource_diffusion_rates, xp=xp
             )

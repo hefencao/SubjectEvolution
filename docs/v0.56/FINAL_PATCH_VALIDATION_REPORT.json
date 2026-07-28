@@ -1,0 +1,20 @@
+{
+  "schema": "final-patch-validation-v1",
+  "passed": true,
+  "baseline_version": "0.55.0",
+  "candidate_version": "0.56.0",
+  "changed_path_count": 61,
+  "git_diff_check": true,
+  "git_apply_check_whitespace_error_all": true,
+  "actual_application": true,
+  "fuzz_or_offset": false,
+  "candidate_and_replay_tree_hash_identical": true,
+  "project_file_count": 305,
+  "replay_tests": {
+    "passed": 271,
+    "skipped": 1,
+    "test_files": 55
+  },
+  "isolated_sdist_wheel_validation": true,
+  "note": "The report is included as the final additional changed path; the final patch is regenerated and replayed after this report is added."
+}

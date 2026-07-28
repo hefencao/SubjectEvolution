@@ -1,11 +1,12 @@
 # SE project status
 
-Version: **0.55.0**
+Version: **0.56.0**
 
 ## Current causal chain
 
 ```text
-orthogonal resource and abiotic fields
+role-free four-channel external resource and abiotic fields
+→ persistent moving channel-specific abiotic renewal targets with explicit source/sink fluxes
 → inherited affinity and elastic capacities
 → fixed inherited functional operators and feed-forward composition
 → regulatory requests separated from physiological execution
@@ -20,43 +21,51 @@ orthogonal resource and abiotic fields
 → ecological differentiation tests only after these processes create distinct demands
 ```
 
-## D3-B result
+## Supplied D3-C result
 
-The supplied D3-B run completed three 1500-tick seeds. Capacity rejection, storage, delayed conversion, intake-ledger closure and internal-store-ledger closure were present in every seed.
+The three 1500-tick seeds retain D3-C:
 
-The accumulated post-assimilation residual was about `1.6e-4`–`1.8e-4` per run, but only `6e-9`–`9e-9` relative to per-channel harvested mass. The old summary used a fixed absolute `1e-4` run-level threshold and incorrectly reported failure. The scale-aware reassessment passes all three seeds.
+- store-decay deposition occurs in every seed;
+- death-carried raw-store deposition occurs;
+- residue releases in every seed;
+- external residue ledgers close in every seed;
+- storage and delayed conversion continue.
 
-## D3-C external recycling
+However, final external resource effective dimensions are only about `1.11`–`1.19`, while mean absolute channel correlations are about `0.88`–`0.92`. The recycling mechanism is therefore functioning inside an environment whose opportunity axes have largely converged.
 
-The opt-in physiology schema is:
+## D3-D persistent renewal
 
-- `transport-metabolism-messenger-tissue-resource-v6`.
+The opt-in environment schema is:
 
-It retains the D3-B pre-harvest capacity contract and adds one external field:
+- `orthogonal-four-resource-renewal-v2`.
 
-- four-channel `identity-preserving-spatial-residue-v1`.
+At tick zero it uses the same mathematical field as `orthogonal-four-resource-niche-v1`. Later ticks reuse the existing channel-specific wave vectors, amplitudes, periods and phases as moving target fractions. The world records:
 
-Sources are restricted to material already accounted by the internal raw-store ledger:
+- positive abiotic renewal source;
+- negative abiotic renewal sink;
+- harvest removal;
+- same-channel residue release;
+- final external inventory.
 
-- internal store decay;
-- raw stores carried by entities at death.
+The target has no entity, lineage or group feedback. Every channel uses the same equation and remains unnamed.
 
-Each source deposits at the entity's current cell and preserves its resource channel. The residual field:
+A same-seed 300-tick mechanism comparison found:
 
-- remains external for at least one tick;
-- diffuses with the existing same-channel resource diffusion rate;
-- releases with the existing same-channel store-decay rate;
-- releases only into free capacity in the same external resource field;
-- remains in the residual field when external capacity is full.
+- v1 resource dimensions `2.681`, mean absolute correlation `0.353`;
+- v2 resource dimensions `3.697`, mean absolute correlation `0.082`.
 
-This is a matter-transfer substrate, not a biological decomposer or scavenger population. Body energy, tissue and structure are not yet converted into external material.
+This confirms action on the identified field-collapse mechanism, not an ecological fitness conclusion.
+
+## Development workflow
+
+`conda-sync` now clears `src/`, `scripts/` and `tests/` bytecode before installation and before editable verification. This prevents same-size, same-second source edits from reusing stale timestamp-based `.pyc` files. Version verification compares pyproject metadata, static source AST, imported runtime value and editable source root.
 
 ## Still incomplete
 
+- evolved coupling between collection location, internal inventory and processing throughput;
+- migration cycles driven by moving resource opportunities and stored inventory;
 - externalization of metabolic byproducts and non-store body material;
-- evolved uptake or processing of residual material as a distinct opportunity;
-- spatially distinct collection and processing opportunities;
-- migration cycles driven by inventory and seasonality;
+- evolved uptake or processing of residue as a distinct opportunity;
 - consumption of other entities and corresponding defense;
 - reproduction investment supplied through delayed stores;
 - stable coexistence, ecotypes and trophic-chain evidence;

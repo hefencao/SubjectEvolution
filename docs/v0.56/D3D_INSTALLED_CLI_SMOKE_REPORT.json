@@ -1,0 +1,10 @@
+{
+  "schema": "d3d-installed-cli-smoke-v1",
+  "passed": true,
+  "cwd": "/tmp",
+  "pythonpath_empty": true,
+  "completed_seed_count": 2,
+  "recommendation": "retain-persistent-renewal-and-continue-collection-processing-coupling",
+  "resource_ledgers_valid": true,
+  "recycling_ledgers_valid": true
+}

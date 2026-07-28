@@ -302,6 +302,19 @@ class HybridGpuRuntime:
             self.environment.resource_residue = self._upload(
                 environment.resource_residue, dtype=xp.float32, copy=True
             )
+        if hasattr(environment, "total_resource_renewal_source"):
+            for name in (
+                "initial_resource_total",
+                "resource_renewal_source_step",
+                "resource_renewal_sink_step",
+                "total_resource_renewal_source",
+                "total_resource_renewal_sink",
+            ):
+                setattr(
+                    self.environment,
+                    name,
+                    np.asarray(getattr(environment, name), dtype=np.float64).copy(),
+                )
         self.information_field.field = self._upload(information.field, dtype=xp.float32, copy=True)
         self.information_field.source = self._upload(information.source, dtype=xp.float32, copy=True)
         self.information_field.age = self._upload(information.age, dtype=xp.uint16, copy=True)
@@ -323,6 +336,19 @@ class HybridGpuRuntime:
             environment.resource_residue = self._download(
                 self.environment.resource_residue
             ).astype(np.float32, copy=False)
+        if hasattr(self.environment, "total_resource_renewal_source"):
+            for name in (
+                "initial_resource_total",
+                "resource_renewal_source_step",
+                "resource_renewal_sink_step",
+                "total_resource_renewal_source",
+                "total_resource_renewal_sink",
+            ):
+                setattr(
+                    environment,
+                    name,
+                    np.asarray(getattr(self.environment, name), dtype=np.float64).copy(),
+                )
         information.field = self._download(self.information_field.field).astype(np.float32, copy=False)
         information.source = self._download(self.information_field.source).astype(np.float32, copy=False)
         information.age = self._download(self.information_field.age).astype(np.uint16, copy=False)
