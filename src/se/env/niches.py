@@ -82,6 +82,29 @@ def harvest_request_rates(
     return rates
 
 
+def constrain_harvest_request_rates(
+    rates: Any,
+    raw_storage_room: Any | None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Cap raw extraction requests by pre-harvest assimilable storage room.
+
+    Returns ``(admitted, rejected)`` in raw environmental units.  A ``None``
+    room preserves the archived post-harvest overflow contract exactly.
+    """
+
+    requested = np.asarray(rates, dtype=np.float32)
+    if raw_storage_room is None:
+        return requested, np.zeros_like(requested)
+    room = np.asarray(raw_storage_room, dtype=np.float32)
+    if room.shape != requested.shape:
+        raise ValueError("raw storage room must match harvest request rates")
+    if not np.all(np.isfinite(room)) or np.any(room < 0.0):
+        raise ValueError("raw storage room must be finite and non-negative")
+    admitted = np.minimum(np.maximum(requested, 0.0), room).astype(np.float32)
+    rejected = np.maximum(requested - admitted, 0.0).astype(np.float32)
+    return admitted, rejected
+
+
 def resource_affinity_enabled(cfg: SimulationConfig) -> bool:
     return cfg.entities.resource_affinity_schema == "normalized-four-resource-affinity-v1"
 
@@ -155,6 +178,7 @@ def policy_resource_view(
     cfg: SimulationConfig,
     *,
     resource_affinity_q: Any | None = None,
+    storage_room_fraction: Any | None = None,
 ) -> np.ndarray:
     """Return raw resources with column zero replaced by entity utility.
 
@@ -179,6 +203,13 @@ def policy_resource_view(
         raise ValueError("resource affinity must be shaped [N, 4]")
     capacities = np.asarray(cfg.environment.resource_capacity, dtype=np.float64)
     fractions = np.clip(local.astype(np.float64) / capacities[None, :], 0.0, 1.5)
+    if storage_room_fraction is not None:
+        room = np.asarray(storage_room_fraction, dtype=np.float64)
+        if room.shape != fractions.shape:
+            raise ValueError("storage room fraction must be shaped [N, 4]")
+        if not np.all(np.isfinite(room)) or np.any(room < 0.0):
+            raise ValueError("storage room fraction must be finite and non-negative")
+        fractions = fractions * np.clip(room, 0.0, 1.0)
     utility = np.sum(fractions * affinity, axis=1) / (
         RESOURCE_CHANNELS * AFFINITY_SCALE
     )

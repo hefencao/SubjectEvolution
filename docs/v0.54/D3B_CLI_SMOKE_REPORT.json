@@ -1,0 +1,360 @@
+{
+  "schema": "d3-conservative-intake-results-v1",
+  "plan": {
+    "schema": "d3-conservative-intake-plan-v1",
+    "seeds": [
+      54001,
+      54002
+    ],
+    "horizon_ticks": 30,
+    "functional_schema": "expression-gated-regulatory-resource-metabolism-v6",
+    "physiology_schema": "transport-metabolism-messenger-tissue-resource-v5",
+    "resource_intake_schema": "storage-room-constrained-preharvest-v2",
+    "single_active_population_per_seed": true,
+    "pass_fail_gate": false,
+    "raw_request_capped_before_environment_commit": true,
+    "capacity_rejected_raw_resource_remains_external": true,
+    "minimum_conversion_delay_ticks": 1,
+    "policy_resource_utility_respects_current_store_room": true,
+    "legacy_resource_v4_replay_preserved": true,
+    "named_metabolic_roles": false,
+    "diversity_reward_or_protection": false,
+    "ecological_role_labels": false,
+    "module_copy_number_changed": false
+  },
+  "completed_seed_count": 2,
+  "runs": [
+    {
+      "seed": 54001,
+      "output": "/mnt/data/v054_d3b_smoke/seed_54001",
+      "final": {
+        "alive": 500,
+        "mean_energy": 1.3636858463287354,
+        "mean_integrity": 0.9757120609283447,
+        "mean_oxygenation": 0.6166046857833862,
+        "mean_tissue_condition": 0.9934048652648926,
+        "mean_structure_condition": 0.9907504320144653,
+        "environment_resource_effective_dimensions": 3.9429018626465333,
+        "physiology_environment_effective_dimensions": 2.643044910340059,
+        "physiology_genetic_effective_dimensions": 17.88445038247464,
+        "resource_metabolism_schema": "transport-metabolism-messenger-tissue-resource-v5",
+        "resource_store_mean": [
+          0.28041424714028834,
+          0.29768701427057387,
+          0.3220671610534191,
+          0.3198708711974323
+        ],
+        "resource_store_std": [
+          0.3735944146282709,
+          0.39390633195178976,
+          0.40207322622446406,
+          0.40392780105664267
+        ],
+        "resource_store_total": [
+          140.20712357014418,
+          148.84350713528693,
+          161.03358052670956,
+          159.93543559871614
+        ],
+        "resource_store_occupancy_mean": [
+          0.23524632843448873,
+          0.24830063284921075,
+          0.2634994302190387,
+          0.26818049904142477
+        ],
+        "resource_store_capacity_mean": [
+          1.1945193351068546,
+          1.1989070719949804,
+          1.20564288921743,
+          1.2100680280352951
+        ],
+        "resource_conversion_capacity_mean": [
+          0.04010622289748252,
+          0.03974944683493372,
+          0.04000498360216104,
+          0.039790694075832016
+        ],
+        "resource_metabolism_genetic_effective_dimensions": 7.896492059006298,
+        "harvested_resources_total": [
+          353.0444888137281,
+          340.6343741696328,
+          363.9889930896461,
+          358.7878053896129
+        ],
+        "admitted_harvest_requests_total": [
+          362.673092443496,
+          345.2005374301225,
+          366.18341591209173,
+          363.01678340509534
+        ],
+        "resource_intake_capacity_rejected_total": [
+          69.44692492485046,
+          78.33947923779488,
+          66.71660128235817,
+          84.70323449373245
+        ],
+        "resource_stored_total": [
+          354.79440257175685,
+          344.14737526432623,
+          369.5155184391637,
+          364.9361364488141
+        ],
+        "resource_store_overflow_total": [
+          9.616944157686547e-07,
+          1.0774191365747754e-06,
+          1.1835496551704239e-06,
+          1.1454685621137273e-06
+        ],
+        "resource_converted_total": [
+          208.4520705584561,
+          189.45036755732866,
+          202.1790442890907,
+          198.74524657305022
+        ],
+        "resource_store_decay_total": [
+          6.135207833434778,
+          5.8534998201206765,
+          6.302894915615186,
+          6.25545699989367
+        ],
+        "resource_store_death_loss_total": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "resource_body_realized_total": [
+          108.39507669039716,
+          5.469712249918984,
+          13.052892383019545,
+          48.522970629381746,
+          47.698859177532015
+        ]
+      }
+    },
+    {
+      "seed": 54002,
+      "output": "/mnt/data/v054_d3b_smoke/seed_54002",
+      "final": {
+        "alive": 500,
+        "mean_energy": 1.3704711198806763,
+        "mean_integrity": 0.9747288823127747,
+        "mean_oxygenation": 0.6202492117881775,
+        "mean_tissue_condition": 0.9933204054832458,
+        "mean_structure_condition": 0.9906327128410339,
+        "environment_resource_effective_dimensions": 3.987151852524529,
+        "physiology_environment_effective_dimensions": 2.643044910340059,
+        "physiology_genetic_effective_dimensions": 17.842256090101195,
+        "resource_metabolism_schema": "transport-metabolism-messenger-tissue-resource-v5",
+        "resource_store_mean": [
+          0.3244579009860754,
+          0.29246927570831033,
+          0.3416754846079275,
+          0.3248170415139757
+        ],
+        "resource_store_std": [
+          0.3995060227662574,
+          0.37196183926866416,
+          0.4046387395844128,
+          0.38673585410156286
+        ],
+        "resource_store_total": [
+          162.2289504930377,
+          146.23463785415515,
+          170.83774230396375,
+          162.40852075698785
+        ],
+        "resource_store_occupancy_mean": [
+          0.26926119018912226,
+          0.2476770944052921,
+          0.2814577551102321,
+          0.2749829175652177
+        ],
+        "resource_store_capacity_mean": [
+          1.2051952313254624,
+          1.1933267511007526,
+          1.1952949162052051,
+          1.1902283091838666
+        ],
+        "resource_conversion_capacity_mean": [
+          0.0400630999004391,
+          0.03978690180505888,
+          0.040064017432795765,
+          0.039931294824772604
+        ],
+        "resource_metabolism_genetic_effective_dimensions": 7.91756506819349,
+        "harvested_resources_total": [
+          360.83478108234704,
+          340.19697891175747,
+          389.23535188660026,
+          367.3562559187412
+        ],
+        "admitted_harvest_requests_total": [
+          362.4938882831484,
+          346.1953424587846,
+          395.20507118850946,
+          369.35970371961594
+        ],
+        "resource_intake_capacity_rejected_total": [
+          76.64612901210785,
+          65.64467373490334,
+          82.15494754910469,
+          79.14031431078911
+        ],
+        "resource_stored_total": [
+          370.6635346777698,
+          342.15833608032705,
+          390.76343540640966,
+          373.759352816305
+        ],
+        "resource_store_overflow_total": [
+          8.985440077546869e-07,
+          1.011699902631058e-06,
+          1.0600458300036308e-06,
+          1.2572492679163716e-06
+        ],
+        "resource_converted_total": [
+          201.97336622440343,
+          190.14571609832745,
+          213.34476850870124,
+          204.9665574195443
+        ],
+        "resource_store_decay_total": [
+          6.46121833201994,
+          5.7779827488203575,
+          6.5809243376507816,
+          6.3842735666756525
+        ],
+        "resource_store_death_loss_total": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "resource_body_realized_total": [
+          105.02615043668979,
+          5.425091992505587,
+          13.512363978582721,
+          51.2027444420883,
+          49.19197378069058
+        ]
+      }
+    }
+  ],
+  "intake_ledger": [
+    {
+      "seed": 54001,
+      "unconstrained_request": [
+        432.12001736834645,
+        423.54001666791737,
+        432.9000171944499,
+        447.7200178988278
+      ],
+      "admitted_request": [
+        362.673092443496,
+        345.2005374301225,
+        366.18341591209173,
+        363.01678340509534
+      ],
+      "capacity_rejected": [
+        69.44692492485046,
+        78.33947923779488,
+        66.71660128235817,
+        84.70323449373245
+      ],
+      "environmental_shortfall": [
+        9.628603629767895,
+        4.566163260489702,
+        2.194422822445631,
+        4.228978015482426
+      ],
+      "actual_harvested": [
+        353.0444888137281,
+        340.6343741696328,
+        363.9889930896461,
+        358.7878053896129
+      ],
+      "post_assimilation_overflow": [
+        9.616944157686547e-07,
+        1.0774191365747754e-06,
+        1.1835496551704239e-06,
+        1.1454685621137273e-06
+      ],
+      "valid": true
+    },
+    {
+      "seed": 54002,
+      "unconstrained_request": [
+        439.14001729525626,
+        411.8400161936879,
+        477.36001873761415,
+        448.50001803040504
+      ],
+      "admitted_request": [
+        362.4938882831484,
+        346.1953424587846,
+        395.20507118850946,
+        369.35970371961594
+      ],
+      "capacity_rejected": [
+        76.64612901210785,
+        65.64467373490334,
+        82.15494754910469,
+        79.14031431078911
+      ],
+      "environmental_shortfall": [
+        1.6591072008013725,
+        5.998363547027111,
+        5.969719301909208,
+        2.00344780087471
+      ],
+      "actual_harvested": [
+        360.83478108234704,
+        340.19697891175747,
+        389.23535188660026,
+        367.3562559187412
+      ],
+      "post_assimilation_overflow": [
+        8.985440077546869e-07,
+        1.011699902631058e-06,
+        1.0600458300036308e-06,
+        1.2572492679163716e-06
+      ],
+      "valid": true
+    }
+  ],
+  "store_ledger": [
+    {
+      "seed": 54001,
+      "residual": [
+        6.0972180904173e-07,
+        7.515899653753877e-07,
+        -1.2922517385050014e-06,
+        -2.722845920288819e-06
+      ],
+      "valid": true
+    },
+    {
+      "seed": 54002,
+      "residual": [
+        -3.716912715390208e-07,
+        -6.209759249031777e-07,
+        2.560938980877836e-07,
+        1.0730971951034007e-06
+      ],
+      "valid": true
+    }
+  ],
+  "stable_trend_summary": {
+    "capacity_rejection_observed_in_any_seed": true,
+    "post_assimilation_overflow_zero_in_every_seed": true,
+    "intake_ledger_valid_in_every_seed": true,
+    "store_ledger_valid_in_every_seed": true,
+    "storage_and_conversion_used_in_every_seed": true
+  },
+  "decision_scope": "conservative-intake-substrate-not-ecological-proof",
+  "recommendation": "retain-conservative-intake-and-continue-external-resource-recycling",
+  "ecological_differentiation_claim": false,
+  "module_copy_number_ready": false,
+  "interpretation_boundary": "This run checks whether inherited buffering can reject unusable raw intake before environmental removal while retaining delayed conversion. It does not establish migration, detrital recycling, trophic transfer, coexistence, or a named metabolism."
+}

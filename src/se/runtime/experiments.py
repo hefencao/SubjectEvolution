@@ -423,6 +423,7 @@ class SimulationExperimentMixin:
                     "expression-gated-compositional-embodied-v3",
                     "expression-gated-compositional-physiological-v4",
                     "expression-gated-regulatory-physiology-v5",
+                    "expression-gated-regulatory-resource-metabolism-v6",
                 }
             ):
                 raise ValueError(
@@ -465,6 +466,7 @@ class SimulationExperimentMixin:
                 or self.cfg.functional_modules.schema not in {
                     "expression-gated-compositional-physiological-v4",
                     "expression-gated-regulatory-physiology-v5",
+                    "expression-gated-regulatory-resource-metabolism-v6",
                 }
             ):
                 raise ValueError(
@@ -485,6 +487,8 @@ class SimulationExperimentMixin:
             if self.cfg.physiology.schema not in {
                 "transport-metabolism-messenger-tissue-v2",
                 "transport-metabolism-messenger-tissue-v3",
+                "transport-metabolism-messenger-tissue-resource-v4",
+                "transport-metabolism-messenger-tissue-resource-v5",
             }:
                 raise ValueError(
                     "messenger receptor blockade requires v5 regulatory physiology"

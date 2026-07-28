@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.54.0
+
+### Conservative pre-harvest intake
+
+- Interprets the supplied D3-A run as persistent delayed buffering with a world-boundary artifact: post-harvest overflow equals roughly 59%–62% of successfully stored material.
+- Adds opt-in `transport-metabolism-messenger-tissue-resource-v5`, whose inherited free store room caps raw environmental requests before commit.
+- Converts assimilated room into raw request units through the existing inherited affinity multiplier.
+- Leaves capacity-rejected raw resource in the external cell and makes policy resource utility respect channel-specific free room.
+- Forbids post-assimilation overflow in v5 apart from floating-point tolerance and records unconstrained/admitted/rejected intake separately.
+- Retains resource-v4 unchanged for exact v0.53 checkpoint and result replay.
+- Adds `se-d3-conservative-intake`, D3-B config, protocol audit v22, tests and reporting.
+- Splits harvest commit from the main simulation coordinator to retain the project architecture boundary.
+- Adds no resource role, detritus, trophic actor, diversity reward, or module-topology change.
+- Complete packages retain only `docs/v0.54` as a version-specific directory.
+
 ## 0.53.0
 
 ### Inherited resource buffering and delayed conversion

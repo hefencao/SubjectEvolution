@@ -65,6 +65,12 @@ class StepStats:
     requested_harvest_resources: np.ndarray = field(
         default_factory=lambda: np.zeros(4, dtype=np.float64)
     )
+    unconstrained_harvest_requests: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
+    resource_intake_capacity_rejected: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
     resource_stored: np.ndarray = field(
         default_factory=lambda: np.zeros(4, dtype=np.float64)
     )

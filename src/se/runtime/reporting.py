@@ -17,6 +17,7 @@ from ..cfg import SimulationConfig
 from se.differentiation.physiology import (
     physiology_diagnostics,
     resource_metabolism_enabled,
+    storage_constrained_intake_enabled,
 )
 from se.runtime.resource_metabolism import resource_metabolism_diagnostics
 from se.subjects.control import (
@@ -1445,6 +1446,13 @@ class SimulationReportingMixin:
                 {
                     "resource_stored_total": self.total_resource_stored.tolist(),
                     "resource_store_overflow_total": self.total_resource_store_overflow.tolist(),
+                    **(
+                        {
+                            "resource_intake_capacity_rejected_total": self.total_resource_intake_capacity_rejected.tolist()
+                        }
+                        if storage_constrained_intake_enabled(self.cfg)
+                        else {}
+                    ),
                     "resource_converted_total": self.total_resource_converted.tolist(),
                     "resource_store_decay_total": self.total_resource_store_decay.tolist(),
                     "resource_store_death_loss_total": self.total_resource_store_death_loss.tolist(),
@@ -1654,6 +1662,30 @@ class SimulationReportingMixin:
                         f"resource_store_overflow_{index}_total": float(self.total_resource_store_overflow[index])
                         for index in range(4)
                     },
+                    **(
+                        {
+                            **{
+                                f"resource_intake_capacity_rejected_{index}_step": float(
+                                    stats.resource_intake_capacity_rejected[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_intake_capacity_rejected_{index}_total": float(
+                                    self.total_resource_intake_capacity_rejected[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"unconstrained_harvest_request_{index}_step": float(
+                                    stats.unconstrained_harvest_requests[index]
+                                )
+                                for index in range(4)
+                            },
+                        }
+                        if storage_constrained_intake_enabled(self.cfg)
+                        else {}
+                    ),
                     **{
                         f"resource_converted_{index}_step": float(stats.resource_converted[index])
                         for index in range(4)

@@ -1,0 +1,15 @@
+{
+  "schema": "v053-v054-final-patch-validation-v1",
+  "passed": true,
+  "changed_path_count": 124,
+  "git_diff_check": true,
+  "git_apply_check_whitespace_error_all": true,
+  "git_apply_actual": true,
+  "candidate_file_count": 290,
+  "patched_file_count": 290,
+  "missing_in_patched": [],
+  "extra_in_patched": [],
+  "hash_mismatches": [],
+  "patched_tree_tests": "259 passed, 1 skipped",
+  "patched_tree_isolated_distribution_validation": true
+}

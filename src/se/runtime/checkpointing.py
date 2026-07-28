@@ -14,7 +14,10 @@ from .. import __version__
 from ..backend import BackendUnavailableError, resolve_backend
 from ..checkpointing import read_checkpoint_bundle, write_checkpoint_bundle
 from ..cfg import SimulationConfig
-from se.differentiation.physiology import resource_metabolism_enabled
+from se.differentiation.physiology import (
+    resource_metabolism_enabled,
+    storage_constrained_intake_enabled,
+)
 from se.subjects.control import (
     AutonomyRecoveryArbiter,
     ControlArbiter,
@@ -180,6 +183,13 @@ class SimulationCheckpointMixin:
                 {
                     "total_resource_stored": self.total_resource_stored.copy(),
                     "total_resource_store_overflow": self.total_resource_store_overflow.copy(),
+                    **(
+                        {
+                            "total_resource_intake_capacity_rejected": self.total_resource_intake_capacity_rejected.copy()
+                        }
+                        if storage_constrained_intake_enabled(self.cfg)
+                        else {}
+                    ),
                     "total_resource_converted": self.total_resource_converted.copy(),
                     "total_resource_store_decay": self.total_resource_store_decay.copy(),
                     "total_resource_store_death_loss": self.total_resource_store_death_loss.copy(),
@@ -472,6 +482,11 @@ class SimulationCheckpointMixin:
             self.total_resource_store_overflow = np.asarray(
                 state.get("total_resource_store_overflow", np.zeros(4)), dtype=np.float64
             ).copy()
+            if storage_constrained_intake_enabled(self.cfg):
+                self.total_resource_intake_capacity_rejected = np.asarray(
+                    state.get("total_resource_intake_capacity_rejected", np.zeros(4)),
+                    dtype=np.float64,
+                ).copy()
             self.total_resource_converted = np.asarray(
                 state.get("total_resource_converted", np.zeros(4)), dtype=np.float64
             ).copy()
@@ -815,6 +830,10 @@ class SimulationCheckpointMixin:
         if resource_metabolism_enabled(self.cfg):
             branch.total_resource_stored = self.total_resource_stored.copy()
             branch.total_resource_store_overflow = self.total_resource_store_overflow.copy()
+            if storage_constrained_intake_enabled(self.cfg):
+                branch.total_resource_intake_capacity_rejected = (
+                    self.total_resource_intake_capacity_rejected.copy()
+                )
             branch.total_resource_converted = self.total_resource_converted.copy()
             branch.total_resource_store_decay = self.total_resource_store_decay.copy()
             branch.total_resource_store_death_loss = self.total_resource_store_death_loss.copy()

@@ -1,0 +1,13 @@
+{
+  "schema": "v054-package-content-validation-v1",
+  "passed": true,
+  "project_file_count_before_archive": 290,
+  "version_docs": [
+    "docs/v0.54"
+  ],
+  "forbidden_paths": [],
+  "tests": "259 passed, 1 skipped",
+  "isolated_distribution_validation": true,
+  "extracted_file_count": 290,
+  "content_hash_match": true
+}

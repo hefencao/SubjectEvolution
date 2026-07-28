@@ -1,0 +1,70 @@
+{
+  "schema": "v053-v054-legacy-resource-v4-compatibility-v1",
+  "passed": true,
+  "config": "mvp_short_d3a_resource_metabolism_longrun modified to 30 ticks / 160 initial entities",
+  "seed": 53001,
+  "backend": "cpu",
+  "ticks": 30,
+  "full_checkpoint_state": [
+    {
+      "tick": 15,
+      "baseline_sha256": "8880f12a6f3aef0bf135ba09250a282ae211237c16a924aeff9480eab5af15a1",
+      "candidate_sha256": "8880f12a6f3aef0bf135ba09250a282ae211237c16a924aeff9480eab5af15a1",
+      "identical": true
+    },
+    {
+      "tick": 30,
+      "baseline_sha256": "a7f16e42e3be84bcc2d9444b230f86af0e516f4991828bafaa6c088cdd33b893",
+      "candidate_sha256": "a7f16e42e3be84bcc2d9444b230f86af0e516f4991828bafaa6c088cdd33b893",
+      "identical": true
+    }
+  ],
+  "thin_checkpoint_arrays": 100,
+  "thin_checkpoint_values": 300618,
+  "thin_checkpoint_mismatches": [],
+  "common_non_timing_json_leaves": 857,
+  "json_leaf_differences": [],
+  "metric_rows": 4,
+  "common_non_timing_metric_columns": 487,
+  "metric_cells": 1948,
+  "metric_differences": [],
+  "auxiliary_files": [
+    {
+      "file": "environment_atlas.jsonl",
+      "identical": true
+    },
+    {
+      "file": "knowledge_events.jsonl",
+      "identical": true
+    },
+    {
+      "file": "knowledge_outcome_updates.csv",
+      "identical": true
+    },
+    {
+      "file": "knowledge_policy_contributions.csv",
+      "identical": true
+    },
+    {
+      "file": "knowledge_routing_costs.csv",
+      "identical": true
+    },
+    {
+      "file": "knowledge_selection_events.csv",
+      "identical": true
+    },
+    {
+      "file": "knowledge_transfers.csv",
+      "identical": true
+    },
+    {
+      "file": "knowledge_working_memory.csv",
+      "identical": true
+    },
+    {
+      "file": "subject_structure_transitions.jsonl",
+      "identical": true
+    }
+  ],
+  "interpretation": "Resource-v4 retains exact authoritative state and common non-timing outputs; conservative pre-harvest intake is enabled only by resource-v5."
+}

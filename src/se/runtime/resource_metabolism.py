@@ -18,7 +18,9 @@ from se.cfg import SimulationConfig
 from se.differentiation.physiology import (
     physiology_phenotype,
     resource_metabolism_enabled,
+    storage_constrained_intake_enabled,
 )
+from se.env.niches import AFFINITY_SCALE
 
 RESOURCE_CHANNELS = 4
 BODY_OUTCOMES = 5
@@ -49,6 +51,87 @@ def _check_non_negative_finite(name: str, values: np.ndarray) -> None:
         raise RuntimeError(f"resource metabolism {name} must be finite and non-negative")
 
 
+
+
+def resource_store_capacity_and_room(
+    entities: Any,
+    rows: np.ndarray,
+    cfg: SimulationConfig,
+    *,
+    genotype: np.ndarray,
+    gene_start: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return inherited store capacity and current non-negative room."""
+
+    indices = np.asarray(rows, dtype=np.int32)
+    if indices.size == 0 or not resource_metabolism_enabled(cfg):
+        empty = np.zeros((indices.size, RESOURCE_CHANNELS), dtype=np.float64)
+        return empty, empty.copy()
+    phenotype = physiology_phenotype(genotype, cfg, gene_start=gene_start)
+    capacity = np.asarray(phenotype.resource_store_capacity, dtype=np.float64)
+    current = np.asarray(entities.resource_store[indices], dtype=np.float64)
+    room = np.maximum(capacity - current, 0.0)
+    _check_non_negative_finite("store capacity", capacity)
+    _check_non_negative_finite("store room", room)
+    return capacity, room
+
+
+def raw_harvest_room(
+    entities: Any,
+    rows: np.ndarray,
+    cfg: SimulationConfig,
+    *,
+    genotype: np.ndarray,
+    gene_start: int,
+    resource_affinity_q: np.ndarray,
+) -> np.ndarray | None:
+    """Return maximum raw extraction that can be assimilated without overflow.
+
+    Affinity scales raw extraction before storage.  The v5 intake contract caps
+    the pre-harvest request in raw units, so the later assimilated amount fits
+    the inherited store exactly instead of removing unusable material from the
+    environment.  Legacy resource-v4 returns ``None`` and preserves archived
+    post-harvest overflow semantics.
+    """
+
+    if not storage_constrained_intake_enabled(cfg):
+        return None
+    indices = np.asarray(rows, dtype=np.int32)
+    affinity = np.asarray(resource_affinity_q, dtype=np.int64)
+    if affinity.shape != (indices.size, RESOURCE_CHANNELS):
+        raise ValueError("resource affinity must align with storage-room rows")
+    _, room = resource_store_capacity_and_room(
+        entities,
+        indices,
+        cfg,
+        genotype=genotype,
+        gene_start=gene_start,
+    )
+    raw_room = room * float(AFFINITY_SCALE) / np.maximum(affinity, 1)
+    _check_non_negative_finite("raw harvest room", raw_room)
+    return raw_room.astype(np.float32)
+
+
+def storage_room_fraction(
+    entities: Any,
+    rows: np.ndarray,
+    cfg: SimulationConfig,
+    *,
+    genotype: np.ndarray,
+    gene_start: int,
+) -> np.ndarray | None:
+    """Return per-channel room fraction for the v5 policy resource view."""
+
+    if not storage_constrained_intake_enabled(cfg):
+        return None
+    capacity, room = resource_store_capacity_and_room(
+        entities, rows, cfg, genotype=genotype, gene_start=gene_start
+    )
+    fraction = np.clip(room / np.maximum(capacity, 1.0e-12), 0.0, 1.0)
+    fraction = np.where(room <= np.maximum(capacity, 1.0) * 1.0e-7, 0.0, fraction)
+    return fraction.astype(np.float32)
+
+
 def store_assimilated_resources(
     entities: Any,
     rows: np.ndarray,
@@ -71,15 +154,17 @@ def store_assimilated_resources(
         raise ValueError("assimilated resources must be shaped [N, 4]")
     if not resource_metabolism_enabled(cfg):
         raise ValueError("resource buffering requires physiology resource-v4")
-    phenotype = physiology_phenotype(genotype, cfg, gene_start=gene_start)
-    capacity = np.asarray(phenotype.resource_store_capacity, dtype=np.float64)
+    capacity, room = resource_store_capacity_and_room(
+        entities, indices, cfg, genotype=genotype, gene_start=gene_start
+    )
     current = np.asarray(entities.resource_store[indices], dtype=np.float64)
-    room = np.maximum(capacity - current, 0.0)
     stored = np.minimum(np.maximum(values, 0.0), room)
     overflow = np.maximum(values - stored, 0.0)
     entities.resource_store[indices] = (current + stored).astype(np.float32)
     _check_non_negative_finite("stored flow", stored)
     _check_non_negative_finite("overflow flow", overflow)
+    if storage_constrained_intake_enabled(cfg) and np.any(overflow > 2.0e-6):
+        raise RuntimeError("storage-constrained intake produced post-harvest overflow")
     return stored, overflow
 
 
@@ -222,6 +307,7 @@ def initialize_resource_metabolism_state(simulation: Any) -> None:
     """Initialize cumulative D3-A ledgers without touching legacy schemas."""
     simulation.total_resource_stored = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
     simulation.total_resource_store_overflow = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
+    simulation.total_resource_intake_capacity_rejected = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
     simulation.total_resource_converted = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
     simulation.total_resource_store_decay = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
     simulation.total_resource_store_death_loss = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
@@ -295,9 +381,12 @@ __all__ = [
     "ResourceMetabolismStep",
     "commit_assimilated_harvest",
     "initialize_resource_metabolism_state",
+    "raw_harvest_room",
     "record_resource_store_death_loss",
+    "resource_store_capacity_and_room",
     "resource_metabolism_diagnostics",
     "settle_resource_metabolism",
     "settle_resource_metabolism_before_step",
+    "storage_room_fraction",
     "store_assimilated_resources",
 ]

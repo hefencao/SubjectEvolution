@@ -18,7 +18,11 @@ from .intents import ActionIntentBatch, ActionResolutionBatch, FailureReason, ac
 from se.evolution.lifecycle import BirthRequestPlan, empty_birth_request_plan
 from .policy import Action
 from .random_api import RandomContext, Stream, keys, uniform01
-from se.env.niches import harvest_request_rates, selective_harvest_enabled
+from se.env.niches import (
+    constrain_harvest_request_rates,
+    harvest_request_rates,
+    selective_harvest_enabled,
+)
 from se.subjects.social import (
     RelationUpdatePlan,
     build_share_relation_update_plan,
@@ -97,6 +101,7 @@ class ActionResolutionSnapshot:
     free_slot_count: int
     resource_affinity_q: np.ndarray | None = None
     harvest_preference_q: np.ndarray | None = None
+    raw_harvest_storage_room: np.ndarray | None = None
 
 
 @dataclass(frozen=True)
@@ -108,6 +113,8 @@ class ActionResolutionPlan:
     harvest_cells: np.ndarray
     gathered: np.ndarray
     requested: np.ndarray
+    unconstrained_requested: np.ndarray
+    storage_rejected: np.ndarray
     share: ShareResolution
     signal_rows: np.ndarray
     birth_requests: BirthRequestPlan
@@ -126,6 +133,8 @@ class HarvestResolution:
     cells: np.ndarray
     gathered: np.ndarray
     requested: np.ndarray
+    unconstrained_requested: np.ndarray
+    storage_rejected: np.ndarray
 
 
 @dataclass(frozen=True)
@@ -259,6 +268,8 @@ class DeterministicActionConflictResolver:
                 np.empty(0, dtype=np.int32),
                 np.empty((0, 4), dtype=np.float32),
                 np.empty((0, 4), dtype=np.float32),
+                np.empty((0, 4), dtype=np.float32),
+                np.empty((0, 4), dtype=np.float32),
             )
         observation_rows = np.searchsorted(snapshot.active, intents.carrier_index[harvest_rows])
         harvest_cells = snapshot.cells[observation_rows]
@@ -293,14 +304,29 @@ class DeterministicActionConflictResolver:
                 draw_index=0,
             )
         )
-        rates = harvest_request_rates(
+        unconstrained_rates = harvest_request_rates(
             affinity,
             self.cfg,
             rows=int(harvest_rows.size),
             channel_draws=channel_draws,
         )
+        raw_room = (
+            None
+            if snapshot.raw_harvest_storage_room is None
+            else snapshot.raw_harvest_storage_room[harvester_indices]
+        )
+        rates, storage_rejected = constrain_harvest_request_rates(
+            unconstrained_rates, raw_room
+        )
         gathered = np.asarray(harvest_allocator(harvest_cells, rates), dtype=np.float32)
-        return HarvestResolution(harvest_rows, harvest_cells, gathered, rates)
+        return HarvestResolution(
+            harvest_rows,
+            harvest_cells,
+            gathered,
+            rates,
+            unconstrained_rates,
+            storage_rejected,
+        )
 
     def resolve(
         self,
@@ -314,6 +340,8 @@ class DeterministicActionConflictResolver:
         harvest_rows = harvest.rows
         harvest_cells = harvest.cells
         gathered = harvest.gathered
+        unconstrained_requested = harvest.unconstrained_requested
+        storage_rejected = harvest.storage_rejected
         if harvest_rows.size:
             resolutions.resource_delta[harvest_rows] = gathered
             harvested = (
@@ -377,6 +405,8 @@ class DeterministicActionConflictResolver:
             harvest_cells=harvest_cells,
             gathered=gathered,
             requested=harvest.requested,
+            unconstrained_requested=unconstrained_requested,
+            storage_rejected=storage_rejected,
             share=share,
             signal_rows=signal_rows,
             birth_requests=birth_requests,

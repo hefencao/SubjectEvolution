@@ -138,7 +138,14 @@ from .experiments import SimulationExperimentMixin
 from .reporting import SimulationReportingMixin
 from .state import EntityState, StepStats, _wrap_periodic_float32
 from .embodied import apply_material_repair, movement_cost_with_power
-from .resource_metabolism import commit_assimilated_harvest, initialize_resource_metabolism_state, record_resource_store_death_loss, settle_resource_metabolism_before_step
+from .harvest_commit import commit_harvest_resolution
+from .resource_metabolism import (
+    initialize_resource_metabolism_state,
+    raw_harvest_room,
+    record_resource_store_death_loss,
+    settle_resource_metabolism_before_step,
+    storage_room_fraction,
+)
 from .functional_execution import (
     add_physiology_capacity_maintenance_cost,
     add_physiology_terrain_cost,
@@ -871,11 +878,19 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 if self.resource_affinity_ablation_enabled
                 else resource_affinity_quantized(ent.genotype, cfg)
             )
+            active_storage_room_fraction = storage_room_fraction(
+                ent,
+                active,
+                cfg,
+                genotype=ent.genotype[active],
+                gene_start=self.policy.physiology_gene_start(cfg),
+            )
             policy_local_resources = policy_resource_view(
                 local_resources,
                 ent.genotype[active],
                 cfg,
                 resource_affinity_q=effective_resource_affinity_q[active],
+                storage_room_fraction=active_storage_room_fraction,
             )
             info = self.information.observe(
                 active=active,
@@ -1159,11 +1174,19 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 if self.resource_affinity_ablation_enabled
                 else resource_affinity_quantized(ent.genotype, cfg)
             )
+            active_storage_room_fraction = storage_room_fraction(
+                ent,
+                active,
+                cfg,
+                genotype=ent.genotype[active],
+                gene_start=self.policy.physiology_gene_start(cfg),
+            )
             policy_local_resources = policy_resource_view(
                 local_resources,
                 ent.genotype[active],
                 cfg,
                 resource_affinity_q=effective_resource_affinity_q[active],
+                storage_room_fraction=active_storage_room_fraction,
             )
             resource_gradient = prepared.resource_gradient
             info = prepared.information
@@ -1409,6 +1432,20 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             heuristic_control=arbitration.heuristic_applied,
             autonomy_control=arbitration.autonomy_applied,
         )
+        active_raw_harvest_room = raw_harvest_room(
+            ent,
+            active,
+            cfg,
+            genotype=ent.genotype[active],
+            gene_start=self.policy.physiology_gene_start(cfg),
+            resource_affinity_q=effective_resource_affinity_q[active],
+        )
+        raw_harvest_storage_room = None
+        if active_raw_harvest_room is not None:
+            raw_harvest_storage_room = np.zeros(
+                (ent.alive.size, RESOURCE_CHANNELS), dtype=np.float32
+            )
+            raw_harvest_storage_room[active] = active_raw_harvest_room
         snapshot = ActionResolutionSnapshot(
             active=active,
             cells=cells,
@@ -1420,6 +1457,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             free_slot_count=len(ent.free_slots),
             resource_affinity_q=effective_resource_affinity_q,
             harvest_preference_q=effective_harvest_preference_q,
+            raw_harvest_storage_room=raw_harvest_storage_room,
         )
         harvest_allocator = (
             self.gpu_runtime.resolve_harvest
@@ -1429,9 +1467,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         resolution_plan = self.conflict_resolver.resolve(snapshot, intents, harvest_allocator)
         resolutions = resolution_plan.resolutions
         harvest_rows = resolution_plan.harvest_rows
-        harvest_cells = resolution_plan.harvest_cells
         gathered = resolution_plan.gathered
-        requested_harvest = resolution_plan.requested
         share = resolution_plan.share
         signal_rows = resolution_plan.signal_rows
         birth_requests = resolution_plan.birth_requests
@@ -1510,69 +1546,13 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         ent.vx[non_movers] = 0.0
         ent.vy[non_movers] = 0.0
 
-        harvest_body_delta: np.ndarray | None = None
-        if harvest_rows.size:
-            if self.gpu_runtime is not None:
-                self.gpu_runtime.commit_harvest(harvest_cells, gathered)
-            else:
-                self.environment.commit_harvest(harvest_cells, gathered)
-            harvesters = intents.carrier_index[harvest_rows]
-            stats.requested_harvest_resources = np.asarray(
-                requested_harvest, dtype=np.float64
-            ).sum(axis=0)
-            self.total_requested_harvest_resources += stats.requested_harvest_resources
-            stats.harvested_resources = np.asarray(
-                gathered, dtype=np.float64
-            ).sum(axis=0)
-            self.total_harvested_resources += stats.harvested_resources
-            if cfg.environment.schema == "legacy-four-channel-v1":
-                ent.energy[harvesters] = np.minimum(
-                    ent.energy[harvesters] + gathered[:, 0], cfg.entities.max_energy
-                )
-                ent.integrity[harvesters] = np.minimum(
-                    ent.integrity[harvesters] + gathered[:, 1] * 0.05, 1.0
-                )
-                ent.information_store[harvesters] = np.minimum(
-                    ent.information_store[harvesters] + gathered[:, 2], 3.0
-                )
-                ent.fertility[harvesters] = np.minimum(
-                    ent.fertility[harvesters] + gathered[:, 3], 3.0
-                )
-                ent.harvested_energy_total[harvesters] += gathered[:, 0]
-                stats.harvested_energy = float(gathered[:, 0].sum())
-            else:
-                if effective_resource_affinity_q is None:
-                    raise RuntimeError("effective resource affinity was not prepared")
-                assimilated, harvest_body_delta = apply_harvest_effects(
-                    gathered,
-                    ent.genotype[harvesters],
-                    cfg,
-                    resource_affinity_q=effective_resource_affinity_q[harvesters],
-                )
-                if resource_metabolism_enabled(cfg):
-                    commit_assimilated_harvest(self, harvesters, assimilated, stats)
-                    harvest_body_delta = None
-                else:
-                    ent.energy[harvesters] = np.minimum(
-                        ent.energy[harvesters] + harvest_body_delta[:, 0],
-                        cfg.entities.max_energy,
-                    )
-                    ent.integrity[harvesters] = np.minimum(
-                        ent.integrity[harvesters] + harvest_body_delta[:, 1], 1.0
-                    )
-                    ent.material[harvesters] = np.maximum(
-                        ent.material[harvesters] + harvest_body_delta[:, 2], 0.0
-                    )
-                    ent.information_store[harvesters] = np.minimum(
-                        ent.information_store[harvesters] + harvest_body_delta[:, 3], 3.0
-                    )
-                    ent.fertility[harvesters] = np.minimum(
-                        ent.fertility[harvesters] + harvest_body_delta[:, 4], 3.0
-                    )
-                    ent.harvested_energy_total[harvesters] += harvest_body_delta[:, 0]
-                    stats.harvested_energy = float(
-                        np.asarray(harvest_body_delta[:, 0], dtype=np.float64).sum()
-                    )
+        harvest_body_delta = commit_harvest_resolution(
+            self,
+            intents,
+            resolution_plan,
+            effective_resource_affinity_q,
+            stats,
+        )
 
         share = self._finalize_share_capacity(share, resolutions)
         stats.shared_energy = self._commit_shares(share)

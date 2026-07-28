@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "installed_version": "0.54.0",
+  "entry_point": "se-d3-conservative-intake",
+  "smoke_result_schema": "d3-conservative-intake-results-v1",
+  "completed_seed_count": 1,
+  "stable_trend_summary": {
+    "capacity_rejection_observed_in_any_seed": true,
+    "post_assimilation_overflow_zero_in_every_seed": true,
+    "intake_ledger_valid_in_every_seed": true,
+    "store_ledger_valid_in_every_seed": true,
+    "storage_and_conversion_used_in_every_seed": true
+  },
+  "recommendation": "retain-conservative-intake-and-continue-external-resource-recycling",
+  "official_plan_sha256": "153f2c1fd5a09f4e56d89980f25edf91fc44cac2e936925b1f1666a914bf1bfa",
+  "official_plan": {
+    "schema": "d3-conservative-intake-plan-v1",
+    "seeds": [
+      54001,
+      54002,
+      54003
+    ],
+    "horizon_ticks": 1500,
+    "functional_schema": "expression-gated-regulatory-resource-metabolism-v6",
+    "physiology_schema": "transport-metabolism-messenger-tissue-resource-v5",
+    "resource_intake_schema": "storage-room-constrained-preharvest-v2",
+    "single_active_population_per_seed": true,
+    "pass_fail_gate": false,
+    "raw_request_capped_before_environment_commit": true,
+    "capacity_rejected_raw_resource_remains_external": true,
+    "minimum_conversion_delay_ticks": 1,
+    "policy_resource_utility_respects_current_store_room": true,
+    "legacy_resource_v4_replay_preserved": true,
+    "named_metabolic_roles": false,
+    "diversity_reward_or_protection": false,
+    "ecological_role_labels": false,
+    "module_copy_number_changed": false
+  }
+}

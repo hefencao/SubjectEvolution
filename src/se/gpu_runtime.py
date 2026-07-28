@@ -31,6 +31,7 @@ from se.knowledge.policy import (
 )
 from se.knowledge.latent import latent_router_state_features
 from se.env.niches import (
+    constrain_harvest_request_rates,
     AFFINITY_SCALE,
     RESOURCE_CHANNELS,
     harvest_request_rates,
@@ -38,6 +39,7 @@ from se.env.niches import (
     resource_affinity_quantized,
     selective_harvest_enabled,
 )
+from se.runtime.resource_metabolism import storage_room_fraction
 from se.knowledge.routing_cost import RoutingCostBudgetResult, apply_routing_cost_budget
 from .intents import ActionIntentBatch
 from .policy import Action, ParametricPolicy, PolicyDecision
@@ -475,11 +477,19 @@ class HybridGpuRuntime:
             if resource_affinity_ablation_enabled
             else resource_affinity_quantized(entity.genotype, self.cfg)
         )
+        active_storage_room_fraction = storage_room_fraction(
+            entity,
+            active_host,
+            self.cfg,
+            genotype=entity.genotype[active_host],
+            gene_start=ParametricPolicy.physiology_gene_start(self.cfg),
+        )
         policy_local_resources_host = policy_resource_view(
             local_resources_host,
             entity.genotype[active_host],
             self.cfg,
             resource_affinity_q=affinity_host[active_host],
+            storage_room_fraction=active_storage_room_fraction,
         )
         policy_local_resources = xp.asarray(
             policy_local_resources_host, dtype=xp.float32
@@ -862,11 +872,14 @@ class HybridGpuRuntime:
         action = self._upload(intents.action, dtype=xp.int16)
         device_rows = xp.flatnonzero(action == int(Action.HARVEST)).astype(xp.int32, copy=False)
         if int(device_rows.size) == 0:
+            empty = np.empty((0, DeviceEnvironment.RESOURCE_CHANNELS), dtype=np.float32)
             return HarvestResolution(
                 np.empty(0, dtype=np.int32),
                 np.empty(0, dtype=np.int32),
-                np.empty((0, DeviceEnvironment.RESOURCE_CHANNELS), dtype=np.float32),
-                np.empty((0, DeviceEnvironment.RESOURCE_CHANNELS), dtype=np.float32),
+                empty.copy(),
+                empty.copy(),
+                empty.copy(),
+                empty.copy(),
             )
 
         # These are copies of the supplied read-only snapshot, not pointers
@@ -911,11 +924,19 @@ class HybridGpuRuntime:
                 draw_index=0,
             )
         )
-        host_rates = harvest_request_rates(
+        unconstrained_rates = harvest_request_rates(
             affinity,
             self.cfg,
             rows=int(host_rows.size),
             channel_draws=channel_draws,
+        )
+        raw_room = (
+            None
+            if snapshot.raw_harvest_storage_room is None
+            else snapshot.raw_harvest_storage_room[intents.carrier_index[host_rows]]
+        )
+        host_rates, storage_rejected = constrain_harvest_request_rates(
+            unconstrained_rates, raw_room
         )
         rates = self._upload(host_rates, dtype=xp.float32)
         device_gathered = self.environment.resolve_harvest(device_cells, rates)
@@ -924,6 +945,8 @@ class HybridGpuRuntime:
             self._download(device_cells).astype(np.int32, copy=False),
             self._download(device_gathered).astype(np.float32, copy=False),
             np.asarray(host_rates, dtype=np.float32),
+            np.asarray(unconstrained_rates, dtype=np.float32),
+            np.asarray(storage_rejected, dtype=np.float32),
         )
 
     def commit_harvest(self, cell_ids: np.ndarray, gathered: np.ndarray) -> None:

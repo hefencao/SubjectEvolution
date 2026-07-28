@@ -1,23 +1,21 @@
-# SE v0.53
+# SE v0.54
 
-SE is a deterministic artificial-life and subject-structure research platform. The current main line retains the conservative v3 regulatory-physiology substrate and adds inherited bounded raw-resource storage with delayed conversion.
+SE is a deterministic artificial-life and subject-structure research platform. The current main line keeps conservative regulatory physiology and delayed raw-resource conversion, then fixes the intake boundary so resources that cannot enter inherited stores are never removed from the environment.
 
-## Why v0.53
+## Why v0.54
 
-The completed three-seed, 1500-tick conservative D2-L rerun closes the physiology flow ledger in every seed. Messenger synthesis, decay, finite precursor use/recovery, computation cost, fatigue turnover, and damage/repair remain active without negative flows. That result supports retaining the physiological substrate, but it does not complete the ecology chain.
+The supplied three-seed D3-A run confirms that inherited storage and delayed conversion remain active and conservative over 1500 ticks. However, post-harvest store overflow was approximately 59%–62% of successfully stored material. The environment had already committed that extraction, so overflow disappeared from the external field without entering the entity or an external recycling pool.
 
-The next structural bottleneck was that harvested external resources were still applied to energy, integrity, material, information, or fertility immediately. That direct same-tick reward keeps selection centered on acquisition even when functional and physiological variation exists.
+That loss is a world-semantics artifact, not evidence for a metabolic strategy. v0.54 therefore introduces an opt-in D3-B intake contract:
 
-v0.53 introduces an opt-in D3-A substrate:
+- inherited free store room caps the raw environmental request before conflict resolution;
+- affinity conversion is accounted for when translating assimilated room into raw external units;
+- capacity-rejected raw material remains in the environmental cell;
+- the policy resource view is reduced by current channel-specific store room;
+- post-assimilation overflow is forbidden apart from floating-point tolerance;
+- v0.53 resource-v4 behavior remains available for exact historical replay.
 
-- each of four raw resource channels enters an inherited bounded internal store;
-- current-tick harvest cannot affect body state in the same tick;
-- stored resource is converted from the next tick onward at an inherited per-channel rate;
-- store occupancy becomes an input to the existing fixed functional operators;
-- conversion still uses the existing versioned resource-effect matrix;
-- decay, overflow, death loss, conversion, and final living stores close a raw-resource ledger.
-
-All four channels use equal base storage, conversion, and decay parameters. Channel differences must arise from the external resource-effect matrix and inherited variation, not named metabolic roles.
+No resource role, metabolic type, ecological actor, diversity reward, or module topology is added.
 
 ## Workflow
 
@@ -40,22 +38,22 @@ Artifact audit:
 make release-check
 ```
 
-## Run D3-A
+## Run D3-B
 
 ```bash
-se-d3-resource-metabolism \
-  --config configs/mvp_short_d3a_resource_metabolism_longrun.json \
-  --seeds 53001,53002,53003 \
-  --output analyses/d3a_resource_metabolism_1500 \
+se-d3-conservative-intake \
+  --config configs/mvp_short_d3b_conservative_intake_longrun.json \
+  --seeds 54001,54002,54003 \
+  --output analyses/d3b_conservative_intake_1500 \
   --backend gpu \
   --until-tick 1500
 ```
 
-D3-A is a substrate-evolution run, not a module-expression, niche, coexistence, or copy-number gate.
+D3-B verifies a conservative intake substrate. It is not a niche, coexistence, migration, trophic, or module-copy gate.
 
 ## Current version documents
 
-- [D2-L v3 result interpretation](docs/v0.53/D2L_V3_RESULT_INTERPRETATION.md)
-- [D3-A design](docs/v0.53/D3A_RESOURCE_METABOLISM_DESIGN.md)
-- [D3-A run plan](docs/v0.53/D3A_RESOURCE_METABOLISM_PLAN.md)
-- [Implementation report](docs/v0.53/IMPLEMENTATION_REPORT.md)
+- [D3-A result interpretation](docs/v0.54/D3A_RESULT_INTERPRETATION.md)
+- [D3-B conservative intake design](docs/v0.54/D3B_CONSERVATIVE_INTAKE_DESIGN.md)
+- [D3-B run plan](docs/v0.54/D3B_CONSERVATIVE_INTAKE_PLAN.md)
+- [Implementation report](docs/v0.54/IMPLEMENTATION_REPORT.md)

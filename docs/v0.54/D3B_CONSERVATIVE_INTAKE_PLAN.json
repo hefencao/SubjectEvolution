@@ -1,0 +1,23 @@
+{
+  "schema": "d3-conservative-intake-plan-v1",
+  "seeds": [
+    54001,
+    54002,
+    54003
+  ],
+  "horizon_ticks": 1500,
+  "functional_schema": "expression-gated-regulatory-resource-metabolism-v6",
+  "physiology_schema": "transport-metabolism-messenger-tissue-resource-v5",
+  "resource_intake_schema": "storage-room-constrained-preharvest-v2",
+  "single_active_population_per_seed": true,
+  "pass_fail_gate": false,
+  "raw_request_capped_before_environment_commit": true,
+  "capacity_rejected_raw_resource_remains_external": true,
+  "minimum_conversion_delay_ticks": 1,
+  "policy_resource_utility_respects_current_store_room": true,
+  "legacy_resource_v4_replay_preserved": true,
+  "named_metabolic_roles": false,
+  "diversity_reward_or_protection": false,
+  "ecological_role_labels": false,
+  "module_copy_number_changed": false
+}

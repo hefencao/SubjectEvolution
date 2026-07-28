@@ -41,6 +41,7 @@ ENTRY_POINTS = {
     "se-d2-regulatory-physiology": "se.experiments.d2_regulatory_physiology:main",
     "se-d2-regulatory-physiology-assess": "se.analysis.d2_regulatory_physiology_flows:main",
     "se-d3-resource-metabolism": "se.experiments.d3_resource_metabolism:main",
+    "se-d3-conservative-intake": "se.experiments.d3_conservative_intake:main",
     "se-d4-niche-reversal": "se.experiments.d4_niche_reversal:main",
     "se-d4-niche-assess": "se.analysis.d4_niche_reversal_effects:main",
 }

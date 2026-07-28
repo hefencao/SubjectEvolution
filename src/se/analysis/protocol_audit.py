@@ -24,10 +24,11 @@ from se.differentiation.functional import (
 from se.differentiation.physiology import (
     physiology_gene_count,
     resource_metabolism_enabled,
+    storage_constrained_intake_enabled,
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v21"
+SCHEMA = "structural-measurement-protocol-audit-v22"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -419,6 +420,24 @@ def build_protocol_audit(
                 "harvest_enters_store_before_body": bool(resource_metabolism_enabled(cfg)),
                 "minimum_conversion_delay_ticks": 1 if resource_metabolism_enabled(cfg) else 0,
                 "same_tick_harvest_body_effect": False if resource_metabolism_enabled(cfg) else True,
+                "resource_intake_schema": (
+                    "storage-room-constrained-preharvest-v2"
+                    if storage_constrained_intake_enabled(cfg)
+                    else "unconstrained-post-harvest-store-v1"
+                ),
+                "storage_constrained_preharvest": bool(
+                    storage_constrained_intake_enabled(cfg)
+                ),
+                "capacity_rejected_resource_remains_external": bool(
+                    storage_constrained_intake_enabled(cfg)
+                ),
+                "policy_resource_utility_respects_store_room": bool(
+                    storage_constrained_intake_enabled(cfg)
+                ),
+                "legacy_post_harvest_overflow_replay": bool(
+                    resource_metabolism_enabled(cfg)
+                    and not storage_constrained_intake_enabled(cfg)
+                ),
                 "store_occupancy_visible_to_operators": bool(
                     resource_metabolism_modules_enabled(cfg)
                 ),
@@ -447,6 +466,21 @@ def build_protocol_audit(
                 "pass_fail_module_gate": False,
                 "minimum_conversion_delay_ticks": 1,
                 "strict_raw_store_ledger": True,
+                "legacy_intake_semantics": "post-harvest bounded storage with overflow loss",
+                "module_copy_number_changed": False,
+                "stable_niche_claim": False,
+            },
+            "conservative_intake_experiment": {
+                "plan_schema": "d3-conservative-intake-plan-v1",
+                "result_schema": "d3-conservative-intake-results-v1",
+                "single_active_population_per_seed": True,
+                "pass_fail_module_gate": False,
+                "preharvest_request_capped_by_inherited_store_room": True,
+                "affinity_adjusted_capacity_in_raw_environment_units": True,
+                "capacity_rejected_resource_remains_external": True,
+                "post_assimilation_overflow_forbidden": True,
+                "policy_resource_utility_respects_store_room": True,
+                "strict_store_ledger": True,
                 "module_copy_number_changed": False,
                 "stable_niche_claim": False,
             },
@@ -560,9 +594,12 @@ def build_protocol_audit(
                 "ports. The archived v4 coarse-drive schema is retained for replay only. The v5 "
                 "schema separates regulatory intent from inherited transport, metabolism, finite "
                 "messenger turnover, fatigue and repair execution. The v6 functional / v4 physiology "
-                "pair adds inherited bounded raw-resource storage and delayed conversion so harvest is "
-                "not an immediate body reward. It still lacks detritus recycling, trophic transfer, a "
-                "completed food chain, dynamic topology and stable niche proof."
+                "pair adds inherited bounded raw-resource storage and delayed conversion but retains "
+                "archived post-harvest overflow loss. The v6 functional / v5 physiology pair constrains "
+                "environmental extraction by inherited free store room before commit, so rejected raw "
+                "resource remains external. It still lacks detritus recycling, spatial separation of "
+                "collection and processing, trophic transfer, a completed food chain, dynamic topology "
+                "and stable niche proof."
             ),
             "leave_one_out_protocol": {
                 "plan_schema": "d2-module-leave-one-out-plan-v1",
@@ -968,6 +1005,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- regulatory physiology experiment: {payload['functional_module_protocol']['regulatory_physiology_experiment']}",
         f"- resource metabolism semantics: {payload['functional_module_protocol']['resource_metabolism_semantics']}",
         f"- resource metabolism experiment: {payload['functional_module_protocol']['resource_metabolism_experiment']}",
+        f"- conservative intake experiment: {payload['functional_module_protocol']['conservative_intake_experiment']}",
         f"- known architecture limit: {payload['functional_module_protocol']['known_architecture_limit']}",
         f"- leave-one-out protocol: {payload['functional_module_protocol']['leave_one_out_protocol']}",
         f"- effect qualification: {payload['functional_module_protocol']['effect_qualification']}",

@@ -1,55 +1,51 @@
 # SE project status
 
-Version: **0.53.0**
+Version: **0.54.0**
 
 ## Current causal chain
 
 ```text
 orthogonal resource and abiotic fields
-→ inherited resource affinity and elastic capacities
-→ fixed four-slot inherited functional operators
-→ inherited feed-forward composition
+→ inherited affinity and elastic capacities
+→ fixed inherited functional operators and feed-forward composition
 → regulatory requests separated from physiological execution
 → inherited transport / reserve / conversion / fatigue / repair / messenger parameters
-→ conservative non-negative flow ledger and starvation debt settlement
+→ conservative non-negative physiological flow ledger
 → inherited bounded raw-resource stores
-→ delayed per-channel conversion through the existing resource-effect matrix
-→ future spatial resource processing, detritus, consumption, defense and trophic transfer
-→ ecological differentiation tests only after those processes create distinct demands
+→ at least one-tick delayed conversion through the existing resource-effect matrix
+→ storage-constrained environmental intake before resource commit
+→ future conserved excretion / detritus / carcass recycling
+→ spatial separation of collection and processing opportunities
+→ entity consumption, defense and trophic transfer
+→ ecological differentiation tests only after these processes create distinct demands
 ```
 
-## D2-L v3 evidence
+## D3-A evidence and correction
 
-The supplied three-seed, 1500-tick rerun uses `transport-metabolism-messenger-tissue-v3`. Every seed has finite non-negative physiology flows, messenger turnover, finite precursor turnover, computation cost, fatigue turnover, and damage/repair. The result supports retaining the conservative physiology substrate. It does not establish a named organ, stable niche, food chain, or module-copy rationale.
+The supplied D3-A run completed three 1500-tick seeds. Storage, conversion, all four channels, genetic variation, and the internal store ledger remained active in every seed. Conversion consumed about 93% of cumulatively stored material.
 
-## D3-A resource metabolism
+The run also exposed a semantic defect: post-harvest overflow was about 59%–62% of successful stored material. Because the environment was debited before capacity was checked, this overflow vanished instead of remaining external or entering a conserved detritus pool. Population endpoints from this run must not be interpreted before correcting that loss.
+
+## D3-B conservative intake
 
 The opt-in pair is:
 
 - functional schema `expression-gated-regulatory-resource-metabolism-v6`;
 - input schema `internal-homeostasis-local-resources-abiotic-stores-feedforward-v5`;
-- physiology schema `transport-metabolism-messenger-tissue-resource-v4`.
+- physiology schema `transport-metabolism-messenger-tissue-resource-v5`;
+- derived intake contract `storage-room-constrained-preharvest-v2`.
 
-D3-A adds eight inherited parameters: four store capacities and four conversion capacities. All channels share equal base values. Harvested raw resources enter bounded stores and can affect body state only on later ticks. Store occupancy is visible to the same fixed operators, allowing behavior to respond to internal inventory without assigning resource roles.
+The inherited store room is converted into maximum raw request units using the entity's resource affinity. Only that admitted request enters environmental conflict resolution. Capacity-rejected raw resource remains in the cell. The policy's resource utility is multiplied by channel-specific free-room fraction, so a full store does not advertise an unusable opportunity.
 
-The ledger is:
-
-```text
-cumulative stored
-= cumulative converted
-+ cumulative decay
-+ cumulative death loss
-+ final stores carried by living entities
-```
-
-Death loss is currently explicit dissipation. Detritus recycling is intentionally deferred until a conserved external matter-transfer process is designed.
+The historical resource-v4 schema preserves v0.53 post-harvest overflow behavior for exact checkpoint and result replay.
 
 ## Still incomplete
 
-- spatially distinct processing opportunities and migration cycles;
-- excretion, detritus, scavenging, and external matter recycling;
+- external excretion, detritus, carcass and scavenging matter pools;
+- spatially distinct collection and processing opportunities;
+- migration cycles driven by stored inventory and environmental seasonality;
 - consumption of other entities and corresponding defense;
-- reproduction investment supplied through delayed stores rather than the current body outcome alone;
-- stable coexistence, ecotypes, and trophic-chain evidence;
+- reproduction investment supplied through delayed stores;
+- stable coexistence, ecotypes and trophic-chain evidence;
 - dynamic module topology or copy-number evolution;
 - deterministic inherited sparse routing beyond continuous costed routes.
