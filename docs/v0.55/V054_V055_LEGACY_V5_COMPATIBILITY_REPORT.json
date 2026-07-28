@@ -1,0 +1,36 @@
+{
+  "schema": "legacy-closed-state-compatibility-v1",
+  "baseline_version": "0.54.0",
+  "candidate_version": "0.55.0",
+  "config": "mvp_short_d3b_conservative_intake_longrun.json",
+  "seed": 54001,
+  "backend": "cpu",
+  "ticks": 60,
+  "legacy_physiology_schema": "transport-metabolism-messenger-tissue-resource-v5",
+  "new_recycling_enabled": false,
+  "thin_checkpoint": {
+    "base_sha256": "6b54ef6c6ea4a3f8fe46677617c74a801de7f3347908b2a6b8cd834f201121e2",
+    "candidate_sha256": "6b54ef6c6ea4a3f8fe46677617c74a801de7f3347908b2a6b8cd834f201121e2",
+    "common_array_count": 50,
+    "compared_value_count": 457075,
+    "different_arrays": [],
+    "exact": true
+  },
+  "full_checkpoint": {
+    "base_state_sha256": "03c4c05cf242ea0ce44f4bcda4c5d31538268166fa29e113aec93df951ca0488",
+    "candidate_state_sha256": "03c4c05cf242ea0ce44f4bcda4c5d31538268166fa29e113aec93df951ca0488",
+    "state_size_bytes": 9780665,
+    "exact": true,
+    "archive_sha_expected_to_differ_due_to_version_metadata": true
+  },
+  "common_non_timing_json_leaf_count": 2612,
+  "non_timing_json_differences": [],
+  "metrics_row_count": 2,
+  "common_non_timing_metrics_column_count": 506,
+  "compared_non_timing_metrics_cell_count": 1012,
+  "non_timing_metrics_differences": [],
+  "auxiliary_common_file_count": 9,
+  "auxiliary_different_files": [],
+  "passed": true,
+  "interpretation": "The v0.54 resource-v5 trajectory is exactly preserved when D3-C resource-v6 recycling is not selected. Version metadata and runtime timing are excluded."
+}

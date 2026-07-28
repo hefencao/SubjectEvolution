@@ -7,6 +7,7 @@ import numpy as np
 from ..cfg import SimulationConfig
 from .danger_evidence import DANGER_EVIDENCE_SCALE
 from .process import build_environment_process, environment_process_metadata
+from .recycling import initialize_resource_residue, update_resource_recycling
 from .diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
     diffuse_resource_fields,
@@ -55,6 +56,7 @@ class Environment:
         )[:, None, None]
         self.hazard = self._hazard_pattern(0)
         self.mortality_trace = np.zeros((gy, gx), dtype=np.float32)
+        initialize_resource_residue(self)
         self.oxygen, self.terrain, self.wear = physiology_fields(cfg, 0)
 
     def _normalized_grid(self, xx: np.ndarray, yy: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -221,6 +223,8 @@ class Environment:
         """
 
         self.resources = self.resources[:, ::-1, ::-1].copy()
+        if hasattr(self, "resource_residue"):
+            self.resource_residue = self.resource_residue[:, ::-1, ::-1].copy()
         self.resource_spatial_reversed = not self.resource_spatial_reversed
 
     def reverse_spatial_orientation(self) -> None:
@@ -327,6 +331,7 @@ class Environment:
         ).astype(np.float32)
 
     def update(self, tick: int) -> None:
+        update_resource_recycling(self)
         seasonal = self._seasonal_multiplier(tick)
         growth = self.regeneration * seasonal * (
             1.0 - self.resources / np.maximum(self.capacity, 1e-6)

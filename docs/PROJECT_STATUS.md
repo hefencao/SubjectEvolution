@@ -1,6 +1,6 @@
 # SE project status
 
-Version: **0.54.0**
+Version: **0.55.0**
 
 ## Current causal chain
 
@@ -14,36 +14,49 @@ orthogonal resource and abiotic fields
 → inherited bounded raw-resource stores
 → at least one-tick delayed conversion through the existing resource-effect matrix
 → storage-constrained environmental intake before resource commit
-→ future conserved excretion / detritus / carcass recycling
+→ identity-preserving external residual-material deposition, diffusion and release
 → spatial separation of collection and processing opportunities
-→ entity consumption, defense and trophic transfer
+→ broader body decomposition / excretion and entity-to-entity material transfer
 → ecological differentiation tests only after these processes create distinct demands
 ```
 
-## D3-A evidence and correction
+## D3-B result
 
-The supplied D3-A run completed three 1500-tick seeds. Storage, conversion, all four channels, genetic variation, and the internal store ledger remained active in every seed. Conversion consumed about 93% of cumulatively stored material.
+The supplied D3-B run completed three 1500-tick seeds. Capacity rejection, storage, delayed conversion, intake-ledger closure and internal-store-ledger closure were present in every seed.
 
-The run also exposed a semantic defect: post-harvest overflow was about 59%–62% of successful stored material. Because the environment was debited before capacity was checked, this overflow vanished instead of remaining external or entering a conserved detritus pool. Population endpoints from this run must not be interpreted before correcting that loss.
+The accumulated post-assimilation residual was about `1.6e-4`–`1.8e-4` per run, but only `6e-9`–`9e-9` relative to per-channel harvested mass. The old summary used a fixed absolute `1e-4` run-level threshold and incorrectly reported failure. The scale-aware reassessment passes all three seeds.
 
-## D3-B conservative intake
+## D3-C external recycling
 
-The opt-in pair is:
+The opt-in physiology schema is:
 
-- functional schema `expression-gated-regulatory-resource-metabolism-v6`;
-- input schema `internal-homeostasis-local-resources-abiotic-stores-feedforward-v5`;
-- physiology schema `transport-metabolism-messenger-tissue-resource-v5`;
-- derived intake contract `storage-room-constrained-preharvest-v2`.
+- `transport-metabolism-messenger-tissue-resource-v6`.
 
-The inherited store room is converted into maximum raw request units using the entity's resource affinity. Only that admitted request enters environmental conflict resolution. Capacity-rejected raw resource remains in the cell. The policy's resource utility is multiplied by channel-specific free-room fraction, so a full store does not advertise an unusable opportunity.
+It retains the D3-B pre-harvest capacity contract and adds one external field:
 
-The historical resource-v4 schema preserves v0.53 post-harvest overflow behavior for exact checkpoint and result replay.
+- four-channel `identity-preserving-spatial-residue-v1`.
+
+Sources are restricted to material already accounted by the internal raw-store ledger:
+
+- internal store decay;
+- raw stores carried by entities at death.
+
+Each source deposits at the entity's current cell and preserves its resource channel. The residual field:
+
+- remains external for at least one tick;
+- diffuses with the existing same-channel resource diffusion rate;
+- releases with the existing same-channel store-decay rate;
+- releases only into free capacity in the same external resource field;
+- remains in the residual field when external capacity is full.
+
+This is a matter-transfer substrate, not a biological decomposer or scavenger population. Body energy, tissue and structure are not yet converted into external material.
 
 ## Still incomplete
 
-- external excretion, detritus, carcass and scavenging matter pools;
+- externalization of metabolic byproducts and non-store body material;
+- evolved uptake or processing of residual material as a distinct opportunity;
 - spatially distinct collection and processing opportunities;
-- migration cycles driven by stored inventory and environmental seasonality;
+- migration cycles driven by inventory and seasonality;
 - consumption of other entities and corresponding defense;
 - reproduction investment supplied through delayed stores;
 - stable coexistence, ecotypes and trophic-chain evidence;

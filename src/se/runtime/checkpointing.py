@@ -17,6 +17,7 @@ from ..cfg import SimulationConfig
 from se.differentiation.physiology import (
     resource_metabolism_enabled,
     storage_constrained_intake_enabled,
+    external_resource_recycling_enabled,
 )
 from se.subjects.control import (
     AutonomyRecoveryArbiter,
@@ -194,6 +195,16 @@ class SimulationCheckpointMixin:
                     "total_resource_store_decay": self.total_resource_store_decay.copy(),
                     "total_resource_store_death_loss": self.total_resource_store_death_loss.copy(),
                     "total_resource_body_realized": self.total_resource_body_realized.copy(),
+                    **(
+                        {
+                            "total_resource_residue_deposited": self.total_resource_residue_deposited.copy(),
+                            "total_resource_residue_released": self.total_resource_residue_released.copy(),
+                            "pending_resource_residue_cells": self.pending_resource_residue_cells.copy(),
+                            "pending_resource_residue_amounts": self.pending_resource_residue_amounts.copy(),
+                        }
+                        if external_resource_recycling_enabled(self.cfg)
+                        else {}
+                    ),
                 }
                 if resource_metabolism_enabled(self.cfg)
                 else {}
@@ -499,6 +510,19 @@ class SimulationCheckpointMixin:
             self.total_resource_body_realized = np.asarray(
                 state.get("total_resource_body_realized", np.zeros(5)), dtype=np.float64
             ).copy()
+            if external_resource_recycling_enabled(self.cfg):
+                self.total_resource_residue_deposited = np.asarray(
+                    state.get("total_resource_residue_deposited", np.zeros(4)), dtype=np.float64
+                ).copy()
+                self.total_resource_residue_released = np.asarray(
+                    state.get("total_resource_residue_released", np.zeros(4)), dtype=np.float64
+                ).copy()
+                self.pending_resource_residue_cells = np.asarray(
+                    state.get("pending_resource_residue_cells", np.zeros(0)), dtype=np.int32
+                ).copy()
+                self.pending_resource_residue_amounts = np.asarray(
+                    state.get("pending_resource_residue_amounts", np.zeros((0, 4))), dtype=np.float32
+                ).copy()
         self.action_counts = np.asarray(state["action_counts"], dtype=np.int64).copy()
         self.benefit_flow_energy_total = np.asarray(
             state["benefit_flow_energy_total"], dtype=np.float64
@@ -838,6 +862,11 @@ class SimulationCheckpointMixin:
             branch.total_resource_store_decay = self.total_resource_store_decay.copy()
             branch.total_resource_store_death_loss = self.total_resource_store_death_loss.copy()
             branch.total_resource_body_realized = self.total_resource_body_realized.copy()
+            if external_resource_recycling_enabled(self.cfg):
+                branch.total_resource_residue_deposited = self.total_resource_residue_deposited.copy()
+                branch.total_resource_residue_released = self.total_resource_residue_released.copy()
+                branch.pending_resource_residue_cells = self.pending_resource_residue_cells.copy()
+                branch.pending_resource_residue_amounts = self.pending_resource_residue_amounts.copy()
         branch.action_counts = self.action_counts.copy()
         branch.benefit_flow_energy_total = self.benefit_flow_energy_total.copy()
         branch.lagged_benefit_boundary = self.lagged_benefit_boundary.clone()

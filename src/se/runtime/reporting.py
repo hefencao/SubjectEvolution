@@ -18,8 +18,10 @@ from se.differentiation.physiology import (
     physiology_diagnostics,
     resource_metabolism_enabled,
     storage_constrained_intake_enabled,
+    external_resource_recycling_enabled,
 )
 from se.runtime.resource_metabolism import resource_metabolism_diagnostics
+from se.env.recycling import resource_recycling_diagnostics
 from se.subjects.control import (
     AutonomyRecoveryArbiter,
     ControlArbiter,
@@ -1457,6 +1459,15 @@ class SimulationReportingMixin:
                     "resource_store_decay_total": self.total_resource_store_decay.tolist(),
                     "resource_store_death_loss_total": self.total_resource_store_death_loss.tolist(),
                     "resource_body_realized_total": self.total_resource_body_realized.tolist(),
+                    **(
+                        {
+                            "resource_residue_deposited_total": self.total_resource_residue_deposited.tolist(),
+                            "resource_residue_released_total": self.total_resource_residue_released.tolist(),
+                            **resource_recycling_diagnostics(self.environment),
+                        }
+                        if external_resource_recycling_enabled(self.cfg)
+                        else {}
+                    ),
                 }
                 if resource_metabolism_enabled(self.cfg)
                 else {}
@@ -1710,6 +1721,28 @@ class SimulationReportingMixin:
                         f"resource_store_death_loss_{index}_total": float(self.total_resource_store_death_loss[index])
                         for index in range(4)
                     },
+                    **(
+                        {
+                            **{
+                                f"resource_residue_deposited_{index}_step": float(stats.resource_residue_deposited[index])
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_residue_deposited_{index}_total": float(self.total_resource_residue_deposited[index])
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_residue_released_{index}_step": float(stats.resource_residue_released[index])
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_residue_released_{index}_total": float(self.total_resource_residue_released[index])
+                                for index in range(4)
+                            },
+                        }
+                        if external_resource_recycling_enabled(self.cfg)
+                        else {}
+                    ),
                     **{
                         f"resource_body_realized_{index}_step": float(stats.resource_body_realized[index])
                         for index in range(5)

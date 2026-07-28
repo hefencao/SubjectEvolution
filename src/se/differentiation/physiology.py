@@ -20,6 +20,7 @@ LEGACY_REGULATORY_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-v2"
 CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-v3"
 RESOURCE_METABOLISM_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v4"
 CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v5"
+RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v6"
 REGULATORY_PHYSIOLOGY_SCHEMA = CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA
 REGULATORY_PHYSIOLOGY_SCHEMAS = frozenset(
     {
@@ -27,6 +28,7 @@ REGULATORY_PHYSIOLOGY_SCHEMAS = frozenset(
         CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA,
         RESOURCE_METABOLISM_PHYSIOLOGY_SCHEMA,
         CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA,
+        RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
     }
 )
 PHYSIOLOGY_GENE_NAMES = (
@@ -91,6 +93,7 @@ def conservative_regulatory_physiology_enabled(cfg: SimulationConfig) -> bool:
             CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA,
             RESOURCE_METABOLISM_PHYSIOLOGY_SCHEMA,
             CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA,
+            RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
         }
     )
 
@@ -100,6 +103,7 @@ def resource_metabolism_enabled(cfg: SimulationConfig) -> bool:
         and cfg.physiology.schema in {
             RESOURCE_METABOLISM_PHYSIOLOGY_SCHEMA,
             CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA,
+            RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
         }
     )
 
@@ -107,7 +111,20 @@ def resource_metabolism_enabled(cfg: SimulationConfig) -> bool:
 def storage_constrained_intake_enabled(cfg: SimulationConfig) -> bool:
     return bool(
         cfg.physiology.enabled
-        and cfg.physiology.schema == CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA
+        and cfg.physiology.schema in {
+            CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA,
+            RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
+        }
+    )
+
+
+
+def external_resource_recycling_enabled(cfg: SimulationConfig) -> bool:
+    """Return whether identity-preserving external residue recycling is active."""
+
+    return bool(
+        cfg.physiology.enabled
+        and cfg.physiology.schema == RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA
     )
 
 
@@ -303,6 +320,7 @@ def physiology_genome_energy(
 
 __all__ = [
     "CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA",
+    "RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA",
     "CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA",
     "LEGACY_REGULATORY_PHYSIOLOGY_SCHEMA",
     "PHYSIOLOGY_GENE_COUNT",
@@ -320,6 +338,7 @@ __all__ = [
     "physiology_genome_energy",
     "physiology_phenotype",
     "regulatory_physiology_enabled",
+    "external_resource_recycling_enabled",
     "resource_metabolism_enabled",
     "storage_constrained_intake_enabled",
 ]

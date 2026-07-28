@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.55.0
+
+### Scale-aware intake assessment and external raw-material recycling
+
+- Reassesses the supplied D3-B run and shows that post-assimilation overflow is only about `6e-9`–`9e-9` of per-channel harvested mass.
+- Replaces exact/absolute-zero interpretation with a scale-aware floating-point tolerance and adds `se-d3-conservative-intake-assess`.
+- Adds opt-in `transport-metabolism-messenger-tissue-resource-v6`.
+- Adds a four-channel identity-preserving spatial residual-material field.
+- Deposits internal-store decay and death-carried raw stores locally without renaming resource channels.
+- Enforces at least one tick of external residence, same-channel diffusion, capacity-limited same-channel release and a closed external residue ledger.
+- Adds `se-d3-external-recycling`, D3-C config, protocol audit v23, checkpoint/GPU synchronization, tests and reporting.
+- Adds a pre-install version-consistency check to prevent pyproject/package/Makefile drift during `conda-sync`.
+- Preserves resource-v5 state and outputs exactly when D3-C is disabled.
+- Adds no decomposer, scavenger, trophic role, ecological label, diversity reward or module topology change.
+- Complete packages retain only `docs/v0.55` as a version-specific directory.
+
 ## 0.54.0
 
 ### Conservative pre-harvest intake

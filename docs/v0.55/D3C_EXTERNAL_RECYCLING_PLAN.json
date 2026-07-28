@@ -1,0 +1,21 @@
+{
+  "schema": "d3-external-recycling-plan-v1",
+  "seeds": [
+    55001,
+    55002,
+    55003
+  ],
+  "horizon_ticks": 1500,
+  "physiology_schema": "transport-metabolism-messenger-tissue-resource-v6",
+  "resource_recycling_schema": "identity-preserving-spatial-residue-v1",
+  "store_decay_deposits_same_channel_residue": true,
+  "death_store_deposits_same_channel_residue": true,
+  "minimum_external_residue_delay_ticks": 1,
+  "residue_diffusion_reuses_channel_resource_diffusion": true,
+  "residue_release_reuses_channel_store_decay_rate": true,
+  "release_limited_by_external_resource_capacity": true,
+  "named_decomposer_or_scavenger_roles": false,
+  "diversity_reward_or_protection": false,
+  "ecological_role_labels": false,
+  "pass_fail_gate": false
+}

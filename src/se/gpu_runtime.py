@@ -298,6 +298,10 @@ class HybridGpuRuntime:
         self.environment.mortality_trace = self._upload(
             environment.mortality_trace, dtype=xp.float32, copy=True
         )
+        if hasattr(environment, "resource_residue"):
+            self.environment.resource_residue = self._upload(
+                environment.resource_residue, dtype=xp.float32, copy=True
+            )
         self.information_field.field = self._upload(information.field, dtype=xp.float32, copy=True)
         self.information_field.source = self._upload(information.source, dtype=xp.float32, copy=True)
         self.information_field.age = self._upload(information.age, dtype=xp.uint16, copy=True)
@@ -315,6 +319,10 @@ class HybridGpuRuntime:
         environment.mortality_trace = self._download(
             self.environment.mortality_trace
         ).astype(np.float32, copy=False)
+        if hasattr(self.environment, "resource_residue"):
+            environment.resource_residue = self._download(
+                self.environment.resource_residue
+            ).astype(np.float32, copy=False)
         information.field = self._download(self.information_field.field).astype(np.float32, copy=False)
         information.source = self._download(self.information_field.source).astype(np.float32, copy=False)
         information.age = self._download(self.information_field.age).astype(np.uint16, copy=False)
@@ -987,6 +995,12 @@ class HybridGpuRuntime:
             flat[channel, device_cells] = xp.maximum(
                 flat[channel, device_cells] - device_totals, xp.float32(0.0)
             ).astype(xp.float32)
+
+    def deposit_resource_residue(self, cell_ids: np.ndarray, amounts: np.ndarray) -> np.ndarray:
+        """Deposit external residue on the authoritative device environment."""
+        from se.env.recycling import deposit_resource_residue
+
+        return deposit_resource_residue(self.environment, cell_ids, amounts)
 
     def _emit_reference_batch(
         self, channel: int, cell_ids: np.ndarray, strengths: np.ndarray

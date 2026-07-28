@@ -1,0 +1,65 @@
+{
+  "schema": "d3-conservative-intake-assessment-v1",
+  "source_schema": "d3-conservative-intake-results-v1",
+  "completed_seed_count": 3,
+  "rows": [
+    {
+      "seed": 54001,
+      "overflow": [
+        4.596263122136346e-05,
+        3.830562088158462e-05,
+        4.552561079795847e-05,
+        4.34674519630418e-05
+      ],
+      "overflow_fraction_of_harvest": [
+        7.584302631285365e-09,
+        6.40394308202083e-09,
+        7.702261029799237e-09,
+        7.283652056883881e-09
+      ],
+      "max_overflow_fraction": 7.702261029799237e-09,
+      "within_tolerance": true,
+      "intake_ledger_valid": true
+    },
+    {
+      "seed": 54002,
+      "overflow": [
+        4.524098032354651e-05,
+        3.495061990821391e-05,
+        3.510990608590614e-05,
+        4.09785757935488e-05
+      ],
+      "overflow_fraction_of_harvest": [
+        7.814803669525696e-09,
+        6.009939222012809e-09,
+        6.0221647237822694e-09,
+        7.068594020749909e-09
+      ],
+      "max_overflow_fraction": 7.814803669525696e-09,
+      "within_tolerance": true,
+      "intake_ledger_valid": true
+    },
+    {
+      "seed": 54003,
+      "overflow": [
+        5.0455051111231164e-05,
+        3.9010699449004704e-05,
+        4.514047796799758e-05,
+        4.264826009980904e-05
+      ],
+      "overflow_fraction_of_harvest": [
+        8.538835797182204e-09,
+        6.45883042097184e-09,
+        7.45077384704921e-09,
+        7.027071739868248e-09
+      ],
+      "max_overflow_fraction": 8.538835797182204e-09,
+      "within_tolerance": true,
+      "intake_ledger_valid": true
+    }
+  ],
+  "store_ledger_valid_in_every_seed": true,
+  "passed": true,
+  "recommendation": "retain-conservative-intake-and-continue-external-resource-recycling",
+  "interpretation_boundary": "Post-assimilation overflow is evaluated relative to per-channel harvested mass, not by exact zero or an absolute run-length-dependent threshold."
+}

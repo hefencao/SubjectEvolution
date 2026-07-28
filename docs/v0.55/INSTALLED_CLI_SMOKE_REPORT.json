@@ -1,0 +1,22 @@
+{
+  "schema": "v055-installed-cli-smoke-v1",
+  "passed": true,
+  "assessment": {
+    "schema": "d3-conservative-intake-assessment-v1",
+    "passed": true,
+    "recommendation": "retain-conservative-intake-and-continue-external-resource-recycling",
+    "max_overflow_fraction": 8.538835797182204e-09
+  },
+  "external_recycling": {
+    "schema": "d3-external-recycling-results-v1",
+    "completed_seed_count": 1,
+    "recommendation": "retain-external-recycling-and-continue-spatial-collection-processing",
+    "stable_trend_summary": {
+      "store_decay_deposited_in_every_seed": true,
+      "death_store_source_observed_in_any_seed": false,
+      "external_residue_released_in_every_seed": true,
+      "external_residue_ledger_valid_in_every_seed": true,
+      "storage_and_conversion_used_in_every_seed": true
+    }
+  }
+}

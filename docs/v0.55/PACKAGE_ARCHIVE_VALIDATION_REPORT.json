@@ -1,0 +1,23 @@
+{
+  "schema": "package-archive-validation-v1",
+  "passed": true,
+  "candidate_version": "0.55.0",
+  "archive_root": "se_v055_project",
+  "project_file_count": 300,
+  "extracted_file_count": 300,
+  "exact_tree_hash_match": true,
+  "version_directories": [
+    "docs/v0.55"
+  ],
+  "forbidden_artifacts": [],
+  "extracted_tree_tests": {
+    "passed": true,
+    "passed_count": 265,
+    "skipped_count": 1,
+    "test_file_count": 53
+  },
+  "extracted_tree_isolated_distribution_validation": {
+    "passed": true
+  },
+  "interpretation": "The deterministic archive reproduces the project tree exactly and contains no Git, cache, egg-info, build, dist, or older versioned-document directories."
+}

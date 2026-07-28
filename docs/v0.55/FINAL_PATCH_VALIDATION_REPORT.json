@@ -1,0 +1,27 @@
+{
+  "schema": "final-patch-validation-v1",
+  "passed": true,
+  "baseline": "se_v054_project.zip",
+  "candidate_version": "0.55.0",
+  "changed_path_count": 133,
+  "git_diff_check_passed": true,
+  "git_apply_check_passed": true,
+  "whitespace_error_check_passed": true,
+  "zero_fuzz_or_offset": true,
+  "expected_final_project_file_count": 300,
+  "pre_report_replay_file_count": 298,
+  "pre_report_replay_exact": true,
+  "patched_tree_tests": {
+    "passed": true,
+    "passed_count": 265,
+    "skipped_count": 1,
+    "test_file_count": 53
+  },
+  "patched_tree_isolated_distribution_validation": {
+    "passed": true,
+    "execution_note": "Combined commands were split after the host total-time limit terminated the distribution phase; the independent release-check passed on the same exact patched source tree."
+  },
+  "interpretation": "The patch is generated from the official v0.54 package, passes whitespace and apply checks, applies with no fuzz or offset, and reconstructs all 300 final project files exactly.",
+  "final_replay_file_count": 300,
+  "final_replay_exact": true
+}

@@ -25,10 +25,11 @@ from se.differentiation.physiology import (
     physiology_gene_count,
     resource_metabolism_enabled,
     storage_constrained_intake_enabled,
+    external_resource_recycling_enabled,
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v22"
+SCHEMA = "structural-measurement-protocol-audit-v23"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -441,13 +442,46 @@ def build_protocol_audit(
                 "store_occupancy_visible_to_operators": bool(
                     resource_metabolism_modules_enabled(cfg)
                 ),
+                "external_recycling_enabled": bool(
+                    external_resource_recycling_enabled(cfg)
+                ),
+                "external_recycling_schema": (
+                    "identity-preserving-spatial-residue-v1"
+                    if external_resource_recycling_enabled(cfg)
+                    else "disabled"
+                ),
                 "death_store_fate": (
-                    "explicit dissipative death loss; no detritus recycling yet"
+                    "same-channel external residue deposition"
+                    if external_resource_recycling_enabled(cfg)
+                    else "explicit dissipative death loss; no external recycling"
                     if resource_metabolism_enabled(cfg)
                     else "not applicable"
                 ),
+                "store_decay_fate": (
+                    "same-channel external residue deposition"
+                    if external_resource_recycling_enabled(cfg)
+                    else "explicit dissipative store decay"
+                    if resource_metabolism_enabled(cfg)
+                    else "not applicable"
+                ),
+                "external_recycling_delay_ticks": (
+                    1 if external_resource_recycling_enabled(cfg) else 0
+                ),
+                "external_residue_diffusion": (
+                    "reuse same-channel resource diffusion rate"
+                    if external_resource_recycling_enabled(cfg)
+                    else "not applicable"
+                ),
+                "external_residue_release": (
+                    "reuse same-channel store-decay rate and limit by resource-field room"
+                    if external_resource_recycling_enabled(cfg)
+                    else "not applicable"
+                ),
                 "ledger": (
-                    "stored = converted + decay + death loss + final living store"
+                    "stored = converted + decay + death loss + final living store; "
+                    "decay + death loss = residue deposited; deposited = released + final residue"
+                    if external_resource_recycling_enabled(cfg)
+                    else "stored = converted + decay + death loss + final living store"
                     if resource_metabolism_enabled(cfg)
                     else "not applicable"
                 ),
@@ -472,7 +506,9 @@ def build_protocol_audit(
             },
             "conservative_intake_experiment": {
                 "plan_schema": "d3-conservative-intake-plan-v1",
-                "result_schema": "d3-conservative-intake-results-v1",
+                "result_schema": "d3-conservative-intake-results-v2",
+                "legacy_result_reassessment_schema": "d3-conservative-intake-assessment-v1",
+                "overflow_zero_semantics": "scale-aware floating-point tolerance",
                 "single_active_population_per_seed": True,
                 "pass_fail_module_gate": False,
                 "preharvest_request_capped_by_inherited_store_room": True,
@@ -483,6 +519,17 @@ def build_protocol_audit(
                 "strict_store_ledger": True,
                 "module_copy_number_changed": False,
                 "stable_niche_claim": False,
+            },
+            "external_recycling_experiment": {
+                "plan_schema": "d3-external-recycling-plan-v1",
+                "result_schema": "d3-external-recycling-results-v1",
+                "single_active_population_per_seed": True,
+                "identity_preserving_channels": True,
+                "store_decay_and_death_store_sources": True,
+                "minimum_external_delay_ticks": 1,
+                "release_limited_by_resource_capacity": True,
+                "named_decomposer_or_scavenger_roles": False,
+                "stable_trophic_claim": False,
             },
             "expression_threshold": float(cfg.functional_modules.expression_threshold),
             "maximum_residual_fraction": float(cfg.functional_modules.max_residual_fraction),
@@ -1006,6 +1053,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- resource metabolism semantics: {payload['functional_module_protocol']['resource_metabolism_semantics']}",
         f"- resource metabolism experiment: {payload['functional_module_protocol']['resource_metabolism_experiment']}",
         f"- conservative intake experiment: {payload['functional_module_protocol']['conservative_intake_experiment']}",
+        f"- external recycling experiment: {payload['functional_module_protocol']['external_recycling_experiment']}",
         f"- known architecture limit: {payload['functional_module_protocol']['known_architecture_limit']}",
         f"- leave-one-out protocol: {payload['functional_module_protocol']['leave_one_out_protocol']}",
         f"- effect qualification: {payload['functional_module_protocol']['effect_qualification']}",

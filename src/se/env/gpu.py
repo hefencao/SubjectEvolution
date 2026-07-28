@@ -14,6 +14,7 @@ from ..backend import Backend, resolve_backend
 from ..cfg import SimulationConfig
 from .danger_evidence import DANGER_EVIDENCE_SCALE
 from .process import build_environment_process, environment_process_metadata
+from .recycling import initialize_resource_residue, update_resource_recycling
 from .diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
     diffuse_resource_fields,
@@ -64,6 +65,7 @@ class DeviceEnvironment:
         self.regeneration = xp.asarray(cfg.environment.resource_regeneration, dtype=xp.float32)[:, None, None]
         self.hazard = self._hazard_pattern(0)
         self.mortality_trace = xp.zeros((gy, gx), dtype=xp.float32)
+        initialize_resource_residue(self)
 
     def _normalized_grid(self, xx: Any, yy: Any) -> tuple[Any, Any]:
         return diversity_normalized_grid(
@@ -175,6 +177,8 @@ class DeviceEnvironment:
     def reverse_resource_spatial_orientation(self) -> None:
         """Rotate only resource geography by 180 degrees persistently."""
         self.resources = self.resources[:, ::-1, ::-1].copy()
+        if hasattr(self, "resource_residue"):
+            self.resource_residue = self.resource_residue[:, ::-1, ::-1].copy()
         self.resource_spatial_reversed = not self.resource_spatial_reversed
 
     def reverse_spatial_orientation(self) -> None:
@@ -286,6 +290,7 @@ class DeviceEnvironment:
         ).astype(xp.float32)
 
     def update(self, tick: int) -> None:
+        update_resource_recycling(self)
         xp = self.backend.xp
         seasonal = self._seasonal_multiplier(tick)
         growth = self.regeneration * seasonal * (1.0 - self.resources / xp.maximum(self.capacity, 1e-6))

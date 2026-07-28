@@ -15,3 +15,5 @@ se-multi --config configs/<name>.json --seeds 10001,10002,10003 --output runs/<n
 ```
 
 D0 files use `env` in filenames while JSON field names retain the full `environment_*` terminology.
+
+- `mvp_short_d3c_external_recycling_longrun.json`: D3-C resource-v6 run with conservative pre-harvest intake plus identity-preserving external residue recycling.

@@ -19,8 +19,10 @@ from se.differentiation.physiology import (
     physiology_phenotype,
     resource_metabolism_enabled,
     storage_constrained_intake_enabled,
+    external_resource_recycling_enabled,
 )
 from se.env.niches import AFFINITY_SCALE
+from se.env.recycling import deposit_resource_residue
 
 RESOURCE_CHANNELS = 4
 BODY_OUTCOMES = 5
@@ -33,6 +35,7 @@ class ResourceMetabolismStep:
     converted: np.ndarray
     decayed: np.ndarray
     body_realized: np.ndarray
+    decayed_by_entity: np.ndarray
 
     @classmethod
     def empty(cls) -> "ResourceMetabolismStep":
@@ -42,6 +45,7 @@ class ResourceMetabolismStep:
             converted=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
             decayed=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
             body_realized=np.zeros(BODY_OUTCOMES, dtype=np.float64),
+            decayed_by_entity=np.zeros((0, RESOURCE_CHANNELS), dtype=np.float64),
         )
 
 
@@ -239,6 +243,7 @@ def settle_resource_metabolism(
         converted=converted.sum(axis=0, dtype=np.float64),
         decayed=decayed.sum(axis=0, dtype=np.float64),
         body_realized=realized.sum(axis=0, dtype=np.float64),
+        decayed_by_entity=decayed,
     )
 
 
@@ -312,6 +317,11 @@ def initialize_resource_metabolism_state(simulation: Any) -> None:
     simulation.total_resource_store_decay = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
     simulation.total_resource_store_death_loss = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
     simulation.total_resource_body_realized = np.zeros(BODY_OUTCOMES, dtype=np.float64)
+    if external_resource_recycling_enabled(simulation.cfg):
+        simulation.total_resource_residue_deposited = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
+        simulation.total_resource_residue_released = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
+        simulation.pending_resource_residue_cells = np.zeros(0, dtype=np.int32)
+        simulation.pending_resource_residue_amounts = np.zeros((0, RESOURCE_CHANNELS), dtype=np.float32)
 
 
 def settle_resource_metabolism_before_step(simulation: Any, stats: Any) -> None:
@@ -332,6 +342,16 @@ def settle_resource_metabolism_before_step(simulation: Any, stats: Any) -> None:
     simulation.total_resource_converted += step.converted
     simulation.total_resource_store_decay += step.decayed
     simulation.total_resource_body_realized += step.body_realized
+    if external_resource_recycling_enabled(simulation.cfg) and rows.size:
+        cells = np.asarray(
+            simulation.spatial.cell_ids(
+                simulation.entities.x[rows], simulation.entities.y[rows]
+            ),
+            dtype=np.int32,
+        )
+        positive = np.any(step.decayed_by_entity > 0.0, axis=1)
+        simulation.pending_resource_residue_cells = cells[positive]
+        simulation.pending_resource_residue_amounts = step.decayed_by_entity[positive].astype(np.float32)
     stats.harvested_energy = float(step.body_realized[0])
     if simulation.gpu_runtime is not None and rows.size:
         # Delayed conversion mutates authoritative host body state before GPU
@@ -366,22 +386,75 @@ def commit_assimilated_harvest(
     simulation.total_resource_store_overflow += stats.resource_store_overflow
 
 
+
+def record_resource_recycling_after_environment_update(simulation: Any, stats: Any) -> None:
+    """Record released residue, then deposit current-tick decay for next tick."""
+    if not external_resource_recycling_enabled(simulation.cfg):
+        return
+    environment = (
+        simulation.gpu_runtime.environment
+        if simulation.gpu_runtime is not None
+        else simulation.environment
+    )
+    released_raw = environment.last_resource_residue_released
+    if hasattr(environment, "backend"):
+        released = np.asarray(environment.backend.to_numpy(released_raw), dtype=np.float64)
+    else:
+        released = np.asarray(released_raw, dtype=np.float64)
+    stats.resource_residue_released = released
+    simulation.total_resource_residue_released += released
+    flush_pending_resource_residue(simulation, stats)
+
+def flush_pending_resource_residue(simulation: Any, stats: Any) -> None:
+    """Deposit current-tick store decay only after the environment update."""
+    if not external_resource_recycling_enabled(simulation.cfg):
+        return
+    cells = simulation.pending_resource_residue_cells
+    amounts = simulation.pending_resource_residue_amounts
+    if cells.size:
+        deposited = (
+            simulation.gpu_runtime.deposit_resource_residue(cells, amounts)
+            if simulation.gpu_runtime is not None
+            else deposit_resource_residue(simulation.environment, cells, amounts)
+        )
+        stats.resource_residue_deposited += deposited
+        simulation.total_resource_residue_deposited += deposited
+    simulation.pending_resource_residue_cells = np.zeros(0, dtype=np.int32)
+    simulation.pending_resource_residue_amounts = np.zeros((0, RESOURCE_CHANNELS), dtype=np.float32)
+
+
 def record_resource_store_death_loss(simulation: Any, dead: np.ndarray, stats: Any) -> None:
-    """Account for stored raw resources dissipated with a dead carrier."""
+    """Account for and optionally externalize raw stores carried at death."""
     if not resource_metabolism_enabled(simulation.cfg) or dead.size == 0:
         return
-    loss = np.asarray(
-        simulation.entities.resource_store[dead], dtype=np.float64
-    ).sum(axis=0)
+    amounts = np.asarray(simulation.entities.resource_store[dead], dtype=np.float64)
+    loss = amounts.sum(axis=0)
     stats.resource_store_death_loss = loss
     simulation.total_resource_store_death_loss += loss
+    if external_resource_recycling_enabled(simulation.cfg):
+        cells = np.asarray(
+            simulation.spatial.cell_ids(
+                simulation.entities.x[dead], simulation.entities.y[dead]
+            ),
+            dtype=np.int32,
+        )
+        deposited = (
+            simulation.gpu_runtime.deposit_resource_residue(cells, amounts.astype(np.float32))
+            if simulation.gpu_runtime is not None
+            else deposit_resource_residue(simulation.environment, cells, amounts)
+        )
+        stats.resource_residue_deposited += deposited
+        simulation.total_resource_residue_deposited += deposited
+
 
 
 __all__ = [
     "ResourceMetabolismStep",
     "commit_assimilated_harvest",
+    "flush_pending_resource_residue",
     "initialize_resource_metabolism_state",
     "raw_harvest_room",
+    "record_resource_recycling_after_environment_update",
     "record_resource_store_death_loss",
     "resource_store_capacity_and_room",
     "resource_metabolism_diagnostics",

@@ -1884,13 +1884,15 @@ def validate_config(cfg: SimulationConfig) -> None:
         "transport-metabolism-messenger-tissue-v3",
         "transport-metabolism-messenger-tissue-resource-v4",
         "transport-metabolism-messenger-tissue-resource-v5",
+        "transport-metabolism-messenger-tissue-resource-v6",
     }:
         raise ValueError(
             "physiology.schema must be 'disabled', 'oxygen-tissue-structure-v1', "
             "'transport-metabolism-messenger-tissue-v2', "
             "'transport-metabolism-messenger-tissue-v3', or "
             "'transport-metabolism-messenger-tissue-resource-v4', or "
-            "'transport-metabolism-messenger-tissue-resource-v5'"
+            "'transport-metabolism-messenger-tissue-resource-v5', or "
+            "'transport-metabolism-messenger-tissue-resource-v6'"
         )
     if pcfg.enabled != (pcfg.schema != "disabled"):
         raise ValueError("physiology enabled/schema fields must agree")
@@ -1943,6 +1945,7 @@ def validate_config(cfg: SimulationConfig) -> None:
             {
                 "transport-metabolism-messenger-tissue-resource-v4",
                 "transport-metabolism-messenger-tissue-resource-v5",
+                "transport-metabolism-messenger-tissue-resource-v6",
             }
             if fcfg.schema == resource_metabolism_schema
             else {
@@ -1999,6 +2002,7 @@ def validate_config(cfg: SimulationConfig) -> None:
             if pcfg.schema in {
                 "transport-metabolism-messenger-tissue-resource-v4",
                 "transport-metabolism-messenger-tissue-resource-v5",
+                "transport-metabolism-messenger-tissue-resource-v6",
             }:
                 required_positive.extend(pcfg.resource_store_base_capacity)
                 required_positive.extend(pcfg.resource_conversion_per_tick)
@@ -2013,6 +2017,7 @@ def validate_config(cfg: SimulationConfig) -> None:
     if pcfg.schema not in {
         "transport-metabolism-messenger-tissue-resource-v4",
         "transport-metabolism-messenger-tissue-resource-v5",
+        "transport-metabolism-messenger-tissue-resource-v6",
     } and any(
         value != 0.0
         for values in (
@@ -2023,7 +2028,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         for value in values
     ):
         raise ValueError(
-            "resource storage and conversion settings require physiology resource-v4/v5"
+            "resource storage and conversion settings require physiology resource-v4/v5/v6"
         )
     if fcfg.enabled:
         if cfg.entities.resource_affinity_schema != "normalized-four-resource-affinity-v1":

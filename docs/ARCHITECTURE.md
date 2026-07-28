@@ -299,3 +299,17 @@ The D3-A opt-in path separates acquisition from body reward. Successful harvest 
 Storage and conversion capacities are inherited independently per channel. Base capacities, conversion rates, and decay rates are equal across channels; channel meaning remains defined only by the existing versioned resource-effect matrix. Functional operators receive normalized store occupancy as additional inputs but keep the same fixed four-slot topology and regulatory output vocabulary.
 
 The authoritative raw-store ledger is `stored = converted + decay + death loss + final living store`. Overflow is reported separately because it never enters the body store. Stored material carried by dead entities is currently explicit dissipation; no detritus recycling is implied.
+
+## D3-C external residual-material boundary
+
+Resource-v6 adds a conditional four-channel field owned by the environment. The field exists only for the explicit recycling schema, so older environment objects and checkpoint state remain unchanged.
+
+The authoritative sequence is:
+
+1. release and diffuse residue already present at tick start;
+2. update ordinary environmental resource regeneration;
+3. deposit current-tick internal-store decay after the environment update;
+4. deposit death-carried raw stores at the death cell;
+5. release those deposits no earlier than the next tick.
+
+All transfers preserve resource-channel identity. Release is limited by external field capacity; unreleased material remains in the residual field. No policy or entity controller writes directly to the field.

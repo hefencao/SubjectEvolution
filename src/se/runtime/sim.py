@@ -142,6 +142,7 @@ from .harvest_commit import commit_harvest_resolution
 from .resource_metabolism import (
     initialize_resource_metabolism_state,
     raw_harvest_room,
+    record_resource_recycling_after_environment_update,
     record_resource_store_death_loss,
     settle_resource_metabolism_before_step,
     storage_room_fraction,
@@ -849,6 +850,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         if self.gpu_runtime is None:
             phase_started = time.perf_counter()
             self.environment.update(self.tick)
+            record_resource_recycling_after_environment_update(self, stats)
             self.information.propagate()
             stats.environment_seconds = time.perf_counter() - phase_started
 
@@ -1113,6 +1115,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             self.gpu_runtime.begin_step_transfer_measurement()
             phase_started = time.perf_counter()
             self.gpu_runtime.update_fields(self.tick)
+            record_resource_recycling_after_environment_update(self, stats)
             if cfg.physiology.enabled:
                 self.environment.update_physiology_fields(self.tick)
             self.gpu_runtime.backend.synchronize()

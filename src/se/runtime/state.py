@@ -86,6 +86,12 @@ class StepStats:
     resource_store_death_loss: np.ndarray = field(
         default_factory=lambda: np.zeros(4, dtype=np.float64)
     )
+    resource_residue_deposited: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
+    resource_residue_released: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
     resource_body_realized: np.ndarray = field(
         default_factory=lambda: np.zeros(5, dtype=np.float64)
     )
