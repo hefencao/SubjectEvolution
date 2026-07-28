@@ -1,0 +1,56 @@
+{
+  "audit": {
+    "shared_tick0_checkpoint_in_every_triplet": true,
+    "response_trajectory_complete_in_every_branch": true,
+    "resource_movement_observed_in_every_branch": true,
+    "active_support_exposure_nonuniform_in_every_active_branch": true,
+    "neutral_support_exactly_one_in_every_neutral_branch": true,
+    "external_resource_ledger_valid_in_every_branch": true,
+    "external_recycling_ledger_valid_in_every_branch": true
+  },
+  "signs": [
+    {
+      "seed": 59001,
+      "branch": "original-support",
+      "resource_move_mean_support_gain": -0.00043960390328889035,
+      "resource_move_positive_support_gain_fraction": 0.38851471109535624,
+      "resource_move_mean_alignment_cosine": -0.16752145151293293
+    },
+    {
+      "seed": 59001,
+      "branch": "reversed-support",
+      "resource_move_mean_support_gain": -0.00016197656806299666,
+      "resource_move_positive_support_gain_fraction": 0.42014134275618376,
+      "resource_move_mean_alignment_cosine": -0.09092130056334438
+    },
+    {
+      "seed": 59001,
+      "branch": "neutral-support",
+      "resource_move_mean_support_gain": -0.0004859059422782955,
+      "resource_move_positive_support_gain_fraction": 0.3851375491246874,
+      "resource_move_mean_alignment_cosine": -0.18015499940268717
+    },
+    {
+      "seed": 59002,
+      "branch": "original-support",
+      "resource_move_mean_support_gain": -0.0007986539191443078,
+      "resource_move_positive_support_gain_fraction": 0.33945578231292517,
+      "resource_move_mean_alignment_cosine": -0.2868420734419435
+    },
+    {
+      "seed": 59002,
+      "branch": "reversed-support",
+      "resource_move_mean_support_gain": -8.050968084721823e-05,
+      "resource_move_positive_support_gain_fraction": 0.4468655715722427,
+      "resource_move_mean_alignment_cosine": -0.0703744118730621
+    },
+    {
+      "seed": 59002,
+      "branch": "neutral-support",
+      "resource_move_mean_support_gain": -0.0007426689798022668,
+      "resource_move_positive_support_gain_fraction": 0.3473719676549865,
+      "resource_move_mean_alignment_cosine": -0.2703558718154997
+    }
+  ],
+  "recommendation": "response-audit-complete-inspect-repeated-orientation-alignment"
+}

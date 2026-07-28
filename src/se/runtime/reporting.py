@@ -182,6 +182,9 @@ class SimulationReportingMixin:
             "harvest_allocation_schema": self.cfg.entities.harvest_allocation_schema,
             "resource_processing_schema": self.cfg.environment.resource_processing_schema,
             "resource_processing_support_amplitude": self.cfg.environment.resource_processing_support_amplitude,
+            "resource_processing_support_orientation_reversed": bool(
+                self.environment.resource_processing_support_reversed
+            ),
             "resource_processing_energy_per_unit": list(
                 self.cfg.physiology.resource_processing_energy_per_unit
             ),
@@ -610,6 +613,9 @@ class SimulationReportingMixin:
                 "resource_processing_support_effective_enabled": (
                     spatial_processing_enabled(self.cfg)
                     and not self.resource_processing_support_ablation_enabled
+                ),
+                "resource_processing_support_orientation_reversed": bool(
+                    self.environment.resource_processing_support_reversed
                 ),
                 "functional_modules_ablation_enabled": (
                     self.functional_modules_ablation_enabled
@@ -1410,6 +1416,9 @@ class SimulationReportingMixin:
             "harvest_allocation_schema": self.cfg.entities.harvest_allocation_schema,
             "resource_processing_schema": self.cfg.environment.resource_processing_schema,
             "resource_processing_support_amplitude": self.cfg.environment.resource_processing_support_amplitude,
+            "resource_processing_support_orientation_reversed": int(
+                self.environment.resource_processing_support_reversed
+            ),
             "resource_processing_energy_per_unit": list(
                 self.cfg.physiology.resource_processing_energy_per_unit
             ),

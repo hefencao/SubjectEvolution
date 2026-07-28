@@ -50,6 +50,7 @@ ENTRY_POINTS = {
     "se-d3-external-recycling": "se.experiments.d3_external_recycling:main",
     "se-d3-resource-renewal": "se.experiments.d3_persistent_resource_renewal:main",
     "se-d3-spatial-processing": "se.experiments.d3_spatial_processing:main",
+    "se-d3-processing-response": "se.experiments.d3_processing_response:main",
     "se-d4-niche-reversal": "se.experiments.d4_niche_reversal:main",
     "se-d4-niche-assess": "se.analysis.d4_niche_reversal_effects:main",
 }

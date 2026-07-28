@@ -1,0 +1,123 @@
+{
+  "passed": true,
+  "schema": "deterministic-pytest-file-shards-v1",
+  "source_tree_sha256": "6076bbda89c214b47ae4647f1ae8184ac9f253e4c83767c249559d22e250d97d",
+  "python": "/home/unkloser/anaconda3/envs/se/bin/python",
+  "shard_count": 5,
+  "test_file_count": 57,
+  "elapsed_seconds": 9.2277304119998,
+  "shards": [
+    {
+      "shard": 1,
+      "returncode": 0,
+      "test_file_count": 12,
+      "test_files": [
+        "tests/test_bytecode_cleanup.py",
+        "tests/test_d2_compositional_capability.py",
+        "tests/test_d2_lineage_mediation.py",
+        "tests/test_d2_regulatory_physiology_conservation.py",
+        "tests/test_d3_processing_response.py",
+        "tests/test_env_diversity.py",
+        "tests/test_knowledge_k2.py",
+        "tests/test_local_event_counterfactual.py",
+        "tests/test_natural_event_execution.py",
+        "tests/test_orthogonal_env.py",
+        "tests/test_phase_counterfactual.py",
+        "tests/test_subject_structure_atlas.py"
+      ],
+      "stdout_tail": [
+        "....................................................                     [100%]",
+        "52 passed in 4.60s"
+      ]
+    },
+    {
+      "shard": 2,
+      "returncode": 0,
+      "test_file_count": 12,
+      "test_files": [
+        "tests/test_checkpoint_replay.py",
+        "tests/test_d2_effect_assessment.py",
+        "tests/test_d2_lineage_pairs.py",
+        "tests/test_d2_source_population.py",
+        "tests/test_d3_resource_metabolism.py",
+        "tests/test_env_process_plugins.py",
+        "tests/test_knowledge_k3.py",
+        "tests/test_local_stress.py",
+        "tests/test_natural_event_matrix.py",
+        "tests/test_package_architecture.py",
+        "tests/test_protocol_provenance.py",
+        "tests/test_version_consistency.py"
+      ],
+      "stdout_tail": [
+        ".............................................................            [100%]",
+        "61 passed in 8.78s"
+      ]
+    },
+    {
+      "shard": 3,
+      "returncode": 0,
+      "test_file_count": 11,
+      "test_files": [
+        "tests/test_cli_overrides.py",
+        "tests/test_d2_embodied_modules.py",
+        "tests/test_d2_module_audit.py",
+        "tests/test_d2_source_population_causal.py",
+        "tests/test_d3_spatial_processing.py",
+        "tests/test_event_cohort.py",
+        "tests/test_knowledge_k4.py",
+        "tests/test_long_run_diagnostics.py",
+        "tests/test_natural_event_result_audit.py",
+        "tests/test_parity.py",
+        "tests/test_routing_cost.py"
+      ],
+      "stdout_tail": [
+        "......................................................                   [100%]",
+        "54 passed in 4.92s"
+      ]
+    },
+    {
+      "shard": 4,
+      "returncode": 0,
+      "test_file_count": 11,
+      "test_files": [
+        "tests/test_d1_capacities.py",
+        "tests/test_d2_functional_modules.py",
+        "tests/test_d2_physiological_ecology.py",
+        "tests/test_d3_conservative_intake.py",
+        "tests/test_d4_niche_reversal.py",
+        "tests/test_gui_interface.py",
+        "tests/test_latent_knowledge.py",
+        "tests/test_memory_selection.py",
+        "tests/test_natural_event_result_synthesis.py",
+        "tests/test_periodic_positions.py",
+        "tests/test_selective_harvest.py"
+      ],
+      "stdout_tail": [
+        "..........................................................               [100%]",
+        "58 passed in 5.23s"
+      ]
+    },
+    {
+      "shard": 5,
+      "returncode": 0,
+      "test_file_count": 11,
+      "test_files": [
+        "tests/test_d1_factorial_and_demand.py",
+        "tests/test_d2_lineage_effect_assessment.py",
+        "tests/test_d2_regulatory_physiology.py",
+        "tests/test_d3_external_recycling.py",
+        "tests/test_danger_evidence_moving_hazard.py",
+        "tests/test_knowledge.py",
+        "tests/test_latent_router_mlp.py",
+        "tests/test_mortality_trace_group_refresh.py",
+        "tests/test_natural_event_timed_execution.py",
+        "tests/test_persistent_resource_renewal.py",
+        "tests/test_structure_env_analysis.py"
+      ],
+      "stdout_tail": [
+        "........................................................                 [100%]",
+        "56 passed in 8.99s"
+      ]
+    }
+  ]
+}

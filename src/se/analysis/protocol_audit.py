@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v26"
+SCHEMA = "structural-measurement-protocol-audit-v27"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -579,6 +579,33 @@ def build_protocol_audit(
                 "direct_action_or_harvest_reward": False,
                 "entity_lineage_and_group_feedback": False,
                 "named_resource_or_ecological_roles": False,
+                "stable_migration_or_ecotype_claim": False,
+            },
+            "spatial_processing_response_audit": {
+                "plan_schema": "d3-spatial-processing-response-plan-v1",
+                "result_schema": "d3-spatial-processing-response-results-v1",
+                "trajectory_schema": "inventory-weighted-processing-response-trajectory-v1",
+                "shared_checkpoint_tick": 0,
+                "branches": [
+                    "original-support",
+                    "reversed-support",
+                    "neutral-support",
+                ],
+                "orientation_intervention": "reverse-spatial-processing-support",
+                "neutralization_intervention": "neutralize-spatial-processing-support",
+                "orientation_changes_only_nonmaterial_support_surface": True,
+                "processing_execution_cost_preserved_in_all_branches": True,
+                "genotype_resource_fields_and_residue_preserved": True,
+                "read_only_tick_observer": True,
+                "movement_reward_or_controller_added": False,
+                "support_sensor_added": False,
+                "measured_mediators": [
+                    "inventory-weighted support exposure",
+                    "resource-move support gain against no-move counterfactual",
+                    "resource-move alignment with local support gradient",
+                    "store-support occupancy correlation",
+                ],
+                "finite_seed_signs_generalized": False,
                 "stable_migration_or_ecotype_claim": False,
             },
             "persistent_resource_renewal_experiment": {

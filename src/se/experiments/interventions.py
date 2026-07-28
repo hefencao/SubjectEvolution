@@ -144,6 +144,12 @@ INTERVENTIONS = (
         aliases=("processing-support-off", "spatial-processing-off"),
     ),
     InterventionSpec(
+        "reverse-spatial-processing-support",
+        InterventionKind.MODIFY_RULES,
+        "phase-shifted-four-channel-processing-support-orientation",
+        aliases=("processing-support-reversed", "reverse-processing-support"),
+    ),
+    InterventionSpec(
         "neutralize-danger-evidence",
         InterventionKind.MODIFY_RULES,
         "inherited-direct-vs-mortality-trace-evidence-expression",

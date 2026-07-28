@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "se-mvp"
-version = "0.58.0"
+version = "0.59.0"
 description = "Reference implementation for nested-subject existence evolution simulation"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -39,6 +39,7 @@ se-d3-conservative-intake-assess = "se.analysis.d3_conservative_intake_effects:m
 se-d3-external-recycling = "se.experiments.d3_external_recycling:main"
 se-d3-resource-renewal = "se.experiments.d3_persistent_resource_renewal:main"
 se-d3-spatial-processing = "se.experiments.d3_spatial_processing:main"
+se-d3-processing-response = "se.experiments.d3_processing_response:main"
 se-d4-niche-reversal = "se.experiments.d4_niche_reversal:main"
 se-d4-niche-assess = "se.analysis.d4_niche_reversal_effects:main"
 

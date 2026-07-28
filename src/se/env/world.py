@@ -32,6 +32,7 @@ class Environment:
         self.cfg = cfg
         self.spatial_reversed = False
         self.resource_spatial_reversed = False
+        self.resource_processing_support_reversed = False
         self.environment_process = build_environment_process(cfg.environment)
         self.environment_process_metadata = environment_process_metadata(cfg.environment)
         gx, gy = cfg.world.grid_x, cfg.world.grid_y
@@ -182,7 +183,7 @@ class Environment:
             tick=tick,
             xp=np,
         )
-        if self.resource_spatial_reversed:
+        if self.resource_spatial_reversed ^ self.resource_processing_support_reversed:
             support = support[:, ::-1, ::-1].copy()
         return np.asarray(support, dtype=np.float32)
 
@@ -303,6 +304,19 @@ class Environment:
         grad_x[rows] = right - left
         grad_y[rows] = up - down
         return grad_x, grad_y
+
+    def reverse_resource_processing_support_orientation(self) -> None:
+        """Rotate only the non-material D3-E processing-support surface.
+
+        Resource fields, residue, renewal targets, hazard, entity state, genotype,
+        and processing costs remain unchanged.  This is an experiment-only
+        orientation intervention used to distinguish support-aligned response
+        from generic shared-checkpoint trajectory sensitivity.
+        """
+
+        self.resource_processing_support_reversed = (
+            not self.resource_processing_support_reversed
+        )
 
     def reverse_resource_spatial_orientation(self) -> None:
         """Rotate only resource geography by 180 degrees persistently.

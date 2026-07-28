@@ -443,6 +443,8 @@ class SimulationCheckpointMixin:
             self.environment.resource_spatial_reversed = bool(
                 getattr(self.environment, "spatial_reversed", False)
             )
+        if not hasattr(self.environment, "resource_processing_support_reversed"):
+            self.environment.resource_processing_support_reversed = False
         if not all(hasattr(self.environment, name) for name in ("oxygen", "terrain", "wear")):
             self.environment.update_physiology_fields(int(state["tick"]))
         self.information = copy.deepcopy(state["information"])

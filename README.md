@@ -1,21 +1,20 @@
-# SE v0.58
+# SE v0.59
 
-SE is a deterministic artificial-life and subject-structure research platform. The current main line combines conservative regulatory physiology, inherited delayed resource processing, storage-constrained intake, identity-preserving external raw-material recycling, persistent four-channel abiotic renewal, and an opt-in costed spatial processing substrate.
+SE is a deterministic artificial-life and subject-structure research platform. The current main line combines conservative regulatory physiology, inherited delayed resource processing, storage-constrained intake, identity-preserving external raw-material recycling, persistent four-channel abiotic renewal, costed spatial processing support, and a read-only shared-checkpoint response audit.
 
-## Why v0.58
+## Why v0.59
 
-The supplied D3-D v2 rerun completed seeds `56001`, `56002`, and `56003` to tick 1500. The corrected external-resource ledger and external-recycling ledger close in every seed, while final resource effective dimensions remain about `2.86`–`2.98`. This clears the measurement gate for a minimal collection-processing coupling, but it does not establish migration, specialization, coexistence, trophic transfer, or ecological roles.
+The supplied D3-E panel completed three shared tick-0 checkpoint pairs to tick 1500. Every active branch experienced both support-limited and support-accelerated conversion, every branch paid processing cost, and both external ledgers closed. Active-minus-neutral conversion was negative in all three seeds, while endpoint survival differences had mixed signs. This retains the substrate but does not establish migration, specialization, coexistence, trophic transfer, or ecological roles.
 
-D3-E introduces a role-free abiotic processing-support field:
+D3-F therefore adds measurement and counterfactual orientation control rather than another ecological mechanism:
 
-- it reuses the persistent four-channel wave basis with a quarter-cycle phase shift;
-- it changes only conversion throughput of raw material already held in internal stores;
-- every converted unit pays a configured energy cost before body outcomes are realized;
-- energy shortage scales all candidate channel conversions proportionally;
-- `neutralize-spatial-processing-support` fixes support at `1.0` while preserving costs, genes, resource fields, and checkpoint state;
-- the paired experiment restores both branches from the same tick-0 full-world checkpoint.
+- `reverse-spatial-processing-support` rotates only the non-material support surface by 180 degrees;
+- resource fields, residue, renewal targets, genotype, inheritance, random state, and per-unit processing cost are preserved;
+- original, reversed, and neutral branches restore the same tick-0 full-world checkpoint;
+- a read-only observer records inventory-weighted exposure, support gain relative to staying in place, movement-gradient alignment, and store-support occupancy correlation;
+- no processing-support sensor, movement reward, migration controller, diversity protection, or role label is added.
 
-No reward is added for moving, maintaining diversity, surviving, specializing, or occupying a particular location. The new experiment reports paired differences but does not turn finite-seed signs into ecological claims.
+Finite-seed response signs remain observations. D3-F is a prerequisite audit for later migration experiments, not a migration or ecotype result.
 
 ## Workflow
 
@@ -38,21 +37,22 @@ Artifact audit:
 make release-check
 ```
 
-## Run D3-E
+## Run D3-F
 
 ```bash
-se-d3-spatial-processing \
+se-d3-processing-response \
   --config configs/mvp_short_d3e_spatial_processing_longrun.json \
-  --seeds 58001,58002,58003 \
-  --output analyses/d3e_spatial_processing_1500 \
+  --seeds 59001,59002,59003 \
+  --output analyses/d3f_processing_response_1500 \
   --backend gpu \
-  --until-tick 1500
+  --until-tick 1500 \
+  --observation-period 30
 ```
 
-Each seed produces an active spatial-support branch and a cost-preserving neutral-support branch from one shared tick-0 checkpoint.
+Each seed produces original-support, reversed-support, and neutral-support branches from one shared tick-0 checkpoint.
 
 ## Current version documents
 
-- [D3-E design](docs/v0.58/D3E_SPATIAL_PROCESSING_DESIGN.md)
-- [Supplied D3-D v2 result](docs/v0.58/D3D_SUPPLIED_RESULTS_V2.md)
-- [Implementation report](docs/v0.58/IMPLEMENTATION_REPORT.md)
+- [D3-F design](docs/v0.59/D3F_PROCESSING_RESPONSE_AUDIT_DESIGN.md)
+- [Supplied D3-E result](docs/v0.59/D3E_SUPPLIED_RESULTS.md)
+- [Implementation report](docs/v0.59/IMPLEMENTATION_REPORT.md)

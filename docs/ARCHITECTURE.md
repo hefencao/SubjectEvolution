@@ -238,7 +238,7 @@ runtime + domains ✕→ analysis / experiments / gui
 The normal local runtime is an activated conda environment with one editable
 installation of the current checkout. `make conda-sync` installs with
 `--no-build-isolation`, then proves that `direct_url.json`, package imports,
-metadata and all six console scripts refer to the exact checkout. Ordinary source
+metadata and the complete configured console-entry table refer to the exact checkout. Ordinary source
 edits require no reinstall. `make conda-check` adds tests and an external smoke
 with an empty `PYTHONPATH`.
 
@@ -367,3 +367,24 @@ external channel field
 The support field is generated analytically from the role-free persistent-renewal wave basis with a quarter-cycle phase shift. It contains no entity feedback and no material inventory. It is queried at current entity cells before observation, after which ordinary entity-state synchronization publishes the realized store/body changes to the device mirror.
 
 The support-neutralization intervention changes only the effective multiplier. It retains cost, genotype, resource fields, random state, and all other simulation mechanisms. The D3-E experiment obtains both branches by restoring one tick-0 checkpoint rather than constructing statistically similar initial states.
+
+## v0.59 D3-F processing-response audit boundary
+
+D3-F does not add an organism capability. It adds one support-only counterfactual and one read-only observer around the existing D3-E substrate.
+
+```text
+one tick-0 full-world checkpoint
+        ├─ original non-material processing-support orientation
+        ├─ 180° reversed non-material processing-support orientation
+        └─ neutral multiplier 1.0 with processing cost retained
+                    ↓
+ordinary inherited policy and unchanged sensors choose movement
+                    ↓
+post-step observer compares realized destination with no-move position
+```
+
+`reverse-spatial-processing-support` changes only the orientation of the analytic support surface. It does not reverse or modify resource geography, renewal targets, residual material, genotype, inheritance, RNG state, policy features, action feasibility or processing-energy rates. The orientation flag is checkpointed and is published in manifests, scientific-validity metadata and metric rows.
+
+The observer reconstructs pre-step store demand for entities present on both sides of a step and samples the next-tick support field at the realized destination and the periodic no-move position. It reports destination-minus-stay support gain, movement/gradient cosine, inventory-weighted exposure and channel store-support correlation. Bilinear sampling is diagnostic only; authoritative metabolism continues to use the existing cell-sampled multiplier.
+
+No response statistic feeds policy, fitness, reproduction, world fields or intervention selection. Original/reversed/neutral contrasts identify registered support interventions only. They cannot by themselves establish migration, specialization, coexistence, ecotypes or ecological roles.

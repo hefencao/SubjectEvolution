@@ -1,0 +1,35 @@
+{
+  "schema": "d3-spatial-collection-processing-plan-v1",
+  "seeds": [
+    58001,
+    58002,
+    58003
+  ],
+  "horizon_ticks": 1500,
+  "shared_checkpoint_tick": 0,
+  "branches": [
+    "spatial-support",
+    "neutral-support"
+  ],
+  "environment_schema": "orthogonal-four-resource-renewal-v2",
+  "processing_support_schema": "phase-shifted-channel-processing-support-v1",
+  "processing_support_amplitude": 0.45,
+  "processing_support_phase_relation": "quarter-cycle-shifted-from-renewal-wave-basis",
+  "processing_energy_per_unit": [
+    0.002,
+    0.002,
+    0.002,
+    0.002
+  ],
+  "processing_energy_charged_before_body_outcomes": true,
+  "neutral_support_multiplier": 1.0,
+  "neutral_support_preserves_processing_cost": true,
+  "neutral_support_preserves_genotype": true,
+  "neutral_support_preserves_resource_fields": true,
+  "neutral_support_preserves_checkpoint_state": true,
+  "entity_lineage_and_group_feedback": false,
+  "named_resource_roles": false,
+  "diversity_reward_or_protection": false,
+  "ecological_role_labels": false,
+  "pass_fail_gate": false
+}

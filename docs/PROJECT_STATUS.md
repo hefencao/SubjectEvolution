@@ -1,6 +1,6 @@
 # SE project status
 
-Version: **0.58.0**
+Version: **0.59.0**
 
 ## Current causal chain
 
@@ -20,44 +20,48 @@ role-free four-channel external resource and abiotic fields
 → phase-shifted abiotic processing support applied only after storage
 → explicit per-unit conversion energy cost
 → shared-checkpoint support neutralization
-→ response and movement audits before any ecological differentiation claim
+→ support-only orientation reversal
+→ read-only inventory-conditioned movement-response audit
+→ response evidence gate before any migration or ecological differentiation mechanism
 ```
 
-## Supplied D3-D v2 result
+## Supplied D3-E result
 
-The supplied three-seed, 1500-tick panel supports the D3-D substrate claim only:
+The supplied three-seed, 1500-tick shared-checkpoint panel retains the D3-E substrate:
 
-- renewal source and sink occur in every seed;
-- corrected external-resource and external-recycling ledgers close in every seed;
-- final effective resource dimensions remain approximately `2.86`–`2.98`;
-- no entity, lineage, or group feedback shapes the renewal target;
-- no named resource role or diversity protection is enabled.
+- every active branch experiences nonuniform support plus both limited and accelerated processing;
+- every neutral branch reports exact unit support;
+- processing cost occurs in all six branches;
+- external-resource and external-recycling ledgers close in all six branches;
+- active-minus-neutral total conversion is negative in all three seeds;
+- active-minus-neutral survival has mixed signs.
 
-This is enough to proceed to a bounded coupling experiment. It is not evidence of migration, collection-processing specialization, coexistence, trophic transfer, or ecotypes.
+The paired differences establish only the effect of support neutralization within each checkpoint. They do not show whether ordinary movement seeks processing opportunity and do not establish migration, collection-processing specialization, coexistence, trophic transfer, ecotypes, or named roles.
 
-## v0.58 decision
+## v0.59 decision
 
-Add D3-E as an opt-in substrate rather than an ecological conclusion. The new field is non-material and abiotic. It multiplies inherited raw-store conversion throughput after acquisition, and its quarter-cycle phase shift creates locations where collection and processing opportunity need not coincide.
+Add D3-F as an **audit**, not as a new ecological capability.
 
-The mechanism has three required boundaries:
+Every seed restores one tick-0 checkpoint into three branches:
 
-1. **Cost:** converted material pays channel-specific energy cost before body outcomes.
-2. **Ablation:** support can be neutralized to multiplier `1.0` while cost, genes, resources, and all other mechanisms remain active.
-3. **Shared control:** active and neutral branches restore the same tick-0 full-world checkpoint.
+1. `original-support` keeps the configured support field;
+2. `reversed-support` rotates only the non-material support surface by 180 degrees;
+3. `neutral-support` fixes the effective multiplier at `1.0` while retaining processing cost.
 
-D3-E does not directly reward movement, change harvest choice, protect population diversity, or assign ecological roles.
+The support reversal preserves the resource fields, residual material, renewal process, genotype, inheritance, random state, processing-energy rates, sensors, policy and material fluxes. A read-only post-step observer measures inventory-weighted support exposure, destination-versus-stay support gain, local-gradient alignment and channel-wise store-support association. It never changes world state.
+
+The reduced two-seed, 120-tick validation completed all triplets and ledgers, but did **not** show positive support-aligned resource movement. Mean destination-minus-stay support gain and mean gradient cosine were negative in original, reversed and neutral branches; reversed values were merely closer to zero. This is a negative short-window finding and prevents promotion to a migration mechanism.
 
 ## Next gate
 
-Run the three-seed D3-E paired panel and first verify substrate operation:
+Run a preregistered D3-F panel with the same three-branch shared-checkpoint contract across:
 
-- both branches close external-resource and recycling ledgers;
-- active branches experience both support-limited and support-accelerated conversion;
-- neutral branches report exact unit support;
-- conversion costs are positive in both branches;
-- paired differences are treated as intervention effects only within each shared checkpoint.
+- at least three seeds;
+- multiple horizons;
+- at least two map scales or wave periods;
+- fixed observation rules declared before outcomes are inspected.
 
-Only after that should the project test whether entities actually change spatial exposure in relation to inventory and processing support. A movement response would still require repeated exposure-aligned evidence before any migration or specialization claim.
+Only repeated orientation-aligned movement response may justify discussing a missing sensing or control capability. A one-off endpoint difference, lower conversion, survival change, inventory correlation or generic trajectory divergence is insufficient. Until then, do not add a processing-support sensor, movement reward, migration controller, diversity protection or ecological-role label.
 
 ## Development workflow
 
@@ -65,9 +69,9 @@ Only after that should the project test whether entities actually change spatial
 
 ## Still incomplete
 
-- a completed long-horizon D3-E shared-checkpoint panel;
-- an observational inventory × collection × processing exposure audit;
-- evidence that spatial movement responds to processing opportunity rather than generic trajectory sensitivity;
+- replicated multi-horizon and map-scale D3-F response evidence;
+- evidence that movement response reverses with support orientation rather than reflecting generic trajectory sensitivity;
+- a justified sensory or control mechanism for processing opportunity;
 - migration cycles driven by moving opportunities and stored inventory;
 - externalization of non-store body matter;
 - evolved uptake or processing of residue;

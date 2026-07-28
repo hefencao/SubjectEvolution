@@ -6,11 +6,11 @@ RELEASE_ENV ?= .release-env
 
 # Normal test path after ``make conda-sync``.
 test:
-	$(PYTHON) scripts/run_test_shards.py --project . --shards 5 --report docs/v0.58/FINAL_TEST_REPORT.json
+	$(PYTHON) scripts/run_test_shards.py --project . --shards 5 --report docs/v0.59/FINAL_TEST_REPORT.json
 
 # Bootstrap path for CI or a clean checkout that is not installed editable.
 test-src:
-	PYTHONPATH=src $(PYTHON) scripts/run_test_shards.py --project . --shards 5 --report docs/v0.58/FINAL_TEST_REPORT.json
+	PYTHONPATH=src $(PYTHON) scripts/run_test_shards.py --project . --shards 5 --report docs/v0.59/FINAL_TEST_REPORT.json
 
 # Preferred local workflow. Source changes are immediately visible after this
 # one editable install; rerun only after changing pyproject entry points,
@@ -23,13 +23,13 @@ conda-sync:
 	$(PYTHON) scripts/verify_conda_editable.py --project . --require-conda
 
 conda-check:
-	$(PYTHON) scripts/run_conda_check.py --project . --shards 5 --docs-dir docs/v0.58
+	$(PYTHON) scripts/run_conda_check.py --project . --shards 5 --docs-dir docs/v0.59
 
 verify-dist:
 	$(PYTHON) scripts/verify_dist.py --project . $(if $(PREVIOUS_WHEEL),--previous-wheel $(PREVIOUS_WHEEL),)
 
 release-check:
-	$(PYTHON) scripts/run_release_check.py --project . --test-report docs/v0.58/FINAL_TEST_REPORT.json --report docs/v0.58/RELEASE_CHECK_REPORT.json $(if $(PREVIOUS_WHEEL),--previous-wheel $(PREVIOUS_WHEEL),)
+	$(PYTHON) scripts/run_release_check.py --project . --test-report docs/v0.59/FINAL_TEST_REPORT.json --report docs/v0.59/RELEASE_CHECK_REPORT.json $(if $(PREVIOUS_WHEEL),--previous-wheel $(PREVIOUS_WHEEL),)
 	@echo "release-check is an artifact audit only; conda-sync is the local runtime workflow."
 
 release-env: test-src

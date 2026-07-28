@@ -575,6 +575,23 @@ class SimulationExperimentMixin:
                 "genotype_coordinates_modified": 0,
                 "inheritance_modified": False,
             }
+        elif normalized == "reverse-spatial-processing-support":
+            if not spatial_processing_enabled(self.cfg):
+                raise ValueError(
+                    "reverse-spatial-processing-support requires D3-E resource-v7"
+                )
+            canonical = "reverse-spatial-processing-support"
+            self.environment.reverse_resource_processing_support_orientation()
+            details = {
+                "rotation_degrees": 180,
+                "processing_execution_cost_preserved": True,
+                "resource_store_and_conversion_genes_preserved": True,
+                "resource_fields_modified": False,
+                "resource_residue_modified": False,
+                "renewal_targets_modified": False,
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+            }
         elif normalized == "neutralize-danger-evidence":
             if not danger_evidence_enabled(self.cfg):
                 raise ValueError(

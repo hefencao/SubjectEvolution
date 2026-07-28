@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.59.0
+
+### Inventory-conditioned spatial-processing response audit
+
+- Interprets the supplied three-seed D3-E panel as a retained costed substrate with negative active-minus-neutral conversion in every pair but mixed survival signs.
+- Adds `reverse-spatial-processing-support`, a checkpointed 180-degree reversal of only the non-material support surface.
+- Preserves resource fields, renewal, residue, genotype, inheritance, random state, processing cost, sensors and policy under the reversal.
+- Adds `se-d3-processing-response`, which restores one tick-0 checkpoint into original-support, reversed-support and neutral-support branches.
+- Adds a read-only inventory-conditioned observer for support exposure, destination-versus-stay gain, local-gradient alignment and store-support correlations.
+- Publishes support orientation in run manifests, scientific-validity metadata and metric rows.
+- Adds protocol audit v27, checkpoint compatibility, tests and a reduced two-seed 120-tick validation.
+- Records the short validation as negative response evidence: no branch shows positive mean support gain or gradient alignment.
+- Adds no support sensor, movement reward, migration controller, diversity protection, ecological role or causal ecological claim.
+- Complete packages retain only `docs/v0.59` as a version-specific directory.
+
 ## 0.58.0
 
 ### Costed spatial collection-processing substrate
