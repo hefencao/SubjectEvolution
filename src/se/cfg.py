@@ -1849,10 +1849,12 @@ def validate_config(cfg: SimulationConfig) -> None:
         "disabled",
         "oxygen-tissue-structure-v1",
         "transport-metabolism-messenger-tissue-v2",
+        "transport-metabolism-messenger-tissue-v3",
     }:
         raise ValueError(
             "physiology.schema must be 'disabled', 'oxygen-tissue-structure-v1', "
-            "or 'transport-metabolism-messenger-tissue-v2'"
+            "'transport-metabolism-messenger-tissue-v2', or "
+            "'transport-metabolism-messenger-tissue-v3'"
         )
     if pcfg.enabled != (pcfg.schema != "disabled"):
         raise ValueError("physiology enabled/schema fields must agree")
@@ -1885,14 +1887,18 @@ def validate_config(cfg: SimulationConfig) -> None:
         if float(getattr(pcfg, name)) > 1.0:
             raise ValueError(f"physiology.{name} cannot exceed 1")
     if fcfg.schema in {physiological_schema, regulatory_schema}:
-        expected_physiology_schema = (
-            "transport-metabolism-messenger-tissue-v2"
+        expected_physiology_schemas = (
+            {
+                "transport-metabolism-messenger-tissue-v2",
+                "transport-metabolism-messenger-tissue-v3",
+            }
             if fcfg.schema == regulatory_schema
-            else "oxygen-tissue-structure-v1"
+            else {"oxygen-tissue-structure-v1"}
         )
-        if not pcfg.enabled or pcfg.schema != expected_physiology_schema:
+        if not pcfg.enabled or pcfg.schema not in expected_physiology_schemas:
             raise ValueError(
-                f"{fcfg.schema} requires physiology schema {expected_physiology_schema!r}"
+                f"{fcfg.schema} requires physiology schema in "
+                f"{sorted(expected_physiology_schemas)!r}"
             )
         if (
             cfg.environment.physiology_environment_schema

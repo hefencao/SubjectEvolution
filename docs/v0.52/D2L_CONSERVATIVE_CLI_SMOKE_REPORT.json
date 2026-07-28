@@ -1,0 +1,235 @@
+{
+  "schema": "d2-regulatory-physiology-results-v2",
+  "plan": {
+    "schema": "d2-regulatory-physiology-plan-v2",
+    "seeds": [
+      52001
+    ],
+    "horizon_ticks": 200,
+    "physiology_schema": "transport-metabolism-messenger-tissue-v3",
+    "conservation_mode": "non-negative-flow-ledger-with-energy-debt-preservation-v1",
+    "all_runtime_flows_must_be_finite_non_negative": true,
+    "negative_energy_debt_preserved_for_world_starvation_settlement": true,
+    "single_active_population_per_seed": true,
+    "pass_fail_gate": false,
+    "fixed_weight_lifetime_dynamics": true,
+    "online_weight_learning": false,
+    "module_expression_threshold_not_used_as_continuation_gate": true,
+    "module_outputs_are_regulatory_requests_not_direct_actions": true,
+    "inherited_physiology_parameters": [
+      "oxygen transport and reserve",
+      "aerobic conversion and anaerobic tolerance",
+      "fatigue clearance",
+      "repair conversion and allocation",
+      "messenger synthesis decay and receptor gain"
+    ],
+    "bounded_dynamic_states": [
+      "oxygenation",
+      "tissue condition",
+      "structure condition",
+      "metabolic fatigue",
+      "mobilization messenger",
+      "maintenance messenger",
+      "messenger precursor"
+    ],
+    "module_regulatory_requests": [
+      "oxygen uptake",
+      "mobilization bus",
+      "maintenance bus",
+      "sensory attention"
+    ],
+    "counterfactual_interfaces": [
+      "module regulatory-output neutralization",
+      "messenger receptor blockade",
+      "bounded physiology state clamps"
+    ],
+    "named_organs_or_hormones": false,
+    "diversity_reward_or_protection": false,
+    "ecological_role_labels": false,
+    "module_copy_number_changed": false
+  },
+  "completed_seed_count": 1,
+  "runs": [
+    {
+      "seed": 52001,
+      "output": "/mnt/data/v052_d2l_smoke_new/seed_52001",
+      "final": {
+        "alive": 150,
+        "effective_lineages": 74.50331125827813,
+        "largest_lineage_fraction": 0.02666666666666667,
+        "mean_energy": 1.2609578371047974,
+        "mean_integrity": 0.9549170136451721,
+        "mean_oxygenation": 0.5919422507286072,
+        "mean_tissue_condition": 0.962416410446167,
+        "mean_structure_condition": 0.9476379156112671,
+        "mean_metabolic_fatigue": 0.0009910135995596647,
+        "mean_mobilization_messenger": 0.006903116125613451,
+        "mean_maintenance_messenger": 0.006961285136640072,
+        "mean_messenger_precursor": 0.8538450002670288,
+        "mean_physiology_sensor_multiplier": 0.7702343463897705,
+        "environment_resource_effective_dimensions": 2.590470115554231,
+        "physiology_environment_effective_dimensions": 2.7395098472407056,
+        "physiology_genetic_effective_dimensions": 12.568585502340662,
+        "functional_harvest_preference_effective_dimensions": 2.8728987446769314,
+        "functional_physiology_output_effective_dimensions": 3.531539636955279,
+        "functional_physiology_output_changed_entity_fraction": 0.9006622516556292,
+        "functional_output_basis_effective_dimensions": 3.5520439652379148,
+        "functional_output_basis_active_port_count": 8,
+        "physiology_oxygen_uptake_total": 442.365873234156,
+        "physiology_oxygen_use_total": 488.9039412836647,
+        "physiology_messenger_synthesis_total": 5.654505192201463,
+        "physiology_messenger_decay_total": 46.12314153181763,
+        "physiology_messenger_precursor_used_total": 2.8272525961007315,
+        "physiology_messenger_precursor_recovered_total": 15.499429040488385,
+        "physiology_messenger_energy_total": 0.11309010384402929,
+        "physiology_computation_energy_total": 0.5730649772911591,
+        "physiology_computation_oxygen_total": 0.28653248864557956,
+        "physiology_fatigue_generated_total": 33.13019258226249,
+        "physiology_fatigue_cleared_total": 46.78044326533595,
+        "physiology_hypoxia_tissue_damage_total": 0.10902663092109165,
+        "physiology_wear_tissue_damage_total": 8.668454680974703,
+        "physiology_wear_structure_damage_total": 12.13583655336458,
+        "physiology_repair_material_total": 2.9559374923366106,
+        "physiology_repair_tissue_total": 0.15167076964806364,
+        "physiology_repair_structure_total": 0.11513838366847788,
+        "physiology_environment_correlations": [
+          [
+            0.9999999999999997,
+            0.0654381488679808,
+            0.2876106908452461
+          ],
+          [
+            0.0654381488679808,
+            0.9999999999999998,
+            0.2335133397960358
+          ],
+          [
+            0.2876106908452461,
+            0.2335133397960358,
+            1.0000000000000007
+          ]
+        ],
+        "physiology_environment_means": [
+          0.60165807044541,
+          0.41209954315490904,
+          0.3762213534282637
+        ],
+        "physiology_environment_standard_deviations": [
+          0.18980580896963983,
+          0.20188560828171292,
+          0.19289403361243407
+        ],
+        "physiology_genetic_trait_names": [
+          "oxygen_transport_capacity",
+          "oxygen_reserve_capacity",
+          "aerobic_conversion_efficiency",
+          "anaerobic_tolerance",
+          "mechanical_power_capacity",
+          "information_transduction_capacity",
+          "fatigue_clearance_capacity",
+          "repair_conversion_efficiency",
+          "structure_repair_allocation",
+          "mobilization_synthesis_capacity",
+          "maintenance_synthesis_capacity",
+          "mobilization_decay_capacity",
+          "maintenance_decay_capacity",
+          "mobilization_receptor_gain",
+          "maintenance_receptor_gain"
+        ],
+        "physiology_genetic_trait_means": [
+          1.0130080191712139,
+          0.9886906835536143,
+          1.0119266054722325,
+          0.49574631182650697,
+          1.001412984498689,
+          0.9825026056060809,
+          1.005068535542776,
+          1.0307729440730449,
+          0.4861943774704077,
+          0.9889084710402093,
+          0.9799134081532311,
+          0.9820169661647447,
+          1.0109465071461814,
+          0.9993519614563076,
+          1.0010507764076682
+        ],
+        "physiology_genetic_trait_standard_deviations": [
+          0.10901939801722484,
+          0.11691927324435682,
+          0.12201844147819917,
+          0.11337109813626363,
+          0.11096593927965004,
+          0.12313559796614935,
+          0.11707337438734268,
+          0.13142451481747075,
+          0.11442751277191417,
+          0.10551115319569973,
+          0.11221110598212028,
+          0.10704265148623347,
+          0.11230188950220162,
+          0.10752447180769875,
+          0.11636717235897959
+        ],
+        "functional_physiology_output_names": [
+          "oxygen_uptake_drive",
+          "mobilization_drive",
+          "maintenance_drive",
+          "sensory_attention_drive"
+        ],
+        "functional_physiology_output_mean": [
+          -0.0006709825124172186,
+          -0.00031043046357615895,
+          0.0005481037872516557,
+          0.0019563586506622516
+        ],
+        "functional_physiology_output_std": [
+          0.011366589569454393,
+          0.011251676018284862,
+          0.0112295536910711,
+          0.014134961168220233
+        ],
+        "functional_physiology_output_abs_mean_by_port": [
+          0.006633834333609271,
+          0.007417994619205298,
+          0.0073775739859271525,
+          0.008446295529801324
+        ],
+        "functional_output_basis_port_names": [
+          "harvest_residual_0",
+          "harvest_residual_1",
+          "harvest_residual_2",
+          "harvest_residual_3",
+          "oxygen_uptake_drive",
+          "mobilization_drive",
+          "maintenance_drive",
+          "sensory_attention_drive"
+        ],
+        "functional_output_basis_std_by_port": [
+          0.0008326964396045982,
+          0.0007706562366501395,
+          0.0007504249233453178,
+          0.0008089878486571376,
+          0.011366589569454393,
+          0.011251676018284862,
+          0.0112295536910711,
+          0.014134961168220233
+        ]
+      }
+    }
+  ],
+  "stable_trend_summary": {
+    "regulatory_output_used_in_every_seed": true,
+    "physiology_genetic_variation_observed": true,
+    "messenger_turnover_observed": true,
+    "finite_precursor_turnover_observed": true,
+    "computation_cost_observed": true,
+    "fatigue_turnover_observed": true,
+    "repair_or_damage_flow_observed": true
+  },
+  "flow_ledger_summary": {
+    "all_cumulative_flows_non_negative": true,
+    "validated_each_tick": true
+  },
+  "decision_scope": "causal-substrate-evolution-not-module-maturity-gate",
+  "interpretation_boundary": "The run checks whether a fixed operator kernel, inherited physiology parameters, finite messenger dynamics, and conserved execution costs remain active during evolution. It does not establish a named organ, mature ecological differentiation, completed food-chain dynamics, or a reason to change module copy number."
+}

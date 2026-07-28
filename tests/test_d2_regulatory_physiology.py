@@ -257,7 +257,7 @@ def test_d2l_runner_reports_substrate_trends_without_maturity_gate(
         backend="cpu",
         until_tick=10,
     )
-    assert result["schema"] == "d2-regulatory-physiology-results-v1"
+    assert result["schema"] == "d2-regulatory-physiology-results-v2"
     assert result["plan"]["pass_fail_gate"] is False
     assert result["plan"]["online_weight_learning"] is False
     assert result["plan"]["module_outputs_are_regulatory_requests_not_direct_actions"] is True

@@ -1,0 +1,115 @@
+{
+  "passed": true,
+  "schema": "deterministic-pytest-file-shards-v1",
+  "source_tree_sha256": "11b1bddd47d69cdc432fbe9cfcf2e209d567afa7a8f2a26615d81ba42034042b",
+  "python": "/home/unkloser/anaconda3/envs/se/bin/python",
+  "shard_count": 5,
+  "test_file_count": 49,
+  "elapsed_seconds": 7.546656538000207,
+  "shards": [
+    {
+      "shard": 1,
+      "returncode": 0,
+      "test_file_count": 10,
+      "test_files": [
+        "tests/test_checkpoint_replay.py",
+        "tests/test_d2_effect_assessment.py",
+        "tests/test_d2_lineage_pairs.py",
+        "tests/test_d2_source_population.py",
+        "tests/test_env_process_plugins.py",
+        "tests/test_knowledge_k3.py",
+        "tests/test_local_stress.py",
+        "tests/test_natural_event_matrix.py",
+        "tests/test_package_architecture.py",
+        "tests/test_routing_cost.py"
+      ],
+      "stdout_tail": [
+        "....................................................                     [100%]",
+        "52 passed in 7.29s"
+      ]
+    },
+    {
+      "shard": 2,
+      "returncode": 0,
+      "test_file_count": 10,
+      "test_files": [
+        "tests/test_cli_overrides.py",
+        "tests/test_d2_embodied_modules.py",
+        "tests/test_d2_module_audit.py",
+        "tests/test_d2_source_population_causal.py",
+        "tests/test_event_cohort.py",
+        "tests/test_knowledge_k4.py",
+        "tests/test_long_run_diagnostics.py",
+        "tests/test_natural_event_result_audit.py",
+        "tests/test_parity.py",
+        "tests/test_selective_harvest.py"
+      ],
+      "stdout_tail": [
+        "..................................................                       [100%]",
+        "50 passed in 4.58s"
+      ]
+    },
+    {
+      "shard": 3,
+      "returncode": 0,
+      "test_file_count": 10,
+      "test_files": [
+        "tests/test_d1_capacities.py",
+        "tests/test_d2_functional_modules.py",
+        "tests/test_d2_physiological_ecology.py",
+        "tests/test_d4_niche_reversal.py",
+        "tests/test_gui_interface.py",
+        "tests/test_latent_knowledge.py",
+        "tests/test_memory_selection.py",
+        "tests/test_natural_event_result_synthesis.py",
+        "tests/test_periodic_positions.py",
+        "tests/test_structure_env_analysis.py"
+      ],
+      "stdout_tail": [
+        "..................................................                       [100%]",
+        "50 passed in 3.65s"
+      ]
+    },
+    {
+      "shard": 4,
+      "returncode": 0,
+      "test_file_count": 10,
+      "test_files": [
+        "tests/test_d1_factorial_and_demand.py",
+        "tests/test_d2_lineage_effect_assessment.py",
+        "tests/test_d2_regulatory_physiology.py",
+        "tests/test_danger_evidence_moving_hazard.py",
+        "tests/test_knowledge.py",
+        "tests/test_latent_router_mlp.py",
+        "tests/test_mortality_trace_group_refresh.py",
+        "tests/test_natural_event_timed_execution.py",
+        "tests/test_phase_counterfactual.py",
+        "tests/test_subject_structure_atlas.py"
+      ],
+      "stdout_tail": [
+        "....................................................                     [100%]",
+        "52 passed in 6.09s"
+      ]
+    },
+    {
+      "shard": 5,
+      "returncode": 0,
+      "test_file_count": 9,
+      "test_files": [
+        "tests/test_d2_compositional_capability.py",
+        "tests/test_d2_lineage_mediation.py",
+        "tests/test_d2_regulatory_physiology_conservation.py",
+        "tests/test_env_diversity.py",
+        "tests/test_knowledge_k2.py",
+        "tests/test_local_event_counterfactual.py",
+        "tests/test_natural_event_execution.py",
+        "tests/test_orthogonal_env.py",
+        "tests/test_protocol_provenance.py"
+      ],
+      "stdout_tail": [
+        "..........................................                               [100%]",
+        "42 passed in 2.63s"
+      ]
+    }
+  ]
+}

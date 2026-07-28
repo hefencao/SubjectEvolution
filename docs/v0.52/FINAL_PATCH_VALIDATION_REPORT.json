@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "schema": "v051-to-v052-patch-validation-v1",
+  "baseline_artifact": "se_v051_project.zip",
+  "candidate_version": "0.52.0",
+  "preliminary_patch_change_path_count": 44,
+  "git_apply_check": true,
+  "git_apply_whitespace_error_all": true,
+  "fuzz_or_offset": false,
+  "candidate_file_count_before_report": 280,
+  "patched_file_count_before_report": 280,
+  "content_hash_mismatch_count": 0,
+  "patched_tree_tests": {
+    "passed": 245,
+    "skipped": 1,
+    "test_file_count": 49
+  },
+  "patched_tree_isolated_distribution_validation": true,
+  "note": "The report itself is included before final patch regeneration; the final patch is reapplied and revalidated after this file is added."
+}

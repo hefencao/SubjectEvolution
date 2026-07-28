@@ -16,7 +16,12 @@ import numpy as np
 
 from se.cfg import SimulationConfig
 
-REGULATORY_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-v2"
+LEGACY_REGULATORY_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-v2"
+CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-v3"
+REGULATORY_PHYSIOLOGY_SCHEMA = CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA
+REGULATORY_PHYSIOLOGY_SCHEMAS = frozenset(
+    {LEGACY_REGULATORY_PHYSIOLOGY_SCHEMA, CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA}
+)
 PHYSIOLOGY_GENE_NAMES = (
     "oxygen_transport_capacity",
     "oxygen_reserve_capacity",
@@ -57,8 +62,18 @@ class PhysiologyPhenotype:
 
 
 def regulatory_physiology_enabled(cfg: SimulationConfig) -> bool:
-    return bool(cfg.physiology.enabled and cfg.physiology.schema == REGULATORY_PHYSIOLOGY_SCHEMA)
+    return bool(cfg.physiology.enabled and cfg.physiology.schema in REGULATORY_PHYSIOLOGY_SCHEMAS)
 
+
+
+
+def conservative_regulatory_physiology_enabled(cfg: SimulationConfig) -> bool:
+    """Return whether strict non-negative flow-ledger semantics are active."""
+
+    return bool(
+        cfg.physiology.enabled
+        and cfg.physiology.schema == CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA
+    )
 
 def physiology_gene_count(cfg: SimulationConfig) -> int:
     return PHYSIOLOGY_GENE_COUNT if regulatory_physiology_enabled(cfg) else 0
@@ -198,10 +213,14 @@ def physiology_genome_energy(
 
 
 __all__ = [
+    "CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA",
+    "LEGACY_REGULATORY_PHYSIOLOGY_SCHEMA",
     "PHYSIOLOGY_GENE_COUNT",
     "PHYSIOLOGY_GENE_NAMES",
     "REGULATORY_PHYSIOLOGY_SCHEMA",
+    "REGULATORY_PHYSIOLOGY_SCHEMAS",
     "PhysiologyPhenotype",
+    "conservative_regulatory_physiology_enabled",
     "physiology_diagnostics",
     "physiology_gene_count",
     "physiology_genome_energy",

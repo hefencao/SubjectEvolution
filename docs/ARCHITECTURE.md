@@ -260,7 +260,7 @@ Locomotion and field-signal outputs modulate existing world interfaces and pay u
 
 `neutralize-functional-module-embodied-output` removes only effective publication to the three embodied ports. Genes, mutation, expression, coupling, harvest routing, and embodied-router structural cost remain present. Combined output-basis diagnostics are observational and never feed policy or world state.
 
-## v0.51 regulatory physiology boundary
+## v0.51-v0.52 regulatory physiology boundary
 
 ```text
 fixed functional operators + expression + feed-forward coupling
@@ -287,3 +287,7 @@ Lifetime operator weights remain fixed. History is explicit bounded state, not h
 Counterfactual branches can neutralize regulatory publication, block both messenger receptor paths, or clamp any bounded physiology state. These treatments are deterministic, checkpointed and do not modify genotype or randomness.
 
 The v4 coarse-drive path remains an archived schema. With v5 disabled, v1-v4 execution is unchanged.
+
+### v0.52 conservation correction
+
+The legacy `transport-metabolism-messenger-tissue-v2` settlement is retained byte-for-byte for replay. New runs use `transport-metabolism-messenger-tissue-v3`, which enforces a finite non-negative per-tick flow ledger. Synthesis and repair spend only non-negative available substrate. Functional computation is still charged after it occurs; any resulting negative energy remains visible until the existing world starvation settlement converts debt into integrity loss. No new biological degree of freedom is introduced by this correction.

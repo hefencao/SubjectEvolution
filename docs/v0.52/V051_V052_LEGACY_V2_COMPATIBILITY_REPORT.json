@@ -1,0 +1,85 @@
+{
+  "passed": true,
+  "schema": "v051-v052-legacy-v2-compatibility-v1",
+  "baseline_version": "0.51.0",
+  "candidate_version": "0.52.0",
+  "config": "d2l_regulatory_physiology legacy v2 smoke",
+  "seed": 10001,
+  "ticks": 30,
+  "backend": "cpu",
+  "thin_checkpoint": {
+    "array_count": 49,
+    "value_count": 187969,
+    "difference_count": 0,
+    "differences": []
+  },
+  "full_checkpoint": {
+    "state_sha256_baseline": "970d9ac8e3ae318a4c2a3f32f88fa06063112be633fa044e883f2510de04c328",
+    "state_sha256_candidate": "970d9ac8e3ae318a4c2a3f32f88fa06063112be633fa044e883f2510de04c328",
+    "state_equal": true,
+    "metadata_expected_differences": [
+      "project_version",
+      "created_utc"
+    ]
+  },
+  "json_outputs": {
+    "common_non_timing_leaf_count": 5306,
+    "difference_count": 0,
+    "files": {
+      "summary.json": {
+        "common_leaf_count": 473,
+        "difference_count": 0,
+        "differences": []
+      },
+      "run_manifest.json": {
+        "common_leaf_count": 268,
+        "difference_count": 0,
+        "differences": []
+      },
+      "run_metadata.json": {
+        "common_leaf_count": 3530,
+        "difference_count": 0,
+        "differences": []
+      },
+      "scientific_validity.json": {
+        "common_leaf_count": 156,
+        "difference_count": 0,
+        "differences": []
+      },
+      "environment_atlas_summary.json": {
+        "common_leaf_count": 849,
+        "difference_count": 0,
+        "differences": []
+      },
+      "subject_structure_summary.json": {
+        "common_leaf_count": 30,
+        "difference_count": 0,
+        "differences": []
+      }
+    }
+  },
+  "metrics": {
+    "row_count": 4,
+    "common_non_timing_column_count": 417,
+    "cell_count": 1668,
+    "difference_count": 0,
+    "differences": []
+  },
+  "byte_identical_auxiliary_files": [
+    "environment_atlas.jsonl",
+    "environment_atlas_summary.json",
+    "evolution_progress.jsonl",
+    "knowledge_events.jsonl",
+    "knowledge_outcome_updates.csv",
+    "knowledge_policy_contributions.csv",
+    "knowledge_routing_costs.csv",
+    "knowledge_selection_events.csv",
+    "knowledge_transfers.csv",
+    "knowledge_working_memory.csv",
+    "scientific_validity.json",
+    "subject_structure_summary.json",
+    "subject_structure_transitions.jsonl"
+  ],
+  "nonidentical_auxiliary_files": [],
+  "interpretation": "The v2 physiology schema is retained for exact replay. The v3 conservation correction is opt-in and does not change the historical v2 state trajectory."
+}

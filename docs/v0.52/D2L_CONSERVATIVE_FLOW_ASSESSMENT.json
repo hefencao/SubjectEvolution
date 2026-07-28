@@ -1,0 +1,28 @@
+{
+  "schema": "d2-regulatory-physiology-flow-assessment-v1",
+  "source_result_schema": "d2-regulatory-physiology-results-v2",
+  "physiology_schema": "transport-metabolism-messenger-tissue-v3",
+  "completed_seed_count": 1,
+  "passed": true,
+  "flow_ledger_valid": true,
+  "conservative_schema_active": true,
+  "messenger_turnover_observed_in_every_seed": true,
+  "finite_precursor_turnover_observed_in_every_seed": true,
+  "invalid_flow_entries": [],
+  "rows": [
+    {
+      "seed": 52001,
+      "messenger_synthesis": 5.654505192201463,
+      "messenger_decay": 46.12314153181763,
+      "precursor_used": 2.8272525961007315,
+      "precursor_recovered": 15.499429040488385,
+      "messenger_energy": 0.11309010384402929,
+      "computation_energy": 0.5730649772911591,
+      "all_flows_finite_non_negative": true
+    }
+  ],
+  "recommendation": "retain-conservative-substrate-and-continue-ecology-chain",
+  "module_copy_number_ready": false,
+  "ecological_differentiation_claim": false,
+  "interpretation_boundary": "This assessment verifies cumulative flow-sign and finite-value invariants for the regulatory physiology substrate. It does not measure module maturity, ecological differentiation, or a named organ."
+}

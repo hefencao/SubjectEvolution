@@ -1,12 +1,12 @@
 {
   "run": {
     "seed": 10001,
-    "ticks": 1500,
-    "metrics_period": 120,
-    "checkpoint_period": 60,
+    "ticks": 60,
+    "metrics_period": 10,
+    "checkpoint_period": 30,
     "gpu_harvest_conflict_planner": true,
     "experiment_mode": "scientific",
-    "evolution_evaluation_period": 120,
+    "evolution_evaluation_period": 10,
     "validation_mode": true,
     "gpu_semantics_mode": "strict-reference",
     "full_checkpoint_enabled": true,
@@ -41,8 +41,8 @@
     "height": 128.0,
     "grid_x": 32,
     "grid_y": 32,
-    "initial_entities": 500,
-    "max_entities": 2048,
+    "initial_entities": 200,
+    "max_entities": 512,
     "periodic": true
   },
   "environment": {
@@ -420,7 +420,7 @@
   },
   "physiology": {
     "enabled": true,
-    "schema": "transport-metabolism-messenger-tissue-v3",
+    "schema": "transport-metabolism-messenger-tissue-v2",
     "initial_oxygenation": 0.75,
     "initial_tissue_condition": 1.0,
     "initial_structure_condition": 1.0,

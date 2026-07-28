@@ -1,0 +1,50 @@
+{
+  "schema": "d2-regulatory-physiology-plan-v2",
+  "seeds": [
+    51001,
+    51002,
+    51003
+  ],
+  "horizon_ticks": 1500,
+  "physiology_schema": "transport-metabolism-messenger-tissue-v3",
+  "conservation_mode": "non-negative-flow-ledger-with-energy-debt-preservation-v1",
+  "all_runtime_flows_must_be_finite_non_negative": true,
+  "negative_energy_debt_preserved_for_world_starvation_settlement": true,
+  "single_active_population_per_seed": true,
+  "pass_fail_gate": false,
+  "fixed_weight_lifetime_dynamics": true,
+  "online_weight_learning": false,
+  "module_expression_threshold_not_used_as_continuation_gate": true,
+  "module_outputs_are_regulatory_requests_not_direct_actions": true,
+  "inherited_physiology_parameters": [
+    "oxygen transport and reserve",
+    "aerobic conversion and anaerobic tolerance",
+    "fatigue clearance",
+    "repair conversion and allocation",
+    "messenger synthesis decay and receptor gain"
+  ],
+  "bounded_dynamic_states": [
+    "oxygenation",
+    "tissue condition",
+    "structure condition",
+    "metabolic fatigue",
+    "mobilization messenger",
+    "maintenance messenger",
+    "messenger precursor"
+  ],
+  "module_regulatory_requests": [
+    "oxygen uptake",
+    "mobilization bus",
+    "maintenance bus",
+    "sensory attention"
+  ],
+  "counterfactual_interfaces": [
+    "module regulatory-output neutralization",
+    "messenger receptor blockade",
+    "bounded physiology state clamps"
+  ],
+  "named_organs_or_hormones": false,
+  "diversity_reward_or_protection": false,
+  "ecological_role_labels": false,
+  "module_copy_number_changed": false
+}

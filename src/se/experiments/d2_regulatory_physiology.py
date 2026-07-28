@@ -24,8 +24,8 @@ from se.differentiation.functional import (
 from se.differentiation.physiology import REGULATORY_PHYSIOLOGY_SCHEMA
 from se.runtime.sim import Simulation
 
-PLAN_SCHEMA = "d2-regulatory-physiology-plan-v1"
-RESULT_SCHEMA = "d2-regulatory-physiology-results-v1"
+PLAN_SCHEMA = "d2-regulatory-physiology-plan-v2"
+RESULT_SCHEMA = "d2-regulatory-physiology-results-v2"
 
 SCALAR_METRICS = (
     "alive",
@@ -104,7 +104,7 @@ def _require_v5(cfg: SimulationConfig) -> None:
     if cfg.functional_modules.output_schema != REGULATORY_OUTPUT_SCHEMA:
         raise ValueError("D2-L requires the regulatory-drive output schema")
     if cfg.physiology.schema != REGULATORY_PHYSIOLOGY_SCHEMA:
-        raise ValueError("D2-L requires inherited regulatory physiology v2")
+        raise ValueError("D2-L requires conservative inherited regulatory physiology v3")
 
 
 def _last_jsonl(path: Path) -> dict[str, Any]:
@@ -138,6 +138,10 @@ def build_plan(seeds: Iterable[int], horizon: int) -> dict[str, Any]:
         "schema": PLAN_SCHEMA,
         "seeds": list(selected),
         "horizon_ticks": int(horizon),
+        "physiology_schema": REGULATORY_PHYSIOLOGY_SCHEMA,
+        "conservation_mode": "non-negative-flow-ledger-with-energy-debt-preservation-v1",
+        "all_runtime_flows_must_be_finite_non_negative": True,
+        "negative_energy_debt_preserved_for_world_starvation_settlement": True,
         "single_active_population_per_seed": True,
         "pass_fail_gate": False,
         "fixed_weight_lifetime_dynamics": True,
@@ -270,6 +274,27 @@ def _payload(plan: dict[str, Any], runs: list[dict[str, Any]]) -> dict[str, Any]
         "completed_seed_count": len(runs),
         "runs": runs,
         "stable_trend_summary": trends,
+        "flow_ledger_summary": {
+            "all_cumulative_flows_non_negative": all(
+                all(
+                    float(run["final"].get(name, 0.0)) >= 0.0
+                    for name in (
+                        "physiology_messenger_synthesis_total",
+                        "physiology_messenger_decay_total",
+                        "physiology_messenger_precursor_used_total",
+                        "physiology_messenger_precursor_recovered_total",
+                        "physiology_messenger_energy_total",
+                        "physiology_computation_energy_total",
+                        "physiology_computation_oxygen_total",
+                        "physiology_fatigue_generated_total",
+                        "physiology_fatigue_cleared_total",
+                        "physiology_repair_material_total",
+                    )
+                )
+                for run in runs
+            ),
+            "validated_each_tick": True,
+        },
         "decision_scope": "causal-substrate-evolution-not-module-maturity-gate",
         "interpretation_boundary": (
             "The run checks whether a fixed operator kernel, inherited physiology parameters, "

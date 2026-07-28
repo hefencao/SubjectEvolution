@@ -420,7 +420,7 @@
   },
   "physiology": {
     "enabled": true,
-    "schema": "transport-metabolism-messenger-tissue-v3",
+    "schema": "transport-metabolism-messenger-tissue-v2",
     "initial_oxygenation": 0.75,
     "initial_tissue_condition": 1.0,
     "initial_structure_condition": 1.0,

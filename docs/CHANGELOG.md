@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.52.0
+
+### Conservative regulatory-physiology settlement
+
+- Detects that the supplied v0.51 D2-L run contains negative messenger synthesis, precursor-use, and messenger-energy totals in every seed.
+- Identifies the cause as a negative energy balance entering the proportional synthesis limiter and later zero-clamping erasing the debt.
+- Adds `transport-metabolism-messenger-tissue-v3` with non-negative substrate limits, per-tick finite/non-negative flow-ledger validation, and energy-debt preservation until world starvation settlement.
+- Retains `transport-metabolism-messenger-tissue-v2` unchanged for exact checkpoint and result replay.
+- Promotes the canonical D2-L configs to v3 and adds explicit legacy-v2 replay configs.
+- Upgrades D2-L plan/results to v2 and adds `se-d2-regulatory-physiology-assess`.
+- Adds protocol audit v20 without adding named organs, hormones, roles, diversity rewards, modules, or world actors.
+- Complete packages retain only `docs/v0.52` as a version-specific directory.
+
 ## 0.51.0
 
 ### Inherited regulatory physiology

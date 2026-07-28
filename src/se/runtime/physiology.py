@@ -11,6 +11,7 @@ from se.cfg import SimulationConfig
 from se.differentiation.functional import PHYSIOLOGICAL_OUTPUT_COUNT, Q
 from se.differentiation.physiology import (
     PhysiologyPhenotype,
+    conservative_regulatory_physiology_enabled,
     physiology_phenotype,
     regulatory_physiology_enabled,
 )
@@ -62,6 +63,45 @@ class PhysiologyStepStats:
     computation_oxygen: float = 0.0
     fatigue_generated: float = 0.0
     fatigue_cleared: float = 0.0
+
+
+_CONSERVATIVE_FLOW_FIELDS = (
+    "oxygen_uptake",
+    "oxygen_use",
+    "perfusion_energy",
+    "repair_energy",
+    "repair_material",
+    "repair_oxygen",
+    "repair_tissue",
+    "repair_structure",
+    "repair_integrity",
+    "hypoxia_tissue_damage",
+    "wear_tissue_damage",
+    "wear_structure_damage",
+    "integrity_damage",
+    "messenger_synthesis",
+    "messenger_decay",
+    "messenger_precursor_used",
+    "messenger_precursor_recovered",
+    "messenger_energy",
+    "computation_energy",
+    "computation_oxygen",
+    "fatigue_generated",
+    "fatigue_cleared",
+)
+
+
+def validate_conservative_flow_ledger(stats: PhysiologyStepStats) -> None:
+    """Reject negative or non-finite v3 flow entries before they reach reports."""
+
+    invalid = {
+        name: float(getattr(stats, name))
+        for name in _CONSERVATIVE_FLOW_FIELDS
+        if not np.isfinite(float(getattr(stats, name)))
+        or float(getattr(stats, name)) < -1.0e-12
+    }
+    if invalid:
+        raise RuntimeError(f"invalid conservative physiology flow ledger: {invalid}")
 
 
 def _drive01(output_q: np.ndarray) -> np.ndarray:
@@ -394,12 +434,24 @@ def _apply_v4_physiology_step(
     )
 
 
-def _proportional_limit(requests: np.ndarray, limit: np.ndarray) -> np.ndarray:
-    total = requests.sum(axis=1, dtype=np.float64)
-    scale = np.ones(requests.shape[0], dtype=np.float64)
+def _proportional_limit(
+    requests: np.ndarray,
+    limit: np.ndarray,
+    *,
+    conservative: bool = False,
+) -> np.ndarray:
+    values = np.asarray(requests, dtype=np.float64)
+    available = np.asarray(limit, dtype=np.float64)
+    if conservative:
+        values = np.maximum(values, 0.0)
+        available = np.maximum(available, 0.0)
+    total = values.sum(axis=1, dtype=np.float64)
+    scale = np.ones(values.shape[0], dtype=np.float64)
     positive = total > 0.0
-    scale[positive] = np.minimum(limit[positive] / total[positive], 1.0)
-    return requests * scale[:, None]
+    scale[positive] = np.minimum(available[positive] / total[positive], 1.0)
+    if conservative:
+        scale = np.clip(scale, 0.0, 1.0)
+    return values * scale[:, None]
 
 
 def _apply_v5_physiology_step(
@@ -418,6 +470,7 @@ def _apply_v5_physiology_step(
     cfg: SimulationConfig,
     receptor_blocked: bool = False,
     state_clamps: dict[str, float] | None = None,
+    conservative: bool = False,
 ) -> PhysiologyStepStats:
     phenotype = physiology_phenotype(genotype, cfg, gene_start=gene_start)
     multipliers = regulatory_multipliers(
@@ -457,16 +510,28 @@ def _apply_v5_physiology_step(
     )
     precursor_per_unit = float(cfg.physiology.messenger_precursor_use_per_unit)
     energy_per_unit = float(cfg.physiology.messenger_energy_per_unit)
-    synthesis = requested_synthesis
+    synthesis = np.maximum(requested_synthesis, 0.0) if conservative else requested_synthesis
     if precursor_per_unit > 0.0:
-        synthesis = _proportional_limit(synthesis, precursor / precursor_per_unit)
+        synthesis = _proportional_limit(
+            synthesis,
+            precursor / precursor_per_unit,
+            conservative=conservative,
+        )
     if energy_per_unit > 0.0:
-        synthesis = _proportional_limit(synthesis, energy / energy_per_unit)
+        synthesis = _proportional_limit(
+            synthesis,
+            energy / energy_per_unit,
+            conservative=conservative,
+        )
     synthesized_total = synthesis.sum(axis=1, dtype=np.float64)
     precursor_used = synthesized_total * precursor_per_unit
     messenger_energy = synthesized_total * energy_per_unit
     precursor = np.maximum(precursor - precursor_used, 0.0)
-    energy = np.maximum(energy - messenger_energy, 0.0)
+    energy = (
+        energy - messenger_energy
+        if conservative
+        else np.maximum(energy - messenger_energy, 0.0)
+    )
 
     mobilization_decay_fraction = np.clip(
         float(cfg.physiology.messenger_decay_per_tick)
@@ -495,10 +560,16 @@ def _apply_v5_physiology_step(
     precursor_recovery = precursor_request.copy()
     if material_per_precursor > 0.0:
         precursor_recovery = np.minimum(
-            precursor_recovery, material / material_per_precursor
+            precursor_recovery,
+            (np.maximum(material, 0.0) if conservative else material)
+            / material_per_precursor,
         )
     precursor_material = precursor_recovery * material_per_precursor
-    material = np.maximum(material - precursor_material, 0.0)
+    material = (
+        material - precursor_material
+        if conservative
+        else np.maximum(material - precursor_material, 0.0)
+    )
     precursor = np.clip(precursor + precursor_recovery, 0.0, 1.0)
 
     oxygen_capacity = np.clip(phenotype.oxygen_reserve_capacity, 0.25, 2.0)
@@ -553,7 +624,11 @@ def _apply_v5_physiology_step(
     computation = np.clip(np.asarray(computation_load, dtype=np.float64), 0.0, None)
     computation_energy = computation * float(cfg.physiology.computation_energy_per_load)
     computation_oxygen = computation * float(cfg.physiology.computation_oxygen_per_load)
-    energy = np.maximum(energy - computation_energy, 0.0)
+    energy = (
+        energy - computation_energy
+        if conservative
+        else np.maximum(energy - computation_energy, 0.0)
+    )
     oxygen_demand = basal_use + movement_use + signal_use + computation_oxygen
     oxygen_shortfall = np.maximum(oxygen_demand - oxygen_amount, 0.0)
     oxygen_amount = np.maximum(oxygen_amount - oxygen_demand, 0.0)
@@ -608,17 +683,31 @@ def _apply_v5_physiology_step(
             + float(cfg.physiology.maintenance_repair_gain) * maintenance_effect
         )
     )
-    material_use = np.minimum(requested_material, material)
+    material_use = np.minimum(
+        requested_material, np.maximum(material, 0.0) if conservative else material
+    )
     repair_energy_per_material = float(cfg.physiology.repair_energy_per_material)
     repair_oxygen_per_material = float(cfg.physiology.repair_oxygen_use_per_material)
     if repair_energy_per_material > 0.0:
-        material_use = np.minimum(material_use, energy / repair_energy_per_material)
+        material_use = np.minimum(
+            material_use,
+            (np.maximum(energy, 0.0) if conservative else energy)
+            / repair_energy_per_material,
+        )
     if repair_oxygen_per_material > 0.0:
         material_use = np.minimum(material_use, oxygen_amount / repair_oxygen_per_material)
     repair_energy = material_use * repair_energy_per_material
     repair_oxygen = material_use * repair_oxygen_per_material
-    material = np.maximum(material - material_use, 0.0)
-    energy = np.maximum(energy - repair_energy, 0.0)
+    material = (
+        material - material_use
+        if conservative
+        else np.maximum(material - material_use, 0.0)
+    )
+    energy = (
+        energy - repair_energy
+        if conservative
+        else np.maximum(energy - repair_energy, 0.0)
+    )
     oxygen_amount = np.maximum(oxygen_amount - repair_oxygen, 0.0)
     oxygen_saturation = np.clip(oxygen_amount / oxygen_capacity, 0.0, 1.0)
 
@@ -711,7 +800,7 @@ def _apply_v5_physiology_step(
     )
     entities.physiology_sensor_multiplier[rows] = next_multipliers.sensor
 
-    return PhysiologyStepStats(
+    stats = PhysiologyStepStats(
         oxygen_uptake=float(uptake.sum(dtype=np.float64)),
         oxygen_use=float((oxygen_demand + repair_oxygen).sum(dtype=np.float64)),
         repair_energy=float(repair_energy.sum(dtype=np.float64)),
@@ -734,6 +823,9 @@ def _apply_v5_physiology_step(
         fatigue_generated=float(fatigue_generated.sum(dtype=np.float64)),
         fatigue_cleared=float(fatigue_cleared.sum(dtype=np.float64)),
     )
+    if conservative:
+        validate_conservative_flow_ledger(stats)
+    return stats
 
 
 def apply_physiology_step(
@@ -796,6 +888,7 @@ def apply_physiology_step(
             cfg=cfg,
             receptor_blocked=bool(receptor_blocked),
             state_clamps=state_clamps,
+            conservative=conservative_regulatory_physiology_enabled(cfg),
         )
     return _apply_v4_physiology_step(
         entities,
@@ -817,4 +910,5 @@ __all__ = [
     "apply_physiology_step",
     "physiology_multipliers",
     "regulatory_multipliers",
+    "validate_conservative_flow_ledger",
 ]

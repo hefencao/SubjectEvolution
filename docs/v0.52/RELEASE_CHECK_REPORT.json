@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "schema": "fresh-tests-plus-isolated-dist-v1",
+  "source_tree_sha256": "11b1bddd47d69cdc432fbe9cfcf2e209d567afa7a8f2a26615d81ba42034042b",
+  "test_report": "/home/unkloser/projects/SubjectEvolution/docs/v0.52/FINAL_TEST_REPORT.json",
+  "test_shard_count": 5,
+  "test_file_count": 49,
+  "distribution_command": [
+    "/home/unkloser/anaconda3/envs/se/bin/python",
+    "scripts/verify_dist.py",
+    "--project",
+    "."
+  ],
+  "distribution_returncode": 0,
+  "distribution_stdout_tail": [
+    "{\"passed\": true, \"report\": \"/tmp/se-dist-verify-vvgwie2z/isolated_wheel_validation.json\", \"wheel\": \"/tmp/se-dist-verify-vvgwie2z/dist/wheel/se_mvp-0.52.0-py3-none-any.whl\", \"venv\": \"/tmp/se-dist-verify-vvgwie2z/venv\"}"
+  ]
+}

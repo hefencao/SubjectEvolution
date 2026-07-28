@@ -22,7 +22,7 @@ from se.differentiation.functional import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v19"
+SCHEMA = "structural-measurement-protocol-audit-v20"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -373,6 +373,14 @@ def build_protocol_audit(
                 "fixed_lifetime_weights": True,
                 "online_hebbian_learning": False,
                 "computation_cost": "actual activation and route load debit energy and oxygen",
+                "conservative_flow_schema": "transport-metabolism-messenger-tissue-v3",
+                "legacy_replay_schema": "transport-metabolism-messenger-tissue-v2",
+                "flow_ledger_invariant": (
+                    "all reported flow magnitudes are finite and non-negative"
+                ),
+                "energy_debt_semantics": (
+                    "physiology preserves negative energy until world starvation settlement"
+                ),
                 "counterfactual_interfaces": [
                     "regulatory output neutralization",
                     "messenger receptor blockade",
@@ -474,8 +482,12 @@ def build_protocol_audit(
                 "stable_niche_claim": False,
             },
             "regulatory_physiology_experiment": {
-                "plan_schema": "d2-regulatory-physiology-plan-v1",
-                "result_schema": "d2-regulatory-physiology-results-v1",
+                "plan_schema": "d2-regulatory-physiology-plan-v2",
+                "result_schema": "d2-regulatory-physiology-results-v2",
+                "legacy_result_schema_readable": "d2-regulatory-physiology-results-v1",
+                "flow_assessment_schema": (
+                    "d2-regulatory-physiology-flow-assessment-v1"
+                ),
                 "single_active_population_per_seed": True,
                 "pass_fail_expression_gate": False,
                 "fixed_lifetime_weights": True,

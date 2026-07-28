@@ -1,0 +1,94 @@
+{
+  "schema": "d2-regulatory-physiology-flow-assessment-v1",
+  "source_result_schema": "d2-regulatory-physiology-results-v1",
+  "physiology_schema": "transport-metabolism-messenger-tissue-v2",
+  "completed_seed_count": 3,
+  "passed": false,
+  "flow_ledger_valid": false,
+  "conservative_schema_active": false,
+  "messenger_turnover_observed_in_every_seed": false,
+  "finite_precursor_turnover_observed_in_every_seed": false,
+  "invalid_flow_entries": [
+    {
+      "seed": 51001,
+      "field": "physiology_messenger_synthesis_total",
+      "value": -409.08105132807646
+    },
+    {
+      "seed": 51001,
+      "field": "physiology_messenger_precursor_used_total",
+      "value": -204.54052566403823
+    },
+    {
+      "seed": 51001,
+      "field": "physiology_messenger_energy_total",
+      "value": -8.181621026561535
+    },
+    {
+      "seed": 51002,
+      "field": "physiology_messenger_synthesis_total",
+      "value": -412.1768469923981
+    },
+    {
+      "seed": 51002,
+      "field": "physiology_messenger_precursor_used_total",
+      "value": -206.08842349619906
+    },
+    {
+      "seed": 51002,
+      "field": "physiology_messenger_energy_total",
+      "value": -8.243536939847939
+    },
+    {
+      "seed": 51003,
+      "field": "physiology_messenger_synthesis_total",
+      "value": -335.3754218936932
+    },
+    {
+      "seed": 51003,
+      "field": "physiology_messenger_precursor_used_total",
+      "value": -167.6877109468466
+    },
+    {
+      "seed": 51003,
+      "field": "physiology_messenger_energy_total",
+      "value": -6.707508437873864
+    }
+  ],
+  "rows": [
+    {
+      "seed": 51001,
+      "messenger_synthesis": -409.08105132807646,
+      "messenger_decay": 358.42008067157735,
+      "precursor_used": -204.54052566403823,
+      "precursor_recovered": 169.781635637241,
+      "messenger_energy": -8.181621026561535,
+      "computation_energy": 7.6403511988782356,
+      "all_flows_finite_non_negative": false
+    },
+    {
+      "seed": 51002,
+      "messenger_synthesis": -412.1768469923981,
+      "messenger_decay": 385.84201845497086,
+      "precursor_used": -206.08842349619906,
+      "precursor_recovered": 186.99597654438546,
+      "messenger_energy": -8.243536939847939,
+      "computation_energy": 9.436865168315467,
+      "all_flows_finite_non_negative": false
+    },
+    {
+      "seed": 51003,
+      "messenger_synthesis": -335.3754218936932,
+      "messenger_decay": 391.4618749580975,
+      "precursor_used": -167.6877109468466,
+      "precursor_recovered": 185.70894207305216,
+      "messenger_energy": -6.707508437873864,
+      "computation_energy": 11.033377983243565,
+      "all_flows_finite_non_negative": false
+    }
+  ],
+  "recommendation": "rerun-conservative-v3-same-seeds",
+  "module_copy_number_ready": false,
+  "ecological_differentiation_claim": false,
+  "interpretation_boundary": "This assessment verifies cumulative flow-sign and finite-value invariants for the regulatory physiology substrate. It does not measure module maturity, ecological differentiation, or a named organ."
+}

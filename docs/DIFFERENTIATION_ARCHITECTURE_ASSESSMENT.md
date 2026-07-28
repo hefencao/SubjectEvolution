@@ -219,3 +219,7 @@ CuPy 的浮点 sigmoid、softmax、einsum 和并行归约不因“纯张量”�
 - 分化不是由中性基因、初始聚类或自动多样性保护制造；
 - 同质实体对照不能产生相同社会结构。
 
+
+## v0.52 conservation note
+
+The v5 architecture is retained. The supplied long-run result exposed a settlement bug rather than a missing trait: negative energy was allowed to create negative messenger flows. New v3 physiology semantics correct only substrate accounting and preserve v2 for exact replay. No new role, module, organ, or ecology actor is added.

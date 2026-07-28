@@ -1,6 +1,6 @@
 # SE project status
 
-Version: **0.51.0**
+Version: **0.52.0**
 
 ## Current causal chain
 
@@ -12,14 +12,17 @@ orthogonal resource and abiotic environments
 → v3 confirms multiple physical output ports are usable
 → v5 separates regulatory intent from physiological execution
 → inherited transport / reserve / conversion / fatigue / repair / messenger parameters
-→ finite messenger precursor and conserved computation/execution costs
+→ conservative non-negative messenger/precursor flow ledger
+→ preserved energy debt and world-level starvation settlement
 → later migration, resource conversion, consumption, defense and trophic interactions
 → ecological differentiation tests only after those demands exist
 ```
 
-## v0.51 substrate
+## v0.52 conservative substrate
 
-The recommended opt-in schema is `expression-gated-regulatory-physiology-v5`. The archived v4 coarse-drive schema remains loadable for exact replay but should not be used as the new scientific baseline.
+The recommended functional schema remains `expression-gated-regulatory-physiology-v5`. New runs must pair it with physiology schema `transport-metabolism-messenger-tissue-v3`. The v2 physiology schema remains loadable only for exact v0.51 replay.
+
+The first 1500-tick D2-L run exposed negative cumulative messenger synthesis, precursor-use, and synthesis-energy values. Those are invalid flow signs, not evolved biological trends. v0.52 corrects the settlement while preserving the same operator kernel, inherited parameters, bounded states, and environment.
 
 v5 adds fifteen inherited physiological parameters, two independently evolvable decaying messenger paths, one shared finite precursor, fatigue, and explicit energy/oxygen cost of functional computation. Functional modules publish regulatory requests; actual execution remains constrained by inherited capacity, body state, material, energy, oxygen and local abiotic conditions.
 

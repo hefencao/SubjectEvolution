@@ -1,0 +1,44 @@
+{
+  "passed": true,
+  "schema": "d2l-installed-cli-smoke-v1",
+  "project_version": "0.52.0",
+  "runner_entry": "se-d2-regulatory-physiology",
+  "assessment_entry": "se-d2-regulatory-physiology-assess",
+  "ticks": 20,
+  "seed": 52002,
+  "result_schema": "d2-regulatory-physiology-results-v2",
+  "plan_schema": "d2-regulatory-physiology-plan-v2",
+  "physiology_schema": "transport-metabolism-messenger-tissue-v3",
+  "flow_ledger_summary": {
+    "all_cumulative_flows_non_negative": true,
+    "validated_each_tick": true
+  },
+  "assessment": {
+    "schema": "d2-regulatory-physiology-flow-assessment-v1",
+    "source_result_schema": "d2-regulatory-physiology-results-v2",
+    "physiology_schema": "transport-metabolism-messenger-tissue-v3",
+    "completed_seed_count": 1,
+    "passed": true,
+    "flow_ledger_valid": true,
+    "conservative_schema_active": true,
+    "messenger_turnover_observed_in_every_seed": true,
+    "finite_precursor_turnover_observed_in_every_seed": true,
+    "invalid_flow_entries": [],
+    "rows": [
+      {
+        "seed": 52002,
+        "messenger_synthesis": 0.6476622084393784,
+        "messenger_decay": 17.989869267680522,
+        "precursor_used": 0.3238311042196892,
+        "precursor_recovered": 1.3879196939086702,
+        "messenger_energy": 0.012953244168787566,
+        "computation_energy": 0.06932267344104184,
+        "all_flows_finite_non_negative": true
+      }
+    ],
+    "recommendation": "retain-conservative-substrate-and-continue-ecology-chain",
+    "module_copy_number_ready": false,
+    "ecological_differentiation_claim": false,
+    "interpretation_boundary": "This assessment verifies cumulative flow-sign and finite-value invariants for the regulatory physiology substrate. It does not measure module maturity, ecological differentiation, or a named organ."
+  }
+}

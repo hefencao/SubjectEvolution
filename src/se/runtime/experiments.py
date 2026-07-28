@@ -482,7 +482,10 @@ class SimulationExperimentMixin:
                 "future_offspring_physiology_output_neutralized": True,
             }
         elif normalized == "block-physiology-messenger-receptors":
-            if self.cfg.physiology.schema != "transport-metabolism-messenger-tissue-v2":
+            if self.cfg.physiology.schema not in {
+                "transport-metabolism-messenger-tissue-v2",
+                "transport-metabolism-messenger-tissue-v3",
+            }:
                 raise ValueError(
                     "messenger receptor blockade requires v5 regulatory physiology"
                 )
