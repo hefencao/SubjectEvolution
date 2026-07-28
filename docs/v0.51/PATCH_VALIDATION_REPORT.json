@@ -1,0 +1,20 @@
+{
+  "actual_apply_passed": true,
+  "apply_check": "git apply --check --whitespace=error-all",
+  "apply_check_passed": true,
+  "baseline": "official se_v050_project.zip extracted tree",
+  "boundary": "The final patch is regenerated after this report is added, then replayed again from a fresh v0.50 extraction and compared file-by-file.",
+  "final_content_hash_comparison_required": true,
+  "final_patch_replayed_from_fresh_baseline": true,
+  "fuzz_or_offset": false,
+  "passed": true,
+  "preliminary_content_identical": true,
+  "preliminary_isolated_distribution_validation": true,
+  "preliminary_project_file_count": 274,
+  "preliminary_tests": {
+    "passed": 240,
+    "skipped": 1,
+    "test_file_count": 48
+  },
+  "schema": "v050-v051-patch-validation-v1"
+}

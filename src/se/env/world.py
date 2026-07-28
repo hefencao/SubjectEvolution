@@ -16,6 +16,7 @@ from .diversity import (
     resource_field_diversity_metrics,
 )
 from .niches import AFFINITY_SCALE, RESOURCE_CHANNELS
+from .physiology import physiology_fields
 from ..reductions import stable_segmented_sum, validate_cell_ids
 
 
@@ -54,6 +55,7 @@ class Environment:
         )[:, None, None]
         self.hazard = self._hazard_pattern(0)
         self.mortality_trace = np.zeros((gy, gx), dtype=np.float32)
+        self.oxygen, self.terrain, self.wear = physiology_fields(cfg, 0)
 
     def _normalized_grid(self, xx: np.ndarray, yy: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         return diversity_normalized_grid(
@@ -168,6 +170,46 @@ class Environment:
             h = h + extension
         result = np.clip(h, 0.0, 1.0).astype(np.float32)
         return result[::-1, ::-1].copy() if self.spatial_reversed else result
+
+    @property
+    def physiology_environment_enabled(self) -> bool:
+        return self.cfg.environment.physiology_environment_schema == "oxygen-terrain-wear-mosaic-v1"
+
+    def update_physiology_fields(self, tick: int) -> None:
+        self.oxygen, self.terrain, self.wear = physiology_fields(self.cfg, tick)
+        if self.spatial_reversed:
+            self.oxygen = self.oxygen[::-1, ::-1].copy()
+            self.terrain = self.terrain[::-1, ::-1].copy()
+            self.wear = self.wear[::-1, ::-1].copy()
+
+    def physiology_for_cells(self, cell_ids: np.ndarray) -> np.ndarray:
+        cells = validate_cell_ids(cell_ids, self.cfg.world.grid_x * self.cfg.world.grid_y)
+        return np.column_stack((
+            self.oxygen.reshape(-1)[cells],
+            self.terrain.reshape(-1)[cells],
+            self.wear.reshape(-1)[cells],
+        )).astype(np.float32)
+
+    def oxygen_gradient_for_entities(
+        self, entity_cells: np.ndarray, entity_count: int
+    ) -> tuple[np.ndarray, np.ndarray]:
+        cells = np.asarray(entity_cells, dtype=np.int32)
+        gx = self.cfg.world.grid_x
+        gy = self.cfg.world.grid_y
+        valid = (cells >= 0) & (cells < gx * gy)
+        grad_x = np.zeros(entity_count, dtype=np.float32)
+        grad_y = np.zeros(entity_count, dtype=np.float32)
+        if not np.any(valid):
+            return grad_x, grad_y
+        yy, xx = np.divmod(cells[valid], gx)
+        left = self.oxygen[yy, (xx - 1) % gx]
+        right = self.oxygen[yy, (xx + 1) % gx]
+        down = self.oxygen[(yy - 1) % gy, xx]
+        up = self.oxygen[(yy + 1) % gy, xx]
+        rows = np.flatnonzero(valid)
+        grad_x[rows] = right - left
+        grad_y[rows] = up - down
+        return grad_x, grad_y
 
     def reverse_resource_spatial_orientation(self) -> None:
         """Rotate only resource geography by 180 degrees persistently.
@@ -298,6 +340,7 @@ class Environment:
             )
         self.resources = np.clip(resources, 0.0, self.capacity).astype(np.float32)
         self.hazard = self._hazard_pattern(tick)
+        self.update_physiology_fields(tick)
         self._update_mortality_trace()
 
     def resource_diversity_metrics(self) -> dict[str, Any]:

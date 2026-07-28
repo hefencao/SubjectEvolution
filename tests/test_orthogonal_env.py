@@ -154,7 +154,7 @@ def test_resource_diversity_cli_and_protocol_audit(tmp_path: Path) -> None:
     assert (out / "resource_environment_diversity_audit.md").exists()
 
     protocol = build_protocol_audit(CONFIG)
-    assert protocol["schema"] == "structural-measurement-protocol-audit-v17"
+    assert protocol["schema"] == "structural-measurement-protocol-audit-v19"
     resource = protocol["resource_environment_protocol"]
     assert resource["schema"] == ORTHOGONAL_ENVIRONMENT_SCHEMA
     assert resource["entity_aware"] is False

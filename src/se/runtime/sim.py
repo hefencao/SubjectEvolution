@@ -10,7 +10,6 @@ from typing import Callable
 import sys
 import time
 import numpy as np
-
 from .. import __version__
 from ..backend import BackendUnavailableError, resolve_backend
 from ..checkpointing import read_checkpoint_bundle, write_checkpoint_bundle
@@ -32,9 +31,8 @@ from se.differentiation.capacity import (
 )
 from se.differentiation.functional import (
     EMBODIED_OUTPUT_COUNT,
+    PHYSIOLOGICAL_OUTPUT_COUNT,
     embodied_outputs_enabled,
-    evaluate_contextual_harvest_modules_q,
-    functional_module_diagnostics,
     functional_module_energy,
 )
 from se.env.danger_evidence import (
@@ -140,7 +138,18 @@ from .checkpointing import SimulationCheckpointMixin
 from .experiments import SimulationExperimentMixin
 from .reporting import SimulationReportingMixin
 from .state import EntityState, StepStats, _wrap_periodic_float32
-from .embodied import apply_material_repair, embodied_power_multipliers, movement_cost_with_power
+from .embodied import apply_material_repair, movement_cost_with_power
+from .functional_execution import (
+    add_physiology_capacity_maintenance_cost,
+    add_physiology_terrain_cost,
+    augment_gradient_with_oxygen,
+    apply_gpu_oxygen_steering,
+    apply_physiology_settlement,
+    evaluate_functional_outputs,
+    initialize_functional_runtime_state,
+    physiology_checkpoint_arrays,
+    record_physiology_capacity_development_cost,
+)
 
 
 class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, SimulationReportingMixin):
@@ -312,11 +321,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.total_reproduction_rejected_capacity = 0
         self.total_reproduction_rejected_resource = 0
         self.total_reproduction_rejected_other = 0
-        self.total_functional_module_movement_energy_delta = 0.0
-        self.total_functional_module_signal_energy_delta = 0.0
-        self.total_functional_module_repair_energy = 0.0
-        self.total_functional_module_repair_material = 0.0
-        self.total_functional_module_repair_integrity = 0.0
+        initialize_functional_runtime_state(self)
         morphology_indices, morphology_names = active_morphology_traits(cfg)
         self.evolution_progress = EvolutionProgressTracker(
             self.output_dir,
@@ -430,7 +435,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.resource_affinity_ablation_enabled = False
         self.functional_modules_ablation_enabled = False
         self.functional_module_coupling_ablation_enabled = False
-        self.functional_module_embodied_output_ablation_enabled = False
         self.functional_module_ablation_mask = np.zeros(
             int(cfg.functional_modules.module_count), dtype=bool
         )
@@ -558,19 +562,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
     @property
     def benefit_unbounded_energy_total(self) -> float:
         return float(self.benefit_flow_energy_total[BenefitFlowKind.UNBOUNDED])
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     def _finalize_share_capacity(
         self,
@@ -794,6 +785,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             group_id=self.social.group_id[active],
             genotype=self.entities.genotype[active],
             generation=self.entities.generation[active],
+            **physiology_checkpoint_arrays(self),
             harvested_resources_total=self.total_harvested_resources,
             **(
                 {
@@ -819,7 +811,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         if self.cfg.run.full_checkpoint_enabled:
             self.save_full_checkpoint()
 
-
     def step(self) -> StepStats:
         cfg = self.cfg
         ent = self.entities
@@ -839,6 +830,11 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         effective_embodied_output_q = np.zeros(
             (ent.alive.size, EMBODIED_OUTPUT_COUNT), dtype=np.int32
         )
+        effective_physiology_output_q = np.zeros(
+            (ent.alive.size, PHYSIOLOGICAL_OUTPUT_COUNT), dtype=np.int32
+        )
+        functional_computation_load = np.zeros(ent.alive.size, dtype=np.float32)
+        local_physiology = np.zeros((0, 3), dtype=np.float32)
         movement_speed_multiplier = np.ones(ent.alive.size, dtype=np.float32)
         signal_strength_multiplier = np.ones(ent.alive.size, dtype=np.float32)
         functional_context_metrics: dict[str, object] = {}
@@ -866,6 +862,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 cfg.policy.partner_samples,
             )
             local_resources = self.environment.cell_values(cells)
+            local_physiology = self.environment.physiology_for_cells(cells)
             effective_resource_affinity_q = (
                 np.full(
                     (ent.alive.size, RESOURCE_CHANNELS),
@@ -911,6 +908,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 effective_resource_affinity_q,
                 effective_danger_evidence_q,
             )
+            resource_gradient = augment_gradient_with_oxygen(self, resource_gradient)
             if cfg.knowledge.enabled and cfg.knowledge.learning_enabled:
                 knowledge_context_keys = encode_local_context(
                     policy_local_resources[:, 0],
@@ -1101,6 +1099,8 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             self.gpu_runtime.begin_step_transfer_measurement()
             phase_started = time.perf_counter()
             self.gpu_runtime.update_fields(self.tick)
+            if cfg.physiology.enabled:
+                self.environment.update_physiology_fields(self.tick)
             self.gpu_runtime.backend.synchronize()
             stats.environment_seconds = time.perf_counter() - phase_started
             prepared = self.gpu_runtime.prepare(
@@ -1150,6 +1150,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 return stats
             cells = prepared.cells
             local_resources = prepared.local_resources
+            local_physiology = self.environment.physiology_for_cells(cells)
             effective_resource_affinity_q = (
                 np.full(
                     (ent.alive.size, RESOURCE_CHANNELS),
@@ -1190,48 +1191,21 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         if effective_resource_affinity_q is None:
             raise RuntimeError("effective resource affinity was not prepared")
         effective_harvest_preference_q = effective_resource_affinity_q.copy()
-        if cfg.functional_modules.enabled:
-            functional_evaluation = evaluate_contextual_harvest_modules_q(
-                ent.genotype[active],
-                effective_resource_affinity_q[active],
-                energy=ent.energy[active],
-                integrity=ent.integrity[active],
-                material=ent.material[active],
-                information_store=ent.information_store[active],
-                fertility=ent.fertility[active],
-                local_resources=local_resources,
-                cfg=cfg,
-                gene_start=ParametricPolicy.functional_module_gene_start(cfg),
-                ablated=self.functional_modules_ablation_enabled,
-                ablated_modules=self.functional_module_ablation_mask,
-                row_ablated_modules=self.functional_module_lineage_ablation_mask(
-                    active, cost=False
-                ),
-                coupling_ablated=self.functional_module_coupling_ablation_enabled,
-                embodied_ablated=(
-                    self.functional_module_embodied_output_ablation_enabled
-                ),
-            )
-            active_preference = functional_evaluation.preference_q
-            effective_harvest_preference_q[active] = active_preference
-            if functional_evaluation.embodied_output_q is not None:
-                active_embodied_q = np.asarray(
-                    functional_evaluation.embodied_output_q, dtype=np.int32
-                )
-                effective_embodied_output_q[active] = active_embodied_q
-                if embodied_outputs_enabled(cfg):
-                    movement, signal = embodied_power_multipliers(active_embodied_q, cfg)
-                    movement_speed_multiplier[active] = movement
-                    signal_strength_multiplier[active] = signal
-            if evaluation_due:
-                functional_context_metrics = functional_module_diagnostics(
-                    ent.genotype[active],
-                    active_preference,
-                    effective_resource_affinity_q[active],
-                    cfg,
-                    gene_start=ParametricPolicy.functional_module_gene_start(cfg),
-                    evaluation=functional_evaluation,
-                )
+        functional_context_metrics = evaluate_functional_outputs(
+            self,
+            active=active,
+            effective_resource_affinity_q=effective_resource_affinity_q,
+            local_resources=local_resources,
+            local_physiology=local_physiology,
+            evaluation_due=evaluation_due,
+            effective_harvest_preference_q=effective_harvest_preference_q,
+            effective_embodied_output_q=effective_embodied_output_q,
+            effective_physiology_output_q=effective_physiology_output_q,
+            functional_computation_load=functional_computation_load,
+            movement_speed_multiplier=movement_speed_multiplier,
+            signal_strength_multiplier=signal_strength_multiplier,
+        )
+        apply_gpu_oxygen_steering(self, active=active, decision=decision)
 
         if self.local_stress_diagnostics is not None:
             local_hazard = (
@@ -1749,6 +1723,9 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     stats.functional_module_development_energy = float(
                         module_development_effective.sum(dtype=np.float64)
                     )
+                record_physiology_capacity_development_cost(
+                    self, newborns, stats
+                )
                 # Recovery is a treatment of the selected living cohort, not
                 # a hereditary trait in the current experiment.
                 self.autonomy_restored[newborns] = False
@@ -2051,8 +2028,29 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 module_cost.sum(dtype=np.float64)
             )
             cost = cost.astype(np.float64) + module_cost
+        cost = add_physiology_capacity_maintenance_cost(
+            self, current_active, cost, stats
+        )
+        cost, current_physiology, moved_current = add_physiology_terrain_cost(
+            self,
+            current_active=current_active,
+            current_cells=current_cells,
+            moved_now=moved_now,
+            cost=cost,
+        )
         ent.energy[current_active] -= cost.astype(np.float32)
         ent.integrity[current_active] -= (hazard * 0.0015).astype(np.float32)
+        apply_physiology_settlement(
+            self,
+            current_active=current_active,
+            current_physiology=current_physiology,
+            moved_current=moved_current,
+            signal_rows=signal_rows,
+            intents=intents,
+            effective_physiology_output_q=effective_physiology_output_q,
+            functional_computation_load=functional_computation_load,
+            stats=stats,
+        )
         starving = ent.energy[current_active] < 0.0
         ent.integrity[current_active[starving]] += ent.energy[current_active[starving]] * 0.05
         ent.energy[current_active] = np.maximum(ent.energy[current_active], 0.0)

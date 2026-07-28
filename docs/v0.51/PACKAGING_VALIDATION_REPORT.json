@@ -1,0 +1,26 @@
+{
+  "archive_extraction_required": true,
+  "archive_root": "se_v051_project",
+  "boundary": "The final archive is built after this report is added, extracted into a new directory, compared file-by-file, tested, and audited as an isolated distribution.",
+  "content_hash_comparison_required": true,
+  "excluded_patterns": [
+    ".git",
+    ".pytest_cache",
+    "__pycache__",
+    "*.pyc",
+    "*.pyo",
+    "*.egg-info",
+    "build",
+    "dist",
+    ".release-env"
+  ],
+  "full_tests_required_after_extraction": {
+    "passed": 240,
+    "skipped": 1,
+    "test_file_count": 48
+  },
+  "isolated_distribution_validation_required": true,
+  "only_versioned_docs_directory": "docs/v0.51",
+  "passed": true,
+  "schema": "v051-clean-package-validation-v1"
+}

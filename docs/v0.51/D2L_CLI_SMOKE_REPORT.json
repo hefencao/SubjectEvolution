@@ -1,0 +1,52 @@
+{
+  "active_output_port_count": 8,
+  "command": [
+    "se-d2-regulatory-physiology",
+    "--config",
+    "configs/d2l_regulatory_physiology_smoke.json",
+    "--seeds",
+    "51001",
+    "--output",
+    "<temporary>",
+    "--backend",
+    "cpu",
+    "--until-tick",
+    "10",
+    "--overwrite"
+  ],
+  "computation_energy_total": 0.03377282684500242,
+  "computation_oxygen_total": 0.01688641342250121,
+  "fatigue_generated_total": 1.952569057458747,
+  "horizon_ticks": 10,
+  "interpretation_boundary": "The run checks whether a fixed operator kernel, inherited physiology parameters, finite messenger dynamics, and conserved execution costs remain active during evolution. It does not establish a named organ, mature ecological differentiation, completed food-chain dynamics, or a reason to change module copy number.",
+  "messenger_precursor_used_total": 0.15182859560435807,
+  "messenger_synthesis_total": 0.30365719120871615,
+  "output_port_names": [
+    "harvest_residual_0",
+    "harvest_residual_1",
+    "harvest_residual_2",
+    "harvest_residual_3",
+    "oxygen_uptake_drive",
+    "mobilization_drive",
+    "maintenance_drive",
+    "sensory_attention_drive"
+  ],
+  "passed": true,
+  "physiology_environment_effective_dimensions": 2.8545423220711497,
+  "physiology_genetic_effective_dimensions": 13.88962851224195,
+  "regulatory_output_changed_entity_fraction": 0.945,
+  "regulatory_output_effective_dimensions": 3.654436254128978,
+  "repair_material_total": 0.010362085142096297,
+  "result_schema": "d2-regulatory-physiology-results-v1",
+  "schema": "d2l-installed-cli-smoke-v1",
+  "seed": 51001,
+  "stable_trend_summary": {
+    "computation_cost_observed": true,
+    "fatigue_turnover_observed": true,
+    "finite_precursor_turnover_observed": true,
+    "messenger_turnover_observed": true,
+    "physiology_genetic_variation_observed": true,
+    "regulatory_output_used_in_every_seed": true,
+    "repair_or_damage_flow_observed": true
+  }
+}

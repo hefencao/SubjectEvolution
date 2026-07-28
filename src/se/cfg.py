@@ -168,6 +168,28 @@ class EnvironmentConfig:
     moving_hazard_radius: float = 0.12
     moving_hazard_speed: float = 0.0
     moving_hazard_phase_offset: float = 0.0
+    # Optional non-biological physiological environment.  This adds three
+    # independent fields without changing resource identity: local oxygen
+    # availability, terrain resistance, and mechanical wear.  The fields are
+    # inert unless the explicit schema is enabled.
+    physiology_environment_schema: str = "disabled"
+    oxygen_floor: float = 1.0
+    oxygen_amplitude: float = 0.0
+    oxygen_period: int = 311
+    oxygen_wave_x: float = 1.0
+    oxygen_wave_y: float = -0.5
+    oxygen_phase_offset: float = 0.0
+    terrain_floor: float = 0.0
+    terrain_amplitude: float = 0.0
+    terrain_wave_x: float = 0.5
+    terrain_wave_y: float = 1.5
+    terrain_phase_offset: float = 0.0
+    wear_floor: float = 0.0
+    wear_amplitude: float = 0.0
+    wear_period: int = 419
+    wear_wave_x: float = -1.5
+    wear_wave_y: float = 0.75
+    wear_phase_offset: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -403,6 +425,75 @@ class FunctionalModuleConfig:
     repair_material_per_tick: float = 0.0
     repair_integrity_per_material: float = 0.0
     repair_energy_per_material: float = 0.0
+    maintenance_energy_per_physiology_weight: float = 0.0
+    development_energy_per_physiology_weight: float = 0.0
+
+
+@dataclass(frozen=True)
+class PhysiologyConfig:
+    """Opt-in lower-level body substrates for versioned functional modules.
+
+    The archived v4 schema exposes four coarse body drives.  The v5 schema
+    adds inherited transport/metabolism parameters, fatigue, finite messenger
+    precursor, and two decaying regulatory buses.  Functional modules publish
+    neural/regulatory drives; actual execution remains limited by body state,
+    inherited capacities, environmental supply, and conserved use costs.
+    """
+
+    enabled: bool = False
+    schema: str = "disabled"
+    initial_oxygenation: float = 1.0
+    initial_tissue_condition: float = 1.0
+    initial_structure_condition: float = 1.0
+    oxygen_uptake_per_tick: float = 0.0
+    basal_oxygen_use_per_tick: float = 0.0
+    movement_oxygen_use_per_tick: float = 0.0
+    signal_oxygen_use_per_tick: float = 0.0
+    repair_oxygen_use_per_material: float = 0.0
+    perfusion_energy_per_tick: float = 0.0
+    hypoxia_threshold: float = 0.0
+    hypoxia_tissue_damage_per_tick: float = 0.0
+    terrain_speed_penalty_fraction: float = 0.0
+    terrain_energy_cost_fraction: float = 0.0
+    wear_tissue_damage_per_tick: float = 0.0
+    wear_structure_damage_per_tick: float = 0.0
+    tissue_damage_integrity_fraction: float = 0.0
+    structure_damage_integrity_fraction: float = 0.0
+    repair_material_per_tick: float = 0.0
+    repair_energy_per_material: float = 0.0
+    repair_tissue_per_material: float = 0.0
+    repair_structure_per_material: float = 0.0
+    max_movement_speed_fraction: float = 0.0
+    max_signal_strength_fraction: float = 0.0
+    oxygen_gradient_weight: float = 0.0
+
+    # v5 bounded regulatory physiology.  These remain inert for the archived
+    # oxygen-tissue-structure-v1 schema.
+    initial_metabolic_fatigue: float = 0.0
+    initial_mobilization_messenger: float = 0.0
+    initial_maintenance_messenger: float = 0.0
+    initial_messenger_precursor: float = 1.0
+    messenger_synthesis_per_tick: float = 0.0
+    messenger_decay_per_tick: float = 0.0
+    messenger_precursor_use_per_unit: float = 0.0
+    messenger_precursor_recovery_per_tick: float = 0.0
+    messenger_precursor_material_per_unit: float = 0.0
+    messenger_energy_per_unit: float = 0.0
+    computation_energy_per_load: float = 0.0
+    computation_oxygen_per_load: float = 0.0
+    fatigue_gain_per_work: float = 0.0
+    fatigue_gain_per_hypoxia: float = 0.0
+    fatigue_clearance_per_tick: float = 0.0
+    mobilization_speed_gain: float = 0.0
+    mobilization_signal_gain: float = 0.0
+    mobilization_oxygen_cost_gain: float = 0.0
+    maintenance_repair_gain: float = 0.0
+    maintenance_clearance_gain: float = 0.0
+    maintenance_speed_penalty: float = 0.0
+    gene_mutation_probability: float = 0.0
+    gene_mutation_std: float = 0.0
+    maintenance_energy_per_capacity: float = 0.0
+    development_energy_per_capacity: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -460,6 +551,7 @@ class SimulationConfig:
     knowledge: KnowledgeConfig
     differentiation: DifferentiationConfig
     functional_modules: FunctionalModuleConfig
+    physiology: PhysiologyConfig
     policy: PolicyConfig
     social: SocialConfig
     control: ControlConfig
@@ -658,6 +750,62 @@ def load_config(path: str | Path) -> SimulationConfig:
             moving_hazard_phase_offset=float(
                 _require(raw, "environment").get("moving_hazard_phase_offset", 0.0)
             ),
+            physiology_environment_schema=str(
+                _require(raw, "environment").get(
+                    "physiology_environment_schema", "disabled"
+                )
+            ),
+            oxygen_floor=float(
+                _require(raw, "environment").get("oxygen_floor", 1.0)
+            ),
+            oxygen_amplitude=float(
+                _require(raw, "environment").get("oxygen_amplitude", 0.0)
+            ),
+            oxygen_period=int(
+                _require(raw, "environment").get("oxygen_period", 311)
+            ),
+            oxygen_wave_x=float(
+                _require(raw, "environment").get("oxygen_wave_x", 1.0)
+            ),
+            oxygen_wave_y=float(
+                _require(raw, "environment").get("oxygen_wave_y", -0.5)
+            ),
+            oxygen_phase_offset=float(
+                _require(raw, "environment").get("oxygen_phase_offset", 0.0)
+            ),
+            terrain_floor=float(
+                _require(raw, "environment").get("terrain_floor", 0.0)
+            ),
+            terrain_amplitude=float(
+                _require(raw, "environment").get("terrain_amplitude", 0.0)
+            ),
+            terrain_wave_x=float(
+                _require(raw, "environment").get("terrain_wave_x", 0.5)
+            ),
+            terrain_wave_y=float(
+                _require(raw, "environment").get("terrain_wave_y", 1.5)
+            ),
+            terrain_phase_offset=float(
+                _require(raw, "environment").get("terrain_phase_offset", 0.0)
+            ),
+            wear_floor=float(
+                _require(raw, "environment").get("wear_floor", 0.0)
+            ),
+            wear_amplitude=float(
+                _require(raw, "environment").get("wear_amplitude", 0.0)
+            ),
+            wear_period=int(
+                _require(raw, "environment").get("wear_period", 419)
+            ),
+            wear_wave_x=float(
+                _require(raw, "environment").get("wear_wave_x", -1.5)
+            ),
+            wear_wave_y=float(
+                _require(raw, "environment").get("wear_wave_y", 0.75)
+            ),
+            wear_phase_offset=float(
+                _require(raw, "environment").get("wear_phase_offset", 0.0)
+            ),
         ),
         entities=EntityConfig(**_require(raw, "entities")),
         information=InformationConfig(
@@ -688,6 +836,7 @@ def load_config(path: str | Path) -> SimulationConfig:
         ),
         differentiation=DifferentiationConfig(**raw.get("differentiation", {})),
         functional_modules=FunctionalModuleConfig(**raw.get("functional_modules", {})),
+        physiology=PhysiologyConfig(**raw.get("physiology", {})),
         policy=PolicyConfig(**policy_raw),
         social=SocialConfig(**_require(raw, "social")),
         control=ControlConfig(**raw.get("control", {})),
@@ -982,6 +1131,62 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.environment.mortality_trace_observation_weight < 0.0:
         raise ValueError(
             "environment.mortality_trace_observation_weight cannot be negative"
+        )
+    if cfg.environment.physiology_environment_schema not in {
+        "disabled",
+        "oxygen-terrain-wear-mosaic-v1",
+    }:
+        raise ValueError(
+            "environment.physiology_environment_schema must be 'disabled' or "
+            "'oxygen-terrain-wear-mosaic-v1'"
+        )
+    physiology_environment_values = (
+        cfg.environment.oxygen_floor,
+        cfg.environment.oxygen_amplitude,
+        cfg.environment.oxygen_wave_x,
+        cfg.environment.oxygen_wave_y,
+        cfg.environment.oxygen_phase_offset,
+        cfg.environment.terrain_floor,
+        cfg.environment.terrain_amplitude,
+        cfg.environment.terrain_wave_x,
+        cfg.environment.terrain_wave_y,
+        cfg.environment.terrain_phase_offset,
+        cfg.environment.wear_floor,
+        cfg.environment.wear_amplitude,
+        cfg.environment.wear_wave_x,
+        cfg.environment.wear_wave_y,
+        cfg.environment.wear_phase_offset,
+    )
+    if any(not math.isfinite(float(value)) for value in physiology_environment_values):
+        raise ValueError("physiological environment fields must be finite")
+    if cfg.environment.oxygen_period <= 0 or cfg.environment.wear_period <= 0:
+        raise ValueError("physiological environment periods must be positive")
+    for name, floor, amplitude in (
+        ("oxygen", cfg.environment.oxygen_floor, cfg.environment.oxygen_amplitude),
+        ("terrain", cfg.environment.terrain_floor, cfg.environment.terrain_amplitude),
+        ("wear", cfg.environment.wear_floor, cfg.environment.wear_amplitude),
+    ):
+        if floor < 0.0 or floor > 1.0 or amplitude < 0.0 or amplitude > 1.0:
+            raise ValueError(
+                f"environment {name} floor/amplitude must each be in [0, 1]"
+            )
+        if floor + amplitude > 1.0 + 1.0e-12:
+            raise ValueError(
+                f"environment {name} floor plus amplitude cannot exceed 1"
+            )
+    if (
+        cfg.environment.physiology_environment_schema == "disabled"
+        and (
+            cfg.environment.oxygen_floor != 1.0
+            or cfg.environment.oxygen_amplitude != 0.0
+            or cfg.environment.terrain_floor != 0.0
+            or cfg.environment.terrain_amplitude != 0.0
+            or cfg.environment.wear_floor != 0.0
+            or cfg.environment.wear_amplitude != 0.0
+        )
+    ):
+        raise ValueError(
+            "disabled physiological environment requires neutral oxygen/terrain/wear fields"
         )
     if (
         cfg.environment.mortality_trace_schema != "disabled"
@@ -1504,21 +1709,30 @@ def validate_config(cfg: SimulationConfig) -> None:
     additive_schema = "expression-gated-contextual-harvest-v1"
     compositional_schema = "expression-gated-compositional-harvest-v2"
     embodied_schema = "expression-gated-compositional-embodied-v3"
+    physiological_schema = "expression-gated-compositional-physiological-v4"
+    regulatory_schema = "expression-gated-regulatory-physiology-v5"
     if fcfg.schema not in {
-        "disabled", additive_schema, compositional_schema, embodied_schema
+        "disabled", additive_schema, compositional_schema, embodied_schema,
+        physiological_schema, regulatory_schema,
     }:
         raise ValueError(
             "functional_modules.schema must be 'disabled', "
             "'expression-gated-contextual-harvest-v1', "
             "'expression-gated-compositional-harvest-v2', or "
-            "'expression-gated-compositional-embodied-v3'"
+            "'expression-gated-compositional-embodied-v3', "
+            "'expression-gated-compositional-physiological-v4', or "
+            "'expression-gated-regulatory-physiology-v5'"
         )
     if fcfg.enabled != (fcfg.schema != "disabled"):
         raise ValueError("functional_modules enabled/schema fields must agree")
     if fcfg.module_count != 4:
         raise ValueError("functional_modules.module_count must be exactly 4")
     expected_input = (
-        "internal-needs-local-resources-feedforward-v2"
+        "internal-homeostasis-local-resources-abiotic-feedforward-v4"
+        if fcfg.schema == regulatory_schema
+        else "internal-physiology-local-resources-abiotic-feedforward-v3"
+        if fcfg.schema == physiological_schema
+        else "internal-needs-local-resources-feedforward-v2"
         if fcfg.schema in {compositional_schema, embodied_schema}
         else "internal-needs-local-resources-v1"
     )
@@ -1529,7 +1743,9 @@ def validate_config(cfg: SimulationConfig) -> None:
         )
     expected_coupling = (
         "lower-slot-signal-modulation-v1"
-        if fcfg.schema in {compositional_schema, embodied_schema}
+        if fcfg.schema in {
+            compositional_schema, embodied_schema, physiological_schema, regulatory_schema
+        }
         else "disabled"
     )
     if fcfg.coupling_schema != expected_coupling:
@@ -1540,6 +1756,10 @@ def validate_config(cfg: SimulationConfig) -> None:
     expected_output = (
         "harvest-locomotion-signal-repair-v1"
         if fcfg.schema == embodied_schema
+        else "harvest-physiology-drive-v1"
+        if fcfg.schema == physiological_schema
+        else "harvest-regulatory-drive-v2"
+        if fcfg.schema == regulatory_schema
         else "harvest-channel-zero-sum-residual-v1"
     )
     if fcfg.output_schema != expected_output:
@@ -1569,6 +1789,8 @@ def validate_config(cfg: SimulationConfig) -> None:
         fcfg.development_energy_per_coupling_weight,
         fcfg.maintenance_energy_per_embodied_weight,
         fcfg.development_energy_per_embodied_weight,
+        fcfg.maintenance_energy_per_physiology_weight,
+        fcfg.development_energy_per_physiology_weight,
         fcfg.max_movement_speed_fraction,
         fcfg.max_signal_strength_fraction,
         fcfg.repair_material_per_tick,
@@ -1596,7 +1818,9 @@ def validate_config(cfg: SimulationConfig) -> None:
         fcfg.maintenance_energy_per_embodied_weight,
         fcfg.development_energy_per_embodied_weight,
     )
-    if fcfg.schema != embodied_schema and any(value != 0.0 for value in embodied_values):
+    if fcfg.schema not in {embodied_schema, physiological_schema} and any(
+        value != 0.0 for value in embodied_values
+    ):
         raise ValueError(
             "embodied functional-module settings require the v3 embodied schema"
         )
@@ -1609,6 +1833,113 @@ def validate_config(cfg: SimulationConfig) -> None:
     ):
         raise ValueError(
             "v3 embodied modules require positive movement, signal, and repair semantics"
+        )
+    physiology_weight_values = (
+        fcfg.maintenance_energy_per_physiology_weight,
+        fcfg.development_energy_per_physiology_weight,
+    )
+    if fcfg.schema not in {physiological_schema, regulatory_schema} and any(
+        value != 0.0 for value in physiology_weight_values
+    ):
+        raise ValueError(
+            "physiology router costs require a physiological functional schema"
+        )
+    pcfg = cfg.physiology
+    if pcfg.schema not in {
+        "disabled",
+        "oxygen-tissue-structure-v1",
+        "transport-metabolism-messenger-tissue-v2",
+    }:
+        raise ValueError(
+            "physiology.schema must be 'disabled', 'oxygen-tissue-structure-v1', "
+            "or 'transport-metabolism-messenger-tissue-v2'"
+        )
+    if pcfg.enabled != (pcfg.schema != "disabled"):
+        raise ValueError("physiology enabled/schema fields must agree")
+    physiology_values = tuple(
+        float(getattr(pcfg, name))
+        for name in PhysiologyConfig.__dataclass_fields__
+        if name not in {"enabled", "schema"}
+    )
+    if any(not math.isfinite(value) or value < 0.0 for value in physiology_values):
+        raise ValueError("physiology parameters must be finite and non-negative")
+    for name in (
+        "initial_oxygenation",
+        "initial_tissue_condition",
+        "initial_structure_condition",
+        "hypoxia_threshold",
+        "terrain_speed_penalty_fraction",
+        "terrain_energy_cost_fraction",
+        "tissue_damage_integrity_fraction",
+        "structure_damage_integrity_fraction",
+        "max_movement_speed_fraction",
+        "max_signal_strength_fraction",
+        "initial_metabolic_fatigue",
+        "initial_mobilization_messenger",
+        "initial_maintenance_messenger",
+        "initial_messenger_precursor",
+        "mobilization_speed_gain",
+        "mobilization_signal_gain",
+        "maintenance_speed_penalty",
+    ):
+        if float(getattr(pcfg, name)) > 1.0:
+            raise ValueError(f"physiology.{name} cannot exceed 1")
+    if fcfg.schema in {physiological_schema, regulatory_schema}:
+        expected_physiology_schema = (
+            "transport-metabolism-messenger-tissue-v2"
+            if fcfg.schema == regulatory_schema
+            else "oxygen-tissue-structure-v1"
+        )
+        if not pcfg.enabled or pcfg.schema != expected_physiology_schema:
+            raise ValueError(
+                f"{fcfg.schema} requires physiology schema {expected_physiology_schema!r}"
+            )
+        if (
+            cfg.environment.physiology_environment_schema
+            != "oxygen-terrain-wear-mosaic-v1"
+        ):
+            raise ValueError(
+                "physiological modules require the oxygen-terrain-wear environment"
+            )
+        required_positive = [
+            pcfg.oxygen_uptake_per_tick,
+            pcfg.basal_oxygen_use_per_tick,
+            pcfg.repair_material_per_tick,
+            pcfg.repair_energy_per_material,
+            pcfg.repair_tissue_per_material,
+            pcfg.repair_structure_per_material,
+            pcfg.max_movement_speed_fraction,
+            pcfg.max_signal_strength_fraction,
+        ]
+        if fcfg.schema == regulatory_schema:
+            required_positive.extend(
+                [
+                    pcfg.messenger_synthesis_per_tick,
+                    pcfg.messenger_decay_per_tick,
+                    pcfg.messenger_precursor_use_per_unit,
+                    pcfg.messenger_precursor_recovery_per_tick,
+                    pcfg.messenger_energy_per_unit,
+                    pcfg.computation_energy_per_load,
+                    pcfg.computation_oxygen_per_load,
+                    pcfg.fatigue_gain_per_work,
+                    pcfg.fatigue_clearance_per_tick,
+                    pcfg.maintenance_energy_per_capacity,
+                    pcfg.development_energy_per_capacity,
+                ]
+            )
+            _probability(
+                "physiology.gene_mutation_probability",
+                pcfg.gene_mutation_probability,
+            )
+            if pcfg.gene_mutation_std <= 0.0:
+                raise ValueError("v5 physiology requires positive gene_mutation_std")
+        if any(value <= 0.0 for value in required_positive):
+            raise ValueError(
+                "physiological modules require positive transport, use, repair, and execution semantics"
+            )
+    elif pcfg.enabled:
+        raise ValueError(
+            "enabled physiology requires a matching physiological functional schema"
         )
     if fcfg.enabled:
         if cfg.entities.resource_affinity_schema != "normalized-four-resource-affinity-v1":

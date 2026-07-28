@@ -37,6 +37,8 @@ ENTRY_POINTS = {
     "se-d2-source-causal-assess": "se.analysis.d2_source_population_causal_effects:main",
     "se-d2-compose": "se.experiments.d2_compositional_capability:main",
     "se-d2-embody": "se.experiments.d2_embodied_capability:main",
+    "se-d2-physiology": "se.experiments.d2_physiological_ecology:main",
+    "se-d2-regulatory-physiology": "se.experiments.d2_regulatory_physiology:main",
     "se-d4-niche-reversal": "se.experiments.d4_niche_reversal:main",
     "se-d4-niche-assess": "se.analysis.d4_niche_reversal_effects:main",
 }

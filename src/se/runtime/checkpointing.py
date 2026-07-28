@@ -204,6 +204,20 @@ class SimulationCheckpointMixin:
             "total_functional_module_repair_integrity": float(
                 self.total_functional_module_repair_integrity
             ),
+            **{
+                f"total_physiology_{name}": float(getattr(self, f"total_physiology_{name}"))
+                for name in (
+                    "oxygen_uptake", "oxygen_use", "perfusion_energy",
+                    "repair_energy", "repair_material", "repair_oxygen",
+                    "repair_tissue", "repair_structure", "repair_integrity",
+                    "hypoxia_tissue_damage", "wear_tissue_damage",
+                    "wear_structure_damage", "integrity_damage",
+                    "messenger_synthesis", "messenger_decay",
+                    "messenger_precursor_used", "messenger_precursor_recovered",
+                    "messenger_energy", "computation_energy",
+                    "computation_oxygen", "fatigue_generated", "fatigue_cleared",
+                )
+            },
             "evolution_progress": self.evolution_progress.snapshot_state(),
             "local_stress_diagnostics": (
                 self.local_stress_diagnostics.snapshot_state()
@@ -265,6 +279,16 @@ class SimulationCheckpointMixin:
             "functional_module_embodied_output_ablation_enabled": bool(
                 self.functional_module_embodied_output_ablation_enabled
             ),
+            "functional_module_physiology_output_ablation_enabled": bool(
+                self.functional_module_physiology_output_ablation_enabled
+            ),
+            "physiology_messenger_receptor_blockade_enabled": bool(
+                self.physiology_messenger_receptor_blockade_enabled
+            ),
+            "physiology_state_clamps": {
+                str(name): float(value)
+                for name, value in self.physiology_state_clamps.items()
+            },
             "functional_module_ablation_mask": (
                 self.functional_module_ablation_mask.astype(bool).copy()
             ),
@@ -327,6 +351,21 @@ class SimulationCheckpointMixin:
         """Install host-authoritative semantic state into a fresh Simulation."""
         self.entities = copy.deepcopy(state["entities"])
         self.entities.cfg = self.cfg
+        entity_capacity = self.entities.alive.size
+        for name, default in (
+            ("oxygenation", self.cfg.physiology.initial_oxygenation),
+            ("tissue_condition", self.cfg.physiology.initial_tissue_condition),
+            ("structure_condition", self.cfg.physiology.initial_structure_condition),
+            ("metabolic_fatigue", self.cfg.physiology.initial_metabolic_fatigue),
+            ("mobilization_messenger", self.cfg.physiology.initial_mobilization_messenger),
+            ("maintenance_messenger", self.cfg.physiology.initial_maintenance_messenger),
+            ("messenger_precursor", self.cfg.physiology.initial_messenger_precursor),
+            ("physiology_sensor_multiplier", 1.0),
+        ):
+            if not hasattr(self.entities, name):
+                values = np.zeros(entity_capacity, dtype=np.float32)
+                values[self.entities.alive] = np.float32(default)
+                setattr(self.entities, name, values)
         entity_capacity = int(np.asarray(self.entities.alive).size)
         memory_width = int(self.cfg.knowledge.working_memory_width)
         if not hasattr(self.entities, "working_memory_q"):
@@ -357,6 +396,8 @@ class SimulationCheckpointMixin:
             self.environment.resource_spatial_reversed = bool(
                 getattr(self.environment, "spatial_reversed", False)
             )
+        if not all(hasattr(self.environment, name) for name in ("oxygen", "terrain", "wear")):
+            self.environment.update_physiology_fields(int(state["tick"]))
         self.information = copy.deepcopy(state["information"])
         self.information.cfg = self.cfg
         self.signal_scheduler = copy.deepcopy(state["signal_scheduler"])
@@ -444,6 +485,22 @@ class SimulationCheckpointMixin:
         self.total_functional_module_repair_integrity = float(
             state.get("total_functional_module_repair_integrity", 0.0)
         )
+        for name in (
+            "oxygen_uptake", "oxygen_use", "perfusion_energy",
+            "repair_energy", "repair_material", "repair_oxygen",
+            "repair_tissue", "repair_structure", "repair_integrity",
+            "hypoxia_tissue_damage", "wear_tissue_damage",
+            "wear_structure_damage", "integrity_damage",
+            "messenger_synthesis", "messenger_decay",
+            "messenger_precursor_used", "messenger_precursor_recovered",
+            "messenger_energy", "computation_energy",
+            "computation_oxygen", "fatigue_generated", "fatigue_cleared",
+        ):
+            setattr(
+                self,
+                f"total_physiology_{name}",
+                float(state.get(f"total_physiology_{name}", 0.0)),
+            )
         self.evolution_progress.restore_state(state["evolution_progress"])
         local_state = state.get("local_stress_diagnostics")
         if local_state is not None:
@@ -540,6 +597,16 @@ class SimulationCheckpointMixin:
         self.functional_module_embodied_output_ablation_enabled = bool(
             state.get("functional_module_embodied_output_ablation_enabled", False)
         )
+        self.functional_module_physiology_output_ablation_enabled = bool(
+            state.get("functional_module_physiology_output_ablation_enabled", False)
+        )
+        self.physiology_messenger_receptor_blockade_enabled = bool(
+            state.get("physiology_messenger_receptor_blockade_enabled", False)
+        )
+        self.physiology_state_clamps = {
+            str(name): float(value)
+            for name, value in dict(state.get("physiology_state_clamps", {})).items()
+        }
         default_module_mask = np.full(
             int(self.cfg.functional_modules.module_count),
             self.functional_modules_ablation_enabled,
@@ -742,6 +809,21 @@ class SimulationCheckpointMixin:
         branch.total_functional_module_repair_integrity = (
             self.total_functional_module_repair_integrity
         )
+        for name in (
+            "oxygen_uptake", "oxygen_use", "perfusion_energy",
+            "repair_energy", "repair_material", "repair_oxygen",
+            "repair_tissue", "repair_structure", "repair_integrity",
+            "hypoxia_tissue_damage", "wear_tissue_damage",
+            "wear_structure_damage", "integrity_damage",
+            "messenger_synthesis", "messenger_decay",
+            "messenger_precursor_used", "messenger_precursor_recovered",
+            "messenger_energy", "computation_energy",
+            "computation_oxygen", "fatigue_generated", "fatigue_cleared",
+        ):
+            setattr(
+                branch, f"total_physiology_{name}",
+                float(getattr(self, f"total_physiology_{name}")),
+            )
         branch.evolution_progress = self.evolution_progress.clone(branch.output_dir)
         branch.local_stress_diagnostics = (
             self.local_stress_diagnostics.clone()
@@ -797,6 +879,13 @@ class SimulationCheckpointMixin:
         branch.functional_module_embodied_output_ablation_enabled = (
             self.functional_module_embodied_output_ablation_enabled
         )
+        branch.functional_module_physiology_output_ablation_enabled = (
+            self.functional_module_physiology_output_ablation_enabled
+        )
+        branch.physiology_messenger_receptor_blockade_enabled = (
+            self.physiology_messenger_receptor_blockade_enabled
+        )
+        branch.physiology_state_clamps = copy.deepcopy(self.physiology_state_clamps)
         branch.functional_module_ablation_mask = (
             self.functional_module_ablation_mask.copy()
         )

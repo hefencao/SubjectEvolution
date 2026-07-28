@@ -1,0 +1,780 @@
+{
+  "schema": "structural-measurement-protocol-audit-v19",
+  "config_path": "/mnt/data/work_v051/se_v050_project/configs/mvp_short_d2l_regulatory_physiology_longrun.json",
+  "group_label_protocol": {
+    "label_schema": "trusted-directed-fixed-round-min-label-v1",
+    "edge_rule": "directed relation slot is eligible when target is alive and materialized trust is at least trust_group_threshold",
+    "successful_share_relation_rule": "forward full trust gain plus reciprocal half-gain; thresholded directions may still differ after history and decay",
+    "propagation_rule": "initialize label as physical slot index; for each fixed round, replace an entity label by the minimum of its current label and labels reachable through eligible outgoing relation slots",
+    "propagation_rounds": 8,
+    "trust_threshold": 0.12,
+    "minimum_members": 6,
+    "group_token_rule": "stable entity ID at the propagated minimum root slot; components below minimum members receive token 0 and remain ungrouped",
+    "exact_component_claim": false,
+    "interpretation": "finite-round directed minimum-label propagation is an approximate candidate-group measurement, not a subject-existence verdict",
+    "refresh": {
+      "mode": "adaptive-topology-v1",
+      "period": 50,
+      "minimum_period": 100,
+      "maximum_period": 300,
+      "adaptive_triggers": [
+        "initial snapshot",
+        "topology-relevant relation change after minimum period",
+        "predicted trust-threshold decay crossing after minimum period",
+        "maximum staleness"
+      ]
+    }
+  },
+  "subject_structure_protocol": {
+    "enabled": true,
+    "schema": "stable-membership-subject-succession-v1",
+    "identity_key": "stable entity ID membership",
+    "transition_rule": "connect previous and current candidate groups when they share at least one stable entity ID; classify zero/one/multiple overlap relations as formation, persistence, split, merge, or dissolution",
+    "feedback_to_world": false,
+    "interpretation": "membership succession among candidate social structures; not an ontological identity theorem, arbitrary nesting graph, or subjecthood score"
+  },
+  "spatial_region_protocol": {
+    "schema": "normalized-fixed-count-grid-v1",
+    "mapping": "row-major-y-then-x",
+    "boundary_convention": "half-open except clipped outer boundary",
+    "regions_x": 4,
+    "regions_y": 4,
+    "region_count": 16,
+    "world_width": 128.0,
+    "world_height": 128.0,
+    "world_grid_x": 32,
+    "world_grid_y": 32,
+    "normalized_region_width": 0.25,
+    "normalized_region_height": 0.25,
+    "physical_region_width": 32.0,
+    "physical_region_height": 32.0,
+    "world_cells_per_region_x": 8.0,
+    "world_cells_per_region_y": 8.0,
+    "world_grid_aligned": true,
+    "feedback_to_world": false,
+    "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+    "partition_sha256": "80ca3a910af4d035ebdcc1b9fb961d80675113ed6ff16e84a7c3b5f30a34c3f9"
+  },
+  "resource_environment_protocol": {
+    "schema": "orthogonal-four-resource-niche-v1",
+    "channel_count": 4,
+    "resource_capacities": [
+      8.0,
+      8.0,
+      8.0,
+      8.0
+    ],
+    "resource_regeneration": [
+      0.018,
+      0.018,
+      0.018,
+      0.018
+    ],
+    "resource_effect_matrix": [
+      [
+        0.52,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.03,
+        0.018,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.03,
+        0.24,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.018,
+        0.0,
+        0.24
+      ]
+    ],
+    "harvest_allocation_schema": "affinity-sampled-exclusive-harvest-v1",
+    "harvest_channel_multipliers": [
+      0.65,
+      0.65,
+      0.65,
+      0.65
+    ],
+    "harvest_budget_semantics": "fixed total extraction budget spent on one channel sampled from inherited affinity with state-free keyed randomness",
+    "independent_cycle_periods": [
+      173,
+      257,
+      349,
+      431
+    ],
+    "cycle_amplitudes": [
+      0.5,
+      0.5,
+      0.5,
+      0.5
+    ],
+    "primary_wave_vectors": [
+      [
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        1.0
+      ],
+      [
+        1.0,
+        -1.0
+      ]
+    ],
+    "secondary_wave_vectors": [
+      [
+        2.0,
+        1.0
+      ],
+      [
+        1.0,
+        2.0
+      ],
+      [
+        2.0,
+        -1.0
+      ],
+      [
+        1.0,
+        -2.0
+      ]
+    ],
+    "primary_wave_amplitudes": [
+      0.25,
+      0.25,
+      0.25,
+      0.25
+    ],
+    "secondary_wave_amplitudes": [
+      0.1,
+      0.1,
+      0.1,
+      0.1
+    ],
+    "diffusion_rates": [
+      0.002,
+      0.004,
+      0.006,
+      0.008
+    ],
+    "entity_aware": false,
+    "environment_generation_entity_aware": false,
+    "harvest_demand_entity_aware": true,
+    "harvest_request_observation": {
+      "schema": "explicit-requested-harvest-window-v1",
+      "requested_before_environment_allocation": true,
+      "realized_after_environment_allocation": true,
+      "scale_composition_separation": true
+    },
+    "lineage_aware": false,
+    "group_aware": false,
+    "diversity_protection": false,
+    "interpretation": "fixed four-channel physical interface with independently configured spatial, temporal, and diffusion dynamics; configuration can create environmental axes but does not guarantee evolved ecological differentiation"
+  },
+  "d1_factorial_protocol": {
+    "schema": "d1-affinity-capacity-factorial-plan-v1",
+    "branches": {
+      "baseline": [],
+      "affinity-neutral": [
+        "neutralize-resource-affinity"
+      ],
+      "capacity-neutral": [
+        "neutralize-elastic-capacities"
+      ],
+      "combined-neutral": [
+        "neutralize-resource-affinity",
+        "neutralize-elastic-capacities"
+      ]
+    },
+    "paired_randomness": true,
+    "genotype_preserved": true,
+    "effect_sign": "expressed phenotype minus neutralized branch",
+    "interaction": "baseline - affinity-neutral - capacity-neutral + combined-neutral",
+    "interpretation": "local checkpoint-phase effects over a fixed horizon; not universal necessity"
+  },
+  "differentiation_capacity_protocol": {
+    "enabled": true,
+    "schema": "inherited-elastic-capacities-v1",
+    "fixed_physical_layout": {
+      "working_memory_dimensions": 4,
+      "knowledge_bytes": 512,
+      "relation_slots": 8,
+      "knowledge_attention_slots": 2
+    },
+    "effective_capacity_bounds": {
+      "working_memory_dimensions": [
+        0,
+        4
+      ],
+      "knowledge_bytes": [
+        0,
+        512
+      ],
+      "relation_slots": [
+        0,
+        8
+      ],
+      "knowledge_attention_slots": [
+        0,
+        2
+      ]
+    },
+    "knowledge_quantum_bytes": 32,
+    "gene_layout": {
+      "start": 535,
+      "count": 4,
+      "mapping": "clip inherited float gene to [-1,1], map monotonically to an integer capacity level, then mask a fixed physical tensor layout"
+    },
+    "mutation": {
+      "probability": 0.03,
+      "std": 0.16
+    },
+    "maintenance_energy": {
+      "per_working_memory_dimension": 1e-05,
+      "per_knowledge_byte": 1e-07,
+      "per_relation_slot": 5e-06,
+      "per_attention_slot": 1e-05
+    },
+    "development_energy": {
+      "per_working_memory_dimension": 0.002,
+      "per_knowledge_byte": 1e-05,
+      "per_relation_slot": 0.001,
+      "per_attention_slot": 0.002
+    },
+    "world_feedback": true,
+    "preset_role_labels": false,
+    "diversity_protection": false,
+    "interpretation": "four inherited capacities alter the usable scale and explicit cost of existing memory, knowledge, relationship, and attention mechanisms; they do not add a predefined ecological role or guarantee adaptive differentiation"
+  },
+  "functional_module_protocol": {
+    "enabled": true,
+    "schema": "expression-gated-regulatory-physiology-v5",
+    "module_count": 4,
+    "gene_start": 539,
+    "gene_count": 126,
+    "architecture_class": "feed-forward-regulatory-physiology",
+    "input_schema": "internal-homeostasis-local-resources-abiotic-feedforward-v4",
+    "inputs": [
+      "bias",
+      "energy deficit",
+      "integrity deficit",
+      "material deficit",
+      "information-store deficit",
+      "fertility deficit",
+      "four local normalized resource channels",
+      "oxygenation deficit",
+      "tissue deficit",
+      "structure deficit",
+      "metabolic fatigue",
+      "mobilization messenger",
+      "maintenance messenger",
+      "messenger precursor",
+      "local oxygen availability",
+      "local terrain resistance",
+      "local mechanical wear"
+    ],
+    "output_schema": "harvest-regulatory-drive-v2",
+    "output_scope": "zero-sum harvest residual plus oxygen-uptake modulation, mobilization-bus stimulation, maintenance-bus stimulation, and sensory-attention modulation; actual execution emerges from inherited physiology, bounded state and abiotic supply",
+    "coupling_schema": "lower-slot-signal-modulation-v1",
+    "coupling_link_count": 6,
+    "hierarchy_depth_by_module": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "coupling_semantics": "lower-slot signals multiplicatively modulate downstream contextual activation; direct module routing remains available at every slot",
+    "action_selection": false,
+    "assimilation_affinity_modified": false,
+    "resource_gradient_utility_modified": false,
+    "new_world_physics": true,
+    "embodied_output_semantics": {
+      "enabled": false,
+      "schema": "harvest-regulatory-drive-v2",
+      "locomotion": "bounded multiplier on existing movement speed with quadratic movement-energy accounting",
+      "field_signal": "bounded multiplier on existing field-signal strength with quadratic signal-energy accounting",
+      "repair": "positive drive converts explicitly debited material and energy into bounded integrity restoration",
+      "new_action_kind": false,
+      "resource_or_energy_created": false,
+      "preset_ecological_role": false
+    },
+    "physiological_output_semantics": {
+      "enabled": false,
+      "body_state": [
+        "oxygenation",
+        "tissue_condition",
+        "structure_condition"
+      ],
+      "module_drives": [
+        "perfusion",
+        "contractile",
+        "sensory",
+        "repair"
+      ],
+      "abiotic_fields": [
+        "oxygen availability",
+        "terrain resistance",
+        "mechanical wear"
+      ],
+      "derived_effects": [
+        "locomotion",
+        "signal reception/emission",
+        "repair"
+      ],
+      "conservation": "repair debits material, energy, and oxygen; damage changes tissue/structure/integrity",
+      "new_action_kind": false,
+      "biological_hazard_source": false,
+      "diversity_reward_or_protection": false,
+      "preset_ecological_role": false
+    },
+    "regulatory_physiology_semantics": {
+      "enabled": true,
+      "physiology_schema": "transport-metabolism-messenger-tissue-v2",
+      "inherited_parameter_count": 15,
+      "module_requests": [
+        "oxygen uptake modulation",
+        "mobilization messenger stimulation",
+        "maintenance messenger stimulation",
+        "sensory attention modulation"
+      ],
+      "dynamic_states": [
+        "oxygenation",
+        "tissue condition",
+        "structure condition",
+        "metabolic fatigue",
+        "mobilization messenger",
+        "maintenance messenger",
+        "shared messenger precursor"
+      ],
+      "intent_execution_separation": true,
+      "zero_module_output_semantics": "basal uptake and attention with no stimulated messenger synthesis",
+      "messenger_buses": "two independently inherited synthesis/decay/receptor pathways sharing one finite precursor pool",
+      "fixed_lifetime_weights": true,
+      "online_hebbian_learning": false,
+      "computation_cost": "actual activation and route load debit energy and oxygen",
+      "counterfactual_interfaces": [
+        "regulatory output neutralization",
+        "messenger receptor blockade",
+        "bounded state clamp"
+      ],
+      "named_organs_or_hormones": false,
+      "conservation": "messenger synthesis debits precursor and energy; precursor recovery debits material; repair debits material, energy and oxygen"
+    },
+    "expression_threshold": 0.0,
+    "maximum_residual_fraction": 0.5,
+    "maintenance_energy_per_expression": 8e-05,
+    "development_energy_per_expression": 0.008,
+    "maintenance_energy_per_coupling_weight": 2e-05,
+    "development_energy_per_coupling_weight": 0.002,
+    "maintenance_energy_per_embodied_weight": 0.0,
+    "development_energy_per_embodied_weight": 0.0,
+    "neutralization_interventions": {
+      "coupling_output": "neutralize-functional-module-coupling-output",
+      "embodied_output": "neutralize-functional-module-embodied-output",
+      "physiology_output": "neutralize-functional-module-physiology-output",
+      "all_modules": "neutralize-functional-modules",
+      "per_module": [
+        "neutralize-functional-module-0",
+        "neutralize-functional-module-1",
+        "neutralize-functional-module-2",
+        "neutralize-functional-module-3"
+      ]
+    },
+    "contribution_diagnostics": {
+      "schema": "functional-module-contribution-audit-v5",
+      "per_module_gate": true,
+      "per_module_activation": true,
+      "isolated_output_effect": true,
+      "contribution_effective_count": true,
+      "cancellation_fraction": true,
+      "coupling_weight_effective_dimensions": true,
+      "mediated_signal_by_hierarchy_level": true,
+      "amplification_and_suppression": true,
+      "embodied_output_effective_dimensions": false,
+      "combined_output_basis_effective_dimensions": true,
+      "physiology_output_effective_dimensions": true,
+      "feedback_to_world": false
+    },
+    "architecture_capability_experiment": {
+      "plan_schema": "d2-compositional-capability-plan-v1",
+      "result_schema": "d2-compositional-capability-results-v1",
+      "branches": [
+        "composition-active",
+        "coupling-neutral"
+      ],
+      "same_v2_genome_and_mutation_streams": true,
+      "coupling_structure_cost_retained_in_neutral_branch": true,
+      "module_copy_number_changed": false,
+      "ecological_niche_claim": false
+    },
+    "embodied_capability_experiment": {
+      "plan_schema": "d2-embodied-capability-plan-v1",
+      "result_schema": "d2-embodied-capability-results-v1",
+      "branches": [
+        "embodied-active",
+        "embodied-neutral"
+      ],
+      "same_v3_genome_and_mutation_streams": true,
+      "harvest_and_coupling_output_active_in_both_branches": true,
+      "embodied_router_structure_cost_retained_in_neutral_branch": true,
+      "module_copy_number_changed": false,
+      "ecological_niche_claim": false
+    },
+    "physiological_ecology_experiment": {
+      "plan_schema": "d2-physiological-ecology-plan-v1",
+      "result_schema": "d2-physiological-ecology-results-v1",
+      "single_active_population_per_seed": true,
+      "pass_fail_expression_gate": false,
+      "independent_abiotic_fields": true,
+      "dynamic_body_state": true,
+      "module_copy_number_changed": false,
+      "food_chain_complete": false,
+      "stable_niche_claim": false
+    },
+    "regulatory_physiology_experiment": {
+      "plan_schema": "d2-regulatory-physiology-plan-v1",
+      "result_schema": "d2-regulatory-physiology-results-v1",
+      "single_active_population_per_seed": true,
+      "pass_fail_expression_gate": false,
+      "fixed_lifetime_weights": true,
+      "finite_messenger_precursor": true,
+      "computation_and_execution_costed": true,
+      "module_copy_number_changed": false,
+      "stable_niche_claim": false
+    },
+    "known_architecture_limit": "The v1 schema supports only independent additive harvest routing. The v2 schema adds inherited hierarchy and joint dependence; v3 adds conserved embodied ports. The archived v4 coarse-drive schema is retained for replay only. The v5 schema separates regulatory intent from inherited transport, metabolism, finite messenger turnover, fatigue and repair execution. It still uses a fixed bounded kernel and lacks a completed trophic chain, dynamic topology and stable niche proof.",
+    "leave_one_out_protocol": {
+      "plan_schema": "d2-module-leave-one-out-plan-v1",
+      "result_schema": "d2-module-leave-one-out-results-v2",
+      "branches": [
+        "baseline",
+        "all-modules-neutral",
+        "module-0-neutral",
+        "module-1-neutral",
+        "module-2-neutral",
+        "module-3-neutral"
+      ],
+      "paired_randomness": true,
+      "genotype_preserved": true,
+      "immediate_footprint": {
+        "schema": "d2-module-immediate-footprint-v1",
+        "conditional_action": "HARVEST",
+        "pre_step": true,
+        "lineage_resolved": true,
+        "feedback_to_world": false
+      }
+    },
+    "effect_qualification": {
+      "schema": "d2-module-effect-assessment-v2",
+      "numerical_tolerance": 1e-12,
+      "directional_replicates": 4,
+      "minimum_seeds": 2,
+      "footprint_preference_changed_fraction": 0.01,
+      "footprint_channel_changed_fraction": 0.005,
+      "minimum_lineage_members": 8,
+      "lineage_guard_effective_count": 4.0,
+      "duplication_requires": [
+        "practical downstream magnitude",
+        "replication across at least two seeds",
+        "immediate checkpoint footprint",
+        "cross-lineage footprint",
+        "positive ecological persistence or preregistered phase tradeoff",
+        "no dominant-lineage guard failure"
+      ]
+    },
+    "lineage_balanced_pair_protocol": {
+      "plan_schema": "d2-lineage-paired-plan-v2",
+      "accepted_plan_schemas": [
+        "d2-lineage-paired-plan-v1",
+        "d2-lineage-paired-plan-v2"
+      ],
+      "result_schema": "d2-lineage-paired-results-v2",
+      "accepted_result_schemas": [
+        "d2-lineage-paired-results-v1",
+        "d2-lineage-paired-results-v2"
+      ],
+      "default_priority_modules": [
+        2,
+        3
+      ],
+      "selection_rule": "largest pre-intervention lineages by membership",
+      "selection_uses_endpoint_response": false,
+      "branches": [
+        "baseline",
+        "output-neutral with expression cost retained",
+        "expression-neutral with output and expression cost removed"
+      ],
+      "target_scope": "one fixed module within one genetic lineage",
+      "same_lineage_descendants_treated": true,
+      "genotype_preserved": true,
+      "lineage_membership_preserved": true,
+      "paired_randomness": true,
+      "equal_inferential_weight_per_lineage_pair": true,
+      "abundance_reweighting_inside_world": false,
+      "diversity_protection": false,
+      "effect_assessment": {
+        "schema": "d2-lineage-paired-assessment-v1",
+        "continuation_effect": "output_routing_effect",
+        "minimum_seeds": 2,
+        "minimum_non_dominant_lineage_identities": 2,
+        "same_material_direction_required": true,
+        "cost_only_signal_qualifies": false,
+        "confirmation_horizon_ticks": 300,
+        "confirmation_selection_rule": "module-level-screen-preserve-all-preselected-checkpoint-lineage-pairs-v1",
+        "outcome_conditioned_pair_selection": false,
+        "copy_number_remains_guarded": true
+      },
+      "temporal_mediation_audit": {
+        "plan_schema": "d2-lineage-mediation-plan-v1",
+        "result_schema": "d2-lineage-mediation-results-v1",
+        "assessment_schema": "d2-lineage-mediation-assessment-v1",
+        "selection_rule": "module-level-confirmed-output-preserve-all-preselected-checkpoint-lineage-pairs-v1",
+        "default_observation_offsets": [
+          30,
+          60,
+          120,
+          180,
+          240,
+          300
+        ],
+        "branches": [
+          "baseline",
+          "output-neutral with expression cost retained",
+          "expression-neutral with output and expression cost removed"
+        ],
+        "read_only_tick_observer": true,
+        "measured_mediators": [
+          "target-lineage energy stock and quartiles",
+          "source survivors and living descendants",
+          "births and deaths by cause",
+          "fertility and reproduction readiness",
+          "post-intervention harvested energy",
+          "post-intervention shared energy received"
+        ],
+        "offsets_are_independent_replicates": false,
+        "minimum_seeds_per_offset": 2,
+        "minimum_non_dominant_lineage_identities_per_offset": 2,
+        "mean_energy_alone_qualifies_as_ecological_benefit": false,
+        "outcome_conditioned_pair_selection": false,
+        "copy_number_remains_guarded": true
+      },
+      "source_population_reconstitution": {
+        "plan_schema": "d2-source-population-plan-v1",
+        "result_schema": "d2-source-population-results-v1",
+        "assessment_schema": "d2-source-population-assessment-v2",
+        "arms": [
+          "natural-abundance-control",
+          "equal-lineage-reconstitution"
+        ],
+        "selection_rule": "cross-run top pre-intervention lineages by abundance; no response-conditioned lineage selection",
+        "founder_transfer": "genotype only from unique living donors without replacement",
+        "reset_state": [
+          "physiology",
+          "age and generation",
+          "knowledge",
+          "social state",
+          "spatial position"
+        ],
+        "same_total_founders_across_arms": true,
+        "ongoing_lineage_protection": false,
+        "lineage_aware_world_rules": false,
+        "module_copy_number_changed": false,
+        "qualification": {
+          "minimum_effective_lineages": 4.0,
+          "maximum_dominant_lineage_fraction": 0.5,
+          "minimum_lineages_above_member_floor": 4,
+          "minimum_expressed_lineages_per_candidate_module": 4,
+          "minimum_observed_panel_seeds_for_exploratory_decision": 3,
+          "minimum_qualified_panel_seeds_per_exploratory_phase": 2,
+          "major_conclusion_minimum_seeds_per_phase": 10,
+          "uncertainty_interval": "two-sided-wilson-95-v1"
+        },
+        "charter_interpretation": {
+          "ten_seed_floor_applies_to_major_conclusions": true,
+          "ten_seed_floor_applies_to_every_exploratory_audit": false,
+          "three_seed_paired_gate_allowed": true
+        },
+        "copy_number_remains_guarded": true
+      },
+      "source_population_causal_reaudit": {
+        "plan_schema": "d2-source-population-causal-plan-v1",
+        "result_schema": "d2-source-population-causal-results-v1",
+        "assessment_schema": "d2-source-population-causal-assessment-v1",
+        "module_indices": [
+          3
+        ],
+        "default_screen_horizon_ticks": 120,
+        "confirmation_horizon_ticks": 300,
+        "checkpoint_selection": "phase-qualified equal-lineage final checkpoints only",
+        "lineage_selection": "all lineages passing preregistered member and expression floors",
+        "branches": [
+          "baseline",
+          "output-neutral with expression cost retained",
+          "expression-neutral with output and expression cost removed"
+        ],
+        "response_conditioned_panel_selection": false,
+        "response_conditioned_lineage_selection": false,
+        "general_source_population_claim": false,
+        "module_copy_number_changed": false,
+        "copy_number_remains_guarded": true
+      }
+    },
+    "preset_role_labels": false,
+    "diversity_protection": false,
+    "interpretation": "a bounded D2-A test of inherited input-expression-output routing within the already validated resource-acquisition interface; not a general organ generator or a claim of new physical functionality"
+  },
+  "d4_niche_reversal_protocol": {
+    "plan_schema": "d4-niche-reversal-plan-v1",
+    "result_schema": "d4-niche-reversal-results-v1",
+    "assessment_schema": "d4-niche-reversal-assessment-v2",
+    "source_gate": "explicit D2-H non-replication stop recommendation",
+    "default_screen_horizon_ticks": 120,
+    "confirmation_horizon_ticks": 300,
+    "checkpoint_selection": "all phase-qualified redesigned-source checkpoints retained from D2-H",
+    "lineage_selection": "all preregistered source-checkpoint lineages; no response-conditioned pruning",
+    "branches": {
+      "baseline": [],
+      "resource-reversed": [
+        "reverse-resource-geography"
+      ],
+      "affinity-neutral": [
+        "neutralize-resource-affinity"
+      ],
+      "joint-neutral": [
+        "reverse-resource-geography",
+        "neutralize-resource-affinity"
+      ]
+    },
+    "primary_interaction": "(baseline - resource-reversed) - (affinity-neutral - joint-neutral)",
+    "resource_reversal": {
+      "rotation_degrees": 180,
+      "current_resource_fields_rotated": true,
+      "future_seasonal_template_rotated": true,
+      "resource_identity_changed": false,
+      "resource_effect_matrix_changed": false,
+      "hazard_changed": false,
+      "mortality_trace_changed": false
+    },
+    "paired_randomness": true,
+    "genotype_preserved": true,
+    "lineage_membership_preserved": true,
+    "minimum_independent_panel_seeds": 2,
+    "minimum_non_dominant_lineage_identities": 2,
+    "source_exposure_diagnostic": "pre-intervention affinity-specific utility difference between original and 180-degree-rotated resource geography",
+    "source_exposure_is_independent_causal_evidence": false,
+    "screen_can_authorize": "longer environment-matching confirmation only when repeated interaction is also aligned with preregistered source exposure and spans multiple dominant affinity channels",
+    "stable_niche_claim_requires": [
+      "persistent environment-matching interaction",
+      "stable coexistence",
+      "ecotype or phenotype-cohort removal",
+      "map-scale and spatial-template checks"
+    ],
+    "module_copy_number_changed": false,
+    "routing_vocabulary_changed": false,
+    "diversity_protection": false
+  },
+  "environment_atlas_protocol": {
+    "enabled": true,
+    "schema": "multiscale-subject-environment-atlas-v2",
+    "scales": [
+      {
+        "schema": "normalized-fixed-count-grid-v1",
+        "mapping": "row-major-y-then-x",
+        "boundary_convention": "half-open except clipped outer boundary",
+        "regions_x": 2,
+        "regions_y": 2,
+        "region_count": 4,
+        "world_width": 128.0,
+        "world_height": 128.0,
+        "world_grid_x": 32,
+        "world_grid_y": 32,
+        "normalized_region_width": 0.5,
+        "normalized_region_height": 0.5,
+        "physical_region_width": 64.0,
+        "physical_region_height": 64.0,
+        "world_cells_per_region_x": 16.0,
+        "world_cells_per_region_y": 16.0,
+        "world_grid_aligned": true,
+        "feedback_to_world": false,
+        "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+        "partition_sha256": "e44cf1d76a49a7081e676977301038cd524d39a839a4594fc74f7ac2d14827cd"
+      },
+      {
+        "schema": "normalized-fixed-count-grid-v1",
+        "mapping": "row-major-y-then-x",
+        "boundary_convention": "half-open except clipped outer boundary",
+        "regions_x": 4,
+        "regions_y": 4,
+        "region_count": 16,
+        "world_width": 128.0,
+        "world_height": 128.0,
+        "world_grid_x": 32,
+        "world_grid_y": 32,
+        "normalized_region_width": 0.25,
+        "normalized_region_height": 0.25,
+        "physical_region_width": 32.0,
+        "physical_region_height": 32.0,
+        "world_cells_per_region_x": 8.0,
+        "world_cells_per_region_y": 8.0,
+        "world_grid_aligned": true,
+        "feedback_to_world": false,
+        "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+        "partition_sha256": "80ca3a910af4d035ebdcc1b9fb961d80675113ed6ff16e84a7c3b5f30a34c3f9"
+      },
+      {
+        "schema": "normalized-fixed-count-grid-v1",
+        "mapping": "row-major-y-then-x",
+        "boundary_convention": "half-open except clipped outer boundary",
+        "regions_x": 8,
+        "regions_y": 8,
+        "region_count": 64,
+        "world_width": 128.0,
+        "world_height": 128.0,
+        "world_grid_x": 32,
+        "world_grid_y": 32,
+        "normalized_region_width": 0.125,
+        "normalized_region_height": 0.125,
+        "physical_region_width": 16.0,
+        "physical_region_height": 16.0,
+        "world_cells_per_region_x": 4.0,
+        "world_cells_per_region_y": 4.0,
+        "world_grid_aligned": true,
+        "feedback_to_world": false,
+        "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+        "partition_sha256": "0fdbb1f57edbe87a4e6a7e2929f4614d1637a26822bfa8a314c3936571dbb876"
+      }
+    ],
+    "signature": [
+      "four capacity-normalized resource means",
+      "hazard mean",
+      "mortality-trace mean"
+    ],
+    "resource_only_metrics": [
+      "resource effective dimensions",
+      "resource channel correlation matrix",
+      "mean/max absolute resource channel correlation"
+    ],
+    "subject_exposure_association": "between-label share of realized regional signature variance for genetic lineages and observed social groups",
+    "feedback_to_world": false,
+    "interpretation": "descriptive multiscale environment heterogeneity and exposure segregation; not environmental causation or subjecthood"
+  },
+  "anchor_protocol": null,
+  "audit_sha256": "d55d891a369570733650f4f9efa73502e05c0aeaa26b5f474c3e815a3f47199a"
+}

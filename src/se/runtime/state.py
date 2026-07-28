@@ -17,6 +17,10 @@ from ..differentiation.functional import (
     functional_module_energy,
     functional_module_gene_count,
 )
+from ..differentiation.physiology import (
+    physiology_gene_count,
+    physiology_genome_energy,
+)
 from se.evolution.progress import BENEFIT_FLOW_COUNT, BenefitFlowKind
 from se.knowledge import KnowledgeStepStats
 from se.evolution.lifecycle import BirthAllocationPlan, DeathCause, DeathEventPlan
@@ -70,6 +74,30 @@ class StepStats:
     functional_module_repair_energy: float = 0.0
     functional_module_repair_material: float = 0.0
     functional_module_repair_integrity: float = 0.0
+    physiology_capacity_maintenance_energy: float = 0.0
+    physiology_capacity_development_energy: float = 0.0
+    physiology_oxygen_uptake: float = 0.0
+    physiology_oxygen_use: float = 0.0
+    physiology_perfusion_energy: float = 0.0
+    physiology_repair_energy: float = 0.0
+    physiology_repair_material: float = 0.0
+    physiology_repair_oxygen: float = 0.0
+    physiology_repair_tissue: float = 0.0
+    physiology_repair_structure: float = 0.0
+    physiology_repair_integrity: float = 0.0
+    physiology_hypoxia_tissue_damage: float = 0.0
+    physiology_wear_tissue_damage: float = 0.0
+    physiology_wear_structure_damage: float = 0.0
+    physiology_integrity_damage: float = 0.0
+    physiology_messenger_synthesis: float = 0.0
+    physiology_messenger_decay: float = 0.0
+    physiology_messenger_precursor_used: float = 0.0
+    physiology_messenger_precursor_recovered: float = 0.0
+    physiology_messenger_energy: float = 0.0
+    physiology_computation_energy: float = 0.0
+    physiology_computation_oxygen: float = 0.0
+    physiology_fatigue_generated: float = 0.0
+    physiology_fatigue_cleared: float = 0.0
     benefit_flow_energy: np.ndarray = field(
         default_factory=lambda: np.zeros(BENEFIT_FLOW_COUNT, dtype=np.float64)
     )
@@ -145,6 +173,14 @@ class EntityState:
         self.vy = np.zeros(cap, dtype=np.float32)
         self.energy = np.zeros(cap, dtype=np.float32)
         self.integrity = np.zeros(cap, dtype=np.float32)
+        self.oxygenation = np.ones(cap, dtype=np.float32)
+        self.tissue_condition = np.ones(cap, dtype=np.float32)
+        self.structure_condition = np.ones(cap, dtype=np.float32)
+        self.metabolic_fatigue = np.zeros(cap, dtype=np.float32)
+        self.mobilization_messenger = np.zeros(cap, dtype=np.float32)
+        self.maintenance_messenger = np.zeros(cap, dtype=np.float32)
+        self.messenger_precursor = np.ones(cap, dtype=np.float32)
+        self.physiology_sensor_multiplier = np.ones(cap, dtype=np.float32)
         self.material = np.zeros(cap, dtype=np.float32)
         self.information_store = np.zeros(cap, dtype=np.float32)
         self.fertility = np.zeros(cap, dtype=np.float32)
@@ -189,6 +225,14 @@ class EntityState:
             cfg.entities.max_energy,
         ).astype(np.float32)
         self.integrity[idx] = 1.0
+        self.oxygenation[idx] = np.float32(cfg.physiology.initial_oxygenation)
+        self.tissue_condition[idx] = np.float32(cfg.physiology.initial_tissue_condition)
+        self.structure_condition[idx] = np.float32(cfg.physiology.initial_structure_condition)
+        self.metabolic_fatigue[idx] = np.float32(cfg.physiology.initial_metabolic_fatigue)
+        self.mobilization_messenger[idx] = np.float32(cfg.physiology.initial_mobilization_messenger)
+        self.maintenance_messenger[idx] = np.float32(cfg.physiology.initial_maintenance_messenger)
+        self.messenger_precursor[idx] = np.float32(cfg.physiology.initial_messenger_precursor)
+        self.physiology_sensor_multiplier[idx] = 1.0
         self.fertility[idx] = 0.25
         for trait in range(self.genotype_size):
             self.genotype[idx, trait] = np.clip(
@@ -263,7 +307,27 @@ class EntityState:
         return self.capacity_phenotype(rows)
 
     def sensor_quality(self) -> np.ndarray:
-        return np.clip(1.0 + 0.35 * self.genotype[:, 0] + 0.15 * self.information_store, 0.1, 2.0).astype(np.float32)
+        quality = np.clip(
+            1.0 + 0.35 * self.genotype[:, 0] + 0.15 * self.information_store,
+            0.1,
+            2.0,
+        )
+        if self.cfg.physiology.enabled:
+            support = np.sqrt(
+                np.clip(
+                    self.oxygenation.astype(np.float64)
+                    * self.tissue_condition.astype(np.float64)
+                    * self.structure_condition.astype(np.float64),
+                    0.0,
+                    1.0,
+                )
+            )
+            quality = (
+                quality
+                * np.clip(0.25 + 0.75 * support, 0.25, 1.0)
+                * np.clip(self.physiology_sensor_multiplier, 0.1, 2.0)
+            )
+        return np.clip(quality, 0.1, 2.0).astype(np.float32)
 
     def commit_births(
         self,
@@ -336,6 +400,14 @@ class EntityState:
         self.age[slots] = 0
         self.generation[slots] = self.generation[parents] + np.uint32(1)
         self.integrity[slots] = 1.0
+        self.oxygenation[slots] = np.float32(self.cfg.physiology.initial_oxygenation)
+        self.tissue_condition[slots] = np.float32(self.cfg.physiology.initial_tissue_condition)
+        self.structure_condition[slots] = np.float32(self.cfg.physiology.initial_structure_condition)
+        self.metabolic_fatigue[slots] = np.float32(self.cfg.physiology.initial_metabolic_fatigue)
+        self.mobilization_messenger[slots] = np.float32(self.cfg.physiology.initial_mobilization_messenger)
+        self.maintenance_messenger[slots] = np.float32(self.cfg.physiology.initial_maintenance_messenger)
+        self.messenger_precursor[slots] = np.float32(self.cfg.physiology.initial_messenger_precursor)
+        self.physiology_sensor_multiplier[slots] = 1.0
         self.material[slots] = 0.0
         self.information_store[slots] = 0.0
         self.fertility[slots] = 0.05
@@ -369,9 +441,12 @@ class EntityState:
         capacity_stop = capacity_start + capacity_gene_count(self.cfg)
         functional_start = ParametricPolicy.functional_module_gene_start(self.cfg)
         functional_stop = functional_start + functional_module_gene_count(self.cfg)
+        physiology_start = ParametricPolicy.physiology_gene_start(self.cfg)
+        physiology_stop = physiology_start + physiology_gene_count(self.cfg)
         for trait in range(self.genotype_size):
             capacity_trait = capacity_start <= trait < capacity_stop
             functional_trait = functional_start <= trait < functional_stop
+            physiology_trait = physiology_start <= trait < physiology_stop
             if capacity_trait:
                 mutation_probability = self.cfg.differentiation.mutation_probability
                 trait_mutation_std = (
@@ -381,6 +456,11 @@ class EntityState:
                 mutation_probability = self.cfg.functional_modules.mutation_probability
                 trait_mutation_std = (
                     0.0 if mutation_std is not None else self.cfg.functional_modules.mutation_std
+                )
+            elif physiology_trait:
+                mutation_probability = self.cfg.physiology.gene_mutation_probability
+                trait_mutation_std = (
+                    0.0 if mutation_std is not None else self.cfg.physiology.gene_mutation_std
                 )
             else:
                 mutation_probability = self.cfg.policy.mutation_probability
@@ -424,6 +504,17 @@ class EntityState:
             )
             self.energy[slots] = np.maximum(
                 self.energy[slots].astype(np.float64) - module_cost,
+                0.0,
+            ).astype(np.float32)
+        physiology_cost = physiology_genome_energy(
+            self.genotype[slots],
+            self.cfg,
+            gene_start=ParametricPolicy.physiology_gene_start(self.cfg),
+            development=True,
+        )
+        if np.any(physiology_cost):
+            self.energy[slots] = np.maximum(
+                self.energy[slots].astype(np.float64) - physiology_cost,
                 0.0,
             ).astype(np.float32)
         return parents, slots
@@ -482,6 +573,14 @@ class EntityState:
         self.free_slots.extend(indices.tolist())
         self.free_slot_version += 1
         self.entity_id[indices] = 0
+        self.oxygenation[indices] = 0.0
+        self.tissue_condition[indices] = 0.0
+        self.structure_condition[indices] = 0.0
+        self.metabolic_fatigue[indices] = 0.0
+        self.mobilization_messenger[indices] = 0.0
+        self.maintenance_messenger[indices] = 0.0
+        self.messenger_precursor[indices] = 0.0
+        self.physiology_sensor_multiplier[indices] = 1.0
         self.vx[indices] = 0.0
         self.vy[indices] = 0.0
         return indices

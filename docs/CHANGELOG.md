@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.51.0
+
+### Inherited regulatory physiology
+
+- Reassesses the unrun v0.50 coarse-drive substrate and retains it only as an archived compatibility schema.
+- Adds opt-in v5 functional operators that publish oxygen-uptake, mobilization, maintenance and sensory-attention regulatory requests rather than direct body abilities.
+- Adds fifteen inherited transport, reserve, conversion, mechanical, information, fatigue, repair and messenger-path parameters.
+- Adds independently evolvable mobilization and maintenance messenger synthesis, decay and receptor gains sharing one finite precursor pool.
+- Defines zero regulatory output as basal physiology with no stimulated messenger synthesis.
+- Adds explicit module-computation energy and oxygen costs, fatigue generation/clearance and conserved messenger/repair fluxes.
+- Adds messenger-receptor blockade and bounded physiology-state clamps with checkpoint and clone persistence.
+- Adds `se-d2-regulatory-physiology`, two v5 configs and protocol audit v19.
+- Preserves v1-v4 authoritative paths when v5 is disabled.
+- Complete packages retain only `docs/v0.51` as a version-specific directory.
+
+## 0.50.0
+
+### Physiological composition and abiotic demand fields
+
+- Treats the completed D2-J run as sufficient evidence that the direct embodied ports are usable; no additional module-expression gate is introduced.
+- Adds opt-in v4 modules that emit perfusion, contractile, sensory and repair drives instead of direct locomotion/signal/repair commands.
+- Adds dynamic oxygenation, tissue condition and structural condition.
+- Adds independent non-biological oxygen, terrain-resistance and mechanical-wear fields.
+- Derives movement, sensor/signal performance, damage and repair from body state and local environment.
+- Makes repair debit material, energy and oxygen before restoring tissue, structure and integrity.
+- Adds `neutralize-functional-module-physiology-output` and `se-d2-physiology`.
+- Preserves v1-v3 authoritative behavior when v4 is disabled.
+- Complete packages retain only `docs/v0.50` as a version-specific directory.
+
 ## 0.49.0
 
 ### Compositional embodied output basis

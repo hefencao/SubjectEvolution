@@ -14,6 +14,7 @@ from .. import __version__
 from ..backend import BackendUnavailableError, resolve_backend
 from ..checkpointing import read_checkpoint_bundle, write_checkpoint_bundle
 from ..cfg import SimulationConfig
+from se.differentiation.physiology import physiology_diagnostics
 from se.subjects.control import (
     AutonomyRecoveryArbiter,
     ControlArbiter,
@@ -32,6 +33,7 @@ from se.env.danger_evidence import (
     danger_evidence_quantized,
 )
 from se.env.world import Environment
+from se.env.physiology import field_metrics as physiology_field_metrics
 from se.env.diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
     resource_field_diversity_metrics,
@@ -1124,6 +1126,16 @@ class SimulationReportingMixin:
             mean_energy = float(ent.energy[active].mean())
             mean_integrity = float(ent.integrity[active].mean())
             mean_age = float(ent.age[active].mean())
+            mean_oxygenation = float(ent.oxygenation[active].mean())
+            mean_tissue_condition = float(ent.tissue_condition[active].mean())
+            mean_structure_condition = float(ent.structure_condition[active].mean())
+            mean_metabolic_fatigue = float(ent.metabolic_fatigue[active].mean())
+            mean_mobilization_messenger = float(ent.mobilization_messenger[active].mean())
+            mean_maintenance_messenger = float(ent.maintenance_messenger[active].mean())
+            mean_messenger_precursor = float(ent.messenger_precursor[active].mean())
+            mean_physiology_sensor_multiplier = float(
+                ent.physiology_sensor_multiplier[active].mean()
+            )
             social_dependency = float(
                 np.mean(
                     ent.shared_energy_received_total[active]
@@ -1164,12 +1176,27 @@ class SimulationReportingMixin:
                 knowledge_use_strength_mean = 0.0
         else:
             mean_energy = mean_integrity = mean_age = social_dependency = grouped_fraction = 0.0
+            mean_oxygenation = mean_tissue_condition = mean_structure_condition = 0.0
+            mean_metabolic_fatigue = 0.0
+            mean_mobilization_messenger = 0.0
+            mean_maintenance_messenger = 0.0
+            mean_messenger_precursor = 0.0
+            mean_physiology_sensor_multiplier = 0.0
             lineage_count = 0
             strategy_mean_abs_weight = 0.0
             raw_strategy_gene_diversity = 0.0
             knowledge_preference_mean = np.zeros(5, dtype=np.float64)
             knowledge_preference_diversity = np.zeros(5, dtype=np.float64)
             knowledge_use_strength_mean = 0.0
+        physiology_environment_metrics = physiology_field_metrics(
+            self.environment.oxygen, self.environment.terrain, self.environment.wear
+        )
+        physiology_genetic_metrics = physiology_diagnostics(
+            ent.genotype,
+            ent.alive,
+            self.cfg,
+            gene_start=ParametricPolicy.physiology_gene_start(self.cfg),
+        )
         affinity_metrics = resource_affinity_diagnostics(
             ent.alive, ent.genotype, self.cfg
         )
@@ -1304,6 +1331,14 @@ class SimulationReportingMixin:
             ),
             "mean_energy": mean_energy,
             "mean_integrity": mean_integrity,
+            "mean_oxygenation": mean_oxygenation,
+            "mean_tissue_condition": mean_tissue_condition,
+            "mean_structure_condition": mean_structure_condition,
+            "mean_metabolic_fatigue": mean_metabolic_fatigue,
+            "mean_mobilization_messenger": mean_mobilization_messenger,
+            "mean_maintenance_messenger": mean_maintenance_messenger,
+            "mean_messenger_precursor": mean_messenger_precursor,
+            "mean_physiology_sensor_multiplier": mean_physiology_sensor_multiplier,
             "mean_age": mean_age,
             "lineages": lineage_count,
             "groups": stats.group_count,
@@ -1359,6 +1394,39 @@ class SimulationReportingMixin:
             "functional_module_embodied_output_ablation_enabled": int(
                 self.functional_module_embodied_output_ablation_enabled
             ),
+            "functional_module_physiology_output_ablation_enabled": int(
+                self.functional_module_physiology_output_ablation_enabled
+            ),
+            "physiology_messenger_receptor_blockade_enabled": int(
+                self.physiology_messenger_receptor_blockade_enabled
+            ),
+            "physiology_state_clamp_count": int(len(self.physiology_state_clamps)),
+            "physiology_state_clamps": {
+                str(name): float(value)
+                for name, value in sorted(self.physiology_state_clamps.items())
+            },
+            "physiology_schema": self.cfg.physiology.schema,
+            "physiology_environment_schema": (
+                self.cfg.environment.physiology_environment_schema
+            ),
+            "physiology_environment_effective_dimensions": float(
+                physiology_environment_metrics.effective_dimensions
+            ),
+            "physiology_environment_correlations": (
+                physiology_environment_metrics.correlations
+            ),
+            "physiology_environment_means": physiology_environment_metrics.means,
+            "physiology_environment_standard_deviations": (
+                physiology_environment_metrics.standard_deviations
+            ),
+            "physiology_genetic_effective_dimensions": float(
+                physiology_genetic_metrics["effective_dimensions"]
+            ),
+            "physiology_genetic_trait_names": physiology_genetic_metrics["gene_names"],
+            "physiology_genetic_trait_means": physiology_genetic_metrics["means"],
+            "physiology_genetic_trait_standard_deviations": (
+                physiology_genetic_metrics["standard_deviations"]
+            ),
             "functional_module_ablation_mask": (
                 self.functional_module_ablation_mask.astype(bool).tolist()
             ),
@@ -1379,6 +1447,12 @@ class SimulationReportingMixin:
             ),
             "functional_module_development_energy_step": (
                 stats.functional_module_development_energy
+            ),
+            "physiology_capacity_maintenance_energy_step": (
+                stats.physiology_capacity_maintenance_energy
+            ),
+            "physiology_capacity_development_energy_step": (
+                stats.physiology_capacity_development_energy
             ),
             "functional_module_movement_energy_delta_step": (
                 stats.functional_module_movement_energy
@@ -1410,6 +1484,34 @@ class SimulationReportingMixin:
             "functional_module_repair_integrity_total": (
                 self.total_functional_module_repair_integrity
             ),
+            **{
+                f"physiology_{name}_step": float(getattr(stats, f"physiology_{name}"))
+                for name in (
+                    "oxygen_uptake", "oxygen_use", "perfusion_energy",
+                    "repair_energy", "repair_material", "repair_oxygen",
+                    "repair_tissue", "repair_structure", "repair_integrity",
+                    "hypoxia_tissue_damage", "wear_tissue_damage",
+                    "wear_structure_damage", "integrity_damage",
+                    "messenger_synthesis", "messenger_decay",
+                    "messenger_precursor_used", "messenger_precursor_recovered",
+                    "messenger_energy", "computation_energy",
+                    "computation_oxygen", "fatigue_generated", "fatigue_cleared",
+                )
+            },
+            **{
+                f"physiology_{name}_total": float(getattr(self, f"total_physiology_{name}"))
+                for name in (
+                    "oxygen_uptake", "oxygen_use", "perfusion_energy",
+                    "repair_energy", "repair_material", "repair_oxygen",
+                    "repair_tissue", "repair_structure", "repair_integrity",
+                    "hypoxia_tissue_damage", "wear_tissue_damage",
+                    "wear_structure_damage", "integrity_damage",
+                    "messenger_synthesis", "messenger_decay",
+                    "messenger_precursor_used", "messenger_precursor_recovered",
+                    "messenger_energy", "computation_energy",
+                    "computation_oxygen", "fatigue_generated", "fatigue_cleared",
+                )
+            },
             "danger_evidence_ablation_enabled": int(
                 self.danger_evidence_ablation_enabled
             ),

@@ -90,6 +90,18 @@ INTERVENTIONS = (
         aliases=("functional-module-embodied-off", "module-embodied-off"),
     ),
     InterventionSpec(
+        "neutralize-functional-module-physiology-output",
+        InterventionKind.MODIFY_RULES,
+        "physiology-regulatory-functional-module-output",
+        aliases=("functional-module-physiology-off", "module-physiology-off"),
+    ),
+    InterventionSpec(
+        "block-physiology-messenger-receptors",
+        InterventionKind.MODIFY_RULES,
+        "whole-body-regulatory-messenger-receptors",
+        aliases=("physiology-receptor-blockade", "messenger-receptors-off"),
+    ),
+    InterventionSpec(
         "neutralize-functional-modules",
         InterventionKind.MODIFY_RULES,
         "expression-gated-contextual-harvest-module-output",

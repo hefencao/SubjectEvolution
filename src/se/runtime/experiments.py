@@ -291,6 +291,51 @@ class SimulationExperimentMixin:
         return tracker.summaries()
 
 
+    def set_physiology_state_clamp(self, state_name: str, value: float) -> None:
+        """Clamp one bounded v5 physiology state for a counterfactual branch.
+
+        The clamp is applied after every physiology settlement and is persisted
+        in full checkpoints. It changes no genotype coordinates and consumes no
+        random draws, so paired branches remain exactly replayable.
+        """
+
+        allowed = {
+            "oxygenation",
+            "tissue_condition",
+            "structure_condition",
+            "metabolic_fatigue",
+            "mobilization_messenger",
+            "maintenance_messenger",
+            "messenger_precursor",
+        }
+        normalized = str(state_name).strip()
+        if normalized not in allowed:
+            choices = ", ".join(sorted(allowed))
+            raise ValueError(f"unsupported physiology state clamp; expected one of: {choices}")
+        bounded = float(value)
+        if not 0.0 <= bounded <= 1.0:
+            raise ValueError("physiology state clamp value must be in [0, 1]")
+        self.physiology_state_clamps[normalized] = bounded
+        self.intervention_history.append(
+            {
+                "tick": self.tick,
+                "type": "clamp-physiology-state",
+                "kind": "modify-rules",
+                "target_scope": normalized,
+                "direct_action_control": False,
+                "experiment_mode": self.experiment_mode.value,
+                "clamp_value": bounded,
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+                "random_stream_modified": False,
+            }
+        )
+
+    def clear_physiology_state_clamps(self) -> None:
+        """Remove all experiment-only physiology clamps."""
+
+        self.physiology_state_clamps.clear()
+
     def apply_intervention(self, intervention: str) -> None:
         """Apply one documented intervention without changing random streams."""
         spec = resolve_intervention(intervention)
@@ -376,6 +421,8 @@ class SimulationExperimentMixin:
                 or self.cfg.functional_modules.schema not in {
                     "expression-gated-compositional-harvest-v2",
                     "expression-gated-compositional-embodied-v3",
+                    "expression-gated-compositional-physiological-v4",
+                    "expression-gated-regulatory-physiology-v5",
                 }
             ):
                 raise ValueError(
@@ -411,6 +458,43 @@ class SimulationExperimentMixin:
                 "genotype_coordinates_modified": 0,
                 "inheritance_modified": False,
                 "future_offspring_embodied_output_neutralized": True,
+            }
+        elif normalized == "neutralize-functional-module-physiology-output":
+            if (
+                not self.cfg.functional_modules.enabled
+                or self.cfg.functional_modules.schema not in {
+                    "expression-gated-compositional-physiological-v4",
+                    "expression-gated-regulatory-physiology-v5",
+                }
+            ):
+                raise ValueError(
+                    "neutralize-functional-module-physiology-output requires "
+                    "v4 or v5 physiological functional modules"
+                )
+            canonical = "neutralize-functional-module-physiology-output"
+            self.functional_module_physiology_output_ablation_enabled = True
+            details = {
+                "effective_output": "basal-physiology-with-zero-module-regulatory-drive",
+                "harvest_and_coupling_output_preserved": True,
+                "physiology_router_structure_cost_preserved": True,
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+                "future_offspring_physiology_output_neutralized": True,
+            }
+        elif normalized == "block-physiology-messenger-receptors":
+            if self.cfg.physiology.schema != "transport-metabolism-messenger-tissue-v2":
+                raise ValueError(
+                    "messenger receptor blockade requires v5 regulatory physiology"
+                )
+            canonical = "block-physiology-messenger-receptors"
+            self.physiology_messenger_receptor_blockade_enabled = True
+            details = {
+                "effective_output": "zero-messenger-receptor-gain",
+                "messenger_synthesis_decay_and_precursor_cost_preserved": True,
+                "direct-regulatory-drives_preserved": True,
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+                "future_offspring_receptors_blocked": True,
             }
         elif normalized == "neutralize-functional-modules":
             if not self.cfg.functional_modules.enabled:

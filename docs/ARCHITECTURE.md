@@ -259,3 +259,31 @@ The opt-in v3 layer retains the fixed four-slot feed-forward module graph and th
 Locomotion and field-signal outputs modulate existing world interfaces and pay use costs. Repair explicitly debits material and energy before restoring integrity. The module layer still does not select an action, invent a sensor, assign an ecological role, or alter module copy number.
 
 `neutralize-functional-module-embodied-output` removes only effective publication to the three embodied ports. Genes, mutation, expression, coupling, harvest routing, and embodied-router structural cost remain present. Combined output-basis diagnostics are observational and never feed policy or world state.
+
+## v0.51 regulatory physiology boundary
+
+```text
+fixed functional operators + expression + feed-forward coupling
+        ↓ signed regulatory requests
+basal oxygen-uptake modulation | mobilization stimulation
+maintenance stimulation       | sensory-attention modulation
+        ↓
+fifteen inherited transport / reserve / conversion / power / transduction /
+fatigue / repair / messenger parameters
+        ×
+finite energy + oxygen + material + shared messenger precursor
+        ×
+local oxygen + terrain resistance + mechanical wear
+        ↓
+oxygenation + fatigue + tissue + structure + two decaying messenger states
+        ↓
+actual movement, sensing, signalling, damage and repair
+```
+
+The functional layer emits intent only. The body layer settles realized fluxes. Two abstract messenger paths have independent inherited synthesis, decay and receptor gains but compete for a shared precursor. This provides global, decaying cross-module regulation without naming a hormone or organ.
+
+Lifetime operator weights remain fixed. History is explicit bounded state, not hidden online parameter learning. Expression gates remain separate from use and cost because the project charter and prior causal audits require those boundaries to be independently observable.
+
+Counterfactual branches can neutralize regulatory publication, block both messenger receptor paths, or clamp any bounded physiology state. These treatments are deterministic, checkpointed and do not modify genotype or randomness.
+
+The v4 coarse-drive path remains an archived schema. With v5 disabled, v1-v4 execution is unchanged.

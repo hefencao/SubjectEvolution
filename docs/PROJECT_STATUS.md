@@ -1,50 +1,40 @@
 # SE project status
 
-Version: **0.49.0**
+Version: **0.51.0**
 
 ## Current causal chain
 
 ```text
-orthogonal four-resource environment
-→ inherited affinity and elastic capacities
-→ v1 independent additive contextual harvest modules
-→ v2 inherited feed-forward composition
-→ D2-I shows hierarchy is used but compressed into harvest-only output
-→ v3 versioned embodied output basis
-→ test whether composition spans locomotion, signalling, repair, and harvest
-→ only then test environment association, coexistence, and removal
+orthogonal resource and abiotic environments
+→ inherited resource affinity and elastic capacities
+→ fixed four-slot inherited functional operators
+→ inherited feed-forward composition
+→ v3 confirms multiple physical output ports are usable
+→ v5 separates regulatory intent from physiological execution
+→ inherited transport / reserve / conversion / fatigue / repair / messenger parameters
+→ finite messenger precursor and conserved computation/execution costs
+→ later migration, resource conversion, consumption, defense and trophic interactions
+→ ecological differentiation tests only after those demands exist
 ```
 
-## D2-I completed result
+## v0.51 substrate
 
-Across seeds 48001–48003, composition-active populations had non-zero mediated signal at all three downstream levels, while neutral branches remained exactly zero. Coupling changed roughly 41–60% of living entities. Effective lineage count increased and largest-lineage fraction decreased in every seed.
+The recommended opt-in schema is `expression-gated-regulatory-physiology-v5`. The archived v4 coarse-drive schema remains loadable for exact replay but should not be used as the new scientific baseline.
 
-However, resource-affinity and functional-harvest-preference effective dimensions decreased in every active branch. The result supports a real selection effect of module hierarchy but identifies the shared harvest-only output vocabulary as the structural bottleneck.
+v5 adds fifteen inherited physiological parameters, two independently evolvable decaying messenger paths, one shared finite precursor, fatigue, and explicit energy/oxygen cost of functional computation. Functional modules publish regulatory requests; actual execution remains constrained by inherited capacity, body state, material, energy, oxygen and local abiotic conditions.
 
-## v0.49 substrate
+Zero regulatory output has basal semantics: basal oxygen uptake and basal sensory attention remain, while no messenger synthesis is stimulated.
 
-The opt-in v3 schema retains the four-slot acyclic hierarchy and adds three inherited output routers per module:
+## Evidence scope
 
-- locomotion power;
-- field-signal power;
-- material-to-integrity repair drive.
+The D2-I and D2-J runs established that compositional and embodied output substrates are used. They did not establish ecological differentiation. D2-L is therefore a continued substrate-evolution run rather than another module maturity gate.
 
-The outputs use bounded, explicit physical semantics and costs. The neutral intervention preserves genes, coupling, direct harvest routing, and router structure cost.
+## Still incomplete
 
-Diagnostics now report the three-port embodied dimension and the combined seven-coordinate output-basis dimension. These are generative-capability measures, not ecological niche verdicts.
-
-## Still blocked
-
-- module duplication/deletion;
-- arbitrary runtime routing;
-- dynamic module topology;
-- diversity protection;
-- claims of stable niche differentiation or ecotype formation.
-
-## Workflow
-
-```bash
-make conda-sync
-make test
-make conda-check
-```
+- resource conversion chains and storage specialization;
+- migration cycles tied to resource and oxygen geography;
+- emergent consumption of other entities and corresponding defense;
+- richer structural/body organization above the fixed bounded physiology kernel;
+- stable coexistence, ecotype and trophic-chain evidence;
+- module duplication/deletion and arbitrary runtime topology;
+- deterministic inherited sparse-routing ABI beyond continuous costed routes.

@@ -15,12 +15,14 @@ from se.policy import ParametricPolicy
 from se.differentiation.functional import (
     compositional_modules_enabled,
     embodied_outputs_enabled,
+    physiological_outputs_enabled,
+    regulatory_outputs_enabled,
     functional_module_coupling_count,
     functional_module_gene_count,
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v17"
+SCHEMA = "structural-measurement-protocol-audit-v19"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -250,7 +252,11 @@ def build_protocol_audit(
             ),
             "gene_count": int(functional_module_gene_count(cfg)),
             "architecture_class": (
-                "feed-forward-compositional-embodied"
+                "feed-forward-regulatory-physiology"
+                if regulatory_outputs_enabled(cfg)
+                else "feed-forward-compositional-physiological"
+                if physiological_outputs_enabled(cfg)
+                else "feed-forward-compositional-embodied"
                 if embodied_outputs_enabled(cfg)
                 else (
                     "feed-forward-compositional"
@@ -267,12 +273,34 @@ def build_protocol_audit(
                 "information-store deficit",
                 "fertility deficit",
                 "four local normalized resource channels",
+                *(
+                    [
+                        "oxygenation deficit", "tissue deficit", "structure deficit",
+                        "metabolic fatigue", "mobilization messenger",
+                        "maintenance messenger", "messenger precursor",
+                        "local oxygen availability", "local terrain resistance",
+                        "local mechanical wear",
+                    ]
+                    if regulatory_outputs_enabled(cfg)
+                    else [
+                        "oxygenation deficit", "tissue deficit", "structure deficit",
+                        "local oxygen availability", "local terrain resistance",
+                        "local mechanical wear",
+                    ]
+                    if physiological_outputs_enabled(cfg) else []
+                ),
             ],
             "output_schema": cfg.functional_modules.output_schema,
             "output_scope": (
-                "zero-sum residual over four harvest-channel request weights plus "
-                "bounded locomotion-power, field-signal-power, and material-to-integrity "
-                "repair outputs"
+                "zero-sum harvest residual plus oxygen-uptake modulation, mobilization-bus "
+                "stimulation, maintenance-bus stimulation, and sensory-attention modulation; "
+                "actual execution emerges from inherited physiology, bounded state and abiotic supply"
+                if regulatory_outputs_enabled(cfg)
+                else "zero-sum harvest residual plus perfusion, contractile, sensory, and repair drives; "
+                "locomotion, signal, and repair emerge from body state and abiotic fields"
+                if physiological_outputs_enabled(cfg)
+                else "zero-sum residual over four harvest-channel request weights plus "
+                "bounded locomotion-power, field-signal-power, and material-to-integrity repair outputs"
                 if embodied_outputs_enabled(cfg)
                 else "zero-sum residual over four harvest-channel request weights"
             ),
@@ -290,7 +318,11 @@ def build_protocol_audit(
             "action_selection": False,
             "assimilation_affinity_modified": False,
             "resource_gradient_utility_modified": False,
-            "new_world_physics": bool(embodied_outputs_enabled(cfg)),
+            "new_world_physics": bool(
+                embodied_outputs_enabled(cfg)
+                or physiological_outputs_enabled(cfg)
+                or regulatory_outputs_enabled(cfg)
+            ),
             "embodied_output_semantics": {
                 "enabled": bool(embodied_outputs_enabled(cfg)),
                 "schema": cfg.functional_modules.output_schema,
@@ -300,6 +332,57 @@ def build_protocol_audit(
                 "new_action_kind": False,
                 "resource_or_energy_created": False,
                 "preset_ecological_role": False,
+            },
+            "physiological_output_semantics": {
+                "enabled": bool(physiological_outputs_enabled(cfg)),
+                "body_state": ["oxygenation", "tissue_condition", "structure_condition"],
+                "module_drives": ["perfusion", "contractile", "sensory", "repair"],
+                "abiotic_fields": ["oxygen availability", "terrain resistance", "mechanical wear"],
+                "derived_effects": ["locomotion", "signal reception/emission", "repair"],
+                "conservation": "repair debits material, energy, and oxygen; damage changes tissue/structure/integrity",
+                "new_action_kind": False,
+                "biological_hazard_source": False,
+                "diversity_reward_or_protection": False,
+                "preset_ecological_role": False,
+            },
+            "regulatory_physiology_semantics": {
+                "enabled": bool(regulatory_outputs_enabled(cfg)),
+                "physiology_schema": cfg.physiology.schema,
+                "inherited_parameter_count": (
+                    15 if regulatory_outputs_enabled(cfg) else 0
+                ),
+                "module_requests": [
+                    "oxygen uptake modulation",
+                    "mobilization messenger stimulation",
+                    "maintenance messenger stimulation",
+                    "sensory attention modulation",
+                ],
+                "dynamic_states": [
+                    "oxygenation", "tissue condition", "structure condition",
+                    "metabolic fatigue", "mobilization messenger",
+                    "maintenance messenger", "shared messenger precursor",
+                ],
+                "intent_execution_separation": True,
+                "zero_module_output_semantics": (
+                    "basal uptake and attention with no stimulated messenger synthesis"
+                ),
+                "messenger_buses": (
+                    "two independently inherited synthesis/decay/receptor pathways sharing "
+                    "one finite precursor pool"
+                ),
+                "fixed_lifetime_weights": True,
+                "online_hebbian_learning": False,
+                "computation_cost": "actual activation and route load debit energy and oxygen",
+                "counterfactual_interfaces": [
+                    "regulatory output neutralization",
+                    "messenger receptor blockade",
+                    "bounded state clamp",
+                ],
+                "named_organs_or_hormones": False,
+                "conservation": (
+                    "messenger synthesis debits precursor and energy; precursor recovery debits "
+                    "material; repair debits material, energy and oxygen"
+                ),
             },
             "expression_threshold": float(cfg.functional_modules.expression_threshold),
             "maximum_residual_fraction": float(cfg.functional_modules.max_residual_fraction),
@@ -324,6 +407,7 @@ def build_protocol_audit(
             "neutralization_interventions": {
                 "coupling_output": "neutralize-functional-module-coupling-output",
                 "embodied_output": "neutralize-functional-module-embodied-output",
+                "physiology_output": "neutralize-functional-module-physiology-output",
                 "all_modules": "neutralize-functional-modules",
                 "per_module": [
                     f"neutralize-functional-module-{index}"
@@ -332,7 +416,11 @@ def build_protocol_audit(
             },
             "contribution_diagnostics": {
                 "schema": (
-                    "functional-module-contribution-audit-v3"
+                    "functional-module-contribution-audit-v5"
+                    if regulatory_outputs_enabled(cfg)
+                    else "functional-module-contribution-audit-v4"
+                    if physiological_outputs_enabled(cfg)
+                    else "functional-module-contribution-audit-v3"
                     if embodied_outputs_enabled(cfg)
                     else "functional-module-contribution-audit-v2"
                 ),
@@ -345,7 +433,14 @@ def build_protocol_audit(
                 "mediated_signal_by_hierarchy_level": True,
                 "amplification_and_suppression": True,
                 "embodied_output_effective_dimensions": bool(embodied_outputs_enabled(cfg)),
-                "combined_output_basis_effective_dimensions": bool(embodied_outputs_enabled(cfg)),
+                "combined_output_basis_effective_dimensions": bool(
+                    embodied_outputs_enabled(cfg)
+                or physiological_outputs_enabled(cfg)
+                or regulatory_outputs_enabled(cfg)
+                ),
+                "physiology_output_effective_dimensions": bool(
+                    physiological_outputs_enabled(cfg) or regulatory_outputs_enabled(cfg)
+                ),
                 "feedback_to_world": False,
             },
             "architecture_capability_experiment": {
@@ -367,13 +462,35 @@ def build_protocol_audit(
                 "module_copy_number_changed": False,
                 "ecological_niche_claim": False,
             },
+            "physiological_ecology_experiment": {
+                "plan_schema": "d2-physiological-ecology-plan-v1",
+                "result_schema": "d2-physiological-ecology-results-v1",
+                "single_active_population_per_seed": True,
+                "pass_fail_expression_gate": False,
+                "independent_abiotic_fields": True,
+                "dynamic_body_state": True,
+                "module_copy_number_changed": False,
+                "food_chain_complete": False,
+                "stable_niche_claim": False,
+            },
+            "regulatory_physiology_experiment": {
+                "plan_schema": "d2-regulatory-physiology-plan-v1",
+                "result_schema": "d2-regulatory-physiology-results-v1",
+                "single_active_population_per_seed": True,
+                "pass_fail_expression_gate": False,
+                "fixed_lifetime_weights": True,
+                "finite_messenger_precursor": True,
+                "computation_and_execution_costed": True,
+                "module_copy_number_changed": False,
+                "stable_niche_claim": False,
+            },
             "known_architecture_limit": (
                 "The v1 schema supports only independent additive harvest routing. The v2 "
-                "schema adds inherited hierarchy and joint dependence but the completed "
-                "three-seed capability run showed that this hierarchy was absorbed into the "
-                "same harvest vocabulary. The v3 schema adds three conserved embodied "
-                "primitives, but remains a fixed four-slot acyclic graph and does not add "
-                "dynamic topology, arbitrary ports, or a stable niche claim."
+                "schema adds inherited hierarchy and joint dependence; v3 adds conserved embodied "
+                "ports. The archived v4 coarse-drive schema is retained for replay only. The v5 "
+                "schema separates regulatory intent from inherited transport, metabolism, finite "
+                "messenger turnover, fatigue and repair execution. It still uses a fixed bounded "
+                "kernel and lacks a completed trophic chain, dynamic topology and stable niche proof."
             ),
             "leave_one_out_protocol": {
                 "plan_schema": "d2-module-leave-one-out-plan-v1",
@@ -773,6 +890,10 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- architecture capability experiment: {payload['functional_module_protocol']['architecture_capability_experiment']}",
         f"- embodied capability experiment: {payload['functional_module_protocol']['embodied_capability_experiment']}",
         f"- embodied semantics: {payload['functional_module_protocol']['embodied_output_semantics']}",
+        f"- physiological semantics: {payload['functional_module_protocol']['physiological_output_semantics']}",
+        f"- physiological ecology experiment: {payload['functional_module_protocol']['physiological_ecology_experiment']}",
+        f"- regulatory physiology semantics: {payload['functional_module_protocol']['regulatory_physiology_semantics']}",
+        f"- regulatory physiology experiment: {payload['functional_module_protocol']['regulatory_physiology_experiment']}",
         f"- known architecture limit: {payload['functional_module_protocol']['known_architecture_limit']}",
         f"- leave-one-out protocol: {payload['functional_module_protocol']['leave_one_out_protocol']}",
         f"- effect qualification: {payload['functional_module_protocol']['effect_qualification']}",

@@ -1,0 +1,20 @@
+{
+  "boundary": "v5 regulatory physiology disabled by the shared v3 config; compare common v0.50 semantics only.",
+  "full_checkpoint_array_mismatch_count": 0,
+  "full_checkpoint_common_array_count": 357,
+  "full_checkpoint_common_array_value_count": 670873,
+  "full_checkpoint_common_semantic_leaf_count": 682409,
+  "full_checkpoint_mismatch_count": 0,
+  "full_checkpoint_mismatch_examples": [],
+  "metrics_common_non_timing_column_count": 395,
+  "metrics_mismatch_count": 0,
+  "metrics_mismatch_examples": [],
+  "metrics_row_count": 3,
+  "passed": true,
+  "schema": "v050-v051-disabled-regulatory-physiology-compatibility-v1",
+  "seed": 50999,
+  "summary_common_non_timing_leaf_count": 410,
+  "summary_mismatch_count": 0,
+  "summary_mismatch_examples": [],
+  "ticks": 20
+}
