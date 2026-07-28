@@ -1,23 +1,27 @@
-# SE v0.52
+# SE v0.53
 
-SE is a deterministic artificial-life and subject-structure research platform. The current main line keeps the fixed, auditable functional-operator kernel and inherited regulatory physiology introduced in v0.51, while correcting a conservation error discovered by the first 1500-tick D2-L run.
+SE is a deterministic artificial-life and subject-structure research platform. The current main line retains the conservative v3 regulatory-physiology substrate and adds inherited bounded raw-resource storage with delayed conversion.
 
-## v0.52 correction
+## Why v0.53
 
-The v0.51 `transport-metabolism-messenger-tissue-v2` runtime could pass a negative energy balance into a proportional messenger-synthesis limiter. That produced negative messenger synthesis, negative precursor use and negative synthesis energy in all three supplied seeds. The same path could erase or partially reverse energy debt before the world-level starvation settlement.
+The completed three-seed, 1500-tick conservative D2-L rerun closes the physiology flow ledger in every seed. Messenger synthesis, decay, finite precursor use/recovery, computation cost, fatigue turnover, and damage/repair remain active without negative flows. That result supports retaining the physiological substrate, but it does not complete the ecology chain.
 
-v0.52 therefore separates two schemas:
+The next structural bottleneck was that harvested external resources were still applied to energy, integrity, material, information, or fertility immediately. That direct same-tick reward keeps selection centered on acquisition even when functional and physiological variation exists.
 
-- `transport-metabolism-messenger-tissue-v2`: retained only for exact historical replay.
-- `transport-metabolism-messenger-tissue-v3`: conservative runtime required for new D2-L experiments.
+v0.53 introduces an opt-in D3-A substrate:
 
-The v3 runtime guarantees that every reported physiology flow is finite and non-negative. Messenger synthesis and repair can spend only currently available non-negative substrate. Functional computation still incurs its real cost; if it pushes energy below zero, that debt is preserved until the existing world starvation step converts it into integrity loss.
+- each of four raw resource channels enters an inherited bounded internal store;
+- current-tick harvest cannot affect body state in the same tick;
+- stored resource is converted from the next tick onward at an inherited per-channel rate;
+- store occupancy becomes an input to the existing fixed functional operators;
+- conversion still uses the existing versioned resource-effect matrix;
+- decay, overflow, death loss, conversion, and final living stores close a raw-resource ledger.
 
-No named organ, hormone, ecological role, diversity reward, new module, or new environment actor is introduced.
+All four channels use equal base storage, conversion, and decay parameters. Channel differences must arise from the external resource-effect matrix and inherited variation, not named metabolic roles.
 
 ## Workflow
 
-After updating project metadata or entry points:
+After metadata or entry-point changes:
 
 ```bash
 make conda-sync
@@ -36,30 +40,22 @@ Artifact audit:
 make release-check
 ```
 
-## Re-run D2-L with conservative semantics
+## Run D3-A
 
 ```bash
-se-d2-regulatory-physiology \
-  --config configs/mvp_short_d2l_regulatory_physiology_longrun.json \
-  --seeds 51001,51002,51003 \
-  --output analyses/d2l_regulatory_physiology_v3_1500 \
+se-d3-resource-metabolism \
+  --config configs/mvp_short_d3a_resource_metabolism_longrun.json \
+  --seeds 53001,53002,53003 \
+  --output analyses/d3a_resource_metabolism_1500 \
   --backend gpu \
   --until-tick 1500
 ```
 
-Then audit the cumulative flow ledger:
-
-```bash
-se-d2-regulatory-physiology-assess \
-  --results analyses/d2l_regulatory_physiology_v3_1500/d2_regulatory_physiology_results.json \
-  --output analyses/d2l_regulatory_physiology_v3_assessment
-```
-
-The assessment checks conservation only. It is not a module-maturity, ecological-differentiation, or copy-number gate.
+D3-A is a substrate-evolution run, not a module-expression, niche, coexistence, or copy-number gate.
 
 ## Current version documents
 
-- [Input-flow assessment](docs/v0.52/D2L_INPUT_FLOW_ASSESSMENT.md)
-- [Conservative physiology correction](docs/v0.52/D2L_CONSERVATIVE_PHYSIOLOGY_DESIGN.md)
-- [Re-run plan](docs/v0.52/D2L_CONSERVATIVE_PLAN.md)
-- [Implementation report](docs/v0.52/IMPLEMENTATION_REPORT.md)
+- [D2-L v3 result interpretation](docs/v0.53/D2L_V3_RESULT_INTERPRETATION.md)
+- [D3-A design](docs/v0.53/D3A_RESOURCE_METABOLISM_DESIGN.md)
+- [D3-A run plan](docs/v0.53/D3A_RESOURCE_METABOLISM_PLAN.md)
+- [Implementation report](docs/v0.53/IMPLEMENTATION_REPORT.md)

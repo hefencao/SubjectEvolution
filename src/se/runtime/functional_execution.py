@@ -13,7 +13,11 @@ from se.differentiation.functional import (
 )
 from se.policy import ParametricPolicy
 from se.runtime.embodied import embodied_power_multipliers
-from se.differentiation.physiology import physiology_genome_energy, physiology_phenotype
+from se.differentiation.physiology import (
+    physiology_genome_energy,
+    physiology_phenotype,
+    resource_metabolism_enabled,
+)
 from se.runtime.physiology import (
     apply_physiology_step,
     physiology_multipliers,
@@ -74,6 +78,24 @@ def evaluate_functional_outputs(
     if not cfg.functional_modules.enabled:
         return {}
 
+    physiology_phenotype_value = (
+        physiology_phenotype(
+            ent.genotype[active],
+            cfg,
+            gene_start=ParametricPolicy.physiology_gene_start(cfg),
+        )
+        if regulatory_outputs_enabled(cfg)
+        else None
+    )
+    resource_store = (
+        ent.resource_store[active] if resource_metabolism_enabled(cfg) else None
+    )
+    resource_store_capacity = (
+        physiology_phenotype_value.resource_store_capacity
+        if resource_metabolism_enabled(cfg) and physiology_phenotype_value is not None
+        else None
+    )
+
     evaluation = evaluate_contextual_harvest_modules_q(
         ent.genotype[active],
         effective_resource_affinity_q[active],
@@ -90,6 +112,8 @@ def evaluate_functional_outputs(
         mobilization_messenger=ent.mobilization_messenger[active],
         maintenance_messenger=ent.maintenance_messenger[active],
         messenger_precursor=ent.messenger_precursor[active],
+        resource_store=resource_store,
+        resource_store_capacity=resource_store_capacity,
         local_oxygen=local_physiology[:, 0],
         local_terrain=local_physiology[:, 1],
         local_wear=local_physiology[:, 2],
@@ -135,11 +159,8 @@ def evaluate_functional_outputs(
             signal_strength_multiplier[active] = multipliers.signal
             ent.physiology_sensor_multiplier[active] = multipliers.sensor
         elif regulatory_outputs_enabled(cfg):
-            phenotype = physiology_phenotype(
-                ent.genotype[active],
-                cfg,
-                gene_start=ParametricPolicy.physiology_gene_start(cfg),
-            )
+            if physiology_phenotype_value is None:
+                raise RuntimeError("regulatory physiology phenotype was not prepared")
             multipliers = regulatory_multipliers(
                 active_physiology_q,
                 oxygenation=ent.oxygenation[active],
@@ -149,7 +170,7 @@ def evaluate_functional_outputs(
                 mobilization_messenger=ent.mobilization_messenger[active],
                 maintenance_messenger=ent.maintenance_messenger[active],
                 local_terrain=local_physiology[:, 1],
-                phenotype=phenotype,
+                phenotype=physiology_phenotype_value,
                 cfg=cfg,
                 receptor_blocked=simulation.physiology_messenger_receptor_blockade_enabled,
             )
@@ -365,7 +386,7 @@ def physiology_checkpoint_arrays(simulation: Any) -> dict[str, np.ndarray]:
     active = np.flatnonzero(simulation.entities.alive)
     ent = simulation.entities
     environment = simulation.environment
-    return {
+    arrays = {
         "oxygenation": ent.oxygenation[active],
         "tissue_condition": ent.tissue_condition[active],
         "structure_condition": ent.structure_condition[active],
@@ -378,6 +399,9 @@ def physiology_checkpoint_arrays(simulation: Any) -> dict[str, np.ndarray]:
         "environment_terrain": environment.terrain,
         "environment_wear": environment.wear,
     }
+    if resource_metabolism_enabled(simulation.cfg):
+        arrays["resource_store"] = ent.resource_store[active]
+    return arrays
 
 
 def augment_gradient_with_oxygen(

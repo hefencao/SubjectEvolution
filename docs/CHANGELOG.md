@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.53.0
+
+### Inherited resource buffering and delayed conversion
+
+- Interprets the completed conservative D2-L v3 run as a closed physiology ledger in all three supplied 1500-tick seeds.
+- Stops further physiology repair and identifies immediate harvest-to-body settlement as the next structural bottleneck.
+- Adds opt-in `transport-metabolism-messenger-tissue-resource-v4` with four inherited raw-resource store capacities and four inherited conversion capacities.
+- Adds `expression-gated-regulatory-resource-metabolism-v6` with normalized four-channel store occupancy in the operator input pool.
+- Makes current harvest enter bounded stores; conversion begins only on later ticks and still uses the existing resource-effect matrix.
+- Adds explicit overflow, decay, conversion, death-loss, final-store, and realized-body accounting with a closed raw-store ledger.
+- Keeps equal base storage, conversion, and decay parameters across channels and adds no named metabolism, role, diversity reward, or trophic actor.
+- Adds `se-d3-resource-metabolism`, D3-A configs, protocol audit v21, checkpoint persistence, reporting, tests, and GPU mirror synchronization after delayed conversion.
+- Preserves v1-v5 and conservative-v3 authoritative behavior when D3-A is disabled.
+- Complete packages retain only `docs/v0.53` as a version-specific directory.
+
 ## 0.52.0
 
 ### Conservative regulatory-physiology settlement

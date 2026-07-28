@@ -1,0 +1,20 @@
+{
+  "schema": "d3-resource-metabolism-cli-smoke-v1",
+  "project_version": "0.53.0",
+  "ticks": 20,
+  "seeds": [
+    53001,
+    53002
+  ],
+  "result_schema": "d3-resource-metabolism-results-v1",
+  "stable_trend_summary": {
+    "storage_used_in_every_seed": true,
+    "conversion_used_in_every_seed": true,
+    "all_channels_converted_in_every_seed": true,
+    "storage_or_conversion_genetic_variation_observed": true,
+    "store_ledger_valid_in_every_seed": true
+  },
+  "maximum_absolute_ledger_residual": 5.794966213557018e-07,
+  "recommendation": "retain-buffered-resource-substrate-and-continue-spatiotemporal-ecology",
+  "passed": true
+}

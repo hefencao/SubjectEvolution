@@ -108,6 +108,7 @@ from se.env.local_stress import LocalStressDiagnostics
 from ..event_cohort import EventCohortDiagnostics
 from se.subjects.succession import SubjectStructureDiagnostics
 from se.env.atlas import EnvironmentAtlasDiagnostics
+from se.differentiation.physiology import resource_metabolism_enabled
 from se.env.niches import (
     AFFINITY_SCALE,
     RESOURCE_CHANNELS,
@@ -132,13 +133,12 @@ from se.subjects.social import (
 )
 from se.env.spatial import SpatialIndex
 from se.subjects.graph import CandidateSubjectGraph
-
-
 from .checkpointing import SimulationCheckpointMixin
 from .experiments import SimulationExperimentMixin
 from .reporting import SimulationReportingMixin
 from .state import EntityState, StepStats, _wrap_periodic_float32
 from .embodied import apply_material_repair, movement_cost_with_power
+from .resource_metabolism import commit_assimilated_harvest, initialize_resource_metabolism_state, record_resource_store_death_loss, settle_resource_metabolism_before_step
 from .functional_execution import (
     add_physiology_capacity_maintenance_cost,
     add_physiology_terrain_cost,
@@ -150,8 +150,6 @@ from .functional_execution import (
     physiology_checkpoint_arrays,
     record_physiology_capacity_development_cost,
 )
-
-
 class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, SimulationReportingMixin):
     def __init__(
         self,
@@ -303,6 +301,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.total_shared_energy = 0.0
         self.total_harvested_resources = np.zeros(4, dtype=np.float64)
         self.total_requested_harvest_resources = np.zeros(4, dtype=np.float64)
+        initialize_resource_metabolism_state(self)
         self.action_counts = np.zeros(len(Action), dtype=np.int64)
         self.benefit_flow_energy_total = np.zeros(
             BENEFIT_FLOW_COUNT, dtype=np.float64
@@ -457,7 +456,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         if cfg.run.trajectory_subject_ids:
             self._trajectory_file = (self.output_dir / "trajectory.jsonl").open("w", encoding="utf-8")
         self._write_run_manifest(backend)
-
 
     def _validate_invariants(self) -> None:
         ent = self.entities
@@ -839,6 +837,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         signal_strength_multiplier = np.ones(ent.alive.size, dtype=np.float32)
         functional_context_metrics: dict[str, object] = {}
         effective_danger_evidence_q: np.ndarray | None = None
+        settle_resource_metabolism_before_step(self, stats)
         policy_energy = ent.energy
         if self.gpu_runtime is None:
             phase_started = time.perf_counter()
@@ -1544,32 +1543,36 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             else:
                 if effective_resource_affinity_q is None:
                     raise RuntimeError("effective resource affinity was not prepared")
-                _, harvest_body_delta = apply_harvest_effects(
+                assimilated, harvest_body_delta = apply_harvest_effects(
                     gathered,
                     ent.genotype[harvesters],
                     cfg,
                     resource_affinity_q=effective_resource_affinity_q[harvesters],
                 )
-                ent.energy[harvesters] = np.minimum(
-                    ent.energy[harvesters] + harvest_body_delta[:, 0],
-                    cfg.entities.max_energy,
-                )
-                ent.integrity[harvesters] = np.minimum(
-                    ent.integrity[harvesters] + harvest_body_delta[:, 1], 1.0
-                )
-                ent.material[harvesters] = np.maximum(
-                    ent.material[harvesters] + harvest_body_delta[:, 2], 0.0
-                )
-                ent.information_store[harvesters] = np.minimum(
-                    ent.information_store[harvesters] + harvest_body_delta[:, 3], 3.0
-                )
-                ent.fertility[harvesters] = np.minimum(
-                    ent.fertility[harvesters] + harvest_body_delta[:, 4], 3.0
-                )
-                ent.harvested_energy_total[harvesters] += harvest_body_delta[:, 0]
-                stats.harvested_energy = float(
-                    np.asarray(harvest_body_delta[:, 0], dtype=np.float64).sum()
-                )
+                if resource_metabolism_enabled(cfg):
+                    commit_assimilated_harvest(self, harvesters, assimilated, stats)
+                    harvest_body_delta = None
+                else:
+                    ent.energy[harvesters] = np.minimum(
+                        ent.energy[harvesters] + harvest_body_delta[:, 0],
+                        cfg.entities.max_energy,
+                    )
+                    ent.integrity[harvesters] = np.minimum(
+                        ent.integrity[harvesters] + harvest_body_delta[:, 1], 1.0
+                    )
+                    ent.material[harvesters] = np.maximum(
+                        ent.material[harvesters] + harvest_body_delta[:, 2], 0.0
+                    )
+                    ent.information_store[harvesters] = np.minimum(
+                        ent.information_store[harvesters] + harvest_body_delta[:, 3], 3.0
+                    )
+                    ent.fertility[harvesters] = np.minimum(
+                        ent.fertility[harvesters] + harvest_body_delta[:, 4], 3.0
+                    )
+                    ent.harvested_energy_total[harvesters] += harvest_body_delta[:, 0]
+                    stats.harvested_energy = float(
+                        np.asarray(harvest_body_delta[:, 0], dtype=np.float64).sum()
+                    )
 
         share = self._finalize_share_capacity(share, resolutions)
         stats.shared_energy = self._commit_shares(share)
@@ -2075,6 +2078,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.last_death_events = death_events
         dead = death_events.entity_indices
         if dead.size:
+            record_resource_store_death_loss(self, dead, stats)
             if self.local_stress_diagnostics is not None:
                 self.local_stress_diagnostics.observe_deaths(dead, ent.x, ent.y)
             death_cells = np.asarray(
@@ -2255,7 +2259,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 time.perf_counter() - evaluation_started
             )
         return stats
-
 
     def run(
         self,
@@ -2492,6 +2495,5 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8"
         )
         return final_row
-
 
 __all__ = ["Simulation"]

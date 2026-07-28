@@ -17,12 +17,17 @@ from se.differentiation.functional import (
     embodied_outputs_enabled,
     physiological_outputs_enabled,
     regulatory_outputs_enabled,
+    resource_metabolism_modules_enabled,
     functional_module_coupling_count,
     functional_module_gene_count,
 )
+from se.differentiation.physiology import (
+    physiology_gene_count,
+    resource_metabolism_enabled,
+)
 
 
-SCHEMA = "structural-measurement-protocol-audit-v20"
+SCHEMA = "structural-measurement-protocol-audit-v21"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -252,7 +257,9 @@ def build_protocol_audit(
             ),
             "gene_count": int(functional_module_gene_count(cfg)),
             "architecture_class": (
-                "feed-forward-regulatory-physiology"
+                "feed-forward-regulatory-resource-metabolism"
+                if resource_metabolism_modules_enabled(cfg)
+                else "feed-forward-regulatory-physiology"
                 if regulatory_outputs_enabled(cfg)
                 else "feed-forward-compositional-physiological"
                 if physiological_outputs_enabled(cfg)
@@ -288,6 +295,11 @@ def build_protocol_audit(
                         "local mechanical wear",
                     ]
                     if physiological_outputs_enabled(cfg) else []
+                ),
+                *(
+                    ["four normalized internal raw-resource store occupancies"]
+                    if resource_metabolism_modules_enabled(cfg)
+                    else []
                 ),
             ],
             "output_schema": cfg.functional_modules.output_schema,
@@ -349,7 +361,9 @@ def build_protocol_audit(
                 "enabled": bool(regulatory_outputs_enabled(cfg)),
                 "physiology_schema": cfg.physiology.schema,
                 "inherited_parameter_count": (
-                    15 if regulatory_outputs_enabled(cfg) else 0
+                    int(physiology_gene_count(cfg))
+                    if regulatory_outputs_enabled(cfg)
+                    else 0
                 ),
                 "module_requests": [
                     "oxygen uptake modulation",
@@ -391,6 +405,50 @@ def build_protocol_audit(
                     "messenger synthesis debits precursor and energy; precursor recovery debits "
                     "material; repair debits material, energy and oxygen"
                 ),
+            },
+            "resource_metabolism_semantics": {
+                "enabled": bool(resource_metabolism_enabled(cfg)),
+                "physiology_schema": cfg.physiology.schema,
+                "functional_schema": cfg.functional_modules.schema,
+                "raw_resource_channels": 4,
+                "inherited_store_capacity_genes": 4 if resource_metabolism_enabled(cfg) else 0,
+                "inherited_conversion_capacity_genes": 4 if resource_metabolism_enabled(cfg) else 0,
+                "base_store_capacity": list(cfg.physiology.resource_store_base_capacity),
+                "base_conversion_per_tick": list(cfg.physiology.resource_conversion_per_tick),
+                "store_decay_per_tick": list(cfg.physiology.resource_store_decay_per_tick),
+                "harvest_enters_store_before_body": bool(resource_metabolism_enabled(cfg)),
+                "minimum_conversion_delay_ticks": 1 if resource_metabolism_enabled(cfg) else 0,
+                "same_tick_harvest_body_effect": False if resource_metabolism_enabled(cfg) else True,
+                "store_occupancy_visible_to_operators": bool(
+                    resource_metabolism_modules_enabled(cfg)
+                ),
+                "death_store_fate": (
+                    "explicit dissipative death loss; no detritus recycling yet"
+                    if resource_metabolism_enabled(cfg)
+                    else "not applicable"
+                ),
+                "ledger": (
+                    "stored = converted + decay + death loss + final living store"
+                    if resource_metabolism_enabled(cfg)
+                    else "not applicable"
+                ),
+                "equal_channel_base_parameters": bool(
+                    len(set(cfg.physiology.resource_store_base_capacity)) <= 1
+                    and len(set(cfg.physiology.resource_conversion_per_tick)) <= 1
+                    and len(set(cfg.physiology.resource_store_decay_per_tick)) <= 1
+                ),
+                "preset_resource_role": False,
+                "diversity_reward_or_protection": False,
+            },
+            "resource_metabolism_experiment": {
+                "plan_schema": "d3-resource-metabolism-plan-v1",
+                "result_schema": "d3-resource-metabolism-results-v1",
+                "single_active_population_per_seed": True,
+                "pass_fail_module_gate": False,
+                "minimum_conversion_delay_ticks": 1,
+                "strict_raw_store_ledger": True,
+                "module_copy_number_changed": False,
+                "stable_niche_claim": False,
             },
             "expression_threshold": float(cfg.functional_modules.expression_threshold),
             "maximum_residual_fraction": float(cfg.functional_modules.max_residual_fraction),
@@ -501,8 +559,10 @@ def build_protocol_audit(
                 "schema adds inherited hierarchy and joint dependence; v3 adds conserved embodied "
                 "ports. The archived v4 coarse-drive schema is retained for replay only. The v5 "
                 "schema separates regulatory intent from inherited transport, metabolism, finite "
-                "messenger turnover, fatigue and repair execution. It still uses a fixed bounded "
-                "kernel and lacks a completed trophic chain, dynamic topology and stable niche proof."
+                "messenger turnover, fatigue and repair execution. The v6 functional / v4 physiology "
+                "pair adds inherited bounded raw-resource storage and delayed conversion so harvest is "
+                "not an immediate body reward. It still lacks detritus recycling, trophic transfer, a "
+                "completed food chain, dynamic topology and stable niche proof."
             ),
             "leave_one_out_protocol": {
                 "plan_schema": "d2-module-leave-one-out-plan-v1",
@@ -906,6 +966,8 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- physiological ecology experiment: {payload['functional_module_protocol']['physiological_ecology_experiment']}",
         f"- regulatory physiology semantics: {payload['functional_module_protocol']['regulatory_physiology_semantics']}",
         f"- regulatory physiology experiment: {payload['functional_module_protocol']['regulatory_physiology_experiment']}",
+        f"- resource metabolism semantics: {payload['functional_module_protocol']['resource_metabolism_semantics']}",
+        f"- resource metabolism experiment: {payload['functional_module_protocol']['resource_metabolism_experiment']}",
         f"- known architecture limit: {payload['functional_module_protocol']['known_architecture_limit']}",
         f"- leave-one-out protocol: {payload['functional_module_protocol']['leave_one_out_protocol']}",
         f"- effect qualification: {payload['functional_module_protocol']['effect_qualification']}",

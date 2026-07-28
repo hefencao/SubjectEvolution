@@ -14,6 +14,7 @@ from .. import __version__
 from ..backend import BackendUnavailableError, resolve_backend
 from ..checkpointing import read_checkpoint_bundle, write_checkpoint_bundle
 from ..cfg import SimulationConfig
+from se.differentiation.physiology import resource_metabolism_enabled
 from se.subjects.control import (
     AutonomyRecoveryArbiter,
     ControlArbiter,
@@ -175,6 +176,18 @@ class SimulationCheckpointMixin:
             "total_shared_energy": float(self.total_shared_energy),
             "total_harvested_resources": self.total_harvested_resources.copy(),
             "total_requested_harvest_resources": self.total_requested_harvest_resources.copy(),
+            **(
+                {
+                    "total_resource_stored": self.total_resource_stored.copy(),
+                    "total_resource_store_overflow": self.total_resource_store_overflow.copy(),
+                    "total_resource_converted": self.total_resource_converted.copy(),
+                    "total_resource_store_decay": self.total_resource_store_decay.copy(),
+                    "total_resource_store_death_loss": self.total_resource_store_death_loss.copy(),
+                    "total_resource_body_realized": self.total_resource_body_realized.copy(),
+                }
+                if resource_metabolism_enabled(self.cfg)
+                else {}
+            ),
             "action_counts": self.action_counts.copy(),
             "benefit_flow_energy_total": self.benefit_flow_energy_total.copy(),
             "lagged_benefit_boundary": self.lagged_benefit_boundary.clone(),
@@ -452,6 +465,25 @@ class SimulationCheckpointMixin:
         self.total_requested_harvest_resources = np.asarray(
             state.get("total_requested_harvest_resources", np.zeros(4)), dtype=np.float64
         ).copy()
+        if resource_metabolism_enabled(self.cfg):
+            self.total_resource_stored = np.asarray(
+                state.get("total_resource_stored", np.zeros(4)), dtype=np.float64
+            ).copy()
+            self.total_resource_store_overflow = np.asarray(
+                state.get("total_resource_store_overflow", np.zeros(4)), dtype=np.float64
+            ).copy()
+            self.total_resource_converted = np.asarray(
+                state.get("total_resource_converted", np.zeros(4)), dtype=np.float64
+            ).copy()
+            self.total_resource_store_decay = np.asarray(
+                state.get("total_resource_store_decay", np.zeros(4)), dtype=np.float64
+            ).copy()
+            self.total_resource_store_death_loss = np.asarray(
+                state.get("total_resource_store_death_loss", np.zeros(4)), dtype=np.float64
+            ).copy()
+            self.total_resource_body_realized = np.asarray(
+                state.get("total_resource_body_realized", np.zeros(5)), dtype=np.float64
+            ).copy()
         self.action_counts = np.asarray(state["action_counts"], dtype=np.int64).copy()
         self.benefit_flow_energy_total = np.asarray(
             state["benefit_flow_energy_total"], dtype=np.float64
@@ -780,6 +812,13 @@ class SimulationCheckpointMixin:
         branch.total_requested_harvest_resources = (
             self.total_requested_harvest_resources.copy()
         )
+        if resource_metabolism_enabled(self.cfg):
+            branch.total_resource_stored = self.total_resource_stored.copy()
+            branch.total_resource_store_overflow = self.total_resource_store_overflow.copy()
+            branch.total_resource_converted = self.total_resource_converted.copy()
+            branch.total_resource_store_decay = self.total_resource_store_decay.copy()
+            branch.total_resource_store_death_loss = self.total_resource_store_death_loss.copy()
+            branch.total_resource_body_realized = self.total_resource_body_realized.copy()
         branch.action_counts = self.action_counts.copy()
         branch.benefit_flow_energy_total = self.benefit_flow_energy_total.copy()
         branch.lagged_benefit_boundary = self.lagged_benefit_boundary.clone()

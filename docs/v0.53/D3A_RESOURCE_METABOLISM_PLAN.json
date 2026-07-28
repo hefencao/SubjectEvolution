@@ -1,0 +1,31 @@
+{
+  "schema": "d3-resource-metabolism-plan-v1",
+  "seeds": [
+    53001,
+    53002,
+    53003
+  ],
+  "horizon_ticks": 1500,
+  "functional_schema": "expression-gated-regulatory-resource-metabolism-v6",
+  "physiology_schema": "transport-metabolism-messenger-tissue-resource-v4",
+  "single_active_population_per_seed": true,
+  "pass_fail_gate": false,
+  "raw_harvest_enters_bounded_store": true,
+  "minimum_conversion_delay_ticks": 1,
+  "store_occupancy_visible_to_functional_operators": true,
+  "inherited_store_capacity_per_channel": true,
+  "inherited_conversion_capacity_per_channel": true,
+  "equal_channel_base_capacity_and_rate": true,
+  "direct_same_tick_body_effect_disabled": true,
+  "store_ledger_terms": [
+    "stored",
+    "converted",
+    "decayed",
+    "death loss",
+    "final living store"
+  ],
+  "named_metabolic_roles": false,
+  "diversity_reward_or_protection": false,
+  "ecological_role_labels": false,
+  "module_copy_number_changed": false
+}

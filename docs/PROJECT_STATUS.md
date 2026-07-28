@@ -1,43 +1,55 @@
 # SE project status
 
-Version: **0.52.0**
+Version: **0.53.0**
 
 ## Current causal chain
 
 ```text
-orthogonal resource and abiotic environments
+orthogonal resource and abiotic fields
 → inherited resource affinity and elastic capacities
 → fixed four-slot inherited functional operators
 → inherited feed-forward composition
-→ v3 confirms multiple physical output ports are usable
-→ v5 separates regulatory intent from physiological execution
+→ regulatory requests separated from physiological execution
 → inherited transport / reserve / conversion / fatigue / repair / messenger parameters
-→ conservative non-negative messenger/precursor flow ledger
-→ preserved energy debt and world-level starvation settlement
-→ later migration, resource conversion, consumption, defense and trophic interactions
-→ ecological differentiation tests only after those demands exist
+→ conservative non-negative flow ledger and starvation debt settlement
+→ inherited bounded raw-resource stores
+→ delayed per-channel conversion through the existing resource-effect matrix
+→ future spatial resource processing, detritus, consumption, defense and trophic transfer
+→ ecological differentiation tests only after those processes create distinct demands
 ```
 
-## v0.52 conservative substrate
+## D2-L v3 evidence
 
-The recommended functional schema remains `expression-gated-regulatory-physiology-v5`. New runs must pair it with physiology schema `transport-metabolism-messenger-tissue-v3`. The v2 physiology schema remains loadable only for exact v0.51 replay.
+The supplied three-seed, 1500-tick rerun uses `transport-metabolism-messenger-tissue-v3`. Every seed has finite non-negative physiology flows, messenger turnover, finite precursor turnover, computation cost, fatigue turnover, and damage/repair. The result supports retaining the conservative physiology substrate. It does not establish a named organ, stable niche, food chain, or module-copy rationale.
 
-The first 1500-tick D2-L run exposed negative cumulative messenger synthesis, precursor-use, and synthesis-energy values. Those are invalid flow signs, not evolved biological trends. v0.52 corrects the settlement while preserving the same operator kernel, inherited parameters, bounded states, and environment.
+## D3-A resource metabolism
 
-v5 adds fifteen inherited physiological parameters, two independently evolvable decaying messenger paths, one shared finite precursor, fatigue, and explicit energy/oxygen cost of functional computation. Functional modules publish regulatory requests; actual execution remains constrained by inherited capacity, body state, material, energy, oxygen and local abiotic conditions.
+The opt-in pair is:
 
-Zero regulatory output has basal semantics: basal oxygen uptake and basal sensory attention remain, while no messenger synthesis is stimulated.
+- functional schema `expression-gated-regulatory-resource-metabolism-v6`;
+- input schema `internal-homeostasis-local-resources-abiotic-stores-feedforward-v5`;
+- physiology schema `transport-metabolism-messenger-tissue-resource-v4`.
 
-## Evidence scope
+D3-A adds eight inherited parameters: four store capacities and four conversion capacities. All channels share equal base values. Harvested raw resources enter bounded stores and can affect body state only on later ticks. Store occupancy is visible to the same fixed operators, allowing behavior to respond to internal inventory without assigning resource roles.
 
-The D2-I and D2-J runs established that compositional and embodied output substrates are used. They did not establish ecological differentiation. D2-L is therefore a continued substrate-evolution run rather than another module maturity gate.
+The ledger is:
+
+```text
+cumulative stored
+= cumulative converted
++ cumulative decay
++ cumulative death loss
++ final stores carried by living entities
+```
+
+Death loss is currently explicit dissipation. Detritus recycling is intentionally deferred until a conserved external matter-transfer process is designed.
 
 ## Still incomplete
 
-- resource conversion chains and storage specialization;
-- migration cycles tied to resource and oxygen geography;
-- emergent consumption of other entities and corresponding defense;
-- richer structural/body organization above the fixed bounded physiology kernel;
-- stable coexistence, ecotype and trophic-chain evidence;
-- module duplication/deletion and arbitrary runtime topology;
-- deterministic inherited sparse-routing ABI beyond continuous costed routes.
+- spatially distinct processing opportunities and migration cycles;
+- excretion, detritus, scavenging, and external matter recycling;
+- consumption of other entities and corresponding defense;
+- reproduction investment supplied through delayed stores rather than the current body outcome alone;
+- stable coexistence, ecotypes, and trophic-chain evidence;
+- dynamic module topology or copy-number evolution;
+- deterministic inherited sparse routing beyond continuous costed routes.

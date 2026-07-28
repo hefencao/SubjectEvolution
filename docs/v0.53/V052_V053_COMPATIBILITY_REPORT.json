@@ -1,0 +1,63 @@
+{
+  "schema": "v052-v053-disabled-resource-metabolism-compatibility-v1",
+  "baseline_version": "0.52.0",
+  "candidate_version": "0.53.0",
+  "config": "configs/d2l_regulatory_physiology_smoke.json",
+  "seed": 10001,
+  "ticks": 30,
+  "backend": "cpu",
+  "resource_metabolism_enabled": false,
+  "thin_checkpoint": {
+    "common_arrays": 49,
+    "values_compared": 187969,
+    "differences": 0
+  },
+  "full_checkpoint_state": {
+    "baseline_sha256": "5b7feef1ecfb23f1d3736760debb6e035fafa5029a612c8722d6207097e2705f",
+    "candidate_sha256": "5b7feef1ecfb23f1d3736760debb6e035fafa5029a612c8722d6207097e2705f",
+    "byte_identical": true,
+    "bytes": 3059654
+  },
+  "json_outputs": {
+    "files": {
+      "summary.json": {
+        "common_non_timing_leaves": 482,
+        "differences": 0
+      },
+      "run_manifest.json": {
+        "common_non_timing_leaves": 256,
+        "differences": 0
+      },
+      "run_metadata.json": {
+        "common_non_timing_leaves": 3601,
+        "differences": 0
+      },
+      "scientific_validity.json": {
+        "common_non_timing_leaves": 157,
+        "differences": 0
+      },
+      "subject_structure_summary.json": {
+        "common_non_timing_leaves": 30,
+        "differences": 0
+      },
+      "environment_atlas_summary.json": {
+        "common_non_timing_leaves": 849,
+        "differences": 0
+      }
+    },
+    "common_non_timing_leaves": 5375,
+    "differences": 0
+  },
+  "metrics": {
+    "rows": 4,
+    "common_non_timing_columns": 426,
+    "cells_compared": 1704,
+    "differences": 0
+  },
+  "auxiliary_files": {
+    "byte_compared": 14,
+    "differences": []
+  },
+  "passed": true,
+  "interpretation": "The D3-A schema is opt-in. With conservative v3 physiology and functional v5, v0.52 and v0.53 preserve the authoritative checkpoint and all common non-timing outputs exactly."
+}

@@ -44,6 +44,9 @@ PHYSIOLOGICAL_FUNCTIONAL_MODULE_SCHEMA = (
 REGULATORY_FUNCTIONAL_MODULE_SCHEMA = (
     "expression-gated-regulatory-physiology-v5"
 )
+RESOURCE_METABOLISM_FUNCTIONAL_MODULE_SCHEMA = (
+    "expression-gated-regulatory-resource-metabolism-v6"
+)
 INPUT_SCHEMA = "internal-needs-local-resources-v1"
 COMPOSITIONAL_INPUT_SCHEMA = "internal-needs-local-resources-feedforward-v2"
 PHYSIOLOGICAL_INPUT_SCHEMA = (
@@ -51,6 +54,9 @@ PHYSIOLOGICAL_INPUT_SCHEMA = (
 )
 REGULATORY_INPUT_SCHEMA = (
     "internal-homeostasis-local-resources-abiotic-feedforward-v4"
+)
+RESOURCE_METABOLISM_INPUT_SCHEMA = (
+    "internal-homeostasis-local-resources-abiotic-stores-feedforward-v5"
 )
 OUTPUT_SCHEMA = "harvest-channel-zero-sum-residual-v1"
 EMBODIED_OUTPUT_SCHEMA = "harvest-locomotion-signal-repair-v1"
@@ -68,6 +74,7 @@ REGULATORY_CONTRIBUTION_DIAGNOSTIC_SCHEMA = (
 INPUT_COUNT = 10
 PHYSIOLOGICAL_INPUT_COUNT = 16
 REGULATORY_INPUT_COUNT = 20
+RESOURCE_METABOLISM_INPUT_COUNT = 24
 OUTPUT_COUNT = RESOURCE_CHANNELS
 EMBODIED_OUTPUT_NAMES = ("locomotion_power", "signal_power", "repair_drive")
 EMBODIED_OUTPUT_COUNT = len(EMBODIED_OUTPUT_NAMES)
@@ -93,6 +100,9 @@ PHYSIOLOGICAL_GENES_PER_MODULE = (
 )
 REGULATORY_GENES_PER_MODULE = (
     1 + REGULATORY_INPUT_COUNT + 1 + OUTPUT_COUNT + REGULATORY_OUTPUT_COUNT
+)
+RESOURCE_METABOLISM_GENES_PER_MODULE = (
+    1 + RESOURCE_METABOLISM_INPUT_COUNT + 1 + OUTPUT_COUNT + REGULATORY_OUTPUT_COUNT
 )
 Q = 4096
 
@@ -137,6 +147,7 @@ def functional_modules_enabled(cfg: SimulationConfig) -> bool:
             EMBODIED_FUNCTIONAL_MODULE_SCHEMA,
             PHYSIOLOGICAL_FUNCTIONAL_MODULE_SCHEMA,
             REGULATORY_FUNCTIONAL_MODULE_SCHEMA,
+            RESOURCE_METABOLISM_FUNCTIONAL_MODULE_SCHEMA,
         }
     )
 
@@ -150,6 +161,7 @@ def compositional_modules_enabled(cfg: SimulationConfig) -> bool:
             EMBODIED_FUNCTIONAL_MODULE_SCHEMA,
             PHYSIOLOGICAL_FUNCTIONAL_MODULE_SCHEMA,
             REGULATORY_FUNCTIONAL_MODULE_SCHEMA,
+            RESOURCE_METABOLISM_FUNCTIONAL_MODULE_SCHEMA,
         }
         and cfg.functional_modules.coupling_schema == COUPLING_SCHEMA
     )
@@ -176,13 +188,26 @@ def physiological_outputs_enabled(cfg: SimulationConfig) -> bool:
 def regulatory_outputs_enabled(cfg: SimulationConfig) -> bool:
     return bool(
         compositional_modules_enabled(cfg)
-        and cfg.functional_modules.schema == REGULATORY_FUNCTIONAL_MODULE_SCHEMA
+        and cfg.functional_modules.schema
+        in {
+            REGULATORY_FUNCTIONAL_MODULE_SCHEMA,
+            RESOURCE_METABOLISM_FUNCTIONAL_MODULE_SCHEMA,
+        }
         and cfg.functional_modules.output_schema == REGULATORY_OUTPUT_SCHEMA
         and cfg.physiology.enabled
     )
 
 
+def resource_metabolism_modules_enabled(cfg: SimulationConfig) -> bool:
+    return bool(
+        regulatory_outputs_enabled(cfg)
+        and cfg.functional_modules.schema == RESOURCE_METABOLISM_FUNCTIONAL_MODULE_SCHEMA
+    )
+
+
 def functional_module_input_count(cfg: SimulationConfig) -> int:
+    if resource_metabolism_modules_enabled(cfg):
+        return RESOURCE_METABOLISM_INPUT_COUNT
     if regulatory_outputs_enabled(cfg):
         return REGULATORY_INPUT_COUNT
     return PHYSIOLOGICAL_INPUT_COUNT if physiological_outputs_enabled(cfg) else INPUT_COUNT
@@ -199,6 +224,8 @@ def functional_module_auxiliary_output_count(cfg: SimulationConfig) -> int:
 
 
 def functional_module_genes_per_module(cfg: SimulationConfig) -> int:
+    if resource_metabolism_modules_enabled(cfg):
+        return RESOURCE_METABOLISM_GENES_PER_MODULE
     if regulatory_outputs_enabled(cfg):
         return REGULATORY_GENES_PER_MODULE
     if physiological_outputs_enabled(cfg):
@@ -336,6 +363,8 @@ def contextual_inputs_q(
     mobilization_messenger: Any | None = None,
     maintenance_messenger: Any | None = None,
     messenger_precursor: Any | None = None,
+    resource_store: Any | None = None,
+    resource_store_capacity: Any | None = None,
     local_oxygen: Any | None = None,
     local_terrain: Any | None = None,
     local_wear: Any | None = None,
@@ -385,6 +414,8 @@ def contextual_inputs_q(
                 maintenance_messenger,
                 messenger_precursor,
             )
+        if resource_metabolism_modules_enabled(cfg):
+            required = required + (resource_store, resource_store_capacity)
         if any(value is None for value in required):
             version = "v5 regulatory" if regulatory_outputs_enabled(cfg) else "v4 physiological"
             raise ValueError(f"{version} modules require body and abiotic inputs")
@@ -400,6 +431,17 @@ def contextual_inputs_q(
                     np.clip(np.asarray(mobilization_messenger, dtype=np.float64), 0.0, 1.0),
                     np.clip(np.asarray(maintenance_messenger, dtype=np.float64), 0.0, 1.0),
                     np.clip(np.asarray(messenger_precursor, dtype=np.float64), 0.0, 1.0),
+                ]
+            )
+        if resource_metabolism_modules_enabled(cfg):
+            stores = np.asarray(resource_store, dtype=np.float64)
+            capacities = np.asarray(resource_store_capacity, dtype=np.float64)
+            if stores.shape != (rows, RESOURCE_CHANNELS) or capacities.shape != stores.shape:
+                raise ValueError("v6 resource stores and capacities must be shaped [N, 4]")
+            body_features.extend(
+                [
+                    np.clip(stores[:, index] / np.maximum(capacities[:, index], 1.0e-12), 0.0, 1.0)
+                    for index in range(RESOURCE_CHANNELS)
                 ]
             )
         body_features.extend(
@@ -451,6 +493,8 @@ def evaluate_contextual_harvest_modules_q(
     mobilization_messenger: Any | None = None,
     maintenance_messenger: Any | None = None,
     messenger_precursor: Any | None = None,
+    resource_store: Any | None = None,
+    resource_store_capacity: Any | None = None,
     local_oxygen: Any | None = None,
     local_terrain: Any | None = None,
     local_wear: Any | None = None,
@@ -535,6 +579,8 @@ def evaluate_contextual_harvest_modules_q(
         mobilization_messenger=mobilization_messenger,
         maintenance_messenger=maintenance_messenger,
         messenger_precursor=messenger_precursor,
+        resource_store=resource_store,
+        resource_store_capacity=resource_store_capacity,
         local_oxygen=local_oxygen,
         local_terrain=local_terrain,
         local_wear=local_wear,
@@ -696,6 +742,8 @@ def contextual_harvest_preference_q(
     mobilization_messenger: Any | None = None,
     maintenance_messenger: Any | None = None,
     messenger_precursor: Any | None = None,
+    resource_store: Any | None = None,
+    resource_store_capacity: Any | None = None,
     local_oxygen: Any | None = None,
     local_terrain: Any | None = None,
     local_wear: Any | None = None,
@@ -724,6 +772,8 @@ def contextual_harvest_preference_q(
         mobilization_messenger=mobilization_messenger,
         maintenance_messenger=maintenance_messenger,
         messenger_precursor=messenger_precursor,
+        resource_store=resource_store,
+        resource_store_capacity=resource_store_capacity,
         local_oxygen=local_oxygen,
         local_terrain=local_terrain,
         local_wear=local_wear,
@@ -1289,11 +1339,15 @@ __all__ = [
     "PHYSIOLOGICAL_CONTRIBUTION_DIAGNOSTIC_SCHEMA",
     "REGULATORY_CONTRIBUTION_DIAGNOSTIC_SCHEMA",
     "REGULATORY_FUNCTIONAL_MODULE_SCHEMA",
+    "RESOURCE_METABOLISM_FUNCTIONAL_MODULE_SCHEMA",
     "REGULATORY_INPUT_SCHEMA",
+    "RESOURCE_METABOLISM_INPUT_SCHEMA",
     "REGULATORY_OUTPUT_SCHEMA",
     "REGULATORY_OUTPUT_NAMES",
     "REGULATORY_OUTPUT_COUNT",
     "REGULATORY_GENES_PER_MODULE",
+    "RESOURCE_METABOLISM_INPUT_COUNT",
+    "RESOURCE_METABOLISM_GENES_PER_MODULE",
     "CONTRIBUTION_DIAGNOSTIC_SCHEMA",
     "EMBODIED_CONTRIBUTION_DIAGNOSTIC_SCHEMA",
     "COUPLING_SCHEMA",
@@ -1314,6 +1368,7 @@ __all__ = [
     "embodied_outputs_enabled",
     "physiological_outputs_enabled",
     "regulatory_outputs_enabled",
+    "resource_metabolism_modules_enabled",
     "functional_module_input_count",
     "functional_module_auxiliary_output_count",
     "functional_modules_enabled",

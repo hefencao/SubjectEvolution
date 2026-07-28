@@ -291,3 +291,11 @@ The v4 coarse-drive path remains an archived schema. With v5 disabled, v1-v4 exe
 ### v0.52 conservation correction
 
 The legacy `transport-metabolism-messenger-tissue-v2` settlement is retained byte-for-byte for replay. New runs use `transport-metabolism-messenger-tissue-v3`, which enforces a finite non-negative per-tick flow ledger. Synthesis and repair spend only non-negative available substrate. Functional computation is still charged after it occurs; any resulting negative energy remains visible until the existing world starvation settlement converts debt into integrity loss. No new biological degree of freedom is introduced by this correction.
+
+## v0.53 delayed raw-resource metabolism boundary
+
+The D3-A opt-in path separates acquisition from body reward. Successful harvest is first assimilated into four bounded internal raw-resource stores. Only store content present before a tick may be converted during that tick, which guarantees a minimum one-tick delay between acquisition and body effect.
+
+Storage and conversion capacities are inherited independently per channel. Base capacities, conversion rates, and decay rates are equal across channels; channel meaning remains defined only by the existing versioned resource-effect matrix. Functional operators receive normalized store occupancy as additional inputs but keep the same fixed four-slot topology and regulatory output vocabulary.
+
+The authoritative raw-store ledger is `stored = converted + decay + death loss + final living store`. Overflow is reported separately because it never enters the body store. Stored material carried by dead entities is currently explicit dissipation; no detritus recycling is implied.

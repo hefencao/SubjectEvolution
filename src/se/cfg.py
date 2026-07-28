@@ -495,6 +495,12 @@ class PhysiologyConfig:
     maintenance_energy_per_capacity: float = 0.0
     development_energy_per_capacity: float = 0.0
 
+    # v6 resource buffering and delayed conversion. These arrays remain inert
+    # unless the explicit resource-metabolism physiology schema is selected.
+    resource_store_base_capacity: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)
+    resource_conversion_per_tick: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)
+    resource_store_decay_per_tick: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)
+
 
 @dataclass(frozen=True)
 class PolicyConfig:
@@ -836,7 +842,26 @@ def load_config(path: str | Path) -> SimulationConfig:
         ),
         differentiation=DifferentiationConfig(**raw.get("differentiation", {})),
         functional_modules=FunctionalModuleConfig(**raw.get("functional_modules", {})),
-        physiology=PhysiologyConfig(**raw.get("physiology", {})),
+        physiology=PhysiologyConfig(
+            **{
+                **raw.get("physiology", {}),
+                "resource_store_base_capacity": tuple(
+                    raw.get("physiology", {}).get(
+                        "resource_store_base_capacity", (0.0, 0.0, 0.0, 0.0)
+                    )
+                ),
+                "resource_conversion_per_tick": tuple(
+                    raw.get("physiology", {}).get(
+                        "resource_conversion_per_tick", (0.0, 0.0, 0.0, 0.0)
+                    )
+                ),
+                "resource_store_decay_per_tick": tuple(
+                    raw.get("physiology", {}).get(
+                        "resource_store_decay_per_tick", (0.0, 0.0, 0.0, 0.0)
+                    )
+                ),
+            }
+        ),
         policy=PolicyConfig(**policy_raw),
         social=SocialConfig(**_require(raw, "social")),
         control=ControlConfig(**raw.get("control", {})),
@@ -1711,24 +1736,28 @@ def validate_config(cfg: SimulationConfig) -> None:
     embodied_schema = "expression-gated-compositional-embodied-v3"
     physiological_schema = "expression-gated-compositional-physiological-v4"
     regulatory_schema = "expression-gated-regulatory-physiology-v5"
+    resource_metabolism_schema = "expression-gated-regulatory-resource-metabolism-v6"
     if fcfg.schema not in {
         "disabled", additive_schema, compositional_schema, embodied_schema,
-        physiological_schema, regulatory_schema,
+        physiological_schema, regulatory_schema, resource_metabolism_schema,
     }:
         raise ValueError(
             "functional_modules.schema must be 'disabled', "
             "'expression-gated-contextual-harvest-v1', "
             "'expression-gated-compositional-harvest-v2', or "
             "'expression-gated-compositional-embodied-v3', "
-            "'expression-gated-compositional-physiological-v4', or "
-            "'expression-gated-regulatory-physiology-v5'"
+            "'expression-gated-compositional-physiological-v4', "
+            "'expression-gated-regulatory-physiology-v5', or "
+            "'expression-gated-regulatory-resource-metabolism-v6'"
         )
     if fcfg.enabled != (fcfg.schema != "disabled"):
         raise ValueError("functional_modules enabled/schema fields must agree")
     if fcfg.module_count != 4:
         raise ValueError("functional_modules.module_count must be exactly 4")
     expected_input = (
-        "internal-homeostasis-local-resources-abiotic-feedforward-v4"
+        "internal-homeostasis-local-resources-abiotic-stores-feedforward-v5"
+        if fcfg.schema == resource_metabolism_schema
+        else "internal-homeostasis-local-resources-abiotic-feedforward-v4"
         if fcfg.schema == regulatory_schema
         else "internal-physiology-local-resources-abiotic-feedforward-v3"
         if fcfg.schema == physiological_schema
@@ -1744,7 +1773,8 @@ def validate_config(cfg: SimulationConfig) -> None:
     expected_coupling = (
         "lower-slot-signal-modulation-v1"
         if fcfg.schema in {
-            compositional_schema, embodied_schema, physiological_schema, regulatory_schema
+            compositional_schema, embodied_schema, physiological_schema,
+            regulatory_schema, resource_metabolism_schema
         }
         else "disabled"
     )
@@ -1759,7 +1789,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         else "harvest-physiology-drive-v1"
         if fcfg.schema == physiological_schema
         else "harvest-regulatory-drive-v2"
-        if fcfg.schema == regulatory_schema
+        if fcfg.schema in {regulatory_schema, resource_metabolism_schema}
         else "harvest-channel-zero-sum-residual-v1"
     )
     if fcfg.output_schema != expected_output:
@@ -1838,7 +1868,9 @@ def validate_config(cfg: SimulationConfig) -> None:
         fcfg.maintenance_energy_per_physiology_weight,
         fcfg.development_energy_per_physiology_weight,
     )
-    if fcfg.schema not in {physiological_schema, regulatory_schema} and any(
+    if fcfg.schema not in {
+        physiological_schema, regulatory_schema, resource_metabolism_schema
+    } and any(
         value != 0.0 for value in physiology_weight_values
     ):
         raise ValueError(
@@ -1850,21 +1882,37 @@ def validate_config(cfg: SimulationConfig) -> None:
         "oxygen-tissue-structure-v1",
         "transport-metabolism-messenger-tissue-v2",
         "transport-metabolism-messenger-tissue-v3",
+        "transport-metabolism-messenger-tissue-resource-v4",
     }:
         raise ValueError(
             "physiology.schema must be 'disabled', 'oxygen-tissue-structure-v1', "
-            "'transport-metabolism-messenger-tissue-v2', or "
-            "'transport-metabolism-messenger-tissue-v3'"
+            "'transport-metabolism-messenger-tissue-v2', "
+            "'transport-metabolism-messenger-tissue-v3', or "
+            "'transport-metabolism-messenger-tissue-resource-v4'"
         )
     if pcfg.enabled != (pcfg.schema != "disabled"):
         raise ValueError("physiology enabled/schema fields must agree")
-    physiology_values = tuple(
-        float(getattr(pcfg, name))
-        for name in PhysiologyConfig.__dataclass_fields__
-        if name not in {"enabled", "schema"}
-    )
+    physiology_values: list[float] = []
+    for name in PhysiologyConfig.__dataclass_fields__:
+        if name in {"enabled", "schema"}:
+            continue
+        raw_value = getattr(pcfg, name)
+        if isinstance(raw_value, tuple):
+            physiology_values.extend(float(value) for value in raw_value)
+        else:
+            physiology_values.append(float(raw_value))
     if any(not math.isfinite(value) or value < 0.0 for value in physiology_values):
         raise ValueError("physiology parameters must be finite and non-negative")
+    for name in (
+        "resource_store_base_capacity",
+        "resource_conversion_per_tick",
+        "resource_store_decay_per_tick",
+    ):
+        values = tuple(float(value) for value in getattr(pcfg, name))
+        if len(values) != 4:
+            raise ValueError(f"physiology.{name} must contain four channels")
+    if any(value > 1.0 for value in pcfg.resource_store_decay_per_tick):
+        raise ValueError("physiology.resource_store_decay_per_tick values cannot exceed 1")
     for name in (
         "initial_oxygenation",
         "initial_tissue_condition",
@@ -1886,9 +1934,13 @@ def validate_config(cfg: SimulationConfig) -> None:
     ):
         if float(getattr(pcfg, name)) > 1.0:
             raise ValueError(f"physiology.{name} cannot exceed 1")
-    if fcfg.schema in {physiological_schema, regulatory_schema}:
+    if fcfg.schema in {
+        physiological_schema, regulatory_schema, resource_metabolism_schema
+    }:
         expected_physiology_schemas = (
-            {
+            {"transport-metabolism-messenger-tissue-resource-v4"}
+            if fcfg.schema == resource_metabolism_schema
+            else {
                 "transport-metabolism-messenger-tissue-v2",
                 "transport-metabolism-messenger-tissue-v3",
             }
@@ -1917,7 +1969,7 @@ def validate_config(cfg: SimulationConfig) -> None:
             pcfg.max_movement_speed_fraction,
             pcfg.max_signal_strength_fraction,
         ]
-        if fcfg.schema == regulatory_schema:
+        if fcfg.schema in {regulatory_schema, resource_metabolism_schema}:
             required_positive.extend(
                 [
                     pcfg.messenger_synthesis_per_tick,
@@ -1939,6 +1991,9 @@ def validate_config(cfg: SimulationConfig) -> None:
             )
             if pcfg.gene_mutation_std <= 0.0:
                 raise ValueError("v5 physiology requires positive gene_mutation_std")
+            if pcfg.schema == "transport-metabolism-messenger-tissue-resource-v4":
+                required_positive.extend(pcfg.resource_store_base_capacity)
+                required_positive.extend(pcfg.resource_conversion_per_tick)
         if any(value <= 0.0 for value in required_positive):
             raise ValueError(
                 "physiological modules require positive transport, use, repair, and execution semantics"
@@ -1946,6 +2001,18 @@ def validate_config(cfg: SimulationConfig) -> None:
     elif pcfg.enabled:
         raise ValueError(
             "enabled physiology requires a matching physiological functional schema"
+        )
+    if pcfg.schema != "transport-metabolism-messenger-tissue-resource-v4" and any(
+        value != 0.0
+        for values in (
+            pcfg.resource_store_base_capacity,
+            pcfg.resource_conversion_per_tick,
+            pcfg.resource_store_decay_per_tick,
+        )
+        for value in values
+    ):
+        raise ValueError(
+            "resource storage and conversion settings require physiology resource-v4"
         )
     if fcfg.enabled:
         if cfg.entities.resource_affinity_schema != "normalized-four-resource-affinity-v1":

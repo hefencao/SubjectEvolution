@@ -223,3 +223,9 @@ CuPy 的浮点 sigmoid、softmax、einsum 和并行归约不因“纯张量”�
 ## v0.52 conservation note
 
 The v5 architecture is retained. The supplied long-run result exposed a settlement bug rather than a missing trait: negative energy was allowed to create negative messenger flows. New v3 physiology semantics correct only substrate accounting and preserve v2 for exact replay. No new role, module, organ, or ecology actor is added.
+
+## v0.53 resource buffering assessment
+
+The conservative physiology substrate is retained. The next limitation was not another missing module output but immediate settlement of all harvested channels into body outcomes. D3-A adds inherited bounded stores and delayed conversion while preserving the fixed operator kernel, existing resource-effect matrix, and equal base parameters across channels.
+
+This creates a temporal processing axis and exposes internal inventory to operator input selection. It does not yet add spatial processing sites, detritus, trophic transfer, or a claim of metabolic specialization.

@@ -34,6 +34,40 @@ class CheckpointError(RuntimeError):
     """Raised when a full-world checkpoint is missing, corrupt, or incompatible."""
 
 
+_RESOURCE_METABOLISM_CONFIG_FIELDS = (
+    "resource_store_base_capacity",
+    "resource_conversion_per_tick",
+    "resource_store_decay_per_tick",
+)
+
+
+def _pickle_checkpoint_state(state: dict[str, Any]) -> bytes:
+    """Serialize legacy schemas without adding v0.53-only config fields.
+
+    Older full checkpoints physically stored no D3-A fields.  Temporarily
+    removing neutral defaults preserves their trusted state payload byte-for-
+    byte while normal dataclass pickling elsewhere remains untouched.
+    """
+    config = state.get("config")
+    physiology = getattr(config, "physiology", None)
+    stored = vars(physiology) if physiology is not None else {}
+    neutral = all(
+        tuple(stored.get(name, (0.0, 0.0, 0.0, 0.0)))
+        == (0.0, 0.0, 0.0, 0.0)
+        for name in _RESOURCE_METABOLISM_CONFIG_FIELDS
+    )
+    removed: list[tuple[str, Any]] = []
+    if neutral:
+        for name in _RESOURCE_METABOLISM_CONFIG_FIELDS:
+            if name in stored:
+                removed.append((name, stored.pop(name)))
+    try:
+        return pickle.dumps(state, protocol=pickle.HIGHEST_PROTOCOL)
+    finally:
+        for name, value in removed:
+            stored[name] = value
+
+
 def _config_sha256(config: Any) -> str:
     payload = json.dumps(asdict(config), ensure_ascii=False, sort_keys=True).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
@@ -83,7 +117,7 @@ def write_checkpoint_bundle(
     """Atomically write one trusted full-world checkpoint bundle."""
     destination = Path(path)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    state_payload = pickle.dumps(state, protocol=pickle.HIGHEST_PROTOCOL)
+    state_payload = _pickle_checkpoint_state(state)
     metadata = {
         "schema": CHECKPOINT_SCHEMA,
         "project_version": __version__,

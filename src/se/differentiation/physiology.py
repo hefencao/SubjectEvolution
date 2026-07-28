@@ -18,9 +18,14 @@ from se.cfg import SimulationConfig
 
 LEGACY_REGULATORY_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-v2"
 CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-v3"
+RESOURCE_METABOLISM_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v4"
 REGULATORY_PHYSIOLOGY_SCHEMA = CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA
 REGULATORY_PHYSIOLOGY_SCHEMAS = frozenset(
-    {LEGACY_REGULATORY_PHYSIOLOGY_SCHEMA, CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA}
+    {
+        LEGACY_REGULATORY_PHYSIOLOGY_SCHEMA,
+        CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA,
+        RESOURCE_METABOLISM_PHYSIOLOGY_SCHEMA,
+    }
 )
 PHYSIOLOGY_GENE_NAMES = (
     "oxygen_transport_capacity",
@@ -40,6 +45,11 @@ PHYSIOLOGY_GENE_NAMES = (
     "maintenance_receptor_gain",
 )
 PHYSIOLOGY_GENE_COUNT = len(PHYSIOLOGY_GENE_NAMES)
+RESOURCE_METABOLISM_GENE_NAMES = tuple(
+    [f"resource_store_capacity_{index}" for index in range(4)]
+    + [f"resource_conversion_capacity_{index}" for index in range(4)]
+)
+RESOURCE_METABOLISM_GENE_COUNT = len(RESOURCE_METABOLISM_GENE_NAMES)
 
 
 @dataclass(frozen=True)
@@ -59,6 +69,8 @@ class PhysiologyPhenotype:
     maintenance_decay_capacity: np.ndarray
     mobilization_receptor_gain: np.ndarray
     maintenance_receptor_gain: np.ndarray
+    resource_store_capacity: np.ndarray
+    resource_conversion_capacity: np.ndarray
 
 
 def regulatory_physiology_enabled(cfg: SimulationConfig) -> bool:
@@ -72,11 +84,32 @@ def conservative_regulatory_physiology_enabled(cfg: SimulationConfig) -> bool:
 
     return bool(
         cfg.physiology.enabled
-        and cfg.physiology.schema == CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA
+        and cfg.physiology.schema
+        in {
+            CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA,
+            RESOURCE_METABOLISM_PHYSIOLOGY_SCHEMA,
+        }
     )
 
+def resource_metabolism_enabled(cfg: SimulationConfig) -> bool:
+    return bool(
+        cfg.physiology.enabled
+        and cfg.physiology.schema == RESOURCE_METABOLISM_PHYSIOLOGY_SCHEMA
+    )
+
+
 def physiology_gene_count(cfg: SimulationConfig) -> int:
-    return PHYSIOLOGY_GENE_COUNT if regulatory_physiology_enabled(cfg) else 0
+    if not regulatory_physiology_enabled(cfg):
+        return 0
+    return PHYSIOLOGY_GENE_COUNT + (
+        RESOURCE_METABOLISM_GENE_COUNT if resource_metabolism_enabled(cfg) else 0
+    )
+
+
+def physiology_gene_names(cfg: SimulationConfig) -> tuple[str, ...]:
+    return PHYSIOLOGY_GENE_NAMES + (
+        RESOURCE_METABOLISM_GENE_NAMES if resource_metabolism_enabled(cfg) else ()
+    )
 
 
 def _bounded_symmetric(raw: np.ndarray, half_span: float = 0.5) -> np.ndarray:
@@ -113,10 +146,20 @@ def physiology_phenotype(
             maintenance_decay_capacity=ones,
             mobilization_receptor_gain=ones,
             maintenance_receptor_gain=ones,
+            resource_store_capacity=np.zeros((values.shape[0], 4), dtype=np.float64),
+            resource_conversion_capacity=np.zeros((values.shape[0], 4), dtype=np.float64),
         )
-    raw = values[:, gene_start : gene_start + PHYSIOLOGY_GENE_COUNT]
-    if raw.shape != (values.shape[0], PHYSIOLOGY_GENE_COUNT):
+    configured_count = physiology_gene_count(cfg)
+    raw = values[:, gene_start : gene_start + configured_count]
+    if raw.shape != (values.shape[0], configured_count):
         raise ValueError("genotype does not contain the configured physiology genes")
+    resource_raw = (
+        raw[:, PHYSIOLOGY_GENE_COUNT : PHYSIOLOGY_GENE_COUNT + RESOURCE_METABOLISM_GENE_COUNT]
+        if resource_metabolism_enabled(cfg)
+        else np.zeros((values.shape[0], RESOURCE_METABOLISM_GENE_COUNT), dtype=np.float32)
+    )
+    store_base = np.asarray(cfg.physiology.resource_store_base_capacity, dtype=np.float64)[None, :]
+    conversion_base = np.asarray(cfg.physiology.resource_conversion_per_tick, dtype=np.float64)[None, :]
     return PhysiologyPhenotype(
         oxygen_transport_capacity=_bounded_symmetric(raw[:, 0]),
         oxygen_reserve_capacity=_bounded_symmetric(raw[:, 1]),
@@ -133,6 +176,16 @@ def physiology_phenotype(
         maintenance_decay_capacity=_bounded_symmetric(raw[:, 12]),
         mobilization_receptor_gain=_bounded_symmetric(raw[:, 13]),
         maintenance_receptor_gain=_bounded_symmetric(raw[:, 14]),
+        resource_store_capacity=(
+            store_base * _bounded_symmetric(resource_raw[:, :4])
+            if resource_metabolism_enabled(cfg)
+            else np.zeros((values.shape[0], 4), dtype=np.float64)
+        ),
+        resource_conversion_capacity=(
+            conversion_base * _bounded_symmetric(resource_raw[:, 4:8])
+            if resource_metabolism_enabled(cfg)
+            else np.zeros((values.shape[0], 4), dtype=np.float64)
+        ),
     )
 
 
@@ -149,17 +202,26 @@ def physiology_diagnostics(
     if not regulatory_physiology_enabled(cfg) or rows.size == 0:
         return {
             "schema": cfg.physiology.schema,
-            "gene_names": list(PHYSIOLOGY_GENE_NAMES),
-            "means": [0.0] * PHYSIOLOGY_GENE_COUNT,
-            "standard_deviations": [0.0] * PHYSIOLOGY_GENE_COUNT,
+            "gene_names": list(physiology_gene_names(cfg)),
+            "means": [0.0] * physiology_gene_count(cfg),
+            "standard_deviations": [0.0] * physiology_gene_count(cfg),
             "effective_dimensions": 0.0,
         }
     phenotype = physiology_phenotype(
         np.asarray(genotype, dtype=np.float32)[rows], cfg, gene_start=gene_start
     )
-    values = np.column_stack(
-        [np.asarray(getattr(phenotype, name), dtype=np.float64) for name in PHYSIOLOGY_GENE_NAMES]
-    )
+    scalar_values = [
+        np.asarray(getattr(phenotype, name), dtype=np.float64)
+        for name in PHYSIOLOGY_GENE_NAMES
+    ]
+    if resource_metabolism_enabled(cfg):
+        scalar_values.extend(
+            [phenotype.resource_store_capacity[:, index] for index in range(4)]
+        )
+        scalar_values.extend(
+            [phenotype.resource_conversion_capacity[:, index] for index in range(4)]
+        )
+    values = np.column_stack(scalar_values)
     centered = values - values.mean(axis=0, keepdims=True)
     covariance = centered.T @ centered / max(values.shape[0] - 1, 1)
     eigenvalues = np.clip(np.linalg.eigvalsh(covariance), 0.0, None)
@@ -168,7 +230,7 @@ def physiology_diagnostics(
     effective = total * total / squared if squared > 0.0 else 0.0
     return {
         "schema": cfg.physiology.schema,
-        "gene_names": list(PHYSIOLOGY_GENE_NAMES),
+        "gene_names": list(physiology_gene_names(cfg)),
         "means": values.mean(axis=0).tolist(),
         "standard_deviations": values.std(axis=0).tolist(),
         "effective_dimensions": effective,
@@ -204,6 +266,20 @@ def physiology_genome_energy(
         + phenotype.mobilization_receptor_gain
         + phenotype.maintenance_receptor_gain
     ) / 11.0
+    if resource_metabolism_enabled(cfg):
+        store_base = np.maximum(
+            np.asarray(cfg.physiology.resource_store_base_capacity, dtype=np.float64),
+            1.0e-12,
+        )
+        conversion_base = np.maximum(
+            np.asarray(cfg.physiology.resource_conversion_per_tick, dtype=np.float64),
+            1.0e-12,
+        )
+        resource_load = 0.5 * (
+            (phenotype.resource_store_capacity / store_base[None, :]).mean(axis=1)
+            + (phenotype.resource_conversion_capacity / conversion_base[None, :]).mean(axis=1)
+        )
+        capacity_load = 0.75 * capacity_load + 0.25 * resource_load
     rate = (
         cfg.physiology.development_energy_per_capacity
         if development
@@ -218,12 +294,17 @@ __all__ = [
     "PHYSIOLOGY_GENE_COUNT",
     "PHYSIOLOGY_GENE_NAMES",
     "REGULATORY_PHYSIOLOGY_SCHEMA",
+    "RESOURCE_METABOLISM_PHYSIOLOGY_SCHEMA",
+    "RESOURCE_METABOLISM_GENE_COUNT",
+    "RESOURCE_METABOLISM_GENE_NAMES",
     "REGULATORY_PHYSIOLOGY_SCHEMAS",
     "PhysiologyPhenotype",
     "conservative_regulatory_physiology_enabled",
     "physiology_diagnostics",
     "physiology_gene_count",
+    "physiology_gene_names",
     "physiology_genome_energy",
     "physiology_phenotype",
     "regulatory_physiology_enabled",
+    "resource_metabolism_enabled",
 ]

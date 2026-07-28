@@ -20,6 +20,7 @@ from ..differentiation.functional import (
 from ..differentiation.physiology import (
     physiology_gene_count,
     physiology_genome_energy,
+    resource_metabolism_enabled,
 )
 from se.evolution.progress import BENEFIT_FLOW_COUNT, BenefitFlowKind
 from se.knowledge import KnowledgeStepStats
@@ -63,6 +64,24 @@ class StepStats:
     )
     requested_harvest_resources: np.ndarray = field(
         default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
+    resource_stored: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
+    resource_store_overflow: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
+    resource_converted: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
+    resource_store_decay: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
+    resource_store_death_loss: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
+    resource_body_realized: np.ndarray = field(
+        default_factory=lambda: np.zeros(5, dtype=np.float64)
     )
     shared_energy: float = 0.0
     capacity_maintenance_energy: float = 0.0
@@ -181,6 +200,8 @@ class EntityState:
         self.maintenance_messenger = np.zeros(cap, dtype=np.float32)
         self.messenger_precursor = np.ones(cap, dtype=np.float32)
         self.physiology_sensor_multiplier = np.ones(cap, dtype=np.float32)
+        if resource_metabolism_enabled(cfg):
+            self.resource_store = np.zeros((cap, 4), dtype=np.float32)
         self.material = np.zeros(cap, dtype=np.float32)
         self.information_store = np.zeros(cap, dtype=np.float32)
         self.fertility = np.zeros(cap, dtype=np.float32)
@@ -408,6 +429,8 @@ class EntityState:
         self.maintenance_messenger[slots] = np.float32(self.cfg.physiology.initial_maintenance_messenger)
         self.messenger_precursor[slots] = np.float32(self.cfg.physiology.initial_messenger_precursor)
         self.physiology_sensor_multiplier[slots] = 1.0
+        if resource_metabolism_enabled(self.cfg):
+            self.resource_store[slots] = 0.0
         self.material[slots] = 0.0
         self.information_store[slots] = 0.0
         self.fertility[slots] = 0.05
@@ -563,6 +586,8 @@ class EntityState:
         ):
             raise ValueError("death event final state is stale")
         self.alive[indices] = False
+        if resource_metabolism_enabled(self.cfg):
+            self.resource_store[indices] = 0.0
         self.memory[indices] = 0.0
         self.working_memory_q[indices] = 0
         self.working_memory_previous_observation_q[indices] = 0

@@ -14,7 +14,11 @@ from .. import __version__
 from ..backend import BackendUnavailableError, resolve_backend
 from ..checkpointing import read_checkpoint_bundle, write_checkpoint_bundle
 from ..cfg import SimulationConfig
-from se.differentiation.physiology import physiology_diagnostics
+from se.differentiation.physiology import (
+    physiology_diagnostics,
+    resource_metabolism_enabled,
+)
+from se.runtime.resource_metabolism import resource_metabolism_diagnostics
 from se.subjects.control import (
     AutonomyRecoveryArbiter,
     ControlArbiter,
@@ -1197,6 +1201,11 @@ class SimulationReportingMixin:
             self.cfg,
             gene_start=ParametricPolicy.physiology_gene_start(self.cfg),
         )
+        resource_metabolism_metrics = resource_metabolism_diagnostics(
+            ent,
+            self.cfg,
+            gene_start=ParametricPolicy.physiology_gene_start(self.cfg),
+        )
         affinity_metrics = resource_affinity_diagnostics(
             ent.alive, ent.genotype, self.cfg
         )
@@ -1427,6 +1436,23 @@ class SimulationReportingMixin:
             "physiology_genetic_trait_standard_deviations": (
                 physiology_genetic_metrics["standard_deviations"]
             ),
+            **(
+                resource_metabolism_metrics
+                if resource_metabolism_enabled(self.cfg)
+                else {}
+            ),
+            **(
+                {
+                    "resource_stored_total": self.total_resource_stored.tolist(),
+                    "resource_store_overflow_total": self.total_resource_store_overflow.tolist(),
+                    "resource_converted_total": self.total_resource_converted.tolist(),
+                    "resource_store_decay_total": self.total_resource_store_decay.tolist(),
+                    "resource_store_death_loss_total": self.total_resource_store_death_loss.tolist(),
+                    "resource_body_realized_total": self.total_resource_body_realized.tolist(),
+                }
+                if resource_metabolism_enabled(self.cfg)
+                else {}
+            ),
             "functional_module_ablation_mask": (
                 self.functional_module_ablation_mask.astype(bool).tolist()
             ),
@@ -1610,6 +1636,60 @@ class SimulationReportingMixin:
             "requested_harvest_resource_1_total": float(self.total_requested_harvest_resources[1]),
             "requested_harvest_resource_2_total": float(self.total_requested_harvest_resources[2]),
             "requested_harvest_resource_3_total": float(self.total_requested_harvest_resources[3]),
+            **(
+                {
+                    **{
+                        f"resource_stored_{index}_step": float(stats.resource_stored[index])
+                        for index in range(4)
+                    },
+                    **{
+                        f"resource_stored_{index}_total": float(self.total_resource_stored[index])
+                        for index in range(4)
+                    },
+                    **{
+                        f"resource_store_overflow_{index}_step": float(stats.resource_store_overflow[index])
+                        for index in range(4)
+                    },
+                    **{
+                        f"resource_store_overflow_{index}_total": float(self.total_resource_store_overflow[index])
+                        for index in range(4)
+                    },
+                    **{
+                        f"resource_converted_{index}_step": float(stats.resource_converted[index])
+                        for index in range(4)
+                    },
+                    **{
+                        f"resource_converted_{index}_total": float(self.total_resource_converted[index])
+                        for index in range(4)
+                    },
+                    **{
+                        f"resource_store_decay_{index}_step": float(stats.resource_store_decay[index])
+                        for index in range(4)
+                    },
+                    **{
+                        f"resource_store_decay_{index}_total": float(self.total_resource_store_decay[index])
+                        for index in range(4)
+                    },
+                    **{
+                        f"resource_store_death_loss_{index}_step": float(stats.resource_store_death_loss[index])
+                        for index in range(4)
+                    },
+                    **{
+                        f"resource_store_death_loss_{index}_total": float(self.total_resource_store_death_loss[index])
+                        for index in range(4)
+                    },
+                    **{
+                        f"resource_body_realized_{index}_step": float(stats.resource_body_realized[index])
+                        for index in range(5)
+                    },
+                    **{
+                        f"resource_body_realized_{index}_total": float(self.total_resource_body_realized[index])
+                        for index in range(5)
+                    },
+                }
+                if resource_metabolism_enabled(self.cfg)
+                else {}
+            ),
             "shared_energy_step": stats.shared_energy,
             "shared_energy_total": self.total_shared_energy,
             "benefit_classification_residual_step": (
