@@ -313,3 +313,40 @@ The authoritative sequence is:
 5. release those deposits no earlier than the next tick.
 
 All transfers preserve resource-channel identity. Release is limited by external field capacity; unreleased material remains in the residual field. No policy or entity controller writes directly to the field.
+
+## v0.57 D3-D numerical settlement boundary
+
+The D3-D physical mechanism remains the v0.56 moving-target source/sink contract. v0.57 changes only authoritative measurement.
+
+```text
+tick-start external inventory
++ residue release
++ abiotic source
+- abiotic sink
+        ↓ float32 field update, diffusion and clipping
+actual pre-harvest inventory
+- admitted harvest
+        ↓ float32 segmented commit
+actual final inventory
+```
+
+Two signed diagnostics close the boundary:
+
+```text
+field settlement
+= actual pre-harvest inventory
+  - (tick-start + release + source - sink)
+
+harvest settlement
+= actual field removal - admitted harvest
+```
+
+Therefore:
+
+```text
+initial + source + release + field settlement
+= harvest + sink + final + harvest settlement
+```
+
+Both terms are numerical provenance, not biological fluxes, abiotic processes, rewards or correction forces. They never feed policy, ecology, field state, fitness, reproduction or renewal. The unadjusted physical-flux residual remains reported so numerical scale is auditable. Old v1 result files remain assessable with absent settlement terms interpreted as zero, but cannot retroactively prove closure.
+

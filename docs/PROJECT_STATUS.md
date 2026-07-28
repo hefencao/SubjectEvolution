@@ -1,12 +1,14 @@
 # SE project status
 
-Version: **0.56.0**
+Version: **0.57.0**
 
 ## Current causal chain
 
 ```text
 role-free four-channel external resource and abiotic fields
-→ persistent moving channel-specific abiotic renewal targets with explicit source/sink fluxes
+→ persistent moving channel-specific abiotic renewal targets
+→ explicit physical source / sink / release / harvest fluxes
+→ separately recorded float32 inventory settlement
 → inherited affinity and elastic capacities
 → fixed inherited functional operators and feed-forward composition
 → regulatory requests separated from physiological execution
@@ -21,47 +23,48 @@ role-free four-channel external resource and abiotic fields
 → ecological differentiation tests only after these processes create distinct demands
 ```
 
-## Supplied D3-C result
+## Supplied D3-D result
 
-The three 1500-tick seeds retain D3-C:
+The supplied three-seed, 1500-tick panel supports only the D3-D substrate claim:
 
-- store-decay deposition occurs in every seed;
-- death-carried raw-store deposition occurs;
-- residue releases in every seed;
-- external residue ledgers close in every seed;
-- storage and delayed conversion continue.
+- renewal source is observed in every seed;
+- renewal sink is observed in every seed;
+- identity-preserving external recycling closes in every seed;
+- final resource effective dimensions are about `2.86`–`2.98`;
+- the v1 open external-resource ledger is marked invalid in every seed.
 
-However, final external resource effective dimensions are only about `1.11`–`1.19`, while mean absolute channel correlations are about `0.88`–`0.92`. The recycling mechanism is therefore functioning inside an environment whose opportunity axes have largely converged.
+The final multidimensional fields are observational evidence that the moving role-free target continues to supply distinct opportunities. They do not establish migration, collection-processing specialization, coexistence, trophic transfer or an ecological role.
 
-## D3-D persistent renewal
+## v0.57 ledger correction
 
-The opt-in environment schema is:
+The v0.56 ledger accumulated source, sink, release and admitted harvest in `float64`, but the authoritative environment fields and segmented harvest commits settle in `float32`. The difference is small, signed and cumulative. It must not be relabeled as a physical source or sink.
 
-- `orthogonal-four-resource-renewal-v2`.
+v0.57 records:
 
-At tick zero it uses the same mathematical field as `orthogonal-four-resource-niche-v1`. Later ticks reuse the existing channel-specific wave vectors, amplitudes, periods and phases as moving target fractions. The world records:
+- `resource_field_roundoff_total`;
+- `resource_harvest_roundoff_total`;
+- their signed net numerical adjustment.
 
-- positive abiotic renewal source;
-- negative abiotic renewal sink;
-- harvest removal;
-- same-channel residue release;
-- final external inventory.
+The authoritative open-system identity is:
 
-The target has no entity, lineage or group feedback. Every channel uses the same equation and remains unnamed.
+```text
+initial + source + release + field settlement
+= harvest + sink + final + harvest settlement
+```
 
-A same-seed 300-tick mechanism comparison found:
+A same-seed 300-tick validation closes the corrected identity at near machine precision while retaining an explicit unadjusted residual. No state transition or ecological mechanism was altered.
 
-- v1 resource dimensions `2.681`, mean absolute correlation `0.353`;
-- v2 resource dimensions `3.697`, mean absolute correlation `0.082`.
+## Decision
 
-This confirms action on the identified field-collapse mechanism, not an ecological fitness conclusion.
+Retain D3-D and the D3-C recycling substrate. Do not advance the scientific chain solely from the old v1 result. Rerun the three 1500-tick seeds with D3-D results v2; reconsider collection-processing coupling only after corrected ledgers close and opportunity dimensions remain persistent.
 
 ## Development workflow
 
-`conda-sync` now clears `src/`, `scripts/` and `tests/` bytecode before installation and before editable verification. This prevents same-size, same-second source edits from reusing stale timestamp-based `.pyc` files. Version verification compares pyproject metadata, static source AST, imported runtime value and editable source root.
+`make conda-sync` clears project bytecode, installs the exact checkout editable, and verifies static source, imported package, installed metadata, direct URL and editable root. `make test` runs the full sharded suite. `make conda-check` repeats tests plus installed console smoke. `make release-check` audits wheel and sdist transfer separately.
 
 ## Still incomplete
 
+- a v2-schema rerun of the supplied three-seed D3-D long horizon;
 - evolved coupling between collection location, internal inventory and processing throughput;
 - migration cycles driven by moving resource opportunities and stored inventory;
 - externalization of metabolic byproducts and non-store body material;

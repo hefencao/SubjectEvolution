@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.57.0
+
+### Authoritative D3-D float32 inventory settlement
+
+- Reassesses the supplied three-seed D3-D long run: source and sink are active, external recycling closes, and resource fields remain multidimensional, while the v1 open-resource ledger fails in every seed.
+- Locates the discrepancy at the numerical measurement boundary: float32 field update and segmented harvest commit change global inventory by small signed amounts not represented in the v0.56 physical-flux ledger.
+- Records field-update and harvest-commit settlement independently for CPU, simulated-device, checkpoint and GPU synchronization paths.
+- Upgrades D3-D plan/results to v2 and reports unadjusted residual, both settlement terms, corrected residual and scale-aware relative errors.
+- Upgrades protocol audit to v25 and states the authoritative ledger with numerical settlement separate from physical source, sink, release and harvest.
+- Adds CPU/device parity, non-zero settlement, backward-compatible v1 result assessment and near-machine-precision corrected-ledger tests.
+- Confirms on a same-seed 300-tick run that the maximum relative residual falls from about `7.5e-6` to about `2.7e-16` without changing the trajectory or physical fluxes.
+- Does not add a new ecological mechanism; D3-E remains gated on a rerun of the supplied long-horizon panel under the v2 report schema.
+- Adds no named resource role, diversity reward, population rescue, lineage protection, ecological role, or causal claim from observational correlation.
+- Complete packages retain only `docs/v0.57` as a version-specific directory.
+
 ## 0.56.0
 
 ### Persistent resource opportunity and bytecode-safe editable verification

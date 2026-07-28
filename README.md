@@ -1,20 +1,39 @@
-# SE v0.56
+# SE v0.57
 
-SE is a deterministic artificial-life and subject-structure research platform. The main line now contains conservative regulatory physiology, inherited delayed resource processing, storage-constrained intake, identity-preserving external raw-material recycling, and an opt-in persistent four-channel abiotic renewal field.
+SE is a deterministic artificial-life and subject-structure research platform. The main line contains conservative regulatory physiology, inherited delayed resource processing, storage-constrained intake, identity-preserving external raw-material recycling, and an opt-in persistent four-channel abiotic renewal field.
 
-## Why v0.56
+## Why v0.57
 
-The supplied D3-C run closes the external residue cycle in all three 1500-tick seeds, so the recycling substrate is retained. Its remaining limitation is environmental: the final four resource fields have only about `1.11`–`1.19` effective dimensions and mean absolute channel correlations around `0.88`–`0.92`.
+The supplied D3-D run completed three 1500-tick seeds. Positive renewal source and negative renewal sink occurred in every seed, external recycling remained conservative, and all final fields retained multiple effective resource dimensions. The old D3-D report nevertheless marked the open external-resource ledger invalid in every seed.
 
-The cause is structural. `orthogonal-four-resource-niche-v1` uses channel-specific geometry for initialization, but its logistic regeneration equilibrium is the same uniform capacity in every cell. Common entity depletion can therefore erase the initial opportunity structure.
+The failure is a measurement-boundary defect rather than evidence of missing ecological material. The environment stores fields as `float32`, while cumulative physical fluxes are accumulated at higher precision. Field renewal/diffusion/clipping and segmented harvest commits therefore produce small signed inventory settlement terms. v0.56 omitted those terms from the authoritative ledger.
 
-v0.56 adds opt-in `orthogonal-four-resource-renewal-v2`, which reuses the existing unnamed wave vectors, periods, phases and amplitudes as a continuously moving abiotic target. Positive and negative renewal fluxes are recorded separately and enter an explicit open-system resource ledger. No resource roles, diversity reward, lineage protection or population feedback are added.
+v0.57 records two independent numerical settlement terms without changing trajectories:
 
-v0.56 also fixes the repeated `conda-sync` version mismatch. The cause was timestamp-based stale Python bytecode: same-length version edits made within a preserved one-second mtime window could leave an old `se.__version__` executable even while `se.__file__` pointed to current source. `conda-sync` and editable verification now clear project bytecode before importing the package, and a regression test reproduces the exact collision.
+- field-update settlement: actual post-update inventory minus the inventory implied by source, sink and residue release;
+- harvest-commit settlement: actual field removal minus intended admitted harvest.
+
+The corrected ledger is:
+
+```text
+initial external resource
++ abiotic renewal source
++ residue release
++ field-update settlement
+=
+harvested resource
++ abiotic renewal sink
++ final external resource
++ harvest-commit settlement
+```
+
+A same-seed 300-tick validation reduced maximum relative ledger residual from about `7.5e-6` to `2.7e-16`. Physical source, sink, release, harvest, final inventory and the simulated trajectory are unchanged.
+
+This release deliberately does not add collection-processing coupling, migration, trophic transfer, resource roles, diversity protection, lineage protection or population feedback. The supplied long run should be rerun with the v2 report schema before the D3-E gate is reconsidered.
 
 ## Workflow
 
-After metadata, entry-point or dependency changes:
+After metadata, entry-point, dependency or package-layout changes:
 
 ```bash
 make conda-sync
@@ -39,16 +58,16 @@ make release-check
 se-d3-resource-renewal \
   --config configs/mvp_short_d3d_persistent_resource_renewal_longrun.json \
   --seeds 56001,56002,56003 \
-  --output analyses/d3d_persistent_resource_renewal_1500 \
+  --output analyses/d3d_persistent_resource_renewal_1500_v057 \
   --backend gpu \
   --until-tick 1500
 ```
 
-D3-D establishes persistent external opportunity axes. It is not evidence for migration, collection-processing specialization, coexistence, trophic differentiation or named resource roles.
+D3-D tests persistent role-free external opportunity and open-system accounting. It is not evidence for migration, collection-processing specialization, coexistence, trophic differentiation or named resource roles.
 
 ## Current version documents
 
-- [D3-C result interpretation](docs/v0.56/D3C_RESULT_INTERPRETATION.md)
-- [D3-D design](docs/v0.56/D3D_PERSISTENT_RESOURCE_RENEWAL_DESIGN.md)
-- [D3-D run plan](docs/v0.56/D3D_PERSISTENT_RESOURCE_RENEWAL_PLAN.md)
-- [Paired renewal mechanism report](docs/v0.56/D3D_RENEWAL_MECHANISM_REPORT.md)
+- [Supplied D3-D result interpretation](docs/v0.57/D3D_SUPPLIED_RESULT_INTERPRETATION.md)
+- [Numerical settlement design](docs/v0.57/D3D_NUMERICAL_SETTLEMENT_DESIGN.md)
+- [300-tick validation](docs/v0.57/D3D_300_TICK_VALIDATION_REPORT.md)
+- [Implementation report](docs/v0.57/IMPLEMENTATION_REPORT.md)

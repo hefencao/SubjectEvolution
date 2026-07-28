@@ -309,6 +309,10 @@ class HybridGpuRuntime:
                 "resource_renewal_sink_step",
                 "total_resource_renewal_source",
                 "total_resource_renewal_sink",
+                "resource_field_roundoff_step",
+                "total_resource_field_roundoff",
+                "resource_harvest_roundoff_step",
+                "total_resource_harvest_roundoff",
             ):
                 setattr(
                     self.environment,
@@ -343,6 +347,10 @@ class HybridGpuRuntime:
                 "resource_renewal_sink_step",
                 "total_resource_renewal_source",
                 "total_resource_renewal_sink",
+                "resource_field_roundoff_step",
+                "total_resource_field_roundoff",
+                "resource_harvest_roundoff_step",
+                "total_resource_harvest_roundoff",
             ):
                 setattr(
                     environment,

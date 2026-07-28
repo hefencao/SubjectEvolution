@@ -30,7 +30,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v24"
+SCHEMA = "structural-measurement-protocol-audit-v25"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -548,13 +548,15 @@ def build_protocol_audit(
                 "stable_trophic_claim": False,
             },
             "persistent_resource_renewal_experiment": {
-                "plan_schema": "d3-persistent-resource-renewal-plan-v1",
-                "result_schema": "d3-persistent-resource-renewal-results-v1",
+                "plan_schema": "d3-persistent-resource-renewal-plan-v2",
+                "result_schema": "d3-persistent-resource-renewal-results-v2",
                 "single_active_population_per_seed": True,
                 "moving_target_reuses_role_free_channel_waves": True,
                 "source_and_sink_recorded_separately": True,
+                "float32_inventory_roundoff_recorded_separately": True,
                 "external_resource_ledger": (
-                    "initial + renewal source + residue release = harvest + renewal sink + final"
+                    "initial + renewal source + residue release + field roundoff "
+                    "= harvest + renewal sink + final + harvest roundoff"
                 ),
                 "entity_lineage_and_group_feedback": False,
                 "named_resource_roles": False,

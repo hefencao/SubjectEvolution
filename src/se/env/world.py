@@ -76,6 +76,18 @@ class Environment:
             self.total_resource_renewal_sink = np.zeros(
                 self.RESOURCE_CHANNELS, dtype=np.float64
             )
+            self.resource_field_roundoff_step = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
+            self.total_resource_field_roundoff = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
+            self.resource_harvest_roundoff_step = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
+            self.total_resource_harvest_roundoff = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
         self.hazard = self._hazard_pattern(0)
         self.mortality_trace = np.zeros((gy, gx), dtype=np.float32)
         initialize_resource_residue(self)
@@ -381,8 +393,12 @@ class Environment:
         ).astype(np.float32)
 
     def update(self, tick: int) -> None:
+        persistent = persistent_orthogonal_renewal_enabled(self.cfg)
+        if persistent:
+            resource_total_before = self.resources.sum(axis=(1, 2), dtype=np.float64)
+            self.resource_harvest_roundoff_step.fill(0.0)
         update_resource_recycling(self)
-        if persistent_orthogonal_renewal_enabled(self.cfg):
+        if persistent:
             resources = self._update_persistent_resource_renewal(tick)
         else:
             seasonal = self._seasonal_multiplier(tick)
@@ -400,6 +416,17 @@ class Environment:
                 resources, self.cfg.environment.resource_diffusion_rates, xp=np
             )
         self.resources = np.clip(resources, 0.0, self.capacity).astype(np.float32)
+        if persistent:
+            resource_total_after = self.resources.sum(axis=(1, 2), dtype=np.float64)
+            released = np.asarray(self.last_resource_residue_released, dtype=np.float64)
+            self.resource_field_roundoff_step = (
+                resource_total_after
+                - resource_total_before
+                - released
+                - self.resource_renewal_source_step
+                + self.resource_renewal_sink_step
+            )
+            self.total_resource_field_roundoff += self.resource_field_roundoff_step
         self.hazard = self._hazard_pattern(tick)
         self.update_physiology_fields(tick)
         self._update_mortality_trace()
@@ -557,12 +584,21 @@ class Environment:
         if cells.size == 0:
             return
         cell_count = self.cfg.world.grid_x * self.cfg.world.grid_y
+        persistent = persistent_orthogonal_renewal_enabled(self.cfg)
+        if persistent:
+            resource_total_before = self.resources.sum(axis=(1, 2), dtype=np.float64)
+            intended = np.asarray(gathered, dtype=np.float64).sum(axis=0)
         flat = self.resources.reshape(self.RESOURCE_CHANNELS, -1)
         for channel in range(self.RESOURCE_CHANNELS):
             total_taken = stable_segmented_sum(
                 cells, gathered[:, channel], cell_count, dtype=np.float32
             )
             flat[channel] = np.maximum(flat[channel] - total_taken, 0.0)
+        if persistent:
+            resource_total_after = self.resources.sum(axis=(1, 2), dtype=np.float64)
+            roundoff = resource_total_before - resource_total_after - intended
+            self.resource_harvest_roundoff_step += roundoff
+            self.total_resource_harvest_roundoff += roundoff
 
     def harvest(self, cell_ids: np.ndarray, rates: np.ndarray) -> np.ndarray:
         """Backward-compatible resolve-and-commit convenience method."""

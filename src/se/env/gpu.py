@@ -87,6 +87,18 @@ class DeviceEnvironment:
             self.total_resource_renewal_sink = np.zeros(
                 self.RESOURCE_CHANNELS, dtype=np.float64
             )
+            self.resource_field_roundoff_step = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
+            self.total_resource_field_roundoff = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
+            self.resource_harvest_roundoff_step = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
+            self.total_resource_harvest_roundoff = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
         self.hazard = self._hazard_pattern(0)
         self.mortality_trace = xp.zeros((gy, gx), dtype=xp.float32)
         initialize_resource_residue(self)
@@ -344,9 +356,18 @@ class DeviceEnvironment:
         ).astype(xp.float32)
 
     def update(self, tick: int) -> None:
-        update_resource_recycling(self)
         xp = self.backend.xp
-        if persistent_orthogonal_renewal_enabled(self.cfg):
+        persistent = persistent_orthogonal_renewal_enabled(self.cfg)
+        if persistent:
+            resource_total_before = np.asarray(
+                self.backend.to_numpy(
+                    self.resources.sum(axis=(1, 2), dtype=xp.float64)
+                ),
+                dtype=np.float64,
+            )
+            self.resource_harvest_roundoff_step.fill(0.0)
+        update_resource_recycling(self)
+        if persistent:
             resources = self._update_persistent_resource_renewal(tick)
         else:
             seasonal = self._seasonal_multiplier(tick)
@@ -360,6 +381,25 @@ class DeviceEnvironment:
                 resources, self.cfg.environment.resource_diffusion_rates, xp=xp
             )
         self.resources = xp.clip(resources, 0.0, self.capacity).astype(xp.float32)
+        if persistent:
+            resource_total_after = np.asarray(
+                self.backend.to_numpy(
+                    self.resources.sum(axis=(1, 2), dtype=xp.float64)
+                ),
+                dtype=np.float64,
+            )
+            released = np.asarray(
+                self.backend.to_numpy(self.last_resource_residue_released),
+                dtype=np.float64,
+            )
+            self.resource_field_roundoff_step = (
+                resource_total_after
+                - resource_total_before
+                - released
+                - self.resource_renewal_source_step
+                + self.resource_renewal_sink_step
+            )
+            self.total_resource_field_roundoff += self.resource_field_roundoff_step
         self.hazard = self._hazard_pattern(tick)
         self._update_mortality_trace()
 
@@ -501,6 +541,17 @@ class DeviceEnvironment:
         amounts = xp.asarray(gathered, dtype=xp.float32)
         if int(cells.size) == 0:
             return
+        persistent = persistent_orthogonal_renewal_enabled(self.cfg)
+        if persistent:
+            resource_total_before = np.asarray(
+                self.backend.to_numpy(
+                    self.resources.sum(axis=(1, 2), dtype=xp.float64)
+                ),
+                dtype=np.float64,
+            )
+            intended = np.asarray(
+                self.backend.to_numpy(amounts), dtype=np.float64
+            ).sum(axis=0)
         cell_count = self.cfg.world.grid_x * self.cfg.world.grid_y
         flat = self.resources.reshape(self.RESOURCE_CHANNELS, -1)
         for channel in range(self.RESOURCE_CHANNELS):
@@ -512,6 +563,16 @@ class DeviceEnvironment:
                 dtype=xp.float32,
             )
             flat[channel] = xp.maximum(flat[channel] - total_taken, 0.0)
+        if persistent:
+            resource_total_after = np.asarray(
+                self.backend.to_numpy(
+                    self.resources.sum(axis=(1, 2), dtype=xp.float64)
+                ),
+                dtype=np.float64,
+            )
+            roundoff = resource_total_before - resource_total_after - intended
+            self.resource_harvest_roundoff_step += roundoff
+            self.total_resource_harvest_roundoff += roundoff
 
     def to_numpy(self, value: Any) -> Any:
         return self.backend.to_numpy(value)

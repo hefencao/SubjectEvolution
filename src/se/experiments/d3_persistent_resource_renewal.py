@@ -31,8 +31,8 @@ from se.policy import ParametricPolicy
 from se.runtime.resource_metabolism import resource_metabolism_diagnostics
 from se.runtime.sim import Simulation
 
-PLAN_SCHEMA = "d3-persistent-resource-renewal-plan-v1"
-RESULT_SCHEMA = "d3-persistent-resource-renewal-results-v1"
+PLAN_SCHEMA = "d3-persistent-resource-renewal-plan-v2"
+RESULT_SCHEMA = "d3-persistent-resource-renewal-results-v2"
 RENEWAL_SCHEMA = "moving-target-source-sink-v2"
 
 
@@ -58,6 +58,7 @@ def build_plan(seeds: Iterable[int], horizon: int) -> dict[str, Any]:
         "renewal_schema": RENEWAL_SCHEMA,
         "moving_target_reuses_role_free_channel_waves": True,
         "renewal_source_and_sink_recorded_separately": True,
+        "float32_inventory_roundoff_recorded_separately": True,
         "entity_lineage_and_group_feedback": False,
         "identity_preserving_external_recycling_retained": True,
         "minimum_external_residue_delay_ticks": 1,
@@ -94,6 +95,12 @@ def _snapshot(
             "resource_initial_total": environment.initial_resource_total.tolist(),
             "resource_renewal_source_total": environment.total_resource_renewal_source.tolist(),
             "resource_renewal_sink_total": environment.total_resource_renewal_sink.tolist(),
+            "resource_field_roundoff_total": environment.total_resource_field_roundoff.tolist(),
+            "resource_harvest_roundoff_total": environment.total_resource_harvest_roundoff.tolist(),
+            "resource_inventory_numerical_adjustment_total": (
+                environment.total_resource_field_roundoff
+                - environment.total_resource_harvest_roundoff
+            ).tolist(),
             "resource_final_total": np.asarray(environment.resources, dtype=np.float64).sum(
                 axis=(1, 2)
             ).tolist(),
@@ -119,22 +126,45 @@ def _resource_ledger(run: dict[str, Any]) -> dict[str, Any]:
     harvested = np.asarray(final["resource_harvested_total"], dtype=np.float64)
     sink = np.asarray(final["resource_renewal_sink_total"], dtype=np.float64)
     remaining = np.asarray(final["resource_final_total"], dtype=np.float64)
-    residual = initial + source + released - harvested - sink - remaining
+    field_roundoff = np.asarray(
+        final.get("resource_field_roundoff_total", [0.0] * 4), dtype=np.float64
+    )
+    harvest_roundoff = np.asarray(
+        final.get("resource_harvest_roundoff_total", [0.0] * 4), dtype=np.float64
+    )
+    numerical_adjustment = field_roundoff - harvest_roundoff
+    unadjusted_residual = initial + source + released - harvested - sink - remaining
+    residual = unadjusted_residual + numerical_adjustment
     scale = np.maximum(
         1.0,
         np.maximum.reduce(
-            [np.abs(initial), np.abs(source), np.abs(harvested), np.abs(remaining)]
+            [
+                np.abs(initial),
+                np.abs(source),
+                np.abs(released),
+                np.abs(harvested),
+                np.abs(sink),
+                np.abs(remaining),
+            ]
         ),
     )
     relative = np.abs(residual) / scale
+    unadjusted_relative = np.abs(unadjusted_residual) / scale
+    adjustment_fraction = np.abs(numerical_adjustment) / scale
     valid = bool(
         np.all(np.isfinite(residual))
-        and np.all(relative <= 5.0e-6)
+        and np.all(relative <= 5.0e-10)
     )
     return {
         "seed": int(run["seed"]),
+        "unadjusted_residual": unadjusted_residual.tolist(),
+        "field_roundoff": field_roundoff.tolist(),
+        "harvest_roundoff": harvest_roundoff.tolist(),
+        "numerical_adjustment": numerical_adjustment.tolist(),
         "residual": residual.tolist(),
+        "unadjusted_relative_error": unadjusted_relative.tolist(),
         "relative_error": relative.tolist(),
+        "numerical_adjustment_fraction": adjustment_fraction.tolist(),
         "valid": valid,
     }
 
@@ -191,7 +221,7 @@ def _payload(plan: dict[str, Any], runs: list[dict[str, Any]]) -> dict[str, Any]
         "decision_scope": "persistent-abiotic-opportunity-substrate-not-niche-proof",
         "ecological_differentiation_claim": False,
         "interpretation_boundary": (
-            "This run tests whether four role-free resource channels retain distinct moving external renewal opportunities while delayed conversion and identity-preserving recycling remain conservative. "
+            "This run tests whether four role-free resource channels retain distinct moving external renewal opportunities while delayed conversion and identity-preserving recycling remain conservative. Float32 inventory settlement is reported separately from physical source, sink, release and harvest fluxes. "
             "It does not establish migration, collection-processing specialization, coexistence, trophic transfer, or named resource roles."
         ),
     }
