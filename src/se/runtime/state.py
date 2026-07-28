@@ -80,6 +80,28 @@ class StepStats:
     resource_converted: np.ndarray = field(
         default_factory=lambda: np.zeros(4, dtype=np.float64)
     )
+    resource_processing_requested: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
+    resource_processing_supported: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
+    resource_processing_support_limited: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
+    resource_processing_support_accelerated: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
+    resource_processing_energy_rejected: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
+    resource_processing_support_weighted_sum: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
+    resource_processing_support_weight: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
+    resource_processing_energy_cost: float = 0.0
     resource_store_decay: np.ndarray = field(
         default_factory=lambda: np.zeros(4, dtype=np.float64)
     )

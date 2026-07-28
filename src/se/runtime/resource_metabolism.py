@@ -20,6 +20,7 @@ from se.differentiation.physiology import (
     resource_metabolism_enabled,
     storage_constrained_intake_enabled,
     external_resource_recycling_enabled,
+    spatial_processing_enabled,
 )
 from se.env.niches import AFFINITY_SCALE
 from se.env.recycling import deposit_resource_residue
@@ -36,6 +37,14 @@ class ResourceMetabolismStep:
     decayed: np.ndarray
     body_realized: np.ndarray
     decayed_by_entity: np.ndarray
+    processing_requested: np.ndarray
+    processing_supported: np.ndarray
+    processing_support_limited: np.ndarray
+    processing_support_accelerated: np.ndarray
+    processing_energy_rejected: np.ndarray
+    processing_support_weighted_sum: np.ndarray
+    processing_support_weight: np.ndarray
+    processing_energy_cost: float
 
     @classmethod
     def empty(cls) -> "ResourceMetabolismStep":
@@ -46,6 +55,16 @@ class ResourceMetabolismStep:
             decayed=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
             body_realized=np.zeros(BODY_OUTCOMES, dtype=np.float64),
             decayed_by_entity=np.zeros((0, RESOURCE_CHANNELS), dtype=np.float64),
+            processing_requested=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
+            processing_supported=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
+            processing_support_limited=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
+            processing_support_accelerated=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
+            processing_energy_rejected=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
+            processing_support_weighted_sum=np.zeros(
+                RESOURCE_CHANNELS, dtype=np.float64
+            ),
+            processing_support_weight=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
+            processing_energy_cost=0.0,
         )
 
 
@@ -179,6 +198,7 @@ def settle_resource_metabolism(
     *,
     genotype: np.ndarray,
     gene_start: int,
+    processing_support: np.ndarray | None = None,
 ) -> ResourceMetabolismStep:
     """Convert bounded raw stores and decay the unprocessed remainder."""
 
@@ -190,7 +210,64 @@ def settle_resource_metabolism(
     conversion_capacity = np.asarray(
         phenotype.resource_conversion_capacity, dtype=np.float64
     )
-    converted = np.minimum(np.maximum(store_before, 0.0), conversion_capacity)
+    if spatial_processing_enabled(cfg):
+        support = np.asarray(processing_support, dtype=np.float64)
+        if support.shape != store_before.shape:
+            raise ValueError("processing support must be shaped [N, 4]")
+        if not np.all(np.isfinite(support)) or np.any(support <= 0.0):
+            raise ValueError("processing support must be finite and positive")
+        processing_requested_by_entity = np.minimum(
+            np.maximum(store_before, 0.0), conversion_capacity
+        )
+        processing_supported_by_entity = np.minimum(
+            np.maximum(store_before, 0.0), conversion_capacity * support
+        )
+        processing_support_limited_by_entity = np.maximum(
+            processing_requested_by_entity - processing_supported_by_entity, 0.0
+        )
+        processing_support_accelerated_by_entity = np.maximum(
+            processing_supported_by_entity - processing_requested_by_entity, 0.0
+        )
+        energy_rates = np.asarray(
+            cfg.physiology.resource_processing_energy_per_unit,
+            dtype=np.float64,
+        )
+        requested_energy = processing_supported_by_entity @ energy_rates
+        available_energy = np.maximum(
+            np.asarray(entities.energy[rows], dtype=np.float64), 0.0
+        )
+        energy_scale = np.ones(rows.size, dtype=np.float64)
+        constrained = requested_energy > available_energy
+        energy_scale[constrained] = (
+            available_energy[constrained]
+            / np.maximum(requested_energy[constrained], 1.0e-30)
+        )
+        converted = processing_supported_by_entity * energy_scale[:, None]
+        processing_energy_rejected_by_entity = np.maximum(
+            processing_supported_by_entity - converted, 0.0
+        )
+        processing_energy_cost_by_entity = converted @ energy_rates
+        entities.energy[rows] = np.maximum(
+            available_energy - processing_energy_cost_by_entity, 0.0
+        ).astype(np.float32)
+        processing_support_weighted_sum = np.sum(
+            support * np.maximum(store_before, 0.0), axis=0, dtype=np.float64
+        )
+        processing_support_weight = np.sum(
+            np.maximum(store_before, 0.0), axis=0, dtype=np.float64
+        )
+    else:
+        converted = np.minimum(np.maximum(store_before, 0.0), conversion_capacity)
+        processing_requested_by_entity = np.zeros_like(store_before)
+        processing_supported_by_entity = np.zeros_like(store_before)
+        processing_support_limited_by_entity = np.zeros_like(store_before)
+        processing_support_accelerated_by_entity = np.zeros_like(store_before)
+        processing_energy_rejected_by_entity = np.zeros_like(store_before)
+        processing_energy_cost_by_entity = np.zeros(rows.size, dtype=np.float64)
+        processing_support_weighted_sum = np.zeros(
+            RESOURCE_CHANNELS, dtype=np.float64
+        )
+        processing_support_weight = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
     after_conversion = np.maximum(store_before - converted, 0.0)
     decay_rate = np.asarray(
         cfg.physiology.resource_store_decay_per_tick, dtype=np.float64
@@ -244,6 +321,26 @@ def settle_resource_metabolism(
         decayed=decayed.sum(axis=0, dtype=np.float64),
         body_realized=realized.sum(axis=0, dtype=np.float64),
         decayed_by_entity=decayed,
+        processing_requested=processing_requested_by_entity.sum(
+            axis=0, dtype=np.float64
+        ),
+        processing_supported=processing_supported_by_entity.sum(
+            axis=0, dtype=np.float64
+        ),
+        processing_support_limited=processing_support_limited_by_entity.sum(
+            axis=0, dtype=np.float64
+        ),
+        processing_support_accelerated=processing_support_accelerated_by_entity.sum(
+            axis=0, dtype=np.float64
+        ),
+        processing_energy_rejected=processing_energy_rejected_by_entity.sum(
+            axis=0, dtype=np.float64
+        ),
+        processing_support_weighted_sum=processing_support_weighted_sum,
+        processing_support_weight=processing_support_weight,
+        processing_energy_cost=float(
+            processing_energy_cost_by_entity.sum(dtype=np.float64)
+        ),
     )
 
 
@@ -317,6 +414,28 @@ def initialize_resource_metabolism_state(simulation: Any) -> None:
     simulation.total_resource_store_decay = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
     simulation.total_resource_store_death_loss = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
     simulation.total_resource_body_realized = np.zeros(BODY_OUTCOMES, dtype=np.float64)
+    simulation.total_resource_processing_requested = np.zeros(
+        RESOURCE_CHANNELS, dtype=np.float64
+    )
+    simulation.total_resource_processing_supported = np.zeros(
+        RESOURCE_CHANNELS, dtype=np.float64
+    )
+    simulation.total_resource_processing_support_limited = np.zeros(
+        RESOURCE_CHANNELS, dtype=np.float64
+    )
+    simulation.total_resource_processing_support_accelerated = np.zeros(
+        RESOURCE_CHANNELS, dtype=np.float64
+    )
+    simulation.total_resource_processing_energy_rejected = np.zeros(
+        RESOURCE_CHANNELS, dtype=np.float64
+    )
+    simulation.total_resource_processing_support_weighted_sum = np.zeros(
+        RESOURCE_CHANNELS, dtype=np.float64
+    )
+    simulation.total_resource_processing_support_weight = np.zeros(
+        RESOURCE_CHANNELS, dtype=np.float64
+    )
+    simulation.total_resource_processing_energy_cost = 0.0
     if external_resource_recycling_enabled(simulation.cfg):
         simulation.total_resource_residue_deposited = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
         simulation.total_resource_residue_released = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
@@ -329,19 +448,64 @@ def settle_resource_metabolism_before_step(simulation: Any, stats: Any) -> None:
     if not resource_metabolism_enabled(simulation.cfg):
         return
     rows = np.flatnonzero(simulation.entities.alive).astype(np.int32)
+    processing_support = None
+    if spatial_processing_enabled(simulation.cfg) and rows.size:
+        if simulation.resource_processing_support_ablation_enabled:
+            processing_support = np.ones(
+                (rows.size, RESOURCE_CHANNELS), dtype=np.float32
+            )
+        else:
+            cells = np.asarray(
+                simulation.spatial.cell_ids(
+                    simulation.entities.x[rows], simulation.entities.y[rows]
+                ),
+                dtype=np.int32,
+            )
+            processing_support = simulation.environment.resource_processing_support_for_cells(
+                cells, tick=simulation.tick
+            )
     step = settle_resource_metabolism(
         simulation.entities,
         rows,
         simulation.cfg,
         genotype=simulation.entities.genotype[rows],
         gene_start=simulation.policy.physiology_gene_start(simulation.cfg),
+        processing_support=processing_support,
     )
     stats.resource_converted = step.converted
     stats.resource_store_decay = step.decayed
     stats.resource_body_realized = step.body_realized
+    stats.resource_processing_requested = step.processing_requested
+    stats.resource_processing_supported = step.processing_supported
+    stats.resource_processing_support_limited = step.processing_support_limited
+    stats.resource_processing_support_accelerated = step.processing_support_accelerated
+    stats.resource_processing_energy_rejected = step.processing_energy_rejected
+    stats.resource_processing_support_weighted_sum = (
+        step.processing_support_weighted_sum
+    )
+    stats.resource_processing_support_weight = step.processing_support_weight
+    stats.resource_processing_energy_cost = step.processing_energy_cost
     simulation.total_resource_converted += step.converted
     simulation.total_resource_store_decay += step.decayed
     simulation.total_resource_body_realized += step.body_realized
+    simulation.total_resource_processing_requested += step.processing_requested
+    simulation.total_resource_processing_supported += step.processing_supported
+    simulation.total_resource_processing_support_limited += (
+        step.processing_support_limited
+    )
+    simulation.total_resource_processing_support_accelerated += (
+        step.processing_support_accelerated
+    )
+    simulation.total_resource_processing_energy_rejected += (
+        step.processing_energy_rejected
+    )
+    simulation.total_resource_processing_support_weighted_sum += (
+        step.processing_support_weighted_sum
+    )
+    simulation.total_resource_processing_support_weight += (
+        step.processing_support_weight
+    )
+    simulation.total_resource_processing_energy_cost += step.processing_energy_cost
     if external_resource_recycling_enabled(simulation.cfg) and rows.size:
         cells = np.asarray(
             simulation.spatial.cell_ids(

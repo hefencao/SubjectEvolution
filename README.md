@@ -1,39 +1,25 @@
-# SE v0.57
+# SE v0.58
 
-SE is a deterministic artificial-life and subject-structure research platform. The main line contains conservative regulatory physiology, inherited delayed resource processing, storage-constrained intake, identity-preserving external raw-material recycling, and an opt-in persistent four-channel abiotic renewal field.
+SE is a deterministic artificial-life and subject-structure research platform. The current main line combines conservative regulatory physiology, inherited delayed resource processing, storage-constrained intake, identity-preserving external raw-material recycling, persistent four-channel abiotic renewal, and an opt-in costed spatial processing substrate.
 
-## Why v0.57
+## Why v0.58
 
-The supplied D3-D run completed three 1500-tick seeds. Positive renewal source and negative renewal sink occurred in every seed, external recycling remained conservative, and all final fields retained multiple effective resource dimensions. The old D3-D report nevertheless marked the open external-resource ledger invalid in every seed.
+The supplied D3-D v2 rerun completed seeds `56001`, `56002`, and `56003` to tick 1500. The corrected external-resource ledger and external-recycling ledger close in every seed, while final resource effective dimensions remain about `2.86`–`2.98`. This clears the measurement gate for a minimal collection-processing coupling, but it does not establish migration, specialization, coexistence, trophic transfer, or ecological roles.
 
-The failure is a measurement-boundary defect rather than evidence of missing ecological material. The environment stores fields as `float32`, while cumulative physical fluxes are accumulated at higher precision. Field renewal/diffusion/clipping and segmented harvest commits therefore produce small signed inventory settlement terms. v0.56 omitted those terms from the authoritative ledger.
+D3-E introduces a role-free abiotic processing-support field:
 
-v0.57 records two independent numerical settlement terms without changing trajectories:
+- it reuses the persistent four-channel wave basis with a quarter-cycle phase shift;
+- it changes only conversion throughput of raw material already held in internal stores;
+- every converted unit pays a configured energy cost before body outcomes are realized;
+- energy shortage scales all candidate channel conversions proportionally;
+- `neutralize-spatial-processing-support` fixes support at `1.0` while preserving costs, genes, resource fields, and checkpoint state;
+- the paired experiment restores both branches from the same tick-0 full-world checkpoint.
 
-- field-update settlement: actual post-update inventory minus the inventory implied by source, sink and residue release;
-- harvest-commit settlement: actual field removal minus intended admitted harvest.
-
-The corrected ledger is:
-
-```text
-initial external resource
-+ abiotic renewal source
-+ residue release
-+ field-update settlement
-=
-harvested resource
-+ abiotic renewal sink
-+ final external resource
-+ harvest-commit settlement
-```
-
-A same-seed 300-tick validation reduced maximum relative ledger residual from about `7.5e-6` to `2.7e-16`. Physical source, sink, release, harvest, final inventory and the simulated trajectory are unchanged.
-
-This release deliberately does not add collection-processing coupling, migration, trophic transfer, resource roles, diversity protection, lineage protection or population feedback. The supplied long run should be rerun with the v2 report schema before the D3-E gate is reconsidered.
+No reward is added for moving, maintaining diversity, surviving, specializing, or occupying a particular location. The new experiment reports paired differences but does not turn finite-seed signs into ecological claims.
 
 ## Workflow
 
-After metadata, entry-point, dependency or package-layout changes:
+After metadata, entry-point, dependency, or package-layout changes:
 
 ```bash
 make conda-sync
@@ -52,22 +38,21 @@ Artifact audit:
 make release-check
 ```
 
-## Run D3-D
+## Run D3-E
 
 ```bash
-se-d3-resource-renewal \
-  --config configs/mvp_short_d3d_persistent_resource_renewal_longrun.json \
-  --seeds 56001,56002,56003 \
-  --output analyses/d3d_persistent_resource_renewal_1500_v057 \
+se-d3-spatial-processing \
+  --config configs/mvp_short_d3e_spatial_processing_longrun.json \
+  --seeds 58001,58002,58003 \
+  --output analyses/d3e_spatial_processing_1500 \
   --backend gpu \
   --until-tick 1500
 ```
 
-D3-D tests persistent role-free external opportunity and open-system accounting. It is not evidence for migration, collection-processing specialization, coexistence, trophic differentiation or named resource roles.
+Each seed produces an active spatial-support branch and a cost-preserving neutral-support branch from one shared tick-0 checkpoint.
 
 ## Current version documents
 
-- [Supplied D3-D result interpretation](docs/v0.57/D3D_SUPPLIED_RESULT_INTERPRETATION.md)
-- [Numerical settlement design](docs/v0.57/D3D_NUMERICAL_SETTLEMENT_DESIGN.md)
-- [300-tick validation](docs/v0.57/D3D_300_TICK_VALIDATION_REPORT.md)
-- [Implementation report](docs/v0.57/IMPLEMENTATION_REPORT.md)
+- [D3-E design](docs/v0.58/D3E_SPATIAL_PROCESSING_DESIGN.md)
+- [Supplied D3-D v2 result](docs/v0.58/D3D_SUPPLIED_RESULTS_V2.md)
+- [Implementation report](docs/v0.58/IMPLEMENTATION_REPORT.md)

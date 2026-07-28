@@ -1,76 +1,77 @@
 # SE project status
 
-Version: **0.57.0**
+Version: **0.58.0**
 
 ## Current causal chain
 
 ```text
 role-free four-channel external resource and abiotic fields
 → persistent moving channel-specific abiotic renewal targets
-→ explicit physical source / sink / release / harvest fluxes
+→ explicit source / sink / release / harvest fluxes
 → separately recorded float32 inventory settlement
 → inherited affinity and elastic capacities
 → fixed inherited functional operators and feed-forward composition
 → regulatory requests separated from physiological execution
-→ inherited transport / reserve / conversion / fatigue / repair / messenger parameters
-→ conservative non-negative physiological flow ledger
+→ conservative physiological flow ledger
 → inherited bounded raw-resource stores
-→ at least one-tick delayed conversion through the existing resource-effect matrix
-→ storage-constrained environmental intake before resource commit
+→ at least one-tick delayed conversion
+→ storage-constrained environmental intake
 → identity-preserving external residual-material deposition, diffusion and release
-→ spatial separation of collection and processing opportunities
-→ broader body decomposition / excretion and entity-to-entity material transfer
-→ ecological differentiation tests only after these processes create distinct demands
+→ phase-shifted abiotic processing support applied only after storage
+→ explicit per-unit conversion energy cost
+→ shared-checkpoint support neutralization
+→ response and movement audits before any ecological differentiation claim
 ```
 
-## Supplied D3-D result
+## Supplied D3-D v2 result
 
-The supplied three-seed, 1500-tick panel supports only the D3-D substrate claim:
+The supplied three-seed, 1500-tick panel supports the D3-D substrate claim only:
 
-- renewal source is observed in every seed;
-- renewal sink is observed in every seed;
-- identity-preserving external recycling closes in every seed;
-- final resource effective dimensions are about `2.86`–`2.98`;
-- the v1 open external-resource ledger is marked invalid in every seed.
+- renewal source and sink occur in every seed;
+- corrected external-resource and external-recycling ledgers close in every seed;
+- final effective resource dimensions remain approximately `2.86`–`2.98`;
+- no entity, lineage, or group feedback shapes the renewal target;
+- no named resource role or diversity protection is enabled.
 
-The final multidimensional fields are observational evidence that the moving role-free target continues to supply distinct opportunities. They do not establish migration, collection-processing specialization, coexistence, trophic transfer or an ecological role.
+This is enough to proceed to a bounded coupling experiment. It is not evidence of migration, collection-processing specialization, coexistence, trophic transfer, or ecotypes.
 
-## v0.57 ledger correction
+## v0.58 decision
 
-The v0.56 ledger accumulated source, sink, release and admitted harvest in `float64`, but the authoritative environment fields and segmented harvest commits settle in `float32`. The difference is small, signed and cumulative. It must not be relabeled as a physical source or sink.
+Add D3-E as an opt-in substrate rather than an ecological conclusion. The new field is non-material and abiotic. It multiplies inherited raw-store conversion throughput after acquisition, and its quarter-cycle phase shift creates locations where collection and processing opportunity need not coincide.
 
-v0.57 records:
+The mechanism has three required boundaries:
 
-- `resource_field_roundoff_total`;
-- `resource_harvest_roundoff_total`;
-- their signed net numerical adjustment.
+1. **Cost:** converted material pays channel-specific energy cost before body outcomes.
+2. **Ablation:** support can be neutralized to multiplier `1.0` while cost, genes, resources, and all other mechanisms remain active.
+3. **Shared control:** active and neutral branches restore the same tick-0 full-world checkpoint.
 
-The authoritative open-system identity is:
+D3-E does not directly reward movement, change harvest choice, protect population diversity, or assign ecological roles.
 
-```text
-initial + source + release + field settlement
-= harvest + sink + final + harvest settlement
-```
+## Next gate
 
-A same-seed 300-tick validation closes the corrected identity at near machine precision while retaining an explicit unadjusted residual. No state transition or ecological mechanism was altered.
+Run the three-seed D3-E paired panel and first verify substrate operation:
 
-## Decision
+- both branches close external-resource and recycling ledgers;
+- active branches experience both support-limited and support-accelerated conversion;
+- neutral branches report exact unit support;
+- conversion costs are positive in both branches;
+- paired differences are treated as intervention effects only within each shared checkpoint.
 
-Retain D3-D and the D3-C recycling substrate. Do not advance the scientific chain solely from the old v1 result. Rerun the three 1500-tick seeds with D3-D results v2; reconsider collection-processing coupling only after corrected ledgers close and opportunity dimensions remain persistent.
+Only after that should the project test whether entities actually change spatial exposure in relation to inventory and processing support. A movement response would still require repeated exposure-aligned evidence before any migration or specialization claim.
 
 ## Development workflow
 
-`make conda-sync` clears project bytecode, installs the exact checkout editable, and verifies static source, imported package, installed metadata, direct URL and editable root. `make test` runs the full sharded suite. `make conda-check` repeats tests plus installed console smoke. `make release-check` audits wheel and sdist transfer separately.
+`make conda-sync` clears project bytecode, installs the exact checkout editable, and verifies static source, imported package, installed metadata, direct URL, and editable root. `make test` runs the sharded suite. `make conda-check` repeats tests plus installed console smoke. `make release-check` audits wheel and sdist transfer separately.
 
 ## Still incomplete
 
-- a v2-schema rerun of the supplied three-seed D3-D long horizon;
-- evolved coupling between collection location, internal inventory and processing throughput;
-- migration cycles driven by moving resource opportunities and stored inventory;
-- externalization of metabolic byproducts and non-store body material;
-- evolved uptake or processing of residue as a distinct opportunity;
-- consumption of other entities and corresponding defense;
+- a completed long-horizon D3-E shared-checkpoint panel;
+- an observational inventory × collection × processing exposure audit;
+- evidence that spatial movement responds to processing opportunity rather than generic trajectory sensitivity;
+- migration cycles driven by moving opportunities and stored inventory;
+- externalization of non-store body matter;
+- evolved uptake or processing of residue;
+- entity-to-entity material transfer and consumption;
 - reproduction investment supplied through delayed stores;
-- stable coexistence, ecotypes and trophic-chain evidence;
-- dynamic module topology or copy-number evolution;
-- deterministic inherited sparse routing beyond continuous costed routes.
+- stable coexistence, ecotypes, or trophic-chain evidence;
+- dynamic module topology or copy-number evolution.

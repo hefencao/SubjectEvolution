@@ -108,6 +108,7 @@ from se.env.niches import (
     resource_affinity_diagnostics,
     resource_affinity_quantized,
 )
+from se.differentiation.physiology import spatial_processing_enabled
 from ..policy import Action, ParametricPolicy
 from ..random_api import RandomContext, Stream, bernoulli, normal, uniform01
 from se.subjects.social import (
@@ -556,6 +557,21 @@ class SimulationExperimentMixin:
             self.resource_affinity_ablation_enabled = True
             details = {
                 "effective_affinity_q": [AFFINITY_SCALE] * RESOURCE_CHANNELS,
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+            }
+        elif normalized == "neutralize-spatial-processing-support":
+            if not spatial_processing_enabled(self.cfg):
+                raise ValueError(
+                    "neutralize-spatial-processing-support requires D3-E resource-v7"
+                )
+            canonical = "neutralize-spatial-processing-support"
+            self.resource_processing_support_ablation_enabled = True
+            details = {
+                "effective_processing_multiplier": 1.0,
+                "processing_execution_cost_preserved": True,
+                "resource_store_and_conversion_genes_preserved": True,
+                "resource_fields_modified": False,
                 "genotype_coordinates_modified": 0,
                 "inheritance_modified": False,
             }

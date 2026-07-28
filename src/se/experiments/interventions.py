@@ -138,6 +138,12 @@ INTERVENTIONS = (
         aliases=("resource-affinity-off", "affinity-off"),
     ),
     InterventionSpec(
+        "neutralize-spatial-processing-support",
+        InterventionKind.MODIFY_RULES,
+        "phase-shifted-four-channel-processing-support",
+        aliases=("processing-support-off", "spatial-processing-off"),
+    ),
+    InterventionSpec(
         "neutralize-danger-evidence",
         InterventionKind.MODIFY_RULES,
         "inherited-direct-vs-mortality-trace-evidence-expression",

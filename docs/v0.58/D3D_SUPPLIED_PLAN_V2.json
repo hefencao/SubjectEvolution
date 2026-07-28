@@ -1,0 +1,21 @@
+{
+  "schema": "d3-persistent-resource-renewal-plan-v2",
+  "seeds": [
+    56001,
+    56002,
+    56003
+  ],
+  "horizon_ticks": 1500,
+  "environment_schema": "orthogonal-four-resource-renewal-v2",
+  "renewal_schema": "moving-target-source-sink-v2",
+  "moving_target_reuses_role_free_channel_waves": true,
+  "renewal_source_and_sink_recorded_separately": true,
+  "float32_inventory_roundoff_recorded_separately": true,
+  "entity_lineage_and_group_feedback": false,
+  "identity_preserving_external_recycling_retained": true,
+  "minimum_external_residue_delay_ticks": 1,
+  "named_resource_roles": false,
+  "diversity_reward_or_protection": false,
+  "ecological_role_labels": false,
+  "pass_fail_gate": false
+}

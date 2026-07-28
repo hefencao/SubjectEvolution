@@ -195,6 +195,16 @@ class SimulationCheckpointMixin:
                     "total_resource_store_decay": self.total_resource_store_decay.copy(),
                     "total_resource_store_death_loss": self.total_resource_store_death_loss.copy(),
                     "total_resource_body_realized": self.total_resource_body_realized.copy(),
+                    "total_resource_processing_requested": self.total_resource_processing_requested.copy(),
+                    "total_resource_processing_supported": self.total_resource_processing_supported.copy(),
+                    "total_resource_processing_support_limited": self.total_resource_processing_support_limited.copy(),
+                    "total_resource_processing_support_accelerated": self.total_resource_processing_support_accelerated.copy(),
+                    "total_resource_processing_energy_rejected": self.total_resource_processing_energy_rejected.copy(),
+                    "total_resource_processing_support_weighted_sum": self.total_resource_processing_support_weighted_sum.copy(),
+                    "total_resource_processing_support_weight": self.total_resource_processing_support_weight.copy(),
+                    "total_resource_processing_energy_cost": float(
+                        self.total_resource_processing_energy_cost
+                    ),
                     **(
                         {
                             "total_resource_residue_deposited": self.total_resource_residue_deposited.copy(),
@@ -303,6 +313,9 @@ class SimulationCheckpointMixin:
             "capacity_ablation_enabled": bool(self.capacity_ablation_enabled),
             "resource_affinity_ablation_enabled": bool(
                 self.resource_affinity_ablation_enabled
+            ),
+            "resource_processing_support_ablation_enabled": bool(
+                self.resource_processing_support_ablation_enabled
             ),
             "functional_modules_ablation_enabled": bool(
                 self.functional_modules_ablation_enabled
@@ -510,6 +523,39 @@ class SimulationCheckpointMixin:
             self.total_resource_body_realized = np.asarray(
                 state.get("total_resource_body_realized", np.zeros(5)), dtype=np.float64
             ).copy()
+            self.total_resource_processing_requested = np.asarray(
+                state.get("total_resource_processing_requested", np.zeros(4)),
+                dtype=np.float64,
+            ).copy()
+            self.total_resource_processing_supported = np.asarray(
+                state.get("total_resource_processing_supported", np.zeros(4)),
+                dtype=np.float64,
+            ).copy()
+            self.total_resource_processing_support_limited = np.asarray(
+                state.get("total_resource_processing_support_limited", np.zeros(4)),
+                dtype=np.float64,
+            ).copy()
+            self.total_resource_processing_support_accelerated = np.asarray(
+                state.get("total_resource_processing_support_accelerated", np.zeros(4)),
+                dtype=np.float64,
+            ).copy()
+            self.total_resource_processing_energy_rejected = np.asarray(
+                state.get("total_resource_processing_energy_rejected", np.zeros(4)),
+                dtype=np.float64,
+            ).copy()
+            self.total_resource_processing_support_weighted_sum = np.asarray(
+                state.get(
+                    "total_resource_processing_support_weighted_sum", np.zeros(4)
+                ),
+                dtype=np.float64,
+            ).copy()
+            self.total_resource_processing_support_weight = np.asarray(
+                state.get("total_resource_processing_support_weight", np.zeros(4)),
+                dtype=np.float64,
+            ).copy()
+            self.total_resource_processing_energy_cost = float(
+                state.get("total_resource_processing_energy_cost", 0.0)
+            )
             if external_resource_recycling_enabled(self.cfg):
                 self.total_resource_residue_deposited = np.asarray(
                     state.get("total_resource_residue_deposited", np.zeros(4)), dtype=np.float64
@@ -658,6 +704,9 @@ class SimulationCheckpointMixin:
         )
         self.resource_affinity_ablation_enabled = bool(
             state.get("resource_affinity_ablation_enabled", False)
+        )
+        self.resource_processing_support_ablation_enabled = bool(
+            state.get("resource_processing_support_ablation_enabled", False)
         )
         self.functional_modules_ablation_enabled = bool(
             state.get("functional_modules_ablation_enabled", False)
@@ -862,6 +911,30 @@ class SimulationCheckpointMixin:
             branch.total_resource_store_decay = self.total_resource_store_decay.copy()
             branch.total_resource_store_death_loss = self.total_resource_store_death_loss.copy()
             branch.total_resource_body_realized = self.total_resource_body_realized.copy()
+            branch.total_resource_processing_requested = (
+                self.total_resource_processing_requested.copy()
+            )
+            branch.total_resource_processing_supported = (
+                self.total_resource_processing_supported.copy()
+            )
+            branch.total_resource_processing_support_limited = (
+                self.total_resource_processing_support_limited.copy()
+            )
+            branch.total_resource_processing_support_accelerated = (
+                self.total_resource_processing_support_accelerated.copy()
+            )
+            branch.total_resource_processing_energy_rejected = (
+                self.total_resource_processing_energy_rejected.copy()
+            )
+            branch.total_resource_processing_support_weighted_sum = (
+                self.total_resource_processing_support_weighted_sum.copy()
+            )
+            branch.total_resource_processing_support_weight = (
+                self.total_resource_processing_support_weight.copy()
+            )
+            branch.total_resource_processing_energy_cost = (
+                self.total_resource_processing_energy_cost
+            )
             if external_resource_recycling_enabled(self.cfg):
                 branch.total_resource_residue_deposited = self.total_resource_residue_deposited.copy()
                 branch.total_resource_residue_released = self.total_resource_residue_released.copy()
@@ -956,6 +1029,9 @@ class SimulationCheckpointMixin:
         branch.capacity_ablation_enabled = self.capacity_ablation_enabled
         branch.resource_affinity_ablation_enabled = (
             self.resource_affinity_ablation_enabled
+        )
+        branch.resource_processing_support_ablation_enabled = (
+            self.resource_processing_support_ablation_enabled
         )
         branch.functional_modules_ablation_enabled = (
             self.functional_modules_ablation_enabled

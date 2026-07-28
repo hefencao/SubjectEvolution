@@ -22,6 +22,7 @@ from ..cfg import EnvironmentConfig, SimulationConfig, load_config
 
 ORTHOGONAL_ENVIRONMENT_SCHEMA = "orthogonal-four-resource-niche-v1"
 PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA = "orthogonal-four-resource-renewal-v2"
+SPATIAL_PROCESSING_SUPPORT_SCHEMA = "phase-shifted-channel-processing-support-v1"
 RESOURCE_DIVERSITY_AUDIT_SCHEMA = "resource-environment-diversity-audit-v1"
 RESOURCE_CHANNELS = 4
 
@@ -137,6 +138,70 @@ def orthogonal_renewal_target_fraction(
         * xp.cos(secondary - 0.5 * offsets - 0.6180339887498948 * temporal)
     )
     return xp.clip(pattern, 0.05, 0.95)
+
+
+def orthogonal_processing_support_multiplier(
+    environment: EnvironmentConfig,
+    xnorm: Any,
+    ynorm: Any,
+    *,
+    tick: int,
+    xp: Any,
+) -> Any:
+    """Return a role-free channel-specific D3-E processing multiplier.
+
+    The support field reuses the persistent-renewal wave basis but advances
+    both wave components by a quarter cycle.  This spatially separates raw
+    collection and processing opportunity without naming resources or adding
+    material.  The configured amplitude is centered around one, so the
+    spatial-support ablation can remove heterogeneity while preserving the
+    neutral global throughput scale and all execution costs.
+    """
+
+    if environment.resource_processing_schema != SPATIAL_PROCESSING_SUPPORT_SCHEMA:
+        shape = (RESOURCE_CHANNELS, *xnorm.shape)
+        return xp.ones(shape, dtype=xp.float32)
+    primary = _wave_phase(environment.resource_primary_wave_vectors, xnorm, ynorm, xp)
+    secondary = _wave_phase(
+        environment.resource_secondary_wave_vectors, xnorm, ynorm, xp
+    )
+    offsets = xp.asarray(
+        environment.resource_temporal_phase_offsets, dtype=xp.float64
+    )[:, None, None]
+    periods = xp.asarray(environment.resource_cycle_periods, dtype=xp.float64)
+    temporal = (2.0 * xp.pi * float(tick) / periods)[:, None, None]
+    quarter_cycle = 0.5 * xp.pi
+    primary_amplitude = xp.asarray(
+        environment.resource_primary_wave_amplitudes, dtype=xp.float64
+    )[:, None, None]
+    secondary_amplitude = xp.asarray(
+        environment.resource_secondary_wave_amplitudes, dtype=xp.float64
+    )[:, None, None]
+    cycle_amplitude = xp.asarray(
+        environment.resource_cycle_amplitudes, dtype=xp.float64
+    )[:, None, None]
+    amplitude_modulation = 1.0 + cycle_amplitude * xp.sin(
+        temporal + quarter_cycle
+    )
+    fraction = (
+        0.50
+        + primary_amplitude
+        * amplitude_modulation
+        * xp.sin(primary + offsets + temporal + quarter_cycle)
+        + secondary_amplitude
+        * amplitude_modulation
+        * xp.cos(
+            secondary
+            - 0.5 * offsets
+            - 0.6180339887498948 * temporal
+            + quarter_cycle
+        )
+    )
+    fraction = xp.clip(fraction, 0.05, 0.95)
+    centered = (fraction - 0.50) / 0.45
+    amplitude = float(environment.resource_processing_support_amplitude)
+    multiplier = 1.0 + amplitude * centered
+    return xp.asarray(multiplier, dtype=xp.float32)
 
 
 def orthogonal_seasonal_multiplier(
@@ -410,11 +475,13 @@ if __name__ == "__main__":  # pragma: no cover
 __all__ = [
     "ORTHOGONAL_ENVIRONMENT_SCHEMA",
     "PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA",
+    "SPATIAL_PROCESSING_SUPPORT_SCHEMA",
     "RESOURCE_DIVERSITY_AUDIT_SCHEMA",
     "build_resource_diversity_audit",
     "diffuse_resource_fields",
     "orthogonal_base_pattern",
     "orthogonal_environment_enabled",
+    "orthogonal_processing_support_multiplier",
     "orthogonal_renewal_target_fraction",
     "persistent_orthogonal_renewal_enabled",
     "orthogonal_seasonal_multiplier",

@@ -1,0 +1,17 @@
+{
+  "schema": "conda-environment-status-v1",
+  "version": "0.58.0",
+  "passed": false,
+  "conda_prefix": null,
+  "python": "/opt/pyvenv/bin/python",
+  "make_conda_sync_returncode": 2,
+  "make_conda_check_returncode": 2,
+  "reason": "CONDA_PREFIX is not set; the current interpreter is /opt/pyvenv/bin/python.",
+  "non_conda_editable_validation": "passed",
+  "full_tests_during_conda_check": "278 passed, 1 skipped",
+  "required_local_commands": [
+    "make conda-sync",
+    "make test",
+    "make conda-check"
+  ]
+}

@@ -27,10 +27,11 @@ from se.differentiation.physiology import (
     resource_metabolism_enabled,
     storage_constrained_intake_enabled,
     external_resource_recycling_enabled,
+    spatial_processing_enabled,
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v25"
+SCHEMA = "structural-measurement-protocol-audit-v26"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -468,6 +469,25 @@ def build_protocol_audit(
                 "external_recycling_delay_ticks": (
                     1 if external_resource_recycling_enabled(cfg) else 0
                 ),
+                "spatial_processing_enabled": bool(spatial_processing_enabled(cfg)),
+                "spatial_processing_schema": cfg.environment.resource_processing_schema,
+                "spatial_processing_support_amplitude": float(
+                    cfg.environment.resource_processing_support_amplitude
+                ),
+                "spatial_processing_energy_per_unit": list(
+                    cfg.physiology.resource_processing_energy_per_unit
+                ),
+                "spatial_processing_effect": (
+                    "multiply inherited per-channel conversion throughput after storage"
+                    if spatial_processing_enabled(cfg)
+                    else "disabled"
+                ),
+                "spatial_processing_cost_timing": (
+                    "charged before body outcomes with energy-limited proportional scaling"
+                    if spatial_processing_enabled(cfg)
+                    else "not applicable"
+                ),
+                "spatial_processing_entity_lineage_group_feedback": False,
                 "external_residue_diffusion": (
                     "reuse same-channel resource diffusion rate"
                     if external_resource_recycling_enabled(cfg)
@@ -546,6 +566,20 @@ def build_protocol_audit(
                 "release_limited_by_resource_capacity": True,
                 "named_decomposer_or_scavenger_roles": False,
                 "stable_trophic_claim": False,
+            },
+            "spatial_processing_experiment": {
+                "plan_schema": "d3-spatial-collection-processing-plan-v1",
+                "result_schema": "d3-spatial-collection-processing-results-v1",
+                "shared_checkpoint_tick": 0,
+                "paired_branches": ["spatial-support", "neutral-support"],
+                "neutralization_intervention": "neutralize-spatial-processing-support",
+                "processing_execution_cost_preserved_in_ablation": True,
+                "genotype_and_resource_fields_preserved_in_ablation": True,
+                "support_phase_relation": "quarter-cycle-shifted-from-renewal-wave-basis",
+                "direct_action_or_harvest_reward": False,
+                "entity_lineage_and_group_feedback": False,
+                "named_resource_or_ecological_roles": False,
+                "stable_migration_or_ecotype_claim": False,
             },
             "persistent_resource_renewal_experiment": {
                 "plan_schema": "d3-persistent-resource-renewal-plan-v2",
@@ -1088,6 +1122,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- conservative intake experiment: {payload['functional_module_protocol']['conservative_intake_experiment']}",
         f"- external recycling experiment: {payload['functional_module_protocol']['external_recycling_experiment']}",
         f"- persistent resource renewal experiment: {payload['functional_module_protocol']['persistent_resource_renewal_experiment']}",
+        f"- spatial processing experiment: {payload['functional_module_protocol']['spatial_processing_experiment']}",
         f"- known architecture limit: {payload['functional_module_protocol']['known_architecture_limit']}",
         f"- leave-one-out protocol: {payload['functional_module_protocol']['leave_one_out_protocol']}",
         f"- effect qualification: {payload['functional_module_protocol']['effect_qualification']}",

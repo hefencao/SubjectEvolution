@@ -14,6 +14,7 @@ from .diversity import (
     diffuse_resource_fields,
     normalized_grid as diversity_normalized_grid,
     orthogonal_base_pattern,
+    orthogonal_processing_support_multiplier,
     orthogonal_seasonal_multiplier,
     orthogonal_renewal_target_fraction,
     persistent_orthogonal_renewal_enabled,
@@ -167,6 +168,34 @@ class Environment:
         if self.resource_spatial_reversed:
             fraction = fraction[:, ::-1, ::-1].copy()
         return (self.capacity * fraction).astype(np.float32)
+
+    def resource_processing_support_field(self, tick: int) -> np.ndarray:
+        """Return the current four-channel D3-E abiotic support multiplier."""
+
+        gx, gy = self.cfg.world.grid_x, self.cfg.world.grid_y
+        yy, xx = np.mgrid[0:gy, 0:gx]
+        xnorm, ynorm = self._normalized_grid(xx, yy)
+        support = orthogonal_processing_support_multiplier(
+            self.cfg.environment,
+            xnorm,
+            ynorm,
+            tick=tick,
+            xp=np,
+        )
+        if self.resource_spatial_reversed:
+            support = support[:, ::-1, ::-1].copy()
+        return np.asarray(support, dtype=np.float32)
+
+    def resource_processing_support_for_cells(
+        self, cell_ids: np.ndarray, *, tick: int
+    ) -> np.ndarray:
+        cells = validate_cell_ids(
+            cell_ids, self.cfg.world.grid_x * self.cfg.world.grid_y
+        )
+        field = self.resource_processing_support_field(tick)
+        return field.reshape(self.RESOURCE_CHANNELS, -1)[:, cells].T.astype(
+            np.float32
+        )
 
     def _update_persistent_resource_renewal(self, tick: int) -> np.ndarray:
         target = self._resource_renewal_target(tick)

@@ -49,6 +49,7 @@ ENTRY_POINTS = {
     "se-d3-conservative-intake-assess": "se.analysis.d3_conservative_intake_effects:main",
     "se-d3-external-recycling": "se.experiments.d3_external_recycling:main",
     "se-d3-resource-renewal": "se.experiments.d3_persistent_resource_renewal:main",
+    "se-d3-spatial-processing": "se.experiments.d3_spatial_processing:main",
     "se-d4-niche-reversal": "se.experiments.d4_niche_reversal:main",
     "se-d4-niche-assess": "se.analysis.d4_niche_reversal_effects:main",
 }

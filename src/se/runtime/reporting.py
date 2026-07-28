@@ -17,6 +17,7 @@ from ..cfg import SimulationConfig
 from se.differentiation.physiology import (
     physiology_diagnostics,
     resource_metabolism_enabled,
+    spatial_processing_enabled,
     storage_constrained_intake_enabled,
     external_resource_recycling_enabled,
 )
@@ -179,6 +180,11 @@ class SimulationReportingMixin:
             "resource_affinity_schema": self.cfg.entities.resource_affinity_schema,
             "resource_affinity_strength": self.cfg.entities.resource_affinity_strength,
             "harvest_allocation_schema": self.cfg.entities.harvest_allocation_schema,
+            "resource_processing_schema": self.cfg.environment.resource_processing_schema,
+            "resource_processing_support_amplitude": self.cfg.environment.resource_processing_support_amplitude,
+            "resource_processing_energy_per_unit": list(
+                self.cfg.physiology.resource_processing_energy_per_unit
+            ),
             "resource_affinity_gene_indices": (
                 [1, 2, 3, 4]
                 if self.cfg.entities.resource_affinity_schema
@@ -597,6 +603,13 @@ class SimulationReportingMixin:
                 ),
                 "resource_affinity_ablation_enabled": (
                     self.resource_affinity_ablation_enabled
+                ),
+                "resource_processing_support_ablation_enabled": (
+                    self.resource_processing_support_ablation_enabled
+                ),
+                "resource_processing_support_effective_enabled": (
+                    spatial_processing_enabled(self.cfg)
+                    and not self.resource_processing_support_ablation_enabled
                 ),
                 "functional_modules_ablation_enabled": (
                     self.functional_modules_ablation_enabled
@@ -1395,6 +1408,11 @@ class SimulationReportingMixin:
             "environment_schema": self.cfg.environment.schema,
             "resource_affinity_schema": self.cfg.entities.resource_affinity_schema,
             "harvest_allocation_schema": self.cfg.entities.harvest_allocation_schema,
+            "resource_processing_schema": self.cfg.environment.resource_processing_schema,
+            "resource_processing_support_amplitude": self.cfg.environment.resource_processing_support_amplitude,
+            "resource_processing_energy_per_unit": list(
+                self.cfg.physiology.resource_processing_energy_per_unit
+            ),
             "capacity_ablation_enabled": int(self.capacity_ablation_enabled),
             "capacity_effective_schema": (
                 "fixed-midpoint-elastic-capacities-ablation-v1"
@@ -1461,6 +1479,26 @@ class SimulationReportingMixin:
                             "resource_intake_capacity_rejected_total": self.total_resource_intake_capacity_rejected.tolist()
                         }
                         if storage_constrained_intake_enabled(self.cfg)
+                        else {}
+                    ),
+                    **(
+                        {
+                            "resource_processing_requested_total": self.total_resource_processing_requested.tolist(),
+                            "resource_processing_supported_total": self.total_resource_processing_supported.tolist(),
+                            "resource_processing_support_limited_total": self.total_resource_processing_support_limited.tolist(),
+                            "resource_processing_support_accelerated_total": self.total_resource_processing_support_accelerated.tolist(),
+                            "resource_processing_energy_rejected_total": self.total_resource_processing_energy_rejected.tolist(),
+                            "resource_processing_support_weighted_mean": np.divide(
+                                self.total_resource_processing_support_weighted_sum,
+                                self.total_resource_processing_support_weight,
+                                out=np.ones(4, dtype=np.float64),
+                                where=self.total_resource_processing_support_weight > 0.0,
+                            ).tolist(),
+                            "resource_processing_energy_cost_total": float(
+                                self.total_resource_processing_energy_cost
+                            ),
+                        }
+                        if spatial_processing_enabled(self.cfg)
                         else {}
                     ),
                     "resource_converted_total": self.total_resource_converted.tolist(),
@@ -1703,6 +1741,96 @@ class SimulationReportingMixin:
                             },
                         }
                         if storage_constrained_intake_enabled(self.cfg)
+                        else {}
+                    ),
+                    **(
+                        {
+                            **{
+                                f"resource_processing_requested_{index}_step": float(
+                                    stats.resource_processing_requested[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_processing_requested_{index}_total": float(
+                                    self.total_resource_processing_requested[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_processing_supported_{index}_step": float(
+                                    stats.resource_processing_supported[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_processing_supported_{index}_total": float(
+                                    self.total_resource_processing_supported[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_processing_support_limited_{index}_step": float(
+                                    stats.resource_processing_support_limited[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_processing_support_limited_{index}_total": float(
+                                    self.total_resource_processing_support_limited[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_processing_support_accelerated_{index}_step": float(
+                                    stats.resource_processing_support_accelerated[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_processing_support_accelerated_{index}_total": float(
+                                    self.total_resource_processing_support_accelerated[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_processing_energy_rejected_{index}_step": float(
+                                    stats.resource_processing_energy_rejected[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_processing_energy_rejected_{index}_total": float(
+                                    self.total_resource_processing_energy_rejected[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_processing_support_{index}_weighted_mean_step": float(
+                                    stats.resource_processing_support_weighted_sum[index]
+                                    / stats.resource_processing_support_weight[index]
+                                )
+                                if stats.resource_processing_support_weight[index] > 0.0
+                                else 1.0
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_processing_support_{index}_weighted_mean_total": float(
+                                    self.total_resource_processing_support_weighted_sum[index]
+                                    / self.total_resource_processing_support_weight[index]
+                                )
+                                if self.total_resource_processing_support_weight[index] > 0.0
+                                else 1.0
+                                for index in range(4)
+                            },
+                            "resource_processing_energy_cost_step": float(
+                                stats.resource_processing_energy_cost
+                            ),
+                            "resource_processing_energy_cost_total": float(
+                                self.total_resource_processing_energy_cost
+                            ),
+                        }
+                        if spatial_processing_enabled(self.cfg)
                         else {}
                     ),
                     **{

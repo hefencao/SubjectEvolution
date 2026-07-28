@@ -124,6 +124,12 @@ class EnvironmentConfig:
     resource_diffusion_rates: tuple[float, float, float, float] = (
         0.002, 0.006, 0.012, 0.020
     )
+    # D3-E opt-in abiotic processing support.  The field reuses the same
+    # role-free four-channel wave basis as persistent renewal but is shifted by
+    # a quarter cycle.  It carries no material and has no entity, lineage, or
+    # group feedback.  A zero amplitude keeps archived configurations inert.
+    resource_processing_schema: str = "disabled"
+    resource_processing_support_amplitude: float = 0.0
     harvest_channel_multipliers: tuple[float, float, float, float] = (
         1.0, 0.45, 0.25, 0.18
     )
@@ -500,6 +506,12 @@ class PhysiologyConfig:
     resource_store_base_capacity: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)
     resource_conversion_per_tick: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)
     resource_store_decay_per_tick: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)
+    # D3-E per-unit execution cost for actual raw-store conversion.  The cost
+    # is charged before body outcomes are realized and is preserved by the
+    # spatial-support ablation.
+    resource_processing_energy_per_unit: tuple[float, float, float, float] = (
+        0.0, 0.0, 0.0, 0.0
+    )
 
 
 @dataclass(frozen=True)
@@ -677,6 +689,16 @@ def load_config(path: str | Path) -> SimulationConfig:
                 float(value)
                 for value in _require(raw, "environment").get(
                     "resource_diffusion_rates", (0.002, 0.006, 0.012, 0.020)
+                )
+            ),
+            resource_processing_schema=str(
+                _require(raw, "environment").get(
+                    "resource_processing_schema", "disabled"
+                )
+            ),
+            resource_processing_support_amplitude=float(
+                _require(raw, "environment").get(
+                    "resource_processing_support_amplitude", 0.0
                 )
             ),
             harvest_channel_multipliers=tuple(
@@ -858,6 +880,12 @@ def load_config(path: str | Path) -> SimulationConfig:
                 "resource_store_decay_per_tick": tuple(
                     raw.get("physiology", {}).get(
                         "resource_store_decay_per_tick", (0.0, 0.0, 0.0, 0.0)
+                    )
+                ),
+                "resource_processing_energy_per_unit": tuple(
+                    raw.get("physiology", {}).get(
+                        "resource_processing_energy_per_unit",
+                        (0.0, 0.0, 0.0, 0.0),
                     )
                 ),
             }
@@ -1108,6 +1136,34 @@ def validate_config(cfg: SimulationConfig) -> None:
             raise ValueError(
                 "orthogonal resource primary wave vectors must be four distinct non-zero modes"
             )
+    if cfg.environment.resource_processing_schema not in {
+        "disabled",
+        "phase-shifted-channel-processing-support-v1",
+    }:
+        raise ValueError(
+            "environment.resource_processing_schema must be 'disabled' or "
+            "'phase-shifted-channel-processing-support-v1'"
+        )
+    processing_amplitude = float(
+        cfg.environment.resource_processing_support_amplitude
+    )
+    if not math.isfinite(processing_amplitude) or not 0.0 <= processing_amplitude < 1.0:
+        raise ValueError(
+            "environment.resource_processing_support_amplitude must be in [0, 1)"
+        )
+    if cfg.environment.resource_processing_schema == "disabled":
+        if processing_amplitude != 0.0:
+            raise ValueError(
+                "disabled resource processing support requires zero amplitude"
+            )
+    elif (
+        cfg.environment.schema != "orthogonal-four-resource-renewal-v2"
+        or processing_amplitude <= 0.0
+    ):
+        raise ValueError(
+            "phase-shifted processing support requires persistent orthogonal renewal "
+            "and positive amplitude"
+        )
     if len(cfg.environment.resource_effect_matrix) != 4 or any(
         len(row) != 5 for row in cfg.environment.resource_effect_matrix
     ):
@@ -1891,6 +1947,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         "transport-metabolism-messenger-tissue-resource-v4",
         "transport-metabolism-messenger-tissue-resource-v5",
         "transport-metabolism-messenger-tissue-resource-v6",
+        "transport-metabolism-messenger-tissue-resource-v7",
     }:
         raise ValueError(
             "physiology.schema must be 'disabled', 'oxygen-tissue-structure-v1', "
@@ -1898,7 +1955,8 @@ def validate_config(cfg: SimulationConfig) -> None:
             "'transport-metabolism-messenger-tissue-v3', or "
             "'transport-metabolism-messenger-tissue-resource-v4', or "
             "'transport-metabolism-messenger-tissue-resource-v5', or "
-            "'transport-metabolism-messenger-tissue-resource-v6'"
+            "'transport-metabolism-messenger-tissue-resource-v6', or "
+            "'transport-metabolism-messenger-tissue-resource-v7'"
         )
     if pcfg.enabled != (pcfg.schema != "disabled"):
         raise ValueError("physiology enabled/schema fields must agree")
@@ -1917,6 +1975,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         "resource_store_base_capacity",
         "resource_conversion_per_tick",
         "resource_store_decay_per_tick",
+        "resource_processing_energy_per_unit",
     ):
         values = tuple(float(value) for value in getattr(pcfg, name))
         if len(values) != 4:
@@ -1952,6 +2011,7 @@ def validate_config(cfg: SimulationConfig) -> None:
                 "transport-metabolism-messenger-tissue-resource-v4",
                 "transport-metabolism-messenger-tissue-resource-v5",
                 "transport-metabolism-messenger-tissue-resource-v6",
+                "transport-metabolism-messenger-tissue-resource-v7",
             }
             if fcfg.schema == resource_metabolism_schema
             else {
@@ -2009,9 +2069,14 @@ def validate_config(cfg: SimulationConfig) -> None:
                 "transport-metabolism-messenger-tissue-resource-v4",
                 "transport-metabolism-messenger-tissue-resource-v5",
                 "transport-metabolism-messenger-tissue-resource-v6",
+                "transport-metabolism-messenger-tissue-resource-v7",
             }:
                 required_positive.extend(pcfg.resource_store_base_capacity)
                 required_positive.extend(pcfg.resource_conversion_per_tick)
+                if pcfg.schema == "transport-metabolism-messenger-tissue-resource-v7":
+                    required_positive.extend(
+                        pcfg.resource_processing_energy_per_unit
+                    )
         if any(value <= 0.0 for value in required_positive):
             raise ValueError(
                 "physiological modules require positive transport, use, repair, and execution semantics"
@@ -2024,17 +2089,31 @@ def validate_config(cfg: SimulationConfig) -> None:
         "transport-metabolism-messenger-tissue-resource-v4",
         "transport-metabolism-messenger-tissue-resource-v5",
         "transport-metabolism-messenger-tissue-resource-v6",
+        "transport-metabolism-messenger-tissue-resource-v7",
     } and any(
         value != 0.0
         for values in (
             pcfg.resource_store_base_capacity,
             pcfg.resource_conversion_per_tick,
             pcfg.resource_store_decay_per_tick,
+            pcfg.resource_processing_energy_per_unit,
         )
         for value in values
     ):
         raise ValueError(
-            "resource storage and conversion settings require physiology resource-v4/v5/v6"
+            "resource storage and conversion settings require physiology resource-v4/v5/v6/v7"
+        )
+    if pcfg.schema == "transport-metabolism-messenger-tissue-resource-v7":
+        if (
+            cfg.environment.resource_processing_schema
+            != "phase-shifted-channel-processing-support-v1"
+        ):
+            raise ValueError(
+                "physiology resource-v7 requires phase-shifted channel processing support"
+            )
+    elif any(value != 0.0 for value in pcfg.resource_processing_energy_per_unit):
+        raise ValueError(
+            "resource processing execution costs require physiology resource-v7"
         )
     if fcfg.enabled:
         if cfg.entities.resource_affinity_schema != "normalized-four-resource-affinity-v1":

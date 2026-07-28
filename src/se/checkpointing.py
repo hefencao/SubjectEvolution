@@ -38,6 +38,7 @@ _RESOURCE_METABOLISM_CONFIG_FIELDS = (
     "resource_store_base_capacity",
     "resource_conversion_per_tick",
     "resource_store_decay_per_tick",
+    "resource_processing_energy_per_unit",
 )
 
 

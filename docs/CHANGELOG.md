@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.58.0
+
+### Costed spatial collection-processing substrate
+
+- Interprets the supplied D3-D v2 three-seed rerun as a closed external-resource and recycling substrate with final effective resource dimensions of about `2.86`–`2.98`.
+- Adds opt-in `transport-metabolism-messenger-tissue-resource-v7` and `phase-shifted-channel-processing-support-v1`.
+- Reuses unnamed persistent-renewal wave parameters with a quarter-cycle phase shift; adds no matter, entity feedback, resource role, or diversity protection.
+- Applies support only to conversion of material already held in internal stores.
+- Charges per-channel execution energy before body outcomes and scales all channel conversions proportionally when energy is insufficient.
+- Records requested, supported, limited, accelerated, energy-rejected, exposure-weighted, and energy-cost diagnostics.
+- Adds cost-preserving `neutralize-spatial-processing-support` without modifying genes, resource fields, inheritance, or random state.
+- Adds `se-d3-spatial-processing`, which restores active and neutral branches from the same tick-0 full-world checkpoint and verifies the source state hash.
+- Upgrades protocol audit to v26 and adds D3-E configuration, checkpoint persistence, reporting, tests, and documentation.
+- Makes no migration, specialization, coexistence, trophic, or ecotype claim from finite-seed outcomes.
+- Complete packages retain only `docs/v0.58` as a version-specific directory.
+
 ## 0.57.0
 
 ### Authoritative D3-D float32 inventory settlement

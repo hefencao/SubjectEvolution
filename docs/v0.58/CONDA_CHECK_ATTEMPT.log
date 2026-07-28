@@ -1,0 +1,39 @@
+python scripts/run_conda_check.py --project . --shards 5 --docs-dir docs/v0.58
+FAILED: /opt/pyvenv/bin/python scripts/verify_conda_editable.py --project . --require-conda --smoke --report /mnt/data/se_v058_work/se_v057_project/docs/v0.58/CONDA_EDITABLE_VALIDATION_REPORT.json
+
+===== full tests =====
+
+===== pytest shard 1/5 =====
+.........................................................                [100%]
+57 passed in 15.82s
+
+===== pytest shard 2/5 =====
+..............................................s..........                [100%]
+56 passed, 1 skipped in 6.55s
+
+===== pytest shard 3/5 =====
+...............................................                          [100%]
+47 passed in 7.86s
+
+===== pytest shard 4/5 =====
+........................................................                 [100%]
+56 passed in 14.17s
+
+===== pytest shard 5/5 =====
+..............................................................           [100%]
+62 passed in 14.15s
+{"passed": true, "schema": "deterministic-pytest-file-shards-v1", "source_tree_sha256": "0f892456f9e3dc4a4d4e048d85e0b43904ea04e21149334978fb489c022e73c1", "python": "/opt/pyvenv/bin/python", "shard_count": 5, "test_file_count": 56, "elapsed_seconds": 17.843592361000447, "shards": [{"shard": 1, "returncode": 0, "test_file_count": 12, "test_files": ["tests/test_bytecode_cleanup.py", "tests/test_d2_compositional_capability.py", "tests/test_d2_lineage_mediation.py", "tests/test_d2_regulatory_physiology_conservation.py", "tests/test_d3_resource_metabolism.py", "tests/test_env_process_plugins.py", "tests/test_knowledge_k3.py", "tests/test_local_stress.py", "tests/test_natural_event_matrix.py", "tests/test_package_architecture.py", "tests/test_protocol_provenance.py", "tests/test_version_consistency.py"], "stdout_tail": [".........................................................                [100%]", "57 passed in 15.82s"]}, {"shard": 2, "returncode": 0, "test_file_count": 11, "test_files": ["tests/test_checkpoint_replay.py", "tests/test_d2_effect_assessment.py", "tests/test_d2_lineage_pairs.py", "tests/test_d2_source_population.py", "tests/test_d3_spatial_processing.py", "tests/test_event_cohort.py", "tests/test_knowledge_k4.py", "tests/test_long_run_diagnostics.py", "tests/test_natural_event_result_audit.py", "tests/test_parity.py", "tests/test_routing_cost.py"], "stdout_tail": ["..............................................s..........                [100%]", "56 passed, 1 skipped in 6.55s"]}, {"shard": 3, "returncode": 0, "test_file_count": 11, "test_files": ["tests/test_cli_overrides.py", "tests/test_d2_embodied_modules.py", "tests/test_d2_module_audit.py", "tests/test_d2_source_population_causal.py", "tests/test_d4_niche_reversal.py", "tests/test_gui_interface.py", "tests/test_latent_knowledge.py", "tests/test_memory_selection.py", "tests/test_natural_event_result_synthesis.py", "tests/test_periodic_positions.py", "tests/test_selective_harvest.py"], "stdout_tail": ["...............................................                          [100%]", "47 passed in 7.86s"]}, {"shard": 4, "returncode": 0, "test_file_count": 11, "test_files": ["tests/test_d1_capacities.py", "tests/test_d2_functional_modules.py", "tests/test_d2_physiological_ecology.py", "tests/test_d3_conservative_intake.py", "tests/test_danger_evidence_moving_hazard.py", "tests/test_knowledge.py", "tests/test_latent_router_mlp.py", "tests/test_mortality_trace_group_refresh.py", "tests/test_natural_event_timed_execution.py", "tests/test_persistent_resource_renewal.py", "tests/test_structure_env_analysis.py"], "stdout_tail": ["........................................................                 [100%]", "56 passed in 14.17s"]}, {"shard": 5, "returncode": 0, "test_file_count": 11, "test_files": ["tests/test_d1_factorial_and_demand.py", "tests/test_d2_lineage_effect_assessment.py", "tests/test_d2_regulatory_physiology.py", "tests/test_d3_external_recycling.py", "tests/test_env_diversity.py", "tests/test_knowledge_k2.py", "tests/test_local_event_counterfactual.py", "tests/test_natural_event_execution.py", "tests/test_orthogonal_env.py", "tests/test_phase_counterfactual.py", "tests/test_subject_structure_atlas.py"], "stdout_tail": ["..............................................................           [100%]", "62 passed in 14.15s"]}]}
+
+===== editable verification =====
+Traceback (most recent call last):
+  File "/mnt/data/se_v058_work/se_v057_project/scripts/verify_conda_editable.py", line 223, in <module>
+    main()
+    ~~~~^^
+  File "/mnt/data/se_v058_work/se_v057_project/scripts/verify_conda_editable.py", line 213, in main
+    report = verify(
+        Path(args.project), require_conda=args.require_conda, smoke=args.smoke
+    )
+  File "/mnt/data/se_v058_work/se_v057_project/scripts/verify_conda_editable.py", line 71, in verify
+    raise RuntimeError("CONDA_PREFIX is not set; activate the intended conda environment")
+RuntimeError: CONDA_PREFIX is not set; activate the intended conda environment
+make: *** [Makefile:26: conda-check] Error 1

@@ -1,0 +1,88 @@
+{
+  "schema": "d3e-60-tick-validation-report-v1",
+  "version": "0.58.0",
+  "source_result_schema": "d3-spatial-collection-processing-results-v1",
+  "seeds": [
+    58001,
+    58002
+  ],
+  "horizon_ticks": 60,
+  "stable_trend_summary": {
+    "shared_tick0_checkpoint_in_every_pair": true,
+    "processing_cost_observed_in_every_branch": true,
+    "spatial_support_exposure_nonuniform_in_every_active_branch": true,
+    "neutral_support_exactly_one_in_every_ablation_branch": true,
+    "support_limited_processing_observed_in_every_active_branch": true,
+    "support_accelerated_processing_observed_in_every_active_branch": true,
+    "external_resource_ledger_valid_in_every_branch": true,
+    "external_recycling_ledger_valid_in_every_branch": true
+  },
+  "recommendation": "retain-costed-spatial-processing-substrate-and-audit-response",
+  "pairs": [
+    {
+      "seed": 58001,
+      "shared_checkpoint_state": true,
+      "spatial_support_alive": 490,
+      "neutral_support_alive": 491,
+      "spatial_support_converted_total": 1976.1188922230044,
+      "neutral_support_converted_total": 2022.7640922118676,
+      "spatial_support_energy_cost_total": 3.9522377844460097,
+      "neutral_support_energy_cost_total": 4.045528184423736,
+      "spatial_support_weighted_mean": [
+        0.966881138738231,
+        0.9497646928868755,
+        0.9980181694070701,
+        0.9443634629882841
+      ],
+      "neutral_support_weighted_mean": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "paired_difference_spatial_minus_neutral": {
+        "alive": -1.0,
+        "births_total": -1.0,
+        "deaths_total": 0.0,
+        "mean_energy": -0.005034685134887695,
+        "processing_energy_cost_total": -0.09329039997772615,
+        "processing_support_accelerated_total": 191.05356197142027,
+        "processing_support_limited_total": 238.04844080985794,
+        "resource_converted_total": -46.64519998886317
+      }
+    },
+    {
+      "seed": 58002,
+      "shared_checkpoint_state": true,
+      "spatial_support_alive": 496,
+      "neutral_support_alive": 497,
+      "spatial_support_converted_total": 2075.628665182563,
+      "neutral_support_converted_total": 2138.3711570907844,
+      "spatial_support_energy_cost_total": 4.151257330365126,
+      "neutral_support_energy_cost_total": 4.27674231418157,
+      "spatial_support_weighted_mean": [
+        0.9756308336794582,
+        0.9403208882551749,
+        0.9237475476939573,
+        0.9610507137297534
+      ],
+      "neutral_support_weighted_mean": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "paired_difference_spatial_minus_neutral": {
+        "alive": -1.0,
+        "births_total": 0.0,
+        "deaths_total": 1.0,
+        "mean_energy": -0.0046994686126708984,
+        "processing_energy_cost_total": -0.12548498381644446,
+        "processing_support_accelerated_total": 196.11526669736412,
+        "processing_support_limited_total": 268.7750586609648,
+        "resource_converted_total": -62.74249190822138
+      }
+    }
+  ],
+  "interpretation_boundary": "D3-E tests whether location-dependent abiotic processing support can constrain or accelerate internal conversion while retaining explicit energy cost and conservative resource ledgers. It does not establish migration, collection-processing specialization, coexistence, trophic transfer, or named ecological roles."
+}

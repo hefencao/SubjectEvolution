@@ -21,6 +21,7 @@ CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tiss
 RESOURCE_METABOLISM_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v4"
 CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v5"
 RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v6"
+SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v7"
 REGULATORY_PHYSIOLOGY_SCHEMA = CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA
 REGULATORY_PHYSIOLOGY_SCHEMAS = frozenset(
     {
@@ -29,6 +30,7 @@ REGULATORY_PHYSIOLOGY_SCHEMAS = frozenset(
         RESOURCE_METABOLISM_PHYSIOLOGY_SCHEMA,
         CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA,
         RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
+        SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA,
     }
 )
 PHYSIOLOGY_GENE_NAMES = (
@@ -94,6 +96,7 @@ def conservative_regulatory_physiology_enabled(cfg: SimulationConfig) -> bool:
             RESOURCE_METABOLISM_PHYSIOLOGY_SCHEMA,
             CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA,
             RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
+            SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA,
         }
     )
 
@@ -104,6 +107,7 @@ def resource_metabolism_enabled(cfg: SimulationConfig) -> bool:
             RESOURCE_METABOLISM_PHYSIOLOGY_SCHEMA,
             CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA,
             RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
+            SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA,
         }
     )
 
@@ -114,6 +118,7 @@ def storage_constrained_intake_enabled(cfg: SimulationConfig) -> bool:
         and cfg.physiology.schema in {
             CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA,
             RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
+            SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA,
         }
     )
 
@@ -124,7 +129,21 @@ def external_resource_recycling_enabled(cfg: SimulationConfig) -> bool:
 
     return bool(
         cfg.physiology.enabled
-        and cfg.physiology.schema == RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA
+        and cfg.physiology.schema in {
+            RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
+            SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA,
+        }
+    )
+
+
+def spatial_processing_enabled(cfg: SimulationConfig) -> bool:
+    """Return whether D3-E local processing support constrains conversion."""
+
+    return bool(
+        cfg.physiology.enabled
+        and cfg.physiology.schema == SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA
+        and cfg.environment.resource_processing_schema
+        == "phase-shifted-channel-processing-support-v1"
     )
 
 
@@ -321,6 +340,7 @@ def physiology_genome_energy(
 __all__ = [
     "CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA",
     "RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA",
+    "SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA",
     "CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA",
     "LEGACY_REGULATORY_PHYSIOLOGY_SCHEMA",
     "PHYSIOLOGY_GENE_COUNT",
@@ -341,4 +361,5 @@ __all__ = [
     "external_resource_recycling_enabled",
     "resource_metabolism_enabled",
     "storage_constrained_intake_enabled",
+    "spatial_processing_enabled",
 ]

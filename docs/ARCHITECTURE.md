@@ -350,3 +350,20 @@ initial + source + release + field settlement
 
 Both terms are numerical provenance, not biological fluxes, abiotic processes, rewards or correction forces. They never feed policy, ecology, field state, fitness, reproduction or renewal. The unadjusted physical-flux residual remains reported so numerical scale is auditable. Old v1 result files remain assessable with absent settlement terms interpreted as zero, but cannot retroactively prove closure.
 
+
+## v0.58 D3-E spatial processing boundary
+
+D3-E keeps acquisition, storage, processing support, processing execution, and body realization separate:
+
+```text
+external channel field
+→ admitted harvest
+→ bounded internal raw store
+→ inherited conversion capacity × local abiotic support
+→ explicit processing-energy arbitration
+→ existing channel-to-body effect matrix
+```
+
+The support field is generated analytically from the role-free persistent-renewal wave basis with a quarter-cycle phase shift. It contains no entity feedback and no material inventory. It is queried at current entity cells before observation, after which ordinary entity-state synchronization publishes the realized store/body changes to the device mirror.
+
+The support-neutralization intervention changes only the effective multiplier. It retains cost, genotype, resource fields, random state, and all other simulation mechanisms. The D3-E experiment obtains both branches by restoring one tick-0 checkpoint rather than constructing statistically similar initial states.

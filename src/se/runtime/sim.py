@@ -440,6 +440,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.freeze_genotype = False
         self.capacity_ablation_enabled = False
         self.resource_affinity_ablation_enabled = False
+        self.resource_processing_support_ablation_enabled = False
         self.functional_modules_ablation_enabled = False
         self.functional_module_coupling_ablation_enabled = False
         self.functional_module_ablation_mask = np.zeros(
