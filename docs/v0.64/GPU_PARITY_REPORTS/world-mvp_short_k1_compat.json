@@ -1,0 +1,46 @@
+{
+  "schema": "cpu-gpu-parity-v2",
+  "mode": "world-parity",
+  "gpu_available": true,
+  "passed": true,
+  "first_failure": null,
+  "ticks_compared": 2,
+  "ticks": [
+    {
+      "tick": 1,
+      "passed": true
+    },
+    {
+      "tick": 2,
+      "passed": true
+    }
+  ],
+  "semantic_root_exclusions": [
+    "conflict_resolver_kind",
+    "entity_device_version",
+    "last_entity_device_commit",
+    "last_information",
+    "spatial"
+  ],
+  "semantic_object_exclusions": [
+    "backend",
+    "cfg",
+    "environment_process"
+  ],
+  "gpu_runtime": {
+    "available": true,
+    "cupy_version": "14.1.1",
+    "cuda_runtime_version": 13020,
+    "cuda_driver_version": 13030,
+    "device_id": 0,
+    "device_name": "NVIDIA GeForce RTX 4070",
+    "compute_capability": [
+      8,
+      9
+    ],
+    "total_global_memory": 12878086144,
+    "multiprocessor_count": 46
+  },
+  "config": "mvp_short_k1_compat.json",
+  "report_sha256_basis": "99dc1f57781ac2f185354ac39c7e7a2efb9163def73795a069a1fec4ec9531c4"
+}

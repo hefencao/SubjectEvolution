@@ -1,0 +1,632 @@
+{
+  "schema": "cpu-gpu-parity-v2",
+  "mode": "stage-parity",
+  "device_backend": "gpu",
+  "passed": true,
+  "first_failure_stage": null,
+  "stages": [
+    {
+      "stage": "environment-initialization",
+      "passed": true,
+      "comparisons": [
+        {
+          "name": "environment.resources",
+          "reference_shape": [
+            4,
+            8,
+            8
+          ],
+          "candidate_shape": [
+            4,
+            8,
+            8
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "environment.hazard",
+          "reference_shape": [
+            8,
+            8
+          ],
+          "candidate_shape": [
+            8,
+            8
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        }
+      ]
+    },
+    {
+      "stage": "environment-update",
+      "passed": true,
+      "comparisons": [
+        {
+          "name": "environment.resources",
+          "reference_shape": [
+            4,
+            8,
+            8
+          ],
+          "candidate_shape": [
+            4,
+            8,
+            8
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "environment.hazard",
+          "reference_shape": [
+            8,
+            8
+          ],
+          "candidate_shape": [
+            8,
+            8
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        }
+      ]
+    },
+    {
+      "stage": "stable-segmented-reduction",
+      "passed": true,
+      "comparisons": [
+        {
+          "name": "segmented_sum",
+          "reference_shape": [
+            64
+          ],
+          "candidate_shape": [
+            64
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 3.3527612686157227e-07,
+          "max_rel_error": 7.728287162542195e-06,
+          "first_mismatch_index": null
+        }
+      ]
+    },
+    {
+      "stage": "harvest-resolve-commit",
+      "passed": true,
+      "comparisons": [
+        {
+          "name": "harvest.gathered",
+          "reference_shape": [
+            48,
+            4
+          ],
+          "candidate_shape": [
+            48,
+            4
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "harvest.resources_after",
+          "reference_shape": [
+            4,
+            8,
+            8
+          ],
+          "candidate_shape": [
+            4,
+            8,
+            8
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 9.5367431640625e-07,
+          "max_rel_error": 1.2294804326344926e-07,
+          "first_mismatch_index": null
+        }
+      ]
+    },
+    {
+      "stage": "spatial-index-partners",
+      "passed": true,
+      "comparisons": [
+        {
+          "name": "spatial.active",
+          "reference_shape": [
+            48
+          ],
+          "candidate_shape": [
+            48
+          ],
+          "reference_dtype": "int32",
+          "candidate_dtype": "int32",
+          "exact_required": true,
+          "passed": true,
+          "reason": null,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "spatial.entity_cells",
+          "reference_shape": [
+            64
+          ],
+          "candidate_shape": [
+            64
+          ],
+          "reference_dtype": "int32",
+          "candidate_dtype": "int32",
+          "exact_required": true,
+          "passed": true,
+          "reason": null,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "spatial.sorted_entity_indices",
+          "reference_shape": [
+            48
+          ],
+          "candidate_shape": [
+            48
+          ],
+          "reference_dtype": "int32",
+          "candidate_dtype": "int32",
+          "exact_required": true,
+          "passed": true,
+          "reason": null,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "spatial.partners",
+          "reference_shape": [
+            48,
+            4
+          ],
+          "candidate_shape": [
+            48,
+            4
+          ],
+          "reference_dtype": "int32",
+          "candidate_dtype": "int32",
+          "exact_required": true,
+          "passed": true,
+          "reason": null,
+          "first_mismatch_index": null
+        }
+      ]
+    },
+    {
+      "stage": "information-observation",
+      "passed": true,
+      "comparisons": [
+        {
+          "name": "information.signals",
+          "reference_shape": [
+            48,
+            3
+          ],
+          "candidate_shape": [
+            48,
+            3
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "information.signal_mask",
+          "reference_shape": [
+            48,
+            3
+          ],
+          "candidate_shape": [
+            48,
+            3
+          ],
+          "reference_dtype": "bool",
+          "candidate_dtype": "bool",
+          "exact_required": true,
+          "passed": true,
+          "reason": null,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "information.signal_age",
+          "reference_shape": [
+            48,
+            3
+          ],
+          "candidate_shape": [
+            48,
+            3
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "information.partner_energy",
+          "reference_shape": [
+            48,
+            4
+          ],
+          "candidate_shape": [
+            48,
+            4
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "information.partner_group_match",
+          "reference_shape": [
+            48,
+            4
+          ],
+          "candidate_shape": [
+            48,
+            4
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "information.partner_mask",
+          "reference_shape": [
+            48,
+            4
+          ],
+          "candidate_shape": [
+            48,
+            4
+          ],
+          "reference_dtype": "bool",
+          "candidate_dtype": "bool",
+          "exact_required": true,
+          "passed": true,
+          "reason": null,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "information.uncertainty",
+          "reference_shape": [
+            48,
+            3
+          ],
+          "candidate_shape": [
+            48,
+            3
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        }
+      ]
+    },
+    {
+      "stage": "policy-batch",
+      "passed": true,
+      "comparisons": [
+        {
+          "name": "policy.features",
+          "reference_shape": [
+            48,
+            16
+          ],
+          "candidate_shape": [
+            48,
+            16
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "policy.genetic_logits",
+          "reference_shape": [
+            48,
+            8
+          ],
+          "candidate_shape": [
+            48,
+            8
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "policy.knowledge_logits",
+          "reference_shape": [
+            48,
+            8
+          ],
+          "candidate_shape": [
+            48,
+            8
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "policy.logits",
+          "reference_shape": [
+            48,
+            8
+          ],
+          "candidate_shape": [
+            48,
+            8
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "policy.genetic_action",
+          "passed": true,
+          "reason": null,
+          "reference_present": false,
+          "candidate_present": false
+        },
+        {
+          "name": "policy.action_mask",
+          "reference_shape": [
+            48,
+            8
+          ],
+          "candidate_shape": [
+            48,
+            8
+          ],
+          "reference_dtype": "bool",
+          "candidate_dtype": "bool",
+          "exact_required": true,
+          "passed": true,
+          "reason": null,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "policy.action",
+          "reference_shape": [
+            48
+          ],
+          "candidate_shape": [
+            48
+          ],
+          "reference_dtype": "int16",
+          "candidate_dtype": "int16",
+          "exact_required": true,
+          "passed": true,
+          "reason": null,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "policy.probability",
+          "reference_shape": [
+            48
+          ],
+          "candidate_shape": [
+            48
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "policy.entropy",
+          "reference_shape": [
+            48
+          ],
+          "candidate_shape": [
+            48
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "policy.direction_x",
+          "reference_shape": [
+            48
+          ],
+          "candidate_shape": [
+            48
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "policy.direction_y",
+          "reference_shape": [
+            48
+          ],
+          "candidate_shape": [
+            48
+          ],
+          "reference_dtype": "float32",
+          "candidate_dtype": "float32",
+          "exact_required": false,
+          "passed": true,
+          "reason": null,
+          "atol": 1e-06,
+          "rtol": 1e-06,
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "first_mismatch_index": null
+        },
+        {
+          "name": "policy.selected_partner",
+          "reference_shape": [
+            48
+          ],
+          "candidate_shape": [
+            48
+          ],
+          "reference_dtype": "int32",
+          "candidate_dtype": "int32",
+          "exact_required": true,
+          "passed": true,
+          "reason": null,
+          "first_mismatch_index": null
+        }
+      ]
+    }
+  ],
+  "gpu_runtime": {
+    "available": true,
+    "cupy_version": "14.1.1",
+    "cuda_runtime_version": 13020,
+    "cuda_driver_version": 13030,
+    "device_id": 0,
+    "device_name": "NVIDIA GeForce RTX 4070",
+    "compute_capability": [
+      8,
+      9
+    ],
+    "total_global_memory": 12878086144,
+    "multiprocessor_count": 46
+  },
+  "report_sha256_basis": "08b3a3e9fbee4140d276641db70d6b6a288381007bda7d583a2f82ec8f16a086"
+}

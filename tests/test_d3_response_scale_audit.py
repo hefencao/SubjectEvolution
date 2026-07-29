@@ -199,9 +199,12 @@ def test_protocol_audit_publishes_nested_effect_inference_contract() -> None:
     section = protocol["functional_module_protocol"][
         "processing_response_scale_audit"
     ]
-    assert protocol["schema"] == "structural-measurement-protocol-audit-v31"
+    assert protocol["schema"] == "structural-measurement-protocol-audit-v32"
     assert section["audit_schema"] == "d3-response-scale-audit-v2"
     assert section["independent_replication_unit"] == "seed-within-scale"
     assert section["checkpoint_weighting_within_seed"] == "equal-checkpoint-v1"
     assert section["seed_weighting_within_scale"] == "equal-seed-v1"
     assert section["exact_sign_flip_descriptive_only"] is True
+    execution = protocol["execution_backend_protocol"]
+    assert execution["parity_certificate_schema"] == "gpu-parity-certificate-v1"
+    assert execution["gpu_execution_audit_schema"] == "gpu-execution-audit-v1"

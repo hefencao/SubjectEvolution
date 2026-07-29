@@ -30,6 +30,7 @@ from se.analysis.parity import (
     compare_array,
     run_stage_parity,
     run_world_parity,
+    write_gpu_parity_report,
 )
 from se.reductions import stable_segmented_sum
 from se.runtime.sim import Simulation
@@ -266,6 +267,9 @@ class CpuGpuParityTests(unittest.TestCase):
                 ticks=2,
                 output_dir=Path(tmp),
             )
+        report_dir = os.environ.get("SE_GPU_PARITY_REPORT_DIR")
+        if report_dir:
+            write_gpu_parity_report(Path(report_dir), "stage-parity.json", report)
         self.assertTrue(report["passed"], report.get("first_failure_stage"))
 
 
@@ -504,6 +508,14 @@ class CpuGpuParityTests(unittest.TestCase):
                     ticks=2,
                     output_dir=root / Path(filename).stem,
                 )
+                report["config"] = filename
+                report_dir = os.environ.get("SE_GPU_PARITY_REPORT_DIR")
+                if report_dir:
+                    write_gpu_parity_report(
+                        Path(report_dir),
+                        f"world-{Path(filename).stem}.json",
+                        report,
+                    )
                 self.assertTrue(report["passed"], (filename, report["first_failure"]))
 
     def test_social_parity_snapshot_uses_real_socialsystem_arrays(self) -> None:

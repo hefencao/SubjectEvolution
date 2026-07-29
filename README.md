@@ -1,24 +1,26 @@
-# SE v0.63
+# SE v0.64
 
 SE is a deterministic artificial-life and subject-structure research platform. The current main line retains four role-free resource channels, conservative delayed storage and processing, identity-preserving external recycling, persistent abiotic renewal, costed spatial processing support, matched controls and nested shared-checkpoint response measurement.
 
-## Why v0.63
+## Why v0.64
 
-The supplied D3-I replication contains eight independent seeds at each of the 1.5× and 2× scales. All 64 matched panels are acute eligible, but neither scale passes the directional replication gate. v0.63 therefore adds no world mechanism.
+The user-supplied parity fixes are integrated into the GPU path. They move oxygen-gradient augmentation into the prepared GPU observation boundary, preserve the exact working-memory state features used by later learning, and keep backend-only mirror sequencing and observation snapshots out of checkpoint-semantic comparison while retaining their dedicated parity stages.
 
-The supplied run manifests also show that every one of 256 branches requested `gpu` but executed `gpu-strict-reference` with `gpu_acceleration_enabled=false`. The previous default validated GPU availability while leaving the CPU world authoritative, which is unsuitable for larger long-running panels.
+The supplied 1.5× rerun contains 128 completed branches. Every branch records:
 
-v0.63 changes the operational boundary:
+```text
+execution_backend: gpu-hybrid-accelerated
+gpu_acceleration_enabled: true
+gpu_fallback_used: false
+```
 
-- high-level commands default to `--backend auto`;
-- a usable CUDA/CuPy device selects the real `gpu-hybrid-accelerated` path;
-- a machine without a usable GPU falls back to CPU and records `cpu-fallback-no-gpu` and the reason;
-- `strict-reference` remains available only as an explicit historical diagnostic;
-- `tests/test_parity.py` owns CPU/GPU semantic validation.
+The operational problem from v0.63 is therefore resolved: the experiment actually executes the hybrid GPU path. Scientific and performance gates remain separate. Thirty-one of 32 panels are acute eligible, zero checkpoints are evolutionarily eligible, and the directional response replication gate remains false.
 
-## GPU execution
+At the late low-population response windows represented in the supplied artifacts, the median reported time per tick is about 0.0906 seconds on hybrid GPU versus 0.0282 seconds in the earlier strict-reference CPU run. This is an observational comparison across different seeds, not a paired benchmark or a general GPU-speed claim. It shows why execution provenance and performance must both be audited.
 
-Normal runs no longer need a backend flag:
+## GPU execution and parity
+
+Normal runs default to `--backend auto`:
 
 ```bash
 se-d3-processing-response-panel \
@@ -30,48 +32,52 @@ se-d3-processing-response-panel \
   --observation-period 30
 ```
 
-Before a scientific long run on a new CUDA/CuPy stack, execute the parity suite:
+Before scientific use on a new CUDA/CuPy stack:
 
 ```bash
 make parity-gpu
 ```
 
-On a GPU host, the real-device semantic-family tests must run rather than skip. Inspect each run's `run_manifest.json`:
+The target writes one machine-readable report for GPU stage parity and one for every registered semantic-family world. A certificate is created only when all required reports are present and pass.
 
-```text
-execution_backend: gpu-hybrid-accelerated
-gpu_acceleration_enabled: true
-gpu_fallback_used: false
+Audit an experiment artifact independently of scientific interpretation:
+
+```bash
+se-gpu-execution-audit \
+  --result panel=analyses/d3i_response_panel_1p5_gpu/d3_processing_response_panel_results.json \
+  --output analyses/gpu_execution_audit
 ```
 
-On a host without a usable GPU the run continues on CPU and records the fallback explicitly. A low-level device-only test can still call `resolve_backend("gpu")`, which remains strict and never silently returns CPU.
+`gpu-execution-audit-v1` verifies recorded backend provenance and summarizes timing and transfer diagnostics. It does not replace `tests/test_parity.py` and does not establish speedup.
 
 ## Parity v2
 
-`cpu-gpu-parity-v2` validates more than a final summary curve:
+`cpu-gpu-parity-v2` validates:
 
-- existing stage-by-stage policy, observation, intent and world comparisons;
+- stage-by-stage observation, policy, intent and world outputs;
 - all checkpoint-authoritative semantic leaves through recursive state comparison;
 - persistent GPU mirrors for entity, social, environment and information state;
 - representative semantic families covering knowledge/culture, mortality/adaptive groups, D3 processing, subject/multi-environment and plugins;
 - exact discrete comparisons and tolerance-bounded floating comparisons;
-- first divergent stage and leaf reporting.
+- first divergent stage, leaf and reference/candidate entity IDs.
 
-Adding checkpoint-authoritative state automatically expands the complete semantic-state parity comparison unless the field is explicitly classified as a backend cache.
+Backend mirror sequence numbers and diagnostic observation snapshots remain checkpointed for restoration and audit but are compared in their dedicated stages rather than treated as cross-backend continuation semantics.
 
-## Supplied D3-I result
+## Supplied D3-I fixed-GPU result
 
-The supplied nested audit reports:
+The nested matched audit reports:
 
 ```text
-1.5x original gain: -2.898296122704174e-06
-1.5x reversed gain: -5.477934432784455e-06
-2x original gain:    9.253429667044727e-07
-2x reversed gain:    6.064305225430936e-07
-replication gates:   false, false
+acute eligible panels: 31 / 32
+independent seeds:      8
+original mean gain:    -7.585360200717007e-07
+reversed mean gain:    -4.841683726372987e-08
+both-positive seeds:    0.25
+replication gate:       false
+evolutionary eligible:  0
 ```
 
-Movement events and checkpoints remain nested observations, not independent seeds. These results do not justify a support sensor, movement reward, migration controller or ecological claim.
+The one ineligible panel misses the preregistered minimum-alive threshold because two active branches reach 99 alive; its resource and recycling ledgers remain valid. No support sensor, movement reward, migration controller or ecological mechanism is unlocked.
 
 ## Workflow
 

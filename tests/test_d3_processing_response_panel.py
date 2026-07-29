@@ -95,7 +95,7 @@ def test_d3g_preregistered_checkpoint_panel_keeps_nested_sample_support(tmp_path
         "outcome_conditioned_checkpoint_selection"
     ] is False
     audit = build_protocol_audit(D3E)
-    assert audit["schema"] == "structural-measurement-protocol-audit-v31"
+    assert audit["schema"] == "structural-measurement-protocol-audit-v32"
     protocol = audit["functional_module_protocol"][
         "processing_response_sample_support_protocol"
     ]

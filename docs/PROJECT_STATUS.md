@@ -1,6 +1,6 @@
 # SE project status
 
-Version: **0.63.0**
+Version: **0.64.0**
 
 ## Current causal and measurement chain
 
@@ -11,57 +11,78 @@ role-free four-channel external resource and abiotic fields
 → inherited affinity, capacities and conservative delayed stores
 → costed spatial processing support with orientation-matched neutral controls
 → preregistered acute panels and nested seed-level effect inference
+→ GPU execution provenance + target-device semantic-parity certificate
 → evidence gate before any sensory, migration or ecological mechanism
 ```
 
-## Supplied D3-I replication result
+## Integrated GPU parity corrections
 
-The supplied artifacts contain eight independent seeds at each of the 1.5× and 2× scales, four preregistered checkpoints per seed and 32 matched four-arm panels per scale. Every panel is acute eligible, but the directional replication gate remains false:
+The supplied `fixed.zip` files are applied directly over the v0.63 baseline. The corrections:
 
-- 1.5× original mean gain: `-2.898296122704174e-06`;
-- 1.5× reversed mean gain: `-5.477934432784455e-06`;
-- 2× original mean gain: `9.253429667044727e-07`;
-- 2× reversed mean gain: `6.064305225430936e-07`;
-- both-orientation-positive seed fractions: `0.0` and `0.125`.
+- move oxygen-gradient augmentation into the GPU prepared-observation boundary instead of mutating the downloaded policy decision afterward;
+- carry the exact working-memory state features used during GPU routing into the later learning boundary;
+- exclude backend mirror sequence numbers and diagnostic observation snapshots from checkpoint-semantic comparison while retaining dedicated observation and device-mirror parity stages;
+- report both reference and candidate entity IDs at first divergence.
 
-This still does not justify a processing-support sensor, movement reward, migration controller or ecological interpretation.
+The complete CPU/no-device regression passes locally. Real-device parity cannot be rerun on the delivery host because CUDA/CuPy is unavailable.
 
-## Supplied backend diagnosis
+## Supplied fixed-GPU execution
 
-All 256 supplied branch runs requested `gpu`, but all 256 report:
+The supplied 1.5× D3-I rerun contains 128 completed branch runs. All 128 record:
 
 ```text
-execution_backend = gpu-strict-reference
-gpu_semantics_mode = strict-reference
-gpu_acceleration_enabled = false
-cpu_reference_world_authoritative = true
+requested_backend = auto
+execution_backend = gpu-hybrid-accelerated
+gpu_device_validated = true
+gpu_acceleration_enabled = true
+gpu_fallback_used = false
+cpu_reference_world_authoritative = false
 ```
 
-They are valid CPU-authoritative runs, not accelerated GPU runs. The previous default therefore prevented practical large-scale GPU long runs.
+This confirms that the production route now uses the hybrid GPU implementation rather than strict-reference CPU execution.
 
-## v0.63 decision
+Execution provenance does not imply performance gain. The earlier strict-reference result and the fixed-GPU result use the same panel plan except for seed IDs. Their median reported window times are:
 
-Change the execution default, not the scientific mechanism:
+- strict-reference CPU authority: `0.028173661200981498` seconds/tick;
+- hybrid GPU: `0.09061893285000527` seconds/tick.
 
-- all high-level run and experiment entry points default to `auto`;
-- configuration defaults use `hybrid-accelerated` GPU semantics;
-- a usable CUDA/CuPy device runs the real hybrid GPU path;
-- a host without a usable GPU continues on CPU and records `cpu-fallback-no-gpu` and its reason;
-- `strict-reference` remains an explicit historical diagnostic, not the production default;
-- CPU/GPU semantic validation belongs to `tests/test_parity.py`, not to a runtime fallback that disables acceleration.
+The observed ratio is approximately `3.2164×` slower for GPU in these late response windows. This is not a paired benchmark and does not generalize to high-population source trajectories. It does show that the current hybrid host/device boundary has substantial overhead at populations near 100–300.
 
-Parity v2 compares every checkpoint-authoritative semantic leaf, dedicated persistent device mirrors and a representative matrix of current semantic families. Real-GPU parity tests skip only when no CUDA device is available.
+## Supplied scientific result
 
-## Next gate
+The fixed-GPU result has 32 preregistered panels, of which 31 are acute eligible and zero are evolutionarily eligible. The nested equal-seed audit gives:
 
-Run `test_parity.py` on the target GPU environment before treating accelerated output as cross-backend validated. Then rerun the fixed D3-I panels with the default `auto` backend and verify `run_manifest.json` reports `gpu-hybrid-accelerated` and `gpu_acceleration_enabled=true`.
+- original matched mean gain: `-7.585360200717007e-07`;
+- reversed matched mean gain: `-4.841683726372987e-08`;
+- both-orientation-positive seed fraction: `0.25`;
+- directional replication gate: `false`.
 
-Do not add a response mechanism while the supplied eight-seed directional replication gate remains false. Evolutionary claims remain blocked until the separate generation-turnover gate is met.
+The only ineligible panel is seed 63008 at checkpoint 900. Its original and reversed branches reach a minimum pre-step alive count of 99, one below the preregistered threshold. Both interval ledgers remain valid, so this is a sampling-support failure rather than a GPU or conservation failure.
+
+## v0.64 decision
+
+Advance the GPU validation and operations boundary, not the world mechanism:
+
+- preserve the supplied parity fixes;
+- emit machine-readable parity reports from `tests/test_parity.py` on the target device;
+- require stage parity and every registered semantic-family world report before producing `gpu-parity-certificate-v1`;
+- add `se-gpu-execution-audit` to distinguish true hybrid GPU runs from fallback or strict-reference runs;
+- report timing and transfer diagnostics without claiming speedup;
+- retain the response-mechanism gate as closed.
+
+## Next gates
+
+1. Run `make parity-gpu` on the target CUDA/CuPy environment and retain the generated certificate.
+2. Benchmark CPU and GPU from the same checkpoint, on the same host, across controlled alive counts. The paired benchmark must include source-population ranges well above the late-panel 100–300 entity regime.
+3. Reduce host/device transfer and CPU commit overhead only after the paired profile identifies the dominant boundary.
+4. Do not add a processing-support sensor, reward or migration controller while the directional response gate remains false.
+5. Evolutionary claims remain blocked until actual generation-turnover requirements are met.
 
 ## Still incomplete
 
-- successful real-GPU parity across all registered semantic families on the target CUDA stack;
-- performance and memory measurements for 1.5× and 2× accelerated panels;
+- archived successful target-device parity certificate for the exact CUDA/CuPy stack;
+- paired same-checkpoint CPU/GPU scaling curve and crossover population;
+- device-resident action settlement, lifecycle, graph, knowledge-learning and logging loop;
 - positive, stable processing-response replication under both orientations;
 - adequate generation turnover for evolutionary inference;
 - justified sensing or control for processing opportunity;

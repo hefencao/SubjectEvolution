@@ -1,0 +1,179 @@
+{
+  "schema": "gpu-parity-certificate-v1",
+  "passed": true,
+  "required_report_count": 7,
+  "found_report_count": 7,
+  "missing_reports": [],
+  "reports": [
+    {
+      "file": "stage-parity.json",
+      "sha256": "7593fdea62ab0ba6791e46495ccb0d6bd2368c8714d87056e3c3b41ca2e95c3d",
+      "passed": true,
+      "gpu_available": true,
+      "config": null,
+      "ticks_compared": null,
+      "first_failure": null,
+      "gpu_runtime": {
+        "available": true,
+        "cupy_version": "14.1.1",
+        "cuda_runtime_version": 13020,
+        "cuda_driver_version": 13030,
+        "device_id": 0,
+        "device_name": "NVIDIA GeForce RTX 4070",
+        "compute_capability": [
+          8,
+          9
+        ],
+        "total_global_memory": 12878086144,
+        "multiprocessor_count": 46
+      }
+    },
+    {
+      "file": "world-mvp_short_k1_compat.json",
+      "sha256": "31b81145243f2d749ed0934067a6e8ea8ba5a72872a467d940c64d2ee26c78d4",
+      "passed": true,
+      "gpu_available": true,
+      "config": "mvp_short_k1_compat.json",
+      "ticks_compared": 2,
+      "first_failure": null,
+      "gpu_runtime": {
+        "available": true,
+        "cupy_version": "14.1.1",
+        "cuda_runtime_version": 13020,
+        "cuda_driver_version": 13030,
+        "device_id": 0,
+        "device_name": "NVIDIA GeForce RTX 4070",
+        "compute_capability": [
+          8,
+          9
+        ],
+        "total_global_memory": 12878086144,
+        "multiprocessor_count": 46
+      }
+    },
+    {
+      "file": "world-mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_culture_longrun.json",
+      "sha256": "07363d7ced2a6154c1c14d785f78efd33b905be8d7e8aa29b22cc4d9d30b6708",
+      "passed": true,
+      "gpu_available": true,
+      "config": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_culture_longrun.json",
+      "ticks_compared": 2,
+      "first_failure": null,
+      "gpu_runtime": {
+        "available": true,
+        "cupy_version": "14.1.1",
+        "cuda_runtime_version": 13020,
+        "cuda_driver_version": 13030,
+        "device_id": 0,
+        "device_name": "NVIDIA GeForce RTX 4070",
+        "compute_capability": [
+          8,
+          9
+        ],
+        "total_global_memory": 12878086144,
+        "multiprocessor_count": 46
+      }
+    },
+    {
+      "file": "world-mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_mortality_trace_adaptive_groups_longrun.json",
+      "sha256": "2493b1804ba5cc17b2a5e9fa26da7a3f1c9ff9e0249e3cf979fde6fc47c1db9f",
+      "passed": true,
+      "gpu_available": true,
+      "config": "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_mortality_trace_adaptive_groups_longrun.json",
+      "ticks_compared": 2,
+      "first_failure": null,
+      "gpu_runtime": {
+        "available": true,
+        "cupy_version": "14.1.1",
+        "cuda_runtime_version": 13020,
+        "cuda_driver_version": 13030,
+        "device_id": 0,
+        "device_name": "NVIDIA GeForce RTX 4070",
+        "compute_capability": [
+          8,
+          9
+        ],
+        "total_global_memory": 12878086144,
+        "multiprocessor_count": 46
+      }
+    },
+    {
+      "file": "world-mvp_short_d3g_spatial_processing_scale1p5_longrun.json",
+      "sha256": "9b807751914c0329189f6406519115536c8fac3af3518eb7c2d3ee69949a2c15",
+      "passed": true,
+      "gpu_available": true,
+      "config": "mvp_short_d3g_spatial_processing_scale1p5_longrun.json",
+      "ticks_compared": 2,
+      "first_failure": null,
+      "gpu_runtime": {
+        "available": true,
+        "cupy_version": "14.1.1",
+        "cuda_runtime_version": 13020,
+        "cuda_driver_version": 13030,
+        "device_id": 0,
+        "device_name": "NVIDIA GeForce RTX 4070",
+        "compute_capability": [
+          8,
+          9
+        ],
+        "total_global_memory": 12878086144,
+        "multiprocessor_count": 46
+      }
+    },
+    {
+      "file": "world-mvp_short_subject_structure_multi_env_atlas_longrun.json",
+      "sha256": "a9776d790cbe1cd57b56fc4545a8715ca87908338afb722732075a7ebe71f3aa",
+      "passed": true,
+      "gpu_available": true,
+      "config": "mvp_short_subject_structure_multi_env_atlas_longrun.json",
+      "ticks_compared": 2,
+      "first_failure": null,
+      "gpu_runtime": {
+        "available": true,
+        "cupy_version": "14.1.1",
+        "cuda_runtime_version": 13020,
+        "cuda_driver_version": 13030,
+        "device_id": 0,
+        "device_name": "NVIDIA GeForce RTX 4070",
+        "compute_capability": [
+          8,
+          9
+        ],
+        "total_global_memory": 12878086144,
+        "multiprocessor_count": 46
+      }
+    },
+    {
+      "file": "world-mvp_short_v023_synthetic_abiotic_field_plugin_120.json",
+      "sha256": "3b9c8d2e03175255f7a33d6f91391451b19470844f23e4611604f3fa05830762",
+      "passed": true,
+      "gpu_available": true,
+      "config": "mvp_short_v023_synthetic_abiotic_field_plugin_120.json",
+      "ticks_compared": 2,
+      "first_failure": null,
+      "gpu_runtime": {
+        "available": true,
+        "cupy_version": "14.1.1",
+        "cuda_runtime_version": 13020,
+        "cuda_driver_version": 13030,
+        "device_id": 0,
+        "device_name": "NVIDIA GeForce RTX 4070",
+        "compute_capability": [
+          8,
+          9
+        ],
+        "total_global_memory": 12878086144,
+        "multiprocessor_count": 46
+      }
+    }
+  ],
+  "semantic_parity_configs": [
+    "mvp_short_k1_compat.json",
+    "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_culture_longrun.json",
+    "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_mortality_trace_adaptive_groups_longrun.json",
+    "mvp_short_d3g_spatial_processing_scale1p5_longrun.json",
+    "mvp_short_subject_structure_multi_env_atlas_longrun.json",
+    "mvp_short_v023_synthetic_abiotic_field_plugin_120.json"
+  ],
+  "validation_scope": "Real-device stage parity plus paired CPU/GPU world parity for every registered semantic family. This certificate validates only the recorded source/config/device combination and does not establish performance speedup."
+}

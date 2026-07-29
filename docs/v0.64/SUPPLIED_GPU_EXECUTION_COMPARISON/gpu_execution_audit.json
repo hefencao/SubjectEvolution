@@ -1,0 +1,590 @@
+{
+  "schema": "gpu-execution-audit-v1",
+  "results": [
+    {
+      "label": "strict-reference",
+      "path": "/mnt/data/analyses9_extract/d3i_response_panel_1p5_replication/d3_processing_response_panel_results.json",
+      "result_schema": "d3-processing-response-panel-results-v2",
+      "run_record_count": 128,
+      "requested_backend_counts": {
+        "gpu": 128
+      },
+      "execution_backend_counts": {
+        "gpu-strict-reference": 128
+      },
+      "gpu_semantics_mode_counts": {
+        "strict-reference": 128
+      },
+      "accelerated_run_count": 0,
+      "fallback_run_count": 0,
+      "strict_reference_run_count": 128,
+      "cpu_authoritative_run_count": 128,
+      "all_runs_real_gpu_accelerated": false,
+      "performance": {
+        "wall_elapsed_seconds": {
+          "count": 128,
+          "minimum": 2.888404628000899,
+          "median": 3.3824407539996173,
+          "mean": 3.6439502132656045,
+          "maximum": 8.1158376150006
+        },
+        "step_seconds": {
+          "count": 128,
+          "minimum": 0.022518861999742512,
+          "median": 0.029718149499785795,
+          "mean": 0.03257685378123654,
+          "maximum": 0.08002073500028928
+        },
+        "window_seconds_per_tick": {
+          "count": 128,
+          "minimum": 0.02326384189999165,
+          "median": 0.028173661200981498,
+          "mean": 0.030332093418798212,
+          "maximum": 0.07189967558332076
+        },
+        "environment_seconds": {
+          "count": 128,
+          "minimum": 0.0009436549999009003,
+          "median": 0.0010665325003174075,
+          "mean": 0.0011169736797072005,
+          "maximum": 0.002011990000028163
+        },
+        "spatial_seconds": {
+          "count": 128,
+          "minimum": 4.471100055525312e-05,
+          "median": 5.252499977359548e-05,
+          "mean": 5.649401562379808e-05,
+          "maximum": 0.00014108699997450458
+        },
+        "observation_seconds": {
+          "count": 128,
+          "minimum": 0.005909609999434906,
+          "median": 0.006828984500316437,
+          "mean": 0.006977957882760677,
+          "maximum": 0.009207583000716113
+        },
+        "policy_seconds": {
+          "count": 128,
+          "minimum": 0.000715899000169884,
+          "median": 0.0008838614999149286,
+          "mean": 0.000902702343765327,
+          "maximum": 0.0014000520004628925
+        },
+        "conflict_seconds": {
+          "count": 128,
+          "minimum": 0.00033556800008227583,
+          "median": 0.0004411880004226987,
+          "mean": 0.0004607559530711569,
+          "maximum": 0.0009117050003624172
+        },
+        "device_commit_seconds": {
+          "count": 128,
+          "minimum": 0.0,
+          "median": 0.0,
+          "mean": 0.0,
+          "maximum": 0.0
+        },
+        "gpu_h2d_bytes": {
+          "count": 128,
+          "minimum": 0.0,
+          "median": 0.0,
+          "mean": 0.0,
+          "maximum": 0.0
+        },
+        "gpu_d2h_bytes": {
+          "count": 128,
+          "minimum": 0.0,
+          "median": 0.0,
+          "mean": 0.0,
+          "maximum": 0.0
+        },
+        "gpu_entity_commit_bytes": {
+          "count": 128,
+          "minimum": 0.0,
+          "median": 0.0,
+          "mean": 0.0,
+          "maximum": 0.0
+        }
+      },
+      "experiment_counts": {
+        "panel_count": 32,
+        "completed_panel_count": 32,
+        "acute_analysis_eligible_panel_count": 32,
+        "evolutionary_analysis_eligible_checkpoint_count": 0
+      },
+      "failed_backend_records": [
+        {
+          "path": "root.panels[0].branches[0]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[0].branches[1]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[0].branches[2]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[0].branches[3]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[1].branches[0]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[1].branches[1]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[1].branches[2]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[1].branches[3]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[2].branches[0]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[2].branches[1]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[2].branches[2]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[2].branches[3]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[3].branches[0]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[3].branches[1]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[3].branches[2]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[3].branches[3]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[4].branches[0]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[4].branches[1]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[4].branches[2]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[4].branches[3]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[5].branches[0]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[5].branches[1]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[5].branches[2]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[5].branches[3]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[6].branches[0]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[6].branches[1]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[6].branches[2]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[6].branches[3]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[7].branches[0]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[7].branches[1]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[7].branches[2]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        },
+        {
+          "path": "root.panels[7].branches[3]",
+          "requested_backend": "gpu",
+          "execution_backend": "gpu-strict-reference",
+          "gpu_semantics_mode": "strict-reference",
+          "gpu_device_validated": true,
+          "gpu_acceleration_enabled": false,
+          "gpu_fallback_used": false,
+          "gpu_fallback_reason": null,
+          "cpu_reference_world_authoritative": true
+        }
+      ],
+      "recommendation": "not-all-runs-real-gpu-accelerated"
+    },
+    {
+      "label": "fixed-hybrid-gpu",
+      "path": "/mnt/data/analyses10/d3i_response_panel_1p5_gpu/d3_processing_response_panel_results.json",
+      "result_schema": "d3-processing-response-panel-results-v2",
+      "run_record_count": 128,
+      "requested_backend_counts": {
+        "auto": 128
+      },
+      "execution_backend_counts": {
+        "gpu-hybrid-accelerated": 128
+      },
+      "gpu_semantics_mode_counts": {
+        "hybrid-accelerated": 128
+      },
+      "accelerated_run_count": 128,
+      "fallback_run_count": 0,
+      "strict_reference_run_count": 0,
+      "cpu_authoritative_run_count": 0,
+      "all_runs_real_gpu_accelerated": true,
+      "performance": {
+        "wall_elapsed_seconds": {
+          "count": 128,
+          "minimum": 9.137841166999351,
+          "median": 10.98317702300028,
+          "mean": 10.858336517945332,
+          "maximum": 13.052464067999608
+        },
+        "step_seconds": {
+          "count": 128,
+          "minimum": 0.07049955000002228,
+          "median": 0.08977817350023543,
+          "mean": 0.09497813312505343,
+          "maximum": 0.19938396100042155
+        },
+        "window_seconds_per_tick": {
+          "count": 128,
+          "minimum": 0.07618222231091956,
+          "median": 0.09061893285000527,
+          "mean": 0.09066928201708184,
+          "maximum": 0.11030916113331841
+        },
+        "environment_seconds": {
+          "count": 128,
+          "minimum": 0.010078481998789357,
+          "median": 0.015649648000362504,
+          "mean": 0.016284202726637886,
+          "maximum": 0.027711303000614862
+        },
+        "spatial_seconds": {
+          "count": 128,
+          "minimum": 0.0035000480002054246,
+          "median": 0.004732748499918671,
+          "mean": 0.005664117788995782,
+          "maximum": 0.03437094400032947
+        },
+        "observation_seconds": {
+          "count": 128,
+          "minimum": 0.007764243999190512,
+          "median": 0.010456825999426655,
+          "mean": 0.011835662609328779,
+          "maximum": 0.0581898229993385
+        },
+        "policy_seconds": {
+          "count": 128,
+          "minimum": 0.007439204999172944,
+          "median": 0.010569302498879551,
+          "mean": 0.01102394017964059,
+          "maximum": 0.01848007599983248
+        },
+        "conflict_seconds": {
+          "count": 128,
+          "minimum": 0.0024123599996528355,
+          "median": 0.003872241499266238,
+          "mean": 0.003961779734396487,
+          "maximum": 0.008653654000227107
+        },
+        "device_commit_seconds": {
+          "count": 128,
+          "minimum": 0.0005679919995600358,
+          "median": 0.0008088925005722558,
+          "mean": 0.0009115147814071634,
+          "maximum": 0.003364332000273862
+        },
+        "gpu_h2d_bytes": {
+          "count": 128,
+          "minimum": 31760.0,
+          "median": 58174.0,
+          "mean": 60601.8515625,
+          "maximum": 101967.0
+        },
+        "gpu_d2h_bytes": {
+          "count": 128,
+          "minimum": 34827.0,
+          "median": 55551.0,
+          "mean": 54063.828125,
+          "maximum": 82191.0
+        },
+        "gpu_entity_commit_bytes": {
+          "count": 128,
+          "minimum": 4128.0,
+          "median": 6954.0,
+          "mean": 6905.5546875,
+          "maximum": 11285.0
+        }
+      },
+      "experiment_counts": {
+        "panel_count": 32,
+        "completed_panel_count": 32,
+        "acute_analysis_eligible_panel_count": 31,
+        "evolutionary_analysis_eligible_checkpoint_count": 0
+      },
+      "failed_backend_records": [],
+      "recommendation": "gpu-execution-confirmed-scientific-and-speedup-claims-separate"
+    }
+  ],
+  "all_results_have_backend_records": true,
+  "all_runs_real_gpu_accelerated": false,
+  "recommendation": "inspect-backend-provenance-before-gpu-claim",
+  "interpretation_boundary": "This audit verifies recorded execution provenance and summarizes timing/transfer diagnostics. It does not prove CPU/GPU semantic parity, a performance speedup, or any scientific effect. Parity requires the target-device test_parity suite and a speedup claim requires a paired benchmark on the same checkpoint and hardware."
+}

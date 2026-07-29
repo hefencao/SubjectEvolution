@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 from collections.abc import Mapping
 from dataclasses import fields, is_dataclass, replace
 import json
@@ -1097,8 +1098,64 @@ def run_world_parity(cfg: SimulationConfig, *, ticks: int, output_dir: Path) -> 
         "first_failure": first_failure,
         "ticks_compared": len(tick_reports),
         "ticks": tick_reports,
+        "semantic_root_exclusions": sorted(_SEMANTIC_ROOT_EXCLUDED_FIELDS),
+        "semantic_object_exclusions": sorted(_SEMANTIC_OBJECT_EXCLUDED_FIELDS),
+        "gpu_runtime": gpu_runtime_metadata(),
     }
 
+
+
+def gpu_runtime_metadata() -> dict[str, Any]:
+    """Return stable target-device metadata for parity certificates."""
+    try:
+        backend = resolve_backend("gpu")
+    except BackendUnavailableError as exc:
+        return {"available": False, "reason": str(exc)}
+    cupy = backend.xp
+    device = cupy.cuda.Device()
+    props = cupy.cuda.runtime.getDeviceProperties(device.id)
+
+    def normalized(value: Any) -> Any:
+        if isinstance(value, bytes):
+            return value.decode("utf-8", errors="replace").rstrip("\x00")
+        if isinstance(value, np.generic):
+            return value.item()
+        return value
+
+    return {
+        "available": True,
+        "cupy_version": str(getattr(cupy, "__version__", "unknown")),
+        "cuda_runtime_version": int(cupy.cuda.runtime.runtimeGetVersion()),
+        "cuda_driver_version": int(cupy.cuda.runtime.driverGetVersion()),
+        "device_id": int(device.id),
+        "device_name": normalized(props.get("name")),
+        "compute_capability": [
+            int(props.get("major", 0)),
+            int(props.get("minor", 0)),
+        ],
+        "total_global_memory": int(props.get("totalGlobalMem", 0)),
+        "multiprocessor_count": int(props.get("multiProcessorCount", 0)),
+    }
+
+
+def write_gpu_parity_report(
+    report_dir: Path,
+    filename: str,
+    report: dict[str, Any],
+) -> Path:
+    """Write one deterministic report emitted by ``tests/test_parity.py``."""
+    report_dir.mkdir(parents=True, exist_ok=True)
+    target = report_dir / filename
+    payload = dict(report)
+    payload.setdefault("gpu_runtime", gpu_runtime_metadata())
+    payload["report_sha256_basis"] = hashlib.sha256(
+        json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    ).hexdigest()
+    target.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return target
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(

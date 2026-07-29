@@ -1,0 +1,10 @@
+{
+  "schema": "v0.64-local-validation-status-v1",
+  "parity_returncode": 0,
+  "required_gpu_parity_returncode": 2,
+  "conda_sync_returncode": 2,
+  "conda_check_returncode": 2,
+  "conda_prefix": null,
+  "gpu_certificate_generated": false,
+  "interpretation": "No usable CUDA/CuPy device and no active Conda environment are available on the delivery host. Ordinary parity and the test portion of conda-check remain valid; target-device and Conda-specific gates are intentionally not claimed."
+}

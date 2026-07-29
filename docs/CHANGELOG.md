@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.64.0
+
+### Integrated target-GPU parity fixes and auditable execution provenance
+
+- Applies the user-supplied GPU parity fixes over the v0.63 baseline without changing world mechanisms.
+- Moves oxygen-gradient augmentation into the GPU prepared-observation boundary so policy decisions are produced from the same semantic input as the CPU path.
+- Carries exact working-memory state features from GPU preparation into the later learning boundary.
+- Excludes device mirror sequence numbers and backend diagnostic observation snapshots from checkpoint continuation semantics while retaining dedicated parity stages.
+- Reports both reference and candidate entity IDs at the first entity-state divergence.
+- Audits the supplied 1.5× rerun and confirms all 128 branches use `gpu-hybrid-accelerated`, with no fallback, strict-reference execution or CPU-authoritative world.
+- Records that 31/32 panels are acute eligible, zero are evolutionarily eligible and the directional matched-response gate remains false.
+- Adds `gpu-execution-audit-v1` and the `se-gpu-execution-audit` console entry for reusable backend-provenance and timing/transfer audits.
+- Adds target-device parity report emission from `tests/test_parity.py` and `gpu-parity-certificate-v1`, which requires stage parity plus every registered semantic-family world report.
+- Changes `make parity-gpu` to clear stale reports, run the required-device test suite and create the certificate only after all reports pass.
+- Separates real GPU execution, semantic parity and speedup claims. The supplied low-population GPU windows are observationally slower than the earlier strict-reference CPU windows, so no performance gain is claimed.
+- Upgrades protocol audit to v32 and project version to 0.64.0.
+- Adds no sensor, reward, controller, population support, diversity protection, role label or world mechanism.
+- Complete packages retain only `docs/v0.64` as a version-specific directory.
+
 ## 0.63.0
 
 ### GPU-first runtime execution and complete semantic parity boundary
