@@ -1,0 +1,13 @@
+{
+  "schema": "d3l-regime-resolution-plan-v1",
+  "config": "configs/mvp_d3l_gpu_scale4_regime_resolution.json",
+  "seeds": [69001, 69002, 69003],
+  "horizon_ticks": 5000,
+  "observation_period_ticks": 100,
+  "checkpoint_period_ticks": 100,
+  "world_mechanisms_changed_from_d3k": false,
+  "outcome_conditioned_stopping": false,
+  "failed_or_unresolved_seed_replaced": false,
+  "population_rescue_or_diversity_protection": false,
+  "pilot_runs_reused_as_confirmatory_effect_evidence": false
+}

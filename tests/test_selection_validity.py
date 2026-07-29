@@ -300,8 +300,64 @@ def test_audit_distinguishes_rebound_from_source_readiness(tmp_path: Path) -> No
     assert regime["post_trough_rebound_fraction"] > 0.1
     assert regime["source_ready_for_future_independent_runs"] is False
     assert regime["classification"] == (
-        "post-bottleneck-rebound-insufficient-source-readiness"
+        "post-bottleneck-active-rebound"
     )
+
+
+def test_audit_does_not_call_monotonic_rebound_settled(tmp_path: Path) -> None:
+    run = tmp_path / "active_rebound"
+    rows = [
+        _source_ready_row(
+            100,
+            alive=1000,
+            births=100,
+            deaths=7100,
+            births_per_initial=0.1,
+            mean_generation=0.2,
+            max_generation=1,
+        ),
+        *[
+            _source_ready_row(
+                tick,
+                alive=alive,
+                births=900,
+                deaths=100,
+                births_per_initial=1.2,
+                mean_generation=2.0,
+                max_generation=6,
+            )
+            for tick, alive in ((200, 1800), (300, 2800), (400, 4000))
+        ],
+    ]
+    _write_run(run, rows)
+    report = audit_run("active", run, thresholds=SelectionValidityThresholds())
+    regime = report["post_bottleneck_regime"]
+    assert regime["active_rebound"] is True
+    assert regime["settled_population_supported"] is False
+    assert regime["classification"] == "post-bottleneck-active-rebound"
+
+
+def test_runtime_records_founder_lineage_concentration_profile(tmp_path: Path) -> None:
+    cfg = load_config(ROOT / "configs" / "heterogeneous_smoke.json")
+    cfg = replace(
+        cfg,
+        run=replace(
+            cfg.run,
+            ticks=1,
+            metrics_period=1,
+            evolution_evaluation_period=1,
+            long_run_diagnostics_enabled=True,
+            long_run_diagnostics_schema="long-run-evolution-diagnostics-v1",
+        ),
+        world=replace(cfg.world, initial_entities=16, max_entities=24),
+    )
+    sim = Simulation(cfg, tmp_path / "lineages", backend="cpu")
+    sim.run(until_tick=1)
+    row = sim.evolution_progress.records[-1]
+    assert row["effective_lineages_shannon"] + 1e-12 >= row["effective_lineages"]
+    assert row["top_5_lineage_fraction"] >= row["largest_lineage_fraction"]
+    assert row["top_10_lineage_fraction"] >= row["top_5_lineage_fraction"]
+    assert 0.0 <= row["effective_lineages_fraction_to_initial"] <= 1.0
 
 
 def test_source_ready_rule_requires_all_independent_seeds(tmp_path: Path) -> None:
@@ -407,9 +463,9 @@ def test_multi_seed_writes_plan_before_first_simulation_and_auto_audit(
     plan = json.loads((output / "multi_seed_plan.json").read_text())
     audit = json.loads((output / "selection_validity_audit.json").read_text())
     long_run = json.loads((output / "long_run_analysis.json").read_text())
-    assert plan["schema"] == "multi-seed-run-plan-v2"
+    assert plan["schema"] == "multi-seed-run-plan-v3"
     assert plan["automatic_selection_validity_audit"] is True
-    assert audit["schema"] == "demographic-selection-validity-audit-v2"
+    assert audit["schema"] == "demographic-selection-validity-audit-v3"
     assert long_run["automatic_selection_validity_audit"]["run_count"] == 1
 
 

@@ -35,5 +35,6 @@ Demographic source audit presets:
 
 - `mvp_d3j_gpu_scale4_demographic_audit.json`: 1,200-tick pilot at 100-tick reporting/evaluation/checkpoint cadence.
 - `mvp_d3k_gpu_scale4_settled_regime_audit.json`: 3,000-tick continuation of the same unprotected scale-4 world, used to test whether a stable, descendant-dominated and reproductively broad post-bottleneck source emerges.
+- `mvp_d3l_gpu_scale4_regime_resolution.json`: fixed 5,000-tick regime-resolution run. It retains the same world and mechanisms while requiring recent population slope and cross-window change to approach zero before a rebound can be called settled.
 
 `se-multi` writes `multi_seed_plan.json` before the first seed and automatically emits `selection_validity_plan.json`, `selection_validity_audit.json` and Markdown after all available seed progress streams complete. These outputs never alter the simulation or replace failed seeds.

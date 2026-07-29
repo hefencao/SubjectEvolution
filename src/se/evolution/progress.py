@@ -821,7 +821,14 @@ class EvolutionProgressTracker:
             lineage_count = int(counts.size)
             share = counts.astype(np.float64) / active.size
             effective_lineages = float(1.0 / np.sum(share * share))
+            positive_share = share[share > 0.0]
+            effective_lineages_shannon = float(
+                np.exp(-np.sum(positive_share * np.log(positive_share)))
+            )
+            ranked_share = np.sort(share)[::-1]
             largest_lineage_fraction = float(share.max())
+            top_5_lineage_fraction = float(ranked_share[:5].sum())
+            top_10_lineage_fraction = float(ranked_share[:10].sum())
             active_generation = np.asarray(generation[active], dtype=np.int64)
             mean_generation = float(np.mean(active_generation))
             max_generation = int(np.max(active_generation))
@@ -830,7 +837,9 @@ class EvolutionProgressTracker:
             descendant_alive_fraction = float(descendant_alive / active.size)
         else:
             lineage_count = 0
-            effective_lineages = largest_lineage_fraction = mean_generation = 0.0
+            effective_lineages = effective_lineages_shannon = 0.0
+            largest_lineage_fraction = top_5_lineage_fraction = 0.0
+            top_10_lineage_fraction = mean_generation = 0.0
             max_generation = 0
             generation_zero_alive = 0
             descendant_alive = 0
@@ -1140,10 +1149,21 @@ class EvolutionProgressTracker:
             "descendant_alive_fraction": descendant_alive_fraction,
             "lineage_count": lineage_count,
             "effective_lineages": effective_lineages,
+            "effective_lineages_shannon": effective_lineages_shannon,
             "effective_lineages_per_alive": (
                 effective_lineages / active.size if active.size else 0.0
             ),
+            "lineage_count_fraction_to_initial": (
+                lineage_count / self.initial_population
+                if self.initial_population > 0 else 0.0
+            ),
+            "effective_lineages_fraction_to_initial": (
+                effective_lineages / self.initial_population
+                if self.initial_population > 0 else 0.0
+            ),
             "largest_lineage_fraction": largest_lineage_fraction,
+            "top_5_lineage_fraction": top_5_lineage_fraction,
+            "top_10_lineage_fraction": top_10_lineage_fraction,
             "window_action_entropy": action_entropy,
             "window_action_counts": action_delta.tolist(),
             "action_names": [action.name for action in Action],

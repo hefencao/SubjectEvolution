@@ -1,3 +1,6 @@
+*.egg-info/
+*.py[cod]
+.validation/
 .venv/
 __pycache__/
 *.py[cod]

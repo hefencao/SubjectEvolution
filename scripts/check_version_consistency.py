@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fail before installation when project and package version sources diverge."""
 from __future__ import annotations
-import argparse, ast, json, re, tomllib
+import argparse, ast, json, tomllib
 from pathlib import Path
 
 
@@ -22,13 +22,12 @@ def check(project: Path) -> dict[str, object]:
     pyproject = tomllib.loads((project/'pyproject.toml').read_text(encoding='utf-8'))
     project_version = str(pyproject['project']['version'])
     package = package_version(project/'src/se/__init__.py')
-    makefile = (project/'Makefile').read_text(encoding='utf-8')
-    docs_versions = sorted(set(re.findall(r'docs/v(\d+\.\d+)', makefile)))
     expected_docs = '.'.join(project_version.split('.')[:2])
-    if package != project_version or docs_versions != [expected_docs]:
+    docs_dir = project / 'docs' / f'v{expected_docs}'
+    if package != project_version or not docs_dir.is_dir():
         raise RuntimeError(
             f'version mismatch: pyproject={project_version}, package={package}, '
-            f'makefile_docs={docs_versions}, expected_docs={expected_docs}'
+            f'docs_dir={docs_dir.relative_to(project)}, docs_exists={docs_dir.is_dir()}'
         )
     return {'passed': True, 'version': project_version, 'docs_version': expected_docs}
 

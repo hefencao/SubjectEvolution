@@ -1,0 +1,114 @@
+{
+  "schema": "d3k-3000-demographic-regime-reinterpretation-v1",
+  "source_schemas": {
+    "long_run_analysis": "multi-seed-long-run-analysis-v16",
+    "selection_validity_audit": "demographic-selection-validity-audit-v2"
+  },
+  "v3_thresholds": {
+    "maximum_settled_alive_slope_fraction_per_window": 0.02,
+    "maximum_settled_span_change_fraction": 0.1
+  },
+  "runs": [
+    {
+      "seed": 68001,
+      "trough_tick": 800,
+      "trough_alive": 898,
+      "final_alive": 7339,
+      "recent_ticks": [
+        2800,
+        2900,
+        3000
+      ],
+      "recent_alive": [
+        5697,
+        6442,
+        7339
+      ],
+      "recent_alive_cv": 0.1033936332906082,
+      "recent_alive_slope_fraction_per_window": 0.12645035424581585,
+      "recent_span_change_fraction": 0.2529007084916316,
+      "recent_maximum_abs_net_growth_fraction": 0.12222373620384248,
+      "mean_generation": 2.8903120316119364,
+      "max_generation": 10,
+      "descendant_alive_fraction": 0.9344597356588091,
+      "effective_successful_parents_window": 1090.090202177294,
+      "largest_parent_contribution_fraction_window": 0.002533783783783784,
+      "effective_founder_lineages": 32.859155840392404,
+      "largest_founder_lineage_fraction": 0.0887041831312168,
+      "strategy_effective_dimensions": 28.398448016983888,
+      "death_energy_depleted_fraction": 1.0,
+      "v3_classification": "post-bottleneck-active-rebound",
+      "settled_population_supported": false,
+      "source_ready_for_future_independent_runs": false
+    },
+    {
+      "seed": 68002,
+      "trough_tick": 900,
+      "trough_alive": 864,
+      "final_alive": 6815,
+      "recent_ticks": [
+        2800,
+        2900,
+        3000
+      ],
+      "recent_alive": [
+        5529,
+        6017,
+        6815
+      ],
+      "recent_alive_cv": 0.08660761956472213,
+      "recent_alive_slope_fraction_per_window": 0.10505963727465849,
+      "recent_span_change_fraction": 0.2101192745493165,
+      "recent_maximum_abs_net_growth_fraction": 0.12280701754385964,
+      "mean_generation": 2.9847395451210565,
+      "max_generation": 9,
+      "descendant_alive_fraction": 0.9363169479090242,
+      "effective_successful_parents_window": 1021.2350907519447,
+      "largest_parent_contribution_fraction_window": 0.0018399264029438822,
+      "effective_founder_lineages": 23.035421923024845,
+      "largest_founder_lineage_fraction": 0.12677916360968453,
+      "strategy_effective_dimensions": 19.981806753647263,
+      "death_energy_depleted_fraction": 0.9996966632962588,
+      "v3_classification": "post-bottleneck-active-rebound",
+      "settled_population_supported": false,
+      "source_ready_for_future_independent_runs": false
+    },
+    {
+      "seed": 68003,
+      "trough_tick": 900,
+      "trough_alive": 879,
+      "final_alive": 6056,
+      "recent_ticks": [
+        2800,
+        2900,
+        3000
+      ],
+      "recent_alive": [
+        4815,
+        5342,
+        6056
+      ],
+      "recent_alive_cv": 0.09410037438725412,
+      "recent_alive_slope_fraction_per_window": 0.11481527169555311,
+      "recent_span_change_fraction": 0.22963054339110592,
+      "recent_maximum_abs_net_growth_fraction": 0.1178996036988111,
+      "mean_generation": 2.6251651254953763,
+      "max_generation": 10,
+      "descendant_alive_fraction": 0.9237120211360634,
+      "effective_successful_parents_window": 896.7094188376753,
+      "largest_parent_contribution_fraction_window": 0.0021141649048625794,
+      "effective_founder_lineages": 46.91570938080448,
+      "largest_founder_lineage_fraction": 0.06109643328929987,
+      "strategy_effective_dimensions": 33.11683512386712,
+      "death_energy_depleted_fraction": 0.9997889182058047,
+      "v3_classification": "post-bottleneck-active-rebound",
+      "settled_population_supported": false,
+      "source_ready_for_future_independent_runs": false
+    }
+  ],
+  "all_runs_active_rebound": true,
+  "all_runs_settled": false,
+  "future_fixed_burn_in_supported": false,
+  "recommendation": "run-fixed-d3l-regime-resolution-without-outcome-conditioned-stopping",
+  "interpretation_boundary": "The supplied endpoints show substantial descendant turnover and broad recent parent contribution, but their population trajectories are still rising rapidly. Founder-lineage concentration and current strategy variation are reported separately. No selection effect is estimated from this reinterpretation."
+}

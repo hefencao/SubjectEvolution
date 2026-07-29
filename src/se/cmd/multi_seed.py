@@ -97,7 +97,7 @@ def main() -> None:
     ).hexdigest()
     selection_thresholds = SelectionValidityThresholds()
     multi_seed_plan = {
-        "schema": "multi-seed-run-plan-v2",
+        "schema": "multi-seed-run-plan-v3",
         "config": str(Path(args.config)),
         "resolved_config_sha256": config_sha256,
         "seeds": seeds,
@@ -113,7 +113,7 @@ def main() -> None:
         "automatic_long_run_analysis": True,
         "automatic_selection_validity_audit": True,
         "selection_validity_plan": {
-            "schema": "demographic-selection-validity-plan-v2",
+            "schema": "demographic-selection-validity-plan-v3",
             "thresholds": asdict(selection_thresholds),
             "independent_unit": "run-seed",
             "windows_are_independent_replicates": False,

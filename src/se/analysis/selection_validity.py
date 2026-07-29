@@ -17,8 +17,8 @@ from typing import Any, Iterable, Sequence
 
 import numpy as np
 
-SCHEMA = "demographic-selection-validity-audit-v2"
-PLAN_SCHEMA = "demographic-selection-validity-plan-v2"
+SCHEMA = "demographic-selection-validity-audit-v3"
+PLAN_SCHEMA = "demographic-selection-validity-plan-v3"
 
 
 @dataclass(frozen=True)
@@ -34,6 +34,8 @@ class SelectionValidityThresholds:
     minimum_settled_alive: int = 1000
     maximum_settled_alive_cv: float = 0.15
     maximum_settled_net_growth_fraction: float = 0.15
+    maximum_settled_alive_slope_fraction_per_window: float = 0.02
+    maximum_settled_span_change_fraction: float = 0.10
     minimum_descendant_alive_fraction: float = 0.75
     minimum_unique_successful_parents_per_window: int = 100
     minimum_effective_successful_parents_per_window: float = 80.0
@@ -63,6 +65,10 @@ class SelectionValidityThresholds:
             raise ValueError("maximum settled alive CV cannot be negative")
         if self.maximum_settled_net_growth_fraction < 0.0:
             raise ValueError("maximum settled net growth fraction cannot be negative")
+        if self.maximum_settled_alive_slope_fraction_per_window < 0.0:
+            raise ValueError("maximum settled alive slope cannot be negative")
+        if self.maximum_settled_span_change_fraction < 0.0:
+            raise ValueError("maximum settled span change cannot be negative")
         if not 0.0 <= self.minimum_descendant_alive_fraction <= 1.0:
             raise ValueError("minimum descendant fraction must be in [0, 1]")
         if self.minimum_unique_successful_parents_per_window < 1:
@@ -183,6 +189,13 @@ def _window_assessment(
     descendant_fraction = row.get("descendant_alive_fraction")
     births_window = int(row.get("births_window", 0))
     deaths_window = int(row.get("deaths_window", 0))
+    lineage_count = int(row.get("lineage_count", 0))
+    effective_lineages_shannon = row.get("effective_lineages_shannon")
+    top_5_lineage_fraction = row.get("top_5_lineage_fraction")
+    top_10_lineage_fraction = row.get("top_10_lineage_fraction")
+    canonical_diversity = row.get("canonical_diversity_ratio_to_initial")
+    policy_diversity = row.get("policy_diversity_ratio_to_initial")
+    strategy_dimensions = row.get("strategy_effective_dimensions")
     demographic_checks = {
         "alive_fraction_met": (
             alive_fraction >= thresholds.minimum_alive_fraction_to_initial
@@ -237,7 +250,33 @@ def _window_assessment(
         "alive": int(row.get("alive", 0)),
         "alive_fraction_to_initial": alive_fraction,
         "effective_lineages": effective_lineages,
+        "lineage_count": lineage_count,
         "largest_lineage_fraction": largest_lineage,
+        "effective_lineages_shannon": (
+            float(effective_lineages_shannon)
+            if effective_lineages_shannon is not None else None
+        ),
+        "top_5_lineage_fraction": (
+            float(top_5_lineage_fraction)
+            if top_5_lineage_fraction is not None else None
+        ),
+        "top_10_lineage_fraction": (
+            float(top_10_lineage_fraction)
+            if top_10_lineage_fraction is not None else None
+        ),
+        "canonical_diversity_ratio_to_initial": (
+            float(canonical_diversity) if canonical_diversity is not None else None
+        ),
+        "policy_diversity_ratio_to_initial": (
+            float(policy_diversity) if policy_diversity is not None else None
+        ),
+        "strategy_effective_dimensions": (
+            float(strategy_dimensions) if strategy_dimensions is not None else None
+        ),
+        "heritable_variation_metrics_available": all(
+            value is not None
+            for value in (canonical_diversity, policy_diversity, strategy_dimensions)
+        ),
         "successful_parent_samples_window": parent_samples,
         "unique_successful_parents_window": (
             int(unique_parents) if unique_parents is not None else None
@@ -291,11 +330,25 @@ def _settled_regime(
             dtype=np.float64,
         )
         maximum_growth_fraction = float(growth_fraction.max(initial=0.0))
+        x = np.arange(recent_alive.size, dtype=np.float64)
+        if recent_alive.size > 1 and alive_mean > 0.0:
+            slope = float(np.polyfit(x, recent_alive, 1)[0])
+            alive_slope_fraction = slope / alive_mean
+            span_change_fraction = float(
+                abs(recent_alive[-1] - recent_alive[0]) / alive_mean
+            )
+        else:
+            alive_slope_fraction = 0.0
+            span_change_fraction = 0.0
         settled_population_supported = bool(
             int(recent_alive.min()) >= thresholds.minimum_settled_alive
             and alive_cv <= thresholds.maximum_settled_alive_cv
             and maximum_growth_fraction
             <= thresholds.maximum_settled_net_growth_fraction
+            and abs(alive_slope_fraction)
+            <= thresholds.maximum_settled_alive_slope_fraction_per_window
+            and span_change_fraction
+            <= thresholds.maximum_settled_span_change_fraction
         )
         settled_lineage_supported = bool(
             min(float(row["effective_lineages"]) for row in recent)
@@ -313,6 +366,8 @@ def _settled_regime(
     else:
         alive_cv = None
         maximum_growth_fraction = None
+        alive_slope_fraction = None
+        span_change_fraction = None
         settled_population_supported = False
         settled_lineage_supported = False
         contributor_available = False
@@ -330,8 +385,38 @@ def _settled_regime(
     rebound_fraction = float(
         (float(final["alive"]) - float(trough["alive"])) / max(float(trough["alive"]), 1.0)
     )
+    heritable_variation = {
+        "available": bool(final["heritable_variation_metrics_available"]),
+        "canonical_diversity_ratio_to_initial": final[
+            "canonical_diversity_ratio_to_initial"
+        ],
+        "policy_diversity_ratio_to_initial": final[
+            "policy_diversity_ratio_to_initial"
+        ],
+        "strategy_effective_dimensions": final["strategy_effective_dimensions"],
+        "interpretation": (
+            "These measurements describe current heritable variation and are reported "
+            "separately from founder-lineage concentration."
+        ),
+    }
+    active_rebound = bool(
+        recent
+        and alive_slope_fraction is not None
+        and alive_slope_fraction
+        > thresholds.maximum_settled_alive_slope_fraction_per_window
+    )
+    active_decline = bool(
+        recent
+        and alive_slope_fraction is not None
+        and alive_slope_fraction
+        < -thresholds.maximum_settled_alive_slope_fraction_per_window
+    )
     if source_ready:
         classification = "settled-source-ready-for-future-independent-runs"
+    elif collapse_before_turnover and rebound_fraction >= 0.10 and active_rebound:
+        classification = "post-bottleneck-active-rebound"
+    elif collapse_before_turnover and active_decline:
+        classification = "post-bottleneck-active-decline"
     elif collapse_before_turnover and rebound_fraction >= 0.10:
         classification = "post-bottleneck-rebound-insufficient-source-readiness"
     elif collapse_before_turnover:
@@ -341,7 +426,7 @@ def _settled_regime(
     else:
         classification = "selection-source-insufficient-observation"
     return {
-        "schema": "post-bottleneck-demographic-regime-v1",
+        "schema": "post-bottleneck-demographic-regime-v2",
         "trough_tick": int(trough["tick"]),
         "trough_alive": int(trough["alive"]),
         "final_alive": int(final["alive"]),
@@ -351,13 +436,23 @@ def _settled_regime(
         "settled_window_start_tick": int(recent[0]["tick"]) if recent else None,
         "settled_alive_cv": alive_cv,
         "settled_maximum_abs_net_growth_fraction": maximum_growth_fraction,
+        "settled_alive_slope_fraction_per_window": alive_slope_fraction,
+        "settled_span_change_fraction": span_change_fraction,
+        "active_rebound": active_rebound,
+        "active_decline": active_decline,
         "settled_population_supported": settled_population_supported,
         "settled_lineage_supported": settled_lineage_supported,
+        "founder_lineage_interpretation": (
+            "Founder-lineage concentration is reported separately from current "
+            "heritable variation. It is not a substitute for genotype or policy "
+            "diversity measurements."
+        ),
         "turnover_supported": turnover_supported,
         "descendant_metric_available": bool(final["descendant_metric_available"]),
         "descendant_supported": descendant_supported,
         "contributor_metrics_available": contributor_available,
         "reproductive_contributor_supported": contributor_supported,
+        "current_heritable_variation": heritable_variation,
         "source_ready_for_future_independent_runs": source_ready,
         "candidate_future_burn_in_tick": (
             int(recent[0]["tick"]) if source_ready and recent else None
@@ -530,6 +625,14 @@ def build_audit(
         for row in rows
         if row["post_bottleneck_regime"]["source_ready_for_future_independent_runs"]
     ]
+    active_rebound = [
+        row for row in rows if row["post_bottleneck_regime"]["active_rebound"]
+    ]
+    settled_population = [
+        row
+        for row in rows
+        if row["post_bottleneck_regime"]["settled_population_supported"]
+    ]
     source_rule_supported = bool(
         len(rows) >= thresholds.minimum_source_ready_seed_count
         and len(source_ready) == len(rows)
@@ -544,6 +647,8 @@ def build_audit(
     )
     if source_rule_supported:
         recommendation = "preregister-fixed-burn-in-and-test-new-independent-seeds"
+    elif rows and len(active_rebound) == len(rows):
+        recommendation = "continue-fixed-horizon-until-demographic-regime-resolves"
     elif bottlenecked:
         recommendation = "bottleneck-dominated-extend-observation-before-selection-claims"
     elif supported:
@@ -568,6 +673,8 @@ def build_audit(
         "bottleneck_dominated_run_count": len(bottlenecked),
         "within_run_selection_supported_count": len(supported),
         "post_bottleneck_source_ready_run_count": len(source_ready),
+        "active_rebound_run_count": len(active_rebound),
+        "settled_population_run_count": len(settled_population),
         "future_fixed_burn_in_rule_supported": source_rule_supported,
         "future_fixed_burn_in_tick": fixed_burn_in,
         "cross_seed_selection_inference_supported": False,
@@ -587,8 +694,8 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         f"Schema: `{payload['schema']}`",
         "",
-        "| Run | Initial | Min alive fraction | Trough tick | Final alive | Mean gen | Descendant fraction | Effective parents | Source ready | Classification |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---|",
+        "| Run | Initial | Min alive fraction | Trough tick | Final alive | Recent slope/window | Effective founder lineages | Strategy dimensions | Mean gen | Descendant fraction | Effective parents | Source ready | Classification |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
     ]
     for row in payload["runs"]:
         final = row["final_population"]
@@ -597,6 +704,9 @@ def render_markdown(payload: dict[str, Any]) -> str:
             f"| {row['label']} | {row['initial_population']} | "
             f"{row['minimum_alive_fraction_to_initial']:.6f} | "
             f"{regime['trough_tick']} | {regime['final_alive']} | "
+            f"{regime['settled_alive_slope_fraction_per_window']} | "
+            f"{final['effective_lineages']:.6f} | "
+            f"{final['strategy_effective_dimensions']} | "
             f"{final['mean_generation']:.6f} | "
             f"{final['descendant_alive_fraction']} | "
             f"{final['effective_successful_parents_window']} | "
@@ -633,6 +743,12 @@ def _thresholds_from_args(args: argparse.Namespace) -> SelectionValidityThreshol
         minimum_settled_alive=args.minimum_settled_alive,
         maximum_settled_alive_cv=args.maximum_settled_alive_cv,
         maximum_settled_net_growth_fraction=args.maximum_settled_net_growth_fraction,
+        maximum_settled_alive_slope_fraction_per_window=(
+            args.maximum_settled_alive_slope_fraction_per_window
+        ),
+        maximum_settled_span_change_fraction=(
+            args.maximum_settled_span_change_fraction
+        ),
         minimum_descendant_alive_fraction=args.minimum_descendant_fraction,
         minimum_unique_successful_parents_per_window=args.minimum_unique_parents,
         minimum_effective_successful_parents_per_window=args.minimum_effective_parents,
@@ -656,6 +772,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--minimum-settled-alive", type=int, default=1000)
     parser.add_argument("--maximum-settled-alive-cv", type=float, default=0.15)
     parser.add_argument("--maximum-settled-net-growth-fraction", type=float, default=0.15)
+    parser.add_argument(
+        "--maximum-settled-alive-slope-fraction-per-window",
+        type=float,
+        default=0.02,
+    )
+    parser.add_argument(
+        "--maximum-settled-span-change-fraction",
+        type=float,
+        default=0.10,
+    )
     parser.add_argument("--minimum-descendant-fraction", type=float, default=0.75)
     parser.add_argument("--minimum-unique-parents", type=int, default=100)
     parser.add_argument("--minimum-effective-parents", type=float, default=80.0)

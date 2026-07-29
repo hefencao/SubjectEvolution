@@ -1528,6 +1528,20 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
             )
             for row in demographic_available
         ),
+        "active_rebound_run_count": sum(
+            bool(
+                row.get("post_bottleneck_regime", {}).get("active_rebound")
+            )
+            for row in demographic_available
+        ),
+        "settled_population_run_count": sum(
+            bool(
+                row.get("post_bottleneck_regime", {}).get(
+                    "settled_population_supported"
+                )
+            )
+            for row in demographic_available
+        ),
         "within_run_selection_supported_count": sum(
             bool(row.get("selection_inference_supported_within_run"))
             for row in demographic_available
@@ -1537,7 +1551,7 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         "windows_are_independent_replicates": False,
     }
     return {
-        "schema": "multi-seed-long-run-analysis-v16",
+        "schema": "multi-seed-long-run-analysis-v17",
         "analyzer_version": __version__,
         "input_runtime_versions": sorted(
             {

@@ -1,3 +1,17 @@
+# Changelog
+
+## 0.69.0
+
+### Active-rebound classification and portable release documentation
+
+- Reclassifies monotonic post-bottleneck growth as an active rebound rather than a settled population.
+- Adds recent alive-slope and cross-window span-change requirements to source readiness.
+- Adds Shannon-effective founder lineages, top-5/top-10 lineage shares and initial-lineage retention diagnostics.
+- Reports founder-lineage concentration separately from current canonical, policy and strategy variation.
+- Upgrades demographic selection validity to v3, the post-bottleneck regime to v2, multi-seed long-run analysis to v17, the multi-seed plan to v3 and protocol audit to v37.
+- Adds the fixed 5,000-tick D3-L scale-4 regime-resolution configuration without changing world mechanisms.
+- Adds no population rescue, diversity protection, outcome-based stopping, sensor, reward, role or ecological conclusion.
+
 ## 0.68.0
 
 ### Post-bottleneck source-readiness audit
@@ -11,7 +25,6 @@
 - Keeps all thresholds observational: no population rescue, diversity protection or outcome-based seed replacement.
 - Upgrades protocol audit to v36 and project version to 0.68.0.
 
-# Changelog
 
 ## 0.67.0
 

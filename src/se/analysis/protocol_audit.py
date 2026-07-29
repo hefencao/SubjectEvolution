@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v36"
+SCHEMA = "structural-measurement-protocol-audit-v37"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -45,6 +45,7 @@ def build_protocol_audit(
     config_path: str | Path,
     manifest_path: str | Path | None = None,
 ) -> dict[str, Any]:
+    config_ref = Path(config_path)
     cfg = load_config(config_path)
     partition = SpatialRegionPartition(
         world_width=cfg.world.width,
@@ -109,7 +110,7 @@ def build_protocol_audit(
     ]
     payload: dict[str, Any] = {
         "schema": SCHEMA,
-        "config_path": str(Path(config_path).resolve()),
+        "config_path": str(config_ref if not config_ref.is_absolute() else config_ref.name),
         "execution_backend_protocol": {
             "cli_default_backend": "auto",
             "configured_gpu_semantics_mode": cfg.run.gpu_semantics_mode,
@@ -149,9 +150,9 @@ def build_protocol_audit(
             "feedback_to_world": False,
         },
         "demographic_selection_validity_protocol": {
-            "audit_schema": "demographic-selection-validity-audit-v2",
-            "plan_schema": "demographic-selection-validity-plan-v2",
-            "multi_seed_plan_schema": "multi-seed-run-plan-v2",
+            "audit_schema": "demographic-selection-validity-audit-v3",
+            "plan_schema": "demographic-selection-validity-plan-v3",
+            "multi_seed_plan_schema": "multi-seed-run-plan-v3",
             "automatic_multi_seed_audit": True,
             "independent_unit": "run-seed",
             "windows_are_independent_replicates": False,
@@ -172,10 +173,17 @@ def build_protocol_audit(
                 "minimum_alive": 1000,
                 "maximum_alive_cv": 0.15,
                 "maximum_abs_net_growth_fraction": 0.15,
+                "maximum_alive_slope_fraction_per_window": 0.02,
+                "maximum_span_change_fraction": 0.10,
                 "minimum_unique_successful_parents_per_window": 100,
                 "minimum_effective_successful_parents_per_window": 80.0,
                 "maximum_largest_parent_contribution_fraction": 0.05,
             },
+            "lineage_interpretation": (
+                "Founder-lineage Hill numbers and top-k shares are reported separately "
+                "from current genotype and policy variation; no single lineage metric "
+                "is treated as complete evidence of heritable variation."
+            ),
             "source_rule_scope": (
                 "pilot-derived burn-in candidates apply only to new independent seeds; "
                 "pilot windows are not reused as confirmatory effect evidence"
@@ -186,7 +194,8 @@ def build_protocol_audit(
             "interpretation": (
                 "rapid collapse before generation turnover is retained as a bottleneck-"
                 "dominated trajectory. A later rebound is separately audited for stable "
-                "population support, descendant turnover, lineage breadth, and independent "
+                "population level, near-zero recent population trend, descendant turnover, "
+                "founder-lineage breadth, current heritable variation, and independent "
                 "reproductive-contributor breadth before it can define a future source rule"
             ),
         },
@@ -1145,11 +1154,14 @@ def build_protocol_audit(
         "anchor_protocol": None,
     }
     if manifest_path is not None:
+        manifest_ref = Path(manifest_path)
         manifest = load_manifest(manifest_path)
         selection = dict(manifest.get("selection_protocol", {}))
         legacy = manifest.get("selection_schema") == "exposure-only-local-peak-selection-v1"
         payload["anchor_protocol"] = {
-            "manifest_path": str(Path(manifest_path).resolve()),
+            "manifest_path": str(
+                manifest_ref if not manifest_ref.is_absolute() else manifest_ref.name
+            ),
             "manifest_schema": manifest.get("schema"),
             "manifest_sha256": manifest.get("plan_sha256"),
             "selection_schema": manifest.get("selection_schema"),
