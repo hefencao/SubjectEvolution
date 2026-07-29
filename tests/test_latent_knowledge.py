@@ -7,6 +7,7 @@ import unittest
 
 import numpy as np
 
+from se.backend import Backend
 from se.cfg import load_config, validate_config
 from se.knowledge import (
     ACQUISITION_PRIVATE_EXPERIENCE,
@@ -181,6 +182,80 @@ class VariableLatentKnowledgeTests(unittest.TestCase):
         self.assertTrue(np.array_equal(first.residuals, reconstructed.astype(np.float32)))
         self.assertTrue(np.all(first.latent_dimension_counts > 0))
         self.assertTrue(np.all(first.latent_max_widths > 0))
+
+    def test_device_batched_root_hashes_match_scalar_catalog_exactly(self) -> None:
+        cfg = self._cfg(
+            initial_content_count=0,
+            initial_holders_fraction=0.0,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            scalar = KnowledgeSystem(
+                cfg,
+                root / "scalar",
+                initial_entity_ids=np.asarray([1], dtype=np.uint64),
+                initial_subject_ids=np.asarray([101], dtype=np.uint64),
+            )
+            device = KnowledgeSystem(
+                cfg,
+                root / "device",
+                initial_entity_ids=np.asarray([1], dtype=np.uint64),
+                initial_subject_ids=np.asarray([101], dtype=np.uint64),
+            )
+            try:
+                for index in range(24):
+                    outcome = np.asarray(
+                        [
+                            (index % 5 - 2) * 0.25,
+                            (index % 7 - 3) * 0.125,
+                            (index % 3) * 0.2,
+                            -(index % 4) * 0.1,
+                            (index % 2) * 0.5,
+                        ],
+                        dtype=np.float32,
+                    )
+                    for system in (scalar, device):
+                        encoded = system._encoded_bytes_for_new_content(
+                            parent_content_id=0,
+                            context_key=7 + index * 11,
+                            action_id=index % len(Action),
+                            source_subject_id=101 + index,
+                        )
+                        system.catalog.append(
+                            parent_content_id=0,
+                            context_key=7 + index * 11,
+                            action_id=index % len(Action),
+                            outcome_vector=outcome,
+                            encoded_bytes=encoded,
+                            created_tick=1,
+                            source_subject_id=101 + index,
+                        )
+                scalar.latent_store.ensure_catalog(scalar.catalog)
+                fake_device = Backend(name="gpu", xp=np, is_gpu=True)
+                stats = device.latent_store.ensure_catalog(
+                    device.catalog,
+                    backend=fake_device,
+                )
+                self.assertEqual(stats.root_rows, 24)
+                self.assertGreater(stats.host_to_device_bytes, 0)
+                self.assertGreater(stats.device_to_host_bytes, 0)
+                self.assertTrue(
+                    np.array_equal(
+                        scalar.catalog.encoded_bytes[: scalar.catalog.size],
+                        device.catalog.encoded_bytes[: device.catalog.size],
+                    )
+                )
+                for name, expected in scalar.latent_store.arrays().items():
+                    self.assertTrue(
+                        np.array_equal(
+                            expected,
+                            device.latent_store.arrays()[name],
+                        ),
+                        name,
+                    )
+            finally:
+                scalar.close()
+                device.close()
 
     def test_copy_order_does_not_change_published_residual(self) -> None:
         ordered, _ = self._manual_plan(False)

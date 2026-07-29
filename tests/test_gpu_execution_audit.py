@@ -23,6 +23,7 @@ def _write(path: Path, backend: dict, *, seconds_per_tick: float = 0.1) -> None:
                                     "gpu_d2h_bytes": 20,
                                     "gpu_device_preprocess_rows": 4,
                                     "gpu_device_resident_host_bytes_avoided": 80,
+                                    "gpu_device_latent_root_rows": 3,
                                 },
                             }
                         ]
@@ -59,6 +60,7 @@ def test_gpu_execution_audit_confirms_real_accelerated_runs(tmp_path: Path) -> N
         row["performance"]["gpu_device_resident_host_bytes_avoided"]["median"]
         == 80.0
     )
+    assert row["performance"]["gpu_device_latent_root_rows"]["median"] == 3.0
     assert "scientific-and-speedup-claims-separate" in audit["recommendation"]
 
 

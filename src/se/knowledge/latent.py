@@ -22,7 +22,7 @@ from typing import Any, Iterable
 
 import numpy as np
 
-from ..backend import backend_from_array, to_numpy
+from ..backend import Backend, backend_from_array, to_numpy
 from ..cfg import KnowledgeConfig, SimulationConfig
 from .types import (
     ACQUISITION_PRIVATE_EXPERIENCE,
@@ -42,6 +42,15 @@ LATENT_ROUTER_METADATA_WIDTH = 3
 SPARSE_SELECTION_SCHEMA = "sparse-query-key-topk-router-v1"
 
 
+@dataclass(frozen=True)
+class LatentCatalogBuildStats:
+    """Traffic and work performed by one device root-materialization batch."""
+
+    root_rows: int = 0
+    host_to_device_bytes: int = 0
+    device_to_host_bytes: int = 0
+
+
 def _mix_scalar(value: int) -> int:
     """SplitMix64 finalizer for deterministic scalar metadata generation."""
     mask = (1 << 64) - 1
@@ -57,6 +66,51 @@ def _signed_hash(*values: int) -> int:
         key ^= _mix_scalar(int(value) + index * 0x9E3779B97F4A7C15)
         key = _mix_scalar(key)
     return 1 if (key & 1) else -1
+
+
+def _mix_uint64_backend(value: Any, xp: Any) -> Any:
+    """Vectorized SplitMix64 finalizer with exact unsigned CPU/GPU semantics."""
+
+    current = xp.asarray(value, dtype=xp.uint64)
+    current = xp.add(
+        current,
+        xp.uint64(0x9E3779B97F4A7C15),
+        dtype=xp.uint64,
+    )
+    current = xp.multiply(
+        current ^ (current >> 30),
+        xp.uint64(0xBF58476D1CE4E5B9),
+        dtype=xp.uint64,
+    )
+    current = xp.multiply(
+        current ^ (current >> 27),
+        xp.uint64(0x94D049BB133111EB),
+        dtype=xp.uint64,
+    )
+    return current ^ (current >> 31)
+
+
+def _signed_hash_backend(xp: Any, *values: Any) -> Any:
+    """Vectorized counterpart of :func:`_signed_hash` for integer batches."""
+
+    key = xp.asarray(0xD1B54A32D192ED03, dtype=xp.uint64)
+    for index, value in enumerate(values):
+        mixed_value = xp.add(
+            xp.asarray(value, dtype=xp.uint64),
+            xp.uint64(
+                (index * 0x9E3779B97F4A7C15) & ((1 << 64) - 1)
+            ),
+            dtype=xp.uint64,
+        )
+        key = _mix_uint64_backend(
+            key ^ _mix_uint64_backend(mixed_value, xp),
+            xp,
+        )
+    return xp.where(
+        (key & xp.uint64(1)) != 0,
+        xp.int8(1),
+        xp.int8(-1),
+    )
 
 
 def _round_divide_signed_numpy(numerator: np.ndarray, denominator: int | np.ndarray) -> np.ndarray:
@@ -222,9 +276,10 @@ class VariableLatentContentStore:
         context_key: int,
         action_id: int,
         source_subject_id: int,
+        content_id: int | None = None,
     ) -> int:
         length = self.preview_length(
-            content_id=self._size + 1,
+            content_id=self._size + 1 if content_id is None else int(content_id),
             parent_content_id=parent_content_id,
             context_key=context_key,
             action_id=action_id,
@@ -311,8 +366,191 @@ class VariableLatentContentStore:
             )
         return result
 
-    def ensure_catalog(self, catalog: Any) -> None:
-        """Append latent records for all newly created catalog contents."""
+    def _root_values_from_hash_components(
+        self,
+        *,
+        outcome_vector: np.ndarray,
+        random_keys: np.ndarray,
+        outcome_signs: np.ndarray,
+        action_signs: np.ndarray,
+        context_signs: np.ndarray,
+    ) -> np.ndarray:
+        """Finish root quantization on CPU in the historical scalar order."""
+
+        length = int(np.asarray(random_keys).size)
+        outcome = np.clip(np.asarray(outcome_vector, dtype=np.float64), -2.0, 2.0)
+        result = np.empty(length, dtype=np.int16)
+        for dimension in range(length):
+            random_key = int(random_keys[dimension])
+            random_component = ((random_key >> 16) & 0xFFFF) / 65535.0 - 0.5
+            outcome_component = 0.0
+            for coordinate in range(OUTCOME_WIDTH):
+                outcome_component += (
+                    float(outcome[coordinate])
+                    * int(outcome_signs[dimension, coordinate])
+                )
+            outcome_component /= float(OUTCOME_WIDTH)
+            action_component = 0.125 * int(action_signs[dimension])
+            context_component = 0.125 * int(context_signs[dimension])
+            value = (
+                0.45 * random_component
+                + 0.30 * outcome_component
+                + action_component
+                + context_component
+            )
+            result[dimension] = np.int16(
+                np.clip(np.rint(value * max(self.quantization_scale, 1)), -32767, 32767)
+            )
+        return result
+
+    def _device_root_batch(
+        self,
+        catalog: Any,
+        rows: np.ndarray,
+        backend: Backend,
+    ) -> tuple[dict[int, np.ndarray], LatentCatalogBuildStats]:
+        """Compute deterministic root hash components in regular device batches."""
+
+        xp = backend.xp
+        row_values = np.asarray(rows, dtype=np.int64)
+        lengths = np.asarray(
+            [
+                self.preview_length(
+                    content_id=int(catalog.content_id[row]),
+                    parent_content_id=0,
+                    context_key=int(catalog.context_key[row]),
+                    action_id=int(catalog.action_id[row]),
+                    source_subject_id=int(catalog.source_subject_id[row]),
+                )
+                for row in row_values
+            ],
+            dtype=np.int32,
+        )
+        vectors: dict[int, np.ndarray] = {}
+        host_to_device_bytes = 0
+        device_to_host_bytes = 0
+        seed = xp.uint64(self.run_seed & ((1 << 64) - 1))
+        for length in sorted(set(int(value) for value in lengths)):
+            selected = np.flatnonzero(lengths == length)
+            selected_rows = row_values[selected]
+            content_host = np.asarray(
+                catalog.content_id[selected_rows], dtype=np.uint64
+            )
+            context_host = np.asarray(
+                catalog.context_key[selected_rows], dtype=np.uint64
+            )
+            action_host = np.asarray(
+                catalog.action_id[selected_rows], dtype=np.uint64
+            )
+            source_host = np.asarray(
+                catalog.source_subject_id[selected_rows], dtype=np.uint64
+            )
+            content = backend.asarray(content_host)
+            context = backend.asarray(context_host)
+            action = backend.asarray(action_host)
+            source = backend.asarray(source_host)
+            host_to_device_bytes += int(
+                content.nbytes + context.nbytes + action.nbytes + source.nbytes
+            )
+            dimensions = xp.arange(length, dtype=xp.uint64)[None, :]
+            random_keys_device = _mix_uint64_backend(
+                seed
+                ^ (
+                    content[:, None]
+                    * xp.uint64(0xD1342543DE82EF95)
+                )
+                ^ (
+                    dimensions
+                    * xp.uint64(0xA24BAED4963EE407)
+                )
+                ^ context[:, None]
+                ^ (source[:, None] << xp.uint64(1)),
+                xp,
+            )
+            action_signs_device = _signed_hash_backend(
+                xp,
+                xp.uint64(0x41435449),
+                dimensions,
+                action[:, None],
+            )
+            context_signs_device = _signed_hash_backend(
+                xp,
+                xp.uint64(0x434F4E54),
+                dimensions,
+                context[:, None],
+            )
+            outcome_signs_device = _signed_hash_backend(
+                xp,
+                xp.uint64(0x4F555443),
+                dimensions.reshape(length, 1),
+                xp.arange(OUTCOME_WIDTH, dtype=xp.uint64)[None, :],
+            )
+            random_keys = backend.to_numpy(random_keys_device)
+            action_signs = backend.to_numpy(action_signs_device)
+            context_signs = backend.to_numpy(context_signs_device)
+            outcome_signs = backend.to_numpy(outcome_signs_device)
+            device_to_host_bytes += int(
+                random_keys_device.nbytes
+                + action_signs_device.nbytes
+                + context_signs_device.nbytes
+                + outcome_signs_device.nbytes
+            )
+            for batch_row, catalog_row in enumerate(selected_rows):
+                vectors[int(catalog_row)] = self._root_values_from_hash_components(
+                    outcome_vector=catalog.outcome_vector[catalog_row],
+                    random_keys=random_keys[batch_row],
+                    outcome_signs=outcome_signs,
+                    action_signs=action_signs[batch_row],
+                    context_signs=context_signs[batch_row],
+                )
+        return vectors, LatentCatalogBuildStats(
+            root_rows=int(row_values.size),
+            host_to_device_bytes=host_to_device_bytes,
+            device_to_host_bytes=device_to_host_bytes,
+        )
+
+    def _append_vector(
+        self,
+        catalog: Any,
+        row: int,
+        vector: np.ndarray,
+        length: int,
+    ) -> None:
+        if vector.size != length:
+            raise ValueError("latent content vector length does not match its level")
+        self._ensure_content_capacity(self._size + 1)
+        self._ensure_value_capacity(self._value_size + length)
+        self.offset[row] = np.uint64(self._value_size)
+        self.length[row] = np.uint16(length)
+        self.values[self._value_size : self._value_size + length] = vector
+        self._value_size += length
+        self._size += 1
+        catalog.encoded_bytes[row] = np.uint32(
+            self.encoded_bytes_for_length(length)
+        )
+
+    def ensure_catalog(
+        self,
+        catalog: Any,
+        *,
+        backend: Backend | None = None,
+    ) -> LatentCatalogBuildStats:
+        """Append newly created contents, batching independent roots on GPU."""
+
+        pending_rows = np.arange(self._size, int(catalog.size), dtype=np.int64)
+        device_vectors: dict[int, np.ndarray] | None = None
+        build_stats = LatentCatalogBuildStats()
+        if (
+            backend is not None
+            and backend.is_gpu
+            and pending_rows.size
+            and np.all(catalog.parent_content_id[pending_rows] == 0)
+        ):
+            device_vectors, build_stats = self._device_root_batch(
+                catalog,
+                pending_rows,
+                backend,
+            )
         while self._size < int(catalog.size):
             row = self._size
             content_id = int(catalog.content_id[row])
@@ -330,6 +568,8 @@ class VariableLatentContentStore:
                     parent_content_id=parent_content_id,
                     target_length=length,
                 )
+            elif device_vectors is not None:
+                vector = device_vectors[row]
             else:
                 vector = self._root_values(
                     content_id=content_id,
@@ -339,19 +579,8 @@ class VariableLatentContentStore:
                     source_subject_id=int(catalog.source_subject_id[row]),
                     outcome_vector=catalog.outcome_vector[row],
                 )
-            if vector.size != length:
-                raise ValueError("latent content vector length does not match its level")
-            self._ensure_content_capacity(self._size + 1)
-            self._ensure_value_capacity(self._value_size + length)
-            self.offset[row] = np.uint64(self._value_size)
-            self.length[row] = np.uint16(length)
-            self.values[self._value_size : self._value_size + length] = vector
-            self._value_size += length
-            self._size += 1
-            # Dynamic payload bytes are authoritative for future copies.  This
-            # update does not alter K1--K4 schemas because the latent store is
-            # only created for the separately gated latent schema.
-            catalog.encoded_bytes[row] = np.uint32(self.encoded_bytes_for_length(length))
+            self._append_vector(catalog, row, vector, length)
+        return build_stats
 
     def vector(self, content_id: int) -> np.ndarray:
         row = int(content_id) - 1

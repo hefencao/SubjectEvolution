@@ -1170,17 +1170,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 if not self._defer_gpu_field_sync:
                     self.gpu_runtime.sync_to_host(self.environment, self.information)
                 transfer = self.gpu_runtime.finish_step_transfer_measurement()
-                stats.gpu_h2d_bytes = transfer.host_to_device_bytes
-                stats.gpu_d2h_bytes = transfer.device_to_host_bytes
-                stats.gpu_direct_message_events = transfer.direct_message_events
-                stats.gpu_direct_dense_bytes_avoided = (
-                    transfer.direct_message_dense_bytes_avoided
-                )
-                stats.gpu_entity_commit_bytes = transfer.entity_commit_bytes
-                stats.gpu_device_preprocess_rows = transfer.device_preprocess_rows
-                stats.gpu_device_resident_host_bytes_avoided = (
-                    transfer.device_resident_host_bytes_avoided
-                )
+                transfer.record_into(stats)
                 return stats
             cells = prepared.cells
             local_resources = prepared.local_resources
@@ -1889,6 +1879,11 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 energy=ent.energy,
                 alive=ent.alive,
                 knowledge_capacities=ent.knowledge_capacity_bytes,
+                latent_catalog_builder=(
+                    self.gpu_runtime.ensure_latent_catalog
+                    if self.gpu_runtime is not None
+                    else None
+                ),
             )
             for field_name in KnowledgeStepStats.__dataclass_fields__:
                 setattr(
@@ -2227,15 +2222,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             self.gpu_runtime.sync_to_host(self.environment, self.information)
         if self.gpu_runtime is not None:
             transfer = self.gpu_runtime.finish_step_transfer_measurement()
-            stats.gpu_h2d_bytes = transfer.host_to_device_bytes
-            stats.gpu_d2h_bytes = transfer.device_to_host_bytes
-            stats.gpu_direct_message_events = transfer.direct_message_events
-            stats.gpu_direct_dense_bytes_avoided = transfer.direct_message_dense_bytes_avoided
-            stats.gpu_entity_commit_bytes = transfer.entity_commit_bytes
-            stats.gpu_device_preprocess_rows = transfer.device_preprocess_rows
-            stats.gpu_device_resident_host_bytes_avoided = (
-                transfer.device_resident_host_bytes_avoided
-            )
+            transfer.record_into(stats)
         if self.cfg.knowledge.enabled:
             self.knowledge.publish(self.tick + 1)
             self.knowledge.accumulate(knowledge_stats)

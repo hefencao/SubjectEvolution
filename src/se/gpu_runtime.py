@@ -80,6 +80,21 @@ class GpuTransferStats:
     entity_commit_bytes: int = 0
     device_preprocess_rows: int = 0
     device_resident_host_bytes_avoided: int = 0
+    device_latent_root_rows: int = 0
+
+    def record_into(self, stats: Any) -> None:
+        """Publish this transfer snapshot into one backend-neutral step record."""
+
+        stats.gpu_h2d_bytes = self.host_to_device_bytes
+        stats.gpu_d2h_bytes = self.device_to_host_bytes
+        stats.gpu_direct_message_events = self.direct_message_events
+        stats.gpu_direct_dense_bytes_avoided = self.direct_message_dense_bytes_avoided
+        stats.gpu_entity_commit_bytes = self.entity_commit_bytes
+        stats.gpu_device_preprocess_rows = self.device_preprocess_rows
+        stats.gpu_device_resident_host_bytes_avoided = (
+            self.device_resident_host_bytes_avoided
+        )
+        stats.gpu_device_latent_root_rows = self.device_latent_root_rows
 
 
 @dataclass
@@ -252,6 +267,7 @@ class HybridGpuRuntime:
         self._entity_commit_bytes = 0
         self._device_preprocess_rows = 0
         self._device_resident_host_bytes_avoided = 0
+        self._device_latent_root_rows = 0
 
     def begin_step_transfer_measurement(self) -> None:
         self._measure_transfers = True
@@ -262,6 +278,7 @@ class HybridGpuRuntime:
         self._entity_commit_bytes = 0
         self._device_preprocess_rows = 0
         self._device_resident_host_bytes_avoided = 0
+        self._device_latent_root_rows = 0
 
     def finish_step_transfer_measurement(self) -> GpuTransferStats:
         result = GpuTransferStats(
@@ -274,6 +291,7 @@ class HybridGpuRuntime:
             device_resident_host_bytes_avoided=(
                 self._device_resident_host_bytes_avoided
             ),
+            device_latent_root_rows=self._device_latent_root_rows,
         )
         self._measure_transfers = False
         return result
@@ -307,6 +325,15 @@ class HybridGpuRuntime:
     def mark_social_state_dirty(self) -> None:
         """Require all group observation fields to be refreshed next tick."""
         self._social_state_dirty = True
+
+    def ensure_latent_catalog(self, store: Any, catalog: Any) -> None:
+        """Materialize independent latent roots with exact device integer hashes."""
+
+        stats = store.ensure_catalog(catalog, backend=self.backend)
+        if self._measure_transfers:
+            self._host_to_device_bytes += int(stats.host_to_device_bytes)
+            self._device_to_host_bytes += int(stats.device_to_host_bytes)
+            self._device_latent_root_rows += int(stats.root_rows)
 
     def sync_entity_from_host(
         self,

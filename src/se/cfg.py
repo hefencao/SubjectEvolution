@@ -337,6 +337,9 @@ class KnowledgeConfig:
     routing_energy_per_emitted_action: float = 0.0
     routing_energy_per_saturation: float = 0.0
     routing_energy_per_clipped_output: float = 0.0
+    # Dense per-entity audit publication is observational and can be disabled
+    # independently of the authoritative cost mechanism and aggregate counters.
+    log_routing_costs: bool = True
 
     # Optional quantized recurrent working memory.  The legacy float32 EMA
     # remains the default when this separately versioned schema is disabled.
@@ -348,6 +351,7 @@ class KnowledgeConfig:
     working_memory_base_energy_cost: float = 0.0
     working_memory_energy_per_dimension: float = 0.0
     working_memory_energy_per_saturation: float = 0.0
+    log_working_memory_updates: bool = True
 
     # Optional sparse Query-Key selection.  Full dynamic knowledge remains in
     # the variable-length SoA; Top-k is an ephemeral per-tick device workset.
@@ -363,6 +367,7 @@ class KnowledgeConfig:
     sparse_selection_base_energy_cost: float = 0.0
     sparse_selection_energy_per_candidate: float = 0.0
     sparse_selection_energy_per_selected_copy: float = 0.0
+    log_sparse_selection_events: bool = True
 
     # K4 candidate knowledge-subject diagnostics.  This layer is observational
     # and is inert unless explicitly enabled.
@@ -1603,6 +1608,8 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("knowledge.latent_max_abs_logit_residual must be positive and finite")
     if not isinstance(cfg.knowledge.routing_cost_enabled, bool):
         raise ValueError("knowledge.routing_cost_enabled must be a boolean")
+    if not isinstance(cfg.knowledge.log_routing_costs, bool):
+        raise ValueError("knowledge.log_routing_costs must be a boolean")
     if cfg.knowledge.routing_cost_schema != "latent-routing-compute-cost-v1":
         raise ValueError("unknown knowledge.routing_cost_schema")
     if cfg.knowledge.routing_budget_mode != "all-or-none-per-entity-v1":
@@ -1622,6 +1629,10 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("knowledge.routing_cost_enabled requires latent policy")
     if not isinstance(cfg.knowledge.working_memory_enabled, bool):
         raise ValueError("knowledge.working_memory_enabled must be a boolean")
+    if not isinstance(cfg.knowledge.log_working_memory_updates, bool):
+        raise ValueError(
+            "knowledge.log_working_memory_updates must be a boolean"
+        )
     if cfg.knowledge.working_memory_schema != "quantized-working-memory-v1":
         raise ValueError("unknown knowledge.working_memory_schema")
     if cfg.knowledge.working_memory_width != 4:
@@ -1646,6 +1657,10 @@ def validate_config(cfg: SimulationConfig) -> None:
             raise ValueError(f"knowledge.{name} must be finite and non-negative")
     if not isinstance(cfg.knowledge.sparse_selection_enabled, bool):
         raise ValueError("knowledge.sparse_selection_enabled must be a boolean")
+    if not isinstance(cfg.knowledge.log_sparse_selection_events, bool):
+        raise ValueError(
+            "knowledge.log_sparse_selection_events must be a boolean"
+        )
     if cfg.knowledge.sparse_selection_schema != "sparse-query-key-topk-router-v1":
         raise ValueError("unknown knowledge.sparse_selection_schema")
     if cfg.knowledge.sparse_selection_top_k < 0 or cfg.knowledge.sparse_selection_top_k > 64:

@@ -11,6 +11,11 @@
 - Extends stage parity with the device policy-preprocessing boundary and with oxygen, terrain and wear fields.
 - Fixes deferred GPU field synchronization in long `run()` execution: local physiology, terrain cost, metrics and checkpoint physiology now read current device-owned fields instead of stale host mirrors.
 - Adds density-preserving 8,000-entity and 32,000-entity GPU long-run presets with per-tick invariant validation disabled and semantic validation delegated to `make parity-gpu`.
+- Makes dense routing-cost, working-memory and sparse-selection CSV publication independently configurable, and disables all dense per-entity knowledge audit streams in the two large-population presets while retaining aggregate counters, costs, transfer events and checkpoints.
+- Records the target RTX 4070 scale-4 bottleneck probe: dense audit output accounted for about 674 MiB over 100 ticks; disabling the five dense streams reduced mean tick time from 0.737 s to 0.421 s while retaining transfer events and leaving the authoritative world mechanisms enabled.
+- Changes both large-population base presets from sparse 750/1,000-tick checkpoint periods to a 100-tick period; a real scale-4 tick-100 run produced a readable 36 MiB `.sechk`, resumed exactly at tick 100 and advanced on the GPU to tick 101.
+- Defers independent latent-root materialization until the end of the canonical outcome commit and batches exact SplitMix64 root, action, context and outcome-projection hashes on the GPU. CPU-ordered floating accumulation and int16 quantization remain unchanged, and `gpu_device_latent_root_rows` plus transfer bytes expose the work.
+- Records 22/22 real-CUDA parity tests after the migration. A matched 20-tick cProfile fell from 22.9 s to 14.0 s, while the less intrusive 100-tick scale-4 window moved from 0.4211 to 0.4098 s/tick; the smaller end-to-end change is the operative throughput result.
 - Upgrades protocol audit to v33 and project version to 0.65.0.
 - Adds no sensor, reward, controller, population support, diversity protection, role label or world mechanism.
 - Complete packages retain only `docs/v0.65` as a version-specific directory.

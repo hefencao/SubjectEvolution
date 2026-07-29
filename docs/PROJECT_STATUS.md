@@ -28,10 +28,37 @@ Ordinary hybrid ticks keep these inputs device resident:
 - policy resource utility;
 - oxygen/terrain/wear fields and oxygen gradients;
 - information detection summaries when full diagnostics are not due.
+- exact uint64 latent-root hash components during batches of new independent experience contents.
 
-The CPU remains authoritative for intent settlement, lifecycle, relation/subject graph changes, knowledge learning and output writing. The runtime reports actual transfer bytes separately from semantic host traffic avoided.
+The CPU remains authoritative for intent settlement, lifecycle, relation/subject graph changes, knowledge outcome commit order, final latent floating accumulation/quantization and output writing. The runtime reports actual transfer bytes separately from semantic host traffic avoided, and reports `gpu_device_latent_root_rows` for the newly migrated integer-hash batch.
 
 Long `run()` calls defer full field synchronization. Local physiology and terrain settlement now query current device fields by active cell; low-frequency metrics and checkpoints explicitly materialize current device fields. This prevents stale CPU mirrors from affecting long GPU trajectories.
+
+The large-population presets keep authoritative knowledge mechanisms, energy
+costs, aggregate counters, transfer events and full checkpoints, but disable
+five dense per-entity/per-candidate CSV streams. On the target RTX 4070, a
+100-tick scale-4 probe otherwise produced about 674 MiB of output (about
+553 MiB from policy contributions alone). Removing only those observational
+streams reduced the measured mean tick time from 0.737 s to 0.421 s; this is a
+throughput result for one host/device pair, not a scientific effect or a general
+GPU speedup claim.
+
+Both large-population base presets now produce observation and full-world
+checkpoints every 100 ticks. A real scale-4 run produced a 19 MiB `.npz` and
+36 MiB `.sechk` at tick 100; the bundle checksum passed and the run resumed on
+the GPU from tick 100 to tick 101. This cadence does not make a checkpoint
+evolutionarily sufficient. It only improves recovery and supplies more
+predeclared base states for later shared-checkpoint experiments.
+
+The first post-I/O migration targets deterministic latent-root hashing rather
+than floating world settlement. New independent roots are still accepted in
+the same CPU canonical order, while SplitMix64-derived root/action/context and
+outcome-projection signs are computed in device batches. Final accumulation
+and int16 quantization use the historical CPU scalar order. On the RTX 4070,
+22/22 real-device parity tests passed. A matched 20-tick cProfile decreased
+from 22.9 s to 14.0 s; a non-profiler 100-tick window changed more modestly
+from 0.4211 to 0.4098 s/tick because root creation is concentrated early and
+other CPU-authoritative stages remain.
 
 ## Validation boundary
 
@@ -42,18 +69,18 @@ Long `run()` calls defer full field synchronization. Local physiology and terrai
 
 ## Next gates
 
-1. Run `make parity-gpu` on the target device and archive the certificate.
-2. Run the 8,000-entity preset first; retain metrics, transfer telemetry and checkpoints.
-3. Run the 32,000-entity preset after the 8,000-entity run proves memory headroom and stable device execution.
-4. Profile remaining CPU-authoritative settlement, lifecycle, graph and knowledge boundaries at those scales.
+1. Archive a `make parity-gpu` certificate for the exact target stack; the direct required-device parity suite currently passes 22/22.
+2. Continue the 8,000-entity base run with 100-tick checkpoints and retain storage/transfer telemetry.
+3. Measure scale-8 checkpoint size and write latency before committing to its full 1,500-tick storage budget.
+4. Profile and migrate the remaining latent finalization/router, functional-output and CPU settlement boundaries only with semantic-family parity.
 5. Keep the processing-response mechanism gate closed until replicated response and generation-turnover requirements are met.
 
 ## Still incomplete
 
 - archived successful parity certificate for the exact target CUDA/CuPy stack;
-- measured large-population GPU scaling and memory headroom;
+- measured scale-8 GPU scaling, checkpoint storage and memory headroom;
 - device-resident action settlement, lifecycle and graph updates;
-- device-resident knowledge-learning and sparse output pipeline;
+- device-resident final knowledge learning/quantization and sparse output pipeline;
 - positive replicated processing-response evidence;
 - adequate generation turnover for evolutionary inference;
 - migration, specialization, coexistence or trophic evidence.

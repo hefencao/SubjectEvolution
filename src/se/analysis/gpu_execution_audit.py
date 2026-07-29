@@ -69,6 +69,7 @@ def _performance(records: Sequence[dict[str, Any]]) -> dict[str, Any]:
         "gpu_entity_commit_bytes",
         "gpu_device_preprocess_rows",
         "gpu_device_resident_host_bytes_avoided",
+        "gpu_device_latent_root_rows",
     )
     result: dict[str, Any] = {}
     for field in fields:

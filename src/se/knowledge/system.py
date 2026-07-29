@@ -142,7 +142,7 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                     ],
                 )
                 self._policy_writer.writeheader()
-            if self.kcfg.routing_cost_enabled:
+            if self.kcfg.routing_cost_enabled and self.kcfg.log_routing_costs:
                 self._routing_cost_file = (
                     self.output_dir / "knowledge_routing_costs.csv"
                 ).open("w", newline="", encoding="utf-8")
@@ -159,7 +159,10 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                     ],
                 )
                 self._routing_cost_writer.writeheader()
-            if self.kcfg.working_memory_enabled:
+            if (
+                self.kcfg.working_memory_enabled
+                and self.kcfg.log_working_memory_updates
+            ):
                 self._working_memory_file = (
                     self.output_dir / "knowledge_working_memory.csv"
                 ).open("w", newline="", encoding="utf-8")
@@ -174,7 +177,10 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                     ],
                 )
                 self._working_memory_writer.writeheader()
-            if self.kcfg.sparse_selection_enabled:
+            if (
+                self.kcfg.sparse_selection_enabled
+                and self.kcfg.log_sparse_selection_events
+            ):
                 self._selection_file = (
                     self.output_dir / "knowledge_selection_events.csv"
                 ).open("w", newline="", encoding="utf-8")
@@ -210,6 +216,7 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
             context_key=context_key,
             action_id=action_id,
             source_subject_id=source_subject_id,
+            content_id=int(self.catalog.size) + 1,
         )
 
     def _seed(
@@ -428,7 +435,7 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                     ],
                 )
                 result._policy_writer.writeheader()
-            if self.kcfg.routing_cost_enabled:
+            if self.kcfg.routing_cost_enabled and self.kcfg.log_routing_costs:
                 result._routing_cost_file = (
                     result.output_dir / "knowledge_routing_costs.csv"
                 ).open("w", newline="", encoding="utf-8")
@@ -445,7 +452,10 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                     ],
                 )
                 result._routing_cost_writer.writeheader()
-            if self.kcfg.working_memory_enabled:
+            if (
+                self.kcfg.working_memory_enabled
+                and self.kcfg.log_working_memory_updates
+            ):
                 result._working_memory_file = (
                     result.output_dir / "knowledge_working_memory.csv"
                 ).open("w", newline="", encoding="utf-8")
@@ -460,7 +470,10 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                     ],
                 )
                 result._working_memory_writer.writeheader()
-            if self.kcfg.sparse_selection_enabled:
+            if (
+                self.kcfg.sparse_selection_enabled
+                and self.kcfg.log_sparse_selection_events
+            ):
                 result._selection_file = (
                     result.output_dir / "knowledge_selection_events.csv"
                 ).open("w", newline="", encoding="utf-8")
@@ -1082,6 +1095,7 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
         energy: np.ndarray,
         alive: np.ndarray,
         knowledge_capacities: np.ndarray | None = None,
+        latent_catalog_builder: Any | None = None,
     ) -> KnowledgeStepStats:
         """Update local copy statistics from committed current-tick outcomes.
 
@@ -1299,9 +1313,6 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                 created_tick=plan.tick,
                 source_subject_id=holder,
             )
-            if self.latent_store is not None:
-                self.latent_store.ensure_catalog(self.catalog)
-                encoded_bytes = int(self.catalog.encoded_bytes[content_id - 1])
             if self.kcfg.candidate_tracking_enabled:
                 self.candidates.ensure_catalog(self.catalog)
             copy_id = self.arena.append(
@@ -1335,6 +1346,12 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                 sample_before=0,
                 confidence_before=0.0,
             )
+
+        if self.latent_store is not None:
+            if latent_catalog_builder is None:
+                self.latent_store.ensure_catalog(self.catalog)
+            else:
+                latent_catalog_builder(self.latent_store, self.catalog)
 
         self._write_event(
             {

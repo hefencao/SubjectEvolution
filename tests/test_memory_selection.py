@@ -312,6 +312,119 @@ class WorkingMemorySelectionTests(unittest.TestCase):
                     simulation.metrics.close()
                     simulation.evolution_progress.close()
 
+    def test_dense_audit_switches_do_not_change_world_state(self) -> None:
+        dense_cfg = self._cfg(
+            log_outcome_updates=True,
+            log_policy_contributions=True,
+            log_routing_costs=True,
+            log_working_memory_updates=True,
+            log_sparse_selection_events=True,
+        )
+        dense_cfg = replace(
+            dense_cfg,
+            run=replace(
+                dense_cfg.run,
+                ticks=2,
+                metrics_period=2,
+                checkpoint_period=2,
+            ),
+            world=replace(
+                dense_cfg.world,
+                initial_entities=24,
+                max_entities=40,
+            ),
+        )
+        quiet_cfg = replace(
+            dense_cfg,
+            knowledge=replace(
+                dense_cfg.knowledge,
+                log_outcome_updates=False,
+                log_policy_contributions=False,
+                log_routing_costs=False,
+                log_working_memory_updates=False,
+                log_sparse_selection_events=False,
+            ),
+        )
+        validate_config(quiet_cfg)
+        dense_names = (
+            "knowledge_outcome_updates.csv",
+            "knowledge_policy_contributions.csv",
+            "knowledge_routing_costs.csv",
+            "knowledge_working_memory.csv",
+            "knowledge_selection_events.csv",
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            dense = Simulation(dense_cfg, root / "dense", backend="cpu")
+            quiet = Simulation(quiet_cfg, root / "quiet", backend="cpu")
+            try:
+                for _ in range(2):
+                    dense.step()
+                    quiet.step()
+                self.assertEqual(dense.tick, quiet.tick)
+                for owner_name in (
+                    "entities",
+                    "environment",
+                    "information",
+                    "social",
+                ):
+                    dense_owner = getattr(dense, owner_name)
+                    quiet_owner = getattr(quiet, owner_name)
+                    for field, dense_value in vars(dense_owner).items():
+                        if isinstance(dense_value, np.ndarray):
+                            self.assertTrue(
+                                np.array_equal(
+                                    dense_value,
+                                    getattr(quiet_owner, field),
+                                ),
+                                f"{owner_name}.{field}",
+                            )
+                dense_knowledge = dense.knowledge.checkpoint_arrays()
+                quiet_knowledge = quiet.knowledge.checkpoint_arrays()
+                self.assertEqual(dense_knowledge.keys(), quiet_knowledge.keys())
+                for field, dense_value in dense_knowledge.items():
+                    self.assertTrue(
+                        np.array_equal(dense_value, quiet_knowledge[field]),
+                        f"knowledge.{field}",
+                    )
+                self.assertTrue(
+                    np.array_equal(dense.action_counts, quiet.action_counts)
+                )
+                self.assertEqual(
+                    dense.knowledge.summary(),
+                    quiet.knowledge.summary(),
+                )
+                for name in dense_names:
+                    self.assertTrue((root / "dense" / name).exists(), name)
+                    self.assertFalse((root / "quiet" / name).exists(), name)
+                self.assertGreater(
+                    quiet.knowledge.summary()[
+                        "working_memory_requested_entities_total"
+                    ],
+                    0,
+                )
+            finally:
+                for simulation in (dense, quiet):
+                    simulation.knowledge.close()
+                    simulation.metrics.close()
+                    simulation.evolution_progress.close()
+
+    def test_large_gpu_presets_disable_only_dense_knowledge_logs(self) -> None:
+        for name in (
+            "mvp_d3i_gpu_scale4_longrun.json",
+            "mvp_d3i_gpu_scale8_longrun.json",
+        ):
+            cfg = load_config(ROOT / "configs" / name)
+            self.assertTrue(cfg.knowledge.routing_cost_enabled, name)
+            self.assertTrue(cfg.knowledge.working_memory_enabled, name)
+            self.assertTrue(cfg.knowledge.sparse_selection_enabled, name)
+            self.assertTrue(cfg.knowledge.log_transfer_events, name)
+            self.assertFalse(cfg.knowledge.log_outcome_updates, name)
+            self.assertFalse(cfg.knowledge.log_policy_contributions, name)
+            self.assertFalse(cfg.knowledge.log_routing_costs, name)
+            self.assertFalse(cfg.knowledge.log_working_memory_updates, name)
+            self.assertFalse(cfg.knowledge.log_sparse_selection_events, name)
+
 
     def test_inherited_topk_capacity_is_discrete_auditable_and_one_gene(self) -> None:
         fixed = self._cfg(

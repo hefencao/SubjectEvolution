@@ -133,9 +133,11 @@ def test_gpu_transfer_stats_expose_device_preprocessing_telemetry() -> None:
         device_to_host_bytes=64,
         device_preprocess_rows=32,
         device_resident_host_bytes_avoided=1024,
+        device_latent_root_rows=12,
     )
     assert stats.device_preprocess_rows == 32
     assert stats.device_resident_host_bytes_avoided == 1024
+    assert stats.device_latent_root_rows == 12
 
 def test_deferred_gpu_physiology_reads_current_device_cells() -> None:
     cfg = _cfg()
@@ -228,4 +230,5 @@ def test_large_gpu_presets_preserve_density_and_cell_scale() -> None:
         assert np.isclose(cfg.world.height / cfg.world.grid_y, reference_cell_height)
         assert cfg.run.gpu_semantics_mode == "hybrid-accelerated"
         assert cfg.run.validation_mode is False
-
+        assert cfg.run.full_checkpoint_enabled is True
+        assert cfg.run.checkpoint_period == 100

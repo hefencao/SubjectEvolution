@@ -19,6 +19,13 @@ The following regular observation inputs are now produced from persistent device
 
 Full information observation arrays remain available at parity and evaluation boundaries. The runtime records actual H2D/D2H bytes and separately reports the semantic host payload avoided.
 
+Independent latent roots created by knowledge outcomes now defer materialization
+until the canonical commit loop completes. SplitMix64 root, action, context and
+outcome-projection hash components are generated as exact uint64 GPU batches.
+CPU commit order, floating accumulation and int16 quantization are unchanged.
+The runtime reports the batch as `gpu_device_latent_root_rows` and includes its
+actual transfers in H2D/D2H telemetry.
+
 ## Deferred-sync correction
 
 Long `Simulation.run()` calls intentionally defer full GPU-to-host environment synchronization. Previously, local physiology and terrain settlement could still read the stale CPU mirror even though the current fields were device authoritative. v0.65 retrieves active-cell physiology directly from the device and materializes complete physiology fields only for metrics/checkpoints. This changes no modeled equation; it restores the intended current-tick semantics of the hybrid route.
@@ -30,18 +37,25 @@ Long `Simulation.run()` calls intentionally defer full GPU-to-host environment s
 
 Both preserve entity density and per-cell mechanism parameters, request hybrid acceleration through `auto`, and disable per-tick invariant validation. They do not bypass target-device parity.
 
+Both now write observation and trusted full-world checkpoints every 100 ticks.
+The cadence changes recovery granularity only: it does not select seeds, rescue
+populations or imply that any checkpoint has adequate evolutionary turnover.
+
 ## Validation boundary
 
-The local delivery environment has no usable CUDA/CuPy device. CPU/no-device tests and CPU-emulated device-stage parity can be executed locally; real-device acceptance remains `make parity-gpu` on the target stack. No target-GPU certificate is fabricated in this delivery.
+The local `se` Conda environment exposes CuPy 14.1.1 and an NVIDIA GeForce RTX
+4070. The direct required-device suite therefore validates real CUDA here.
+An archival `make parity-gpu` certificate remains a separate release artifact;
+passing an interactive pytest command is not represented as that certificate.
 
 ## Completed validation
 
 - JSON configurations: 95/95 load successfully.
 - Python compilation: 191 files.
-- Full tests: 315 passed, 2 skipped; both skips require a real CUDA/CuPy device.
-- Ordinary parity: 20 passed, 2 real-device tests skipped.
+- Full deterministic shards: 318 passed, 2 skipped; the sandboxed shard process cannot access the device.
+- Real required-device parity in `se`: 22 passed with no skip.
+- Exact CPU versus device-batched latent catalog arrays cover length, offset, values and encoded bytes.
+- A scale-4 tick-100 run wrote a 19 MiB `.npz` and 36 MiB `.sechk`; the bundle checksum passed and a real-GPU resume advanced from tick 100 to 101.
+- Matched 20-tick cProfile: 22.9 s before versus 14.0 s after latent hash migration. Non-profiler scale-4 100-tick window: 0.4098 s/tick versus the prior 0.4211 s/tick baseline.
 - Non-Conda editable verification: 117 modules and 32 console entries, with external empty-`PYTHONPATH` smoke.
 - Isolated wheel and sdist release validation passed.
-- `make conda-sync` and `make conda-check` were executed and stopped at the real `CONDA_PREFIX` guard; `conda-check` completed its full test phase first.
-- `make parity-gpu` was executed and failed at the required-device contract because the delivery host has no usable CUDA/CuPy device.
-

@@ -158,6 +158,18 @@ class SimulationReportingMixin:
             "gpu_acceleration_enabled": self.gpu_acceleration_enabled,
             "gpu_fallback_used": self.gpu_fallback_used,
             "gpu_fallback_reason": self.gpu_fallback_reason,
+            "gpu_latent_root_hash_batch_enabled": bool(
+                self.gpu_runtime is not None
+                and self.cfg.knowledge.latent_policy_enabled
+            ),
+            "gpu_latent_root_hash_schema": (
+                "splitmix64-uint64-device-hash-cpu-ordered-quantization-v1"
+                if (
+                    self.gpu_runtime is not None
+                    and self.cfg.knowledge.latent_policy_enabled
+                )
+                else None
+            ),
             "python": sys.version,
             "platform": platform.platform(),
             "numpy": np.__version__,
@@ -262,6 +274,10 @@ class SimulationReportingMixin:
                 if self.cfg.knowledge.learning_enabled
                 else None
             ),
+            "knowledge_outcome_dense_log_enabled": (
+                self.cfg.knowledge.learning_enabled
+                and self.cfg.knowledge.log_outcome_updates
+            ),
             "knowledge_transfer_trigger_schema": (
                 "signal-action-partner-v1" if self.cfg.knowledge.enabled else None
             ),
@@ -274,6 +290,10 @@ class SimulationReportingMixin:
             ),
             "knowledge_cultural_metrics_require_committed_transfer": True,
             "knowledge_policy_influence": self.cfg.knowledge.policy_influence_enabled,
+            "knowledge_policy_dense_log_enabled": (
+                self.cfg.knowledge.policy_influence_enabled
+                and self.cfg.knowledge.log_policy_contributions
+            ),
             "knowledge_policy_residual_schema": (
                 self.cfg.knowledge.policy_residual_schema
                 if self.cfg.knowledge.policy_influence_enabled
@@ -314,6 +334,10 @@ class SimulationReportingMixin:
                 self.cfg.knowledge.latent_policy_enabled
             ),
             "knowledge_routing_cost_enabled": self.cfg.knowledge.routing_cost_enabled,
+            "knowledge_routing_cost_dense_log_enabled": (
+                self.cfg.knowledge.routing_cost_enabled
+                and self.cfg.knowledge.log_routing_costs
+            ),
             "knowledge_routing_cost_schema": (
                 self.cfg.knowledge.routing_cost_schema
                 if self.cfg.knowledge.routing_cost_enabled
@@ -326,6 +350,10 @@ class SimulationReportingMixin:
             ),
             "knowledge_working_memory_enabled": (
                 self.cfg.knowledge.working_memory_enabled
+            ),
+            "knowledge_working_memory_dense_log_enabled": (
+                self.cfg.knowledge.working_memory_enabled
+                and self.cfg.knowledge.log_working_memory_updates
             ),
             "knowledge_working_memory_schema": (
                 self.cfg.knowledge.working_memory_schema
@@ -341,6 +369,10 @@ class SimulationReportingMixin:
             ),
             "knowledge_sparse_selection_enabled": (
                 self.cfg.knowledge.sparse_selection_enabled
+            ),
+            "knowledge_sparse_selection_dense_log_enabled": (
+                self.cfg.knowledge.sparse_selection_enabled
+                and self.cfg.knowledge.log_sparse_selection_events
             ),
             "knowledge_sparse_selection_schema": (
                 self.cfg.knowledge.sparse_selection_schema
@@ -561,6 +593,18 @@ class SimulationReportingMixin:
                 "gpu_acceleration_enabled": self.gpu_acceleration_enabled,
                 "gpu_fallback_used": self.gpu_fallback_used,
                 "gpu_fallback_reason": self.gpu_fallback_reason,
+                "gpu_latent_root_hash_batch_enabled": bool(
+                    self.gpu_runtime is not None
+                    and self.cfg.knowledge.latent_policy_enabled
+                ),
+                "gpu_latent_root_hash_schema": (
+                    "splitmix64-uint64-device-hash-cpu-ordered-quantization-v1"
+                    if (
+                        self.gpu_runtime is not None
+                        and self.cfg.knowledge.latent_policy_enabled
+                    )
+                    else None
+                ),
                 "cpu_reference_world_authoritative": (
                     self.gpu_runtime is None
                 ),
@@ -636,6 +680,14 @@ class SimulationReportingMixin:
                     if self.cfg.knowledge.policy_influence_enabled
                     else None
                 ),
+                "knowledge_outcome_dense_log_enabled": (
+                    self.cfg.knowledge.learning_enabled
+                    and self.cfg.knowledge.log_outcome_updates
+                ),
+                "knowledge_policy_dense_log_enabled": (
+                    self.cfg.knowledge.policy_influence_enabled
+                    and self.cfg.knowledge.log_policy_contributions
+                ),
                 "knowledge_candidate_tracking": self.cfg.knowledge.candidate_tracking_enabled,
                 "knowledge_candidate_schema": (
                     self.cfg.knowledge.candidate_schema
@@ -684,6 +736,10 @@ class SimulationReportingMixin:
                     self.cfg.knowledge.latent_policy_enabled
                 ),
                 "knowledge_routing_cost_enabled": self.cfg.knowledge.routing_cost_enabled,
+                "knowledge_routing_cost_dense_log_enabled": (
+                    self.cfg.knowledge.routing_cost_enabled
+                    and self.cfg.knowledge.log_routing_costs
+                ),
                 "knowledge_routing_cost_schema": (
                     self.cfg.knowledge.routing_cost_schema
                     if self.cfg.knowledge.routing_cost_enabled
@@ -702,6 +758,10 @@ class SimulationReportingMixin:
                 "knowledge_working_memory_enabled": (
                     self.cfg.knowledge.working_memory_enabled
                 ),
+                "knowledge_working_memory_dense_log_enabled": (
+                    self.cfg.knowledge.working_memory_enabled
+                    and self.cfg.knowledge.log_working_memory_updates
+                ),
                 "knowledge_working_memory_schema": (
                     self.cfg.knowledge.working_memory_schema
                     if self.cfg.knowledge.working_memory_enabled else None
@@ -712,6 +772,10 @@ class SimulationReportingMixin:
                 ),
                 "knowledge_sparse_selection_enabled": (
                     self.cfg.knowledge.sparse_selection_enabled
+                ),
+                "knowledge_sparse_selection_dense_log_enabled": (
+                    self.cfg.knowledge.sparse_selection_enabled
+                    and self.cfg.knowledge.log_sparse_selection_events
                 ),
                 "knowledge_sparse_selection_schema": (
                     self.cfg.knowledge.sparse_selection_schema
@@ -2042,6 +2106,7 @@ class SimulationReportingMixin:
             "gpu_device_resident_host_bytes_avoided": (
                 stats.gpu_device_resident_host_bytes_avoided
             ),
+            "gpu_device_latent_root_rows": stats.gpu_device_latent_root_rows,
             "step_seconds": elapsed,
             "wall_elapsed_seconds": wall_elapsed,
             "window_seconds": window_seconds,
@@ -2522,4 +2587,3 @@ class SimulationReportingMixin:
             )
         row.update(self.subjects.summary())
         return row
-
