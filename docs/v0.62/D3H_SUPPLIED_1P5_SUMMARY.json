@@ -1,0 +1,110 @@
+{
+  "schema": "d3h-supplied-1p5-summary-v1",
+  "source_result_schema": "d3-processing-response-panel-results-v2",
+  "panel_count": 12,
+  "completed_panel_count": 12,
+  "acute_analysis_eligible_panel_count": 12,
+  "evolutionary_analysis_eligible_checkpoint_count": 0,
+  "audit_completeness": {
+    "every_predeclared_checkpoint_accounted_for": true,
+    "all_completed_quartets_share_checkpoint_state": true,
+    "all_completed_branches_have_complete_response_and_sample_trajectories": true,
+    "acute_interval_resource_ledger_valid_in_every_completed_branch": true,
+    "acute_interval_recycling_ledger_valid_in_every_completed_branch": true,
+    "outcome_conditioned_checkpoint_selection": false,
+    "insufficient_checkpoint_replacement": false
+  },
+  "independent_seed_count": 3,
+  "mean_support_gain_inference": {
+    "original": {
+      "equal_seed_mean": 6.47752786474193e-08,
+      "seed_median": -2.189894164948463e-06,
+      "positive_seed_count": 1,
+      "positive_seed_fraction": 0.3333333333333333,
+      "independent_seed_count": 3,
+      "seed_mean_minimum": -6.13535695413714e-06,
+      "seed_mean_maximum": 8.51957695502786e-06,
+      "leave_one_seed_out_mean_range": {
+        "minimum": -4.162625559542801e-06,
+        "maximum": 3.164841395039699e-06
+      },
+      "exact_sign_flip": {
+        "value": 1.0,
+        "method": "exact-two-sided-seed-sign-flip-v1",
+        "enumerated_assignments": 8
+      }
+    },
+    "reversed": {
+      "equal_seed_mean": -7.434496869115597e-06,
+      "seed_median": -8.324418076323066e-06,
+      "positive_seed_count": 0,
+      "positive_seed_fraction": 0.0,
+      "independent_seed_count": 3,
+      "seed_mean_minimum": -9.724851395485924e-06,
+      "seed_mean_maximum": -4.254221135537801e-06,
+      "leave_one_seed_out_mean_range": {
+        "minimum": -9.024634735904496e-06,
+        "maximum": -6.2893196059304334e-06
+      },
+      "exact_sign_flip": {
+        "value": 0.25,
+        "method": "exact-two-sided-seed-sign-flip-v1",
+        "enumerated_assignments": 8
+      }
+    },
+    "both_orientations_positive_seed_count": 0,
+    "both_orientations_positive_seed_fraction": 0.0,
+    "orientation_common_effect": -7.434496869115597e-06
+  },
+  "mean_alignment_cosine_inference": {
+    "original": {
+      "equal_seed_mean": 0.00012034033715960929,
+      "seed_median": -0.0007245225018392846,
+      "positive_seed_count": 1,
+      "positive_seed_fraction": 0.3333333333333333,
+      "independent_seed_count": 3,
+      "seed_mean_minimum": -0.00411450746155349,
+      "seed_mean_maximum": 0.005200050974871602,
+      "leave_one_seed_out_mean_range": {
+        "minimum": -0.002419514981696387,
+        "maximum": 0.002237764236516159
+      },
+      "exact_sign_flip": {
+        "value": 1.0,
+        "method": "exact-two-sided-seed-sign-flip-v1",
+        "enumerated_assignments": 8
+      }
+    },
+    "reversed": {
+      "equal_seed_mean": -0.006087301571671754,
+      "seed_median": -0.0051102410832107635,
+      "positive_seed_count": 0,
+      "positive_seed_fraction": 0.0,
+      "independent_seed_count": 3,
+      "seed_mean_minimum": -0.010127006328625643,
+      "seed_mean_maximum": -0.0030246573031788553,
+      "leave_one_seed_out_mean_range": {
+        "minimum": -0.007618623705918204,
+        "maximum": -0.00406744919319481
+      },
+      "exact_sign_flip": {
+        "value": 0.25,
+        "method": "exact-two-sided-seed-sign-flip-v1",
+        "enumerated_assignments": 8
+      }
+    },
+    "both_orientations_positive_seed_count": 0,
+    "both_orientations_positive_seed_fraction": 0.0,
+    "orientation_common_effect": -0.006087301571671754
+  },
+  "directional_replication_gate": {
+    "minimum_independent_seeds_met": false,
+    "original_equal_seed_mean_positive": true,
+    "reversed_equal_seed_mean_positive": false,
+    "original_positive_seed_fraction_met": false,
+    "reversed_positive_seed_fraction_met": false,
+    "both_orientation_positive_seed_fraction_met": false,
+    "eligible": false
+  },
+  "recommendation": "collect-more-independent-seeds-with-fixed-v2-protocol"
+}

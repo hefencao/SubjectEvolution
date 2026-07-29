@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v29"
+SCHEMA = "structural-measurement-protocol-audit-v30"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -610,17 +610,29 @@ def build_protocol_audit(
                 "stable_migration_or_ecotype_claim": False,
             },
             "processing_response_scale_audit": {
-                "audit_schema": "d3-response-scale-audit-v1",
+                "audit_schema": "d3-response-scale-audit-v2",
+                "effect_inference_schema": (
+                    "nested-seed-checkpoint-matched-effect-inference-v1"
+                ),
                 "supported_panel_result_schemas": [
                     "d3-processing-response-panel-results-v1",
                     "d3-processing-response-panel-results-v2",
                 ],
-                "independent_replication_unit": "seed",
+                "independent_replication_unit": "seed-within-scale",
                 "checkpoints_within_seed": "nested-repeated-panels",
+                "observation_windows_within_checkpoint": (
+                    "nested-repeated-measurements"
+                ),
+                "checkpoint_weighting_within_seed": "equal-checkpoint-v1",
+                "seed_weighting_within_scale": "equal-seed-v1",
                 "movement_events_independent_replicates": False,
                 "matched_orientation_neutral_control_required": True,
                 "legacy_three_arm_reversed_effect_identified": False,
-                "sampling_gate_feedback_to_world": False,
+                "default_minimum_independent_seeds": 8,
+                "default_minimum_positive_seed_fraction": 0.75,
+                "default_minimum_both_orientation_positive_seed_fraction": 0.75,
+                "exact_sign_flip_descriptive_only": True,
+                "sampling_or_replication_gate_feedback_to_world": False,
             },
             "processing_response_sample_support_protocol": {
                 "plan_schema": "d3-processing-response-panel-plan-v2",

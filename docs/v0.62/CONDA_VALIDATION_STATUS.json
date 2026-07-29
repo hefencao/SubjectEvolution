@@ -1,0 +1,41 @@
+{
+  "schema": "conda-validation-status-v1",
+  "version": "0.62.0",
+  "conda_prefix": null,
+  "conda_environment_active": false,
+  "make_conda_sync": {
+    "attempted": true,
+    "returncode": 2,
+    "expected_guard_failure": true,
+    "reason": "CONDA_PREFIX is not set; activate the intended conda environment",
+    "log": "/mnt/data/v062_conda_sync.log"
+  },
+  "make_conda_check": {
+    "attempted": true,
+    "returncode": 2,
+    "tests_completed_before_guard": true,
+    "pytest_passed": 291,
+    "pytest_skipped": 1,
+    "test_file_count": 61,
+    "expected_guard_failure": true,
+    "reason": "CONDA_PREFIX is not set; activate the intended conda environment",
+    "log": "/mnt/data/v062_conda_check.log"
+  },
+  "non_conda_editable_validation": {
+    "passed": true,
+    "module_count": 116,
+    "console_entry_count": 31,
+    "smoke_passed": true,
+    "report": "docs/v0.62/EDITABLE_INSTALL_REPORT.json",
+    "build_isolation_disabled_because": "The execution environment used its existing build tools without changing project metadata."
+  },
+  "release_check": {
+    "passed": true,
+    "report": "docs/v0.62/RELEASE_CHECK_REPORT.json"
+  },
+  "local_commands": [
+    "make conda-sync",
+    "make test",
+    "make conda-check"
+  ]
+}

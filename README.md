@@ -1,64 +1,79 @@
-# SE v0.61
+# SE v0.62
 
-SE is a deterministic artificial-life and subject-structure research platform. The current main line keeps four role-free resource channels, conservative delayed storage and processing, identity-preserving external recycling, persistent abiotic renewal, costed spatial processing support, and shared-checkpoint response measurement.
+SE is a deterministic artificial-life and subject-structure research platform. The current main line retains four role-free resource channels, conservative delayed storage and processing, identity-preserving external recycling, persistent abiotic renewal, costed spatial processing support, matched support neutralization, and shared-checkpoint acute-response measurement.
 
-## Why v0.61
+## Why v0.62
 
-The supplied D3-G runs completed the base, 1.5× linear, and 2× linear checkpoint panels. The larger scales each produced 12 population-supported acute panels, while the base scale produced none. No checkpoint met the evolutionary turnover gate.
+The supplied v0.61 D3-H 1.5× run completed all 12 preregistered seed/checkpoint quartets. Every quartet met the acute sample-support gate, every interval resource and recycling ledger closed, and no checkpoint met the evolutionary-turnover gate.
 
-Two measurement problems remained:
+The four-arm design now identifies original and reversed active-minus-neutral effects under matched observation orientations. The remaining problem is statistical interpretation: four checkpoints inside one seed are repeated panels, not four independent experiments, and tens of thousands of movement events do not increase the independent seed count.
 
-1. Short checkpoint-relative recycling ledgers did not record float32 settlement from residue-field diffusion/release and sparse residue deposits. The unrecorded term grows with field size and caused some otherwise conservative acute branches to be marked invalid.
-2. The v1 panel had original active, reversed active, and original-orientation neutral branches. It did not have a reversed-orientation neutral branch, so the reversed active effect lacked a matched observation-orientation control.
+v0.62 adds D3-I nested matched-effect inference. It changes no world mechanism, sensor, reward, controller, reproduction rule, population support, diversity rule, or ecological label.
 
-v0.61 fixes both boundaries without adding a sensor, reward, migration controller, ecological role, population rescue, or diversity protection.
+## D3-I nested effect audit
 
-## D3-H matched acute response panel
-
-`se-d3-processing-response-panel` now uses four branches from every predeclared checkpoint:
-
-- `original-support`;
-- `neutral-support`;
-- `reversed-support`;
-- `reversed-neutral-support`.
-
-The matched causal contrasts are:
+`se-d3-response-scale-audit` now performs three levels of accounting:
 
 ```text
-original support effect = original-support - neutral-support
-reversed support effect = reversed-support - reversed-neutral-support
+movement events and 30-tick windows
+        ↓ repeated measurements only
+checkpoint matched active-neutral effect
+        ↓ equal checkpoint weight
+seed-level effect
+        ↓ equal seed weight
+scale-level effect and replication gate
 ```
 
-Both neutral branches retain processing cost, genotype, resources, residue, checkpoint state, policy, and RNG state. The second neutral branch differs only in the support surface used by the read-only response observer.
+For every metric and support orientation it reports:
 
-The result separately records residue field-roundoff and sparse-deposit roundoff. Physical deposition, release, and final residue remain unchanged and visible.
+- matched panel effects;
+- fixed-window matched effects;
+- equal-checkpoint seed means;
+- checkpoint and window sign fractions;
+- leave-one-checkpoint-out sensitivity;
+- equal-seed scale means;
+- leave-one-seed-out sensitivity;
+- an exact seed-level sign-flip diagnostic;
+- a directional replication gate that never feeds back into the world.
 
-## Cross-scale audit
+Default interpretation requirements are eight independent seeds per scale, at least 75% positive seed means in each orientation, and at least 75% of seeds positive under both orientations. These are analysis gates only. They do not rescue populations, retry runs, select checkpoints, or alter behavior.
 
-`se-d3-response-scale-audit` reads one or more D3-G panel result files. It treats seed as the independent replication unit and checkpoints as nested repeated panels. Legacy three-arm v1 results remain readable, but their reversed-support effect is explicitly marked unidentified.
+## Supplied 1.5× result
 
-```bash
-se-d3-response-scale-audit \
-  --result base=analyses/d3g_response_panel_base/d3_processing_response_panel_results.json \
-  --result scale1p5=analyses/d3g_response_panel_1p5/d3_processing_response_panel_results.json \
-  --result scale2=analyses/d3g_response_panel_2/d3_processing_response_panel_results.json \
-  --output analyses/d3g_scale_audit
+Equal-weight seed aggregation gives:
+
+```text
+original active-neutral mean support gain:  6.47752786474193e-08
+reversed active-neutral mean support gain: -7.434496869115597e-06
+independent seeds: 3
+seeds positive in both orientations: 0
 ```
 
-## Run the v2 matched panel
+The original effect changes sign under leave-one-seed-out analysis. All three reversed seed means are negative, but three seeds are still insufficient for the preregistered replication gate. The supplied result therefore remains valid acute causal measurement but does not justify a processing-support sensor, movement reward, migration controller, or ecological interpretation.
+
+## Run the fixed v2 panel
+
+The next scientific run should preserve the same four-arm protocol and checkpoint list while adding independent seeds at both 1.5× and 2× scales.
 
 ```bash
 se-d3-processing-response-panel \
   --config configs/mvp_short_d3g_spatial_processing_scale1p5_longrun.json \
-  --seeds 61001,61002,61003 \
-  --output analyses/d3h_response_panel_1p5 \
+  --seeds 62001,62002,62003,62004,62005,62006,62007,62008 \
+  --output analyses/d3i_response_panel_1p5_replication \
   --checkpoint-ticks 300,600,900,1200 \
   --response-window 120 \
   --observation-period 30 \
   --backend gpu
 ```
 
-The 2× scale config can be used as an independent scale replication. Checkpoints within one seed are not independent seeds.
+Analyze without treating checkpoints as independent seeds:
+
+```bash
+se-d3-response-scale-audit \
+  --result scale1p5=analyses/d3i_response_panel_1p5_replication/d3_processing_response_panel_results.json \
+  --result scale2=analyses/d3i_response_panel_2_replication/d3_processing_response_panel_results.json \
+  --output analyses/d3i_response_effect_audit
+```
 
 ## Workflow
 
@@ -83,6 +98,6 @@ make release-check
 
 ## Current version documents
 
-- [Supplied cross-scale audit](docs/v0.61/D3G_SUPPLIED_SCALE_AUDIT.md)
-- [Matched-control design](docs/v0.61/D3H_MATCHED_CONTROL_DESIGN.md)
-- [Implementation report](docs/v0.61/IMPLEMENTATION_REPORT.md)
+- [Supplied 1.5× four-arm result](docs/v0.62/D3H_SUPPLIED_1P5_RESULTS.md)
+- [Nested matched-effect audit](docs/v0.62/D3I_SUPPLIED_EFFECT_AUDIT.md)
+- [Implementation report](docs/v0.62/IMPLEMENTATION_REPORT.md)

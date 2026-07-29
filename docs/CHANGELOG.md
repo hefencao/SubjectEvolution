@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.62.0
+
+### Nested seed-level matched-response inference
+
+- Audits the supplied 1.5× D3-H v2 result with 12 acute-eligible four-arm panels and zero evolutionarily eligible checkpoints.
+- Reconstructs fixed 30-tick matched effects from cumulative response trajectories.
+- Validates stored matched contrasts against branch summaries and excludes branches with invalid interval ledgers.
+- Aggregates checkpoints equally within each seed and seeds equally within each scale.
+- Reports checkpoint/window sign fractions, leave-one-checkpoint and leave-one-seed sensitivity, and exact seed sign-flip diagnostics.
+- Uses exact sign-flip values descriptively rather than as a sole mechanism gate.
+- Adds explicit replication requirements: at least eight independent seeds per scale and 75% positive seed means in each and both orientations.
+- Finds the supplied original effect unstable around zero and the reversed effect negative in all three seed means; zero seeds are positive in both orientations.
+- Upgrades `se-d3-response-scale-audit` to `d3-response-scale-audit-v2`.
+- Fixes the audit Markdown table column mismatch present in v0.61.
+- Upgrades protocol audit to v30 and project version to 0.62.0.
+- Adds no sensor, reward, controller, population rescue, diversity protection, role label, or world mechanism.
+- Complete packages retain only `docs/v0.62` as a version-specific directory.
+
 ## 0.61.0
 
 ### Matched-orientation controls and residue settlement accounting

@@ -458,3 +458,31 @@ active-minus-neutral within each observer orientation
 Applying reversal and neutralization together leaves processing execution neutral while retaining the reversed analytical surface for the read-only observer. This separates support execution from the coordinate system used to measure movement alignment.
 
 The cross-scale audit accepts legacy three-arm and current four-arm results. It can summarize original active-minus-neutral effects from legacy files, but marks their reversed effect unidentified. Seed is the independent unit; checkpoints remain nested observations.
+
+## v0.62 D3-I nested matched-effect inference boundary
+
+D3-I formalizes the experimental hierarchy after the four-arm causal design is complete:
+
+```text
+seed
+  └─ checkpoint panel
+       └─ fixed observation window
+            └─ entity movement events
+```
+
+Only the seed is an independent replication unit. Checkpoints are equally weighted repeated panels within a seed. Fixed windows are used to audit temporal sign stability, and movement events support measurement precision only; neither increases the independent sample count.
+
+For each support orientation the audit computes:
+
+```text
+panel effect = active branch metric - orientation-matched neutral metric
+seed effect  = equal mean of eligible checkpoint effects
+scale effect = equal mean of seed effects
+```
+
+The audit also reports leave-one-checkpoint and leave-one-seed ranges. Exact seed-level sign flips enumerate all sign assignments when there are at most 20 seeds, but the result is descriptive and never the sole gate.
+
+The default replication boundary requires at least eight independent seeds per scale, positive seed means in at least 75% of seeds for each orientation, and both orientations positive in at least 75% of seeds. These thresholds affect interpretation only. They do not alter policy, world state, reproduction, checkpoint selection, reruns, or population survival.
+
+Legacy three-arm results remain readable for original-orientation descriptions, but cannot enter matched reversed inference. Invalid interval ledgers or stored contrast mismatches are excluded from matched inference and retained in the audit record.
+

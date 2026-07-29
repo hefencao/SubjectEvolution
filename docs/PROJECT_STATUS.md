@@ -1,6 +1,6 @@
 # SE project status
 
-Version: **0.61.0**
+Version: **0.62.0**
 
 ## Current causal and measurement chain
 
@@ -18,42 +18,45 @@ role-free four-channel external resource and abiotic fields
 → orientation-matched neutral controls
 → read-only inventory-conditioned movement-response audit
 → preregistered multi-checkpoint acute panels
-→ seed-level cross-scale audit with checkpoints nested inside seeds
 → separate acute-response and evolutionary sample-support labels
-→ evidence gate before any migration or ecological differentiation mechanism
+→ equal-checkpoint seed aggregation
+→ equal-seed scale aggregation and leave-one-seed sensitivity
+→ evidence gate before any sensory, migration, or ecological mechanism
 ```
 
-## Supplied D3-G scale results
+## Supplied D3-H 1.5× result
 
-The supplied base, 1.5×, and 2× linear-scale runs account for all predeclared checkpoints and preserve shared checkpoint state. The base scale has zero acute-eligible panels. The 1.5× and 2× scales each have 12 acute-eligible panels. No checkpoint at any scale reaches the evolutionary turnover gate.
+The supplied v2 run contains three independent seeds and four preregistered checkpoints per seed. All 12 quartets completed, passed the acute sample-support gate, shared checkpoint state, and closed both interval ledgers. No checkpoint passed the evolutionary-turnover gate.
 
-The larger-scale v1 results show very small original-active minus neutral mean support-gain contrasts, about `6.0e-6` and `7.6e-6`, while original and neutral panel values track each other with correlation near `0.99`. This does not establish a support-guided movement effect.
+The matched mean-support-gain effects, aggregated with equal checkpoint weight inside each seed and equal seed weight inside the scale, are:
 
-The v1 reversed branch is not causally identified because its only neutral control is observed against the original support orientation. The old results remain valid mechanism and sample-support records, but cannot estimate the reversed active effect.
+- original orientation: `6.47752786474193e-08`;
+- reversed orientation: `-7.434496869115597e-06`.
 
-## v0.61 decision
+Original seed means are negative, positive, and negative. The original scale mean changes sign under leave-one-seed-out aggregation. Reversed seed means are negative in all three seeds, but the exact sign-flip diagnostic has only eight assignments and a two-sided value of `0.25`. Zero seeds are positive in both orientations.
 
-Add D3-H as a measurement correction, not a new organism or ecological capability.
+This supports neither a repeated orientation-aligned response nor a zero-effect claim. It is valid acute causal measurement with insufficient independent replication.
 
-Every checkpoint now produces four branches: original active, original neutral, reversed active, and reversed neutral. Active-minus-neutral contrasts are computed only within the same observation orientation. The seed remains the independent replication unit; checkpoints remain nested repeated panels.
+## v0.62 decision
 
-External residue accounting now records two numerical provenance terms:
+Add D3-I as an interpretation-boundary correction, not a new world capability.
 
-- float32 diffusion/release field settlement;
-- float32 sparse-deposit writeback settlement.
+The scale audit now reconstructs fixed-window matched effects from cumulative trajectories, validates stored matched contrasts, excludes invalid interval ledgers, aggregates checkpoints equally within a seed, aggregates seeds equally within a scale, reports checkpoint/window sign stability, and reports leave-one-checkpoint and leave-one-seed sensitivity.
 
-They never modify the world and are not interpreted as physical source or sink. Corrected checkpoint-relative residue ledgers close against physical deposition, release, and final inventory.
+The exact seed sign-flip statistic is descriptive only. It is not used alone to unlock a mechanism.
 
 ## Next gate
 
-Run the v2 four-arm panel at 1.5× and 2× scales across independent seeds. Analyze seed-level matched effects only for acute-eligible panels, while retaining all insufficient panels. Do not add a processing-support sensor, movement reward, migration controller, population rescue, diversity protection, or ecological-role label unless matched support effects repeat across independent seeds and scales.
+Keep the D3-H v2 four-arm protocol fixed and collect at least eight independent seeds at 1.5× and 2× scales. Retain every preregistered checkpoint, including insufficient or unavailable panels. Do not add a processing-support sensor, movement reward, migration controller, population rescue, diversity protection, or ecological-role label unless both orientation-matched effects are positive and repeat across independent seeds and scales.
 
-Evolutionary claims remain blocked until actual generation turnover satisfies the preregistered gate.
+Evolutionary claims remain blocked until actual generation turnover satisfies the separate preregistered gate.
 
 ## Still incomplete
 
-- replicated v2 matched-control panels at 1.5× and 2× scale;
-- consistent non-zero active-minus-neutral response under both orientations;
+- at least eight independent v2 seeds at 1.5× scale;
+- at least eight independent v2 seeds at 2× scale;
+- positive and stable active-minus-neutral effects under both orientations;
+- cross-scale replication without checkpoint or event pseudoreplication;
 - adequate generation turnover for evolutionary inference;
 - a justified sensory or control mechanism for processing opportunity;
 - migration cycles driven by moving opportunities and stored inventory;

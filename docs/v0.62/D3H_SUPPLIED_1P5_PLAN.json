@@ -1,0 +1,60 @@
+{
+  "schema": "d3-processing-response-panel-plan-v2",
+  "seeds": [
+    61001,
+    61002,
+    61003
+  ],
+  "checkpoint_ticks": [
+    300,
+    600,
+    900,
+    1200
+  ],
+  "response_window_ticks": 120,
+  "observation_period_ticks": 30,
+  "branches": [
+    "original-support",
+    "reversed-support",
+    "neutral-support",
+    "reversed-neutral-support"
+  ],
+  "matched_orientation_controls": {
+    "original-support": "neutral-support",
+    "reversed-support": "reversed-neutral-support"
+  },
+  "reversed_neutral_interventions": [
+    "reverse-spatial-processing-support",
+    "neutralize-spatial-processing-support"
+  ],
+  "float32_residue_inventory_roundoff_recorded_separately": true,
+  "sample_schema": "nested-seed-checkpoint-response-sampling-v1",
+  "requirements": {
+    "minimum_alive": 100,
+    "minimum_alive_entity_ticks": 12000,
+    "minimum_eligible_entity_ticks": 6000,
+    "minimum_resource_moves": 1000,
+    "minimum_unique_entities": 100,
+    "minimum_effective_lineages": 20.0,
+    "maximum_largest_lineage_fraction": 0.25,
+    "evolutionary_minimum_births_per_initial_entity": 1.0,
+    "evolutionary_minimum_mean_generation": 1.0,
+    "evolutionary_minimum_max_generation": 3
+  },
+  "checkpoint_selection": "predeclared-all-retained-v1",
+  "outcome_conditioned_checkpoint_selection": false,
+  "insufficient_checkpoints_rerun_or_replaced": false,
+  "nested_independent_unit": "seed/checkpoint",
+  "movement_events_independent_replicates": false,
+  "acute_response_and_evolutionary_support_reported_separately": true,
+  "source_population_rules_changed": false,
+  "non_world_long_run_diagnostics_disabled_for_panel": true,
+  "diagnostic_override_feedback_to_world": false,
+  "movement_reward_or_controller_added": false,
+  "support_sensor_added": false,
+  "entity_lineage_and_group_feedback": false,
+  "named_resource_roles": false,
+  "diversity_reward_or_protection": false,
+  "ecological_role_labels": false,
+  "pass_fail_gate_feedback_to_world": false
+}

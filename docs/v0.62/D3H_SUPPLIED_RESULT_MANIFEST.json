@@ -1,0 +1,21 @@
+{
+  "schema": "supplied-analysis-file-manifest-v1",
+  "label": "scale1p5-v2-four-arm",
+  "files": [
+    {
+      "file": "d3_processing_response_panel_plan.json",
+      "size_bytes": 1974,
+      "sha256": "c02cdbc808e94183e6d2188e769ccf70ff7d41736235ffc318dfc643570ae7c2"
+    },
+    {
+      "file": "d3_processing_response_panel_results.md",
+      "size_bytes": 9792,
+      "sha256": "b61040ce47210a8e18bf1d2d403690425b2c9c38edbf029115fcba076ba252e1"
+    },
+    {
+      "file": "d3_processing_response_panel_results.json",
+      "size_bytes": 4201259,
+      "sha256": "3c77ffb79d6141a3150296dbd30e6d33cac4a6b1494cf5cfad9bb5edaeea8c05"
+    }
+  ]
+}
