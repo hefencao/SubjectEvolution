@@ -1,0 +1,142 @@
+{
+  "schema": "d3h-pilot-summary-v1",
+  "source_result_schema": "d3-processing-response-panel-results-v2",
+  "seed": 61001,
+  "checkpoint_tick": 30,
+  "response_window_ticks": 30,
+  "checkpoint_population": {
+    "alive": 1125,
+    "unique_entities": 1125,
+    "lineage_count": 1125,
+    "effective_lineages": 1124.9999999999995,
+    "largest_lineage_fraction": 0.0008888888888888889,
+    "mean_generation": 0.0,
+    "max_generation": 0,
+    "mean_age": 30.0,
+    "births_total": 0,
+    "deaths_total": 0,
+    "population_support": {
+      "minimum_alive_met": true,
+      "minimum_effective_lineages_met": true,
+      "maximum_largest_lineage_fraction_met": true,
+      "eligible": true
+    },
+    "evolutionary_support": {
+      "minimum_births_per_initial_entity_met": false,
+      "minimum_mean_generation_met": false,
+      "minimum_max_generation_met": false,
+      "eligible": false
+    }
+  },
+  "shared_checkpoint_state": true,
+  "acute_quartet_analysis_eligible": true,
+  "evolutionary_checkpoint_analysis_eligible": false,
+  "matched_orientation_contrasts": {
+    "schema": "matched-orientation-active-neutral-contrast-v1",
+    "mean_support_gain": {
+      "original": -1.7078346617626543e-05,
+      "reversed": 8.860765973310705e-06,
+      "reversed_minus_original": 2.593911259093725e-05
+    },
+    "mean_alignment_cosine": {
+      "original": -0.004983136476321676,
+      "reversed": 0.0017774089863028947,
+      "reversed_minus_original": 0.00676054546262457
+    },
+    "positive_gain_fraction": {
+      "original": 0.0005889209600510315,
+      "reversed": 0.00469441615417765,
+      "reversed_minus_original": 0.004105495194126618
+    }
+  },
+  "branches": [
+    {
+      "branch": "original-support",
+      "interventions": [],
+      "sample_support": {
+        "minimum_alive_met": true,
+        "minimum_alive_entity_ticks_met": true,
+        "minimum_eligible_entity_ticks_met": true,
+        "minimum_resource_moves_met": true,
+        "minimum_unique_entities_met": true,
+        "minimum_effective_lineages_met": true,
+        "maximum_largest_lineage_fraction_met": true,
+        "eligible": true
+      },
+      "resource_moves": 4716.0,
+      "minimum_alive": 1110,
+      "external_resource_ledger_valid": true,
+      "external_recycling_ledger_valid": true,
+      "max_abs_recycling_residual_before_adjustment": 2.1141201045793423e-05,
+      "max_abs_corrected_recycling_residual": 1.7763568394002505e-14
+    },
+    {
+      "branch": "reversed-support",
+      "interventions": [
+        "reverse-spatial-processing-support"
+      ],
+      "sample_support": {
+        "minimum_alive_met": true,
+        "minimum_alive_entity_ticks_met": true,
+        "minimum_eligible_entity_ticks_met": true,
+        "minimum_resource_moves_met": true,
+        "minimum_unique_entities_met": true,
+        "minimum_effective_lineages_met": true,
+        "maximum_largest_lineage_fraction_met": true,
+        "eligible": true
+      },
+      "resource_moves": 4704.0,
+      "minimum_alive": 1113,
+      "external_resource_ledger_valid": true,
+      "external_recycling_ledger_valid": true,
+      "max_abs_recycling_residual_before_adjustment": 2.1520617345061055e-05,
+      "max_abs_corrected_recycling_residual": 1.4210854715202004e-14
+    },
+    {
+      "branch": "neutral-support",
+      "interventions": [
+        "neutralize-spatial-processing-support"
+      ],
+      "sample_support": {
+        "minimum_alive_met": true,
+        "minimum_alive_entity_ticks_met": true,
+        "minimum_eligible_entity_ticks_met": true,
+        "minimum_resource_moves_met": true,
+        "minimum_unique_entities_met": true,
+        "minimum_effective_lineages_met": true,
+        "maximum_largest_lineage_fraction_met": true,
+        "eligible": true
+      },
+      "resource_moves": 4689.0,
+      "minimum_alive": 1112,
+      "external_resource_ledger_valid": true,
+      "external_recycling_ledger_valid": true,
+      "max_abs_recycling_residual_before_adjustment": 2.2668163182970602e-05,
+      "max_abs_corrected_recycling_residual": 1.2434497875801753e-14
+    },
+    {
+      "branch": "reversed-neutral-support",
+      "interventions": [
+        "reverse-spatial-processing-support",
+        "neutralize-spatial-processing-support"
+      ],
+      "sample_support": {
+        "minimum_alive_met": true,
+        "minimum_alive_entity_ticks_met": true,
+        "minimum_eligible_entity_ticks_met": true,
+        "minimum_resource_moves_met": true,
+        "minimum_unique_entities_met": true,
+        "minimum_effective_lineages_met": true,
+        "maximum_largest_lineage_fraction_met": true,
+        "eligible": true
+      },
+      "resource_moves": 4689.0,
+      "minimum_alive": 1112,
+      "external_resource_ledger_valid": true,
+      "external_recycling_ledger_valid": true,
+      "max_abs_recycling_residual_before_adjustment": 2.2668163182970602e-05,
+      "max_abs_corrected_recycling_residual": 1.2434497875801753e-14
+    }
+  ],
+  "interpretation_boundary": "Sampling eligibility controls interpretation only and never feeds back into the world, protects lineages, retries failed populations, or selects checkpoints by outcomes. Acute response support does not establish evolutionary adaptation, migration, specialization, coexistence, or ecological roles."
+}

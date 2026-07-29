@@ -1,0 +1,37 @@
+{
+  "schema": "conda-validation-status-v1",
+  "version": "0.61.0",
+  "conda_prefix": null,
+  "conda_environment_active": false,
+  "make_conda_sync": {
+    "attempted": true,
+    "returncode": 2,
+    "expected_guard_failure": true,
+    "reason": "CONDA_PREFIX is not set; activate the intended conda environment",
+    "log": "/mnt/data/v061_conda_sync.log"
+  },
+  "make_conda_check": {
+    "attempted": true,
+    "returncode": 2,
+    "tests_completed_before_guard": true,
+    "pytest_passed": 287,
+    "pytest_skipped": 1,
+    "test_file_count": 61,
+    "expected_guard_failure": true,
+    "reason": "CONDA_PREFIX is not set; activate the intended conda environment",
+    "log": "/mnt/data/v061_conda_check.log"
+  },
+  "non_conda_editable_validation": {
+    "passed": true,
+    "module_count": 116,
+    "console_entry_count": 31,
+    "smoke_passed": true,
+    "report": "docs/v0.61/EDITABLE_INSTALL_REPORT.json",
+    "build_isolation_disabled_because": "The execution environment package index did not expose setuptools>=68; existing environment build tools were used without changing project metadata."
+  },
+  "local_commands": [
+    "make conda-sync",
+    "make test",
+    "make conda-check"
+  ]
+}

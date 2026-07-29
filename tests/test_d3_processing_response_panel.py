@@ -65,7 +65,7 @@ def test_d3g_preregistered_checkpoint_panel_keeps_nested_sample_support(tmp_path
         backend="cpu",
         requirements=requirements,
     )
-    assert payload["schema"] == "d3-processing-response-panel-results-v1"
+    assert payload["schema"] == "d3-processing-response-panel-results-v2"
     assert payload["panel_count"] == 2
     assert payload["completed_panel_count"] == 2
     assert payload["audit_completeness"][
@@ -74,18 +74,28 @@ def test_d3g_preregistered_checkpoint_panel_keeps_nested_sample_support(tmp_path
     for panel in payload["panels"]:
         assert panel["status"] == "completed"
         assert panel["shared_checkpoint_state"]
-        assert len(panel["branches"]) == 3
+        assert len(panel["branches"]) == 4
         for branch in panel["branches"]:
             assert branch["sample_windows"]
             assert branch["sample_support"]["alive_entity_ticks"] > 0
             assert branch["sample_support"]["unique_entities"] > 0
             assert branch["interval_ledgers"]["external_resource"]["valid"]
-            assert branch["interval_ledgers"]["external_recycling"]["valid"]
+            recycling = branch["interval_ledgers"]["external_recycling"]
+            assert recycling["valid"]
+            assert max(abs(value) for value in recycling["corrected_external_residual"]) < 1.0e-8
+        contrasts = panel["matched_orientation_contrasts"]
+        assert contrasts["schema"] == "matched-orientation-active-neutral-contrast-v1"
+        assert set(branch["branch"] for branch in panel["branches"]) == {
+            "original-support",
+            "reversed-support",
+            "neutral-support",
+            "reversed-neutral-support",
+        }
     assert payload["audit_completeness"][
         "outcome_conditioned_checkpoint_selection"
     ] is False
     audit = build_protocol_audit(D3E)
-    assert audit["schema"] == "structural-measurement-protocol-audit-v28"
+    assert audit["schema"] == "structural-measurement-protocol-audit-v29"
     protocol = audit["functional_module_protocol"][
         "processing_response_sample_support_protocol"
     ]

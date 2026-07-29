@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v28"
+SCHEMA = "structural-measurement-protocol-audit-v29"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -557,8 +557,9 @@ def build_protocol_audit(
                 "stable_niche_claim": False,
             },
             "external_recycling_experiment": {
-                "plan_schema": "d3-external-recycling-plan-v1",
-                "result_schema": "d3-external-recycling-results-v1",
+                "plan_schema": "d3-external-recycling-plan-v2",
+                "result_schema": "d3-external-recycling-results-v2",
+                "float32_residue_inventory_roundoff_recorded_separately": True,
                 "single_active_population_per_seed": True,
                 "identity_preserving_channels": True,
                 "store_decay_and_death_store_sources": True,
@@ -568,8 +569,8 @@ def build_protocol_audit(
                 "stable_trophic_claim": False,
             },
             "spatial_processing_experiment": {
-                "plan_schema": "d3-spatial-collection-processing-plan-v1",
-                "result_schema": "d3-spatial-collection-processing-results-v1",
+                "plan_schema": "d3-spatial-collection-processing-plan-v2",
+                "result_schema": "d3-spatial-collection-processing-results-v2",
                 "shared_checkpoint_tick": 0,
                 "paired_branches": ["spatial-support", "neutral-support"],
                 "neutralization_intervention": "neutralize-spatial-processing-support",
@@ -582,8 +583,8 @@ def build_protocol_audit(
                 "stable_migration_or_ecotype_claim": False,
             },
             "spatial_processing_response_audit": {
-                "plan_schema": "d3-spatial-processing-response-plan-v1",
-                "result_schema": "d3-spatial-processing-response-results-v1",
+                "plan_schema": "d3-spatial-processing-response-plan-v2",
+                "result_schema": "d3-spatial-processing-response-results-v2",
                 "trajectory_schema": "inventory-weighted-processing-response-trajectory-v1",
                 "shared_checkpoint_tick": 0,
                 "branches": [
@@ -608,16 +609,35 @@ def build_protocol_audit(
                 "finite_seed_signs_generalized": False,
                 "stable_migration_or_ecotype_claim": False,
             },
+            "processing_response_scale_audit": {
+                "audit_schema": "d3-response-scale-audit-v1",
+                "supported_panel_result_schemas": [
+                    "d3-processing-response-panel-results-v1",
+                    "d3-processing-response-panel-results-v2",
+                ],
+                "independent_replication_unit": "seed",
+                "checkpoints_within_seed": "nested-repeated-panels",
+                "movement_events_independent_replicates": False,
+                "matched_orientation_neutral_control_required": True,
+                "legacy_three_arm_reversed_effect_identified": False,
+                "sampling_gate_feedback_to_world": False,
+            },
             "processing_response_sample_support_protocol": {
-                "plan_schema": "d3-processing-response-panel-plan-v1",
-                "result_schema": "d3-processing-response-panel-results-v1",
+                "plan_schema": "d3-processing-response-panel-plan-v2",
+                "result_schema": "d3-processing-response-panel-results-v2",
                 "sample_schema": "nested-seed-checkpoint-response-sampling-v1",
                 "source_trajectory": "unintervened baseline to every predeclared checkpoint",
                 "branches": [
                     "original-support",
                     "reversed-support",
                     "neutral-support",
+                    "reversed-neutral-support",
                 ],
+                "matched_orientation_controls": {
+                    "original-support": "neutral-support",
+                    "reversed-support": "reversed-neutral-support",
+                },
+                "float32_residue_inventory_roundoff_recorded_separately": True,
                 "default_response_window_ticks": 120,
                 "default_observation_period_ticks": 30,
                 "all_predeclared_checkpoints_retained": True,
@@ -641,8 +661,8 @@ def build_protocol_audit(
                 "stable_migration_or_ecotype_claim": False,
             },
             "persistent_resource_renewal_experiment": {
-                "plan_schema": "d3-persistent-resource-renewal-plan-v2",
-                "result_schema": "d3-persistent-resource-renewal-results-v2",
+                "plan_schema": "d3-persistent-resource-renewal-plan-v3",
+                "result_schema": "d3-persistent-resource-renewal-results-v3",
                 "single_active_population_per_seed": True,
                 "moving_target_reuses_role_free_channel_waves": True,
                 "source_and_sink_recorded_separately": True,
@@ -1183,6 +1203,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- persistent resource renewal experiment: {payload['functional_module_protocol']['persistent_resource_renewal_experiment']}",
         f"- spatial processing experiment: {payload['functional_module_protocol']['spatial_processing_experiment']}",
         f"- spatial processing response audit: {payload['functional_module_protocol']['spatial_processing_response_audit']}",
+        f"- processing response scale audit: {payload['functional_module_protocol']['processing_response_scale_audit']}",
         f"- processing response sample support: {payload['functional_module_protocol']['processing_response_sample_support_protocol']}",
         f"- known architecture limit: {payload['functional_module_protocol']['known_architecture_limit']}",
         f"- leave-one-out protocol: {payload['functional_module_protocol']['leave_one_out_protocol']}",

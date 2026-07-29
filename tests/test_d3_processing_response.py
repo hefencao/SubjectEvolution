@@ -72,7 +72,7 @@ def test_d3f_shared_checkpoint_triplet_and_response_trajectory(tmp_path: Path) -
         until_tick=8,
         observation_period=4,
     )
-    assert payload["schema"] == "d3-spatial-processing-response-results-v1"
+    assert payload["schema"] == "d3-spatial-processing-response-results-v2"
     pair = payload["pairs"][0]
     assert pair["shared_checkpoint_state"]
     branches = {row["branch"]: row for row in pair["branches"]}
@@ -101,7 +101,7 @@ def test_d3f_shared_checkpoint_triplet_and_response_trajectory(tmp_path: Path) -
     assert all(row["valid"] for row in payload["external_resource_ledger"])
     assert all(row["valid"] for row in payload["external_recycling_ledger"])
     audit = build_protocol_audit(D3E)
-    assert audit["schema"] == "structural-measurement-protocol-audit-v28"
+    assert audit["schema"] == "structural-measurement-protocol-audit-v29"
     protocol = audit["functional_module_protocol"][
         "spatial_processing_response_audit"
     ]

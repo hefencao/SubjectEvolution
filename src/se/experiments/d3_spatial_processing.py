@@ -37,8 +37,8 @@ from se.policy import ParametricPolicy
 from se.runtime.resource_metabolism import resource_metabolism_diagnostics
 from se.runtime.sim import Simulation
 
-PLAN_SCHEMA = "d3-spatial-collection-processing-plan-v1"
-RESULT_SCHEMA = "d3-spatial-collection-processing-results-v1"
+PLAN_SCHEMA = "d3-spatial-collection-processing-plan-v2"
+RESULT_SCHEMA = "d3-spatial-collection-processing-results-v2"
 ABLATION = "neutralize-spatial-processing-support"
 BRANCHES = ("spatial-support", "neutral-support")
 
@@ -74,6 +74,7 @@ def build_plan(cfg: SimulationConfig, seeds: Iterable[int], horizon: int) -> dic
             cfg.physiology.resource_processing_energy_per_unit
         ),
         "processing_energy_charged_before_body_outcomes": True,
+        "float32_residue_inventory_roundoff_recorded_separately": True,
         "neutral_support_multiplier": 1.0,
         "neutral_support_preserves_processing_cost": True,
         "neutral_support_preserves_genotype": True,

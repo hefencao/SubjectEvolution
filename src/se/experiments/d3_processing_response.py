@@ -29,8 +29,8 @@ from se.policy import Action, ParametricPolicy
 from se.runtime.sim import Simulation
 from se.runtime.state import StepStats
 
-PLAN_SCHEMA = "d3-spatial-processing-response-plan-v1"
-RESULT_SCHEMA = "d3-spatial-processing-response-results-v1"
+PLAN_SCHEMA = "d3-spatial-processing-response-plan-v2"
+RESULT_SCHEMA = "d3-spatial-processing-response-results-v2"
 TRAJECTORY_SCHEMA = "inventory-weighted-processing-response-trajectory-v1"
 BRANCHES = ("original-support", "reversed-support", "neutral-support")
 REVERSE_INTERVENTION = "reverse-spatial-processing-support"
@@ -385,6 +385,7 @@ def build_plan(
         "shared_checkpoint_tick": 0,
         "observation_period_ticks": int(observation_period),
         "trajectory_schema": TRAJECTORY_SCHEMA,
+        "float32_residue_inventory_roundoff_recorded_separately": True,
         "branches": list(BRANCHES),
         "original_interventions": [],
         "reversed_interventions": [REVERSE_INTERVENTION],

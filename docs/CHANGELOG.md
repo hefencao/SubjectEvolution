@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.61.0
+
+### Matched-orientation controls and residue settlement accounting
+
+- Audits the supplied base, 1.5×, and 2× D3-G panels without treating checkpoints or movement events as independent seeds.
+- Confirms 0 acute-eligible base panels and 12 each at 1.5× and 2×, with no evolutionarily eligible checkpoint.
+- Detects that v1 three-arm panels lack a reversed-orientation neutral control, so the reversed active effect is not identified.
+- Adds `reversed-neutral-support` and upgrades the acute panel to four matched branches.
+- Reports original and reversed active-minus-neutral contrasts under matching observation orientations.
+- Adds `se-d3-response-scale-audit` for cross-scale seed-level auditing and legacy v1 detection.
+- Records float32 residue-field diffusion/release settlement and sparse-deposit settlement separately from physical fluxes.
+- Corrects checkpoint-relative recycling ledgers without modifying resource or residue state.
+- Preserves pre-v0.61 checkpoint compatibility by backfilling absent numerical counters with zero.
+- Upgrades protocol audit to v29 and project version to 0.61.0.
+- Adds no sensor, reward, migration controller, population rescue, diversity protection, role label, or ecological claim.
+- Complete packages retain only `docs/v0.61` as a version-specific directory.
+
 ## 0.60.0
 
 ### Preregistered acute response panels and sample-support accounting

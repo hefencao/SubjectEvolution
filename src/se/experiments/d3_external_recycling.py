@@ -26,8 +26,8 @@ from se.policy import ParametricPolicy
 from se.runtime.resource_metabolism import resource_metabolism_diagnostics
 from se.runtime.sim import Simulation
 
-PLAN_SCHEMA="d3-external-recycling-plan-v1"
-RESULT_SCHEMA="d3-external-recycling-results-v1"
+PLAN_SCHEMA="d3-external-recycling-plan-v2"
+RESULT_SCHEMA="d3-external-recycling-results-v2"
 RECYCLING_SCHEMA="identity-preserving-spatial-residue-v1"
 
 
@@ -53,6 +53,7 @@ def build_plan(seeds: Iterable[int], horizon: int) -> dict[str, Any]:
         "horizon_ticks": int(horizon),
         "physiology_schema": RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
         "resource_recycling_schema": RECYCLING_SCHEMA,
+        "float32_residue_inventory_roundoff_recorded_separately": True,
         "store_decay_deposits_same_channel_residue": True,
         "death_store_deposits_same_channel_residue": True,
         "minimum_external_residue_delay_ticks": 1,
@@ -90,18 +91,31 @@ def _ledger(run: dict[str, Any]) -> dict[str, Any]:
     deposited=np.asarray(f["resource_residue_deposited_total"], dtype=np.float64)
     released=np.asarray(f["resource_residue_released_total"], dtype=np.float64)
     remaining=np.asarray(f["resource_residue_total"], dtype=np.float64)
+    field_roundoff=np.asarray(
+        f.get("resource_residue_field_roundoff_total", [0.0]*4), dtype=np.float64
+    )
+    deposit_roundoff=np.asarray(
+        f.get("resource_residue_deposit_roundoff_total", [0.0]*4), dtype=np.float64
+    )
+    numerical_adjustment=field_roundoff+deposit_roundoff
     source_residual=decay+death-deposited
     external_residual=deposited-released-remaining
+    corrected_external_residual=external_residual+numerical_adjustment
     scale=max(1.0,float(np.max(deposited, initial=0.0)))
     valid=bool(
-        np.all(np.isfinite(source_residual)) and np.all(np.isfinite(external_residual))
+        np.all(np.isfinite(source_residual))
+        and np.all(np.isfinite(corrected_external_residual))
         and np.all(np.abs(source_residual) <= 2.0e-5*scale)
-        and np.all(np.abs(external_residual) <= 2.0e-5*scale)
+        and np.all(np.abs(corrected_external_residual) <= 2.0e-5*scale)
     )
     return {
         "seed": int(run["seed"]),
         "source_residual": source_residual.tolist(),
-        "external_residual": external_residual.tolist(),
+        "external_residual_before_numerical_adjustment": external_residual.tolist(),
+        "residue_field_roundoff": field_roundoff.tolist(),
+        "residue_deposit_roundoff": deposit_roundoff.tolist(),
+        "residue_numerical_adjustment": numerical_adjustment.tolist(),
+        "corrected_external_residual": corrected_external_residual.tolist(),
         "valid": valid,
     }
 

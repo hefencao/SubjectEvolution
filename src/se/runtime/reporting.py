@@ -1884,6 +1884,58 @@ class SimulationReportingMixin:
                                 f"resource_residue_released_{index}_total": float(self.total_resource_residue_released[index])
                                 for index in range(4)
                             },
+                            **{
+                                f"resource_residue_field_roundoff_{index}_step": float(
+                                    np.asarray(
+                                        getattr(
+                                            self.environment,
+                                            "resource_residue_field_roundoff_step",
+                                            np.zeros(4),
+                                        ),
+                                        dtype=np.float64,
+                                    )[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_residue_field_roundoff_{index}_total": float(
+                                    np.asarray(
+                                        getattr(
+                                            self.environment,
+                                            "total_resource_residue_field_roundoff",
+                                            np.zeros(4),
+                                        ),
+                                        dtype=np.float64,
+                                    )[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_residue_deposit_roundoff_{index}_step": float(
+                                    np.asarray(
+                                        getattr(
+                                            self.environment,
+                                            "resource_residue_deposit_roundoff_step",
+                                            np.zeros(4),
+                                        ),
+                                        dtype=np.float64,
+                                    )[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_residue_deposit_roundoff_{index}_total": float(
+                                    np.asarray(
+                                        getattr(
+                                            self.environment,
+                                            "total_resource_residue_deposit_roundoff",
+                                            np.zeros(4),
+                                        ),
+                                        dtype=np.float64,
+                                    )[index]
+                                )
+                                for index in range(4)
+                            },
                         }
                         if external_resource_recycling_enabled(self.cfg)
                         else {}

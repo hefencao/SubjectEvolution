@@ -413,3 +413,48 @@ Sample-support accounting uses the seed/checkpoint panel as the nested experimen
 The acute branch ledger starts from checkpoint inventory and cumulative counters, subtracts checkpoint baselines, and closes only the branch interval. This prevents tick-zero history from hiding a branch-window accounting error.
 
 Density-preserving scale configs increase world area, grid cells, initial entities and maximum entities by the same area factor. Cell size and entity density remain fixed. Scale changes no reward, protection, role, genotype, mutation, cost or per-cell environmental parameter.
+
+## v0.61 D3-H matched-control and residue-settlement boundary
+
+D3-H corrects two measurement boundaries without changing policy or ecology.
+
+### Residue numerical provenance
+
+The external residue pool remains float32 world state. Two float64 diagnostic accumulators record finite-precision settlement:
+
+```text
+residue field settlement
+= residue after diffusion/release + released - residue before update
+
+residue deposit settlement
+= residue after sparse writeback - residue before writeback - requested deposit
+```
+
+The checkpoint-relative ledger is therefore:
+
+```text
+checkpoint residue
++ physical deposits
++ field settlement
++ deposit settlement
+= physical release
++ final residue
+```
+
+The settlement terms never feed back into state, policy, fitness, reproduction, or environmental dynamics. Older checkpoints are restored with zero historical counters; only post-restore settlement is measured.
+
+### Matched orientation controls
+
+```text
+seed/checkpoint state
+        ├─ original active
+        ├─ original neutral
+        ├─ reversed active
+        └─ reversed neutral
+                    ↓
+active-minus-neutral within each observer orientation
+```
+
+Applying reversal and neutralization together leaves processing execution neutral while retaining the reversed analytical surface for the read-only observer. This separates support execution from the coordinate system used to measure movement alignment.
+
+The cross-scale audit accepts legacy three-arm and current four-arm results. It can summarize original active-minus-neutral effects from legacy files, but marks their reversed effect unidentified. Seed is the independent unit; checkpoints remain nested observations.

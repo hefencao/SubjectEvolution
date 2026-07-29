@@ -31,8 +31,8 @@ from se.policy import ParametricPolicy
 from se.runtime.resource_metabolism import resource_metabolism_diagnostics
 from se.runtime.sim import Simulation
 
-PLAN_SCHEMA = "d3-persistent-resource-renewal-plan-v2"
-RESULT_SCHEMA = "d3-persistent-resource-renewal-results-v2"
+PLAN_SCHEMA = "d3-persistent-resource-renewal-plan-v3"
+RESULT_SCHEMA = "d3-persistent-resource-renewal-results-v3"
 RENEWAL_SCHEMA = "moving-target-source-sink-v2"
 
 
@@ -59,6 +59,8 @@ def build_plan(seeds: Iterable[int], horizon: int) -> dict[str, Any]:
         "moving_target_reuses_role_free_channel_waves": True,
         "renewal_source_and_sink_recorded_separately": True,
         "float32_inventory_roundoff_recorded_separately": True,
+        "float32_resource_inventory_roundoff_recorded_separately": True,
+        "float32_residue_inventory_roundoff_recorded_separately": True,
         "entity_lineage_and_group_feedback": False,
         "identity_preserving_external_recycling_retained": True,
         "minimum_external_residue_delay_ticks": 1,

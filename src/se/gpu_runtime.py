@@ -302,6 +302,17 @@ class HybridGpuRuntime:
             self.environment.resource_residue = self._upload(
                 environment.resource_residue, dtype=xp.float32, copy=True
             )
+            for name in (
+                "resource_residue_field_roundoff_step",
+                "total_resource_residue_field_roundoff",
+                "resource_residue_deposit_roundoff_step",
+                "total_resource_residue_deposit_roundoff",
+            ):
+                setattr(
+                    self.environment,
+                    name,
+                    np.asarray(getattr(environment, name, np.zeros(4)), dtype=np.float64).copy(),
+                )
         if hasattr(environment, "total_resource_renewal_source"):
             for name in (
                 "initial_resource_total",
@@ -340,6 +351,19 @@ class HybridGpuRuntime:
             environment.resource_residue = self._download(
                 self.environment.resource_residue
             ).astype(np.float32, copy=False)
+            for name in (
+                "resource_residue_field_roundoff_step",
+                "total_resource_residue_field_roundoff",
+                "resource_residue_deposit_roundoff_step",
+                "total_resource_residue_deposit_roundoff",
+            ):
+                setattr(
+                    environment,
+                    name,
+                    np.asarray(
+                        getattr(self.environment, name, np.zeros(4)), dtype=np.float64
+                    ).copy(),
+                )
         if hasattr(self.environment, "total_resource_renewal_source"):
             for name in (
                 "initial_resource_total",

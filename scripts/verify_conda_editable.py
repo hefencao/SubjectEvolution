@@ -24,38 +24,20 @@ import tomllib
 from clean_project_bytecode import clean as clean_project_bytecode
 
 DIST_NAME = "se-mvp"
-ENTRY_POINTS = {
-    "se": "se.cmd.run:main",
-    "se-multi": "se.cmd.multi_seed:main",
-    "se-gui": "se.gui.runner:main",
-    "se-d1-factorial": "se.experiments.d1_factorial:main",
-    "se-d2-audit": "se.experiments.d2_module_audit:main",
-    "se-d2-assess": "se.analysis.d2_effects:main",
-    "se-d2-lineage-pairs": "se.experiments.d2_lineage_pairs:main",
-    "se-d2-lineage-assess": "se.analysis.d2_lineage_effects:main",
-    "se-d2-lineage-mediate": "se.experiments.d2_lineage_mediation:main",
-    "se-d2-lineage-mediate-assess": "se.analysis.d2_lineage_mediation_effects:main",
-    "se-d2-source-population": "se.experiments.d2_source_population:main",
-    "se-d2-source-population-assess": "se.analysis.d2_source_population_effects:main",
-    "se-d2-source-causal": "se.experiments.d2_source_population_causal:main",
-    "se-d2-source-causal-assess": "se.analysis.d2_source_population_causal_effects:main",
-    "se-d2-compose": "se.experiments.d2_compositional_capability:main",
-    "se-d2-embody": "se.experiments.d2_embodied_capability:main",
-    "se-d2-physiology": "se.experiments.d2_physiological_ecology:main",
-    "se-d2-regulatory-physiology": "se.experiments.d2_regulatory_physiology:main",
-    "se-d2-regulatory-physiology-assess": "se.analysis.d2_regulatory_physiology_flows:main",
-    "se-d3-resource-metabolism": "se.experiments.d3_resource_metabolism:main",
-    "se-d3-conservative-intake": "se.experiments.d3_conservative_intake:main",
-    "se-d3-conservative-intake-assess": "se.analysis.d3_conservative_intake_effects:main",
-    "se-d3-external-recycling": "se.experiments.d3_external_recycling:main",
-    "se-d3-resource-renewal": "se.experiments.d3_persistent_resource_renewal:main",
-    "se-d3-spatial-processing": "se.experiments.d3_spatial_processing:main",
-    "se-d3-processing-response": "se.experiments.d3_processing_response:main",
-    "se-d3-processing-response-panel": "se.experiments.d3_processing_response_panel:main",
-    "se-d3-response-adequacy": "se.analysis.d3_response_adequacy:main",
-    "se-d4-niche-reversal": "se.experiments.d4_niche_reversal:main",
-    "se-d4-niche-assess": "se.analysis.d4_niche_reversal_effects:main",
-}
+def _expected_entry_points(pyproject: dict[str, object]) -> dict[str, str]:
+    project = pyproject.get("project")
+    if not isinstance(project, dict):
+        raise RuntimeError("pyproject [project] table is missing")
+    scripts = project.get("scripts", {})
+    if not isinstance(scripts, dict):
+        raise RuntimeError("pyproject [project.scripts] must be a table")
+    expected: dict[str, str] = {}
+    for name, target in scripts.items():
+        if not isinstance(name, str) or not isinstance(target, str):
+            raise RuntimeError("pyproject console entry names and targets must be strings")
+        expected[name] = target
+    return expected
+
 
 
 def _within(path: Path, root: Path) -> bool:
@@ -67,6 +49,7 @@ def verify(project: Path, *, require_conda: bool, smoke: bool) -> dict[str, obje
     source_root = (project / "src").resolve()
     pyproject = tomllib.loads((project / "pyproject.toml").read_text(encoding="utf-8"))
     expected_version = str(pyproject["project"]["version"])
+    expected_entry_points = _expected_entry_points(pyproject)
 
     conda_prefix_text = os.environ.get("CONDA_PREFIX", "")
     conda_prefix = Path(conda_prefix_text).resolve() if conda_prefix_text else None
@@ -142,11 +125,11 @@ def verify(project: Path, *, require_conda: bool, smoke: bool) -> dict[str, obje
     installed_entries = {
         entry.name: entry.value
         for entry in metadata.entry_points(group="console_scripts")
-        if entry.name in ENTRY_POINTS
+        if entry.name in expected_entry_points
     }
-    if installed_entries != ENTRY_POINTS:
+    if installed_entries != expected_entry_points:
         raise RuntimeError(
-            f"console entry points are stale; expected={ENTRY_POINTS}, found={installed_entries}"
+            f"console entry points are stale; expected={expected_entry_points}, found={installed_entries}"
         )
 
     smoke_payload: dict[str, object] | None = None

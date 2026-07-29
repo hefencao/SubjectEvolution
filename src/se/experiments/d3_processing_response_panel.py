@@ -1,8 +1,8 @@
-"""Run preregistered acute D3-G processing-response checkpoint panels.
+"""Run preregistered acute D3-H matched processing-response panels.
 
 A baseline source trajectory writes every predeclared full-world checkpoint.
-Each available checkpoint is restored into original, reversed, and neutral
-processing-support branches for a short acute response window.  No checkpoint
+Each available checkpoint is restored into original active, original neutral,
+reversed active, and reversed neutral processing-support branches. No checkpoint
 is selected or discarded from endpoint outcomes: unavailable and sampling-
 insufficient checkpoints remain in the report with explicit reasons.
 """
@@ -21,7 +21,7 @@ from se.checkpointing import read_checkpoint_bundle
 from se.cfg import SimulationConfig, load_config
 from se.experiments.d3_conservative_intake import parse_seeds
 from se.experiments.d3_processing_response import (
-    BRANCHES,
+    BRANCHES as D3F_BRANCHES,
     NEUTRAL_INTERVENTION,
     REVERSE_INTERVENTION,
     SpatialProcessingResponseObserver,
@@ -30,9 +30,10 @@ from se.experiments.d3_spatial_processing import _require, _snapshot
 from se.runtime.sim import Simulation
 from se.runtime.state import StepStats
 
-PLAN_SCHEMA = "d3-processing-response-panel-plan-v1"
-RESULT_SCHEMA = "d3-processing-response-panel-results-v1"
+PLAN_SCHEMA = "d3-processing-response-panel-plan-v2"
+RESULT_SCHEMA = "d3-processing-response-panel-results-v2"
 SAMPLE_SCHEMA = "nested-seed-checkpoint-response-sampling-v1"
+BRANCHES = (*D3F_BRANCHES, "reversed-neutral-support")
 
 
 @dataclass(frozen=True)
@@ -466,6 +467,18 @@ def _ledger_state(simulation: Simulation) -> dict[str, np.ndarray]:
         "deposited": np.asarray(
             simulation.total_resource_residue_deposited, dtype=np.float64
         ).copy(),
+        "residue_field_roundoff": np.asarray(
+            getattr(
+                environment, "total_resource_residue_field_roundoff", np.zeros(4)
+            ),
+            dtype=np.float64,
+        ).copy(),
+        "residue_deposit_roundoff": np.asarray(
+            getattr(
+                environment, "total_resource_residue_deposit_roundoff", np.zeros(4)
+            ),
+            dtype=np.float64,
+        ).copy(),
     }
 
 
@@ -498,6 +511,10 @@ def _interval_ledgers(
     external_residual = (
         start["residue"] + delta("deposited") - delta("released") - end["residue"]
     )
+    residue_field_roundoff = delta("residue_field_roundoff")
+    residue_deposit_roundoff = delta("residue_deposit_roundoff")
+    residue_numerical_adjustment = residue_field_roundoff + residue_deposit_roundoff
+    corrected_external_residual = external_residual + residue_numerical_adjustment
     recycling_scale = max(1.0, float(np.max(np.abs(delta("deposited")), initial=0.0)))
     return {
         "external_resource": {
@@ -510,12 +527,19 @@ def _interval_ledgers(
         },
         "external_recycling": {
             "source_residual": source_residual.tolist(),
-            "external_residual": external_residual.tolist(),
+            "external_residual_before_numerical_adjustment": external_residual.tolist(),
+            "residue_field_roundoff": residue_field_roundoff.tolist(),
+            "residue_deposit_roundoff": residue_deposit_roundoff.tolist(),
+            "residue_numerical_adjustment": residue_numerical_adjustment.tolist(),
+            "corrected_external_residual": corrected_external_residual.tolist(),
             "valid": bool(
                 np.all(np.isfinite(source_residual))
-                and np.all(np.isfinite(external_residual))
+                and np.all(np.isfinite(corrected_external_residual))
                 and np.all(np.abs(source_residual) <= 2.0e-5 * recycling_scale)
-                and np.all(np.abs(external_residual) <= 2.0e-5 * recycling_scale)
+                and np.all(
+                    np.abs(corrected_external_residual)
+                    <= 2.0e-5 * recycling_scale
+                )
             ),
         },
     }
@@ -545,6 +569,15 @@ def build_plan(
         "response_window_ticks": int(response_window),
         "observation_period_ticks": int(observation_period),
         "branches": list(BRANCHES),
+        "matched_orientation_controls": {
+            "original-support": "neutral-support",
+            "reversed-support": "reversed-neutral-support",
+        },
+        "reversed_neutral_interventions": [
+            REVERSE_INTERVENTION,
+            NEUTRAL_INTERVENTION,
+        ],
+        "float32_residue_inventory_roundoff_recorded_separately": True,
         "sample_schema": SAMPLE_SCHEMA,
         "requirements": asdict(requirements),
         "checkpoint_selection": "predeclared-all-retained-v1",
@@ -590,6 +623,10 @@ def _run_branch(
     elif branch == "neutral-support":
         simulation.apply_intervention(NEUTRAL_INTERVENTION)
         interventions.append(NEUTRAL_INTERVENTION)
+    elif branch == "reversed-neutral-support":
+        simulation.apply_intervention(REVERSE_INTERVENTION)
+        simulation.apply_intervention(NEUTRAL_INTERVENTION)
+        interventions.extend((REVERSE_INTERVENTION, NEUTRAL_INTERVENTION))
     elif branch != "original-support":
         raise ValueError(f"unknown response-panel branch {branch!r}")
     if not np.array_equal(genotype_before, simulation.entities.genotype):
@@ -626,6 +663,33 @@ def _run_branch(
     }
 
 
+def _matched_orientation_contrasts(branches: list[dict[str, Any]]) -> dict[str, Any]:
+    by_name = {row["branch"]: row for row in branches}
+    pairs = {
+        "original": ("original-support", "neutral-support"),
+        "reversed": ("reversed-support", "reversed-neutral-support"),
+    }
+    metrics = {
+        "resource_move_mean_support_gain": "mean_support_gain",
+        "resource_move_mean_alignment_cosine": "mean_alignment_cosine",
+        "resource_move_positive_support_gain_fraction": "positive_gain_fraction",
+    }
+    result: dict[str, Any] = {"schema": "matched-orientation-active-neutral-contrast-v1"}
+    for source_key, output_key in metrics.items():
+        effects = {
+            orientation: float(
+                by_name[active]["response_summary"][source_key]
+                - by_name[neutral]["response_summary"][source_key]
+            )
+            for orientation, (active, neutral) in pairs.items()
+        }
+        result[output_key] = {
+            **effects,
+            "reversed_minus_original": effects["reversed"] - effects["original"],
+        }
+    return result
+
+
 def _checkpoint_panel(
     seed: int,
     checkpoint_tick: int,
@@ -646,7 +710,7 @@ def _checkpoint_panel(
             "checkpoint_population": None,
             "branches": [],
             "shared_checkpoint_state": False,
-            "acute_triplet_analysis_eligible": False,
+            "acute_quartet_analysis_eligible": False,
         }
     metadata, record = read_checkpoint_bundle(checkpoint)
     checkpoint_population = _checkpoint_diagnostics(record, requirements)
@@ -666,7 +730,7 @@ def _checkpoint_panel(
     ]
     shared = len({row["checkpoint_state_sha256"] for row in branches}) == 1
     if any(row["checkpoint_state_sha256"] != metadata["state_sha256"] for row in branches):
-        raise RuntimeError("D3-G branch did not preserve the source checkpoint state")
+        raise RuntimeError("D3-H branch did not preserve the source checkpoint state")
     eligible = bool(
         checkpoint_population["population_support"]["eligible"]
         and all(row["sample_support"]["analysis_support"]["eligible"] for row in branches)
@@ -680,7 +744,8 @@ def _checkpoint_panel(
         "checkpoint_population": checkpoint_population,
         "branches": branches,
         "shared_checkpoint_state": shared,
-        "acute_triplet_analysis_eligible": eligible,
+        "matched_orientation_contrasts": _matched_orientation_contrasts(branches),
+        "acute_quartet_analysis_eligible": eligible,
         "evolutionary_checkpoint_analysis_eligible": checkpoint_population[
             "evolutionary_support"
         ]["eligible"],
@@ -689,7 +754,7 @@ def _checkpoint_panel(
 
 def _payload(plan: dict[str, Any], panels: list[dict[str, Any]]) -> dict[str, Any]:
     completed = [row for row in panels if row["status"] == "completed"]
-    eligible = [row for row in completed if row["acute_triplet_analysis_eligible"]]
+    eligible = [row for row in completed if row["acute_quartet_analysis_eligible"]]
     evolutionary = [
         row
         for row in completed
@@ -701,7 +766,7 @@ def _payload(plan: dict[str, Any], panels: list[dict[str, Any]]) -> dict[str, An
             len(panels)
             == len(plan["seeds"]) * len(plan["checkpoint_ticks"])
         ),
-        "all_completed_triplets_share_checkpoint_state": all(
+        "all_completed_quartets_share_checkpoint_state": all(
             row["shared_checkpoint_state"] for row in completed
         ),
         "all_completed_branches_have_complete_response_and_sample_trajectories": all(
@@ -739,8 +804,8 @@ def _payload(plan: dict[str, Any], panels: list[dict[str, Any]]) -> dict[str, An
             else "increase-unprotected-system-scale-or-revise-preregistered-checkpoints-before-new-mechanism"
         ),
         "causal_claim_scope": (
-            "Within each completed seed/checkpoint triplet, branch differences are attributable "
-            "to registered support orientation or neutralization over the acute window. "
+            "Within each completed seed/checkpoint quartet, active-versus-neutral differences "
+            "are attributable to support execution under a matched observation orientation. "
             "Checkpoints within one seed are nested repeated panels, not independent seeds."
         ),
         "interpretation_boundary": (
@@ -754,7 +819,7 @@ def _payload(plan: dict[str, Any], panels: list[dict[str, Any]]) -> dict[str, An
 
 def render_markdown(payload: dict[str, Any]) -> str:
     lines = [
-        "# D3-G preregistered acute processing-response panel",
+        "# D3-H matched acute processing-response panel",
         "",
         f"Schema: `{payload['schema']}`",
         "",

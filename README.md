@@ -1,35 +1,64 @@
-# SE v0.60
+# SE v0.61
 
-SE is a deterministic artificial-life and subject-structure research platform. The current main line combines conservative regulatory physiology, inherited delayed resource processing, storage-constrained intake, identity-preserving external raw-material recycling, persistent four-channel abiotic renewal, costed spatial processing support, and shared-checkpoint response measurement.
+SE is a deterministic artificial-life and subject-structure research platform. The current main line keeps four role-free resource channels, conservative delayed storage and processing, identity-preserving external recycling, persistent abiotic renewal, costed spatial processing support, and shared-checkpoint response measurement.
 
-## Why v0.60
+## Why v0.61
 
-The supplied D3-F three-seed panel completed all original, reversed, and neutral branches to tick 1500, with valid resource and recycling ledgers. Its cumulative response statistics are nevertheless dominated by the early high-population transient:
+The supplied D3-G runs completed the base, 1.5× linear, and 2× linear checkpoint panels. The larger scales each produced 12 population-supported acute panels, while the base scale produced none. No checkpoint met the evolutionary turnover gate.
 
-- the first 300 ticks contribute about 43.7%–53.7% of inventory-eligible entity-ticks;
-- the first 300 ticks contribute about 52.8%–61.3% of resource movements;
-- every branch first falls below 100 alive between observed ticks 330 and 420;
-- movement events are repeated observations nested inside only three independent seed triplets.
+Two measurement problems remained:
 
-v0.60 therefore does not add another ecological mechanism. It adds D3-G, a preregistered acute checkpoint-panel protocol and explicit sampling-adequacy analysis.
+1. Short checkpoint-relative recycling ledgers did not record float32 settlement from residue-field diffusion/release and sparse residue deposits. The unrecorded term grows with field size and caused some otherwise conservative acute branches to be marked invalid.
+2. The v1 panel had original active, reversed active, and original-orientation neutral branches. It did not have a reversed-orientation neutral branch, so the reversed active effect lacked a matched observation-orientation control.
 
-## D3-G
+v0.61 fixes both boundaries without adding a sensor, reward, migration controller, ecological role, population rescue, or diversity protection.
 
-`se-d3-processing-response-panel` runs one unintervened source trajectory per seed to every predeclared checkpoint. Each available checkpoint is restored into original-support, reversed-support, and neutral-support branches for a short response window.
+## D3-H matched acute response panel
 
-The result records:
+`se-d3-processing-response-panel` now uses four branches from every predeclared checkpoint:
 
-- checkpoint population size, effective lineages, lineage concentration, age and generation depth;
-- exact branch-window alive entity-ticks and inventory-eligible entity-ticks;
-- resource movement counts and unique observed entities;
-- effective lineage entity-ticks and largest-lineage contribution;
-- windowed response trajectories rather than only one tick-0 cumulative mean;
-- checkpoint-relative external-resource and recycling ledgers;
-- separate acute-response and evolutionary-sampling eligibility.
+- `original-support`;
+- `neutral-support`;
+- `reversed-support`;
+- `reversed-neutral-support`.
 
-Every predeclared checkpoint remains in the result. Low-population or unavailable checkpoints are not replaced, retried, or removed. Eligibility controls interpretation only and never feeds back into the world.
+The matched causal contrasts are:
 
-`se-d3-response-adequacy` performs the same fixed-block audit on historical D3-F result files.
+```text
+original support effect = original-support - neutral-support
+reversed support effect = reversed-support - reversed-neutral-support
+```
+
+Both neutral branches retain processing cost, genotype, resources, residue, checkpoint state, policy, and RNG state. The second neutral branch differs only in the support surface used by the read-only response observer.
+
+The result separately records residue field-roundoff and sparse-deposit roundoff. Physical deposition, release, and final residue remain unchanged and visible.
+
+## Cross-scale audit
+
+`se-d3-response-scale-audit` reads one or more D3-G panel result files. It treats seed as the independent replication unit and checkpoints as nested repeated panels. Legacy three-arm v1 results remain readable, but their reversed-support effect is explicitly marked unidentified.
+
+```bash
+se-d3-response-scale-audit \
+  --result base=analyses/d3g_response_panel_base/d3_processing_response_panel_results.json \
+  --result scale1p5=analyses/d3g_response_panel_1p5/d3_processing_response_panel_results.json \
+  --result scale2=analyses/d3g_response_panel_2/d3_processing_response_panel_results.json \
+  --output analyses/d3g_scale_audit
+```
+
+## Run the v2 matched panel
+
+```bash
+se-d3-processing-response-panel \
+  --config configs/mvp_short_d3g_spatial_processing_scale1p5_longrun.json \
+  --seeds 61001,61002,61003 \
+  --output analyses/d3h_response_panel_1p5 \
+  --checkpoint-ticks 300,600,900,1200 \
+  --response-window 120 \
+  --observation-period 30 \
+  --backend gpu
+```
+
+The 2× scale config can be used as an independent scale replication. Checkpoints within one seed are not independent seeds.
 
 ## Workflow
 
@@ -52,41 +81,8 @@ Artifact audit:
 make release-check
 ```
 
-## Audit the supplied D3-F result
-
-```bash
-se-d3-response-adequacy \
-  --results d3_processing_response_results.json \
-  --output analyses/d3f_sampling_adequacy.json \
-  --block-ticks 300 \
-  --min-alive 100 \
-  --burn-in-ticks 300
-```
-
-## Run the base D3-G panel
-
-```bash
-se-d3-processing-response-panel \
-  --config configs/mvp_short_d3e_spatial_processing_longrun.json \
-  --seeds 60001,60002,60003 \
-  --output analyses/d3g_response_panel_base \
-  --checkpoint-ticks 300,600,900,1200 \
-  --response-window 120 \
-  --observation-period 30 \
-  --backend gpu
-```
-
-Map-scale controls are provided as:
-
-- `configs/mvp_short_d3g_spatial_processing_scale1p5_longrun.json`;
-- `configs/mvp_short_d3g_spatial_processing_scale2_longrun.json`.
-
-They preserve entity density, maximum-entity density and grid-cell physical size. They do not protect populations or lineages.
-
 ## Current version documents
 
-- [D3-G design](docs/v0.60/D3G_SAMPLE_SUPPORT_DESIGN.md)
-- [Supplied D3-F result](docs/v0.60/D3F_SUPPLIED_RESULTS.md)
-- [Supplied-result adequacy audit](docs/v0.60/D3F_SUPPLIED_SAMPLING_ADEQUACY_AUDIT.md)
-- [Base 300→420 pilot](docs/v0.60/D3G_BASE_300_120_PILOT_RESULTS.md)
-- [Implementation report](docs/v0.60/IMPLEMENTATION_REPORT.md)
+- [Supplied cross-scale audit](docs/v0.61/D3G_SUPPLIED_SCALE_AUDIT.md)
+- [Matched-control design](docs/v0.61/D3H_MATCHED_CONTROL_DESIGN.md)
+- [Implementation report](docs/v0.61/IMPLEMENTATION_REPORT.md)

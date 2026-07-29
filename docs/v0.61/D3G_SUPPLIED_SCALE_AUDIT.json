@@ -1,0 +1,923 @@
+{
+  "schema": "d3-response-scale-audit-v1",
+  "scales": [
+    {
+      "label": "base",
+      "path": "/mnt/data/analyses7/analyses/d3g_response_panel_base/d3_processing_response_panel_results.json",
+      "result_schema": "d3-processing-response-panel-results-v1",
+      "panel_count": 12,
+      "completed_panel_count": 12,
+      "acute_analysis_eligible_panel_count": 0,
+      "evolutionary_analysis_eligible_checkpoint_count": 0,
+      "matched_orientation_control_panel_count": 0,
+      "matched_orientation_control_eligible_panel_count": 0,
+      "original_active_neutral_gain_mean_across_eligible_panels": null,
+      "panels": [
+        {
+          "seed": 60001,
+          "checkpoint_tick": 300,
+          "acute_analysis_eligible": false,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -1.0318567243950425e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.006450228974875738,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.004021438796231569,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60001,
+          "checkpoint_tick": 600,
+          "acute_analysis_eligible": false,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -3.57163217198505e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.01758965037164595,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.006397581367921734,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60001,
+          "checkpoint_tick": 900,
+          "acute_analysis_eligible": false,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -1.1313032297649816e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.011397262708352458,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.002643324121949231,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60001,
+          "checkpoint_tick": 1200,
+          "acute_analysis_eligible": false,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -4.529570367011078e-06,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.001424187929641163,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.002073320380407029,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60002,
+          "checkpoint_tick": 300,
+          "acute_analysis_eligible": false,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -6.470045127997856e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.02943480302593174,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.012913772359027798,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60002,
+          "checkpoint_tick": 600,
+          "acute_analysis_eligible": false,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -4.330706146918683e-06,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.007486280261054926,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.0034386292108636862,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60002,
+          "checkpoint_tick": 900,
+          "acute_analysis_eligible": false,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -1.6237824274491734e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.017681041738090778,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.015302181241767354,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60002,
+          "checkpoint_tick": 1200,
+          "acute_analysis_eligible": false,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -2.9747228807152693e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.0021816567073077164,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.006047319420322883,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60003,
+          "checkpoint_tick": 300,
+          "acute_analysis_eligible": false,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -5.86272078978373e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.010148448941212446,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.0050784967889954125,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60003,
+          "checkpoint_tick": 600,
+          "acute_analysis_eligible": false,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 1.2678834272584572e-06,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.0018983104410644352,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.0008876999931486385,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60003,
+          "checkpoint_tick": 900,
+          "acute_analysis_eligible": false,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -1.0036070615823136e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.005050634812838323,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.016643929058663076,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60003,
+          "checkpoint_tick": 1200,
+          "acute_analysis_eligible": false,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -1.4771338846278955e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.010488131618366425,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.004295271164226566,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        }
+      ],
+      "seed_summaries": []
+    },
+    {
+      "label": "scale1p5",
+      "path": "/mnt/data/analyses7/analyses/d3g_response_panel_1p5/d3_processing_response_panel_results.json",
+      "result_schema": "d3-processing-response-panel-results-v1",
+      "panel_count": 12,
+      "completed_panel_count": 12,
+      "acute_analysis_eligible_panel_count": 12,
+      "evolutionary_analysis_eligible_checkpoint_count": 0,
+      "matched_orientation_control_panel_count": 0,
+      "matched_orientation_control_eligible_panel_count": 0,
+      "original_active_neutral_gain_mean_across_eligible_panels": 6.0181564160178314e-06,
+      "panels": [
+        {
+          "seed": 60001,
+          "checkpoint_tick": 300,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -1.75449128536221e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.007021140573374912,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.008561417689799289,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60001,
+          "checkpoint_tick": 600,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 6.4375093868697814e-06,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.001520225843419494,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.0030309056373473142,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60001,
+          "checkpoint_tick": 900,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -1.8672027751185288e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.01810140492282153,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.014150027648017316,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60001,
+          "checkpoint_tick": 1200,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 3.765796357673985e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.031871936395588774,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.003373193056873336,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60002,
+          "checkpoint_tick": 300,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 1.4595401917098945e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.0016045360135567566,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.0010733090447738736,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60002,
+          "checkpoint_tick": 600,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 5.502535320421213e-07,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.006624155446814398,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.002100171258600514,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60002,
+          "checkpoint_tick": 900,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 2.7792459450912124e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.025473926333230507,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.011543639619087331,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60002,
+          "checkpoint_tick": 1200,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 2.903077684842268e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.004458753294545259,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.009907460265000168,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60003,
+          "checkpoint_tick": 300,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 6.109011880198829e-06,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.005776206335098344,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.0020112896744409747,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60003,
+          "checkpoint_tick": 600,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -1.6645516181420145e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.011060336435334439,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.0065973013806081005,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60003,
+          "checkpoint_tick": 900,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 2.413531119122612e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.025088146812494036,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.019168765957356282,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60003,
+          "checkpoint_tick": 1200,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -2.1228354005068946e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.012803485503010303,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.014088559645361709,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        }
+      ],
+      "seed_summaries": []
+    },
+    {
+      "label": "scale2",
+      "path": "/mnt/data/analyses7/analyses/d3g_response_panel_2/d3_processing_response_panel_results.json",
+      "result_schema": "d3-processing-response-panel-results-v1",
+      "panel_count": 12,
+      "completed_panel_count": 12,
+      "acute_analysis_eligible_panel_count": 12,
+      "evolutionary_analysis_eligible_checkpoint_count": 0,
+      "matched_orientation_control_panel_count": 0,
+      "matched_orientation_control_eligible_panel_count": 0,
+      "original_active_neutral_gain_mean_across_eligible_panels": 7.588150933964606e-06,
+      "panels": [
+        {
+          "seed": 60001,
+          "checkpoint_tick": 300,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 9.100819105185132e-06,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.012343850919142169,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.008371445411067546,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60001,
+          "checkpoint_tick": 600,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 1.7872691155055518e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.016104231984339877,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.008041155412237322,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60001,
+          "checkpoint_tick": 900,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 1.124930582203536e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.008395568721107166,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.006828638804181719,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60001,
+          "checkpoint_tick": 1200,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 2.4209890380954104e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.008672860370737029,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.007606357610737469,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60002,
+          "checkpoint_tick": 300,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 4.886579069921497e-06,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.012363767594854247,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.009721587967205902,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60002,
+          "checkpoint_tick": 600,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 3.8072698309957626e-06,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.003001524619819451,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.0006192408824869378,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60002,
+          "checkpoint_tick": 900,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 2.471698614248008e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.026149789843563795,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.012397115712926454,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60002,
+          "checkpoint_tick": 1200,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -7.306073488817463e-06,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.015029591853824353,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.006514733422423924,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60003,
+          "checkpoint_tick": 300,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 2.0679274363690224e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.019236998845762326,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.008225993245263075,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60003,
+          "checkpoint_tick": 600,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": 2.198507241257371e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": 0.011804229967559305,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": 0.0085532856069363,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60003,
+          "checkpoint_tick": 900,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -1.9201999364781963e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.015634265087177607,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.00898061521021598,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        },
+        {
+          "seed": 60003,
+          "checkpoint_tick": 1200,
+          "acute_analysis_eligible": true,
+          "evolutionary_analysis_eligible": false,
+          "matched_orientation_controls_complete": false,
+          "matched_effects": {
+            "mean_support_gain": {
+              "original": -2.0942004221716676e-05,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "mean_alignment_cosine": {
+              "original": -0.009701975515867683,
+              "reversed": null,
+              "reversed_minus_original": null
+            },
+            "positive_gain_fraction": {
+              "original": -0.0063424618090413,
+              "reversed": null,
+              "reversed_minus_original": null
+            }
+          }
+        }
+      ],
+      "seed_summaries": []
+    }
+  ],
+  "completed_panel_count": 36,
+  "acute_analysis_eligible_panel_count": 24,
+  "matched_orientation_control_eligible_panel_count": 0,
+  "all_eligible_panels_have_matched_orientation_controls": false,
+  "independent_replication_unit": "seed",
+  "checkpoints_within_seed": "nested-repeated-panels",
+  "movement_events_independent_replicates": false,
+  "recommendation": "rerun-eligible-panels-with-matched-orientation-neutral-controls",
+  "interpretation_boundary": "Only active-minus-neutral contrasts under the same support observation orientation isolate support execution. Three-arm v1 panels do not identify the reversed-support effect because their neutral branch is observed against the original orientation. No result here establishes evolutionary adaptation, migration, specialization, coexistence, or ecological roles."
+}
