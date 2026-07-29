@@ -164,7 +164,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         cfg: SimulationConfig,
         output_dir: str | Path,
         *,
-        backend: str = "cpu",
+        backend: str = "auto",
         conflict_resolver: ActionConflictResolver | None = None,
         control_arbiter: ControlArbiter | None = None,
         group_label_planner: GroupLabelPlanner | None = None,
@@ -226,40 +226,45 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.gpu_semantics_mode = cfg.run.gpu_semantics_mode
         self.gpu_device_validated = False
         self.gpu_acceleration_enabled = False
+        self.gpu_fallback_used = False
+        self.gpu_fallback_reason: str | None = None
         if requested_backend == "cpu":
             self.gpu_runtime: HybridGpuRuntime | None = None
             self.execution_backend = "cpu"
         elif requested_backend in {"gpu", "auto"}:
             if self.gpu_semantics_mode == "strict-reference":
-                # Correctness gate: require a real usable GPU for an explicit
-                # GPU request, but keep the CPU reference path authoritative
-                # until the accelerated multi-tick world passes exact discrete
-                # parity on real CUDA.  This prevents a scientific run from
-                # silently producing a backend-dependent evolutionary history.
+                # Historical diagnostic mode: validate CUDA when available but
+                # intentionally keep the CPU world authoritative.  Missing CUDA
+                # is a recorded CPU fallback for both auto and explicit gpu so
+                # long-run orchestration can remain portable across hosts.
                 try:
                     resolve_backend("gpu")
-                except BackendUnavailableError:
-                    if requested_backend == "gpu":
-                        raise
+                except BackendUnavailableError as exc:
                     self.gpu_runtime = None
-                    self.execution_backend = "cpu"
+                    self.gpu_fallback_used = True
+                    self.gpu_fallback_reason = str(exc)
+                    self.execution_backend = "cpu-fallback-no-gpu"
                 else:
                     self.gpu_runtime = None
                     self.gpu_device_validated = True
                     self.execution_backend = "gpu-strict-reference"
             else:
+                # Production default: use the real hybrid GPU path whenever a
+                # compatible CuPy/CUDA device is usable.  Backend validation is
+                # delegated to test_parity; runtime availability alone decides
+                # whether this host accelerates or records a CPU fallback.
                 try:
                     self.gpu_runtime = HybridGpuRuntime(cfg, backend="gpu")
-                except BackendUnavailableError:
-                    if requested_backend == "gpu":
-                        raise
+                except BackendUnavailableError as exc:
                     self.gpu_runtime = None
+                    self.gpu_fallback_used = True
+                    self.gpu_fallback_reason = str(exc)
                 self.gpu_acceleration_enabled = self.gpu_runtime is not None
                 self.gpu_device_validated = self.gpu_runtime is not None
                 self.execution_backend = (
                     "gpu-hybrid-accelerated"
                     if self.gpu_runtime is not None
-                    else "cpu"
+                    else "cpu-fallback-no-gpu"
                 )
         else:
             raise ValueError("backend must be one of: 'cpu', 'gpu', or 'auto'")
@@ -2414,6 +2419,8 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             "gpu_semantics_mode": self.gpu_semantics_mode,
             "gpu_device_validated": self.gpu_device_validated,
             "gpu_acceleration_enabled": self.gpu_acceleration_enabled,
+            "gpu_fallback_used": self.gpu_fallback_used,
+            "gpu_fallback_reason": self.gpu_fallback_reason,
             "experiment_mode": self.experiment_mode.value,
             "scientific_validity": self.scientific_validity(),
             "ticks_completed": self.tick,

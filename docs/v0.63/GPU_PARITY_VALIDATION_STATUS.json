@@ -1,0 +1,9 @@
+{
+  "schema": "gpu-parity-validation-status-v1",
+  "host_gpu_available": false,
+  "regular_parity_returncode": 0,
+  "regular_parity_summary": "17 passed, 2 skipped",
+  "required_gpu_parity_returncode": 1,
+  "required_gpu_failure": "SE_REQUIRE_GPU_PARITY=1 requires a usable CuPy/CUDA device",
+  "interpretation": "CPU-emulated parity and non-device contracts pass. Real-GPU semantic-family parity must be run on the target GPU host with make parity-gpu."
+}

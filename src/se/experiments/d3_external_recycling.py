@@ -197,7 +197,7 @@ def execute_external_recycling(cfg: SimulationConfig, seeds: Iterable[int], outp
 def main(argv: list[str]|None=None) -> int:
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--config",required=True); p.add_argument("--seeds",required=True); p.add_argument("--output",required=True)
-    p.add_argument("--backend",choices=("cpu","gpu","auto"),default="cpu"); p.add_argument("--until-tick",type=int); p.add_argument("--overwrite",action="store_true")
+    p.add_argument("--backend",choices=("cpu","gpu","auto"),default="auto"); p.add_argument("--until-tick",type=int); p.add_argument("--overwrite",action="store_true")
     a=p.parse_args(argv)
     payload=execute_external_recycling(load_config(a.config),parse_seeds(a.seeds),a.output,backend=a.backend,until_tick=a.until_tick,overwrite=a.overwrite)
     print(json.dumps({"completed_seed_count":payload["completed_seed_count"],"recommendation":payload["recommendation"]}))

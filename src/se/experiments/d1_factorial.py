@@ -291,7 +291,7 @@ def execute_factorial_plan(
     plan: FactorialPlan,
     output_dir: str | Path,
     *,
-    backend: str = "cpu",
+    backend: str = "auto",
     gpu_semantics_mode: str | None = None,
 ) -> dict[str, Any]:
     root = Path(output_dir)
@@ -433,7 +433,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-phase-tick", type=int)
     parser.add_argument("--allow-incomplete-cycle", action="store_true")
     parser.add_argument("--execute", action="store_true")
-    parser.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="cpu")
+    parser.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="auto")
     parser.add_argument(
         "--gpu-semantics-mode",
         choices=("strict-reference", "hybrid-accelerated"),

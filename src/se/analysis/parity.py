@@ -14,6 +14,7 @@ import copy
 from collections.abc import Mapping
 from dataclasses import fields, is_dataclass, replace
 import json
+from enum import Enum
 from pathlib import Path
 import tempfile
 from typing import Any
@@ -31,9 +32,145 @@ from ..runtime.sim import Simulation
 from se.env.spatial import SpatialIndex
 
 
-PARITY_SCHEMA = "cpu-gpu-parity-v1"
+PARITY_SCHEMA = "cpu-gpu-parity-v2"
 DEFAULT_ATOL = 1e-6
 DEFAULT_RTOL = 1e-6
+
+
+# Representative configurations spanning the currently implemented semantic
+# families.  Real-GPU CI exercises every member; the full semantic-state stage
+# then compares all checkpoint-authoritative leaves rather than a hand-picked
+# list of fields.
+SEMANTIC_PARITY_CONFIGS: tuple[str, ...] = (
+    "mvp_short_k1_compat.json",
+    "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_local_culture_longrun.json",
+    "mvp_short_latent_l2_memory_topk_inherited_heterogeneous_budget_matched_costed_transfer_mortality_trace_adaptive_groups_longrun.json",
+    "mvp_short_d3g_spatial_processing_scale1p5_longrun.json",
+    "mvp_short_subject_structure_multi_env_atlas_longrun.json",
+    "mvp_short_v023_synthetic_abiotic_field_plugin_120.json",
+)
+
+_SEMANTIC_OBJECT_EXCLUDED_FIELDS = frozenset({
+    "cfg",
+    "backend",
+    "environment_process",
+})
+_SEMANTIC_ROOT_EXCLUDED_FIELDS = frozenset({
+    # Device/CPU cache implementations are validated in dedicated stages and
+    # are not authoritative continuation semantics.
+    "spatial",
+    "last_entity_device_commit",
+    "conflict_resolver_kind",
+})
+
+
+def _semantic_leaves(
+    value: Any,
+    *,
+    prefix: str = "state",
+) -> list[tuple[str, Any]]:
+    """Flatten checkpoint-authoritative state into named comparable leaves.
+
+    This intentionally traverses mappings, dataclasses, ordinary state
+    objects, arrays, sets and scalar containers.  Adding a new semantic field
+    to the full checkpoint therefore adds it to parity automatically unless it
+    is explicitly classified as a backend cache above.
+    """
+
+    leaves: list[tuple[str, Any]] = []
+    active_ids: set[int] = set()
+
+    def visit(item: Any, path: str) -> None:
+        if item is None or isinstance(item, (bool, int, float, str)):
+            leaves.append((path, item))
+            return
+        if isinstance(item, np.generic):
+            leaves.append((path, item.item()))
+            return
+        if isinstance(item, Enum):
+            leaves.append((path, item.value))
+            return
+        if isinstance(item, Path):
+            leaves.append((path, str(item)))
+            return
+        module_root = item.__class__.__module__.split(".", 1)[0]
+        if isinstance(item, np.ndarray) or module_root == "cupy":
+            leaves.append((path, item))
+            return
+
+        identity = id(item)
+        if identity in active_ids:
+            raise TypeError(f"cycle encountered while flattening semantic parity state at {path}")
+        active_ids.add(identity)
+        try:
+            if isinstance(item, Mapping):
+                for key in sorted(item, key=lambda current: str(current)):
+                    visit(item[key], f"{path}.{key}")
+                return
+            if is_dataclass(item):
+                for field in fields(item):
+                    visit(getattr(item, field.name), f"{path}.{field.name}")
+                return
+            if isinstance(item, (tuple, list)):
+                leaves.append((f"{path}.__length__", len(item)))
+                for index, child in enumerate(item):
+                    visit(child, f"{path}[{index}]")
+                return
+            if isinstance(item, (set, frozenset)):
+                normalized = sorted(item, key=repr)
+                leaves.append((f"{path}.__length__", len(normalized)))
+                for index, child in enumerate(normalized):
+                    visit(child, f"{path}[{index}]")
+                return
+            if hasattr(item, "__dict__"):
+                state = vars(item)
+                for name in sorted(state):
+                    if name in _SEMANTIC_OBJECT_EXCLUDED_FIELDS:
+                        continue
+                    visit(state[name], f"{path}.{name}")
+                return
+        finally:
+            active_ids.remove(identity)
+        raise TypeError(
+            f"unsupported semantic parity value at {path}: {type(item).__name__}"
+        )
+
+    visit(value, prefix)
+    return leaves
+
+
+def _compare_semantic_state(cpu: Simulation, gpu: Simulation) -> list[dict[str, Any]]:
+    reference_state = cpu._full_checkpoint_state()
+    candidate_state = gpu._full_checkpoint_state()
+    for name in _SEMANTIC_ROOT_EXCLUDED_FIELDS:
+        reference_state.pop(name, None)
+        candidate_state.pop(name, None)
+    reference = _semantic_leaves(reference_state)
+    candidate = _semantic_leaves(candidate_state)
+    reference_names = [name for name, _ in reference]
+    candidate_names = [name for name, _ in candidate]
+    if reference_names != candidate_names:
+        return [{
+            "name": "semantic-state-structure",
+            "passed": False,
+            "reason": "semantic-leaf-path-mismatch",
+            "reference_leaf_count": len(reference),
+            "candidate_leaf_count": len(candidate),
+            "reference_only": sorted(set(reference_names) - set(candidate_names))[:32],
+            "candidate_only": sorted(set(candidate_names) - set(reference_names))[:32],
+        }]
+    for (name, reference_value), (_, candidate_value) in zip(reference, candidate):
+        comparison = _compare_value(name, reference_value, candidate_value)
+        failed = next((row for row in comparison if not row.get("passed")), None)
+        if failed is not None:
+            failed["semantic_leaf_count"] = len(reference)
+            return [failed]
+    return [{
+        "name": "semantic-state-complete",
+        "passed": True,
+        "reason": None,
+        "semantic_leaf_count": len(reference),
+    }]
 
 
 def _json_scalar(value: Any) -> Any:
@@ -107,14 +244,16 @@ def compare_array(
     abs_error = np.abs(ref64 - got64)
     denominator = np.maximum(np.abs(ref64), np.finfo(np.float64).tiny)
     rel_error = abs_error / denominator
+    finite_abs = abs_error[np.isfinite(abs_error)]
+    finite_rel = rel_error[np.isfinite(rel_error)]
     result.update(
         {
             "passed": passed,
             "reason": None if passed else "float-mismatch",
             "atol": float(atol),
             "rtol": float(rtol),
-            "max_abs_error": float(np.nanmax(abs_error)) if abs_error.size else 0.0,
-            "max_rel_error": float(np.nanmax(rel_error)) if rel_error.size else 0.0,
+            "max_abs_error": float(finite_abs.max()) if finite_abs.size else 0.0,
+            "max_rel_error": float(finite_rel.max()) if finite_rel.size else 0.0,
             "first_mismatch_index": _first_index(~close),
         }
     )
@@ -629,6 +768,64 @@ def _array_state_snapshot(value: Any) -> dict[str, Any]:
     return dict(sorted(state.items()))
 
 
+def _device_mirror_stage(gpu: Simulation) -> tuple[str, Any, Any] | None:
+    runtime = gpu.gpu_runtime
+    if runtime is None or runtime.entity_state is None:
+        return None
+    entity = gpu.entities
+    social = gpu.social
+    state = runtime.entity_state
+    reference = {
+        "entity.x": entity.x,
+        "entity.y": entity.y,
+        "entity.alive": entity.alive,
+        "entity.entity_id": entity.entity_id,
+        "entity.energy": entity.energy,
+        "entity.integrity": entity.integrity,
+        "entity.fertility": entity.fertility,
+        "entity.genotype": entity.genotype,
+        "entity.memory": entity.memory,
+        "entity.sensor_quality": entity.sensor_quality(),
+        "social.group_id": social.group_id,
+        "social.group_dir_x": social.group_dir_x,
+        "social.group_dir_y": social.group_dir_y,
+        "entity_device_version": int(gpu.entity_device_version),
+    }
+    candidate = {
+        "entity.x": state.x,
+        "entity.y": state.y,
+        "entity.alive": state.alive,
+        "entity.entity_id": state.stable_ids,
+        "entity.energy": state.energy,
+        "entity.integrity": state.integrity,
+        "entity.fertility": state.fertility,
+        "entity.genotype": state.genotype,
+        "entity.memory": state.memory,
+        "entity.sensor_quality": state.sensor_quality,
+        "social.group_id": state.group_ids,
+        "social.group_dir_x": state.group_dir_x,
+        "social.group_dir_y": state.group_dir_y,
+        "entity_device_version": int(state.version),
+    }
+    device_environment = _array_state_snapshot(runtime.environment)
+    host_environment = _array_state_snapshot(gpu.environment)
+    for name in sorted(device_environment):
+        if name in host_environment:
+            reference[f"environment.{name}"] = host_environment[name]
+            candidate[f"environment.{name}"] = device_environment[name]
+    reference.update({
+        "information.field": gpu.information.field,
+        "information.source": gpu.information.source,
+        "information.age": gpu.information.age,
+    })
+    candidate.update({
+        "information.field": runtime.information_field.field,
+        "information.source": runtime.information_field.source,
+        "information.age": runtime.information_field.age,
+    })
+    return "gpu-device-mirror", reference, candidate
+
+
 def _simulation_stages(cpu: Simulation, gpu: Simulation) -> list[tuple[str, Any, Any]]:
     stages: list[tuple[str, Any, Any]] = [
         ("prepared-index", (cpu.last_active, cpu.last_cells), (gpu.last_active, gpu.last_cells)),
@@ -783,6 +980,10 @@ def _simulation_stages(cpu: Simulation, gpu: Simulation) -> list[tuple[str, Any,
                 tuple(gpu_knowledge.get(key, np.asarray([], dtype=np.uint8)) for key in keys),
             )
         )
+    device_stage = _device_mirror_stage(gpu)
+    if device_stage is not None:
+        stages.append(device_stage)
+    stages.append(("semantic-checkpoint-state", None, None))
     return stages
 
 
@@ -822,9 +1023,10 @@ def _failure_entity_context(
 def run_world_parity(cfg: SimulationConfig, *, ticks: int, output_dir: Path) -> dict[str, Any]:
     """Run paired CPU/experimental-hybrid worlds and stop at first divergence.
 
-    Normal scientific GPU runs default to strict CPU-reference semantics.  A
-    parity diagnostic must explicitly exercise the accelerated implementation,
-    otherwise both worlds would intentionally follow the same CPU authority.
+    Production runs prefer the accelerated hybrid implementation.  This
+    diagnostic constructs one CPU-reference world and one real hybrid-GPU world
+    explicitly, then compares every registered stage and checkpoint-authoritative
+    semantic leaf after each tick.
     """
     if not cupy_available():
         return {
@@ -848,7 +1050,11 @@ def run_world_parity(cfg: SimulationConfig, *, ticks: int, output_dir: Path) -> 
             gpu.step()
             stage_reports: list[dict[str, Any]] = []
             for stage_name, reference, candidate in _simulation_stages(cpu, gpu):
-                comparisons = _compare_value(stage_name, reference, candidate)
+                comparisons = (
+                    _compare_semantic_state(cpu, gpu)
+                    if stage_name == "semantic-checkpoint-state"
+                    else _compare_value(stage_name, reference, candidate)
+                )
                 report = _stage(stage_name, comparisons)
                 stage_reports.append(report)
                 if not report["passed"]:

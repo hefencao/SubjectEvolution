@@ -560,7 +560,7 @@ def execute_niche_reversal_plan(
     plan: NicheReversalPlan,
     output_dir: str | Path,
     *,
-    backend: str = "cpu",
+    backend: str = "auto",
     gpu_semantics_mode: str | None = None,
     plan_base_dir: str | Path | None = None,
 ) -> dict[str, Any]:
@@ -757,7 +757,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", required=True)
     parser.add_argument("--horizon", type=int, default=120)
     parser.add_argument("--execute", action="store_true")
-    parser.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="cpu")
+    parser.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="auto")
     parser.add_argument(
         "--gpu-semantics-mode",
         choices=("strict-reference", "hybrid-accelerated"),

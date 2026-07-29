@@ -536,7 +536,7 @@ def execute_mediation_plan(
     plan: LineageMediationPlan,
     output_dir: str | Path,
     *,
-    backend: str = "cpu",
+    backend: str = "auto",
     gpu_semantics_mode: str | None = None,
 ) -> dict[str, Any]:
     if tuple(plan.branches) != BRANCHES:
@@ -759,7 +759,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=",".join(map(str, DEFAULT_OBSERVATION_OFFSETS)),
     )
     parser.add_argument("--execute", action="store_true")
-    parser.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="cpu")
+    parser.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="auto")
     parser.add_argument(
         "--gpu-semantics-mode",
         choices=("strict-reference", "hybrid-accelerated"),

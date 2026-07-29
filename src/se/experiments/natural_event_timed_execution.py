@@ -511,7 +511,7 @@ def execute_timed_plan(
     plan: dict[str, Any],
     output_dir: str | Path,
     *,
-    backend: str = "cpu",
+    backend: str = "auto",
     gpu_semantics_mode: str | None = None,
     overwrite_existing: bool = False,
     require_full_audit: bool = True,
@@ -798,7 +798,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--no-common-boundary-audit", action="store_true")
     parser.add_argument("--no-event-cohort-audit", action="store_true")
     parser.add_argument("--execute", action="store_true")
-    parser.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="cpu")
+    parser.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="auto")
     parser.add_argument(
         "--gpu-semantics-mode", choices=("strict-reference", "hybrid-accelerated")
     )

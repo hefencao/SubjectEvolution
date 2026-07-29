@@ -35,19 +35,19 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--backend",
         choices=("cpu", "gpu", "auto"),
-        default="cpu",
+        default="auto",
         help=(
-            "Execution backend. A GPU request defaults to strict CPU-reference "
-            "world semantics until accelerated parity is proven; default: cpu."
+            "Execution backend. auto (default) uses the hybrid GPU path when "
+            "CuPy/CUDA is available and records a CPU fallback otherwise."
         ),
     )
     parser.add_argument(
         "--gpu-semantics-mode",
         choices=("strict-reference", "hybrid-accelerated"),
         help=(
-            "Override run.gpu_semantics_mode. strict-reference guarantees the "
-            "CPU semantic trajectory while requiring a usable GPU; "
-            "hybrid-accelerated enables the experimental device world path."
+            "Override run.gpu_semantics_mode. hybrid-accelerated is the production "
+            "default; strict-reference retains the historical CPU-authoritative "
+            "diagnostic path."
         ),
     )
     parser.add_argument(

@@ -1,67 +1,71 @@
 # SE project status
 
-Version: **0.62.0**
+Version: **0.63.0**
 
 ## Current causal and measurement chain
 
 ```text
 role-free four-channel external resource and abiotic fields
 → persistent moving channel-specific abiotic renewal targets
-→ explicit source / sink / release / harvest fluxes
-→ separately recorded resource-field and harvest float32 settlement
-→ inherited affinity and elastic capacities
-→ conservative delayed four-channel raw stores
-→ identity-preserving external residue deposition, diffusion and release
-→ separately recorded residue-field and sparse-deposit float32 settlement
-→ phase-shifted abiotic processing support with explicit per-unit energy cost
-→ original and reversed support interventions
-→ orientation-matched neutral controls
-→ read-only inventory-conditioned movement-response audit
-→ preregistered multi-checkpoint acute panels
-→ separate acute-response and evolutionary sample-support labels
-→ equal-checkpoint seed aggregation
-→ equal-seed scale aggregation and leave-one-seed sensitivity
-→ evidence gate before any sensory, migration, or ecological mechanism
+→ explicit physical flux and numerical-settlement ledgers
+→ inherited affinity, capacities and conservative delayed stores
+→ costed spatial processing support with orientation-matched neutral controls
+→ preregistered acute panels and nested seed-level effect inference
+→ evidence gate before any sensory, migration or ecological mechanism
 ```
 
-## Supplied D3-H 1.5× result
+## Supplied D3-I replication result
 
-The supplied v2 run contains three independent seeds and four preregistered checkpoints per seed. All 12 quartets completed, passed the acute sample-support gate, shared checkpoint state, and closed both interval ledgers. No checkpoint passed the evolutionary-turnover gate.
+The supplied artifacts contain eight independent seeds at each of the 1.5× and 2× scales, four preregistered checkpoints per seed and 32 matched four-arm panels per scale. Every panel is acute eligible, but the directional replication gate remains false:
 
-The matched mean-support-gain effects, aggregated with equal checkpoint weight inside each seed and equal seed weight inside the scale, are:
+- 1.5× original mean gain: `-2.898296122704174e-06`;
+- 1.5× reversed mean gain: `-5.477934432784455e-06`;
+- 2× original mean gain: `9.253429667044727e-07`;
+- 2× reversed mean gain: `6.064305225430936e-07`;
+- both-orientation-positive seed fractions: `0.0` and `0.125`.
 
-- original orientation: `6.47752786474193e-08`;
-- reversed orientation: `-7.434496869115597e-06`.
+This still does not justify a processing-support sensor, movement reward, migration controller or ecological interpretation.
 
-Original seed means are negative, positive, and negative. The original scale mean changes sign under leave-one-seed-out aggregation. Reversed seed means are negative in all three seeds, but the exact sign-flip diagnostic has only eight assignments and a two-sided value of `0.25`. Zero seeds are positive in both orientations.
+## Supplied backend diagnosis
 
-This supports neither a repeated orientation-aligned response nor a zero-effect claim. It is valid acute causal measurement with insufficient independent replication.
+All 256 supplied branch runs requested `gpu`, but all 256 report:
 
-## v0.62 decision
+```text
+execution_backend = gpu-strict-reference
+gpu_semantics_mode = strict-reference
+gpu_acceleration_enabled = false
+cpu_reference_world_authoritative = true
+```
 
-Add D3-I as an interpretation-boundary correction, not a new world capability.
+They are valid CPU-authoritative runs, not accelerated GPU runs. The previous default therefore prevented practical large-scale GPU long runs.
 
-The scale audit now reconstructs fixed-window matched effects from cumulative trajectories, validates stored matched contrasts, excludes invalid interval ledgers, aggregates checkpoints equally within a seed, aggregates seeds equally within a scale, reports checkpoint/window sign stability, and reports leave-one-checkpoint and leave-one-seed sensitivity.
+## v0.63 decision
 
-The exact seed sign-flip statistic is descriptive only. It is not used alone to unlock a mechanism.
+Change the execution default, not the scientific mechanism:
+
+- all high-level run and experiment entry points default to `auto`;
+- configuration defaults use `hybrid-accelerated` GPU semantics;
+- a usable CUDA/CuPy device runs the real hybrid GPU path;
+- a host without a usable GPU continues on CPU and records `cpu-fallback-no-gpu` and its reason;
+- `strict-reference` remains an explicit historical diagnostic, not the production default;
+- CPU/GPU semantic validation belongs to `tests/test_parity.py`, not to a runtime fallback that disables acceleration.
+
+Parity v2 compares every checkpoint-authoritative semantic leaf, dedicated persistent device mirrors and a representative matrix of current semantic families. Real-GPU parity tests skip only when no CUDA device is available.
 
 ## Next gate
 
-Keep the D3-H v2 four-arm protocol fixed and collect at least eight independent seeds at 1.5× and 2× scales. Retain every preregistered checkpoint, including insufficient or unavailable panels. Do not add a processing-support sensor, movement reward, migration controller, population rescue, diversity protection, or ecological-role label unless both orientation-matched effects are positive and repeat across independent seeds and scales.
+Run `test_parity.py` on the target GPU environment before treating accelerated output as cross-backend validated. Then rerun the fixed D3-I panels with the default `auto` backend and verify `run_manifest.json` reports `gpu-hybrid-accelerated` and `gpu_acceleration_enabled=true`.
 
-Evolutionary claims remain blocked until actual generation turnover satisfies the separate preregistered gate.
+Do not add a response mechanism while the supplied eight-seed directional replication gate remains false. Evolutionary claims remain blocked until the separate generation-turnover gate is met.
 
 ## Still incomplete
 
-- at least eight independent v2 seeds at 1.5× scale;
-- at least eight independent v2 seeds at 2× scale;
-- positive and stable active-minus-neutral effects under both orientations;
-- cross-scale replication without checkpoint or event pseudoreplication;
+- successful real-GPU parity across all registered semantic families on the target CUDA stack;
+- performance and memory measurements for 1.5× and 2× accelerated panels;
+- positive, stable processing-response replication under both orientations;
 - adequate generation turnover for evolutionary inference;
-- a justified sensory or control mechanism for processing opportunity;
-- migration cycles driven by moving opportunities and stored inventory;
-- externalization of non-store body matter;
-- evolved uptake or processing of residue;
+- justified sensing or control for processing opportunity;
+- migration, specialization, coexistence or trophic evidence;
+- externalization and evolved reuse of non-store body matter;
 - entity-to-entity material transfer and consumption;
-- stable coexistence, ecotypes, or trophic-chain evidence;
 - dynamic module topology or copy-number evolution.

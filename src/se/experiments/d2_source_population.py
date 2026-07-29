@@ -689,7 +689,7 @@ def execute_source_population_plan(
     plan: SourcePopulationPlan,
     output_dir: str | Path,
     *,
-    backend: str = "cpu",
+    backend: str = "auto",
     gpu_semantics_mode: str | None = None,
 ) -> dict[str, Any]:
     if tuple(plan.arms) != ARMS:
@@ -896,7 +896,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--plan")
     parser.add_argument("--output", required=True)
     parser.add_argument("--execute", action="store_true")
-    parser.add_argument("--backend", default="cpu", choices=("cpu", "gpu", "auto"))
+    parser.add_argument("--backend", default="auto", choices=("cpu", "gpu", "auto"))
     parser.add_argument("--gpu-semantics-mode")
     parser.add_argument("--panel-seeds", default=",".join(map(str, DEFAULT_PANEL_SEEDS)))
     parser.add_argument("--lineages-per-run", type=int, default=2)

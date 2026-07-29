@@ -97,3 +97,26 @@ def test_se_multi_writes_union_of_exact_checkpoints_for_every_seed(
         resolved = json.loads((run / "resolved_config.json").read_text())
         assert resolved["run"]["seed"] == seed
         assert resolved["run"]["checkpoint_ticks"] == [1, 3]
+
+
+def test_cli_backend_defaults_prefer_gpu_with_cpu_fallback() -> None:
+    assert run_command.build_parser().get_default("backend") == "auto"
+    assert multi_command.build_parser().get_default("backend") == "auto"
+
+
+def test_all_shipped_configs_use_hybrid_gpu_semantics_by_default() -> None:
+    from se.cfg import load_config
+
+    for path in sorted((ROOT / "configs").glob("*.json")):
+        assert load_config(path).run.gpu_semantics_mode == "hybrid-accelerated", path.name
+
+
+def test_no_high_level_backend_default_remains_cpu() -> None:
+    offenders: list[str] = []
+    for path in sorted((ROOT / "src" / "se").rglob("*.py")):
+        text = path.read_text(encoding="utf-8")
+        if 'default="cpu"' in text or "default='cpu'" in text:
+            offenders.append(str(path.relative_to(ROOT)))
+        if 'backend: str = "cpu"' in text or "backend: str = 'cpu'" in text:
+            offenders.append(str(path.relative_to(ROOT)))
+    assert not offenders, offenders

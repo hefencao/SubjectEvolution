@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from pathlib import Path
+import os
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -20,10 +21,14 @@ from se.information import (
     SignalEmissionPlan,
 )
 from se.analysis.parity import (
+    SEMANTIC_PARITY_CONFIGS,
     _array_state_snapshot,
+    _compare_semantic_state,
+    _semantic_leaves,
     _simulation_stages,
     compare_array,
     run_stage_parity,
+    run_world_parity,
 )
 from se.reductions import stable_segmented_sum
 from se.runtime.sim import Simulation
@@ -220,12 +225,35 @@ class CpuGpuParityTests(unittest.TestCase):
         self.assertIsNone(report["first_failure_stage"])
         self.assertTrue(all(stage["passed"] for stage in report["stages"]))
 
-    def test_gpu_request_never_silently_falls_back_to_cpu(self) -> None:
+    def test_low_level_explicit_gpu_resolution_remains_strict(self) -> None:
         if cupy_available():
             self.assertTrue(resolve_backend("gpu").is_gpu)
         else:
             with self.assertRaises(BackendUnavailableError):
                 resolve_backend("gpu")
+
+    def test_simulation_gpu_request_records_cpu_fallback_when_unavailable(self) -> None:
+        cfg = self._cfg()
+        with tempfile.TemporaryDirectory() as tmp, patch(
+            "se.runtime.sim.HybridGpuRuntime",
+            side_effect=BackendUnavailableError("test CUDA unavailable"),
+        ):
+            simulation = Simulation(cfg, Path(tmp) / "fallback", backend="gpu")
+            try:
+                self.assertEqual(simulation.requested_backend, "gpu")
+                self.assertEqual(simulation.execution_backend, "cpu-fallback-no-gpu")
+                self.assertTrue(simulation.gpu_fallback_used)
+                self.assertIn("CUDA unavailable", simulation.gpu_fallback_reason)
+                self.assertFalse(simulation.gpu_acceleration_enabled)
+            finally:
+                self._close(simulation)
+
+    def test_required_gpu_parity_environment_contract(self) -> None:
+        if os.environ.get("SE_REQUIRE_GPU_PARITY") == "1":
+            self.assertTrue(
+                cupy_available(),
+                "SE_REQUIRE_GPU_PARITY=1 requires a usable CuPy/CUDA device",
+            )
 
     @unittest.skipUnless(cupy_available(), "CuPy/CUDA GPU is unavailable")
     def test_real_gpu_stage_parity_when_available(self) -> None:
@@ -288,15 +316,15 @@ class CpuGpuParityTests(unittest.TestCase):
                 self._close(cpu)
                 self._close(strict)
 
-    def test_hybrid_mode_is_explicit_not_default(self) -> None:
+    def test_hybrid_mode_is_the_default_and_strict_reference_remains_explicit(self) -> None:
         cfg = self._cfg()
-        self.assertEqual(cfg.run.gpu_semantics_mode, "strict-reference")
-        hybrid = replace(
-            cfg, run=replace(cfg.run, gpu_semantics_mode="hybrid-accelerated")
+        self.assertEqual(cfg.run.gpu_semantics_mode, "hybrid-accelerated")
+        strict = replace(
+            cfg, run=replace(cfg.run, gpu_semantics_mode="strict-reference")
         )
-        self.assertEqual(hybrid.run.gpu_semantics_mode, "hybrid-accelerated")
+        self.assertEqual(strict.run.gpu_semantics_mode, "strict-reference")
 
-    def test_unproven_hybrid_is_not_scientific_baseline(self) -> None:
+    def test_hybrid_validation_is_delegated_to_parity_suite(self) -> None:
         cfg = self._cfg()
         with tempfile.TemporaryDirectory() as tmp:
             simulation = Simulation(cfg, Path(tmp) / "simulation", backend="cpu")
@@ -304,13 +332,90 @@ class CpuGpuParityTests(unittest.TestCase):
                 simulation.gpu_semantics_mode = "hybrid-accelerated"
                 simulation.gpu_acceleration_enabled = True
                 validity = simulation.scientific_validity()
-                self.assertFalse(validity["structural_evolution_provenance_valid"])
-                self.assertTrue(
-                    any("GPU multi-tick parity" in value for value in validity["violations"])
+                self.assertTrue(validity["structural_evolution_provenance_valid"])
+                backend = validity["backend_semantics"]
+                self.assertEqual(
+                    backend["hybrid_acceleration_validation"],
+                    "external-test-parity-suite",
                 )
+                self.assertIsNone(backend["hybrid_acceleration_parity_proven"])
             finally:
                 self._close(simulation)
 
+
+    def test_semantic_checkpoint_snapshot_covers_full_authoritative_state(self) -> None:
+        cfg = self._cfg()
+        with tempfile.TemporaryDirectory() as tmp:
+            cpu = Simulation(cfg, Path(tmp) / "cpu", backend="cpu")
+            candidate = Simulation(cfg, Path(tmp) / "candidate", backend="cpu")
+            try:
+                cpu.step()
+                candidate.step()
+                report = _compare_semantic_state(cpu, candidate)
+                self.assertTrue(report[0]["passed"], report)
+                self.assertGreater(report[0]["semantic_leaf_count"], 500)
+                state = cpu._full_checkpoint_state()
+                leaves = dict(_semantic_leaves(state))
+                self.assertIn("state.entities.oxygenation", leaves)
+                self.assertIn("state.environment.resources", leaves)
+                self.assertIn("state.total_physiology_oxygen_use", leaves)
+                self.assertIn("state.subjects.version", leaves)
+            finally:
+                self._close(cpu)
+                self._close(candidate)
+
+    def test_world_stage_list_includes_complete_semantic_state(self) -> None:
+        cfg = self._cfg()
+        with tempfile.TemporaryDirectory() as tmp:
+            cpu = Simulation(cfg, Path(tmp) / "cpu", backend="cpu")
+            candidate = Simulation(cfg, Path(tmp) / "candidate", backend="cpu")
+            try:
+                cpu.step()
+                candidate.step()
+                names = [name for name, _, _ in _simulation_stages(cpu, candidate)]
+                self.assertIn("semantic-checkpoint-state", names)
+            finally:
+                self._close(cpu)
+                self._close(candidate)
+
+    def test_semantic_parity_catalog_files_exist_and_default_to_hybrid(self) -> None:
+        for filename in SEMANTIC_PARITY_CONFIGS:
+            path = ROOT / "configs" / filename
+            self.assertTrue(path.is_file(), filename)
+            self.assertEqual(
+                load_config(path).run.gpu_semantics_mode,
+                "hybrid-accelerated",
+                filename,
+            )
+
+    @unittest.skipUnless(cupy_available(), "CuPy/CUDA GPU is unavailable")
+    def test_real_gpu_world_parity_for_all_semantic_families(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for filename in SEMANTIC_PARITY_CONFIGS:
+                cfg = load_config(ROOT / "configs" / filename)
+                cfg = replace(
+                    cfg,
+                    run=replace(
+                        cfg.run,
+                        ticks=2,
+                        metrics_period=2,
+                        checkpoint_period=2,
+                        evolution_evaluation_period=3,
+                        validation_mode=True,
+                    ),
+                    world=replace(
+                        cfg.world,
+                        initial_entities=min(48, cfg.world.initial_entities),
+                        max_entities=max(64, min(72, cfg.world.max_entities)),
+                    ),
+                )
+                report = run_world_parity(
+                    cfg,
+                    ticks=2,
+                    output_dir=root / Path(filename).stem,
+                )
+                self.assertTrue(report["passed"], (filename, report["first_failure"]))
 
     def test_social_parity_snapshot_uses_real_socialsystem_arrays(self) -> None:
         cfg = self._cfg()

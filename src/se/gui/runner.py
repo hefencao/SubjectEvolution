@@ -30,7 +30,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Protocol sidecar path; defaults to <stream>.json",
     )
     parser.add_argument(
-        "--backend", choices=("cpu", "gpu", "auto"), default="cpu"
+        "--backend", choices=("cpu", "gpu", "auto"), default="auto"
     )
     parser.add_argument(
         "--gpu-semantics-mode",
@@ -90,7 +90,7 @@ def run(
     config_path: str | Path | None = None,
     resume_checkpoint: str | Path | None = None,
     manifest_path: str | Path | None = None,
-    backend: str = "cpu",
+    backend: str = "auto",
     gpu_semantics_mode: str | None = None,
     until_tick: int | None = None,
     publish_every: int = 2,

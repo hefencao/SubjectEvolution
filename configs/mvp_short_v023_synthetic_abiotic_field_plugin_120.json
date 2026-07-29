@@ -8,7 +8,7 @@
     "experiment_mode": "entertainment",
     "evolution_evaluation_period": 20,
     "validation_mode": true,
-    "gpu_semantics_mode": "strict-reference",
+    "gpu_semantics_mode": "hybrid-accelerated",
     "full_checkpoint_enabled": true,
     "long_run_diagnostics_enabled": true,
     "long_run_diagnostics_schema": "long-run-evolution-diagnostics-v1",

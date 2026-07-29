@@ -414,7 +414,7 @@ def execute_source_population_causal_plan(
     plan: SourcePopulationCausalPlan,
     output_dir: str | Path,
     *,
-    backend: str = "cpu",
+    backend: str = "auto",
     gpu_semantics_mode: str | None = None,
 ) -> dict[str, Any]:
     if plan.general_source_population_claim:
@@ -509,7 +509,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", required=True)
     parser.add_argument("--horizon-ticks", type=int, default=DEFAULT_HORIZON_TICKS)
     parser.add_argument("--execute", action="store_true")
-    parser.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="cpu")
+    parser.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="auto")
     parser.add_argument("--gpu-semantics-mode")
     return parser
 

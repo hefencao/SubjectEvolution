@@ -247,10 +247,13 @@ runtime environment.
 
 ## Backends and GUI
 
-- `cpu`: authoritative reference semantics.
-- `gpu` + `strict-reference`: GPU availability validation with CPU-authoritative world.
-- `gpu` + `hybrid-accelerated`: experimental accelerated stages; parity remains separate.
-- `se.gui`: observation-only shared-frame publication.
+- `auto` is the high-level default: use `gpu-hybrid-accelerated` when CUDA/CuPy is usable, otherwise record `cpu-fallback-no-gpu` and continue on CPU.
+- `cpu` selects the authoritative reference implementation directly.
+- `gpu` follows the same GPU-first/fallback policy as `auto`; the low-level `resolve_backend("gpu")` API remains strict for device-only validation.
+- `strict-reference` is an explicit historical diagnostic with CPU-authoritative world semantics, not the production default.
+- `hybrid-accelerated` keeps the CPU reference model as the semantic specification while executing registered stages on persistent device state.
+- `tests/test_parity.py` is the authoritative cross-backend validation boundary and compares stage outputs, device mirrors and all checkpoint-authoritative state.
+- `se.gui` remains observation-only shared-frame publication.
 
 ## D2-J compositional embodied output boundary
 
@@ -486,3 +489,21 @@ The default replication boundary requires at least eight independent seeds per s
 
 Legacy three-arm results remain readable for original-orientation descriptions, but cannot enter matched reversed inference. Invalid interval ledgers or stored contrast mismatches are excluded from matched inference and retained in the audit record.
 
+
+## v0.63 GPU-first execution boundary
+
+Production orchestration uses `auto`. Availability selects execution, while parity selects scientific acceptability:
+
+```text
+requested auto/gpu
+    ├─ usable CUDA/CuPy + hybrid semantics → persistent HybridGpuRuntime
+    └─ unavailable device/runtime          → recorded CPU fallback
+
+cross-backend validation
+    └─ tests/test_parity.py
+       ├─ stage outputs
+       ├─ persistent device mirrors
+       └─ complete checkpoint-authoritative semantic state
+```
+
+The runtime does not silently relabel CPU fallback as GPU execution. The manifest records requested backend, actual execution backend, acceleration state, fallback state and reason. `strict-reference` remains replayable but is not the default route for large runs.

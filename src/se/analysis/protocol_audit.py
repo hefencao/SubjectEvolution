@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v30"
+SCHEMA = "structural-measurement-protocol-audit-v31"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -110,6 +110,30 @@ def build_protocol_audit(
     payload: dict[str, Any] = {
         "schema": SCHEMA,
         "config_path": str(Path(config_path).resolve()),
+        "execution_backend_protocol": {
+            "cli_default_backend": "auto",
+            "configured_gpu_semantics_mode": cfg.run.gpu_semantics_mode,
+            "gpu_preference": (
+                "hybrid GPU acceleration when compatible CuPy/CUDA is available"
+            ),
+            "unavailable_gpu_behavior": (
+                "recorded CPU fallback without changing model configuration or random streams"
+            ),
+            "strict_reference_status": (
+                "retained as an explicit historical diagnostic mode; not the production default"
+            ),
+            "semantic_validation_boundary": "tests/test_parity.py",
+            "parity_schema": "cpu-gpu-parity-v2",
+            "parity_scope": [
+                "device stage algorithms",
+                "prepared observations and policy decisions",
+                "intents and resolutions",
+                "birth and death plans",
+                "all checkpoint-authoritative semantic leaves",
+                "persistent GPU entity, environment, information, and social mirrors",
+            ],
+            "feedback_to_world": False,
+        },
         "group_label_protocol": group,
         "subject_structure_protocol": {
             "enabled": bool(cfg.run.subject_structure_diagnostics_enabled),
@@ -1109,11 +1133,23 @@ def render_markdown(payload: dict[str, Any]) -> str:
     atlas = payload["environment_atlas_protocol"]
     resource = payload["resource_environment_protocol"]
     differentiation = payload["differentiation_capacity_protocol"]
+    execution = payload["execution_backend_protocol"]
     lines = [
         "# Structural measurement protocol audit",
         "",
         f"Schema: `{payload['schema']}`",
         f"Audit SHA-256: `{payload['audit_sha256']}`",
+        "",
+        "## Execution backend",
+        "",
+        f"- CLI default: `{execution['cli_default_backend']}`",
+        f"- configured GPU semantics: `{execution['configured_gpu_semantics_mode']}`",
+        f"- GPU preference: {execution['gpu_preference']}",
+        f"- unavailable GPU: {execution['unavailable_gpu_behavior']}",
+        f"- strict-reference: {execution['strict_reference_status']}",
+        f"- semantic validation: `{execution['semantic_validation_boundary']}` / `{execution['parity_schema']}`",
+        f"- parity scope: {execution['parity_scope']}",
+        f"- feedback to world: {execution['feedback_to_world']}",
         "",
         "## Group label",
         "",

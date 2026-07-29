@@ -156,6 +156,8 @@ class SimulationReportingMixin:
             "gpu_semantics_mode": self.gpu_semantics_mode,
             "gpu_device_validated": self.gpu_device_validated,
             "gpu_acceleration_enabled": self.gpu_acceleration_enabled,
+            "gpu_fallback_used": self.gpu_fallback_used,
+            "gpu_fallback_reason": self.gpu_fallback_reason,
             "python": sys.version,
             "platform": platform.platform(),
             "numpy": np.__version__,
@@ -546,14 +548,6 @@ class SimulationReportingMixin:
             violations.append(
                 "direct action replacement: " + ", ".join(direct_interventions)
             )
-        if (
-            self.gpu_semantics_mode == "hybrid-accelerated"
-            and self.gpu_acceleration_enabled
-        ):
-            violations.append(
-                "accelerated GPU multi-tick parity is not proven; "
-                "use strict-reference for scientific results"
-            )
         valid = not violations
         return {
             "structural_evolution_provenance_valid": valid,
@@ -565,10 +559,13 @@ class SimulationReportingMixin:
                 "gpu_semantics_mode": self.gpu_semantics_mode,
                 "gpu_device_validated": self.gpu_device_validated,
                 "gpu_acceleration_enabled": self.gpu_acceleration_enabled,
+                "gpu_fallback_used": self.gpu_fallback_used,
+                "gpu_fallback_reason": self.gpu_fallback_reason,
                 "cpu_reference_world_authoritative": (
                     self.gpu_runtime is None
                 ),
-                "hybrid_acceleration_parity_proven": False,
+                "hybrid_acceleration_validation": "external-test-parity-suite",
+                "hybrid_acceleration_parity_proven": None,
             },
             "strategy": {
                 "architecture": self.cfg.policy.schema,

@@ -803,7 +803,7 @@ class SimulationCheckpointMixin:
         checkpoint: str | Path,
         output_dir: str | Path,
         *,
-        backend: str = "cpu",
+        backend: str = "auto",
         until_tick: int | None = None,
         gpu_semantics_mode: str | None = None,
         checkpoint_ticks: tuple[int, ...] | None = None,

@@ -876,7 +876,7 @@ def execute_processing_response_panel(
     checkpoint_ticks: Iterable[int],
     response_window: int = 120,
     observation_period: int = 30,
-    backend: str = "cpu",
+    backend: str = "auto",
     requirements: SampleSupportRequirements | None = None,
     overwrite: bool = False,
 ) -> dict[str, Any]:
@@ -974,7 +974,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--checkpoint-ticks", required=True)
     parser.add_argument("--response-window", type=int, default=120)
     parser.add_argument("--observation-period", type=int, default=30)
-    parser.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="cpu")
+    parser.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="auto")
     parser.add_argument("--min-alive", type=int, default=100)
     parser.add_argument("--min-alive-entity-ticks", type=int, default=12_000)
     parser.add_argument("--min-eligible-entity-ticks", type=int, default=6_000)

@@ -187,7 +187,7 @@ def execute_regulatory_physiology(
     seeds: Iterable[int],
     output_dir: str | Path,
     *,
-    backend: str = "cpu",
+    backend: str = "auto",
     until_tick: int | None = None,
     overwrite: bool = False,
 ) -> dict[str, Any]:
@@ -340,7 +340,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--config", required=True)
     parser.add_argument("--seeds", required=True)
     parser.add_argument("--output", required=True)
-    parser.add_argument("--backend", default="cpu", choices=("cpu", "gpu", "auto"))
+    parser.add_argument("--backend", default="auto", choices=("cpu", "gpu", "auto"))
     parser.add_argument("--until-tick", type=int)
     parser.add_argument("--overwrite", action="store_true")
     return parser

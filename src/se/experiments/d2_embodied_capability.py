@@ -118,7 +118,7 @@ def execute_embodied_capability(
     seeds: Iterable[int],
     output_dir: str | Path,
     *,
-    backend: str = "cpu",
+    backend: str = "auto",
     until_tick: int | None = None,
     overwrite: bool = False,
 ) -> dict[str, Any]:
@@ -387,7 +387,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--config", required=True)
     parser.add_argument("--seeds", required=True, help="Comma-separated integer seeds")
     parser.add_argument("--output", required=True)
-    parser.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="cpu")
+    parser.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="auto")
     parser.add_argument("--until-tick", type=int)
     parser.add_argument("--overwrite", action="store_true")
     return parser

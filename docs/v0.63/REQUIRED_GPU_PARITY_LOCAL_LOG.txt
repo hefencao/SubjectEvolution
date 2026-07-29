@@ -1,0 +1,18 @@
+........ssF........                                                      [100%]
+=================================== FAILURES ===================================
+_______ CpuGpuParityTests.test_required_gpu_parity_environment_contract ________
+
+self = <tests.test_parity.CpuGpuParityTests testMethod=test_required_gpu_parity_environment_contract>
+
+    def test_required_gpu_parity_environment_contract(self) -> None:
+        if os.environ.get("SE_REQUIRE_GPU_PARITY") == "1":
+>           self.assertTrue(
+                cupy_available(),
+                "SE_REQUIRE_GPU_PARITY=1 requires a usable CuPy/CUDA device",
+            )
+E           AssertionError: False is not true : SE_REQUIRE_GPU_PARITY=1 requires a usable CuPy/CUDA device
+
+tests/test_parity.py:253: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_parity.py::CpuGpuParityTests::test_required_gpu_parity_environment_contract - AssertionError: False is not true : SE_REQUIRE_GPU_PARITY=1 requires a usable CuPy/CUDA device
+1 failed, 16 passed, 2 skipped in 0.45s

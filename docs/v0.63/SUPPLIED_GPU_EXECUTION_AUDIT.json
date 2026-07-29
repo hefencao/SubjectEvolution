@@ -1,0 +1,26 @@
+{
+  "schema": "supplied-gpu-execution-audit-v1",
+  "source": "analyses(9).zip",
+  "requested_gpu_branch_count": 256,
+  "execution_records": [
+    {
+      "scale": "1.5x",
+      "branch_count": 128,
+      "requested_backend": "gpu",
+      "execution_backend": "gpu-strict-reference",
+      "gpu_semantics_mode": "strict-reference",
+      "gpu_acceleration_enabled": false,
+      "cpu_reference_world_authoritative": true
+    },
+    {
+      "scale": "2x",
+      "branch_count": 128,
+      "requested_backend": "gpu",
+      "execution_backend": "gpu-strict-reference",
+      "gpu_semantics_mode": "strict-reference",
+      "gpu_acceleration_enabled": false,
+      "cpu_reference_world_authoritative": true
+    }
+  ],
+  "interpretation": "The supplied runs are valid CPU-authoritative scientific runs but are not evidence of accelerated GPU execution or multi-tick GPU parity."
+}

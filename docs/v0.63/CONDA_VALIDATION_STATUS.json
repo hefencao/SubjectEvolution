@@ -1,0 +1,10 @@
+{
+  "schema": "conda-validation-status-v1",
+  "conda_prefix": null,
+  "conda_sync_returncode": 2,
+  "conda_check_returncode": 2,
+  "full_test_suite_inside_conda_check_passed": true,
+  "test_summary": "300 passed, 2 skipped",
+  "editable_guard_reason": "CONDA_PREFIX is not set; activate the intended conda environment",
+  "interpretation": "The host has no active Conda environment. Conda-only editable verification was not claimed."
+}

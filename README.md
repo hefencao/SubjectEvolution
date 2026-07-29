@@ -1,83 +1,81 @@
-# SE v0.62
+# SE v0.63
 
-SE is a deterministic artificial-life and subject-structure research platform. The current main line retains four role-free resource channels, conservative delayed storage and processing, identity-preserving external recycling, persistent abiotic renewal, costed spatial processing support, matched support neutralization, and shared-checkpoint acute-response measurement.
+SE is a deterministic artificial-life and subject-structure research platform. The current main line retains four role-free resource channels, conservative delayed storage and processing, identity-preserving external recycling, persistent abiotic renewal, costed spatial processing support, matched controls and nested shared-checkpoint response measurement.
 
-## Why v0.62
+## Why v0.63
 
-The supplied v0.61 D3-H 1.5× run completed all 12 preregistered seed/checkpoint quartets. Every quartet met the acute sample-support gate, every interval resource and recycling ledger closed, and no checkpoint met the evolutionary-turnover gate.
+The supplied D3-I replication contains eight independent seeds at each of the 1.5× and 2× scales. All 64 matched panels are acute eligible, but neither scale passes the directional replication gate. v0.63 therefore adds no world mechanism.
 
-The four-arm design now identifies original and reversed active-minus-neutral effects under matched observation orientations. The remaining problem is statistical interpretation: four checkpoints inside one seed are repeated panels, not four independent experiments, and tens of thousands of movement events do not increase the independent seed count.
+The supplied run manifests also show that every one of 256 branches requested `gpu` but executed `gpu-strict-reference` with `gpu_acceleration_enabled=false`. The previous default validated GPU availability while leaving the CPU world authoritative, which is unsuitable for larger long-running panels.
 
-v0.62 adds D3-I nested matched-effect inference. It changes no world mechanism, sensor, reward, controller, reproduction rule, population support, diversity rule, or ecological label.
+v0.63 changes the operational boundary:
 
-## D3-I nested effect audit
+- high-level commands default to `--backend auto`;
+- a usable CUDA/CuPy device selects the real `gpu-hybrid-accelerated` path;
+- a machine without a usable GPU falls back to CPU and records `cpu-fallback-no-gpu` and the reason;
+- `strict-reference` remains available only as an explicit historical diagnostic;
+- `tests/test_parity.py` owns CPU/GPU semantic validation.
 
-`se-d3-response-scale-audit` now performs three levels of accounting:
+## GPU execution
 
-```text
-movement events and 30-tick windows
-        ↓ repeated measurements only
-checkpoint matched active-neutral effect
-        ↓ equal checkpoint weight
-seed-level effect
-        ↓ equal seed weight
-scale-level effect and replication gate
-```
-
-For every metric and support orientation it reports:
-
-- matched panel effects;
-- fixed-window matched effects;
-- equal-checkpoint seed means;
-- checkpoint and window sign fractions;
-- leave-one-checkpoint-out sensitivity;
-- equal-seed scale means;
-- leave-one-seed-out sensitivity;
-- an exact seed-level sign-flip diagnostic;
-- a directional replication gate that never feeds back into the world.
-
-Default interpretation requirements are eight independent seeds per scale, at least 75% positive seed means in each orientation, and at least 75% of seeds positive under both orientations. These are analysis gates only. They do not rescue populations, retry runs, select checkpoints, or alter behavior.
-
-## Supplied 1.5× result
-
-Equal-weight seed aggregation gives:
-
-```text
-original active-neutral mean support gain:  6.47752786474193e-08
-reversed active-neutral mean support gain: -7.434496869115597e-06
-independent seeds: 3
-seeds positive in both orientations: 0
-```
-
-The original effect changes sign under leave-one-seed-out analysis. All three reversed seed means are negative, but three seeds are still insufficient for the preregistered replication gate. The supplied result therefore remains valid acute causal measurement but does not justify a processing-support sensor, movement reward, migration controller, or ecological interpretation.
-
-## Run the fixed v2 panel
-
-The next scientific run should preserve the same four-arm protocol and checkpoint list while adding independent seeds at both 1.5× and 2× scales.
+Normal runs no longer need a backend flag:
 
 ```bash
 se-d3-processing-response-panel \
   --config configs/mvp_short_d3g_spatial_processing_scale1p5_longrun.json \
-  --seeds 62001,62002,62003,62004,62005,62006,62007,62008 \
-  --output analyses/d3i_response_panel_1p5_replication \
+  --seeds 63001,63002,63003,63004,63005,63006,63007,63008 \
+  --output analyses/d3i_response_panel_1p5_gpu \
   --checkpoint-ticks 300,600,900,1200 \
   --response-window 120 \
-  --observation-period 30 \
-  --backend gpu
+  --observation-period 30
 ```
 
-Analyze without treating checkpoints as independent seeds:
+Before a scientific long run on a new CUDA/CuPy stack, execute the parity suite:
 
 ```bash
-se-d3-response-scale-audit \
-  --result scale1p5=analyses/d3i_response_panel_1p5_replication/d3_processing_response_panel_results.json \
-  --result scale2=analyses/d3i_response_panel_2_replication/d3_processing_response_panel_results.json \
-  --output analyses/d3i_response_effect_audit
+make parity-gpu
 ```
+
+On a GPU host, the real-device semantic-family tests must run rather than skip. Inspect each run's `run_manifest.json`:
+
+```text
+execution_backend: gpu-hybrid-accelerated
+gpu_acceleration_enabled: true
+gpu_fallback_used: false
+```
+
+On a host without a usable GPU the run continues on CPU and records the fallback explicitly. A low-level device-only test can still call `resolve_backend("gpu")`, which remains strict and never silently returns CPU.
+
+## Parity v2
+
+`cpu-gpu-parity-v2` validates more than a final summary curve:
+
+- existing stage-by-stage policy, observation, intent and world comparisons;
+- all checkpoint-authoritative semantic leaves through recursive state comparison;
+- persistent GPU mirrors for entity, social, environment and information state;
+- representative semantic families covering knowledge/culture, mortality/adaptive groups, D3 processing, subject/multi-environment and plugins;
+- exact discrete comparisons and tolerance-bounded floating comparisons;
+- first divergent stage and leaf reporting.
+
+Adding checkpoint-authoritative state automatically expands the complete semantic-state parity comparison unless the field is explicitly classified as a backend cache.
+
+## Supplied D3-I result
+
+The supplied nested audit reports:
+
+```text
+1.5x original gain: -2.898296122704174e-06
+1.5x reversed gain: -5.477934432784455e-06
+2x original gain:    9.253429667044727e-07
+2x reversed gain:    6.064305225430936e-07
+replication gates:   false, false
+```
+
+Movement events and checkpoints remain nested observations, not independent seeds. These results do not justify a support sensor, movement reward, migration controller or ecological claim.
 
 ## Workflow
 
-After metadata, entry-point, dependency, or package-layout changes:
+After metadata, entry-point, dependency or package-layout changes:
 
 ```bash
 make conda-sync
@@ -98,6 +96,7 @@ make release-check
 
 ## Current version documents
 
-- [Supplied 1.5× four-arm result](docs/v0.62/D3H_SUPPLIED_1P5_RESULTS.md)
-- [Nested matched-effect audit](docs/v0.62/D3I_SUPPLIED_EFFECT_AUDIT.md)
-- [Implementation report](docs/v0.62/IMPLEMENTATION_REPORT.md)
+- [Implementation report](docs/v0.63/IMPLEMENTATION_REPORT.md)
+- [Supplied D3-I effect audit](docs/v0.63/SUPPLIED_D3I_EFFECT_AUDIT.md)
+- [Supplied GPU execution audit](docs/v0.63/SUPPLIED_GPU_EXECUTION_AUDIT.json)
+- [No-GPU fallback smoke manifest](docs/v0.63/AUTO_BACKEND_SMOKE_MANIFEST.json)

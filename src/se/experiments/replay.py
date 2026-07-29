@@ -20,7 +20,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", required=True, help="Replay output directory")
     parser.add_argument("--until-tick", type=int, required=True, help="Absolute final tick")
     parser.add_argument(
-        "--backend", choices=("cpu", "gpu", "auto"), default="cpu"
+        "--backend", choices=("cpu", "gpu", "auto"), default="auto"
     )
     parser.add_argument(
         "--gpu-semantics-mode",

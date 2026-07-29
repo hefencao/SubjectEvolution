@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.63.0
+
+### GPU-first runtime execution and complete semantic parity boundary
+
+- Audits the supplied D3-I replication artifacts and confirms that all 256 requested-GPU branch runs actually used `gpu-strict-reference` with CPU-authoritative execution and no acceleration.
+- Changes the runtime and experiment default backend from `cpu` to `auto`.
+- Changes the configuration default GPU semantics from `strict-reference` to `hybrid-accelerated`.
+- Uses the real hybrid GPU runtime whenever CUDA/CuPy is available; otherwise records an explicit `cpu-fallback-no-gpu` execution backend and fallback reason.
+- Retains `strict-reference` only as an explicit historical diagnostic mode rather than a production default or scientific-validation gate.
+- Moves semantic validation to `tests/test_parity.py` and upgrades the parity report to `cpu-gpu-parity-v2`.
+- Adds a recursive comparison of every checkpoint-authoritative semantic leaf, so newly checkpointed world state enters parity unless explicitly classified as backend cache state.
+- Adds persistent device-mirror parity for entity, social, environment and information state.
+- Adds a real-GPU semantic-family matrix covering baseline, knowledge/culture, mortality/adaptive groups, D3 spatial processing, subject/multi-environment and plugin semantics.
+- Adds `make parity-gpu`, which sets a required-device contract so a target-GPU validation cannot pass by skipping CUDA tests.
+- Keeps the low-level explicit GPU backend resolver strict, while high-level simulations follow the requested no-device CPU fallback contract.
+- Fixes a clean-import cycle between `se.runtime` and `se.gpu_runtime` through lazy runtime exports.
+- Upgrades protocol audit to v31 and project version to 0.63.0.
+- Adds no sensor, reward, controller, population support, diversity protection, role label or world mechanism.
+- Complete packages retain only `docs/v0.63` as a version-specific directory.
+
 ## 0.62.0
 
 ### Nested seed-level matched-response inference

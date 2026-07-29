@@ -8,7 +8,7 @@
     "experiment_mode": "scientific",
     "evolution_evaluation_period": 30,
     "validation_mode": true,
-    "gpu_semantics_mode": "strict-reference",
+    "gpu_semantics_mode": "hybrid-accelerated",
     "spatial_stress_region_schema": "normalized-fixed-count-grid-v1"
   },
   "world": {

@@ -77,3 +77,18 @@ def test_protocol_audit_publishes_current_structural_rules() -> None:
     assert region["physical_region_width"] == 32.0
     assert region["world_cells_per_region_x"] == 8.0
     assert len(payload["audit_sha256"]) == 64
+
+
+def test_protocol_audit_publishes_gpu_first_parity_boundary() -> None:
+    from se.analysis.protocol_audit import build_protocol_audit, render_markdown
+
+    report = build_protocol_audit(ROOT / "configs" / "mvp_short_k1_compat.json")
+    execution = report["execution_backend_protocol"]
+    assert execution["cli_default_backend"] == "auto"
+    assert execution["configured_gpu_semantics_mode"] == "hybrid-accelerated"
+    assert execution["parity_schema"] == "cpu-gpu-parity-v2"
+    assert execution["semantic_validation_boundary"] == "tests/test_parity.py"
+    markdown = render_markdown(report)
+    assert "## Execution backend" in markdown
+    preference = execution["gpu_preference"].lower()
+    assert "gpu-hybrid" in preference or "hybrid gpu" in preference

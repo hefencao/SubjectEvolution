@@ -27,11 +27,12 @@ class RunConfig:
     experiment_mode: str = "scientific"
     evolution_evaluation_period: int = 500
     validation_mode: bool = False
-    # Until accelerated multi-tick CPU/GPU parity is proven on real CUDA,
-    # scientific GPU requests use the CPU reference world semantics.  The
-    # legacy hybrid accelerator remains available only as an explicit
-    # experimental mode for parity diagnostics and profiling.
-    gpu_semantics_mode: str = "strict-reference"
+    # GPU-capable runs use the hybrid accelerator by default.  CPU remains the
+    # deterministic fallback when CUDA/CuPy is unavailable.  The explicit
+    # strict-reference mode is retained for diagnostics and historical replay;
+    # CPU/GPU semantic validation belongs to the parity suite rather than the
+    # production run path.
+    gpu_semantics_mode: str = "hybrid-accelerated"
     # Full-world bundles are opt-in because they are larger than the legacy
     # analysis-only NPZ snapshots.  When enabled they use checkpoint_period.
     full_checkpoint_enabled: bool = False
