@@ -1,0 +1,123 @@
+{
+  "schema": "gpu-execution-audit-v1",
+  "results": [
+    {
+      "label": "panel",
+      "path": "/home/unkloser/projects/SubjectEvolution/analyses/d3i_response_panel_1p5_gpu/d3_processing_response_panel_results.json",
+      "result_schema": "d3-processing-response-panel-results-v2",
+      "run_record_count": 128,
+      "requested_backend_counts": {
+        "auto": 128
+      },
+      "execution_backend_counts": {
+        "gpu-hybrid-accelerated": 128
+      },
+      "gpu_semantics_mode_counts": {
+        "hybrid-accelerated": 128
+      },
+      "accelerated_run_count": 128,
+      "fallback_run_count": 0,
+      "strict_reference_run_count": 0,
+      "cpu_authoritative_run_count": 0,
+      "all_runs_real_gpu_accelerated": true,
+      "performance": {
+        "wall_elapsed_seconds": {
+          "count": 128,
+          "minimum": 9.137841166999351,
+          "median": 10.98317702300028,
+          "mean": 10.858336517945332,
+          "maximum": 13.052464067999608
+        },
+        "step_seconds": {
+          "count": 128,
+          "minimum": 0.07049955000002228,
+          "median": 0.08977817350023543,
+          "mean": 0.09497813312505343,
+          "maximum": 0.19938396100042155
+        },
+        "window_seconds_per_tick": {
+          "count": 128,
+          "minimum": 0.07618222231091956,
+          "median": 0.09061893285000527,
+          "mean": 0.09066928201708184,
+          "maximum": 0.11030916113331841
+        },
+        "environment_seconds": {
+          "count": 128,
+          "minimum": 0.010078481998789357,
+          "median": 0.015649648000362504,
+          "mean": 0.016284202726637886,
+          "maximum": 0.027711303000614862
+        },
+        "spatial_seconds": {
+          "count": 128,
+          "minimum": 0.0035000480002054246,
+          "median": 0.004732748499918671,
+          "mean": 0.005664117788995782,
+          "maximum": 0.03437094400032947
+        },
+        "observation_seconds": {
+          "count": 128,
+          "minimum": 0.007764243999190512,
+          "median": 0.010456825999426655,
+          "mean": 0.011835662609328779,
+          "maximum": 0.0581898229993385
+        },
+        "policy_seconds": {
+          "count": 128,
+          "minimum": 0.007439204999172944,
+          "median": 0.010569302498879551,
+          "mean": 0.01102394017964059,
+          "maximum": 0.01848007599983248
+        },
+        "conflict_seconds": {
+          "count": 128,
+          "minimum": 0.0024123599996528355,
+          "median": 0.003872241499266238,
+          "mean": 0.003961779734396487,
+          "maximum": 0.008653654000227107
+        },
+        "device_commit_seconds": {
+          "count": 128,
+          "minimum": 0.0005679919995600358,
+          "median": 0.0008088925005722558,
+          "mean": 0.0009115147814071634,
+          "maximum": 0.003364332000273862
+        },
+        "gpu_h2d_bytes": {
+          "count": 128,
+          "minimum": 31760.0,
+          "median": 58174.0,
+          "mean": 60601.8515625,
+          "maximum": 101967.0
+        },
+        "gpu_d2h_bytes": {
+          "count": 128,
+          "minimum": 34827.0,
+          "median": 55551.0,
+          "mean": 54063.828125,
+          "maximum": 82191.0
+        },
+        "gpu_entity_commit_bytes": {
+          "count": 128,
+          "minimum": 4128.0,
+          "median": 6954.0,
+          "mean": 6905.5546875,
+          "maximum": 11285.0
+        }
+      },
+      "experiment_counts": {
+        "panel_count": 32,
+        "completed_panel_count": 32,
+        "acute_analysis_eligible_panel_count": 31,
+        "evolutionary_analysis_eligible_checkpoint_count": 0
+      },
+      "failed_backend_records": [],
+      "recommendation": "gpu-execution-confirmed-scientific-and-speedup-claims-separate"
+    }
+  ],
+  "all_results_have_backend_records": true,
+  "all_runs_real_gpu_accelerated": true,
+  "recommendation": "gpu-execution-confirmed-scientific-and-speedup-claims-separate",
+  "interpretation_boundary": "This audit verifies recorded execution provenance and summarizes timing/transfer diagnostics. It does not prove CPU/GPU semantic parity, a performance speedup, or any scientific effect. Parity requires the target-device test_parity suite and a speedup claim requires a paired benchmark on the same checkpoint and hardware."
+}

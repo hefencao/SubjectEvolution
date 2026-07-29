@@ -1,0 +1,10 @@
+{
+  "schema": "v0.65-local-validation-status-v1",
+  "conda_prefix_present": true,
+  "conda_sync_returncode": 2,
+  "conda_check_returncode": 2,
+  "non_conda_editable_used": true,
+  "real_gpu_available": false,
+  "parity_gpu_returncode": 2,
+  "parity_gpu_expected_no_device_failure": true
+}

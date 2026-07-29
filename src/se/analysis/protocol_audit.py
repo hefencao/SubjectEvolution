@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v32"
+SCHEMA = "structural-measurement-protocol-audit-v33"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -127,6 +127,17 @@ def build_protocol_audit(
             "parity_certificate_schema": "gpu-parity-certificate-v1",
             "parity_report_emitter": "tests/test_parity.py under make parity-gpu",
             "gpu_execution_audit_schema": "gpu-execution-audit-v1",
+            "device_resident_preprocessing": [
+                "resource-affinity quantization",
+                "danger-evidence quantization",
+                "policy resource-view construction",
+                "oxygen-gradient construction",
+                "non-diagnostic information summaries",
+            ],
+            "large_run_validation_policy": (
+                "per-tick validation may be disabled for preregistered large GPU runs; "
+                "semantic validation remains mandatory through test_parity on the target stack"
+            ),
             "parity_scope": [
                 "device stage algorithms",
                 "prepared observations and policy decisions",
@@ -1153,6 +1164,8 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- semantic validation: `{execution['semantic_validation_boundary']}` / `{execution['parity_schema']}`",
         f"- parity certificate: `{execution['parity_certificate_schema']}` via {execution['parity_report_emitter']}",
         f"- execution provenance audit: `{execution['gpu_execution_audit_schema']}`",
+        f"- device-resident preprocessing: {execution['device_resident_preprocessing']}",
+        f"- large-run validation: {execution['large_run_validation_policy']}",
         f"- parity scope: {execution['parity_scope']}",
         f"- feedback to world: {execution['feedback_to_world']}",
         "",

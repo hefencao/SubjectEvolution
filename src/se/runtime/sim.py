@@ -1177,10 +1177,14 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     transfer.direct_message_dense_bytes_avoided
                 )
                 stats.gpu_entity_commit_bytes = transfer.entity_commit_bytes
+                stats.gpu_device_preprocess_rows = transfer.device_preprocess_rows
+                stats.gpu_device_resident_host_bytes_avoided = (
+                    transfer.device_resident_host_bytes_avoided
+                )
                 return stats
             cells = prepared.cells
             local_resources = prepared.local_resources
-            local_physiology = self.environment.physiology_for_cells(cells)
+            local_physiology = self.gpu_runtime.physiology_for_cells(cells)
             effective_resource_affinity_q = (
                 np.full(
                     (ent.alive.size, RESOURCE_CHANNELS),
@@ -1414,8 +1418,14 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         stats.reproduction_eligible = int(reproduction_eligible_indices.size)
         stats.reproduction_proposals = int(step_action_counts[Action.REPRODUCE])
         stats.action_entropy = float(decision.entropy.mean())
-        stats.signal_detection_rate = float(info.signal_mask.mean())
-        stats.partner_detection_rate = float(info.partner_mask.mean()) if info.partner_mask.size else 0.0
+        if self.gpu_runtime is not None:
+            stats.signal_detection_rate = prepared.signal_detection_rate
+            stats.partner_detection_rate = prepared.partner_detection_rate
+        else:
+            stats.signal_detection_rate = float(info.signal_mask.mean())
+            stats.partner_detection_rate = (
+                float(info.partner_mask.mean()) if info.partner_mask.size else 0.0
+            )
         grouped = self.social.group_id[active] != 0
         stats.move_social_fraction = float(
             np.mean(decision.action[grouped] == Action.MOVE_SOCIAL) if np.any(grouped) else 0.0
@@ -2222,6 +2232,10 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             stats.gpu_direct_message_events = transfer.direct_message_events
             stats.gpu_direct_dense_bytes_avoided = transfer.direct_message_dense_bytes_avoided
             stats.gpu_entity_commit_bytes = transfer.entity_commit_bytes
+            stats.gpu_device_preprocess_rows = transfer.device_preprocess_rows
+            stats.gpu_device_resident_host_bytes_avoided = (
+                transfer.device_resident_host_bytes_avoided
+            )
         if self.cfg.knowledge.enabled:
             self.knowledge.publish(self.tick + 1)
             self.knowledge.accumulate(knowledge_stats)

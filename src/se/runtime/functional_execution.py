@@ -245,7 +245,11 @@ def add_physiology_terrain_cost(
     cfg = simulation.cfg
     if not cfg.physiology.enabled:
         return cost, np.zeros((0, 3), dtype=np.float32), np.zeros(0, dtype=bool)
-    current_physiology = simulation.environment.physiology_for_cells(current_cells)
+    current_physiology = (
+        simulation.gpu_runtime.physiology_for_cells(current_cells)
+        if simulation.gpu_runtime is not None
+        else simulation.environment.physiology_for_cells(current_cells)
+    )
     moved_current = moved_now[current_active]
     terrain_extra = (
         moved_current.astype(np.float64)
@@ -350,6 +354,16 @@ def physiology_checkpoint_arrays(simulation: Any) -> dict[str, np.ndarray]:
     active = np.flatnonzero(simulation.entities.alive)
     ent = simulation.entities
     environment = simulation.environment
+    if simulation.gpu_runtime is None:
+        environment_oxygen = environment.oxygen
+        environment_terrain = environment.terrain
+        environment_wear = environment.wear
+    else:
+        (
+            environment_oxygen,
+            environment_terrain,
+            environment_wear,
+        ) = simulation.gpu_runtime.physiology_fields_to_host()
     arrays = {
         "oxygenation": ent.oxygenation[active],
         "tissue_condition": ent.tissue_condition[active],
@@ -359,9 +373,9 @@ def physiology_checkpoint_arrays(simulation: Any) -> dict[str, np.ndarray]:
         "maintenance_messenger": ent.maintenance_messenger[active],
         "messenger_precursor": ent.messenger_precursor[active],
         "physiology_sensor_multiplier": ent.physiology_sensor_multiplier[active],
-        "environment_oxygen": environment.oxygen,
-        "environment_terrain": environment.terrain,
-        "environment_wear": environment.wear,
+        "environment_oxygen": environment_oxygen,
+        "environment_terrain": environment_terrain,
+        "environment_wear": environment_wear,
     }
     if resource_metabolism_enabled(simulation.cfg):
         arrays["resource_store"] = ent.resource_store[active]

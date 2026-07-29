@@ -1,22 +1,30 @@
-# SE v0.64
+# SE v0.65
 
 SE is a deterministic artificial-life and subject-structure research platform. The current main line retains four role-free resource channels, conservative delayed storage and processing, identity-preserving external recycling, persistent abiotic renewal, costed spatial processing support, matched controls and nested shared-checkpoint response measurement.
 
-## Why v0.64
+## Why v0.65
 
-The user-supplied parity fixes are integrated into the GPU path. They move oxygen-gradient augmentation into the prepared GPU observation boundary, preserve the exact working-memory state features used by later learning, and keep backend-only mirror sequencing and observation snapshots out of checkpoint-semantic comparison while retaining their dedicated parity stages.
+v0.65 advances the large-population GPU path rather than treating late 100–300 entity windows as a performance gate. The CPU remains authoritative for action settlement and lifecycle, while regular observation preprocessing now stays on the selected device:
 
-The supplied 1.5× rerun contains 128 completed branches. Every branch records:
+- fixed-budget resource-affinity quantization;
+- fixed-budget danger-evidence quantization;
+- affinity/storage-conditioned policy resource view;
+- oxygen-gradient construction;
+- information detection summaries when full parity/evaluation diagnostics are not due.
 
-```text
-execution_backend: gpu-hybrid-accelerated
-gpu_acceleration_enabled: true
-gpu_fallback_used: false
+The runtime reports both actual transfer bytes and the semantic host traffic avoided by this device-resident boundary. No world, reward, sensing, inheritance or ecological mechanism changes in this release.
+
+Two density-preserving large-run presets are included:
+
+```bash
+se --config configs/mvp_d3i_gpu_scale4_longrun.json \
+  --output runs/d3i_gpu_scale4 --backend auto
+
+se --config configs/mvp_d3i_gpu_scale8_longrun.json \
+  --output runs/d3i_gpu_scale8 --backend auto
 ```
 
-The operational problem from v0.63 is therefore resolved: the experiment actually executes the hybrid GPU path. Scientific and performance gates remain separate. Thirty-one of 32 panels are acute eligible, zero checkpoints are evolutionarily eligible, and the directional response replication gate remains false.
-
-At the late low-population response windows represented in the supplied artifacts, the median reported time per tick is about 0.0906 seconds on hybrid GPU versus 0.0282 seconds in the earlier strict-reference CPU run. This is an observational comparison across different seeds, not a paired benchmark or a general GPU-speed claim. It shows why execution provenance and performance must both be audited.
+They start with 8,000 and 32,000 entities respectively, use real hybrid GPU execution when available, disable per-tick invariant validation, and leave semantic validation to the target-device parity suite.
 
 ## GPU execution and parity
 
@@ -63,7 +71,7 @@ se-gpu-execution-audit \
 
 Backend mirror sequence numbers and diagnostic observation snapshots remain checkpointed for restoration and audit but are compared in their dedicated stages rather than treated as cross-backend continuation semantics.
 
-## Supplied D3-I fixed-GPU result
+## Existing D3-I response result
 
 The nested matched audit reports:
 
@@ -102,7 +110,6 @@ make release-check
 
 ## Current version documents
 
-- [Implementation report](docs/v0.63/IMPLEMENTATION_REPORT.md)
-- [Supplied D3-I effect audit](docs/v0.63/SUPPLIED_D3I_EFFECT_AUDIT.md)
-- [Supplied GPU execution audit](docs/v0.63/SUPPLIED_GPU_EXECUTION_AUDIT.json)
-- [No-GPU fallback smoke manifest](docs/v0.63/AUTO_BACKEND_SMOKE_MANIFEST.json)
+- [Implementation report](docs/v0.65/IMPLEMENTATION_REPORT.md)
+- [Supplied D3-I effect audit](docs/v0.65/SUPPLIED_D3I_EFFECT_AUDIT/d3_response_scale_audit.md)
+- [Supplied GPU execution audit](docs/v0.65/SUPPLIED_GPU_EXECUTION_AUDIT/gpu_execution_audit.json)

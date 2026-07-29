@@ -1,92 +1,59 @@
 # SE project status
 
-Version: **0.64.0**
+Version: **0.65.0**
 
 ## Current causal and measurement chain
 
 ```text
-role-free four-channel external resource and abiotic fields
-→ persistent moving channel-specific abiotic renewal targets
-→ explicit physical flux and numerical-settlement ledgers
-→ inherited affinity, capacities and conservative delayed stores
-→ costed spatial processing support with orientation-matched neutral controls
-→ preregistered acute panels and nested seed-level effect inference
-→ GPU execution provenance + target-device semantic-parity certificate
-→ evidence gate before any sensory, migration or ecological mechanism
+role-free four-channel abiotic resources
+→ conservative storage, recycling and persistent renewal
+→ costed spatial processing with orientation-matched neutral controls
+→ preregistered acute panels and seed-level inference
+→ GPU-first execution + target-device parity certificate
+→ large-population source runs before any new response mechanism
 ```
 
-## Integrated GPU parity corrections
+## Supplied GPU evidence retained
 
-The supplied `fixed.zip` files are applied directly over the v0.63 baseline. The corrections:
+The supplied D3-I artifact contains 128/128 real `gpu-hybrid-accelerated` branches with no fallback or strict-reference execution. It proves execution provenance, not speedup or scientific effect. The response replication gate remains closed and no checkpoint is evolutionarily sufficient.
 
-- move oxygen-gradient augmentation into the GPU prepared-observation boundary instead of mutating the downloaded policy decision afterward;
-- carry the exact working-memory state features used during GPU routing into the later learning boundary;
-- exclude backend mirror sequence numbers and diagnostic observation snapshots from checkpoint-semantic comparison while retaining dedicated observation and device-mirror parity stages;
-- report both reference and candidate entity IDs at first divergence.
+Low-population windows near 100–300 alive are not used as a GPU throughput gate. Their launch, transfer and CPU-settlement overhead is expected to dominate. v0.65 therefore moves directly to density-preserving source populations of 8,000 and 32,000 entities.
 
-The complete CPU/no-device regression passes locally. Real-device parity cannot be rerun on the delivery host because CUDA/CuPy is unavailable.
+## v0.65 execution boundary
 
-## Supplied fixed-GPU execution
+Ordinary hybrid ticks keep these inputs device resident:
 
-The supplied 1.5× D3-I rerun contains 128 completed branch runs. All 128 record:
+- inherited resource-affinity quantization;
+- inherited danger-evidence quantization;
+- policy resource utility;
+- oxygen/terrain/wear fields and oxygen gradients;
+- information detection summaries when full diagnostics are not due.
 
-```text
-requested_backend = auto
-execution_backend = gpu-hybrid-accelerated
-gpu_device_validated = true
-gpu_acceleration_enabled = true
-gpu_fallback_used = false
-cpu_reference_world_authoritative = false
-```
+The CPU remains authoritative for intent settlement, lifecycle, relation/subject graph changes, knowledge learning and output writing. The runtime reports actual transfer bytes separately from semantic host traffic avoided.
 
-This confirms that the production route now uses the hybrid GPU implementation rather than strict-reference CPU execution.
+Long `run()` calls defer full field synchronization. Local physiology and terrain settlement now query current device fields by active cell; low-frequency metrics and checkpoints explicitly materialize current device fields. This prevents stale CPU mirrors from affecting long GPU trajectories.
 
-Execution provenance does not imply performance gain. The earlier strict-reference result and the fixed-GPU result use the same panel plan except for seed IDs. Their median reported window times are:
+## Validation boundary
 
-- strict-reference CPU authority: `0.028173661200981498` seconds/tick;
-- hybrid GPU: `0.09061893285000527` seconds/tick.
-
-The observed ratio is approximately `3.2164×` slower for GPU in these late response windows. This is not a paired benchmark and does not generalize to high-population source trajectories. It does show that the current hybrid host/device boundary has substantial overhead at populations near 100–300.
-
-## Supplied scientific result
-
-The fixed-GPU result has 32 preregistered panels, of which 31 are acute eligible and zero are evolutionarily eligible. The nested equal-seed audit gives:
-
-- original matched mean gain: `-7.585360200717007e-07`;
-- reversed matched mean gain: `-4.841683726372987e-08`;
-- both-orientation-positive seed fraction: `0.25`;
-- directional replication gate: `false`.
-
-The only ineligible panel is seed 63008 at checkpoint 900. Its original and reversed branches reach a minimum pre-step alive count of 99, one below the preregistered threshold. Both interval ledgers remain valid, so this is a sampling-support failure rather than a GPU or conservation failure.
-
-## v0.64 decision
-
-Advance the GPU validation and operations boundary, not the world mechanism:
-
-- preserve the supplied parity fixes;
-- emit machine-readable parity reports from `tests/test_parity.py` on the target device;
-- require stage parity and every registered semantic-family world report before producing `gpu-parity-certificate-v1`;
-- add `se-gpu-execution-audit` to distinguish true hybrid GPU runs from fallback or strict-reference runs;
-- report timing and transfer diagnostics without claiming speedup;
-- retain the response-mechanism gate as closed.
+- `make test` validates the CPU/no-device build and CPU-emulated parity stages.
+- `make parity-gpu` is mandatory on each target CUDA/CuPy stack and produces the archival parity certificate only when every registered semantic family passes.
+- GPU execution provenance and parity are separate from performance claims.
+- Performance work is evaluated on large source populations, not late low-population response windows.
 
 ## Next gates
 
-1. Run `make parity-gpu` on the target CUDA/CuPy environment and retain the generated certificate.
-2. Benchmark CPU and GPU from the same checkpoint, on the same host, across controlled alive counts. The paired benchmark must include source-population ranges well above the late-panel 100–300 entity regime.
-3. Reduce host/device transfer and CPU commit overhead only after the paired profile identifies the dominant boundary.
-4. Do not add a processing-support sensor, reward or migration controller while the directional response gate remains false.
-5. Evolutionary claims remain blocked until actual generation-turnover requirements are met.
+1. Run `make parity-gpu` on the target device and archive the certificate.
+2. Run the 8,000-entity preset first; retain metrics, transfer telemetry and checkpoints.
+3. Run the 32,000-entity preset after the 8,000-entity run proves memory headroom and stable device execution.
+4. Profile remaining CPU-authoritative settlement, lifecycle, graph and knowledge boundaries at those scales.
+5. Keep the processing-response mechanism gate closed until replicated response and generation-turnover requirements are met.
 
 ## Still incomplete
 
-- archived successful target-device parity certificate for the exact CUDA/CuPy stack;
-- paired same-checkpoint CPU/GPU scaling curve and crossover population;
-- device-resident action settlement, lifecycle, graph, knowledge-learning and logging loop;
-- positive, stable processing-response replication under both orientations;
+- archived successful parity certificate for the exact target CUDA/CuPy stack;
+- measured large-population GPU scaling and memory headroom;
+- device-resident action settlement, lifecycle and graph updates;
+- device-resident knowledge-learning and sparse output pipeline;
+- positive replicated processing-response evidence;
 - adequate generation turnover for evolutionary inference;
-- justified sensing or control for processing opportunity;
-- migration, specialization, coexistence or trophic evidence;
-- externalization and evolved reuse of non-store body matter;
-- entity-to-entity material transfer and consumption;
-- dynamic module topology or copy-number evolution.
+- migration, specialization, coexistence or trophic evidence.

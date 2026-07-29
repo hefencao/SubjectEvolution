@@ -26,10 +26,18 @@ from ..backend import BackendUnavailableError, cupy_available, resolve_backend, 
 from ..cfg import SimulationConfig, load_config
 from se.env.world import Environment
 from se.env.gpu import DeviceEnvironment, DeviceInformationField
+from se.env.danger_evidence import danger_evidence_quantized
+from se.env.niches import policy_resource_view, resource_affinity_quantized
+from se.gpu_runtime import (
+    device_danger_evidence_quantized,
+    device_policy_resource_view,
+    device_resource_affinity_quantized,
+)
 from ..information import DirectMessageObservationPlan, InformationSystem
 from ..policy import ParametricPolicy
 from ..reductions import stable_segmented_sum
 from ..runtime.sim import Simulation
+from ..runtime.resource_metabolism import storage_room_fraction
 from se.env.spatial import SpatialIndex
 
 
@@ -420,6 +428,21 @@ def run_stage_parity(
                     cpu_environment.hazard,
                     device_environment.hazard,
                 ),
+                compare_array(
+                    "environment.oxygen",
+                    cpu_environment.oxygen,
+                    device_environment.oxygen,
+                ),
+                compare_array(
+                    "environment.terrain",
+                    cpu_environment.terrain,
+                    device_environment.terrain,
+                ),
+                compare_array(
+                    "environment.wear",
+                    cpu_environment.wear,
+                    device_environment.wear,
+                ),
             ]
             stages.append(_stage("environment-initialization", initial_comparisons))
             for tick in range(max(1, ticks)):
@@ -438,6 +461,21 @@ def run_stage_parity(
                             "environment.hazard",
                             cpu_environment.hazard,
                             device_environment.hazard,
+                        ),
+                        compare_array(
+                            "environment.oxygen",
+                            cpu_environment.oxygen,
+                            device_environment.oxygen,
+                        ),
+                        compare_array(
+                            "environment.terrain",
+                            cpu_environment.terrain,
+                            device_environment.terrain,
+                        ),
+                        compare_array(
+                            "environment.wear",
+                            cpu_environment.wear,
+                            device_environment.wear,
                         ),
                     ],
                 )
@@ -554,6 +592,90 @@ def run_stage_parity(
                             device_spatial.sorted_entity_indices,
                         ),
                         compare_array("spatial.partners", partners, device_partners),
+                    ],
+                )
+            )
+
+            # Device-native policy preprocessing.  These arrays used to bounce
+            # through the host before policy evaluation; parity keeps their exact
+            # semantics explicit while allowing the production path to remain
+            # device resident.
+            active_genotype = entity.genotype[active]
+            cpu_affinity = resource_affinity_quantized(entity.genotype, cfg)
+            device_affinity = device_resource_affinity_quantized(
+                backend.asarray(entity.genotype, dtype=backend.xp.float32),
+                cfg,
+                xp=backend.xp,
+            )
+            cpu_danger_evidence = danger_evidence_quantized(entity.genotype, cfg)
+            device_danger_evidence = device_danger_evidence_quantized(
+                backend.asarray(entity.genotype, dtype=backend.xp.float32),
+                cfg,
+                xp=backend.xp,
+            )
+            local_resources = cpu_environment.cell_values(reference_spatial.entity_cells[active])
+            room = storage_room_fraction(
+                entity,
+                active,
+                cfg,
+                genotype=active_genotype,
+                gene_start=ParametricPolicy.physiology_gene_start(cfg),
+            )
+            cpu_policy_resources = policy_resource_view(
+                local_resources,
+                active_genotype,
+                cfg,
+                resource_affinity_q=cpu_affinity[active],
+                storage_room_fraction=room,
+            )
+            device_policy_resources = device_policy_resource_view(
+                backend.asarray(local_resources, dtype=backend.xp.float32),
+                cfg,
+                resource_affinity_q=device_affinity[
+                    backend.asarray(active, dtype=backend.xp.int32)
+                ],
+                storage_room_fraction=(
+                    None
+                    if room is None
+                    else backend.asarray(room, dtype=backend.xp.float32)
+                ),
+                xp=backend.xp,
+            )
+            cpu_oxygen_gx, cpu_oxygen_gy = cpu_environment.oxygen_gradient_for_entities(
+                reference_spatial.entity_cells,
+                entity.alive.size,
+            )
+            device_oxygen_gx, device_oxygen_gy = (
+                device_environment.oxygen_gradient_for_entities(
+                    device_spatial.entity_cells,
+                    entity.alive.size,
+                )
+            )
+            stages.append(
+                _stage(
+                    "device-policy-preprocessing",
+                    [
+                        compare_array("preprocess.affinity", cpu_affinity, device_affinity),
+                        compare_array(
+                            "preprocess.danger_evidence",
+                            cpu_danger_evidence,
+                            device_danger_evidence,
+                        ),
+                        compare_array(
+                            "preprocess.policy_resources",
+                            cpu_policy_resources,
+                            device_policy_resources,
+                        ),
+                        compare_array(
+                            "preprocess.oxygen_gradient_x",
+                            cpu_oxygen_gx,
+                            device_oxygen_gx,
+                        ),
+                        compare_array(
+                            "preprocess.oxygen_gradient_y",
+                            cpu_oxygen_gy,
+                            device_oxygen_gy,
+                        ),
                     ],
                 )
             )

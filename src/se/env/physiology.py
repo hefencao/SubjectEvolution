@@ -19,40 +19,46 @@ class PhysiologyFieldMetrics:
 
 
 def _wave(
-    xnorm: np.ndarray,
-    ynorm: np.ndarray,
+    xnorm: object,
+    ynorm: object,
     *,
     wave_x: float,
     wave_y: float,
     phase: float,
-) -> np.ndarray:
-    primary = np.sin(2.0 * np.pi * (wave_x * xnorm + wave_y * ynorm) + phase)
-    secondary = np.cos(
-        2.0 * np.pi * ((wave_y + 0.5) * xnorm - (wave_x - 0.25) * ynorm)
+    xp: object = np,
+) -> object:
+    primary = xp.sin(2.0 * xp.pi * (wave_x * xnorm + wave_y * ynorm) + phase)
+    secondary = xp.cos(
+        2.0 * xp.pi * ((wave_y + 0.5) * xnorm - (wave_x - 0.25) * ynorm)
         - 0.7 * phase
     )
-    return np.clip(0.5 + 0.32 * primary + 0.18 * secondary, 0.0, 1.0)
+    return xp.clip(0.5 + 0.32 * primary + 0.18 * secondary, 0.0, 1.0)
 
 
-def physiology_fields(cfg: SimulationConfig, tick: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def physiology_fields(
+    cfg: SimulationConfig,
+    tick: int,
+    *,
+    xp: object = np,
+) -> tuple[object, object, object]:
     """Return normalized oxygen availability, terrain resistance, and wear."""
 
     gy, gx = cfg.world.grid_y, cfg.world.grid_x
     if cfg.environment.physiology_environment_schema != PHYSIOLOGY_ENVIRONMENT_SCHEMA:
         return (
-            np.ones((gy, gx), dtype=np.float32),
-            np.zeros((gy, gx), dtype=np.float32),
-            np.zeros((gy, gx), dtype=np.float32),
+            xp.ones((gy, gx), dtype=xp.float32),
+            xp.zeros((gy, gx), dtype=xp.float32),
+            xp.zeros((gy, gx), dtype=xp.float32),
         )
-    yy, xx = np.mgrid[0:gy, 0:gx]
-    xnorm = xx.astype(np.float64) / max(gx - 1, 1)
-    ynorm = yy.astype(np.float64) / max(gy - 1, 1)
+    yy, xx = xp.mgrid[0:gy, 0:gx]
+    xnorm = xx.astype(xp.float64) / max(gx - 1, 1)
+    ynorm = yy.astype(xp.float64) / max(gy - 1, 1)
     oxygen_phase = (
-        2.0 * np.pi * tick / max(cfg.environment.oxygen_period, 1)
+        2.0 * xp.pi * tick / max(cfg.environment.oxygen_period, 1)
         + cfg.environment.oxygen_phase_offset
     )
     wear_phase = (
-        2.0 * np.pi * tick / max(cfg.environment.wear_period, 1)
+        2.0 * xp.pi * tick / max(cfg.environment.wear_period, 1)
         + cfg.environment.wear_phase_offset
     )
     oxygen = cfg.environment.oxygen_floor + cfg.environment.oxygen_amplitude * _wave(
@@ -61,6 +67,7 @@ def physiology_fields(cfg: SimulationConfig, tick: int) -> tuple[np.ndarray, np.
         wave_x=cfg.environment.oxygen_wave_x,
         wave_y=cfg.environment.oxygen_wave_y,
         phase=oxygen_phase,
+        xp=xp,
     )
     terrain = cfg.environment.terrain_floor + cfg.environment.terrain_amplitude * _wave(
         xnorm,
@@ -68,6 +75,7 @@ def physiology_fields(cfg: SimulationConfig, tick: int) -> tuple[np.ndarray, np.
         wave_x=cfg.environment.terrain_wave_x,
         wave_y=cfg.environment.terrain_wave_y,
         phase=cfg.environment.terrain_phase_offset,
+        xp=xp,
     )
     wear = cfg.environment.wear_floor + cfg.environment.wear_amplitude * _wave(
         xnorm,
@@ -75,9 +83,10 @@ def physiology_fields(cfg: SimulationConfig, tick: int) -> tuple[np.ndarray, np.
         wave_x=cfg.environment.wear_wave_x,
         wave_y=cfg.environment.wear_wave_y,
         phase=wear_phase,
+        xp=xp,
     )
     return tuple(
-        np.clip(field, 0.0, 1.0).astype(np.float32)
+        xp.clip(field, 0.0, 1.0).astype(xp.float32)
         for field in (oxygen, terrain, wear)
     )
 

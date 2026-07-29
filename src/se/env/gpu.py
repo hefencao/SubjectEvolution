@@ -16,6 +16,7 @@ from ..backend import Backend, resolve_backend
 from ..cfg import SimulationConfig
 from .danger_evidence import DANGER_EVIDENCE_SCALE
 from .process import build_environment_process, environment_process_metadata
+from .physiology import physiology_fields
 from .recycling import initialize_resource_residue, update_resource_recycling
 from .diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
@@ -100,6 +101,7 @@ class DeviceEnvironment:
                 self.RESOURCE_CHANNELS, dtype=np.float64
             )
         self.hazard = self._hazard_pattern(0)
+        self.oxygen, self.terrain, self.wear = physiology_fields(cfg, 0, xp=xp)
         self.mortality_trace = xp.zeros((gy, gx), dtype=xp.float32)
         initialize_resource_residue(self)
 
@@ -251,6 +253,9 @@ class DeviceEnvironment:
         """Rotate resource and hazard geography by 180 degrees persistently."""
         self.reverse_resource_spatial_orientation()
         self.hazard = self.hazard[::-1, ::-1].copy()
+        self.oxygen = self.oxygen[::-1, ::-1].copy()
+        self.terrain = self.terrain[::-1, ::-1].copy()
+        self.wear = self.wear[::-1, ::-1].copy()
         self.mortality_trace = self.mortality_trace[::-1, ::-1].copy()
         self.spatial_reversed = not self.spatial_reversed
 
@@ -401,6 +406,13 @@ class DeviceEnvironment:
             )
             self.total_resource_field_roundoff += self.resource_field_roundoff_step
         self.hazard = self._hazard_pattern(tick)
+        self.oxygen, self.terrain, self.wear = physiology_fields(
+            self.cfg, tick, xp=xp
+        )
+        if self.spatial_reversed:
+            self.oxygen = self.oxygen[::-1, ::-1].copy()
+            self.terrain = self.terrain[::-1, ::-1].copy()
+            self.wear = self.wear[::-1, ::-1].copy()
         self._update_mortality_trace()
 
     def resource_diversity_metrics(self) -> dict[str, Any]:
@@ -417,6 +429,51 @@ class DeviceEnvironment:
             backend=self.backend,
         )
         return self.resources.reshape(self.RESOURCE_CHANNELS, -1)[:, cells].T.astype(xp.float32)
+
+
+    def physiology_for_cells(self, cell_ids: Any) -> Any:
+        """Return oxygen, terrain and wear for device-owned cell ids."""
+        xp = self.backend.xp
+        cells = validate_cell_ids(
+            cell_ids,
+            self.cfg.world.grid_x * self.cfg.world.grid_y,
+            backend=self.backend,
+        )
+        return xp.stack(
+            (
+                self.oxygen.reshape(-1)[cells],
+                self.terrain.reshape(-1)[cells],
+                self.wear.reshape(-1)[cells],
+            ),
+            axis=1,
+        ).astype(xp.float32)
+
+    def oxygen_gradient_for_entities(
+        self, entity_cells: Any, entity_count: int
+    ) -> tuple[Any, Any]:
+        """Return periodic oxygen gradients without leaving the device."""
+        xp = self.backend.xp
+        cells = validate_cell_ids(
+            entity_cells,
+            self.cfg.world.grid_x * self.cfg.world.grid_y,
+            backend=self.backend,
+            allow_missing=True,
+        )
+        gx = self.cfg.world.grid_x
+        gy = self.cfg.world.grid_y
+        valid = (cells >= 0) & (cells < gx * gy)
+        safe_cells = xp.where(valid, cells, 0)
+        yy = safe_cells // gx
+        xx = safe_cells % gx
+        left = self.oxygen[yy, (xx - 1) % gx]
+        right = self.oxygen[yy, (xx + 1) % gx]
+        down = self.oxygen[(yy - 1) % gy, xx]
+        up = self.oxygen[(yy + 1) % gy, xx]
+        grad_x = xp.where(valid, right - left, xp.float32(0.0)).astype(xp.float32)
+        grad_y = xp.where(valid, up - down, xp.float32(0.0)).astype(xp.float32)
+        if int(grad_x.size) != int(entity_count):
+            raise ValueError("oxygen gradient entity count does not match cell mirror")
+        return grad_x, grad_y
 
     def gradients_for_entities(
         self,

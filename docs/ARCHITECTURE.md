@@ -507,3 +507,25 @@ cross-backend validation
 ```
 
 The runtime does not silently relabel CPU fallback as GPU execution. The manifest records requested backend, actual execution backend, acceleration state, fallback state and reason. `strict-reference` remains replayable but is not the default route for large runs.
+
+## v0.65 large-population GPU preprocessing boundary
+
+The hybrid runtime keeps regular observation preprocessing on persistent device state:
+
+```text
+device genotype + device fields + device entity mirror
+    ├─ resource-affinity fixed-budget quantization
+    ├─ danger-evidence fixed-budget quantization
+    ├─ storage-conditioned policy resource utility
+    ├─ oxygen / terrain / wear field update
+    ├─ resource, danger and oxygen gradients
+    └─ information observation + policy batch
+                    ↓
+        compact policy/commit payload to CPU
+```
+
+Full information observations are downloaded only when parity or evaluation diagnostics require them. Ordinary production ticks download scalar detection summaries instead. Actual H2D/D2H counters remain authoritative; `gpu_device_resident_host_bytes_avoided` is a semantic estimate of host payloads removed by this boundary and is never presented as physical bus measurement.
+
+`Simulation.run()` deliberately defers full device-field synchronization. Any CPU-authoritative phase that needs local physiology obtains only the active-cell oxygen/terrain/wear triplets from `HybridGpuRuntime`; metrics and checkpoints explicitly materialize the current device fields at their low-frequency boundaries. This prevents the deferred host mirror from becoming accidental world state.
+
+The CPU still owns action settlement, births/deaths, relations, subject graphs, knowledge learning and file output. Those are future migration boundaries only after large-population profiling identifies them as dominant. `tests/test_parity.py` covers all registered semantic families and now includes the device preprocessing stage; target-device acceptance still requires `make parity-gpu`.

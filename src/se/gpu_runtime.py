@@ -56,7 +56,7 @@ class GpuPreparedStep:
     cells: np.ndarray
     local_resources: np.ndarray
     resource_gradient: tuple[np.ndarray, np.ndarray] | None
-    information: InformationObservation
+    information: InformationObservation | None
     decision: PolicyDecision
     spatial_seconds: float
     observation_seconds: float
@@ -65,6 +65,8 @@ class GpuPreparedStep:
     knowledge_policy_plan: KnowledgePolicyPlan
     working_memory_state_features: np.ndarray | None
     routing_cost_result: RoutingCostBudgetResult | None
+    signal_detection_rate: float
+    partner_detection_rate: float
 
 
 @dataclass(frozen=True)
@@ -76,6 +78,8 @@ class GpuTransferStats:
     direct_message_events: int = 0
     direct_message_dense_bytes_avoided: int = 0
     entity_commit_bytes: int = 0
+    device_preprocess_rows: int = 0
+    device_resident_host_bytes_avoided: int = 0
 
 
 @dataclass
@@ -96,6 +100,127 @@ class DeviceEntityState:
     group_dir_x: Any
     group_dir_y: Any
     version: int
+
+
+def device_resource_affinity_quantized(
+    genotype: Any,
+    cfg: SimulationConfig,
+    *,
+    xp: Any,
+) -> Any:
+    """Compute the fixed-budget affinity vector on the owning array backend."""
+    values = xp.asarray(genotype, dtype=xp.float32)
+    if values.ndim != 2 or values.shape[1] < 5:
+        raise ValueError("genotype does not contain the four resource-affinity traits")
+    rows = int(values.shape[0])
+    if cfg.entities.resource_affinity_schema != "normalized-four-resource-affinity-v1":
+        return xp.full((rows, RESOURCE_CHANNELS), AFFINITY_SCALE, dtype=xp.int32)
+    traits = xp.clip(values[:, 1:5], -1.0, 1.0).astype(xp.float64)
+    raw = xp.rint(
+        AFFINITY_SCALE
+        * (1.0 + float(cfg.entities.resource_affinity_strength) * traits)
+    ).astype(xp.int64)
+    minimum = int(
+        round(AFFINITY_SCALE * cfg.entities.resource_affinity_min_efficiency)
+    )
+    maximum = int(
+        round(AFFINITY_SCALE * cfg.entities.resource_affinity_max_efficiency)
+    )
+    raw = xp.clip(raw, minimum, maximum)
+    denominator = raw.sum(axis=1, dtype=xp.int64)
+    numerator = raw * (RESOURCE_CHANNELS * AFFINITY_SCALE)
+    affinity = (
+        (numerator + denominator[:, None] // 2) // denominator[:, None]
+    ).astype(xp.int64)
+    residual = RESOURCE_CHANNELS * AFFINITY_SCALE - affinity.sum(axis=1)
+    strongest = xp.argmax(raw, axis=1)
+    affinity[xp.arange(rows), strongest] += residual
+    if bool(xp.any(affinity <= 0)):
+        raise RuntimeError(
+            "resource affinity normalization produced a non-positive channel"
+        )
+    return affinity.astype(xp.int32)
+
+
+def device_danger_evidence_quantized(
+    genotype: Any,
+    cfg: SimulationConfig,
+    *,
+    xp: Any,
+) -> Any:
+    """Compute fixed-budget direct/trace evidence weights on the device."""
+    values = xp.asarray(genotype, dtype=xp.float32)
+    if values.ndim != 2 or values.shape[1] <= 6:
+        raise ValueError("genotype does not contain the danger-evidence trait")
+    rows = int(values.shape[0])
+    if not danger_evidence_enabled(cfg):
+        return xp.full((rows, 2), DANGER_EVIDENCE_SCALE, dtype=xp.int32)
+    trait = xp.clip(values[:, 6], -1.0, 1.0).astype(xp.float64)
+    direct = xp.rint(
+        DANGER_EVIDENCE_SCALE
+        * (1.0 + float(cfg.entities.danger_evidence_strength) * trait)
+    ).astype(xp.int64)
+    minimum = int(
+        round(
+            DANGER_EVIDENCE_SCALE
+            * float(cfg.entities.danger_evidence_min_efficiency)
+        )
+    )
+    maximum = int(
+        round(
+            DANGER_EVIDENCE_SCALE
+            * float(cfg.entities.danger_evidence_max_efficiency)
+        )
+    )
+    direct = xp.clip(direct, minimum, maximum)
+    trace = 2 * DANGER_EVIDENCE_SCALE - direct
+    if bool(xp.any(trace <= 0)):
+        raise RuntimeError(
+            "danger evidence normalization produced a non-positive weight"
+        )
+    return xp.stack((direct, trace), axis=1).astype(xp.int32)
+
+
+def device_policy_resource_view(
+    local_resources: Any,
+    cfg: SimulationConfig,
+    *,
+    resource_affinity_q: Any,
+    storage_room_fraction: Any | None,
+    xp: Any,
+) -> Any:
+    """Construct the scalar policy resource coordinate without a host bounce."""
+    local = xp.asarray(local_resources, dtype=xp.float32)
+    if local.ndim != 2 or local.shape[1] != RESOURCE_CHANNELS:
+        raise ValueError("local resources must be shaped [N, 4]")
+    if cfg.environment.schema == "legacy-four-channel-v1":
+        return local
+    affinity = xp.asarray(resource_affinity_q, dtype=xp.int32).astype(xp.float64)
+    if affinity.shape != (local.shape[0], RESOURCE_CHANNELS):
+        raise ValueError("resource affinity must be shaped [N, 4]")
+    capacities = xp.asarray(
+        cfg.environment.resource_capacity, dtype=xp.float64
+    )
+    fractions = xp.clip(
+        local.astype(xp.float64) / capacities[None, :], 0.0, 1.5
+    )
+    if storage_room_fraction is not None:
+        room = xp.asarray(storage_room_fraction, dtype=xp.float32).astype(xp.float64)
+        if room.shape != fractions.shape:
+            raise ValueError("storage room fraction must be shaped [N, 4]")
+        if bool(xp.any(~xp.isfinite(room))) or bool(xp.any(room < 0.0)):
+            raise ValueError(
+                "storage room fraction must be finite and non-negative"
+            )
+        fractions = fractions * xp.clip(room, 0.0, 1.0)
+    utility = xp.sum(fractions * affinity, axis=1) / (
+        RESOURCE_CHANNELS * AFFINITY_SCALE
+    )
+    result = local.copy()
+    result[:, 0] = (
+        utility * float(cfg.environment.resource_capacity[0])
+    ).astype(xp.float32)
+    return result
 
 
 class HybridGpuRuntime:
@@ -125,6 +250,8 @@ class HybridGpuRuntime:
         self._direct_message_events = 0
         self._direct_message_dense_bytes_avoided = 0
         self._entity_commit_bytes = 0
+        self._device_preprocess_rows = 0
+        self._device_resident_host_bytes_avoided = 0
 
     def begin_step_transfer_measurement(self) -> None:
         self._measure_transfers = True
@@ -133,6 +260,8 @@ class HybridGpuRuntime:
         self._direct_message_events = 0
         self._direct_message_dense_bytes_avoided = 0
         self._entity_commit_bytes = 0
+        self._device_preprocess_rows = 0
+        self._device_resident_host_bytes_avoided = 0
 
     def finish_step_transfer_measurement(self) -> GpuTransferStats:
         result = GpuTransferStats(
@@ -141,6 +270,10 @@ class HybridGpuRuntime:
             direct_message_events=self._direct_message_events,
             direct_message_dense_bytes_avoided=self._direct_message_dense_bytes_avoided,
             entity_commit_bytes=self._entity_commit_bytes,
+            device_preprocess_rows=self._device_preprocess_rows,
+            device_resident_host_bytes_avoided=(
+                self._device_resident_host_bytes_avoided
+            ),
         )
         self._measure_transfers = False
         return result
@@ -296,6 +429,15 @@ class HybridGpuRuntime:
         self.environment.capacity = self._upload(environment.capacity, dtype=xp.float32, copy=True)
         self.environment.regeneration = self._upload(environment.regeneration, dtype=xp.float32, copy=True)
         self.environment.hazard = self._upload(environment.hazard, dtype=xp.float32, copy=True)
+        self.environment.oxygen = self._upload(
+            environment.oxygen, dtype=xp.float32, copy=True
+        )
+        self.environment.terrain = self._upload(
+            environment.terrain, dtype=xp.float32, copy=True
+        )
+        self.environment.wear = self._upload(
+            environment.wear, dtype=xp.float32, copy=True
+        )
         self.environment.mortality_trace = self._upload(
             environment.mortality_trace, dtype=xp.float32, copy=True
         )
@@ -345,6 +487,15 @@ class HybridGpuRuntime:
         environment.capacity = self._download(self.environment.capacity).astype(np.float32, copy=False)
         environment.regeneration = self._download(self.environment.regeneration).astype(np.float32, copy=False)
         environment.hazard = self._download(self.environment.hazard).astype(np.float32, copy=False)
+        environment.oxygen = self._download(self.environment.oxygen).astype(
+            np.float32, copy=False
+        )
+        environment.terrain = self._download(self.environment.terrain).astype(
+            np.float32, copy=False
+        )
+        environment.wear = self._download(self.environment.wear).astype(
+            np.float32, copy=False
+        )
         environment.mortality_trace = self._download(
             self.environment.mortality_trace
         ).astype(np.float32, copy=False)
@@ -486,6 +637,8 @@ class HybridGpuRuntime:
                 KnowledgePolicyPlan.empty(tick),
                 np.empty((0, 4), dtype=np.float32),
                 None,
+                0.0,
+                0.0,
             )
 
         # The versioned mirror is frozen for this prepare pass.  The CPU owns
@@ -534,17 +687,17 @@ class HybridGpuRuntime:
                 direct.dense_nbytes - direct.semantic_transfer_nbytes, 0
             )
         local_resources = self.environment.cell_values(cells)
-        local_resources_host = self._download(local_resources).astype(
-            np.float32, copy=False
-        )
-        affinity_host = (
-            np.full(
-                (entity.alive.size, RESOURCE_CHANNELS),
+        capacity = int(entity.alive.size)
+        affinity_device = (
+            xp.full(
+                (capacity, RESOURCE_CHANNELS),
                 AFFINITY_SCALE,
-                dtype=np.int32,
+                dtype=xp.int32,
             )
             if resource_affinity_ablation_enabled
-            else resource_affinity_quantized(entity.genotype, self.cfg)
+            else device_resource_affinity_quantized(
+                genotype, self.cfg, xp=xp
+            )
         )
         active_storage_room_fraction = storage_room_fraction(
             entity,
@@ -553,35 +706,50 @@ class HybridGpuRuntime:
             genotype=entity.genotype[active_host],
             gene_start=ParametricPolicy.physiology_gene_start(self.cfg),
         )
-        policy_local_resources_host = policy_resource_view(
-            local_resources_host,
-            entity.genotype[active_host],
+        room_device = (
+            None
+            if active_storage_room_fraction is None
+            else self._upload(
+                active_storage_room_fraction,
+                dtype=xp.float32,
+            )
+        )
+        policy_local_resources = device_policy_resource_view(
+            local_resources,
             self.cfg,
-            resource_affinity_q=affinity_host[active_host],
-            storage_room_fraction=active_storage_room_fraction,
+            resource_affinity_q=affinity_device[active],
+            storage_room_fraction=room_device,
+            xp=xp,
         )
-        policy_local_resources = xp.asarray(
-            policy_local_resources_host, dtype=xp.float32
-        )
-        affinity_device = xp.asarray(affinity_host, dtype=xp.int32)
-        danger_evidence_host = (
+        danger_evidence_device = (
             (
-                np.full(
-                    (entity.alive.size, 2),
+                xp.full(
+                    (capacity, 2),
                     DANGER_EVIDENCE_SCALE,
-                    dtype=np.int32,
+                    dtype=xp.int32,
                 )
                 if danger_evidence_ablation_enabled
-                else danger_evidence_quantized(entity.genotype, self.cfg)
+                else device_danger_evidence_quantized(
+                    genotype, self.cfg, xp=xp
+                )
             )
             if danger_evidence_enabled(self.cfg)
             else None
         )
-        danger_evidence_device = (
-            None
-            if danger_evidence_host is None
-            else xp.asarray(danger_evidence_host, dtype=xp.int32)
-        )
+        if self._measure_transfers:
+            self._device_preprocess_rows = int(active_host.size)
+            avoided = capacity * RESOURCE_CHANNELS * np.dtype(np.int32).itemsize
+            if danger_evidence_device is not None:
+                avoided += capacity * 2 * np.dtype(np.int32).itemsize
+            if active_storage_room_fraction is None:
+                avoided += active_host.size * RESOURCE_CHANNELS * np.dtype(np.float32).itemsize
+            if physiology_environment is not None:
+                # The device now derives both oxygen-gradient components and only
+                # receives one per-entity weight instead of two weighted vectors.
+                avoided += active_host.size * np.dtype(np.float32).itemsize
+            self._device_resident_host_bytes_avoided += int(avoided)
+        local_resources_host: np.ndarray | None = None
+        policy_local_resources_host: np.ndarray | None = None
         device_info = self.information_field.observe(
             stable_ids=stable_ids[active],
             cell_ids=cells,
@@ -602,12 +770,9 @@ class HybridGpuRuntime:
         )
         cells_result: np.ndarray | None = None
         if physiology_environment is not None:
-            cells_result = self._download(cells).astype(np.int32, copy=False)
-            oxygen_gx, oxygen_gy = (
-                physiology_environment.oxygen_gradient_for_entities(
-                    cells_result,
-                    active_host.size,
-                )
+            oxygen_gx, oxygen_gy = self.environment.oxygen_gradient_for_entities(
+                self.spatial.entity_cells,
+                capacity,
             )
             oxygen_need = np.clip(
                 1.0 - entity.oxygenation[active_host],
@@ -619,19 +784,14 @@ class HybridGpuRuntime:
                 0.1,
                 2.0,
             )
-            oxygen_weight = (
+            oxygen_weight = self._upload(
                 np.float32(self.cfg.physiology.oxygen_gradient_weight)
                 * oxygen_need
-                * sensory_support
-            )
-            resource_gradient[0][active] += self._upload(
-                oxygen_weight * oxygen_gx,
+                * sensory_support,
                 dtype=xp.float32,
             )
-            resource_gradient[1][active] += self._upload(
-                oxygen_weight * oxygen_gy,
-                dtype=xp.float32,
-            )
+            resource_gradient[0][active] += oxygen_weight * oxygen_gx[active]
+            resource_gradient[1][active] += oxygen_weight * oxygen_gy[active]
         self.backend.synchronize()
         observation_seconds = time.perf_counter() - timer
 
@@ -658,6 +818,26 @@ class HybridGpuRuntime:
             )
             knowledge_context_keys = self._download(device_context_keys).astype(
                 np.uint64, copy=False
+            )
+            if local_resources_host is None:
+                local_resources_host = self._download(local_resources).astype(
+                    np.float32, copy=False
+                )
+            affinity_host = (
+                np.full(
+                    (capacity, RESOURCE_CHANNELS),
+                    AFFINITY_SCALE,
+                    dtype=np.int32,
+                )
+                if resource_affinity_ablation_enabled
+                else resource_affinity_quantized(entity.genotype, self.cfg)
+            )
+            policy_local_resources_host = policy_resource_view(
+                local_resources_host,
+                entity.genotype[active_host],
+                self.cfg,
+                resource_affinity_q=affinity_host[active_host],
+                storage_room_fraction=active_storage_room_fraction,
             )
             local_resource_host = policy_local_resources_host[:, 0]
             if knowledge.kcfg.working_memory_enabled:
@@ -846,38 +1026,73 @@ class HybridGpuRuntime:
         active_result = active_host
         if cells_result is None:
             cells_result = self._download(cells).astype(np.int32, copy=False)
+        if local_resources_host is None:
+            local_resources_host = self._download(local_resources).astype(
+                np.float32, copy=False
+            )
         local_result = local_resources_host
         resource_result = (
             tuple(self._download(value).astype(np.float32, copy=False) for value in resource_gradient)
             if need_host_resource_gradient
             else None
         )
-        host_info = InformationObservation(
-            signals=self._download(device_info.signals).astype(np.float32, copy=False),
-            signal_mask=self._download(device_info.signal_mask).astype(bool, copy=False),
-            signal_age=(
-                self._download(device_info.signal_age).astype(np.float32, copy=False)
-                if retain_policy_diagnostics
-                else np.empty((active_result.size, 3), dtype=np.float32)
-            ),
-            messages=np.empty((active_result.size, 0, 3), dtype=np.float32),
-            message_mask=np.empty((active_result.size, 0), dtype=bool),
-            message_age=np.empty((active_result.size, 0), dtype=np.uint32),
-            message_confidence=np.empty((active_result.size, 0), dtype=np.float32),
-            message_source_id=np.empty((active_result.size, 0), dtype=np.uint64),
-            message_corruption=np.empty((active_result.size, 0), dtype=np.uint8),
-            partner_energy=(
-                self._download(device_info.partner_energy).astype(np.float32, copy=False)
-                if retain_policy_diagnostics
-                else np.empty((active_result.size, 0), dtype=np.float32)
-            ),
-            partner_group_match=(
-                self._download(device_info.partner_group_match).astype(np.float32, copy=False)
-                if retain_policy_diagnostics
-                else np.empty((active_result.size, 0), dtype=np.float32)
-            ),
-            partner_mask=self._download(device_info.partner_mask).astype(bool, copy=False),
-            uncertainty=self._download(device_info.uncertainty).astype(np.float32, copy=False),
+        signal_detection_rate = float(
+            self._download(
+                xp.mean(device_info.signal_mask, dtype=xp.float64)
+            ).item()
+        )
+        partner_detection_rate = (
+            float(
+                self._download(
+                    xp.mean(device_info.partner_mask, dtype=xp.float64)
+                ).item()
+            )
+            if int(device_info.partner_mask.size)
+            else 0.0
+        )
+        need_host_information = (
+            retain_policy_diagnostics
+            or not self.cfg.knowledge.working_memory_enabled
+        )
+        if self._measure_transfers and not need_host_information:
+            self._device_resident_host_bytes_avoided += int(
+                device_info.signals.nbytes
+                + device_info.signal_mask.nbytes
+                + device_info.partner_mask.nbytes
+                + device_info.uncertainty.nbytes
+            )
+        host_info = (
+            InformationObservation(
+                signals=self._download(device_info.signals).astype(
+                    np.float32, copy=False
+                ),
+                signal_mask=self._download(device_info.signal_mask).astype(
+                    bool, copy=False
+                ),
+                signal_age=self._download(device_info.signal_age).astype(
+                    np.float32, copy=False
+                ),
+                messages=np.empty((active_result.size, 0, 3), dtype=np.float32),
+                message_mask=np.empty((active_result.size, 0), dtype=bool),
+                message_age=np.empty((active_result.size, 0), dtype=np.uint32),
+                message_confidence=np.empty((active_result.size, 0), dtype=np.float32),
+                message_source_id=np.empty((active_result.size, 0), dtype=np.uint64),
+                message_corruption=np.empty((active_result.size, 0), dtype=np.uint8),
+                partner_energy=self._download(device_info.partner_energy).astype(
+                    np.float32, copy=False
+                ),
+                partner_group_match=self._download(
+                    device_info.partner_group_match
+                ).astype(np.float32, copy=False),
+                partner_mask=self._download(device_info.partner_mask).astype(
+                    bool, copy=False
+                ),
+                uncertainty=self._download(device_info.uncertainty).astype(
+                    np.float32, copy=False
+                ),
+            )
+            if need_host_information
+            else None
         )
         host_decision = PolicyDecision(
             action=self._download(device_decision.action).astype(np.int16, copy=False),
@@ -966,6 +1181,8 @@ class HybridGpuRuntime:
             knowledge_policy_plan,
             working_memory_state_features,
             routing_cost_result,
+            signal_detection_rate,
+            partner_detection_rate,
         )
 
     def resolve_harvest(self, cell_ids: np.ndarray, rates: np.ndarray) -> np.ndarray:
@@ -1160,6 +1377,23 @@ class HybridGpuRuntime:
         values = self.environment.hazard.reshape(-1)[cells]
         return self._download(values).astype(np.float32, copy=False)
 
+    def physiology_for_cells(self, cell_ids: np.ndarray) -> np.ndarray:
+        """Download only the requested cell physiology triplets from device state."""
+        cells = self._upload(cell_ids, dtype=self.backend.xp.int32)
+        values = self.environment.physiology_for_cells(cells)
+        return self._download(values).astype(np.float32, copy=False)
+
+    def physiology_fields_to_host(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Materialize current device-owned physiology fields for diagnostics."""
+        return tuple(
+            self._download(value).astype(np.float32, copy=False)
+            for value in (
+                self.environment.oxygen,
+                self.environment.terrain,
+                self.environment.wear,
+            )
+        )
+
     def danger_for_cells(
         self, cell_ids: np.ndarray, evidence_q: np.ndarray | None = None
     ) -> np.ndarray:
@@ -1189,4 +1423,7 @@ __all__ = [
     "GpuPreparedStep",
     "GpuTransferStats",
     "HybridGpuRuntime",
+    "device_danger_evidence_quantized",
+    "device_policy_resource_view",
+    "device_resource_affinity_quantized",
 ]

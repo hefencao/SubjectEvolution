@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.65.0
+
+### Large-population device-resident preprocessing and deferred-sync correctness
+
+- Advances the actual large-population hybrid GPU path instead of using late 100–300 entity windows as a performance gate.
+- Computes fixed-budget resource affinity, fixed-budget danger evidence, the affinity/storage-conditioned policy resource view and oxygen gradients on persistent device state.
+- Avoids materializing full information observations on ordinary production ticks; only detection summaries cross the host boundary unless parity/evaluation diagnostics are due.
+- Adds explicit `gpu_device_preprocess_rows` and `gpu_device_resident_host_bytes_avoided` telemetry while retaining actual H2D/D2H byte counters.
+- Extends stage parity with the device policy-preprocessing boundary and with oxygen, terrain and wear fields.
+- Fixes deferred GPU field synchronization in long `run()` execution: local physiology, terrain cost, metrics and checkpoint physiology now read current device-owned fields instead of stale host mirrors.
+- Adds density-preserving 8,000-entity and 32,000-entity GPU long-run presets with per-tick invariant validation disabled and semantic validation delegated to `make parity-gpu`.
+- Upgrades protocol audit to v33 and project version to 0.65.0.
+- Adds no sensor, reward, controller, population support, diversity protection, role label or world mechanism.
+- Complete packages retain only `docs/v0.65` as a version-specific directory.
+
 ## 0.64.0
 
 ### Integrated target-GPU parity fixes and auditable execution provenance

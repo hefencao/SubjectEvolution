@@ -1219,8 +1219,16 @@ class SimulationReportingMixin:
             knowledge_preference_mean = np.zeros(5, dtype=np.float64)
             knowledge_preference_diversity = np.zeros(5, dtype=np.float64)
             knowledge_use_strength_mean = 0.0
+        if self.gpu_runtime is None:
+            physiology_metric_fields = (
+                self.environment.oxygen,
+                self.environment.terrain,
+                self.environment.wear,
+            )
+        else:
+            physiology_metric_fields = self.gpu_runtime.physiology_fields_to_host()
         physiology_environment_metrics = physiology_field_metrics(
-            self.environment.oxygen, self.environment.terrain, self.environment.wear
+            *physiology_metric_fields
         )
         physiology_genetic_metrics = physiology_diagnostics(
             ent.genotype,
@@ -2030,6 +2038,10 @@ class SimulationReportingMixin:
             "gpu_direct_message_events": stats.gpu_direct_message_events,
             "gpu_direct_dense_bytes_avoided": stats.gpu_direct_dense_bytes_avoided,
             "gpu_entity_commit_bytes": stats.gpu_entity_commit_bytes,
+            "gpu_device_preprocess_rows": stats.gpu_device_preprocess_rows,
+            "gpu_device_resident_host_bytes_avoided": (
+                stats.gpu_device_resident_host_bytes_avoided
+            ),
             "step_seconds": elapsed,
             "wall_elapsed_seconds": wall_elapsed,
             "window_seconds": window_seconds,

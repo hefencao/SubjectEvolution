@@ -186,6 +186,8 @@ class StepStats:
     gpu_direct_message_events: int = 0
     gpu_direct_dense_bytes_avoided: int = 0
     gpu_entity_commit_bytes: int = 0
+    gpu_device_preprocess_rows: int = 0
+    gpu_device_resident_host_bytes_avoided: int = 0
     autonomy_module_actions: int = 0
     autonomy_restored_active: int = 0
     autonomy_harvest_attempts: int = 0
