@@ -24,6 +24,7 @@ from se.analysis.parity import (
     SEMANTIC_PARITY_CONFIGS,
     _array_state_snapshot,
     _compare_semantic_state,
+    _failure_entity_context,
     _semantic_leaves,
     _simulation_stages,
     compare_array,
@@ -364,6 +365,67 @@ class CpuGpuParityTests(unittest.TestCase):
                 self._close(cpu)
                 self._close(candidate)
 
+    def test_semantic_world_state_excludes_device_mirror_sequence_number(self) -> None:
+        cfg = self._cfg()
+        with tempfile.TemporaryDirectory() as tmp:
+            cpu = Simulation(cfg, Path(tmp) / "cpu", backend="cpu")
+            candidate = Simulation(cfg, Path(tmp) / "candidate", backend="cpu")
+            try:
+                cpu.step()
+                candidate.step()
+                candidate.entity_device_version = cpu.entity_device_version + 1
+
+                cpu_leaves = dict(_semantic_leaves(cpu._full_checkpoint_state()))
+                candidate_leaves = dict(
+                    _semantic_leaves(candidate._full_checkpoint_state())
+                )
+                self.assertIn("state.entity_device_version", cpu_leaves)
+                self.assertNotEqual(
+                    cpu_leaves["state.entity_device_version"],
+                    candidate_leaves["state.entity_device_version"],
+                )
+
+                report = _compare_semantic_state(cpu, candidate)
+                self.assertTrue(report[0]["passed"], report)
+            finally:
+                self._close(cpu)
+                self._close(candidate)
+
+    def test_semantic_world_state_excludes_backend_observation_snapshot(self) -> None:
+        cfg = self._cfg()
+        with tempfile.TemporaryDirectory() as tmp:
+            cpu = Simulation(cfg, Path(tmp) / "cpu", backend="cpu")
+            candidate = Simulation(cfg, Path(tmp) / "candidate", backend="cpu")
+            try:
+                cpu.step()
+                candidate.step()
+                self.assertIsNotNone(cpu.last_information)
+                self.assertIsNotNone(candidate.last_information)
+                candidate.last_information.messages = np.empty(
+                    (candidate.last_active.size, 0, 3),
+                    dtype=np.float32,
+                )
+
+                cpu_leaves = dict(_semantic_leaves(cpu._full_checkpoint_state()))
+                candidate_leaves = dict(
+                    _semantic_leaves(candidate._full_checkpoint_state())
+                )
+                self.assertIn("state.last_information.messages", cpu_leaves)
+                self.assertNotEqual(
+                    cpu_leaves["state.last_information.messages"].shape,
+                    candidate_leaves["state.last_information.messages"].shape,
+                )
+
+                report = _compare_semantic_state(cpu, candidate)
+                self.assertTrue(report[0]["passed"], report)
+                stage_names = [
+                    name for name, _, _ in _simulation_stages(cpu, candidate)
+                ]
+                self.assertIn("policy-observation", stage_names)
+            finally:
+                self._close(cpu)
+                self._close(candidate)
+
     def test_world_stage_list_includes_complete_semantic_state(self) -> None:
         cfg = self._cfg()
         with tempfile.TemporaryDirectory() as tmp:
@@ -374,6 +436,33 @@ class CpuGpuParityTests(unittest.TestCase):
                 candidate.step()
                 names = [name for name, _, _ in _simulation_stages(cpu, candidate)]
                 self.assertIn("semantic-checkpoint-state", names)
+            finally:
+                self._close(cpu)
+                self._close(candidate)
+
+    def test_failure_entity_context_reports_both_worlds(self) -> None:
+        cfg = self._cfg()
+        with tempfile.TemporaryDirectory() as tmp:
+            cpu = Simulation(cfg, Path(tmp) / "cpu", backend="cpu")
+            candidate = Simulation(cfg, Path(tmp) / "candidate", backend="cpu")
+            try:
+                context = _failure_entity_context(
+                    cpu,
+                    candidate,
+                    "entity-state",
+                    [{"passed": False, "first_mismatch_index": [0]}],
+                )
+                self.assertEqual(
+                    context,
+                    {
+                        "active_row": None,
+                        "entity_slot": 0,
+                        "reference_entity_id": int(cpu.entities.entity_id[0]),
+                        "candidate_entity_id": int(
+                            candidate.entities.entity_id[0]
+                        ),
+                    },
+                )
             finally:
                 self._close(cpu)
                 self._close(candidate)

@@ -63,6 +63,7 @@ class GpuPreparedStep:
     policy_seconds: float
     knowledge_context_keys: np.ndarray
     knowledge_policy_plan: KnowledgePolicyPlan
+    working_memory_state_features: np.ndarray | None
     routing_cost_result: RoutingCostBudgetResult | None
 
 
@@ -411,6 +412,7 @@ class HybridGpuRuntime:
         retain_policy_diagnostics: bool,
         need_host_resource_gradient: bool,
         entity_state_version: int,
+        physiology_environment: Any | None = None,
         knowledge: KnowledgeSystem | None = None,
         resource_affinity_ablation_enabled: bool = False,
         danger_evidence_ablation_enabled: bool = False,
@@ -482,6 +484,7 @@ class HybridGpuRuntime:
                 0.0,
                 np.empty(0, dtype=np.uint64),
                 KnowledgePolicyPlan.empty(tick),
+                np.empty((0, 4), dtype=np.float32),
                 None,
             )
 
@@ -597,11 +600,44 @@ class HybridGpuRuntime:
             affinity_device,
             danger_evidence_device,
         )
+        cells_result: np.ndarray | None = None
+        if physiology_environment is not None:
+            cells_result = self._download(cells).astype(np.int32, copy=False)
+            oxygen_gx, oxygen_gy = (
+                physiology_environment.oxygen_gradient_for_entities(
+                    cells_result,
+                    active_host.size,
+                )
+            )
+            oxygen_need = np.clip(
+                1.0 - entity.oxygenation[active_host],
+                0.0,
+                1.0,
+            )
+            sensory_support = np.clip(
+                entity.physiology_sensor_multiplier[active_host],
+                0.1,
+                2.0,
+            )
+            oxygen_weight = (
+                np.float32(self.cfg.physiology.oxygen_gradient_weight)
+                * oxygen_need
+                * sensory_support
+            )
+            resource_gradient[0][active] += self._upload(
+                oxygen_weight * oxygen_gx,
+                dtype=xp.float32,
+            )
+            resource_gradient[1][active] += self._upload(
+                oxygen_weight * oxygen_gy,
+                dtype=xp.float32,
+            )
         self.backend.synchronize()
         observation_seconds = time.perf_counter() - timer
 
         knowledge_context_keys = np.empty(0, dtype=np.uint64)
         knowledge_policy_plan = KnowledgePolicyPlan.empty(tick)
+        working_memory_state_features: np.ndarray | None = None
         routing_cost_result: RoutingCostBudgetResult | None = None
         cost_free_plan = KnowledgePolicyPlan.empty(tick)
         if knowledge is not None and knowledge.kcfg.learning_enabled:
@@ -623,6 +659,19 @@ class HybridGpuRuntime:
             knowledge_context_keys = self._download(device_context_keys).astype(
                 np.uint64, copy=False
             )
+            local_resource_host = policy_local_resources_host[:, 0]
+            if knowledge.kcfg.working_memory_enabled:
+                working_memory_state_features = np.asarray(
+                    latent_router_state_features(
+                        energy=entity.energy[active_host],
+                        integrity=entity.integrity[active_host],
+                        fertility=entity.fertility[active_host],
+                        local_resource=local_resource_host,
+                        max_energy=self.cfg.entities.max_energy,
+                        resource_capacity=self.cfg.environment.resource_capacity[0],
+                    ),
+                    dtype=np.float32,
+                ).copy()
             if (
                 knowledge.kcfg.policy_influence_enabled
                 and not knowledge_policy_ablation_enabled
@@ -636,14 +685,17 @@ class HybridGpuRuntime:
                     # inherited routing still execute on the GPU, while a
                     # backend-specific division cannot move a quantized state
                     # coordinate across a later action boundary.
-                    local_resource_host = policy_local_resources_host[:, 0]
-                    router_state = latent_router_state_features(
-                        energy=entity.energy[active_host],
-                        integrity=entity.integrity[active_host],
-                        fertility=entity.fertility[active_host],
-                        local_resource=local_resource_host,
-                        max_energy=self.cfg.entities.max_energy,
-                        resource_capacity=self.cfg.environment.resource_capacity[0],
+                    router_state = (
+                        working_memory_state_features
+                        if working_memory_state_features is not None
+                        else latent_router_state_features(
+                            energy=entity.energy[active_host],
+                            integrity=entity.integrity[active_host],
+                            fertility=entity.fertility[active_host],
+                            local_resource=local_resource_host,
+                            max_energy=self.cfg.entities.max_energy,
+                            resource_capacity=self.cfg.environment.resource_capacity[0],
+                        )
                     )
                     active_genotype_device = genotype[active]
                     active_genotype_host = entity.genotype[active_host]
@@ -792,7 +844,8 @@ class HybridGpuRuntime:
 
         # One synchronized host boundary for the CPU intent/commit stages.
         active_result = active_host
-        cells_result = self._download(cells).astype(np.int32, copy=False)
+        if cells_result is None:
+            cells_result = self._download(cells).astype(np.int32, copy=False)
         local_result = local_resources_host
         resource_result = (
             tuple(self._download(value).astype(np.float32, copy=False) for value in resource_gradient)
@@ -911,6 +964,7 @@ class HybridGpuRuntime:
             policy_seconds,
             knowledge_context_keys,
             knowledge_policy_plan,
+            working_memory_state_features,
             routing_cost_result,
         )
 

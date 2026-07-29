@@ -1,15 +1,15 @@
 {
-  "passed": false,
+  "passed": true,
   "schema": "deterministic-pytest-file-shards-v1",
-  "source_tree_sha256": "995f789a265ee0b69dc78f16a755084a3b64a397da305db6db01fb52b34ac13f",
+  "source_tree_sha256": "8ffd13b343ebd7faf74e3d41bf8107c43bcfe129e86d9b6f16b03fe4d31b14dd",
   "python": "/home/unkloser/anaconda3/envs/se/bin/python",
   "shard_count": 5,
   "test_file_count": 61,
-  "elapsed_seconds": 10.918247444000372,
+  "elapsed_seconds": 10.405573316998925,
   "shards": [
     {
       "shard": 1,
-      "returncode": 1,
+      "returncode": 0,
       "test_file_count": 13,
       "test_files": [
         "tests/test_bytecode_cleanup.py",
@@ -27,14 +27,8 @@
         "tests/test_version_consistency.py"
       ],
       "stdout_tail": [
-        "                )",
-        ">               self.assertTrue(report[\"passed\"], (filename, report[\"first_failure\"]))",
-        "E               AssertionError: False is not true : ('mvp_short_k1_compat.json', {'tick': 1, 'stage': 'semantic-checkpoint-state', 'entity_context': None, 'comparisons': [{'name': 'state.entity_device_version', 'passed': False, 'reason': 'scalar-mismatch', 'reference_value': 0, 'candidate_value': 1, 'semantic_leaf_count': 1938}]})",
-        "",
-        "tests/test_parity.py:418: AssertionError",
-        "=========================== short test summary info ============================",
-        "FAILED tests/test_parity.py::CpuGpuParityTests::test_real_gpu_world_parity_for_all_semantic_families",
-        "1 failed, 61 passed in 4.59s"
+        ".................................................................        [100%]",
+        "65 passed in 5.37s"
       ]
     },
     {
@@ -57,7 +51,7 @@
       ],
       "stdout_tail": [
         "....................................................                     [100%]",
-        "52 passed in 5.64s"
+        "52 passed in 5.09s"
       ]
     },
     {
@@ -80,7 +74,7 @@
       ],
       "stdout_tail": [
         "..........................................................               [100%]",
-        "58 passed in 7.75s"
+        "58 passed in 6.85s"
       ]
     },
     {
@@ -103,7 +97,7 @@
       ],
       "stdout_tail": [
         "...............................................................          [100%]",
-        "63 passed in 9.70s"
+        "63 passed in 5.91s"
       ]
     },
     {
@@ -126,7 +120,7 @@
       ],
       "stdout_tail": [
         "...................................................................      [100%]",
-        "67 passed in 10.66s"
+        "67 passed in 10.23s"
       ]
     }
   ]

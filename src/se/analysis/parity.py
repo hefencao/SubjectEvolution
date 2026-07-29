@@ -56,9 +56,12 @@ _SEMANTIC_OBJECT_EXCLUDED_FIELDS = frozenset({
     "environment_process",
 })
 _SEMANTIC_ROOT_EXCLUDED_FIELDS = frozenset({
-    # Device/CPU cache implementations are validated in dedicated stages and
-    # are not authoritative continuation semantics.
+    # Device/CPU caches, mirror sequencing and backend-specific diagnostic
+    # snapshots are validated in dedicated stages.  They are checkpointed for
+    # restoration/audit but are not cross-backend continuation semantics.
     "spatial",
+    "entity_device_version",
+    "last_information",
     "last_entity_device_commit",
     "conflict_resolver_kind",
 })
@@ -988,7 +991,10 @@ def _simulation_stages(cpu: Simulation, gpu: Simulation) -> list[tuple[str, Any,
 
 
 def _failure_entity_context(
-    cpu: Simulation, stage_name: str, comparisons: list[dict[str, Any]]
+    cpu: Simulation,
+    gpu: Simulation,
+    stage_name: str,
+    comparisons: list[dict[str, Any]],
 ) -> dict[str, Any] | None:
     failed = next((item for item in comparisons if not item.get("passed")), None)
     if failed is None:
@@ -1062,7 +1068,7 @@ def run_world_parity(cfg: SimulationConfig, *, ticks: int, output_dir: Path) -> 
                         "tick": int(cpu.tick),
                         "stage": stage_name,
                         "entity_context": _failure_entity_context(
-                            cpu, stage_name, comparisons
+                            cpu, gpu, stage_name, comparisons
                         ),
                         "comparisons": comparisons,
                     }

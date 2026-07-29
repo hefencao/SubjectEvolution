@@ -151,7 +151,6 @@ from .functional_execution import (
     add_physiology_capacity_maintenance_cost,
     add_physiology_terrain_cost,
     augment_gradient_with_oxygen,
-    apply_gpu_oxygen_steering,
     apply_physiology_settlement,
     evaluate_functional_outputs,
     initialize_functional_runtime_state,
@@ -1147,6 +1146,14 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     )
                 ),
                 entity_state_version=self.entity_device_version,
+                physiology_environment=(
+                    self.environment
+                    if (
+                        cfg.physiology.enabled
+                        and cfg.physiology.oxygen_gradient_weight > 0.0
+                    )
+                    else None
+                ),
                 knowledge=self.knowledge if cfg.knowledge.enabled else None,
                 resource_affinity_ablation_enabled=(
                     self.resource_affinity_ablation_enabled
@@ -1202,19 +1209,8 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             decision = prepared.decision
             knowledge_context_keys = prepared.knowledge_context_keys
             knowledge_policy_plan = prepared.knowledge_policy_plan
+            working_memory_state_features = prepared.working_memory_state_features
             routing_cost_result = prepared.routing_cost_result
-            if cfg.knowledge.working_memory_enabled:
-                working_memory_state_features = np.asarray(
-                    latent_router_state_features(
-                        energy=ent.energy[active],
-                        integrity=ent.integrity[active],
-                        fertility=ent.fertility[active],
-                        local_resource=policy_local_resources[:, 0],
-                        max_energy=cfg.entities.max_energy,
-                        resource_capacity=cfg.environment.resource_capacity[0],
-                    ),
-                    dtype=np.float32,
-                )
             stats.spatial_seconds = prepared.spatial_seconds
             stats.observation_seconds = prepared.observation_seconds
             stats.policy_seconds = prepared.policy_seconds
@@ -1236,7 +1232,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             movement_speed_multiplier=movement_speed_multiplier,
             signal_strength_multiplier=signal_strength_multiplier,
         )
-        apply_gpu_oxygen_steering(self, active=active, decision=decision)
 
         if self.local_stress_diagnostics is not None:
             local_hazard = (

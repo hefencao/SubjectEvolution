@@ -190,42 +190,6 @@ def evaluate_functional_outputs(
     )
 
 
-def apply_gpu_oxygen_steering(
-    simulation: Any,
-    *,
-    active: np.ndarray,
-    decision: Any,
-) -> None:
-    """Apply the host-side oxygen-seeking correction after GPU policy output."""
-    cfg = simulation.cfg
-    if not cfg.physiology.enabled or simulation.gpu_runtime is None:
-        return
-    ent = simulation.entities
-    oxygen_gx, oxygen_gy = simulation.environment.oxygen_gradient_for_entities(
-        simulation.spatial.entity_cells, ent.alive.size
-    )
-    active_need = np.clip(1.0 - ent.oxygenation[active], 0.0, 1.0)
-    sensory_support = np.clip(
-        ent.physiology_sensor_multiplier[active], 0.1, 2.0
-    )
-    weight = (
-        np.float32(cfg.physiology.oxygen_gradient_weight)
-        * active_need
-        * sensory_support
-    )
-    direction_x = np.asarray(decision.direction_x, dtype=np.float32).copy()
-    direction_y = np.asarray(decision.direction_y, dtype=np.float32).copy()
-    direction_x += weight * oxygen_gx[active]
-    direction_y += weight * oxygen_gy[active]
-    magnitude = np.sqrt(direction_x * direction_x + direction_y * direction_y)
-    valid = magnitude > 1.0e-12
-    direction_x[valid] /= magnitude[valid]
-    direction_y[valid] /= magnitude[valid]
-    decision.direction_x = direction_x
-    decision.direction_y = direction_y
-
-
-
 def record_physiology_capacity_development_cost(
     simulation: Any, newborns: np.ndarray, stats: Any
 ) -> None:
@@ -432,7 +396,6 @@ def augment_gradient_with_oxygen(
 __all__ = [
     "add_physiology_terrain_cost",
     "augment_gradient_with_oxygen",
-    "apply_gpu_oxygen_steering",
     "apply_physiology_settlement",
     "evaluate_functional_outputs",
     "initialize_functional_runtime_state",
