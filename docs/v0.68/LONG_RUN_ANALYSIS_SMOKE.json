@@ -1,0 +1,1626 @@
+{
+  "schema": "multi-seed-long-run-analysis-v16",
+  "analyzer_version": "0.68.0",
+  "input_runtime_versions": [
+    "0.68.0"
+  ],
+  "run_count": 2,
+  "runs": [
+    {
+      "path": "/tmp/se_v068_smoke/output/seed_68001/evolution_progress.jsonl",
+      "run_name": "seed_68001",
+      "record_count": 2,
+      "first_tick": 1,
+      "final_tick": 2,
+      "alive_final": 16,
+      "alive_peak": 16,
+      "alive_peak_tick": 1,
+      "alive_trough": 16,
+      "alive_trough_tick": 1,
+      "effective_lineages_final": 16.0,
+      "largest_lineage_fraction_final": 0.0625,
+      "strategy_effective_dimensions_final": 12.700879279102438,
+      "window_action_entropy_final": 1.5808185358593017,
+      "benefit_boundary_cohesion_final": 0.0,
+      "resource_affinity_effective_dimensions_final": 2.5011565804822222,
+      "subject_structure_final": {},
+      "environment_atlas_final": {},
+      "resource_environment_final": {
+        "environment_resource_channel_mean": [
+          3.7470717148389667,
+          3.0825621887343004,
+          3.687512369011529,
+          3.961442844127305
+        ],
+        "environment_resource_channel_std": [
+          1.6348716731145252,
+          1.092983715497599,
+          1.2504273233774386,
+          1.5286333087350052
+        ],
+        "environment_resource_channel_min": [
+          0.8671001195907593,
+          0.8339349031448364,
+          1.486782431602478,
+          1.27597177028656
+        ],
+        "environment_resource_channel_max": [
+          7.196282386779785,
+          6.621066570281982,
+          6.996017932891846,
+          7.446604251861572
+        ]
+      },
+      "capacity_final": {},
+      "functional_module_final": {},
+      "danger_direct_weight_mean_final": 1.0,
+      "danger_direct_weight_std_final": 0.0,
+      "danger_trace_weight_mean_final": 1.0,
+      "danger_trace_weight_std_final": 0.0,
+      "danger_evidence_effective_dimensions_final": 0.0,
+      "environment_mortality_trace_mean_final": 0.0,
+      "environment_mortality_trace_max_final": 0.0,
+      "group_update_count_final": 1,
+      "group_update_skipped_final": 1,
+      "group_last_update_tick_final": 0,
+      "lineage_group_nmi_final": 0.0,
+      "lineage_group_pair_enrichment_final": 0.0,
+      "same_lineage_given_same_group_final": 0.0,
+      "knowledge_effective_root_contents_final": 34.0,
+      "knowledge_largest_root_holder_fraction_final": 0.029411764705882353,
+      "knowledge_root_genetic_lineage_pair_enrichment_final": 0.0,
+      "knowledge_transfer_proposals_final": 0,
+      "knowledge_transfer_attempts_final": 0,
+      "knowledge_transfer_committed_final": 0,
+      "knowledge_transfer_committed_bytes_final": 0,
+      "knowledge_transfer_commit_rate_after_attention_final": 0.0,
+      "knowledge_transfer_commit_rate_per_proposal_final": 0.0,
+      "knowledge_transfer_same_lineage_committed_final": 0,
+      "knowledge_transfer_cross_lineage_committed_final": 0,
+      "knowledge_transfer_same_group_committed_final": 0,
+      "knowledge_transfer_cross_group_committed_final": 0,
+      "knowledge_active_transferred_root_count_final": 0,
+      "knowledge_effective_transferred_roots_final": 0.0,
+      "knowledge_largest_transferred_root_holder_fraction_final": 0.0,
+      "knowledge_cultural_spread_interpretable": false,
+      "knowledge_transfer_phase_summary": {
+        "rise": {
+          "windows": 0,
+          "attempts": 0,
+          "committed": 0,
+          "commit_rate": 0.0
+        },
+        "decline": {
+          "windows": 0,
+          "attempts": 0,
+          "committed": 0,
+          "commit_rate": 0.0
+        },
+        "peak": {
+          "windows": 2,
+          "attempts": 0,
+          "committed": 0,
+          "commit_rate": 0.0
+        },
+        "trough": {
+          "windows": 2,
+          "attempts": 0,
+          "committed": 0,
+          "commit_rate": 0.0
+        }
+      },
+      "correlations_cultural_transfer": {},
+      "spatial_local_analysis": {
+        "available": false,
+        "reason": "fewer than five spatial diagnostic windows"
+      },
+      "resource_demand_analysis": {
+        "available": true,
+        "window_count": 2,
+        "request_observation_schema": "explicit-requested-harvest-window-v1",
+        "request_channel_metrics_available": true,
+        "explicit_request_window_count": 2,
+        "inferred_request_window_count": 0,
+        "unavailable_request_window_count": 0,
+        "harvest_channel_totals": [
+          0.5850000232458115,
+          0.5850000232458115,
+          0.5850000232458115,
+          0.5850000232458115
+        ],
+        "harvest_channel_shares": [
+          0.25,
+          0.25,
+          0.25,
+          0.25
+        ],
+        "harvest_balance_effective_count": 4.0,
+        "harvest_temporal_effective_dimensions": 1.0,
+        "harvest_channel_correlation": [
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ],
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ],
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ],
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ]
+        ],
+        "harvest_channel_mean_abs_correlation": 0.9999999999999999,
+        "harvest_channel_max_abs_correlation": 0.9999999999999999,
+        "harvest_share_temporal_effective_dimensions": 1.0,
+        "harvest_share_channel_correlation": [
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ],
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ],
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ],
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ]
+        ],
+        "harvest_share_channel_mean_abs_correlation": 0.9999999999999999,
+        "harvest_share_channel_max_abs_correlation": 0.9999999999999999,
+        "requested_harvest_channel_totals": [
+          0.5850000232458115,
+          0.5850000232458115,
+          0.5850000232458115,
+          0.5850000232458115
+        ],
+        "requested_harvest_channel_shares": [
+          0.25,
+          0.25,
+          0.25,
+          0.25
+        ],
+        "requested_harvest_balance_effective_count": 4.0,
+        "requested_harvest_temporal_effective_dimensions": 1.0,
+        "requested_harvest_channel_correlation": [
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ],
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ],
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ],
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ]
+        ],
+        "requested_harvest_channel_mean_abs_correlation": 0.9999999999999999,
+        "requested_harvest_channel_max_abs_correlation": 0.9999999999999999,
+        "requested_harvest_share_temporal_effective_dimensions": 1.0,
+        "requested_harvest_share_channel_correlation": [
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ],
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ],
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ],
+          [
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999,
+            0.9999999999999999
+          ]
+        ],
+        "requested_harvest_share_channel_mean_abs_correlation": 0.9999999999999999,
+        "requested_harvest_share_channel_max_abs_correlation": 0.9999999999999999,
+        "harvest_volume_vs_requested_volume": null,
+        "harvest_balance_vs_resource_environment_dimensions": null,
+        "harvest_extraction_efficiency_mean": 1.0,
+        "harvest_extraction_efficiency_final": 1.0,
+        "interpretation": "Raw channel volumes co-move with population and HARVEST action count. Share-composition metrics remove that common scale before measuring demand differentiation. Realized extraction remains availability-limited; explicit requested-channel metrics are authoritative. Older selective runs without requested-channel fields cannot reconstruct channel composition."
+      },
+      "demographic_selection_validity": {
+        "label": "seed_68001",
+        "run_dir": "/tmp/se_v068_smoke/output/seed_68001",
+        "summary_tick": 2,
+        "reporting_state_tick": 2,
+        "initial_population": 16,
+        "window_count": 2,
+        "minimum_alive_fraction_to_initial": 1.0,
+        "first_tick_below_population_floor": null,
+        "first_tick_with_turnover_support": null,
+        "population_collapse_before_turnover": false,
+        "demographic_supported_window_count": 0,
+        "evolutionary_supported_window_count": 0,
+        "final_population": {
+          "tick": 2,
+          "window_ticks": 1,
+          "alive": 16,
+          "alive_fraction_to_initial": 1.0,
+          "effective_lineages": 16.0,
+          "largest_lineage_fraction": 0.0625,
+          "successful_parent_samples_window": 0,
+          "unique_successful_parents_window": 0,
+          "effective_successful_parents_window": 0.0,
+          "largest_parent_contribution_fraction_window": 0.0,
+          "contributor_metrics_available": true,
+          "births_window": 0,
+          "deaths_window": 0,
+          "net_growth_window": 0,
+          "mean_generation": 0.0,
+          "max_generation": 0,
+          "generation_zero_alive": 16,
+          "descendant_alive": 0,
+          "descendant_alive_fraction": 0.0,
+          "descendant_metric_available": true,
+          "descendant_fraction_met": false,
+          "cumulative_births_per_initial": 0.0,
+          "demographic_checks": {
+            "alive_fraction_met": true,
+            "effective_lineages_met": false,
+            "largest_lineage_fraction_met": true,
+            "successful_parent_samples_met": false
+          },
+          "turnover_checks": {
+            "mean_generation_met": false,
+            "max_generation_met": false,
+            "cumulative_births_per_initial_met": false
+          },
+          "contributor_checks": {
+            "unique_successful_parents_met": false,
+            "effective_successful_parents_met": false,
+            "largest_parent_contribution_met": true
+          },
+          "demographic_selection_window_supported": false,
+          "evolutionary_selection_window_supported": false
+        },
+        "death_causes": {
+          "available": true,
+          "death_event_count": 0,
+          "signature_counts": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "energy_depleted_count": 0,
+          "integrity_depleted_count": 0,
+          "max_age_count": 0,
+          "energy_depleted_fraction": 0.0,
+          "integrity_depleted_fraction": 0.0,
+          "max_age_fraction": 0.0,
+          "overlap_note": "Cause-presence fractions can sum above one because a death event may simultaneously satisfy energy, integrity, and age conditions."
+        },
+        "post_bottleneck_regime": {
+          "schema": "post-bottleneck-demographic-regime-v1",
+          "trough_tick": 1,
+          "trough_alive": 16,
+          "final_alive": 16,
+          "post_trough_rebound_fraction": 0.0,
+          "settled_window_count_required": 3,
+          "settled_window_count_available": 0,
+          "settled_window_start_tick": null,
+          "settled_alive_cv": null,
+          "settled_maximum_abs_net_growth_fraction": null,
+          "settled_population_supported": false,
+          "settled_lineage_supported": false,
+          "turnover_supported": false,
+          "descendant_metric_available": true,
+          "descendant_supported": false,
+          "contributor_metrics_available": false,
+          "reproductive_contributor_supported": false,
+          "source_ready_for_future_independent_runs": false,
+          "candidate_future_burn_in_tick": null,
+          "classification": "selection-source-insufficient-observation",
+          "interpretation_boundary": "A source-ready classification only proposes a fixed burn-in rule for new independent runs. The pilot windows used to derive it cannot be reused as confirmatory selection evidence."
+        },
+        "windows": [
+          {
+            "tick": 1,
+            "window_ticks": 1,
+            "alive": 16,
+            "alive_fraction_to_initial": 1.0,
+            "effective_lineages": 16.0,
+            "largest_lineage_fraction": 0.0625,
+            "successful_parent_samples_window": 0,
+            "unique_successful_parents_window": 0,
+            "effective_successful_parents_window": 0.0,
+            "largest_parent_contribution_fraction_window": 0.0,
+            "contributor_metrics_available": true,
+            "births_window": 0,
+            "deaths_window": 0,
+            "net_growth_window": 0,
+            "mean_generation": 0.0,
+            "max_generation": 0,
+            "generation_zero_alive": 16,
+            "descendant_alive": 0,
+            "descendant_alive_fraction": 0.0,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.0,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": false,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": true
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 2,
+            "window_ticks": 1,
+            "alive": 16,
+            "alive_fraction_to_initial": 1.0,
+            "effective_lineages": 16.0,
+            "largest_lineage_fraction": 0.0625,
+            "successful_parent_samples_window": 0,
+            "unique_successful_parents_window": 0,
+            "effective_successful_parents_window": 0.0,
+            "largest_parent_contribution_fraction_window": 0.0,
+            "contributor_metrics_available": true,
+            "births_window": 0,
+            "deaths_window": 0,
+            "net_growth_window": 0,
+            "mean_generation": 0.0,
+            "max_generation": 0,
+            "generation_zero_alive": 16,
+            "descendant_alive": 0,
+            "descendant_alive_fraction": 0.0,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.0,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": false,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": true
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          }
+        ],
+        "selection_inference_supported_within_run": false,
+        "recommendation": "selection-inference-insufficient-retain-run",
+        "interpretation_boundary": "This is a within-run adequacy audit. Windows are repeated observations, not independent replicates. Failed windows remain in the record. A future burn-in candidate is a design output, not evidence from the current run."
+      },
+      "config_context": {
+        "initial_entities": 16,
+        "knowledge_transfer_probability": 0.0,
+        "knowledge_transfer_period": 1,
+        "environment_schema": "spatially-asynchronous-multiniche-v1",
+        "resource_cycle_periods": [
+          120,
+          173,
+          229,
+          307
+        ],
+        "resource_cycle_amplitudes": [
+          0.55,
+          0.5,
+          0.45,
+          0.4
+        ],
+        "resource_primary_wave_vectors": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            -1.0
+          ]
+        ],
+        "resource_secondary_wave_vectors": [
+          [
+            2.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            -1.0
+          ],
+          [
+            1.0,
+            -2.0
+          ]
+        ],
+        "resource_primary_wave_amplitudes": [
+          0.24,
+          0.22,
+          0.2,
+          0.18
+        ],
+        "resource_secondary_wave_amplitudes": [
+          0.14,
+          0.13,
+          0.12,
+          0.11
+        ],
+        "resource_diffusion_rates": [
+          0.002,
+          0.006,
+          0.012,
+          0.02
+        ],
+        "resource_effect_matrix": [
+          [
+            0.75,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.65,
+            0.025,
+            0.05,
+            0.0,
+            0.0
+          ],
+          [
+            0.6,
+            0.0,
+            0.05,
+            0.35,
+            0.0
+          ],
+          [
+            0.6,
+            0.0,
+            0.05,
+            0.0,
+            0.35
+          ]
+        ],
+        "environment_process_schema": "disabled",
+        "environment_process_origin": "core-disabled",
+        "environment_process_mechanism_class": "none",
+        "environment_process_interpretation": "scientific-core-only",
+        "environment_process_parameter_names": [],
+        "moving_hazard_schema": "disabled",
+        "moving_hazard_source_count": 0,
+        "mortality_trace_schema": "disabled",
+        "resource_affinity_schema": "normalized-four-resource-affinity-v1",
+        "harvest_allocation_schema": "uniform-channel-rates-v1",
+        "harvest_rate": 0.3,
+        "harvest_channel_multipliers": [
+          0.65,
+          0.65,
+          0.65,
+          0.65
+        ],
+        "harvest_request_budget": 0.78,
+        "danger_evidence_schema": "disabled",
+        "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+        "group_label_propagation_rounds": 8,
+        "group_trust_threshold": 0.12,
+        "group_min_members": 6,
+        "group_update_mode": "periodic-v1",
+        "group_update_period": 50,
+        "group_update_min_period": 1,
+        "group_update_max_period": 0,
+        "spatial_stress_diagnostics_schema": "disabled",
+        "spatial_region_partition": null,
+        "differentiation_enabled": false,
+        "differentiation_schema": "disabled",
+        "differentiation_capacity_bounds": {
+          "working_memory_dimensions": [
+            0,
+            4
+          ],
+          "knowledge_bytes": [
+            0,
+            512
+          ],
+          "relation_slots": [
+            0,
+            8
+          ],
+          "knowledge_attention_slots": [
+            0,
+            4
+          ]
+        },
+        "differentiation_mutation_probability": 0.02,
+        "differentiation_mutation_std": 0.12,
+        "functional_modules_enabled": false,
+        "functional_modules_schema": "disabled",
+        "functional_modules_module_count": 4,
+        "functional_modules_coupling_schema": "disabled",
+        "functional_modules_expression_threshold": 0.25,
+        "functional_modules_max_residual_fraction": 0.5,
+        "requested_backend": "cpu",
+        "execution_backend": "cpu",
+        "gpu_semantics_mode": "hybrid-accelerated",
+        "gpu_device_validated": false,
+        "gpu_acceleration_enabled": false,
+        "runtime_version": "0.68.0"
+      },
+      "trends_per_1000_ticks": {
+        "alive": null,
+        "effective_lineages": null,
+        "largest_lineage_fraction": null,
+        "strategy_effective_dimensions": null,
+        "window_action_entropy": null,
+        "benefit_boundary_cohesion": null,
+        "resource_affinity_effective_dimensions": null,
+        "capacity_effective_dimensions": null,
+        "capacity_working_memory_dimensions_mean": null,
+        "capacity_knowledge_capacity_bytes_mean": null,
+        "capacity_relation_slots_mean": null,
+        "capacity_knowledge_attention_slots_mean": null,
+        "functional_module_expressed_mean": null,
+        "functional_harvest_preference_effective_dimensions": null,
+        "functional_module_residual_abs_mean": null,
+        "functional_module_changed_entity_fraction": null,
+        "functional_module_contribution_effective_count": null,
+        "functional_module_contribution_dominance": null,
+        "functional_module_cancellation_fraction": null
+      },
+      "capacity_correlations_observational": {},
+      "correlations_observational": {
+        "mortality_vs_same_window_cohesion": null,
+        "mortality_vs_next_window_cohesion": null,
+        "effective_lineages_vs_cohesion": null,
+        "largest_lineage_fraction_vs_cohesion": null,
+        "strategy_dimensions_vs_action_entropy": null,
+        "lineage_group_nmi_vs_cohesion": null,
+        "lineage_group_pair_enrichment_vs_cohesion": null,
+        "knowledge_effective_roots_vs_effective_lineages": null
+      },
+      "correlations_first_difference": {
+        "delta_mortality_vs_delta_cohesion": null,
+        "mortality_vs_next_delta_cohesion": null,
+        "delta_effective_lineages_vs_delta_cohesion": null,
+        "delta_largest_lineage_fraction_vs_delta_cohesion": null,
+        "delta_strategy_dimensions_vs_delta_action_entropy": null,
+        "delta_lineage_group_pair_enrichment_vs_delta_cohesion": null
+      },
+      "correlations_partial": {
+        "mortality_vs_cohesion_controlling_tick_alive": null,
+        "effective_lineages_vs_cohesion_controlling_tick_alive": null,
+        "largest_lineage_fraction_vs_cohesion_controlling_tick_alive": null,
+        "lineage_group_pair_enrichment_vs_cohesion_controlling_tick_alive": null
+      },
+      "mortality_to_cohesion_cross_lag": {
+        "-3": null,
+        "-2": null,
+        "-1": null,
+        "0": null,
+        "1": null,
+        "2": null,
+        "3": null
+      },
+      "mortality_to_cohesion_best_lag": null,
+      "analysis_warnings": [
+        "No committed knowledge transfer was detected; root-content spread metrics describe private experience creation, not cultural transmission."
+      ],
+      "causal_caution": "All correlations are descriptive. Raw correlations can be dominated by shared time trends; first differences and partial correlations reduce, but do not eliminate, confounding."
+    },
+    {
+      "path": "/tmp/se_v068_smoke/output/seed_68002/evolution_progress.jsonl",
+      "run_name": "seed_68002",
+      "record_count": 2,
+      "first_tick": 1,
+      "final_tick": 2,
+      "alive_final": 16,
+      "alive_peak": 16,
+      "alive_peak_tick": 1,
+      "alive_trough": 16,
+      "alive_trough_tick": 1,
+      "effective_lineages_final": 16.0,
+      "largest_lineage_fraction_final": 0.0625,
+      "strategy_effective_dimensions_final": 13.076107669508968,
+      "window_action_entropy_final": 1.515412517888733,
+      "benefit_boundary_cohesion_final": 0.0,
+      "resource_affinity_effective_dimensions_final": 2.5048588465441535,
+      "subject_structure_final": {},
+      "environment_atlas_final": {},
+      "resource_environment_final": {
+        "environment_resource_channel_mean": [
+          3.7466903881868348,
+          3.0821808313485235,
+          3.6871307162800804,
+          3.961061477777548
+        ],
+        "environment_resource_channel_std": [
+          1.6347078903310366,
+          1.0922708551098819,
+          1.251298753395743,
+          1.528355527166561
+        ],
+        "environment_resource_channel_min": [
+          0.8671001195907593,
+          0.9755488038063049,
+          1.3270620107650757,
+          1.27597177028656
+        ],
+        "environment_resource_channel_max": [
+          7.196282386779785,
+          6.621066570281982,
+          6.996017932891846,
+          7.446604251861572
+        ]
+      },
+      "capacity_final": {},
+      "functional_module_final": {},
+      "danger_direct_weight_mean_final": 1.0,
+      "danger_direct_weight_std_final": 0.0,
+      "danger_trace_weight_mean_final": 1.0,
+      "danger_trace_weight_std_final": 0.0,
+      "danger_evidence_effective_dimensions_final": 0.0,
+      "environment_mortality_trace_mean_final": 0.0,
+      "environment_mortality_trace_max_final": 0.0,
+      "group_update_count_final": 1,
+      "group_update_skipped_final": 1,
+      "group_last_update_tick_final": 0,
+      "lineage_group_nmi_final": 0.0,
+      "lineage_group_pair_enrichment_final": 0.0,
+      "same_lineage_given_same_group_final": 0.0,
+      "knowledge_effective_root_contents_final": 31.0,
+      "knowledge_largest_root_holder_fraction_final": 0.03225806451612903,
+      "knowledge_root_genetic_lineage_pair_enrichment_final": 0.0,
+      "knowledge_transfer_proposals_final": 0,
+      "knowledge_transfer_attempts_final": 0,
+      "knowledge_transfer_committed_final": 0,
+      "knowledge_transfer_committed_bytes_final": 0,
+      "knowledge_transfer_commit_rate_after_attention_final": 0.0,
+      "knowledge_transfer_commit_rate_per_proposal_final": 0.0,
+      "knowledge_transfer_same_lineage_committed_final": 0,
+      "knowledge_transfer_cross_lineage_committed_final": 0,
+      "knowledge_transfer_same_group_committed_final": 0,
+      "knowledge_transfer_cross_group_committed_final": 0,
+      "knowledge_active_transferred_root_count_final": 0,
+      "knowledge_effective_transferred_roots_final": 0.0,
+      "knowledge_largest_transferred_root_holder_fraction_final": 0.0,
+      "knowledge_cultural_spread_interpretable": false,
+      "knowledge_transfer_phase_summary": {
+        "rise": {
+          "windows": 0,
+          "attempts": 0,
+          "committed": 0,
+          "commit_rate": 0.0
+        },
+        "decline": {
+          "windows": 0,
+          "attempts": 0,
+          "committed": 0,
+          "commit_rate": 0.0
+        },
+        "peak": {
+          "windows": 2,
+          "attempts": 0,
+          "committed": 0,
+          "commit_rate": 0.0
+        },
+        "trough": {
+          "windows": 2,
+          "attempts": 0,
+          "committed": 0,
+          "commit_rate": 0.0
+        }
+      },
+      "correlations_cultural_transfer": {},
+      "spatial_local_analysis": {
+        "available": false,
+        "reason": "fewer than five spatial diagnostic windows"
+      },
+      "resource_demand_analysis": {
+        "available": true,
+        "window_count": 2,
+        "request_observation_schema": "explicit-requested-harvest-window-v1",
+        "request_channel_metrics_available": true,
+        "explicit_request_window_count": 2,
+        "inferred_request_window_count": 0,
+        "unavailable_request_window_count": 0,
+        "harvest_channel_totals": [
+          0.9750000387430191,
+          0.9750000387430191,
+          0.9750000387430191,
+          0.9750000387430191
+        ],
+        "harvest_channel_shares": [
+          0.25,
+          0.25,
+          0.25,
+          0.25
+        ],
+        "harvest_balance_effective_count": 4.0,
+        "harvest_temporal_effective_dimensions": 1.0,
+        "harvest_channel_correlation": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        ],
+        "harvest_channel_mean_abs_correlation": 1.0,
+        "harvest_channel_max_abs_correlation": 1.0,
+        "harvest_share_temporal_effective_dimensions": 0.0,
+        "harvest_share_channel_correlation": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "harvest_share_channel_mean_abs_correlation": 0.0,
+        "harvest_share_channel_max_abs_correlation": 0.0,
+        "requested_harvest_channel_totals": [
+          0.9750000387430191,
+          0.9750000387430191,
+          0.9750000387430191,
+          0.9750000387430191
+        ],
+        "requested_harvest_channel_shares": [
+          0.25,
+          0.25,
+          0.25,
+          0.25
+        ],
+        "requested_harvest_balance_effective_count": 4.0,
+        "requested_harvest_temporal_effective_dimensions": 1.0,
+        "requested_harvest_channel_correlation": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        ],
+        "requested_harvest_channel_mean_abs_correlation": 1.0,
+        "requested_harvest_channel_max_abs_correlation": 1.0,
+        "requested_harvest_share_temporal_effective_dimensions": 0.0,
+        "requested_harvest_share_channel_correlation": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "requested_harvest_share_channel_mean_abs_correlation": 0.0,
+        "requested_harvest_share_channel_max_abs_correlation": 0.0,
+        "harvest_volume_vs_requested_volume": null,
+        "harvest_balance_vs_resource_environment_dimensions": null,
+        "harvest_extraction_efficiency_mean": 1.0,
+        "harvest_extraction_efficiency_final": 1.0,
+        "interpretation": "Raw channel volumes co-move with population and HARVEST action count. Share-composition metrics remove that common scale before measuring demand differentiation. Realized extraction remains availability-limited; explicit requested-channel metrics are authoritative. Older selective runs without requested-channel fields cannot reconstruct channel composition."
+      },
+      "demographic_selection_validity": {
+        "label": "seed_68002",
+        "run_dir": "/tmp/se_v068_smoke/output/seed_68002",
+        "summary_tick": 2,
+        "reporting_state_tick": 2,
+        "initial_population": 16,
+        "window_count": 2,
+        "minimum_alive_fraction_to_initial": 1.0,
+        "first_tick_below_population_floor": null,
+        "first_tick_with_turnover_support": null,
+        "population_collapse_before_turnover": false,
+        "demographic_supported_window_count": 0,
+        "evolutionary_supported_window_count": 0,
+        "final_population": {
+          "tick": 2,
+          "window_ticks": 1,
+          "alive": 16,
+          "alive_fraction_to_initial": 1.0,
+          "effective_lineages": 16.0,
+          "largest_lineage_fraction": 0.0625,
+          "successful_parent_samples_window": 0,
+          "unique_successful_parents_window": 0,
+          "effective_successful_parents_window": 0.0,
+          "largest_parent_contribution_fraction_window": 0.0,
+          "contributor_metrics_available": true,
+          "births_window": 0,
+          "deaths_window": 0,
+          "net_growth_window": 0,
+          "mean_generation": 0.0,
+          "max_generation": 0,
+          "generation_zero_alive": 16,
+          "descendant_alive": 0,
+          "descendant_alive_fraction": 0.0,
+          "descendant_metric_available": true,
+          "descendant_fraction_met": false,
+          "cumulative_births_per_initial": 0.0,
+          "demographic_checks": {
+            "alive_fraction_met": true,
+            "effective_lineages_met": false,
+            "largest_lineage_fraction_met": true,
+            "successful_parent_samples_met": false
+          },
+          "turnover_checks": {
+            "mean_generation_met": false,
+            "max_generation_met": false,
+            "cumulative_births_per_initial_met": false
+          },
+          "contributor_checks": {
+            "unique_successful_parents_met": false,
+            "effective_successful_parents_met": false,
+            "largest_parent_contribution_met": true
+          },
+          "demographic_selection_window_supported": false,
+          "evolutionary_selection_window_supported": false
+        },
+        "death_causes": {
+          "available": true,
+          "death_event_count": 0,
+          "signature_counts": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "energy_depleted_count": 0,
+          "integrity_depleted_count": 0,
+          "max_age_count": 0,
+          "energy_depleted_fraction": 0.0,
+          "integrity_depleted_fraction": 0.0,
+          "max_age_fraction": 0.0,
+          "overlap_note": "Cause-presence fractions can sum above one because a death event may simultaneously satisfy energy, integrity, and age conditions."
+        },
+        "post_bottleneck_regime": {
+          "schema": "post-bottleneck-demographic-regime-v1",
+          "trough_tick": 1,
+          "trough_alive": 16,
+          "final_alive": 16,
+          "post_trough_rebound_fraction": 0.0,
+          "settled_window_count_required": 3,
+          "settled_window_count_available": 0,
+          "settled_window_start_tick": null,
+          "settled_alive_cv": null,
+          "settled_maximum_abs_net_growth_fraction": null,
+          "settled_population_supported": false,
+          "settled_lineage_supported": false,
+          "turnover_supported": false,
+          "descendant_metric_available": true,
+          "descendant_supported": false,
+          "contributor_metrics_available": false,
+          "reproductive_contributor_supported": false,
+          "source_ready_for_future_independent_runs": false,
+          "candidate_future_burn_in_tick": null,
+          "classification": "selection-source-insufficient-observation",
+          "interpretation_boundary": "A source-ready classification only proposes a fixed burn-in rule for new independent runs. The pilot windows used to derive it cannot be reused as confirmatory selection evidence."
+        },
+        "windows": [
+          {
+            "tick": 1,
+            "window_ticks": 1,
+            "alive": 16,
+            "alive_fraction_to_initial": 1.0,
+            "effective_lineages": 16.0,
+            "largest_lineage_fraction": 0.0625,
+            "successful_parent_samples_window": 0,
+            "unique_successful_parents_window": 0,
+            "effective_successful_parents_window": 0.0,
+            "largest_parent_contribution_fraction_window": 0.0,
+            "contributor_metrics_available": true,
+            "births_window": 0,
+            "deaths_window": 0,
+            "net_growth_window": 0,
+            "mean_generation": 0.0,
+            "max_generation": 0,
+            "generation_zero_alive": 16,
+            "descendant_alive": 0,
+            "descendant_alive_fraction": 0.0,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.0,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": false,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": true
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 2,
+            "window_ticks": 1,
+            "alive": 16,
+            "alive_fraction_to_initial": 1.0,
+            "effective_lineages": 16.0,
+            "largest_lineage_fraction": 0.0625,
+            "successful_parent_samples_window": 0,
+            "unique_successful_parents_window": 0,
+            "effective_successful_parents_window": 0.0,
+            "largest_parent_contribution_fraction_window": 0.0,
+            "contributor_metrics_available": true,
+            "births_window": 0,
+            "deaths_window": 0,
+            "net_growth_window": 0,
+            "mean_generation": 0.0,
+            "max_generation": 0,
+            "generation_zero_alive": 16,
+            "descendant_alive": 0,
+            "descendant_alive_fraction": 0.0,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.0,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": false,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": true
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          }
+        ],
+        "selection_inference_supported_within_run": false,
+        "recommendation": "selection-inference-insufficient-retain-run",
+        "interpretation_boundary": "This is a within-run adequacy audit. Windows are repeated observations, not independent replicates. Failed windows remain in the record. A future burn-in candidate is a design output, not evidence from the current run."
+      },
+      "config_context": {
+        "initial_entities": 16,
+        "knowledge_transfer_probability": 0.0,
+        "knowledge_transfer_period": 1,
+        "environment_schema": "spatially-asynchronous-multiniche-v1",
+        "resource_cycle_periods": [
+          120,
+          173,
+          229,
+          307
+        ],
+        "resource_cycle_amplitudes": [
+          0.55,
+          0.5,
+          0.45,
+          0.4
+        ],
+        "resource_primary_wave_vectors": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            -1.0
+          ]
+        ],
+        "resource_secondary_wave_vectors": [
+          [
+            2.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            -1.0
+          ],
+          [
+            1.0,
+            -2.0
+          ]
+        ],
+        "resource_primary_wave_amplitudes": [
+          0.24,
+          0.22,
+          0.2,
+          0.18
+        ],
+        "resource_secondary_wave_amplitudes": [
+          0.14,
+          0.13,
+          0.12,
+          0.11
+        ],
+        "resource_diffusion_rates": [
+          0.002,
+          0.006,
+          0.012,
+          0.02
+        ],
+        "resource_effect_matrix": [
+          [
+            0.75,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.65,
+            0.025,
+            0.05,
+            0.0,
+            0.0
+          ],
+          [
+            0.6,
+            0.0,
+            0.05,
+            0.35,
+            0.0
+          ],
+          [
+            0.6,
+            0.0,
+            0.05,
+            0.0,
+            0.35
+          ]
+        ],
+        "environment_process_schema": "disabled",
+        "environment_process_origin": "core-disabled",
+        "environment_process_mechanism_class": "none",
+        "environment_process_interpretation": "scientific-core-only",
+        "environment_process_parameter_names": [],
+        "moving_hazard_schema": "disabled",
+        "moving_hazard_source_count": 0,
+        "mortality_trace_schema": "disabled",
+        "resource_affinity_schema": "normalized-four-resource-affinity-v1",
+        "harvest_allocation_schema": "uniform-channel-rates-v1",
+        "harvest_rate": 0.3,
+        "harvest_channel_multipliers": [
+          0.65,
+          0.65,
+          0.65,
+          0.65
+        ],
+        "harvest_request_budget": 0.78,
+        "danger_evidence_schema": "disabled",
+        "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+        "group_label_propagation_rounds": 8,
+        "group_trust_threshold": 0.12,
+        "group_min_members": 6,
+        "group_update_mode": "periodic-v1",
+        "group_update_period": 50,
+        "group_update_min_period": 1,
+        "group_update_max_period": 0,
+        "spatial_stress_diagnostics_schema": "disabled",
+        "spatial_region_partition": null,
+        "differentiation_enabled": false,
+        "differentiation_schema": "disabled",
+        "differentiation_capacity_bounds": {
+          "working_memory_dimensions": [
+            0,
+            4
+          ],
+          "knowledge_bytes": [
+            0,
+            512
+          ],
+          "relation_slots": [
+            0,
+            8
+          ],
+          "knowledge_attention_slots": [
+            0,
+            4
+          ]
+        },
+        "differentiation_mutation_probability": 0.02,
+        "differentiation_mutation_std": 0.12,
+        "functional_modules_enabled": false,
+        "functional_modules_schema": "disabled",
+        "functional_modules_module_count": 4,
+        "functional_modules_coupling_schema": "disabled",
+        "functional_modules_expression_threshold": 0.25,
+        "functional_modules_max_residual_fraction": 0.5,
+        "requested_backend": "cpu",
+        "execution_backend": "cpu",
+        "gpu_semantics_mode": "hybrid-accelerated",
+        "gpu_device_validated": false,
+        "gpu_acceleration_enabled": false,
+        "runtime_version": "0.68.0"
+      },
+      "trends_per_1000_ticks": {
+        "alive": null,
+        "effective_lineages": null,
+        "largest_lineage_fraction": null,
+        "strategy_effective_dimensions": null,
+        "window_action_entropy": null,
+        "benefit_boundary_cohesion": null,
+        "resource_affinity_effective_dimensions": null,
+        "capacity_effective_dimensions": null,
+        "capacity_working_memory_dimensions_mean": null,
+        "capacity_knowledge_capacity_bytes_mean": null,
+        "capacity_relation_slots_mean": null,
+        "capacity_knowledge_attention_slots_mean": null,
+        "functional_module_expressed_mean": null,
+        "functional_harvest_preference_effective_dimensions": null,
+        "functional_module_residual_abs_mean": null,
+        "functional_module_changed_entity_fraction": null,
+        "functional_module_contribution_effective_count": null,
+        "functional_module_contribution_dominance": null,
+        "functional_module_cancellation_fraction": null
+      },
+      "capacity_correlations_observational": {},
+      "correlations_observational": {
+        "mortality_vs_same_window_cohesion": null,
+        "mortality_vs_next_window_cohesion": null,
+        "effective_lineages_vs_cohesion": null,
+        "largest_lineage_fraction_vs_cohesion": null,
+        "strategy_dimensions_vs_action_entropy": null,
+        "lineage_group_nmi_vs_cohesion": null,
+        "lineage_group_pair_enrichment_vs_cohesion": null,
+        "knowledge_effective_roots_vs_effective_lineages": null
+      },
+      "correlations_first_difference": {
+        "delta_mortality_vs_delta_cohesion": null,
+        "mortality_vs_next_delta_cohesion": null,
+        "delta_effective_lineages_vs_delta_cohesion": null,
+        "delta_largest_lineage_fraction_vs_delta_cohesion": null,
+        "delta_strategy_dimensions_vs_delta_action_entropy": null,
+        "delta_lineage_group_pair_enrichment_vs_delta_cohesion": null
+      },
+      "correlations_partial": {
+        "mortality_vs_cohesion_controlling_tick_alive": null,
+        "effective_lineages_vs_cohesion_controlling_tick_alive": null,
+        "largest_lineage_fraction_vs_cohesion_controlling_tick_alive": null,
+        "lineage_group_pair_enrichment_vs_cohesion_controlling_tick_alive": null
+      },
+      "mortality_to_cohesion_cross_lag": {
+        "-3": null,
+        "-2": null,
+        "-1": null,
+        "0": null,
+        "1": null,
+        "2": null,
+        "3": null
+      },
+      "mortality_to_cohesion_best_lag": null,
+      "analysis_warnings": [
+        "No committed knowledge transfer was detected; root-content spread metrics describe private experience creation, not cultural transmission."
+      ],
+      "causal_caution": "All correlations are descriptive. Raw correlations can be dominated by shared time trends; first differences and partial correlations reduce, but do not eliminate, confounding."
+    }
+  ],
+  "endpoint_aggregate": {
+    "alive_final": {
+      "mean": 16.0,
+      "min": 16.0,
+      "max": 16.0,
+      "std": 0.0
+    },
+    "effective_lineages_final": {
+      "mean": 16.0,
+      "min": 16.0,
+      "max": 16.0,
+      "std": 0.0
+    },
+    "largest_lineage_fraction_final": {
+      "mean": 0.0625,
+      "min": 0.0625,
+      "max": 0.0625,
+      "std": 0.0
+    },
+    "strategy_effective_dimensions_final": {
+      "mean": 12.888493474305703,
+      "min": 12.700879279102438,
+      "max": 13.076107669508968,
+      "std": 0.18761419520326506
+    },
+    "window_action_entropy_final": {
+      "mean": 1.5481155268740174,
+      "min": 1.515412517888733,
+      "max": 1.5808185358593017,
+      "std": 0.03270300898528433
+    },
+    "benefit_boundary_cohesion_final": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "std": 0.0
+    },
+    "knowledge_transfer_committed_final": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "std": 0.0
+    },
+    "knowledge_effective_transferred_roots_final": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "std": 0.0
+    }
+  },
+  "demographic_selection_aggregate": {
+    "available_run_count": 2,
+    "bottleneck_dominated_run_count": 0,
+    "source_ready_run_count": 0,
+    "within_run_selection_supported_count": 0,
+    "regime_classification_counts": {
+      "selection-source-insufficient-observation": 2
+    },
+    "independent_unit": "run-seed",
+    "windows_are_independent_replicates": false
+  },
+  "cross_seed_sign_consistency": {
+    "correlations_observational.effective_lineages_vs_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_observational.knowledge_effective_roots_vs_effective_lineages": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_observational.largest_lineage_fraction_vs_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_observational.lineage_group_nmi_vs_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_observational.lineage_group_pair_enrichment_vs_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_observational.mortality_vs_next_window_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_observational.mortality_vs_same_window_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_observational.strategy_dimensions_vs_action_entropy": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_first_difference.delta_effective_lineages_vs_delta_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_first_difference.delta_largest_lineage_fraction_vs_delta_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_first_difference.delta_lineage_group_pair_enrichment_vs_delta_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_first_difference.delta_mortality_vs_delta_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_first_difference.delta_strategy_dimensions_vs_delta_action_entropy": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_first_difference.mortality_vs_next_delta_cohesion": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_partial.effective_lineages_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_partial.largest_lineage_fraction_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_partial.lineage_group_pair_enrichment_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "correlations_partial.mortality_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 0,
+      "positive_runs": 0,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": false,
+      "mean": null,
+      "min": null,
+      "max": null
+    }
+  },
+  "cross_seed_local_sign_consistency": {},
+  "repeated_directional_patterns": [],
+  "repeated_local_directional_patterns": [],
+  "interpretation_boundary": "Repeated signs across seeds support robustness, not necessity. Raw within-run correlations may reflect shared temporal drift. Controlled checkpoint interventions are required for phase-specific causal claims.",
+  "requested_seed_count": 2,
+  "missing_progress_seeds": [],
+  "automatic_selection_validity_audit": {
+    "schema": "demographic-selection-validity-audit-v2",
+    "run_count": 2,
+    "bottleneck_dominated_run_count": 0,
+    "post_bottleneck_source_ready_run_count": 0,
+    "future_fixed_burn_in_rule_supported": false,
+    "future_fixed_burn_in_tick": null,
+    "recommendation": "retain-runs-and-redesign-source-before-selection-claims"
+  }
+}

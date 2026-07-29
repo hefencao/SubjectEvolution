@@ -1,0 +1,26 @@
+[
+  {
+    "seed": 67001,
+    "output": "analyses/d3j_scale4_demography/seed_67001",
+    "final_tick": 1200,
+    "alive": 1014,
+    "evolution_progress": "analyses/d3j_scale4_demography/seed_67001/evolution_progress.jsonl",
+    "status": "completed"
+  },
+  {
+    "seed": 67002,
+    "output": "analyses/d3j_scale4_demography/seed_67002",
+    "final_tick": 1200,
+    "alive": 1117,
+    "evolution_progress": "analyses/d3j_scale4_demography/seed_67002/evolution_progress.jsonl",
+    "status": "completed"
+  },
+  {
+    "seed": 67003,
+    "output": "analyses/d3j_scale4_demography/seed_67003",
+    "final_tick": 1200,
+    "alive": 1085,
+    "evolution_progress": "analyses/d3j_scale4_demography/seed_67003/evolution_progress.jsonl",
+    "status": "completed"
+  }
+]

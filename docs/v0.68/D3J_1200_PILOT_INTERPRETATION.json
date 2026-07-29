@@ -1,0 +1,62 @@
+{
+  "schema": "d3j-demographic-pilot-interpretation-v1",
+  "source_analysis_schema": "multi-seed-long-run-analysis-v15",
+  "source_runtime_versions": [
+    "0.67.0"
+  ],
+  "run_count": 3,
+  "runs": [
+    {
+      "run_name": "seed_67001",
+      "final_tick": 1200,
+      "alive_peak_observed": 6503,
+      "alive_peak_tick": 100,
+      "alive_trough": 873,
+      "alive_trough_tick": 800,
+      "alive_final": 1014,
+      "post_trough_rebound_fraction": 0.16151202749140894,
+      "effective_lineages_final": 261.89403973509934,
+      "largest_lineage_fraction_final": 0.016765285996055226,
+      "execution_backend": "gpu-hybrid-accelerated",
+      "gpu_acceleration_enabled": true
+    },
+    {
+      "run_name": "seed_67002",
+      "final_tick": 1200,
+      "alive_peak_observed": 6495,
+      "alive_peak_tick": 100,
+      "alive_trough": 929,
+      "alive_trough_tick": 800,
+      "alive_final": 1117,
+      "post_trough_rebound_fraction": 0.2023681377825619,
+      "effective_lineages_final": 188.38728672806886,
+      "largest_lineage_fraction_final": 0.03401969561324977,
+      "execution_backend": "gpu-hybrid-accelerated",
+      "gpu_acceleration_enabled": true
+    },
+    {
+      "run_name": "seed_67003",
+      "final_tick": 1200,
+      "alive_peak_observed": 6560,
+      "alive_peak_tick": 100,
+      "alive_trough": 912,
+      "alive_trough_tick": 800,
+      "alive_final": 1085,
+      "post_trough_rebound_fraction": 0.18969298245614036,
+      "effective_lineages_final": 248.93740748572634,
+      "largest_lineage_fraction_final": 0.03133640552995392,
+      "execution_backend": "gpu-hybrid-accelerated",
+      "gpu_acceleration_enabled": true
+    }
+  ],
+  "all_runs_trough_at_tick_800": true,
+  "all_runs_rebounded_after_trough": true,
+  "all_runs_real_gpu": true,
+  "lineage_monopoly_observed": false,
+  "turnover_fields_available_in_supplied_aggregate": false,
+  "reproductive_contributor_fields_available_in_supplied_aggregate": false,
+  "selection_validity_resolved": false,
+  "classification": "demographic-rebound-observed-selection-validity-unresolved",
+  "interpretation": "The three runs share an early population contraction, a trough at tick 800, and a modest rebound by tick 1200. Final effective-lineage counts remain broad and no lineage approaches monopoly. The supplied archive contains aggregate v15 analysis rather than raw evolution_progress streams, so generation replacement, descendant fraction, death causes, and independent successful-parent breadth cannot be reconstructed from this archive alone.",
+  "next_step": "Re-analyze the retained raw seed directories with v0.68, or run the preregistered D3-K 3000-tick panel. Do not treat the current rebound as effective selection until source-readiness criteria pass on independent seeds."
+}

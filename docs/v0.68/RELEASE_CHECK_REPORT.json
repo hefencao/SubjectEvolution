@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "schema": "fresh-tests-plus-isolated-dist-v1",
+  "source_tree_sha256": "8cfb9cceaac33648eb43ea96d835e19d22507b91810db79f3f7d726d09da3170",
+  "test_report": "/mnt/data/se_v068_work/se_v067_project/docs/v0.68/FINAL_TEST_REPORT.json",
+  "test_shard_count": 5,
+  "test_file_count": 66,
+  "distribution_command": [
+    "/opt/pyvenv/bin/python",
+    "scripts/verify_dist.py",
+    "--project",
+    "."
+  ],
+  "distribution_returncode": 0,
+  "distribution_stdout_tail": [
+    "{\"passed\": true, \"report\": \"/tmp/se-dist-verify-ujd3nv3l/isolated_wheel_validation.json\", \"wheel\": \"/tmp/se-dist-verify-ujd3nv3l/dist/wheel/se_mvp-0.68.0-py3-none-any.whl\", \"venv\": \"/tmp/se-dist-verify-ujd3nv3l/venv\"}"
+  ]
+}

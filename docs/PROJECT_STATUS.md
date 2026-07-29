@@ -1,22 +1,19 @@
 # SE project status
 
-Version: **0.67.0**
+Version: **0.68.0**
 
-## v0.67 demographic-selection validity boundary
+## v0.68 post-bottleneck source-readiness boundary
 
-A rapid contraction from a large initial population can create a severe
-bottleneck before descendants replace the founding cohort. Tick duration,
-movement events and repeated windows do not repair that loss of independent
-population support. v0.67 therefore separates three questions:
+The supplied three-seed D3-J panel reaches its population trough near tick 800 and rebounds by tick 1200. Final populations are 1,014–1,117, effective lineages are about 188–262, and the largest lineage remains below 3.5%. This rules out a simple claim that the remaining population is already monopolized by one lineage, but it does not establish effective selection.
 
-1. did the mechanism and accounting execute correctly;
-2. did the population retain enough demographic and lineage support;
-3. did enough generation turnover occur for evolutionary-selection inference.
+v0.68 separates four questions:
 
-Runtime records canonical death-cause signatures, population fraction relative
-to initialization, cumulative replacement and generation depth. The offline
-audit treats each seed as one independent run, retains every failed window and
-never feeds a threshold back into the world.
+1. did a severe initial contraction occur before turnover;
+2. did a stable post-trough demographic regime emerge;
+3. did descendants replace the founding cohort;
+4. did reproduction involve many independent contributors rather than repeated births by a few parents.
+
+`se-multi` now preregisters the seed set and output schedule before execution and automatically emits the demographic-selection audit after execution.
 
 ## Current execution and scientific chain
 
@@ -24,27 +21,27 @@ never feeds a threshold back into the world.
 role-free four-channel resources
 → conservative storage/recycling/renewal
 → costed spatial processing and matched controls
-→ GPU-first large-population execution with parity
-→ demographic bottleneck + generation-turnover validity audit
+→ GPU-first large-population execution with target-device parity
+→ initial bottleneck and death-cause audit
+→ post-trough population + descendant + parent-contributor audit
+→ fixed burn-in rule tested on new independent seeds
 → only then replicated evolutionary-selection inference
 ```
 
 ## Current gates
 
-1. Run the fixed 1,200-tick scale-4 demographic plan at 100-tick cadence.
-2. Determine when population decline occurs and which canonical death causes
-   dominate; do not tune them from one observed seed.
-3. Require demographic support and actual generation turnover before using
-   trait differentials as selection evidence.
-4. Preserve every insufficient seed and window; no outcome-based replacement.
-5. Keep all response, migration, specialization and ecotype gates closed until
-   independent replicated evidence survives this validity boundary.
+1. Re-analyze retained raw D3-J seed directories with v0.68; rerunning the simulations is not required.
+2. Run the fixed D3-K 3,000-tick panel if raw D3-J progress is unavailable or turnover remains unresolved.
+3. Do not count repeated windows or births as independent seed replication.
+4. A pilot-derived burn-in tick may only preregister future independent runs.
+5. Preserve every insufficient seed and window; no outcome-based replacement.
+6. Keep migration, specialization, coexistence and ecotype gates closed.
 
 ## Still incomplete
 
-- completed multi-seed D3-J demographic audit on the target GPU;
-- causal decomposition of any replicated collapse mechanism;
-- adequate generation turnover for evolutionary inference;
+- raw v0.68 re-analysis of the supplied D3-J seed directories;
+- replicated source-ready post-bottleneck regime;
+- adequate descendant replacement and reproductive-contributor breadth;
+- causal decomposition of any persistent mortality pressure;
 - device-resident action settlement, lifecycle and graph updates;
-- positive replicated processing-response evidence;
-- migration, specialization, coexistence or trophic evidence.
+- positive replicated processing-response evidence.

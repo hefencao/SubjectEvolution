@@ -11,6 +11,10 @@ from typing import Any, Iterable
 import numpy as np
 
 from se import __version__
+from se.analysis.selection_validity import (
+    SelectionValidityThresholds,
+    audit_progress_records,
+)
 from se.env.partition import NORMALIZED_FIXED_COUNT_SCHEMA, SpatialRegionPartition
 
 
@@ -450,6 +454,7 @@ def _resolved_config_context(path: str | Path) -> dict[str, Any]:
     except (KeyError, TypeError, ValueError):
         spatial_partition = None
     return {
+        "initial_entities": world.get("initial_entities"),
         "knowledge_transfer_probability": knowledge.get("transfer_probability"),
         "knowledge_transfer_period": knowledge.get("transfer_period"),
         "environment_schema": environment.get("schema"),
@@ -1086,6 +1091,25 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
     }
     lag_correlations = _cross_lag_correlations(mortality, cohesion, max_lag=3)
     config_context = _resolved_config_context(path)
+    initial_population = int(
+        records[0].get("initial_population", config_context.get("initial_entities", 0) or 0)
+    )
+    demographic_selection: dict[str, Any]
+    if initial_population > 0:
+        demographic_selection = audit_progress_records(
+            Path(path).parent.name,
+            records,
+            initial_population=initial_population,
+            thresholds=SelectionValidityThresholds(),
+            run_dir=str(Path(path).parent),
+            summary_tick=int(final.get("tick", 0)),
+            reporting_state_tick=int(final.get("tick", 0)),
+        )
+    else:
+        demographic_selection = {
+            "available": False,
+            "reason": "initial population unavailable in progress or resolved config",
+        }
     transfer_proposals = int(final.get("knowledge_transfer_proposals_total", 0))
     transfer_attempts = int(final.get("knowledge_transfer_attempts_total", 0))
     transfer_committed = int(final.get("knowledge_transfer_committed_total", 0))
@@ -1282,6 +1306,7 @@ def summarize_run(path: str | Path, records: list[dict[str, Any]]) -> dict[str, 
         ),
         "spatial_local_analysis": _spatial_panel_analysis(records),
         "resource_demand_analysis": _resource_demand_analysis(records, config_context),
+        "demographic_selection_validity": demographic_selection,
         "config_context": config_context,
         "trends_per_1000_ticks": {
             "alive": _slope_per_1000_ticks(ticks, alive),
@@ -1473,8 +1498,46 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         for key, value in local_consistency.items()
         if value["available_runs"] >= 3 and value["same_nonzero_sign"]
     ]
+    demographic_rows = [
+        run.get("demographic_selection_validity", {}) for run in runs
+    ]
+    demographic_available = [
+        row for row in demographic_rows if row.get("windows") is not None
+    ]
+    regime_classifications: dict[str, int] = {}
+    for row in demographic_available:
+        classification = str(
+            row.get("post_bottleneck_regime", {}).get(
+                "classification", "unclassified"
+            )
+        )
+        regime_classifications[classification] = (
+            regime_classifications.get(classification, 0) + 1
+        )
+    demographic_aggregate = {
+        "available_run_count": len(demographic_available),
+        "bottleneck_dominated_run_count": sum(
+            bool(row.get("population_collapse_before_turnover"))
+            for row in demographic_available
+        ),
+        "source_ready_run_count": sum(
+            bool(
+                row.get("post_bottleneck_regime", {}).get(
+                    "source_ready_for_future_independent_runs"
+                )
+            )
+            for row in demographic_available
+        ),
+        "within_run_selection_supported_count": sum(
+            bool(row.get("selection_inference_supported_within_run"))
+            for row in demographic_available
+        ),
+        "regime_classification_counts": regime_classifications,
+        "independent_unit": "run-seed",
+        "windows_are_independent_replicates": False,
+    }
     return {
-        "schema": "multi-seed-long-run-analysis-v15",
+        "schema": "multi-seed-long-run-analysis-v16",
         "analyzer_version": __version__,
         "input_runtime_versions": sorted(
             {
@@ -1486,6 +1549,7 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         "run_count": len(runs),
         "runs": runs,
         "endpoint_aggregate": aggregate,
+        "demographic_selection_aggregate": demographic_aggregate,
         "cross_seed_sign_consistency": consistency,
         "cross_seed_local_sign_consistency": local_consistency,
         "repeated_directional_patterns": robust,
@@ -1533,6 +1597,41 @@ def render_markdown(report: dict[str, Any]) -> str:
                 roots=run["knowledge_effective_transferred_roots_final"],
             )
         )
+    lines.extend(["", "## Demographic selection validity", ""])
+    demographic = report.get("demographic_selection_aggregate", {})
+    lines.extend([
+        f"- available runs: {demographic.get('available_run_count', 0)}",
+        f"- collapse before turnover: {demographic.get('bottleneck_dominated_run_count', 0)}",
+        f"- post-bottleneck source ready: {demographic.get('source_ready_run_count', 0)}",
+        f"- within-run supported windows present: {demographic.get('within_run_selection_supported_count', 0)}",
+        f"- regime classifications: {demographic.get('regime_classification_counts', {})}",
+        "- independent unit: seed; windows are repeated observations within a seed.",
+        "",
+    ])
+    for run in report["runs"]:
+        audit = run.get("demographic_selection_validity", {})
+        if not audit.get("windows"):
+            lines.extend([
+                f"### {run['run_name']}",
+                f"- unavailable: {audit.get('reason', 'demographic progress fields missing')}",
+                "",
+            ])
+            continue
+        final_population = audit["final_population"]
+        regime = audit["post_bottleneck_regime"]
+        death = audit.get("death_causes", {})
+        lines.extend([
+            f"### {run['run_name']}",
+            f"- initial / trough / final alive: {audit['initial_population']} / {regime['trough_alive']} at tick {regime['trough_tick']} / {regime['final_alive']}",
+            f"- minimum alive fraction: {_format(audit['minimum_alive_fraction_to_initial'], 6)}",
+            f"- final mean/max generation: {_format(final_population['mean_generation'], 6)} / {final_population['max_generation']}",
+            f"- final descendant fraction: {final_population.get('descendant_alive_fraction')}",
+            f"- final unique/effective successful parents: {final_population.get('unique_successful_parents_window')} / {final_population.get('effective_successful_parents_window')}",
+            f"- classification / source ready: `{regime['classification']}` / {regime['source_ready_for_future_independent_runs']}",
+            f"- death causes available: {death.get('available', False)}; energy/integrity/age presence fractions: {death.get('energy_depleted_fraction')} / {death.get('integrity_depleted_fraction')} / {death.get('max_age_fraction')}",
+            "",
+        ])
+
     lines.extend(["", "## Within-run raw observational correlations", ""])
     for run in report["runs"]:
         lines.append(f"### {run['run_name']}")

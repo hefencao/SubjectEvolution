@@ -199,7 +199,7 @@ def test_protocol_audit_publishes_nested_effect_inference_contract() -> None:
     section = protocol["functional_module_protocol"][
         "processing_response_scale_audit"
     ]
-    assert protocol["schema"] == "structural-measurement-protocol-audit-v35"
+    assert protocol["schema"] == "structural-measurement-protocol-audit-v36"
     assert section["audit_schema"] == "d3-response-scale-audit-v2"
     assert section["independent_replication_unit"] == "seed-within-scale"
     assert section["checkpoint_weighting_within_seed"] == "equal-checkpoint-v1"

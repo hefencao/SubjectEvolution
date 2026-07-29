@@ -1,0 +1,22 @@
+{
+  "schema": "v0.68-local-validation-v1",
+  "passed": true,
+  "version": "0.68.0",
+  "configs": 97,
+  "python_files": 194,
+  "tests_passed": 329,
+  "tests_skipped_gpu_only": 2,
+  "test_files": 66,
+  "ordinary_parity_passed": 20,
+  "ordinary_parity_skipped_gpu_only": 2,
+  "editable_modules": 118,
+  "console_entries": 33,
+  "external_smoke_passed": true,
+  "isolated_wheel_sdist_passed": true,
+  "conda_prefix_present": false,
+  "conda_guard_bypassed": false,
+  "cuda_device_validated_here": false,
+  "world_mechanism_changed": false,
+  "population_rescue_added": false,
+  "outcome_based_seed_replacement": false
+}

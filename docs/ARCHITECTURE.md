@@ -570,3 +570,24 @@ independent unit; periodic windows are repeated measurements. Population floors
 and generation thresholds govern interpretation only. Runs that collapse before
 turnover remain archived as bottleneck/failure-mode evidence and are never
 silently replaced.
+
+## v0.68 post-bottleneck source-readiness boundary
+
+```text
+fixed initialization
+        ↓
+early contraction / trough
+        ↓ fixed diagnostic windows
+population stability + effective lineages
+        + descendant replacement
+        + unique/effective successful parents
+        + parent-contribution concentration
+        ↓ offline only
+candidate burn-in rule for future independent seeds
+```
+
+The runtime tracks successful parent contributions by stable entity ID. Sample count, unique contributor count and inverse-Simpson effective contributor count are separate quantities. The progress tracker checkpoints the in-progress parent contribution map so branch continuation preserves exact window semantics.
+
+`se-multi` writes `multi-seed-run-plan-v2` before starting the first seed and runs `demographic-selection-validity-audit-v2` after all available progress streams complete. Outcome-dependent seed replacement remains forbidden.
+
+A post-bottleneck source rule is design provenance, not retrospective evidence. It can only be applied as a fixed burn-in rule to new independent seeds. Pilot windows used to derive the rule cannot be reused as confirmatory effect samples.

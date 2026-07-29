@@ -1,0 +1,9 @@
+{
+  "schema": "config-and-python-validation-v1",
+  "passed": true,
+  "config_count": 97,
+  "python_file_count": 194,
+  "source_python_count": 119,
+  "script_python_count": 8,
+  "test_python_count": 67
+}

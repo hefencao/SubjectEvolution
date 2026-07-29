@@ -629,6 +629,7 @@ class EvolutionProgressTracker:
         self.reproduction_eligible_trait_count = 0
         self.reproduction_parent_trait_count = 0
         self.reproduction_offspring_trait_count = 0
+        self.reproduction_parent_stable_id_counts: dict[int, int] = {}
         self.previous_reproduction_eligible_trait_sum = np.zeros(width, dtype=np.float64)
         self.previous_reproduction_parent_trait_sum = np.zeros(width, dtype=np.float64)
         self.previous_reproduction_offspring_trait_sum = np.zeros(width, dtype=np.float64)
@@ -658,6 +659,8 @@ class EvolutionProgressTracker:
             self.initial_population = int(self.initial_stable_ids.size)
         if not hasattr(self, "previous_death_cause_counts"):
             self.previous_death_cause_counts = np.zeros(8, dtype=np.int64)
+        if not hasattr(self, "reproduction_parent_stable_id_counts"):
+            self.reproduction_parent_stable_id_counts = {}
         self._file = None
 
     def clone(self, output_dir: str | Path) -> "EvolutionProgressTracker":
@@ -691,6 +694,9 @@ class EvolutionProgressTracker:
             "previous_reproduction_offspring_trait_sum",
         ):
             setattr(branch, name, getattr(self, name).copy())
+        branch.reproduction_parent_stable_id_counts = dict(
+            self.reproduction_parent_stable_id_counts
+        )
         branch.initial_stable_ids = self.initial_stable_ids.copy()
         branch.initial_genotype = self.initial_genotype.copy()
         branch.baseline = copy.deepcopy(self.baseline)
@@ -701,13 +707,23 @@ class EvolutionProgressTracker:
     def observe_reproduction_traits(
         self,
         genotype: np.ndarray,
+        stable_ids: np.ndarray,
         *,
         eligible_indices: np.ndarray,
         accepted_parent_indices: np.ndarray,
         newborn_indices: np.ndarray,
     ) -> None:
         """Accumulate observational trait cohorts for the next report window."""
-        if not self.long_run_diagnostics_enabled or not self.morphology_trait_indices:
+        if not self.long_run_diagnostics_enabled:
+            return
+        stable = np.asarray(stable_ids, dtype=np.uint64)
+        accepted = np.asarray(accepted_parent_indices, dtype=np.int32)
+        for value in stable[accepted]:
+            key = int(value)
+            self.reproduction_parent_stable_id_counts[key] = (
+                self.reproduction_parent_stable_id_counts.get(key, 0) + 1
+            )
+        if not self.morphology_trait_indices:
             return
         values = np.asarray(genotype, dtype=np.float32)
         columns = np.asarray(self.morphology_trait_indices, dtype=np.int32)
@@ -806,12 +822,19 @@ class EvolutionProgressTracker:
             share = counts.astype(np.float64) / active.size
             effective_lineages = float(1.0 / np.sum(share * share))
             largest_lineage_fraction = float(share.max())
-            mean_generation = float(np.mean(generation[active]))
-            max_generation = int(np.max(generation[active]))
+            active_generation = np.asarray(generation[active], dtype=np.int64)
+            mean_generation = float(np.mean(active_generation))
+            max_generation = int(np.max(active_generation))
+            generation_zero_alive = int(np.count_nonzero(active_generation == 0))
+            descendant_alive = int(active.size - generation_zero_alive)
+            descendant_alive_fraction = float(descendant_alive / active.size)
         else:
             lineage_count = 0
             effective_lineages = largest_lineage_fraction = mean_generation = 0.0
             max_generation = 0
+            generation_zero_alive = 0
+            descendant_alive = 0
+            descendant_alive_fraction = 0.0
 
         death_cause_totals = np.asarray(death_cause_counts_total, dtype=np.int64)
         if death_cause_totals.shape != (8,):
@@ -1014,11 +1037,35 @@ class EvolutionProgressTracker:
                 self.reproduction_offspring_trait_count,
                 self.previous_reproduction_offspring_trait_count,
             )
+            parent_contributions = np.asarray(
+                list(self.reproduction_parent_stable_id_counts.values()),
+                dtype=np.float64,
+            )
+            parent_contribution_total = float(parent_contributions.sum())
+            unique_parent_count = int(parent_contributions.size)
+            effective_parent_count = (
+                float(
+                    parent_contribution_total * parent_contribution_total
+                    / np.square(parent_contributions).sum()
+                )
+                if parent_contribution_total > 0.0
+                else 0.0
+            )
+            largest_parent_fraction = (
+                float(parent_contributions.max() / parent_contribution_total)
+                if parent_contribution_total > 0.0
+                else 0.0
+            )
             long_run_metrics.update(
                 {
                     "selection_trait_names": list(self.morphology_trait_names),
                     "selection_eligible_carrier_samples_window": eligible_count,
                     "selection_successful_parent_samples_window": parent_count,
+                    "selection_unique_successful_parents_window": unique_parent_count,
+                    "selection_effective_successful_parents_window": effective_parent_count,
+                    "selection_largest_parent_contribution_fraction_window": (
+                        largest_parent_fraction
+                    ),
                     "selection_offspring_samples_window": offspring_count,
                     "selection_eligible_trait_mean_window": eligible_mean.tolist(),
                     "selection_successful_parent_trait_mean_window": parent_mean.tolist(),
@@ -1085,6 +1132,12 @@ class EvolutionProgressTracker:
             ),
             "mean_generation": mean_generation,
             "max_generation": max_generation,
+            "generation_zero_alive": generation_zero_alive,
+            "generation_zero_alive_fraction": (
+                float(generation_zero_alive / active.size) if active.size else 0.0
+            ),
+            "descendant_alive": descendant_alive,
+            "descendant_alive_fraction": descendant_alive_fraction,
             "lineage_count": lineage_count,
             "effective_lineages": effective_lineages,
             "effective_lineages_per_alive": (
@@ -1257,6 +1310,7 @@ class EvolutionProgressTracker:
             self.previous_reproduction_offspring_trait_count = int(
                 self.reproduction_offspring_trait_count
             )
+            self.reproduction_parent_stable_id_counts.clear()
         self.previous_strategy_mean = strategy_mean
         return record
 

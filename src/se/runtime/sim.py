@@ -565,7 +565,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
     @property
     def benefit_internal_energy_total(self) -> float:
         return float(self.benefit_flow_energy_total[BenefitFlowKind.INTERNAL])
-
     @property
     def benefit_cross_boundary_energy_total(self) -> float:
         return float(
@@ -1754,6 +1753,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
 
         self.evolution_progress.observe_reproduction_traits(
             ent.genotype,
+            ent.entity_id,
             eligible_indices=reproduction_eligible_indices,
             accepted_parent_indices=accepted_parents,
             newborn_indices=newborns,

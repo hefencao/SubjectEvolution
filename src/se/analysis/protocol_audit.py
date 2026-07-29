@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v35"
+SCHEMA = "structural-measurement-protocol-audit-v36"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -149,8 +149,10 @@ def build_protocol_audit(
             "feedback_to_world": False,
         },
         "demographic_selection_validity_protocol": {
-            "audit_schema": "demographic-selection-validity-audit-v1",
-            "plan_schema": "demographic-selection-validity-plan-v1",
+            "audit_schema": "demographic-selection-validity-audit-v2",
+            "plan_schema": "demographic-selection-validity-plan-v2",
+            "multi_seed_plan_schema": "multi-seed-run-plan-v2",
+            "automatic_multi_seed_audit": True,
             "independent_unit": "run-seed",
             "windows_are_independent_replicates": False,
             "death_cause_accounting": {
@@ -163,14 +165,29 @@ def build_protocol_audit(
                 "minimum_mean_generation": 1.0,
                 "minimum_max_generation": 3,
                 "minimum_cumulative_births_per_initial": 1.0,
+                "minimum_descendant_alive_fraction": 0.75,
             },
+            "settled_source_requirements": {
+                "minimum_recent_windows": 3,
+                "minimum_alive": 1000,
+                "maximum_alive_cv": 0.15,
+                "maximum_abs_net_growth_fraction": 0.15,
+                "minimum_unique_successful_parents_per_window": 100,
+                "minimum_effective_successful_parents_per_window": 80.0,
+                "maximum_largest_parent_contribution_fraction": 0.05,
+            },
+            "source_rule_scope": (
+                "pilot-derived burn-in candidates apply only to new independent seeds; "
+                "pilot windows are not reused as confirmatory effect evidence"
+            ),
             "population_rescue_or_diversity_protection": False,
             "failed_runs_or_windows_replaced": False,
             "feedback_to_world": False,
             "interpretation": (
                 "rapid collapse before generation turnover is retained as a bottleneck-"
-                "dominated trajectory, useful for mechanism and failure-mode analysis but "
-                "not sufficient evidence of effective evolutionary selection"
+                "dominated trajectory. A later rebound is separately audited for stable "
+                "population support, descendant turnover, lineage breadth, and independent "
+                "reproductive-contributor breadth before it can define a future source rule"
             ),
         },
         "run_reporting_protocol": {
@@ -1224,6 +1241,9 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- windows independent: {demographic['windows_are_independent_replicates']}",
         f"- default population floor: {demographic['default_population_floor_fraction']}",
         f"- turnover requirements: {demographic['default_generation_turnover_requirements']}",
+        f"- settled-source requirements: {demographic['settled_source_requirements']}",
+        f"- source-rule scope: {demographic['source_rule_scope']}",
+        f"- automatic multi-seed audit / plan: {demographic['automatic_multi_seed_audit']} / `{demographic['multi_seed_plan_schema']}`",
         f"- death-cause accounting: {demographic['death_cause_accounting']}",
         f"- rescue / replacement / feedback: {demographic['population_rescue_or_diversity_protection']} / {demographic['failed_runs_or_windows_replaced']} / {demographic['feedback_to_world']}",
         f"- boundary: {demographic['interpretation']}",

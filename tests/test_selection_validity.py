@@ -200,6 +200,10 @@ def test_runtime_records_canonical_death_causes_and_checkpoints_them(
     record = sim.evolution_progress.records[-1]
     assert record["initial_population"] == 16
     assert "alive_fraction_to_initial" in record
+    assert "descendant_alive_fraction" in record
+    assert "selection_unique_successful_parents_window" in record
+    assert "selection_effective_successful_parents_window" in record
+    assert "selection_largest_parent_contribution_fraction_window" in record
     assert sum(record["death_cause_code_counts_window"][1:]) == record["deaths_window"]
 
     restored = Simulation.from_checkpoint(
@@ -211,3 +215,238 @@ def test_runtime_records_canonical_death_causes_and_checkpoints_them(
     assert np.array_equal(
         restored.total_death_cause_counts, sim.total_death_cause_counts
     )
+
+
+def _source_ready_row(
+    tick: int,
+    *,
+    alive: int,
+    births: int,
+    deaths: int,
+    births_per_initial: float,
+    mean_generation: float,
+    max_generation: int,
+) -> dict[str, object]:
+    row = _row(
+        tick,
+        alive=alive,
+        mean_generation=mean_generation,
+        max_generation=max_generation,
+        births_per_initial=births_per_initial,
+        parents=220,
+        births=births,
+        deaths=deaths,
+    )
+    row.update(
+        {
+            "descendant_alive_fraction": 0.82,
+            "generation_zero_alive": int(alive * 0.18),
+            "descendant_alive": int(alive * 0.82),
+            "selection_unique_successful_parents_window": 180,
+            "selection_effective_successful_parents_window": 150.0,
+            "selection_largest_parent_contribution_fraction_window": 0.02,
+        }
+    )
+    return row
+
+
+def test_audit_distinguishes_rebound_from_source_readiness(tmp_path: Path) -> None:
+    run = tmp_path / "rebound"
+    rows = [
+        _row(
+            100,
+            alive=1400,
+            mean_generation=0.1,
+            max_generation=1,
+            births_per_initial=0.05,
+            parents=40,
+            births=400,
+            deaths=7000,
+        ),
+        _row(
+            200,
+            alive=900,
+            mean_generation=0.2,
+            max_generation=1,
+            births_per_initial=0.1,
+            parents=60,
+            births=400,
+            deaths=900,
+        ),
+        _row(
+            300,
+            alive=1050,
+            mean_generation=0.4,
+            max_generation=2,
+            births_per_initial=0.2,
+            parents=80,
+            births=250,
+            deaths=100,
+        ),
+        _row(
+            400,
+            alive=1100,
+            mean_generation=0.5,
+            max_generation=2,
+            births_per_initial=0.3,
+            parents=90,
+            births=150,
+            deaths=100,
+        ),
+    ]
+    _write_run(run, rows)
+    report = audit_run("rebound", run, thresholds=SelectionValidityThresholds())
+    regime = report["post_bottleneck_regime"]
+    assert regime["post_trough_rebound_fraction"] > 0.1
+    assert regime["source_ready_for_future_independent_runs"] is False
+    assert regime["classification"] == (
+        "post-bottleneck-rebound-insufficient-source-readiness"
+    )
+
+
+def test_source_ready_rule_requires_all_independent_seeds(tmp_path: Path) -> None:
+    runs: list[tuple[str, Path]] = []
+    for seed in (1, 2, 3):
+        run = tmp_path / f"seed_{seed}"
+        rows = [
+            _source_ready_row(
+                100,
+                alive=1500,
+                births=500,
+                deaths=7000,
+                births_per_initial=0.1,
+                mean_generation=0.2,
+                max_generation=1,
+            ),
+            _source_ready_row(
+                200,
+                alive=1200,
+                births=400,
+                deaths=450,
+                births_per_initial=1.05,
+                mean_generation=1.1,
+                max_generation=4,
+            ),
+            _source_ready_row(
+                300,
+                alive=1220,
+                births=180,
+                deaths=160,
+                births_per_initial=1.08,
+                mean_generation=1.2,
+                max_generation=4,
+            ),
+            _source_ready_row(
+                400,
+                alive=1210,
+                births=170,
+                deaths=180,
+                births_per_initial=1.1,
+                mean_generation=1.3,
+                max_generation=5,
+            ),
+        ]
+        _write_run(run, rows)
+        runs.append((f"seed_{seed}", run))
+    report = build_audit(runs)
+    assert report["post_bottleneck_source_ready_run_count"] == 3
+    assert report["future_fixed_burn_in_rule_supported"] is True
+    assert report["future_fixed_burn_in_tick"] == 200
+    assert report["plan"]["source_rule_applies_only_to_future_independent_runs"] is True
+
+
+def test_multi_seed_writes_plan_before_first_simulation_and_auto_audit(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from dataclasses import asdict
+    import sys
+
+    from se.cmd import multi_seed
+
+    cfg = load_config(ROOT / "configs" / "heterogeneous_smoke.json")
+    cfg = replace(
+        cfg,
+        run=replace(
+            cfg.run,
+            ticks=1,
+            metrics_period=1,
+            checkpoint_period=1,
+            evolution_evaluation_period=1,
+            full_checkpoint_enabled=True,
+            long_run_diagnostics_enabled=True,
+            long_run_diagnostics_schema="long-run-evolution-diagnostics-v1",
+        ),
+        world=replace(cfg.world, initial_entities=16, max_entities=24),
+    )
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(asdict(cfg)), encoding="utf-8")
+    output = tmp_path / "multi"
+    original_simulation = multi_seed.Simulation
+
+    def checked_simulation(*args, **kwargs):
+        assert (output / "multi_seed_plan.json").is_file()
+        return original_simulation(*args, **kwargs)
+
+    monkeypatch.setattr(multi_seed, "Simulation", checked_simulation)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "se-multi",
+            "--config",
+            str(config_path),
+            "--seeds",
+            "68001",
+            "--output",
+            str(output),
+            "--backend",
+            "cpu",
+        ],
+    )
+    multi_seed.main()
+    plan = json.loads((output / "multi_seed_plan.json").read_text())
+    audit = json.loads((output / "selection_validity_audit.json").read_text())
+    long_run = json.loads((output / "long_run_analysis.json").read_text())
+    assert plan["schema"] == "multi-seed-run-plan-v2"
+    assert plan["automatic_selection_validity_audit"] is True
+    assert audit["schema"] == "demographic-selection-validity-audit-v2"
+    assert long_run["automatic_selection_validity_audit"]["run_count"] == 1
+
+
+def test_reproductive_contributor_state_uses_stable_ids_and_clones(
+    tmp_path: Path,
+) -> None:
+    cfg = load_config(ROOT / "configs" / "heterogeneous_smoke.json")
+    cfg = replace(
+        cfg,
+        run=replace(
+            cfg.run,
+            long_run_diagnostics_enabled=True,
+            long_run_diagnostics_schema="long-run-evolution-diagnostics-v1",
+        ),
+        world=replace(cfg.world, initial_entities=8, max_entities=12),
+    )
+    sim = Simulation(cfg, tmp_path / "run", backend="cpu")
+    tracker = sim.evolution_progress
+    active = np.flatnonzero(sim.entities.alive).astype(np.int32)
+    accepted = np.asarray([active[0], active[0], active[1]], dtype=np.int32)
+    tracker.observe_reproduction_traits(
+        sim.entities.genotype,
+        sim.entities.entity_id,
+        eligible_indices=active[:2],
+        accepted_parent_indices=accepted,
+        newborn_indices=np.empty(0, dtype=np.int32),
+    )
+    first_id = int(sim.entities.entity_id[active[0]])
+    second_id = int(sim.entities.entity_id[active[1]])
+    assert tracker.reproduction_parent_stable_id_counts == {
+        first_id: 2,
+        second_id: 1,
+    }
+    clone = tracker.clone(tmp_path / "clone")
+    clone.reproduction_parent_stable_id_counts[first_id] += 1
+    assert tracker.reproduction_parent_stable_id_counts[first_id] == 2
+    restored_state = tracker.snapshot_state()
+    tracker.reproduction_parent_stable_id_counts.clear()
+    tracker.restore_state(restored_state)
+    assert tracker.reproduction_parent_stable_id_counts[first_id] == 2

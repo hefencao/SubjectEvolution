@@ -1,3 +1,16 @@
+## 0.68.0
+
+### Post-bottleneck source-readiness audit
+
+- Adds living-descendant and generation-zero cohort metrics.
+- Adds unique/effective successful-parent counts and parent-contribution concentration.
+- Upgrades demographic selection validity to v2 with a post-bottleneck regime classifier.
+- Upgrades multi-seed long-run analysis to v16 so demographic and turnover fields are retained.
+- Writes `multi-seed-run-plan-v2` before the first seed and automatically emits selection-validity artifacts.
+- Adds the 3,000-tick D3-K scale-4 settled-regime configuration.
+- Keeps all thresholds observational: no population rescue, diversity protection or outcome-based seed replacement.
+- Upgrades protocol audit to v36 and project version to 0.68.0.
+
 # Changelog
 
 ## 0.67.0

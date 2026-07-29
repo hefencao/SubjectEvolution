@@ -4,12 +4,18 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import asdict, replace
+import hashlib
 import json
 from pathlib import Path
 import shutil
 
 from ..cfg import load_config
 from se.analysis.long_run import analyze, render_markdown
+from se.analysis.selection_validity import (
+    SelectionValidityThresholds,
+    build_audit as build_selection_audit,
+    render_markdown as render_selection_markdown,
+)
 from ..runtime.sim import Simulation
 
 
@@ -85,7 +91,43 @@ def main() -> None:
         )
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
+    base_payload = asdict(base)
+    config_sha256 = hashlib.sha256(
+        json.dumps(base_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    selection_thresholds = SelectionValidityThresholds()
+    multi_seed_plan = {
+        "schema": "multi-seed-run-plan-v2",
+        "config": str(Path(args.config)),
+        "resolved_config_sha256": config_sha256,
+        "seeds": seeds,
+        "requested_backend": args.backend,
+        "target_tick": target_tick,
+        "metrics_period": int(base.run.metrics_period),
+        "evolution_evaluation_period": int(base.run.evolution_evaluation_period),
+        "periodic_checkpoint_period": int(base.run.checkpoint_period),
+        "checkpoint_ticks": list(checkpoint_ticks or base.run.checkpoint_ticks),
+        "seed_output_directories": [f"seed_{seed}" for seed in seeds],
+        "failed_or_partial_seed_replaced_by_outcome": False,
+        "overwrite_partial_requires_explicit_flag": True,
+        "automatic_long_run_analysis": True,
+        "automatic_selection_validity_audit": True,
+        "selection_validity_plan": {
+            "schema": "demographic-selection-validity-plan-v2",
+            "thresholds": asdict(selection_thresholds),
+            "independent_unit": "run-seed",
+            "windows_are_independent_replicates": False,
+            "feedback_to_world": False,
+            "population_rescue_or_diversity_protection": False,
+            "source_rule_applies_only_to_future_independent_runs": True,
+        },
+    }
+    (output / "multi_seed_plan.json").write_text(
+        json.dumps(multi_seed_plan, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
     progress_paths: list[Path] = []
+    auditable_runs: list[tuple[str, Path]] = []
     index: list[dict[str, object]] = []
     for seed in seeds:
         run_cfg = replace(
@@ -109,6 +151,7 @@ def main() -> None:
             progress_value: str | None = None
             if progress.is_file():
                 progress_paths.append(progress)
+                auditable_runs.append((f"seed_{seed}", run_dir))
                 with progress.open("r", encoding="utf-8") as handle:
                     final_records = [
                         json.loads(line) for line in handle if line.strip()
@@ -156,6 +199,7 @@ def main() -> None:
         progress_value: str | None = None
         if progress.is_file():
             progress_paths.append(progress)
+            auditable_runs.append((f"seed_{seed}", run_dir))
             progress_value = str(progress)
         index.append(
             {
@@ -200,6 +244,44 @@ def main() -> None:
             + report["reason"]
             + "\n"
         )
+    if auditable_runs:
+        selection_report = build_selection_audit(
+            auditable_runs, thresholds=selection_thresholds
+        )
+        (output / "selection_validity_plan.json").write_text(
+            json.dumps(selection_report["plan"], ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        (output / "selection_validity_audit.json").write_text(
+            json.dumps(selection_report, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        (output / "selection_validity_audit.md").write_text(
+            render_selection_markdown(selection_report), encoding="utf-8"
+        )
+        report["automatic_selection_validity_audit"] = {
+            "schema": selection_report["schema"],
+            "run_count": selection_report["run_count"],
+            "bottleneck_dominated_run_count": selection_report[
+                "bottleneck_dominated_run_count"
+            ],
+            "post_bottleneck_source_ready_run_count": selection_report[
+                "post_bottleneck_source_ready_run_count"
+            ],
+            "future_fixed_burn_in_rule_supported": selection_report[
+                "future_fixed_burn_in_rule_supported"
+            ],
+            "future_fixed_burn_in_tick": selection_report[
+                "future_fixed_burn_in_tick"
+            ],
+            "recommendation": selection_report["recommendation"],
+        }
+        markdown += "\n" + render_selection_markdown(selection_report)
+    else:
+        report["automatic_selection_validity_audit"] = {
+            "available": False,
+            "reason": "no evolution progress streams were available",
+        }
     (output / "long_run_analysis.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
     )

@@ -1,0 +1,49 @@
+{
+  "schema": "multi-seed-run-plan-v2",
+  "config": "/tmp/se_v068_smoke/config.json",
+  "resolved_config_sha256": "d38bed9409e337a30b3754af75263b592a0fcb99e40a6fecd8a10d2d8abf2a4c",
+  "seeds": [
+    68001,
+    68002
+  ],
+  "requested_backend": "cpu",
+  "target_tick": 2,
+  "metrics_period": 1,
+  "evolution_evaluation_period": 1,
+  "periodic_checkpoint_period": 1,
+  "checkpoint_ticks": [],
+  "seed_output_directories": [
+    "seed_68001",
+    "seed_68002"
+  ],
+  "failed_or_partial_seed_replaced_by_outcome": false,
+  "overwrite_partial_requires_explicit_flag": true,
+  "automatic_long_run_analysis": true,
+  "automatic_selection_validity_audit": true,
+  "selection_validity_plan": {
+    "schema": "demographic-selection-validity-plan-v2",
+    "thresholds": {
+      "minimum_alive_fraction_to_initial": 0.25,
+      "minimum_effective_lineages": 100.0,
+      "maximum_largest_lineage_fraction": 0.25,
+      "minimum_successful_parent_samples_per_window": 100,
+      "minimum_mean_generation": 1.0,
+      "minimum_max_generation": 3,
+      "minimum_cumulative_births_per_initial": 1.0,
+      "settled_window_count": 3,
+      "minimum_settled_alive": 1000,
+      "maximum_settled_alive_cv": 0.15,
+      "maximum_settled_net_growth_fraction": 0.15,
+      "minimum_descendant_alive_fraction": 0.75,
+      "minimum_unique_successful_parents_per_window": 100,
+      "minimum_effective_successful_parents_per_window": 80.0,
+      "maximum_largest_parent_contribution_fraction": 0.05,
+      "minimum_source_ready_seed_count": 3
+    },
+    "independent_unit": "run-seed",
+    "windows_are_independent_replicates": false,
+    "feedback_to_world": false,
+    "population_rescue_or_diversity_protection": false,
+    "source_rule_applies_only_to_future_independent_runs": true
+  }
+}
