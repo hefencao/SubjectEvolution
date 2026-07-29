@@ -1,31 +1,39 @@
-# SE v0.66
+# SE v0.67
 
-SE is a deterministic artificial-life and subject-structure research platform. The current main line retains four role-free resource channels, conservative delayed storage and processing, identity-preserving external recycling, persistent abiotic renewal, costed spatial processing support, matched controls and nested shared-checkpoint response measurement.
+SE is a deterministic artificial-life and subject-structure research platform. The current main line retains four role-free resource channels, conservative delayed storage and processing, identity-preserving external recycling, persistent abiotic renewal, costed spatial processing support, matched controls and GPU-first execution.
 
-## Why v0.66
+## Why v0.67
 
-v0.66 integrates the supplied scale-4 GPU/knowledge optimizations and fixes the
-reporting boundary exposed by the two completed 3,000-tick runs. Hybrid runs
-intentionally keep environment fields device-resident between checkpoints, but
-`summary.json` previously combined the current entity/tick counters with the
-most recently materialized host residue mirror. Changing checkpoint cadence
-therefore changed summary freshness without changing the final tick.
+An 8,000-entity run that rapidly contracts toward roughly 1,000 entities can be dominated by an early demographic bottleneck, founder sampling and drift before meaningful generation turnover. Extending the same trajectory to a large tick count does not by itself turn it into effective evolutionary-selection evidence.
 
-Every metrics row and final summary now uses an
-`authoritative-reporting-snapshot-v1` boundary: current device state is
-materialized before the row is assembled, and the row records
-`reporting_state_tick` and `reporting_state_source`. Summary correctness is no
-longer coupled to checkpoint cadence.
+v0.67 adds a non-intervening demographic-selection validity boundary. Runtime diagnostics now preserve canonical death causes, population fraction relative to initialization, cumulative replacement and generation depth. The new `se-selection-validity-audit` keeps every failed run and window, treats the seed as the independent unit, and distinguishes mechanism-valid trajectories from population-supported and generation-supported selection evidence.
 
-Every `Simulation.run()` also writes `run_plan.json` before the first
-authoritative step. The plan records the fixed target tick, reporting cadence,
-checkpoint cadence, resolved backend and config hash; it never adapts the
-schedule from observed outcomes.
+No population is rescued. No death, birth, resource, carrying-capacity, reward, sensing, diversity or lineage-protection parameter is altered.
 
-The supplied staged files additionally retain 100-tick full checkpoints, disable
-large dense audit CSV streams, and batch deterministic latent-root hash work on
-the selected device. No world, reward, sensing, inheritance, population-support
-or ecological mechanism changes in this release.
+## Demographic-selection audit
+
+Run the fixed scale-4 diagnostic source:
+
+```bash
+se-multi \
+  --config configs/mvp_d3j_gpu_scale4_demographic_audit.json \
+  --seeds 67001,67002,67003 \
+  --output analyses/d3j_scale4_demography \
+  --backend auto \
+  --until-tick 1200
+```
+
+Then audit the fixed seed outputs:
+
+```bash
+se-selection-validity-audit \
+  --run 67001=analyses/d3j_scale4_demography/seed_67001 \
+  --run 67002=analyses/d3j_scale4_demography/seed_67002 \
+  --run 67003=analyses/d3j_scale4_demography/seed_67003 \
+  --output analyses/d3j_scale4_demography/selection_validity
+```
+
+The default interpretation floor is 25% of the initial population, together with effective-lineage, parent-sample and generation-turnover requirements. These thresholds change interpretation only and never feed back into the world.
 
 ## GPU execution and parity
 
@@ -111,6 +119,6 @@ make release-check
 
 ## Current version documents
 
-- [Implementation report](docs/v0.66/IMPLEMENTATION_REPORT.md)
-- [Supplied scale-4 summary audit](docs/v0.66/SUPPLIED_SCALE4_SUMMARY_AUDIT.md)
-- [Protocol audit](docs/v0.66/protocol_audit.md)
+- [Implementation report](docs/v0.67/IMPLEMENTATION_REPORT.md)
+- [Demographic-selection plan](docs/v0.67/DEMOGRAPHIC_SELECTION_PLAN.md)
+- [Protocol audit](docs/v0.67/protocol_audit.md)

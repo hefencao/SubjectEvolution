@@ -1,0 +1,19 @@
+WARNING: The directory '/home/oai/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Looking in indexes: https://reader:****@packages.applied-caas-gateway1.internal.api.openai.org/artifactory/api/pypi/pypi-public/simple
+Obtaining file:///mnt/data/work_v067/se_v066_project
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: se-mvp
+  Building editable for se-mvp (pyproject.toml): started
+  Building editable for se-mvp (pyproject.toml): finished with status 'done'
+  Created wheel for se-mvp: filename=se_mvp-0.67.0-0.editable-py3-none-any.whl size=4285 sha256=6c607fde9d6440c72aee60fd11df9bd08ce19479b450a518f729e124d3cb424e
+  Stored in directory: /tmp/pip-ephem-wheel-cache-klqjgwu3/wheels/7f/d0/3d/94fe3fae1a8b8e70eca8a3b40a8d6557e7d0d4fd33ebf36605
+Successfully built se-mvp
+Installing collected packages: se-mvp
+  Attempting uninstall: se-mvp
+    Found existing installation: se-mvp 0.66.0
+    Uninstalling se-mvp-0.66.0:
+      Successfully uninstalled se-mvp-0.66.0
+Successfully installed se-mvp-0.67.0

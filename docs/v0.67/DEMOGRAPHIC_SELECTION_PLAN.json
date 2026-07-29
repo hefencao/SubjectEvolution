@@ -1,0 +1,25 @@
+{
+  "schema": "demographic-selection-source-plan-v1",
+  "config": "configs/mvp_d3j_gpu_scale4_demographic_audit.json",
+  "seeds": [67001, 67002, 67003],
+  "horizon_ticks": 1200,
+  "metrics_period_ticks": 100,
+  "evolution_evaluation_period_ticks": 100,
+  "checkpoint_period_ticks": 100,
+  "audit_schema": "demographic-selection-validity-audit-v1",
+  "thresholds": {
+    "minimum_alive_fraction_to_initial": 0.25,
+    "minimum_effective_lineages": 100.0,
+    "maximum_largest_lineage_fraction": 0.25,
+    "minimum_successful_parent_samples_per_window": 100,
+    "minimum_mean_generation": 1.0,
+    "minimum_max_generation": 3,
+    "minimum_cumulative_births_per_initial": 1.0
+  },
+  "independent_unit": "seed",
+  "windows_are_independent_replicates": false,
+  "failed_runs_or_windows_replaced": false,
+  "population_rescue_or_diversity_protection": false,
+  "feedback_to_world": false,
+  "pass_fail_gate_changes_world": false
+}

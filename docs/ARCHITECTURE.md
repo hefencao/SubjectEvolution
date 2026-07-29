@@ -551,3 +551,22 @@ back into the world.
 Before stepping, each run writes `simulation-run-plan-v1` with its fixed target,
 backend and output cadences. The plan is provenance, not a scheduler, and
 explicitly forbids outcome-conditioned schedule changes.
+
+## v0.67 demographic-selection validity boundary
+
+```text
+canonical lifecycle settlement
+        ├─ death signature counts (energy / integrity / age overlaps)
+        ├─ births and successful-parent cohorts
+        └─ living lineage + generation state
+                    ↓ fixed evolution window
+population fraction + effective lineages + replacement depth
+                    ↓ offline audit only
+mechanism-valid / demographic-valid / evolutionary-valid classification
+```
+
+The validity audit has no world reference and cannot modify a run. A seed is the
+independent unit; periodic windows are repeated measurements. Population floors
+and generation thresholds govern interpretation only. Runs that collapse before
+turnover remain archived as bottleneck/failure-mode evidence and are never
+silently replaced.

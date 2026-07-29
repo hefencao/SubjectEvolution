@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.67.0
+
+### Demographic bottleneck and selection-validity boundary
+
+- Adds canonical per-step and cumulative death-cause signature accounting for energy depletion, integrity depletion, maximum age and their overlaps.
+- Checkpoints and experiment branches preserve the new death-cause totals; legacy checkpoints default to zero.
+- Evolution windows now report initial population, alive fraction, cumulative births/deaths per initial entity, replacement fraction and death-cause composition.
+- Adds `demographic-selection-validity-audit-v1` and `se-selection-validity-audit`.
+- Separates demographic support from generation turnover and marks collapse-before-turnover runs as bottleneck dominated.
+- Treats seed/run as the independent unit; windows remain repeated observations and failed runs are never replaced.
+- Adds a fixed 1,200-tick, 100-tick-cadence scale-4 demographic audit preset and three-seed plan.
+- Upgrades protocol audit to v35 and project version to 0.67.0.
+- Changes no world mechanism, demographic pressure, population support, diversity protection, reward or ecological role.
+
 ## 0.66.0
 
 ### Authoritative reporting snapshots and pre-run plans

@@ -58,6 +58,9 @@ def _wrap_periodic_float32(values: np.ndarray, extent: float) -> np.ndarray:
 class StepStats:
     births: int = 0
     deaths: int = 0
+    death_cause_counts: np.ndarray = field(
+        default_factory=lambda: np.zeros(8, dtype=np.int64)
+    )
     harvested_energy: float = 0.0
     harvested_resources: np.ndarray = field(
         default_factory=lambda: np.zeros(4, dtype=np.float64)

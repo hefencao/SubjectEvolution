@@ -1,0 +1,135 @@
+{
+  "schema": "demographic-selection-validity-audit-v1",
+  "plan": {
+    "schema": "demographic-selection-validity-plan-v1",
+    "thresholds": {
+      "minimum_alive_fraction_to_initial": 0.25,
+      "minimum_effective_lineages": 100.0,
+      "maximum_largest_lineage_fraction": 0.25,
+      "minimum_successful_parent_samples_per_window": 100,
+      "minimum_mean_generation": 1.0,
+      "minimum_max_generation": 3,
+      "minimum_cumulative_births_per_initial": 1.0
+    },
+    "independent_unit": "run-seed",
+    "windows_are_independent_replicates": false,
+    "failed_runs_or_windows_replaced": false,
+    "feedback_to_world": false,
+    "population_rescue_or_diversity_protection": false
+  },
+  "runs": [
+    {
+      "label": "scale4",
+      "run_dir": "/tmp/se-selection-smoke/run",
+      "summary_tick": 200,
+      "reporting_state_tick": 200,
+      "initial_population": 8000,
+      "window_count": 2,
+      "minimum_alive_fraction_to_initial": 0.11875,
+      "first_tick_below_population_floor": 100,
+      "first_tick_with_turnover_support": null,
+      "population_collapse_before_turnover": true,
+      "demographic_supported_window_count": 0,
+      "evolutionary_supported_window_count": 0,
+      "final_population": {
+        "tick": 200,
+        "window_ticks": 100,
+        "alive": 950,
+        "alive_fraction_to_initial": 0.11875,
+        "effective_lineages": 280.0,
+        "largest_lineage_fraction": 0.04,
+        "successful_parent_samples_window": 10,
+        "births_window": 50,
+        "deaths_window": 100,
+        "net_growth_window": -50,
+        "mean_generation": 0.08,
+        "max_generation": 1,
+        "cumulative_births_per_initial": 0.01875,
+        "demographic_checks": {
+          "alive_fraction_met": false,
+          "effective_lineages_met": true,
+          "largest_lineage_fraction_met": true,
+          "successful_parent_samples_met": false
+        },
+        "turnover_checks": {
+          "mean_generation_met": false,
+          "max_generation_met": false,
+          "cumulative_births_per_initial_met": false
+        },
+        "demographic_selection_window_supported": false,
+        "evolutionary_selection_window_supported": false
+      },
+      "death_causes": {
+        "available": false,
+        "reason": "run predates per-window canonical death-cause accounting"
+      },
+      "windows": [
+        {
+          "tick": 100,
+          "window_ticks": 100,
+          "alive": 1000,
+          "alive_fraction_to_initial": 0.125,
+          "effective_lineages": 300.0,
+          "largest_lineage_fraction": 0.03,
+          "successful_parent_samples_window": 20,
+          "births_window": 100,
+          "deaths_window": 7100,
+          "net_growth_window": -7000,
+          "mean_generation": 0.05,
+          "max_generation": 1,
+          "cumulative_births_per_initial": 0.0125,
+          "demographic_checks": {
+            "alive_fraction_met": false,
+            "effective_lineages_met": true,
+            "largest_lineage_fraction_met": true,
+            "successful_parent_samples_met": false
+          },
+          "turnover_checks": {
+            "mean_generation_met": false,
+            "max_generation_met": false,
+            "cumulative_births_per_initial_met": false
+          },
+          "demographic_selection_window_supported": false,
+          "evolutionary_selection_window_supported": false
+        },
+        {
+          "tick": 200,
+          "window_ticks": 100,
+          "alive": 950,
+          "alive_fraction_to_initial": 0.11875,
+          "effective_lineages": 280.0,
+          "largest_lineage_fraction": 0.04,
+          "successful_parent_samples_window": 10,
+          "births_window": 50,
+          "deaths_window": 100,
+          "net_growth_window": -50,
+          "mean_generation": 0.08,
+          "max_generation": 1,
+          "cumulative_births_per_initial": 0.01875,
+          "demographic_checks": {
+            "alive_fraction_met": false,
+            "effective_lineages_met": true,
+            "largest_lineage_fraction_met": true,
+            "successful_parent_samples_met": false
+          },
+          "turnover_checks": {
+            "mean_generation_met": false,
+            "max_generation_met": false,
+            "cumulative_births_per_initial_met": false
+          },
+          "demographic_selection_window_supported": false,
+          "evolutionary_selection_window_supported": false
+        }
+      ],
+      "selection_inference_supported_within_run": false,
+      "recommendation": "bottleneck-dominated-do-not-interpret-as-effective-selection",
+      "interpretation_boundary": "This is a within-run adequacy audit. Windows are repeated observations, not independent replicates. Passing windows still require independent seeds; failing windows remain in the record and are never replaced by outcome."
+    }
+  ],
+  "run_count": 1,
+  "bottleneck_dominated_run_count": 1,
+  "within_run_selection_supported_count": 0,
+  "cross_seed_selection_inference_supported": false,
+  "recommendation": "bottleneck-dominated-source-redesign-before-selection-claims",
+  "interpretation_boundary": "No cross-seed effect is estimated here. The audit separates demographic support and generation turnover from mere tick duration, and never changes the simulated world or filters results by outcome."
+}

@@ -1241,6 +1241,7 @@ class SimulationReportingMixin:
             genotype=self.entities.genotype,
             births_total=self.total_births,
             deaths_total=self.total_deaths,
+            death_cause_counts_total=self.total_death_cause_counts,
             action_counts=self.action_counts,
             benefit_flow_energy_total=self.benefit_flow_energy_total,
             lagged_benefit_flow_energy_total=(
@@ -1485,6 +1486,20 @@ class SimulationReportingMixin:
             "deaths_step": stats.deaths,
             "births_total": self.total_births,
             "deaths_total": self.total_deaths,
+            "death_cause_code_counts_step": stats.death_cause_counts.tolist(),
+            "death_cause_code_counts_total": self.total_death_cause_counts.tolist(),
+            "death_energy_depleted_step": int(
+                stats.death_cause_counts[1] + stats.death_cause_counts[3]
+                + stats.death_cause_counts[5] + stats.death_cause_counts[7]
+            ),
+            "death_integrity_depleted_step": int(
+                stats.death_cause_counts[2] + stats.death_cause_counts[3]
+                + stats.death_cause_counts[6] + stats.death_cause_counts[7]
+            ),
+            "death_max_age_step": int(
+                stats.death_cause_counts[4] + stats.death_cause_counts[5]
+                + stats.death_cause_counts[6] + stats.death_cause_counts[7]
+            ),
             "reproduction_eligible_step": stats.reproduction_eligible,
             "reproduction_proposals_step": stats.reproduction_proposals,
             "reproduction_accepted_step": stats.reproduction_accepted,

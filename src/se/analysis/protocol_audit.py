@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v34"
+SCHEMA = "structural-measurement-protocol-audit-v35"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -147,6 +147,31 @@ def build_protocol_audit(
                 "persistent GPU entity, environment, information, and social mirrors",
             ],
             "feedback_to_world": False,
+        },
+        "demographic_selection_validity_protocol": {
+            "audit_schema": "demographic-selection-validity-audit-v1",
+            "plan_schema": "demographic-selection-validity-plan-v1",
+            "independent_unit": "run-seed",
+            "windows_are_independent_replicates": False,
+            "death_cause_accounting": {
+                "canonical_signature_buckets": 8,
+                "energy_integrity_age_overlap_preserved": True,
+                "checkpointed": True,
+            },
+            "default_population_floor_fraction": 0.25,
+            "default_generation_turnover_requirements": {
+                "minimum_mean_generation": 1.0,
+                "minimum_max_generation": 3,
+                "minimum_cumulative_births_per_initial": 1.0,
+            },
+            "population_rescue_or_diversity_protection": False,
+            "failed_runs_or_windows_replaced": False,
+            "feedback_to_world": False,
+            "interpretation": (
+                "rapid collapse before generation turnover is retained as a bottleneck-"
+                "dominated trajectory, useful for mechanism and failure-mode analysis but "
+                "not sufficient evidence of effective evolutionary selection"
+            ),
         },
         "run_reporting_protocol": {
             "plan_schema": "simulation-run-plan-v1",
@@ -1159,6 +1184,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     differentiation = payload["differentiation_capacity_protocol"]
     execution = payload["execution_backend_protocol"]
     reporting = payload["run_reporting_protocol"]
+    demographic = payload["demographic_selection_validity_protocol"]
     lines = [
         "# Structural measurement protocol audit",
         "",
@@ -1190,6 +1216,17 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- checkpoint cadence independent: {reporting['checkpoint_cadence_independent_from_summary_freshness']}",
         f"- outcome-conditioned schedule changes: {reporting['outcome_conditioned_schedule_changes']}",
         f"- feedback to world: {reporting['feedback_to_world']}",
+        "",
+        "## Demographic selection validity",
+        "",
+        f"- audit / plan: `{demographic['audit_schema']}` / `{demographic['plan_schema']}`",
+        f"- independent unit: `{demographic['independent_unit']}`",
+        f"- windows independent: {demographic['windows_are_independent_replicates']}",
+        f"- default population floor: {demographic['default_population_floor_fraction']}",
+        f"- turnover requirements: {demographic['default_generation_turnover_requirements']}",
+        f"- death-cause accounting: {demographic['death_cause_accounting']}",
+        f"- rescue / replacement / feedback: {demographic['population_rescue_or_diversity_protection']} / {demographic['failed_runs_or_windows_replaced']} / {demographic['feedback_to_world']}",
+        f"- boundary: {demographic['interpretation']}",
         "",
         "## Group label",
         "",

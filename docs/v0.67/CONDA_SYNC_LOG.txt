@@ -1,0 +1,6 @@
+python scripts/check_version_consistency.py --project .
+{"passed": true, "version": "0.67.0", "docs_version": "0.67"}
+python scripts/clean_project_bytecode.py --project .
+{"passed": true, "project": "/mnt/data/work_v067/se_v066_project", "removed_cache_directories": 14, "removed_compiled_files": 0, "removed_paths": ["src/se/subjects/__pycache__", "src/se/runtime/__pycache__", "src/se/plugins/__pycache__", "src/se/knowledge/__pycache__", "src/se/gui/__pycache__", "src/se/experiments/__pycache__", "src/se/evolution/__pycache__", "src/se/env/__pycache__", "src/se/differentiation/__pycache__", "src/se/cmd/__pycache__", "src/se/analysis/__pycache__", "src/se/__pycache__", "scripts/__pycache__", "tests/__pycache__"]}
+Activate the intended conda environment first.
+make: *** [Makefile:32: conda-sync] Error 2

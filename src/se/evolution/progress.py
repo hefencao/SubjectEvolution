@@ -581,6 +581,7 @@ class EvolutionProgressTracker:
         if len(self.morphology_trait_indices) != len(self.morphology_trait_names):
             raise ValueError("morphology trait indices and names must be aligned")
         active = np.flatnonzero(np.asarray(alive, dtype=bool)).astype(np.int32)
+        self.initial_population = int(active.size)
         sampled = _deterministic_sample(active, stable_ids, self.run_seed, 4096)
         self.initial_stable_ids = np.asarray(stable_ids[sampled], dtype=np.uint64).copy()
         self.initial_genotype = np.asarray(genotype[sampled], dtype=np.float32).copy()
@@ -604,6 +605,7 @@ class EvolutionProgressTracker:
         self.previous_tick = 0
         self.previous_births = 0
         self.previous_deaths = 0
+        self.previous_death_cause_counts = np.zeros(8, dtype=np.int64)
         self.previous_action_counts = np.zeros(len(Action), dtype=np.int64)
         self.previous_benefit_flow_totals = np.zeros(
             BENEFIT_FLOW_COUNT, dtype=np.float64
@@ -652,6 +654,10 @@ class EvolutionProgressTracker:
             self.previous_knowledge_transfer_totals = {}
         if not hasattr(self, "previous_requested_harvest_resources"):
             self.previous_requested_harvest_resources = np.zeros(4, dtype=np.float64)
+        if not hasattr(self, "initial_population"):
+            self.initial_population = int(self.initial_stable_ids.size)
+        if not hasattr(self, "previous_death_cause_counts"):
+            self.previous_death_cause_counts = np.zeros(8, dtype=np.int64)
         self._file = None
 
     def clone(self, output_dir: str | Path) -> "EvolutionProgressTracker":
@@ -660,6 +666,7 @@ class EvolutionProgressTracker:
         branch.previous_strategy_mean = self.previous_strategy_mean.copy()
         branch.initial_strategy_mean = self.initial_strategy_mean.copy()
         branch.previous_action_counts = self.previous_action_counts.copy()
+        branch.previous_death_cause_counts = self.previous_death_cause_counts.copy()
         branch.previous_benefit_flow_totals = (
             self.previous_benefit_flow_totals.copy()
         )
@@ -753,6 +760,7 @@ class EvolutionProgressTracker:
         genotype: np.ndarray,
         births_total: int,
         deaths_total: int,
+        death_cause_counts_total: np.ndarray,
         action_counts: np.ndarray,
         benefit_flow_energy_total: np.ndarray,
         lagged_benefit_flow_energy_total: np.ndarray,
@@ -804,6 +812,29 @@ class EvolutionProgressTracker:
             lineage_count = 0
             effective_lineages = largest_lineage_fraction = mean_generation = 0.0
             max_generation = 0
+
+        death_cause_totals = np.asarray(death_cause_counts_total, dtype=np.int64)
+        if death_cause_totals.shape != (8,):
+            raise ValueError("death cause totals must contain eight canonical buckets")
+        death_cause_window = death_cause_totals - self.previous_death_cause_counts
+        if np.any(death_cause_window < 0):
+            raise ValueError("death cause totals cannot decrease")
+        death_events_window = int(deaths_total - self.previous_deaths)
+        death_signature_total = int(death_cause_window[1:].sum())
+        if death_signature_total != death_events_window:
+            raise ValueError("death cause window does not match death total window")
+        death_energy_window = int(
+            death_cause_window[1] + death_cause_window[3]
+            + death_cause_window[5] + death_cause_window[7]
+        )
+        death_integrity_window = int(
+            death_cause_window[2] + death_cause_window[3]
+            + death_cause_window[6] + death_cause_window[7]
+        )
+        death_age_window = int(
+            death_cause_window[4] + death_cause_window[5]
+            + death_cause_window[6] + death_cause_window[7]
+        )
 
         action_delta = np.asarray(action_counts, dtype=np.int64) - self.previous_action_counts
         action_total = int(action_delta.sum())
@@ -1022,6 +1053,36 @@ class EvolutionProgressTracker:
             "alive": int(active.size),
             "births_window": int(births_total - self.previous_births),
             "deaths_window": int(deaths_total - self.previous_deaths),
+            "initial_population": int(self.initial_population),
+            "alive_fraction_to_initial": (
+                float(active.size / self.initial_population)
+                if self.initial_population > 0 else 0.0
+            ),
+            "cumulative_births_per_initial": (
+                float(births_total / self.initial_population)
+                if self.initial_population > 0 else 0.0
+            ),
+            "cumulative_deaths_per_initial": (
+                float(deaths_total / self.initial_population)
+                if self.initial_population > 0 else 0.0
+            ),
+            "population_replacement_fraction": (
+                float(min(births_total, self.initial_population) / self.initial_population)
+                if self.initial_population > 0 else 0.0
+            ),
+            "death_cause_code_counts_window": death_cause_window.tolist(),
+            "death_energy_depleted_window": death_energy_window,
+            "death_integrity_depleted_window": death_integrity_window,
+            "death_max_age_window": death_age_window,
+            "death_energy_depleted_fraction_window": (
+                death_energy_window / death_events_window if death_events_window else 0.0
+            ),
+            "death_integrity_depleted_fraction_window": (
+                death_integrity_window / death_events_window if death_events_window else 0.0
+            ),
+            "death_max_age_fraction_window": (
+                death_age_window / death_events_window if death_events_window else 0.0
+            ),
             "mean_generation": mean_generation,
             "max_generation": max_generation,
             "lineage_count": lineage_count,
@@ -1153,6 +1214,7 @@ class EvolutionProgressTracker:
         self.previous_tick = int(tick)
         self.previous_births = int(births_total)
         self.previous_deaths = int(deaths_total)
+        self.previous_death_cause_counts = death_cause_totals.copy()
         self.previous_action_counts = np.asarray(action_counts, dtype=np.int64).copy()
         self.previous_benefit_flow_totals = benefit_totals.copy()
         self.previous_lagged_benefit_flow_totals = lagged_benefit_totals.copy()

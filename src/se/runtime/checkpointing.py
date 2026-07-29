@@ -176,6 +176,7 @@ class SimulationCheckpointMixin:
             "last_group_plan": copy.deepcopy(self.last_group_plan),
             "total_births": int(self.total_births),
             "total_deaths": int(self.total_deaths),
+            "total_death_cause_counts": self.total_death_cause_counts.copy(),
             "total_shared_energy": float(self.total_shared_energy),
             "total_harvested_resources": self.total_harvested_resources.copy(),
             "total_requested_harvest_resources": self.total_requested_harvest_resources.copy(),
@@ -493,6 +494,11 @@ class SimulationCheckpointMixin:
         self.last_group_plan = copy.deepcopy(state["last_group_plan"])
         self.total_births = int(state["total_births"])
         self.total_deaths = int(state["total_deaths"])
+        self.total_death_cause_counts = np.asarray(
+            state.get("total_death_cause_counts", np.zeros(8)), dtype=np.int64
+        ).copy()
+        if self.total_death_cause_counts.shape != (8,):
+            raise ValueError("checkpoint death-cause counts must contain eight buckets")
         self.total_shared_energy = float(state["total_shared_energy"])
         self.total_harvested_resources = np.asarray(
             state.get("total_harvested_resources", np.zeros(4)), dtype=np.float64
@@ -896,6 +902,7 @@ class SimulationCheckpointMixin:
         branch.last_group_plan = copy.deepcopy(self.last_group_plan)
         branch.total_births = self.total_births
         branch.total_deaths = self.total_deaths
+        branch.total_death_cause_counts = self.total_death_cause_counts.copy()
         branch.total_shared_energy = self.total_shared_energy
         branch.total_harvested_resources = self.total_harvested_resources.copy()
         branch.total_requested_harvest_resources = (

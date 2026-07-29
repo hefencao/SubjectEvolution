@@ -1,99 +1,50 @@
 # SE project status
 
-Version: **0.66.0**
+Version: **0.67.0**
 
-## v0.66 reporting and plan boundary
+## v0.67 demographic-selection validity boundary
 
-The supplied scale-4 runs exposed a mixed-age summary: current tick/entity
-counters were combined with a residue field last synchronized by the preceding
-full checkpoint. v0.66 treats reporting as its own authoritative boundary.
-Every metrics row materializes current device-owned fields and records the
-materialized tick; checkpoint cadence can no longer change summary freshness.
+A rapid contraction from a large initial population can create a severe
+bottleneck before descendants replace the founding cohort. Tick duration,
+movement events and repeated windows do not repair that loss of independent
+population support. v0.67 therefore separates three questions:
 
-A fixed `run_plan.json` is written before stepping. It records target tick,
-backend, metrics cadence and checkpoint schedule without using outcomes to
-change the run. This fills the missing plan artifact while preserving the
-project rule against outcome-conditioned checkpoint or seed selection.
+1. did the mechanism and accounting execute correctly;
+2. did the population retain enough demographic and lineage support;
+3. did enough generation turnover occur for evolutionary-selection inference.
 
-## Current causal and measurement chain
+Runtime records canonical death-cause signatures, population fraction relative
+to initialization, cumulative replacement and generation depth. The offline
+audit treats each seed as one independent run, retains every failed window and
+never feeds a threshold back into the world.
+
+## Current execution and scientific chain
 
 ```text
-role-free four-channel abiotic resources
-→ conservative storage, recycling and persistent renewal
-→ costed spatial processing with orientation-matched neutral controls
-→ preregistered acute panels and seed-level inference
-→ GPU-first execution + target-device parity certificate
-→ large-population source runs before any new response mechanism
+role-free four-channel resources
+→ conservative storage/recycling/renewal
+→ costed spatial processing and matched controls
+→ GPU-first large-population execution with parity
+→ demographic bottleneck + generation-turnover validity audit
+→ only then replicated evolutionary-selection inference
 ```
 
-## Supplied GPU evidence retained
+## Current gates
 
-The supplied D3-I artifact contains 128/128 real `gpu-hybrid-accelerated` branches with no fallback or strict-reference execution. It proves execution provenance, not speedup or scientific effect. The response replication gate remains closed and no checkpoint is evolutionarily sufficient.
-
-Low-population windows near 100–300 alive are not used as a GPU throughput gate. Their launch, transfer and CPU-settlement overhead is expected to dominate. v0.65 therefore moves directly to density-preserving source populations of 8,000 and 32,000 entities.
-
-## v0.65 execution boundary
-
-Ordinary hybrid ticks keep these inputs device resident:
-
-- inherited resource-affinity quantization;
-- inherited danger-evidence quantization;
-- policy resource utility;
-- oxygen/terrain/wear fields and oxygen gradients;
-- information detection summaries when full diagnostics are not due.
-- exact uint64 latent-root hash components during batches of new independent experience contents.
-
-The CPU remains authoritative for intent settlement, lifecycle, relation/subject graph changes, knowledge outcome commit order, final latent floating accumulation/quantization and output writing. The runtime reports actual transfer bytes separately from semantic host traffic avoided, and reports `gpu_device_latent_root_rows` for the newly migrated integer-hash batch.
-
-Long `run()` calls defer full field synchronization. Local physiology and terrain settlement now query current device fields by active cell; low-frequency metrics and checkpoints explicitly materialize current device fields. This prevents stale CPU mirrors from affecting long GPU trajectories.
-
-The large-population presets keep authoritative knowledge mechanisms, energy
-costs, aggregate counters, transfer events and full checkpoints, but disable
-five dense per-entity/per-candidate CSV streams. On the target RTX 4070, a
-100-tick scale-4 probe otherwise produced about 674 MiB of output (about
-553 MiB from policy contributions alone). Removing only those observational
-streams reduced the measured mean tick time from 0.737 s to 0.421 s; this is a
-throughput result for one host/device pair, not a scientific effect or a general
-GPU speedup claim.
-
-Both large-population base presets now produce observation and full-world
-checkpoints every 100 ticks. A real scale-4 run produced a 19 MiB `.npz` and
-36 MiB `.sechk` at tick 100; the bundle checksum passed and the run resumed on
-the GPU from tick 100 to tick 101. This cadence does not make a checkpoint
-evolutionarily sufficient. It only improves recovery and supplies more
-predeclared base states for later shared-checkpoint experiments.
-
-The first post-I/O migration targets deterministic latent-root hashing rather
-than floating world settlement. New independent roots are still accepted in
-the same CPU canonical order, while SplitMix64-derived root/action/context and
-outcome-projection signs are computed in device batches. Final accumulation
-and int16 quantization use the historical CPU scalar order. On the RTX 4070,
-22/22 real-device parity tests passed. A matched 20-tick cProfile decreased
-from 22.9 s to 14.0 s; a non-profiler 100-tick window changed more modestly
-from 0.4211 to 0.4098 s/tick because root creation is concentrated early and
-other CPU-authoritative stages remain.
-
-## Validation boundary
-
-- `make test` validates the CPU/no-device build and CPU-emulated parity stages.
-- `make parity-gpu` is mandatory on each target CUDA/CuPy stack and produces the archival parity certificate only when every registered semantic family passes.
-- GPU execution provenance and parity are separate from performance claims.
-- Performance work is evaluated on large source populations, not late low-population response windows.
-
-## Next gates
-
-1. Archive a `make parity-gpu` certificate for the exact target stack; the direct required-device parity suite currently passes 22/22.
-2. Continue the 8,000-entity base run with 100-tick checkpoints and retain storage/transfer telemetry.
-3. Measure scale-8 checkpoint size and write latency before committing to its full 1,500-tick storage budget.
-4. Profile and migrate the remaining latent finalization/router, functional-output and CPU settlement boundaries only with semantic-family parity.
-5. Keep the processing-response mechanism gate closed until replicated response and generation-turnover requirements are met.
+1. Run the fixed 1,200-tick scale-4 demographic plan at 100-tick cadence.
+2. Determine when population decline occurs and which canonical death causes
+   dominate; do not tune them from one observed seed.
+3. Require demographic support and actual generation turnover before using
+   trait differentials as selection evidence.
+4. Preserve every insufficient seed and window; no outcome-based replacement.
+5. Keep all response, migration, specialization and ecotype gates closed until
+   independent replicated evidence survives this validity boundary.
 
 ## Still incomplete
 
-- archived successful parity certificate for the exact target CUDA/CuPy stack;
-- measured scale-8 GPU scaling, checkpoint storage and memory headroom;
-- device-resident action settlement, lifecycle and graph updates;
-- device-resident final knowledge learning/quantization and sparse output pipeline;
-- positive replicated processing-response evidence;
+- completed multi-seed D3-J demographic audit on the target GPU;
+- causal decomposition of any replicated collapse mechanism;
 - adequate generation turnover for evolutionary inference;
+- device-resident action settlement, lifecycle and graph updates;
+- positive replicated processing-response evidence;
 - migration, specialization, coexistence or trophic evidence.

@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 from dataclasses import dataclass, field, replace
 import copy
 import hashlib
@@ -315,6 +314,8 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         )
         self.total_births = 0
         self.total_deaths = 0
+        # Index by the canonical DeathCause signature code (1..7).
+        self.total_death_cause_counts = np.zeros(8, dtype=np.int64)
         self.total_shared_energy = 0.0
         self.total_harvested_resources = np.zeros(4, dtype=np.float64)
         self.total_requested_harvest_resources = np.zeros(4, dtype=np.float64)
@@ -474,7 +475,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         if cfg.run.trajectory_subject_ids:
             self._trajectory_file = (self.output_dir / "trajectory.jsonl").open("w", encoding="utf-8")
         self._write_run_manifest(backend)
-
     def _validate_invariants(self) -> None:
         ent = self.entities
         active = np.flatnonzero(ent.alive)
@@ -562,7 +562,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             ):
                 raise AssertionError("inactive slots retain working-memory state")
         self.knowledge.validate(ent.alive, ent.primary_subject_id)
-
     @property
     def benefit_internal_energy_total(self) -> float:
         return float(self.benefit_flow_energy_total[BenefitFlowKind.INTERNAL])
@@ -2094,6 +2093,9 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             self.social.group_age[dead] = 0
             self.social.mark_group_labels_dirty("entity-death")
             stats.deaths = int(dead.size)
+            cause_codes = np.asarray(death_events.cause_code, dtype=np.uint8)
+            stats.death_cause_counts = np.bincount(cause_codes, minlength=8)[:8]
+            self.total_death_cause_counts += stats.death_cause_counts
             self.total_deaths += stats.deaths
         # With no death this tick no new stale relation target can exist, so
         # skip the otherwise full fixed-slot relationship-table scan.
