@@ -142,8 +142,7 @@ class SimulationCheckpointMixin:
         excluded.  A restored run creates fresh writers and reconstructs the
         requested backend before this host-authoritative state is installed.
         """
-        if self.gpu_runtime is not None:
-            self.gpu_runtime.sync_to_host(self.environment, self.information)
+        self.sync_host_semantic_state()
         return {
             "tick": int(self.tick),
             "entities": copy.deepcopy(self.entities),

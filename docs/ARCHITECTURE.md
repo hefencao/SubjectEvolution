@@ -529,3 +529,25 @@ Full information observations are downloaded only when parity or evaluation diag
 `Simulation.run()` deliberately defers full device-field synchronization. Any CPU-authoritative phase that needs local physiology obtains only the active-cell oxygen/terrain/wear triplets from `HybridGpuRuntime`; metrics and checkpoints explicitly materialize the current device fields at their low-frequency boundaries. This prevents the deferred host mirror from becoming accidental world state.
 
 The CPU still owns action settlement, births/deaths, relations, subject graphs, knowledge learning and file output. Those are future migration boundaries only after large-population profiling identifies them as dominant. `tests/test_parity.py` covers all registered semantic families and now includes the device preprocessing stage; target-device acceptance still requires `make parity-gpu`.
+
+
+## v0.66 authoritative reporting boundary
+
+```text
+device-authoritative world at tick T
+        ↓ report boundary
+materialize current environment + information host mirrors
+        ↓
+metric row / summary tagged reporting_state_tick = T
+```
+
+Checkpoint writes and reporting are independent schedules. A checkpoint may
+materialize device state for replay, but a report never assumes that the latest
+checkpoint is current. This prevents mixed-age rows in which entity counters
+are from tick T while residue, roundoff or information fields come from an
+earlier checkpoint. Materialization is observational and does not feed values
+back into the world.
+
+Before stepping, each run writes `simulation-run-plan-v1` with its fixed target,
+backend and output cadences. The plan is provenance, not a scheduler, and
+explicitly forbids outcome-conditioned schedule changes.

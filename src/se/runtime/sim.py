@@ -300,6 +300,11 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.policy = ParametricPolicy(cfg)
         self.metrics = MetricsWriter(self.output_dir)
         self.tick = 0
+        self.host_semantic_state_tick = 0
+        self.reporting_state_tick = 0
+        self.reporting_state_source = (
+            "gpu-initial-host-mirror" if self.gpu_runtime is not None else "cpu-authoritative"
+        )
         self.last_group_summary = GroupSummary(
             np.empty(0, dtype=np.uint64), np.empty(0, dtype=np.int32), np.empty(0, dtype=np.float32)
         )
@@ -823,6 +828,8 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             self.save_full_checkpoint()
 
     def step(self) -> StepStats:
+        if self.gpu_runtime is not None:
+            self.host_semantic_state_tick = -1
         cfg = self.cfg
         ent = self.entities
         stats = StepStats()
@@ -1169,6 +1176,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             if active.size == 0:
                 if not self._defer_gpu_field_sync:
                     self.gpu_runtime.sync_to_host(self.environment, self.information)
+                    self.host_semantic_state_tick = int(self.tick)
                 transfer = self.gpu_runtime.finish_step_transfer_measurement()
                 transfer.record_into(stats)
                 return stats
@@ -2220,6 +2228,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self._record_trajectories(intents, resolutions, decision.logits)
         if self.gpu_runtime is not None and not self._defer_gpu_field_sync:
             self.gpu_runtime.sync_to_host(self.environment, self.information)
+            self.host_semantic_state_tick = int(self.tick + 1)
         if self.gpu_runtime is not None:
             transfer = self.gpu_runtime.finish_step_transfer_measurement()
             transfer.record_into(stats)
@@ -2250,7 +2259,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         until_tick: int | None = None,
         *,
         tick_observer: Callable[["Simulation", StepStats | None], None] | None = None,
-    ) -> dict[str, float | int]:
+    ) -> dict[str, object]:
         """Advance to an absolute tick and finalize this run's outputs.
 
         ``until_tick`` is absolute rather than a step count so a simulation
@@ -2267,11 +2276,12 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             raise ValueError(
                 f"until_tick {target_tick} precedes current tick {self.tick}"
             )
+        self.write_run_plan(target_tick)
         started = time.perf_counter()
         window_started = started
         run_start_tick = self.tick
         window_start_tick = self.tick
-        final_row: dict[str, float | int] = {}
+        final_row: dict[str, object] = {}
         last_stats: StepStats | None = None
         last_step_seconds = 0.0
         previous_defer_gpu_field_sync = self._defer_gpu_field_sync
@@ -2296,6 +2306,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     reported_at = time.perf_counter()
                     window_ticks = self.tick - window_start_tick
                     window_seconds = reported_at - window_started
+                    self.materialize_reporting_state()
                     final_row = self.metric_row(
                         stats,
                         elapsed,
@@ -2323,6 +2334,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             if not final_row or int(final_row["tick"]) != self.tick:
                 reported_at = time.perf_counter()
                 window_ticks = self.tick - window_start_tick
+                self.materialize_reporting_state()
                 final_row = self.metric_row(
                     last_stats if last_stats is not None else StepStats(),
                     last_step_seconds,
@@ -2338,8 +2350,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     f"wall={final_row['wall_elapsed_seconds']:.1f}s"
                 )
         finally:
-            if self.gpu_runtime is not None:
-                self.gpu_runtime.sync_to_host(self.environment, self.information)
+            self.sync_host_semantic_state()
             self._defer_gpu_field_sync = previous_defer_gpu_field_sync
             self.metrics.close()
             self.evolution_progress.close()

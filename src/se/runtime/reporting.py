@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field, replace
+from dataclasses import asdict, dataclass, field, replace
 import copy
 import hashlib
 import json
@@ -143,6 +143,82 @@ from .state import EntityState, StepStats, _wrap_periodic_float32
 
 class SimulationReportingMixin:
     """Run provenance, scientific validity, progress, and metric publication."""
+
+    def write_run_plan(self, target_tick: int) -> Path:
+        """Write the resolved execution plan before the first authoritative step.
+
+        This is provenance, not an adaptive scheduler: the plan records the
+        predeclared target, reporting cadence, checkpoint cadence and resolved
+        backend without using run outcomes to alter the world.
+        """
+        config_payload = asdict(self.cfg)
+        canonical = json.dumps(
+            config_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
+        plan = {
+            "schema": "simulation-run-plan-v1",
+            "version": __version__,
+            "start_tick": int(self.tick),
+            "target_tick": int(target_tick),
+            "requested_backend": self.requested_backend,
+            "execution_backend": self.execution_backend,
+            "gpu_semantics_mode": self.gpu_semantics_mode,
+            "gpu_acceleration_enabled": bool(self.gpu_acceleration_enabled),
+            "gpu_fallback_used": bool(self.gpu_fallback_used),
+            "gpu_fallback_reason": self.gpu_fallback_reason,
+            "experiment_mode": self.experiment_mode.value,
+            "resolved_config_sha256": hashlib.sha256(canonical).hexdigest(),
+            "reporting": {
+                "metrics_period": int(self.cfg.run.metrics_period),
+                "summary_schema": "authoritative-reporting-snapshot-v1",
+                "device_state_materialized_at_every_report": True,
+            },
+            "checkpoints": {
+                "period": int(self.cfg.run.checkpoint_period),
+                "exact_ticks": [int(value) for value in self.cfg.run.checkpoint_ticks],
+                "full_checkpoint_enabled": bool(self.cfg.run.full_checkpoint_enabled),
+                "thin_pattern": "checkpoint_{tick:08d}.npz",
+                "full_pattern": "checkpoint_{tick:08d}.sechk",
+            },
+            "planned_outputs": [
+                "run_plan.json",
+                "metrics.csv",
+                "summary.json",
+                "scientific_validity.json",
+                "run_metadata.json",
+            ],
+            "checkpoint_lineage": copy.deepcopy(self.checkpoint_lineage),
+            "outcome_conditioned_schedule_changes": False,
+        }
+        destination = self.output_dir / "run_plan.json"
+        destination.write_text(
+            json.dumps(plan, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        return destination
+
+    def sync_host_semantic_state(self) -> None:
+        """Materialize device-owned semantic fields at most once per tick."""
+        if self.gpu_runtime is None:
+            self.host_semantic_state_tick = int(self.tick)
+            return
+        if int(getattr(self, "host_semantic_state_tick", -1)) == int(self.tick):
+            return
+        self.gpu_runtime.sync_to_host(self.environment, self.information)
+        self.host_semantic_state_tick = int(self.tick)
+
+    def materialize_reporting_state(self) -> None:
+        """Make every field used by one report authoritative at ``self.tick``.
+
+        Hybrid runs deliberately defer full device-to-host field copies between
+        checkpoints. A report is a separate semantic boundary: summary fields
+        must never silently mix current entity counters with an older host
+        environment mirror.
+        """
+        self.sync_host_semantic_state()
+        source = "gpu-materialized" if self.gpu_runtime is not None else "cpu-authoritative"
+        self.reporting_state_tick = int(self.tick)
+        self.reporting_state_source = source
 
     def _write_run_manifest(self, requested_backend: str) -> None:
         config_payload = json.dumps(
@@ -1213,7 +1289,7 @@ class SimulationReportingMixin:
         wall_elapsed: float = 0.0,
         window_seconds: float = 0.0,
         window_ticks: int = 1,
-    ) -> dict[str, float | int]:
+    ) -> dict[str, object]:
         ent = self.entities
         active = np.flatnonzero(ent.alive)
         alive_count = active.size
@@ -1395,8 +1471,15 @@ class SimulationReportingMixin:
             + self.benefit_flow_energy_total[BenefitFlowKind.GROUP_TO_GROUP]
             + self.benefit_flow_energy_total[BenefitFlowKind.GROUP_TO_UNGROUPED]
         )
-        row: dict[str, float | int] = {
+        row: dict[str, object] = {
             "tick": self.tick,
+            "reporting_snapshot_schema": "authoritative-reporting-snapshot-v1",
+            "reporting_state_tick": int(
+                getattr(self, "reporting_state_tick", self.tick)
+            ),
+            "reporting_state_source": str(
+                getattr(self, "reporting_state_source", "unmaterialized")
+            ),
             "alive": alive_count,
             "births_step": stats.births,
             "deaths_step": stats.deaths,

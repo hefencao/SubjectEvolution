@@ -1,6 +1,19 @@
 # SE project status
 
-Version: **0.65.0**
+Version: **0.66.0**
+
+## v0.66 reporting and plan boundary
+
+The supplied scale-4 runs exposed a mixed-age summary: current tick/entity
+counters were combined with a residue field last synchronized by the preceding
+full checkpoint. v0.66 treats reporting as its own authoritative boundary.
+Every metrics row materializes current device-owned fields and records the
+materialized tick; checkpoint cadence can no longer change summary freshness.
+
+A fixed `run_plan.json` is written before stepping. It records target tick,
+backend, metrics cadence and checkpoint schedule without using outcomes to
+change the run. This fills the missing plan artifact while preserving the
+project rule against outcome-conditioned checkpoint or seed selection.
 
 ## Current causal and measurement chain
 

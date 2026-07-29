@@ -1,0 +1,2 @@
+tick=      1 alive=   1000 groups=    0 E=1.817 step=0.011s window_avg=0.011s wall=0.0s
+tick=      2 alive=   1000 groups=    0 E=1.836 step=0.011s window_avg=0.013s wall=0.0s

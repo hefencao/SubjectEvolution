@@ -1,0 +1,15 @@
+WARNING: The directory '/home/oai/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Looking in indexes: https://reader:****@packages.applied-caas-gateway1.internal.api.openai.org/artifactory/api/pypi/pypi-public/simple
+Obtaining file:///mnt/data/work_v066/se_v065_project
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: se-mvp
+  Building editable for se-mvp (pyproject.toml): started
+  Building editable for se-mvp (pyproject.toml): finished with status 'done'
+  Created wheel for se-mvp: filename=se_mvp-0.66.0-0.editable-py3-none-any.whl size=4208 sha256=a3bb60a7ceab9c34ce6fbd03fb4be4a3296eb2f1a49c6b871b2977aacc4098f7
+  Stored in directory: /tmp/pip-ephem-wheel-cache-z07ou_vi/wheels/17/84/90/f79c208bd213794bacb65ec72be168eb22b790b169b87d0bb7
+Successfully built se-mvp
+Installing collected packages: se-mvp
+Successfully installed se-mvp-0.66.0

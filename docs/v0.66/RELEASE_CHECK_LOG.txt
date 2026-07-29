@@ -1,0 +1,3 @@
+python scripts/run_release_check.py --project . --test-report docs/v0.66/FINAL_TEST_REPORT.json --report docs/v0.66/RELEASE_CHECK_REPORT.json 
+{"passed": true, "report": "/tmp/se-dist-verify-l5hilsm0/isolated_wheel_validation.json", "wheel": "/tmp/se-dist-verify-l5hilsm0/dist/wheel/se_mvp-0.66.0-py3-none-any.whl", "venv": "/tmp/se-dist-verify-l5hilsm0/venv"}
+release-check is an artifact audit only; conda-sync is the local runtime workflow.

@@ -1,30 +1,31 @@
-# SE v0.65
+# SE v0.66
 
 SE is a deterministic artificial-life and subject-structure research platform. The current main line retains four role-free resource channels, conservative delayed storage and processing, identity-preserving external recycling, persistent abiotic renewal, costed spatial processing support, matched controls and nested shared-checkpoint response measurement.
 
-## Why v0.65
+## Why v0.66
 
-v0.65 advances the large-population GPU path rather than treating late 100–300 entity windows as a performance gate. The CPU remains authoritative for action settlement and lifecycle, while regular observation preprocessing now stays on the selected device:
+v0.66 integrates the supplied scale-4 GPU/knowledge optimizations and fixes the
+reporting boundary exposed by the two completed 3,000-tick runs. Hybrid runs
+intentionally keep environment fields device-resident between checkpoints, but
+`summary.json` previously combined the current entity/tick counters with the
+most recently materialized host residue mirror. Changing checkpoint cadence
+therefore changed summary freshness without changing the final tick.
 
-- fixed-budget resource-affinity quantization;
-- fixed-budget danger-evidence quantization;
-- affinity/storage-conditioned policy resource view;
-- oxygen-gradient construction;
-- information detection summaries when full parity/evaluation diagnostics are not due.
+Every metrics row and final summary now uses an
+`authoritative-reporting-snapshot-v1` boundary: current device state is
+materialized before the row is assembled, and the row records
+`reporting_state_tick` and `reporting_state_source`. Summary correctness is no
+longer coupled to checkpoint cadence.
 
-The runtime reports both actual transfer bytes and the semantic host traffic avoided by this device-resident boundary. No world, reward, sensing, inheritance or ecological mechanism changes in this release.
+Every `Simulation.run()` also writes `run_plan.json` before the first
+authoritative step. The plan records the fixed target tick, reporting cadence,
+checkpoint cadence, resolved backend and config hash; it never adapts the
+schedule from observed outcomes.
 
-Two density-preserving large-run presets are included:
-
-```bash
-se --config configs/mvp_d3i_gpu_scale4_longrun.json \
-  --output runs/d3i_gpu_scale4 --backend auto
-
-se --config configs/mvp_d3i_gpu_scale8_longrun.json \
-  --output runs/d3i_gpu_scale8 --backend auto
-```
-
-They start with 8,000 and 32,000 entities respectively, use real hybrid GPU execution when available, disable per-tick invariant validation, and leave semantic validation to the target-device parity suite.
+The supplied staged files additionally retain 100-tick full checkpoints, disable
+large dense audit CSV streams, and batch deterministic latent-root hash work on
+the selected device. No world, reward, sensing, inheritance, population-support
+or ecological mechanism changes in this release.
 
 ## GPU execution and parity
 
@@ -110,6 +111,6 @@ make release-check
 
 ## Current version documents
 
-- [Implementation report](docs/v0.65/IMPLEMENTATION_REPORT.md)
-- [Supplied D3-I effect audit](docs/v0.65/SUPPLIED_D3I_EFFECT_AUDIT/d3_response_scale_audit.md)
-- [Supplied GPU execution audit](docs/v0.65/SUPPLIED_GPU_EXECUTION_AUDIT/gpu_execution_audit.json)
+- [Implementation report](docs/v0.66/IMPLEMENTATION_REPORT.md)
+- [Supplied scale-4 summary audit](docs/v0.66/SUPPLIED_SCALE4_SUMMARY_AUDIT.md)
+- [Protocol audit](docs/v0.66/protocol_audit.md)

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.66.0
+
+### Authoritative reporting snapshots and pre-run plans
+
+- Applies every file from `staged_files_20260729.zip` over the v0.65 baseline.
+- Retains 100-tick scale-4/scale-8 checkpoints, optional dense knowledge audit logs, batched deterministic GPU latent-root hashes and their transfer telemetry.
+- Audits the two supplied 3,000-tick scale-4 summaries: both report tick 3000/alive 7506, while residue and its roundoff fields reflect the prior host materialization (user-reported tick 2000 with 1,000-tick checkpoints and tick 2900 with 100-tick checkpoints).
+- Adds `authoritative-reporting-snapshot-v1`; every periodic/final report materializes current hybrid device state before assembling the row.
+- Adds `reporting_state_tick` and `reporting_state_source`, requiring the summary state tick to equal the reported tick.
+- Decouples summary freshness from checkpoint cadence; checkpoint frequency remains a recovery/storage decision only.
+- Writes `simulation-run-plan-v1` to `run_plan.json` before the first authoritative step for normal, resumed and experiment branch runs.
+- Records fixed target, metrics/checkpoint schedules, exact ticks, resolved backend, config hash and non-adaptive schedule semantics.
+- Upgrades protocol audit to v34 and project version to 0.66.0.
+- Adds no sensor, reward, controller, population support, diversity protection, role label or world mechanism.
+
 ## 0.65.0
 
 ### Large-population device-resident preprocessing and deferred-sync correctness

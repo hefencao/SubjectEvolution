@@ -1,0 +1,91 @@
+{
+  "schema": "scale4-summary-stale-mirror-audit-v1",
+  "inputs": [
+    {
+      "label": "checkpoint-period-1000",
+      "file": "summary_1000.json",
+      "sha256": "e3665b6f4d628d184409308fbb4eb505f4f952c62d2b1ff248180321626ad0f4",
+      "tick": 3000,
+      "alive": 7506,
+      "user_reported_last_host_mirror_tick": 2000
+    },
+    {
+      "label": "checkpoint-period-100",
+      "file": "summary(2).json",
+      "sha256": "118772918acdf1067f4e8ed0c75574b109601534b836f7287b79ee0a04059821",
+      "tick": 3000,
+      "alive": 7506,
+      "user_reported_last_host_mirror_tick": 2900
+    }
+  ],
+  "common_final_tick": 3000,
+  "common_alive": 7506,
+  "differing_top_level_key_count": 37,
+  "differing_key_classes": {
+    "timing": [
+      "conflict_seconds",
+      "device_commit_seconds",
+      "environment_seconds",
+      "evolution_evaluation_seconds",
+      "graph_seconds",
+      "observation_seconds",
+      "policy_seconds",
+      "spatial_seconds",
+      "step_seconds",
+      "wall_elapsed_seconds",
+      "window_seconds",
+      "window_seconds_per_tick"
+    ],
+    "gpu_telemetry": [
+      "gpu_d2h_bytes",
+      "gpu_device_latent_root_rows",
+      "gpu_h2d_bytes"
+    ],
+    "resource_residue_or_roundoff": [
+      "resource_residue_deposit_roundoff_0_step",
+      "resource_residue_deposit_roundoff_0_total",
+      "resource_residue_deposit_roundoff_1_step",
+      "resource_residue_deposit_roundoff_1_total",
+      "resource_residue_deposit_roundoff_2_step",
+      "resource_residue_deposit_roundoff_2_total",
+      "resource_residue_deposit_roundoff_3_step",
+      "resource_residue_deposit_roundoff_3_total",
+      "resource_residue_deposit_roundoff_total",
+      "resource_residue_field_roundoff_0_step",
+      "resource_residue_field_roundoff_0_total",
+      "resource_residue_field_roundoff_1_step",
+      "resource_residue_field_roundoff_1_total",
+      "resource_residue_field_roundoff_2_step",
+      "resource_residue_field_roundoff_2_total",
+      "resource_residue_field_roundoff_3_step",
+      "resource_residue_field_roundoff_3_total",
+      "resource_residue_field_roundoff_total",
+      "resource_residue_mean",
+      "resource_residue_numerical_adjustment_total",
+      "resource_residue_std",
+      "resource_residue_total"
+    ],
+    "other": []
+  },
+  "resource_residue_total": {
+    "checkpoint_period_1000_summary": [
+      1274.0912387243006,
+      1258.2481839046814,
+      1300.2060227338225,
+      1316.5786032611504
+    ],
+    "checkpoint_period_100_summary": [
+      3280.3765747209545,
+      2985.078865673393,
+      3326.107370005222,
+      3247.1724624461494
+    ]
+  },
+  "diagnosis": "The report row was assembled before the final checkpoint/materialization boundary. Current entity counters and tick were combined with the most recently synchronized host residue mirror. Checkpoint cadence therefore changed summary freshness.",
+  "required_fix": {
+    "summary_schema": "authoritative-reporting-snapshot-v1",
+    "materialize_device_state_before_every_report": true,
+    "summary_freshness_independent_of_checkpoint_period": true,
+    "reporting_state_tick_must_equal_summary_tick": true
+  }
+}

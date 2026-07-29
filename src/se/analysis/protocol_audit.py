@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v33"
+SCHEMA = "structural-measurement-protocol-audit-v34"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -146,6 +146,16 @@ def build_protocol_audit(
                 "all checkpoint-authoritative semantic leaves",
                 "persistent GPU entity, environment, information, and social mirrors",
             ],
+            "feedback_to_world": False,
+        },
+        "run_reporting_protocol": {
+            "plan_schema": "simulation-run-plan-v1",
+            "plan_written_before_first_authoritative_step": True,
+            "summary_schema": "authoritative-reporting-snapshot-v1",
+            "hybrid_device_state_materialized_at_every_report": True,
+            "summary_tick_and_reporting_state_tick_must_match": True,
+            "checkpoint_cadence_independent_from_summary_freshness": True,
+            "outcome_conditioned_schedule_changes": False,
             "feedback_to_world": False,
         },
         "group_label_protocol": group,
@@ -1148,6 +1158,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     resource = payload["resource_environment_protocol"]
     differentiation = payload["differentiation_capacity_protocol"]
     execution = payload["execution_backend_protocol"]
+    reporting = payload["run_reporting_protocol"]
     lines = [
         "# Structural measurement protocol audit",
         "",
@@ -1168,6 +1179,17 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- large-run validation: {execution['large_run_validation_policy']}",
         f"- parity scope: {execution['parity_scope']}",
         f"- feedback to world: {execution['feedback_to_world']}",
+        "",
+        "## Run reporting",
+        "",
+        f"- plan schema: `{reporting['plan_schema']}`",
+        f"- plan written before first step: {reporting['plan_written_before_first_authoritative_step']}",
+        f"- summary schema: `{reporting['summary_schema']}`",
+        f"- materialize hybrid state at every report: {reporting['hybrid_device_state_materialized_at_every_report']}",
+        f"- tick consistency required: {reporting['summary_tick_and_reporting_state_tick_must_match']}",
+        f"- checkpoint cadence independent: {reporting['checkpoint_cadence_independent_from_summary_freshness']}",
+        f"- outcome-conditioned schedule changes: {reporting['outcome_conditioned_schedule_changes']}",
+        f"- feedback to world: {reporting['feedback_to_world']}",
         "",
         "## Group label",
         "",

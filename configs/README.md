@@ -8,6 +8,10 @@ Single run:
 se --config configs/<name>.json --output runs/<name> --backend auto
 ```
 
+Each run writes `run_plan.json` before its first step and tags every summary
+with an authoritative reporting-state tick. Checkpoint cadence controls recovery
+artifacts, not the freshness of `summary.json`.
+
 Multi-seed:
 
 ```bash
