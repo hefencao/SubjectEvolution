@@ -388,3 +388,28 @@ post-step observer compares realized destination with no-move position
 The observer reconstructs pre-step store demand for entities present on both sides of a step and samples the next-tick support field at the realized destination and the periodic no-move position. It reports destination-minus-stay support gain, movement/gradient cosine, inventory-weighted exposure and channel store-support correlation. Bilinear sampling is diagnostic only; authoritative metabolism continues to use the existing cell-sampled multiplier.
 
 No response statistic feeds policy, fitness, reproduction, world fields or intervention selection. Original/reversed/neutral contrasts identify registered support interventions only. They cannot by themselves establish migration, specialization, coexistence, ecotypes or ecological roles.
+
+## v0.60 D3-G nested sample-support boundary
+
+D3-G separates source evolution, acute intervention response, and interpretation eligibility:
+
+```text
+unintervened source trajectory
+        ↓ all predeclared checkpoints retained
+seed / checkpoint full-world state
+        ├─ original support, fixed acute window
+        ├─ reversed support, fixed acute window
+        └─ neutral support, fixed acute window
+                    ↓
+read-only response and sample-support observers
+                    ↓
+acute eligibility and evolutionary eligibility reported separately
+```
+
+The source run disables expensive long-run output diagnostics that have no feedback to world state. World mechanics, policy, RNG, costs, checkpoint contents and branch interventions remain unchanged.
+
+Sample-support accounting uses the seed/checkpoint panel as the nested experimental unit. Movement events, entity-ticks and observation windows are measurement support within that panel, not independent replicates. Every predeclared checkpoint is represented by either a completed panel or an explicit unavailable record. No endpoint-dependent replacement is permitted.
+
+The acute branch ledger starts from checkpoint inventory and cumulative counters, subtracts checkpoint baselines, and closes only the branch interval. This prevents tick-zero history from hiding a branch-window accounting error.
+
+Density-preserving scale configs increase world area, grid cells, initial entities and maximum entities by the same area factor. Cell size and entity density remain fixed. Scale changes no reward, protection, role, genotype, mutation, cost or per-cell environmental parameter.

@@ -1,0 +1,24 @@
+{
+  "schema": "d3g-scale-checkpoint-pilot-v1",
+  "tick": 300,
+  "branches_completed": false,
+  "base": {
+    "config": "configs/mvp_short_d3e_spatial_processing_longrun.json",
+    "linear_scale": 1.0,
+    "initial_entities": 500,
+    "alive": 119,
+    "effective_lineages": 108.09923664122137,
+    "mean_generation": 0.05042016806722689,
+    "max_generation": 1
+  },
+  "scale_1p5": {
+    "config": "configs/mvp_short_d3g_spatial_processing_scale1p5_longrun.json",
+    "linear_scale": 1.5,
+    "initial_entities": 1125,
+    "alive": 274,
+    "effective_lineages": 246.9605263157896,
+    "mean_generation": 0.05474452554744526,
+    "max_generation": 1
+  },
+  "interpretation": "Unprotected geometric scaling increases the population and lineage count available at tick 300, but does not create generational depth. The scale-1.5 acute triplet was not completed on the delivery host and is not treated as response evidence."
+}

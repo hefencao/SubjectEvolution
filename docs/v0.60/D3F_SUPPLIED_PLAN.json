@@ -1,0 +1,34 @@
+{
+  "schema": "d3-spatial-processing-response-plan-v1",
+  "seeds": [
+    59001,
+    59002,
+    59003
+  ],
+  "horizon_ticks": 1500,
+  "shared_checkpoint_tick": 0,
+  "observation_period_ticks": 30,
+  "trajectory_schema": "inventory-weighted-processing-response-trajectory-v1",
+  "branches": [
+    "original-support",
+    "reversed-support",
+    "neutral-support"
+  ],
+  "original_interventions": [],
+  "reversed_interventions": [
+    "reverse-spatial-processing-support"
+  ],
+  "neutral_interventions": [
+    "neutralize-spatial-processing-support"
+  ],
+  "support_orientation_reversal_preserves_resource_fields": true,
+  "support_orientation_reversal_preserves_processing_cost": true,
+  "neutral_support_preserves_processing_cost": true,
+  "movement_reward_or_controller_added": false,
+  "support_sensor_added": false,
+  "entity_lineage_and_group_feedback": false,
+  "named_resource_roles": false,
+  "diversity_reward_or_protection": false,
+  "ecological_role_labels": false,
+  "pass_fail_gate": false
+}

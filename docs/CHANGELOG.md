@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.60.0
+
+### Preregistered acute response panels and sample-support accounting
+
+- Reanalyzes the supplied D3-F 1500-tick panel in fixed 300-tick blocks.
+- Shows that the first 300 ticks contribute 43.7%–53.7% of eligible entity-ticks and 52.8%–61.3% of resource movements.
+- Records that every branch first falls below 100 alive between observed ticks 330 and 420; the mechanism audit remains valid but long-run population support does not.
+- Adds `se-d3-response-adequacy` for fixed-block historical result auditing without treating movement events as independent replicates.
+- Adds `se-d3-processing-response-panel`, which runs all predeclared source checkpoints through original, reversed and neutral acute branches.
+- Retains unavailable and sampling-insufficient checkpoints instead of replacing or filtering them by outcomes.
+- Reports exact alive and eligible entity-ticks, unique entities, effective lineage entity-ticks, largest-lineage contribution, births, deaths, age and generation depth.
+- Separates acute-response eligibility from evolutionary-sampling eligibility.
+- Adds checkpoint-relative external-resource and recycling ledgers for every acute branch.
+- Adds density-preserving 1.5× and 2× linear map-scale configurations without population, lineage or diversity protection.
+- Adds protocol audit v28, two console entries, tests, supplied-result audit, and a base checkpoint-300 pilot.
+- Adds no sensor, reward, migration controller, ecological role, population rescue or causal ecological claim.
+- Complete packages retain only `docs/v0.60` as a version-specific directory.
+
 ## 0.59.0
 
 ### Inventory-conditioned spatial-processing response audit

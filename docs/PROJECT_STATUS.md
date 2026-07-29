@@ -1,8 +1,8 @@
 # SE project status
 
-Version: **0.59.0**
+Version: **0.60.0**
 
-## Current causal chain
+## Current causal and measurement chain
 
 ```text
 role-free four-channel external resource and abiotic fields
@@ -19,49 +19,43 @@ role-free four-channel external resource and abiotic fields
 → identity-preserving external residual-material deposition, diffusion and release
 → phase-shifted abiotic processing support applied only after storage
 → explicit per-unit conversion energy cost
-→ shared-checkpoint support neutralization
-→ support-only orientation reversal
+→ support neutralization and support-only orientation reversal
 → read-only inventory-conditioned movement-response audit
-→ response evidence gate before any migration or ecological differentiation mechanism
+→ fixed-block historical sampling-adequacy audit
+→ preregistered multi-checkpoint acute response panels
+→ separate acute-response and evolutionary sample-support labels
+→ evidence gate before any migration or ecological differentiation mechanism
 ```
 
-## Supplied D3-E result
+## Supplied D3-F result
 
-The supplied three-seed, 1500-tick shared-checkpoint panel retains the D3-E substrate:
+The supplied three-seed, 1500-tick triplets complete the D3-F mechanism audit:
 
-- every active branch experiences nonuniform support plus both limited and accelerated processing;
-- every neutral branch reports exact unit support;
-- processing cost occurs in all six branches;
-- external-resource and external-recycling ledgers close in all six branches;
-- active-minus-neutral total conversion is negative in all three seeds;
-- active-minus-neutral survival has mixed signs.
+- all branches share their registered tick-0 checkpoint;
+- response trajectories are complete;
+- resource movement occurs in every branch;
+- active support is nonuniform and neutral support is exactly one;
+- external-resource and external-recycling ledgers close in every branch.
 
-The paired differences establish only the effect of support neutralization within each checkpoint. They do not show whether ordinary movement seeks processing opportunity and do not establish migration, collection-processing specialization, coexistence, trophic transfer, ecotypes, or named roles.
+The result still does not provide population-balanced long-run evidence. A fixed 300-tick reanalysis shows that the first 300 ticks contribute 43.7%–53.7% of eligible entity-ticks and 52.8%–61.3% of resource movements. Every branch first falls below 100 alive between observed ticks 330 and 420, and no post-burn-in branch retains that floor across all snapshots. Movement events are nested repeated observations, not independent replicates.
 
-## v0.59 decision
+## v0.60 decision
 
-Add D3-F as an **audit**, not as a new ecological capability.
+Add D3-G as a **sampling and experimental-design correction**, not as a new ecological capability.
 
-Every seed restores one tick-0 checkpoint into three branches:
+For every seed, an unintervened source trajectory writes all predeclared checkpoints. Every available checkpoint is restored into original, reversed and neutral support branches for a default 120-tick acute window. Missing or insufficient checkpoints stay in the result and are never replaced from outcomes.
 
-1. `original-support` keeps the configured support field;
-2. `reversed-support` rotates only the non-material support surface by 180 degrees;
-3. `neutral-support` fixes the effective multiplier at `1.0` while retaining processing cost.
+The panel reports exact branch-window entity-ticks, eligible entity-ticks, movements, unique entities, lineage concentration, generation depth and checkpoint-relative material ledgers. Acute-response eligibility and evolutionary-sampling eligibility are separate.
 
-The support reversal preserves the resource fields, residual material, renewal process, genotype, inheritance, random state, processing-energy rates, sensors, policy and material fluxes. A read-only post-step observer measures inventory-weighted support exposure, destination-versus-stay support gain, local-gradient alignment and channel-wise store-support association. It never changes world state.
+The default base pilot at checkpoint 300 had 119 alive and about 108 effective living lineages, but all three 120-tick branches dropped below 100 alive. It is therefore retained as a complete mechanism panel but marked insufficient for the preregistered acute analysis. Mean living generation was about 0.05 and maximum generation was 1, so it is also explicitly ineligible for evolutionary interpretation.
 
-The reduced two-seed, 120-tick validation completed all triplets and ledgers, but did **not** show positive support-aligned resource movement. Mean destination-minus-stay support gain and mean gradient cosine were negative in original, reversed and neutral branches; reversed values were merely closer to zero. This is a negative short-window finding and prevents promotion to a migration mechanism.
+A 1.5× linear, density-preserving source pilot reached checkpoint 300 with 274 alive and about 247 effective lineages, but mean generation remained about 0.055 and maximum generation remained 1. The full triplet was not completed on the delivery host and is not treated as response evidence.
 
 ## Next gate
 
-Run a preregistered D3-F panel with the same three-branch shared-checkpoint contract across:
+Run the preregistered D3-G panel across independent seeds and at least the base and one density-preserving larger map scale. Analyze only panels marked acute-eligible, while retaining every insufficient panel in the report. Checkpoints within one seed remain nested observations.
 
-- at least three seeds;
-- multiple horizons;
-- at least two map scales or wave periods;
-- fixed observation rules declared before outcomes are inspected.
-
-Only repeated orientation-aligned movement response may justify discussing a missing sensing or control capability. A one-off endpoint difference, lower conversion, survival change, inventory correlation or generic trajectory divergence is insufficient. Until then, do not add a processing-support sensor, movement reward, migration controller, diversity protection or ecological-role label.
+Do not add a processing-support sensor, movement reward, migration controller, population rescue, diversity protection or ecological-role label unless repeated orientation-aligned response appears across independent seeds and scales. Evolutionary claims additionally require actual generation turnover rather than a long tick count alone.
 
 ## Development workflow
 
@@ -69,8 +63,10 @@ Only repeated orientation-aligned movement response may justify discussing a mis
 
 ## Still incomplete
 
-- replicated multi-horizon and map-scale D3-F response evidence;
-- evidence that movement response reverses with support orientation rather than reflecting generic trajectory sensitivity;
+- replicated sample-supported D3-G acute panels across independent seeds;
+- a completed larger-map acute panel;
+- adequate generation turnover for evolutionary inference;
+- evidence that response reverses with support orientation rather than generic trajectory sensitivity;
 - a justified sensory or control mechanism for processing opportunity;
 - migration cycles driven by moving opportunities and stored inventory;
 - externalization of non-store body matter;

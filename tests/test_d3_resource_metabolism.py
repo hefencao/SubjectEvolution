@@ -146,7 +146,7 @@ def test_legacy_v3_does_not_allocate_resource_store() -> None:
 
 def test_protocol_audit_records_delayed_resource_metabolism() -> None:
     audit = build_protocol_audit(D3_CONFIG)
-    assert audit["schema"] == "structural-measurement-protocol-audit-v27"
+    assert audit["schema"] == "structural-measurement-protocol-audit-v28"
     functional = audit["functional_module_protocol"]
     semantics = functional["resource_metabolism_semantics"]
     experiment = functional["resource_metabolism_experiment"]

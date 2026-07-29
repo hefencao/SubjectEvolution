@@ -1,0 +1,30 @@
+{
+  "schema": "conda-validation-status-v1",
+  "project_version": "0.60.0",
+  "conda_prefix": null,
+  "conda_environment_active": false,
+  "make_conda_sync": {
+    "passed": false,
+    "reason": "CONDA_PREFIX is not set; the explicit environment guard stopped before installation",
+    "version_consistency_passed": true,
+    "bytecode_cleanup_passed": true
+  },
+  "make_conda_check": {
+    "passed": false,
+    "reason": "the full test phase passed, then --require-conda stopped at the explicit CONDA_PREFIX guard",
+    "tests_passed": 283,
+    "tests_skipped": 1
+  },
+  "non_conda_editable_verification": {
+    "passed": true,
+    "module_count": 115,
+    "console_entry_count": 30,
+    "external_smoke_passed": true
+  },
+  "fabricated_conda_state": false,
+  "required_local_commands": [
+    "make conda-sync",
+    "make test",
+    "make conda-check"
+  ]
+}

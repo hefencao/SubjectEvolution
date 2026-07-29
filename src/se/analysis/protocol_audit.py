@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v27"
+SCHEMA = "structural-measurement-protocol-audit-v28"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -608,6 +608,38 @@ def build_protocol_audit(
                 "finite_seed_signs_generalized": False,
                 "stable_migration_or_ecotype_claim": False,
             },
+            "processing_response_sample_support_protocol": {
+                "plan_schema": "d3-processing-response-panel-plan-v1",
+                "result_schema": "d3-processing-response-panel-results-v1",
+                "sample_schema": "nested-seed-checkpoint-response-sampling-v1",
+                "source_trajectory": "unintervened baseline to every predeclared checkpoint",
+                "branches": [
+                    "original-support",
+                    "reversed-support",
+                    "neutral-support",
+                ],
+                "default_response_window_ticks": 120,
+                "default_observation_period_ticks": 30,
+                "all_predeclared_checkpoints_retained": True,
+                "insufficient_or_unavailable_checkpoints_replaced": False,
+                "outcome_conditioned_checkpoint_selection": False,
+                "nested_independent_unit": "seed/checkpoint",
+                "movement_events_independent_replicates": False,
+                "reported_sample_support": [
+                    "minimum alive and alive entity-ticks",
+                    "inventory-eligible entity-ticks",
+                    "resource movement count",
+                    "unique entities",
+                    "effective lineage entity-ticks",
+                    "largest lineage entity-tick fraction",
+                    "checkpoint births and generation depth",
+                ],
+                "acute_and_evolutionary_eligibility_separate": True,
+                "checkpoint_relative_resource_and_recycling_ledgers": True,
+                "sampling_gate_feedback_to_world": False,
+                "population_or_lineage_protection": False,
+                "stable_migration_or_ecotype_claim": False,
+            },
             "persistent_resource_renewal_experiment": {
                 "plan_schema": "d3-persistent-resource-renewal-plan-v2",
                 "result_schema": "d3-persistent-resource-renewal-results-v2",
@@ -1150,6 +1182,8 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- external recycling experiment: {payload['functional_module_protocol']['external_recycling_experiment']}",
         f"- persistent resource renewal experiment: {payload['functional_module_protocol']['persistent_resource_renewal_experiment']}",
         f"- spatial processing experiment: {payload['functional_module_protocol']['spatial_processing_experiment']}",
+        f"- spatial processing response audit: {payload['functional_module_protocol']['spatial_processing_response_audit']}",
+        f"- processing response sample support: {payload['functional_module_protocol']['processing_response_sample_support_protocol']}",
         f"- known architecture limit: {payload['functional_module_protocol']['known_architecture_limit']}",
         f"- leave-one-out protocol: {payload['functional_module_protocol']['leave_one_out_protocol']}",
         f"- effect qualification: {payload['functional_module_protocol']['effect_qualification']}",
