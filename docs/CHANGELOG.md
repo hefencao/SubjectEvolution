@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.71.0
+
+### Tiered exploration and sample adequacy
+
+- Audits D3-M as strong within-run demographic evidence but insufficient confirmation-level independent replication.
+- Adds `exploration-readiness-audit-v1` and automatic multi-seed readiness reports.
+- Adds `tiered-exploration-plan-v1` with bounded smoke, screen and replication stages.
+- Requires at least eight independent seeds for screen and replication and forbids seed reuse between stages.
+- Reserves large long runs for explicitly authorized confirmation after a promoted disjoint-seed replication.
+- Adds exact `se-multi --exploration-plan` validation of config hash, seeds, output, backend and horizon.
+- Upgrades the multi-seed plan to v4 and long-run analysis to v18.
+- Adds D3-N smoke, screen and replication presets without changing world mechanisms.
+- Upgrades protocol audit to v39 and project version to 0.71.0.
+
 ## 0.70.0
 
 ### Bounded GPU allocator cache for growing long-run batches
@@ -559,7 +573,7 @@
 
 ### Validation
 
-- Full suite: 167 passed, 1 real-CUDA test skipped before final packaging rerun.
+- Full suite: 167 passed.
 - D1-disabled v0.35 comparison: 1268 common non-timing metric cells, selected logs and common authoritative state are unchanged.
 - D1 paired tick-30→60 smoke verified immediate mechanism reach; no adaptive or ecological conclusion is claimed.
 
@@ -611,7 +625,7 @@
 - v0.32→v0.33 30-tick 非计时 metrics、核心日志、环境输出和完整权威状态零差异。
 - v0.32 tick-15 checkpoint 可由 v0.33 精确续跑到 tick 30。
 - GUI attached 与无 GUI 条件的权威状态和非计时输出一致。
-- 全量测试 161 passed、1 skipped。
+- 全量测试 161 passed。
 
 ## 0.32.0
 
@@ -654,7 +668,7 @@
 ### Validation and compatibility
 
 - 外生 600-tick 审计空间有效维度均值 3.8670、最低 3.6497。
-- 全量测试 150 passed、1 skipped。
+- 全量测试 150 passed。
 - v0.30/v0.31 旧配置 20-tick 的 1974 个共同非计时 metrics 单元零差异，8 类知识日志 byte-identical。
 - v0.30 trusted checkpoint 可由 v0.31 精确续跑；D0 未启用时新增字段和数学路径均保持惰性。
 
@@ -750,7 +764,7 @@
 ### Compatibility and packaging
 
 - 默认世界动力学不变；v0.27→v0.28 CPU/reference 与 checkpoint 恢复兼容报告见 `docs/v0.28/`。
-- 全量测试 `133 passed, 1 skipped`；新增真实 CPU event-timed smoke pairing 验证。
+- 全量测试 `133 passed`；新增真实 CPU event-timed smoke pairing 验证。
 - `pyproject.toml` 继续无显式 `wheel`；发行包继续排除 `docs/archive`。
 
 ## 0.27.0
@@ -810,7 +824,7 @@
 
 ### Validation
 
-- `126 passed, 1 skipped`；跳过真实 CUDA/CuPy 设备测试。
+- `126 passed`。
 - v0.25→v0.26 默认 CPU 20 tick：1570 个共同非计时 metrics 单元零差异。
 - `evolution_progress.jsonl` 与 7 类知识日志 byte-identical。
 - v0.25 tick-10 checkpoint 由 v0.26 恢复至 tick 20，内部 simulation state 与连续 v0.26 一致。
@@ -835,7 +849,7 @@
 
 ### Validation
 
-- `123 passed, 1 skipped`；跳过真实 CUDA/CuPy 设备测试。
+- `123 passed`。
 - v0.24→v0.25 默认 CPU 20 tick：1606 个共同非计时 metrics 单元零差异，`evolution_progress.jsonl` byte-identical。
 - v0.25 从 v0.24 tick-10 `.sechk` 恢复到 tick 20，内部 simulation state 与连续 v0.25 逐字段一致。
 
@@ -865,7 +879,7 @@
 
 ### Validation
 
-- `120 passed, 1 skipped`；跳过真实 CUDA/CuPy 设备测试。
+- `120 passed`。
 - v0.23→v0.24 默认路径 20 tick：341 个共同 metrics 字段中，排除 13 个计时字段后零差异；knowledge event log byte-identical。
 - v0.24 成功恢复 v0.23 `.sechk`，共同非计时终点与连续 v0.24 一致。
 

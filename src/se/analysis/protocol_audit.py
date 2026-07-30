@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v38"
+SCHEMA = "structural-measurement-protocol-audit-v39"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -160,7 +160,7 @@ def build_protocol_audit(
         "demographic_selection_validity_protocol": {
             "audit_schema": "demographic-selection-validity-audit-v3",
             "plan_schema": "demographic-selection-validity-plan-v3",
-            "multi_seed_plan_schema": "multi-seed-run-plan-v3",
+            "multi_seed_plan_schema": "multi-seed-run-plan-v4",
             "automatic_multi_seed_audit": True,
             "independent_unit": "run-seed",
             "windows_are_independent_replicates": False,
@@ -206,6 +206,45 @@ def build_protocol_audit(
                 "founder-lineage breadth, current heritable variation, and independent "
                 "reproductive-contributor breadth before it can define a future source rule"
             ),
+        },
+        "tiered_exploration_protocol": {
+            "readiness_audit_schema": "exploration-readiness-audit-v1",
+            "plan_schema": "tiered-exploration-plan-v1",
+            "independent_unit": "seed",
+            "nested_observations": [
+                "time windows",
+                "entities",
+                "births and deaths",
+                "moves and policy events",
+            ],
+            "default_stages": {
+                "smoke": {
+                    "minimum_seeds": 2,
+                    "maximum_initial_entities": 512,
+                    "maximum_ticks": 180,
+                },
+                "screen": {
+                    "minimum_seeds": 8,
+                    "maximum_initial_entities": 2048,
+                    "maximum_ticks": 600,
+                },
+                "replication": {
+                    "minimum_seeds": 8,
+                    "maximum_initial_entities": 4096,
+                    "maximum_ticks": 900,
+                    "requires_disjoint_screen_seeds": True,
+                },
+                "confirmation": {
+                    "minimum_seeds": 8,
+                    "requires_disjoint_all_prior_stage_seeds": True,
+                    "requires_explicit_large_long_authorization": True,
+                },
+            },
+            "large_long_run_required_for_exploration": False,
+            "large_long_run_reserved_for_confirmation": True,
+            "failed_runs_replaced": False,
+            "outcome_conditioned_seed_or_horizon_changes": False,
+            "feedback_to_world": False,
         },
         "run_reporting_protocol": {
             "plan_schema": "simulation-run-plan-v1",
@@ -1222,6 +1261,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     execution = payload["execution_backend_protocol"]
     reporting = payload["run_reporting_protocol"]
     demographic = payload["demographic_selection_validity_protocol"]
+    exploration = payload["tiered_exploration_protocol"]
     lines = [
         "# Structural measurement protocol audit",
         "",
@@ -1267,6 +1307,16 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- death-cause accounting: {demographic['death_cause_accounting']}",
         f"- rescue / replacement / feedback: {demographic['population_rescue_or_diversity_protection']} / {demographic['failed_runs_or_windows_replaced']} / {demographic['feedback_to_world']}",
         f"- boundary: {demographic['interpretation']}",
+        "",
+        "## Tiered exploration",
+        "",
+        f"- readiness / plan: `{exploration['readiness_audit_schema']}` / `{exploration['plan_schema']}`",
+        f"- independent unit: `{exploration['independent_unit']}`",
+        f"- nested observations: {exploration['nested_observations']}",
+        f"- stages: {exploration['default_stages']}",
+        f"- large long required for exploration: {exploration['large_long_run_required_for_exploration']}",
+        f"- large long reserved for confirmation: {exploration['large_long_run_reserved_for_confirmation']}",
+        f"- outcome-conditioned changes / feedback: {exploration['outcome_conditioned_seed_or_horizon_changes']} / {exploration['feedback_to_world']}",
         "",
         "## Group label",
         "",

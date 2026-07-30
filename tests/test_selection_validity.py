@@ -463,10 +463,13 @@ def test_multi_seed_writes_plan_before_first_simulation_and_auto_audit(
     plan = json.loads((output / "multi_seed_plan.json").read_text())
     audit = json.loads((output / "selection_validity_audit.json").read_text())
     long_run = json.loads((output / "long_run_analysis.json").read_text())
-    assert plan["schema"] == "multi-seed-run-plan-v3"
+    readiness = json.loads((output / "exploration_readiness_audit.json").read_text())
+    assert plan["schema"] == "multi-seed-run-plan-v4"
     assert plan["automatic_selection_validity_audit"] is True
     assert audit["schema"] == "demographic-selection-validity-audit-v3"
     assert long_run["automatic_selection_validity_audit"]["run_count"] == 1
+    assert readiness["schema"] == "exploration-readiness-audit-v1"
+    assert long_run["automatic_exploration_readiness_audit"]["independent_seed_count"] == 1
 
 
 def test_reproductive_contributor_state_uses_stable_ids_and_clones(

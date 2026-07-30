@@ -1,58 +1,51 @@
 # SE project status
 
-Version: **0.70.0**
+Version: **0.71.0**
 
+## Current sample diagnosis
 
-## Current GPU memory boundary
+The D3-M scale-4 runs have adequate within-run observational support:
 
-D3-L scale-4 runs reached 22,369–26,596 living entities before the fixed horizon stopped. Persistent knowledge state remained measured in megabytes, while device residency grew to the device limit. The current diagnosis is allocator-cache retention from monotonically changing transient batch shapes, not a tens-of-gigabytes biological state.
+- final alive: 23,533–28,523;
+- descendant alive fraction: 1.0;
+- effective successful parents in the final window: about 2,278–2,480;
+- largest parent contribution remains very small;
+- current strategy effective dimensions remain about 13–27.
 
-v0.70 uses a bounded unused-cache policy and records live, total, cached, peak, trim and released-byte telemetry. The policy cannot evict live arrays, alter world state, lower the population or trigger a CPU fallback.
+The remaining sample limitations are cross-run and source-regime limitations:
 
-The next operational gate is completion of the fixed D3-M horizon with post-trim cached bytes within the configured bound. Demographic regime and selection-validity gates remain unchanged.
+- only three independent seeds;
+- founder-lineage inverse-Simpson counts about 14–35;
+- no common future source rule;
+- population remains slightly increasing at the final observation windows.
 
-## Current demographic interpretation
+Thus the completed large runs are useful demographic and operational anchors, but not confirmation-level selection evidence.
 
-The D3-K three-seed aggregate does not show a settled post-bottleneck source at tick 3000. All runs rebound strongly after their troughs, but their last three 100-tick observations still have normalized positive slopes of about 0.105–0.126 per window and span changes of about 0.210–0.253.
-
-The runs nevertheless show substantial turnover and broad recent reproduction:
-
-- final alive: 6,056–7,339;
-- living descendants: 92.4%–93.6%;
-- mean generation: 2.63–2.98;
-- effective successful parents in the final window: about 897–1,090;
-- largest parent contribution: below 0.3%.
-
-Founder-lineage inverse-Simpson counts are only about 23–47, while final strategy effective dimensions are about 20–33. These are different measurements and are no longer collapsed into a single diversity claim.
-
-## Current execution and scientific chain
+## Current exploration policy
 
 ```text
-role-free four-channel resources
-→ conservative storage/recycling/renewal
-→ costed spatial processing and matched controls
-→ GPU-first large-population execution with target-device parity
-→ bottleneck and death-cause audit
-→ active rebound versus settled-platform classification
-→ founder-lineage and current heritable-variation audit
-→ fixed burn-in rule tested on new independent seeds
-→ only then replicated evolutionary-selection inference
+mechanism smoke
+→ 8-seed small screen
+→ 8 new-seed medium replication
+→ explicit large long confirmation only for promoted candidates
 ```
+
+`se-exploration-plan` pre-registers the stage and `se-multi` verifies the exact config hash, seeds, output, backend and horizon before execution.
 
 ## Current gates
 
-1. Do not treat the D3-K tick-3000 endpoint as settled.
-2. Run the fixed D3-L horizon without outcome-conditioned stopping or seed replacement.
-3. Require low recent slope and low cross-window population change before proposing a burn-in.
-4. Keep founder-lineage concentration separate from current genotype/policy variation.
-5. Preserve every insufficient run and window.
-6. Keep migration, specialization, coexistence and ecotype gates closed.
+1. Do not count entities, windows, births or moves as independent replicates.
+2. Do not repeat large long runs for ordinary exploratory iteration.
+3. Require at least eight seeds for screen and replication.
+4. Require disjoint seeds across all stages.
+5. Require explicit authorization before large long confirmation.
+6. Preserve every failed or insufficient run.
+7. Keep migration, specialization, coexistence and ecotype gates closed.
 
 ## Still incomplete
 
-- a replicated settled post-bottleneck regime;
-- a preregistered burn-in validated on new independent seeds;
+- a stable common post-bottleneck source rule;
+- confirmation-level independent replication;
 - causal decomposition of founder-lineage contraction;
-- replicated selection effects after demographic stabilization;
-- device-resident action settlement, lifecycle and graph updates;
-- positive replicated processing-response evidence.
+- replicated positive processing-response evidence;
+- device-resident action settlement, lifecycle and graph updates.

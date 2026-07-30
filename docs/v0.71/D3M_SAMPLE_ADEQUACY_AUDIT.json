@@ -1,0 +1,138 @@
+{
+  "schema": "exploration-readiness-audit-v1",
+  "thresholds": {
+    "minimum_independent_seeds_for_confirmation": 8,
+    "minimum_final_alive": 1000,
+    "minimum_descendant_alive_fraction": 0.75,
+    "minimum_effective_successful_parents": 80.0,
+    "maximum_largest_parent_contribution_fraction": 0.05,
+    "minimum_strategy_effective_dimensions": 4.0,
+    "minimum_effective_founder_lineages_for_source": 100.0
+  },
+  "selection_audit_schema": "demographic-selection-validity-audit-v3",
+  "long_run_analysis_schema": "multi-seed-long-run-analysis-v17",
+  "run_count": 3,
+  "runs": [
+    {
+      "label": "seed_70001",
+      "summary_tick": 5000,
+      "final_alive": 24951,
+      "descendant_alive_fraction": 1.0,
+      "effective_successful_parents": 2414.2852784134247,
+      "largest_parent_contribution_fraction": 0.000794912559618442,
+      "effective_founder_lineages": 35.21210643602199,
+      "strategy_effective_dimensions": 27.40291619867307,
+      "within_run_observational_support": true,
+      "within_run_checks": {
+        "population_support": true,
+        "descendant_turnover_support": true,
+        "reproductive_contributor_support": true,
+        "current_strategy_variation_support": true
+      },
+      "founder_lineage_source_support": false,
+      "settled_population_support": true,
+      "future_source_ready": false,
+      "classification": "post-bottleneck-rebound-insufficient-source-readiness"
+    },
+    {
+      "label": "seed_70002",
+      "summary_tick": 5000,
+      "final_alive": 23533,
+      "descendant_alive_fraction": 1.0,
+      "effective_successful_parents": 2277.9794014768754,
+      "largest_parent_contribution_fraction": 0.0012391573729863693,
+      "effective_founder_lineages": 13.925564617531833,
+      "strategy_effective_dimensions": 13.381871332824291,
+      "within_run_observational_support": true,
+      "within_run_checks": {
+        "population_support": true,
+        "descendant_turnover_support": true,
+        "reproductive_contributor_support": true,
+        "current_strategy_variation_support": true
+      },
+      "founder_lineage_source_support": false,
+      "settled_population_support": true,
+      "future_source_ready": false,
+      "classification": "post-bottleneck-rebound-insufficient-source-readiness"
+    },
+    {
+      "label": "seed_70003",
+      "summary_tick": 5000,
+      "final_alive": 28523,
+      "descendant_alive_fraction": 1.0,
+      "effective_successful_parents": 2479.834403997145,
+      "largest_parent_contribution_fraction": 0.0011380880121396055,
+      "effective_founder_lineages": 19.283212442147335,
+      "strategy_effective_dimensions": 16.752658770442675,
+      "within_run_observational_support": true,
+      "within_run_checks": {
+        "population_support": true,
+        "descendant_turnover_support": true,
+        "reproductive_contributor_support": true,
+        "current_strategy_variation_support": true
+      },
+      "founder_lineage_source_support": false,
+      "settled_population_support": true,
+      "future_source_ready": false,
+      "classification": "post-bottleneck-rebound-insufficient-source-readiness"
+    }
+  ],
+  "sample_diagnosis": {
+    "within_run_observational_support": true,
+    "independent_seed_count": 3,
+    "independent_seed_confirmation_support": false,
+    "founder_lineage_source_support_count": 0,
+    "settled_population_support_count": 3,
+    "future_source_ready_count": 0,
+    "event_or_window_pseudoreplication_allowed": false,
+    "independent_unit": "run-seed",
+    "sample_issue": true,
+    "sample_issue_reasons": [
+      "independent-seed count is below the confirmation threshold",
+      "founder-lineage breadth is insufficient for a stable source claim",
+      "no common future source rule is supported across runs"
+    ]
+  },
+  "exploration_protocol": {
+    "schema": "tiered-exploration-protocol-v1",
+    "independent_unit": "seed",
+    "windows_entities_and_events_are_nested_observations": true,
+    "large_long_run_required_for_exploration": false,
+    "large_long_run_reserved_for_confirmation": true,
+    "stages": {
+      "smoke": {
+        "purpose": "mechanism, schema, ledger, and parity validation",
+        "minimum_seeds": 2,
+        "maximum_initial_entities": 512,
+        "maximum_ticks": 180,
+        "selection_claim_allowed": false
+      },
+      "screen": {
+        "purpose": "cheap directional screening across independent seeds",
+        "minimum_seeds": 8,
+        "maximum_initial_entities": 2048,
+        "maximum_ticks": 600,
+        "selection_claim_allowed": false
+      },
+      "replication": {
+        "purpose": "repeat a promoted screen on disjoint independent seeds",
+        "minimum_seeds": 8,
+        "maximum_initial_entities": 4096,
+        "maximum_ticks": 900,
+        "selection_claim_allowed": false
+      },
+      "confirmation": {
+        "purpose": "confirm only candidates that pass screen and replication",
+        "minimum_seeds": 8,
+        "requires_disjoint_prior_stage_seeds": true,
+        "requires_explicit_large_long_authorization": true,
+        "selection_claim_allowed": true
+      }
+    },
+    "failed_runs_replaced": false,
+    "promotion_based_on_same_seed_reuse": false,
+    "feedback_to_world": false
+  },
+  "recommendation": "use-tiered-small-panel-exploration-add-independent-seeds-before-confirmation",
+  "interpretation_boundary": "Large trajectories may establish demographic and runtime behavior, but repeated windows, entities, births, and moves are not independent confirmation samples. Exploration should use cheaper independent-seed panels; large long runs are reserved for promoted candidates on new seeds."
+}

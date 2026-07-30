@@ -11,6 +11,11 @@ import shutil
 
 from ..cfg import load_config
 from se.analysis.long_run import analyze, render_markdown
+from se.analysis.exploration_protocol import validate_multi_seed_invocation
+from se.analysis.exploration_readiness import (
+    build_audit as build_exploration_readiness,
+    render_markdown as render_exploration_readiness_markdown,
+)
 from se.analysis.selection_validity import (
     SelectionValidityThresholds,
     build_audit as build_selection_audit,
@@ -40,6 +45,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--checkpoint-ticks",
         help="Comma-separated exact ticks written as full .sechk checkpoints for every seed.",
+    )
+    parser.add_argument(
+        "--exploration-plan",
+        help="Optional tiered-exploration plan; invocation must match it exactly.",
     )
     parser.add_argument(
         "--overwrite-partial",
@@ -91,13 +100,23 @@ def main() -> None:
         )
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
+    exploration_plan = None
+    if args.exploration_plan:
+        exploration_plan = validate_multi_seed_invocation(
+            Path(args.exploration_plan),
+            config_path=Path(args.config),
+            seeds=seeds,
+            output=output,
+            backend=args.backend,
+            target_tick=target_tick,
+        )
     base_payload = asdict(base)
     config_sha256 = hashlib.sha256(
         json.dumps(base_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
     selection_thresholds = SelectionValidityThresholds()
     multi_seed_plan = {
-        "schema": "multi-seed-run-plan-v3",
+        "schema": "multi-seed-run-plan-v4",
         "config": str(Path(args.config)),
         "resolved_config_sha256": config_sha256,
         "seeds": seeds,
@@ -112,6 +131,17 @@ def main() -> None:
         "overwrite_partial_requires_explicit_flag": True,
         "automatic_long_run_analysis": True,
         "automatic_selection_validity_audit": True,
+        "exploration_protocol": (
+            {
+                "schema": exploration_plan["schema"],
+                "stage": exploration_plan["stage"],
+                "candidate_id": exploration_plan["candidate_id"],
+                "selection_claim_allowed": exploration_plan["selection_claim_allowed"],
+                "plan": str(Path(args.exploration_plan)),
+            }
+            if exploration_plan is not None
+            else None
+        ),
         "selection_validity_plan": {
             "schema": "demographic-selection-validity-plan-v3",
             "thresholds": asdict(selection_thresholds),
@@ -259,6 +289,24 @@ def main() -> None:
         (output / "selection_validity_audit.md").write_text(
             render_selection_markdown(selection_report), encoding="utf-8"
         )
+        exploration_readiness = build_exploration_readiness(
+            selection_report, long_run_analysis=report
+        )
+        (output / "exploration_readiness_audit.json").write_text(
+            json.dumps(exploration_readiness, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        (output / "exploration_readiness_audit.md").write_text(
+            render_exploration_readiness_markdown(exploration_readiness),
+            encoding="utf-8",
+        )
+        report["automatic_exploration_readiness_audit"] = {
+            "schema": exploration_readiness["schema"],
+            "sample_issue": exploration_readiness["sample_diagnosis"]["sample_issue"],
+            "independent_seed_count": exploration_readiness["sample_diagnosis"]["independent_seed_count"],
+            "recommendation": exploration_readiness["recommendation"],
+        }
+        markdown += "\n" + render_exploration_readiness_markdown(exploration_readiness)
         report["automatic_selection_validity_audit"] = {
             "schema": selection_report["schema"],
             "run_count": selection_report["run_count"],
@@ -281,6 +329,10 @@ def main() -> None:
         report["automatic_selection_validity_audit"] = {
             "available": False,
             "reason": "no evolution progress streams were available",
+        }
+        report["automatic_exploration_readiness_audit"] = {
+            "available": False,
+            "reason": "no selection-validity audit was available",
         }
     (output / "long_run_analysis.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"

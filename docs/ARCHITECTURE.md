@@ -602,3 +602,21 @@ The hybrid runtime separates live semantic device state from allocator-owned fre
 Persistent entity mirrors, environment fields, information fields and spatial buffers remain referenced and cannot be released by this operation. The controller therefore changes allocation lifetime, not simulation state. Memory-pressure fallback is deliberately absent: a run either continues on its resolved backend or fails while retaining its latest scheduled checkpoint.
 
 Allocator telemetry belongs to operational provenance. It is not included in checkpoint semantic parity and is not evidence of selection validity.
+
+## v0.71 tiered exploration boundary
+
+```text
+existing large-run demographic anchor
+        ↓ readiness audit
+within-run support ≠ independent confirmation
+        ↓
+smoke → screen → disjoint replication
+        ↓ explicit promotion
+large long confirmation on new seeds
+```
+
+`exploration-readiness-audit-v1` reads completed selection-validity output and separates population, descendant, reproductive-contributor and current-strategy support from independent-seed count, founder-lineage breadth and stable-source readiness.
+
+`tiered-exploration-plan-v1` fixes the candidate, config hash, seed set, output, backend and horizon before execution. `se-multi` validates the invocation against this plan. Stage promotion cannot reuse seeds, and large long execution requires an explicit confirmation-stage flag.
+
+The protocol is observational and scheduling-only. It does not alter simulation state, thresholds inside the world, survival, reproduction, diversity or selection pressure.

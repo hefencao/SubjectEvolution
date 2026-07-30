@@ -1551,7 +1551,7 @@ def analyze(paths: list[str | Path]) -> dict[str, Any]:
         "windows_are_independent_replicates": False,
     }
     return {
-        "schema": "multi-seed-long-run-analysis-v17",
+        "schema": "multi-seed-long-run-analysis-v18",
         "analyzer_version": __version__,
         "input_runtime_versions": sorted(
             {

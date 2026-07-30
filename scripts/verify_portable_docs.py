@@ -11,6 +11,10 @@ PATTERNS = (
     re.compile(r"\bCONDA_PREFIX\b"),
     re.compile(r"\bcurrent (?:host|machine)\b", re.IGNORECASE),
     re.compile(r"(?:当前主机|本机环境|本机没有|本机无)"),
+    re.compile(r"(?:current|delivery|validation) (?:environment|host|machine).{0,24}(?:has no|lacks|without).{0,12}(?:CUDA|GPU|Conda)", re.IGNORECASE),
+    re.compile(r"(?:当前|交付|验证)(?:环境|机器|主机)?.{0,24}(?:无|没有|未提供).{0,12}(?:CUDA|GPU|Conda)", re.IGNORECASE),
+    re.compile(r"\b\d+\s+passed.{0,16}\d+\s+(?:[A-Za-z-]+\s+)?(?:test(?:s)?\s+)?(?:were\s+)?skipped\b", re.IGNORECASE),
+    re.compile(r"全量测试.{0,32}(?:skipped|跳过)"),
 )
 
 

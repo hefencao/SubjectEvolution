@@ -143,11 +143,11 @@ def test_d2_intervention_persists_through_checkpoint_and_is_analyzed(
     restored.run(until_tick=6)
 
     report = analyze([source / "evolution_progress.jsonl"])
-    assert report["schema"] == "multi-seed-long-run-analysis-v17"
+    assert report["schema"] == "multi-seed-long-run-analysis-v18"
     final = report["runs"][0]["functional_module_final"]
     assert final["functional_module_schema"] == FUNCTIONAL_MODULE_SCHEMA
     protocol = build_protocol_audit(CONFIG)
-    assert protocol["schema"] == "structural-measurement-protocol-audit-v38"
+    assert protocol["schema"] == "structural-measurement-protocol-audit-v39"
     functional = protocol["functional_module_protocol"]
     assert functional["action_selection"] is False
     assert functional["new_world_physics"] is False

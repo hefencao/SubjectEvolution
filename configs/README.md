@@ -42,3 +42,11 @@ Demographic source audit presets:
 GPU memory-stability preset:
 
 - `mvp_d3m_gpu_scale4_memory_stability.json`: fixed 5,000-tick repetition of the D3-L world with `bounded-cache-v1`, a 512 MiB unused-cache limit and safe next-step-start trimming. Live arrays and model state are unchanged. Use `se-gpu-memory-audit` on the resulting seed directories to distinguish live memory from allocator cache.
+
+Tiered exploration presets:
+
+- `mvp_d3n_exploration_smoke.json`: 500 initial entities, 120 ticks, two-or-more seed mechanism validation.
+- `mvp_d3n_exploration_screen.json`: 1,125 initial entities, 480 ticks, at least eight independent seeds.
+- `mvp_d3n_exploration_replication.json`: 2,000 initial entities, 720 ticks, at least eight seeds disjoint from the screen.
+
+Create a pre-registered plan with `se-exploration-plan`, then pass its JSON to `se-multi --exploration-plan`. Large long runs are confirmation-only and require explicit authorization in the plan.
