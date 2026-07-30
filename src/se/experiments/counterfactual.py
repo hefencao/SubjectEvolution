@@ -18,6 +18,9 @@ class PairedRunResult:
     intervention_tick: int
     pre_intervention: dict[str, float | int]
     scientific_warnings: tuple[str, ...]
+    intervention_record: dict[str, object]
+    baseline_scientific_validity: dict[str, object]
+    intervention_scientific_validity: dict[str, object]
 
 
 def run_paired(
@@ -137,6 +140,8 @@ def run_paired(
         for key in keys
         if isinstance(baseline_row[key], (int, float)) and isinstance(intervention_row[key], (int, float))
     }
+    baseline_validity = baseline.scientific_validity()
+    intervention_validity = branch.scientific_validity()
     result = PairedRunResult(
         baseline_row,
         intervention_row,
@@ -144,6 +149,9 @@ def run_paired(
         scheduled_tick,
         pre_intervention,
         tuple(scientific_warnings),
+        dict(intervention_record),
+        dict(baseline_validity),
+        dict(intervention_validity),
     )
     (root / "counterfactual_summary.json").write_text(
         json.dumps(
@@ -157,8 +165,8 @@ def run_paired(
                 "shared_intervention_tick": shared_tick,
                 "paired_randomness": True,
                 "scientific_warnings": scientific_warnings,
-                "baseline_scientific_validity": baseline.scientific_validity(),
-                "intervention_scientific_validity": branch.scientific_validity(),
+                "baseline_scientific_validity": baseline_validity,
+                "intervention_scientific_validity": intervention_validity,
                 "pre_intervention": pre_intervention,
                 "baseline": baseline_row,
                 "intervention_result": intervention_row,

@@ -20,14 +20,23 @@ from typing import Any, Sequence
 
 import numpy as np
 
+from se.analysis.candidate_ledger import (
+    candidate_signature,
+    load_ledger,
+    record_assessment,
+    validate_candidate_for_plan,
+)
 from se.checkpointing import read_checkpoint_bundle
 from se.experiments.counterfactual import run_paired
 from se.experiments.interventions import ExperimentMode, intervention_names, resolve_intervention
 from se.runtime.sim import Simulation
 
-PLAN_SCHEMA = "tiered-paired-exploration-plan-v1"
-RESULT_SCHEMA = "tiered-paired-exploration-results-v1"
-ASSESSMENT_SCHEMA = "tiered-paired-exploration-assessment-v1"
+PLAN_SCHEMA = "tiered-paired-exploration-plan-v2"
+LEGACY_PLAN_SCHEMA = "tiered-paired-exploration-plan-v1"
+RESULT_SCHEMA = "tiered-paired-exploration-results-v2"
+ASSESSMENT_SCHEMA = "tiered-paired-exploration-assessment-v2"
+LEGACY_ASSESSMENT_SCHEMA = "tiered-paired-exploration-assessment-v1"
+CANDIDATE_SCHEMA = "paired-exploration-candidate-v1"
 _STAGE_ORDER = {"smoke": 0, "screen": 1, "replication": 2, "confirmation": 3}
 _STAGE_MINIMUM_SEEDS = {"smoke": 2, "screen": 8, "replication": 8, "confirmation": 8}
 _CUMULATIVE_ALIASES: dict[str, tuple[str, ...]] = {
@@ -37,6 +46,16 @@ _CUMULATIVE_ALIASES: dict[str, tuple[str, ...]] = {
     ),
     "resource-stored-total": tuple(f"resource_stored_{index}_total" for index in range(4)),
     "resource-converted-total": ("resource_converted_total",),
+    "knowledge-working-memory-active-dimensions-total": (
+        "knowledge_working_memory_active_dimensions_total",
+    ),
+    "knowledge-working-memory-committed-entities-total": (
+        "knowledge_working_memory_committed_entities_total",
+    ),
+    "knowledge-capacity-rejections-total": (
+        "knowledge_transfer_capacity_rejected_total",
+        "knowledge_learning_capacity_rejected_total",
+    ),
 }
 
 
@@ -70,6 +89,92 @@ def _read_json(path: Path) -> dict[str, Any]:
     return payload
 
 
+def _normalize_manipulation_checks(checks: Sequence[dict[str, Any]] | None) -> list[dict[str, Any]]:
+    normalized: list[dict[str, Any]] = []
+    for raw in checks or ():
+        if not isinstance(raw, dict):
+            raise ValueError("manipulation checks must be objects")
+        metric = str(raw.get("metric", "")).strip()
+        branch = str(raw.get("branch", "")).strip()
+        operator = str(raw.get("operator", "")).strip()
+        metric_mode = str(raw.get("metric_mode", "endpoint")).strip()
+        if not metric:
+            raise ValueError("manipulation check metric cannot be empty")
+        if branch not in {"baseline", "intervention"}:
+            raise ValueError("manipulation check branch must be baseline or intervention")
+        if operator not in {"<", "<=", ">", ">=", "=="}:
+            raise ValueError("unsupported manipulation check operator")
+        if metric_mode not in {"endpoint", "cumulative"}:
+            raise ValueError("manipulation check metric_mode must be endpoint or cumulative")
+        value = float(raw.get("value"))
+        if not math.isfinite(value):
+            raise ValueError("manipulation check value must be finite")
+        normalized.append(
+            {
+                "metric": metric,
+                "metric_mode": metric_mode,
+                "branch": branch,
+                "operator": operator,
+                "value": value,
+            }
+        )
+    return normalized
+
+
+def load_candidate_spec(path: str | Path) -> tuple[dict[str, Any], str]:
+    candidate_path = Path(path)
+    payload = _read_json(candidate_path)
+    if payload.get("schema") != CANDIDATE_SCHEMA:
+        raise ValueError(f"unsupported paired candidate schema: {payload.get('schema')!r}")
+    required = (
+        "candidate_id",
+        "intervention",
+        "primary_metric",
+        "metric_mode",
+        "direction",
+        "minimum_relative_effect",
+        "response_ticks",
+    )
+    missing = [key for key in required if payload.get(key) is None]
+    if missing:
+        raise ValueError(f"candidate spec is missing required fields: {missing}")
+    spec = resolve_intervention(str(payload["intervention"]))
+    spec.require_mode(ExperimentMode.SCIENTIFIC)
+    normalized = dict(payload)
+    normalized["candidate_id"] = str(payload["candidate_id"]).strip()
+    normalized["intervention"] = spec.name
+    normalized["primary_metric"] = str(payload["primary_metric"])
+    normalized["metric_mode"] = str(payload["metric_mode"])
+    normalized["direction"] = str(payload["direction"])
+    normalized["minimum_relative_effect"] = float(payload["minimum_relative_effect"])
+    normalized["response_ticks"] = int(payload["response_ticks"])
+    normalized["manipulation_checks"] = _normalize_manipulation_checks(
+        payload.get("manipulation_checks")
+    )
+    return normalized, _sha256_file(candidate_path)
+
+
+def _candidate_signature_payload(
+    *,
+    intervention: str,
+    primary_metric: str,
+    metric_mode: str,
+    direction: str,
+    minimum_relative_effect: float,
+    response_ticks: int,
+    manipulation_checks: Sequence[dict[str, Any]],
+) -> dict[str, Any]:
+    return {
+        "intervention": intervention,
+        "primary_metric": primary_metric,
+        "metric_mode": metric_mode,
+        "direction": direction,
+        "minimum_relative_effect": float(minimum_relative_effect),
+        "response_ticks": int(response_ticks),
+        "manipulation_checks": list(manipulation_checks),
+    }
+
+
 def _source_index(source_root: Path) -> list[dict[str, Any]]:
     payload = json.loads((source_root / "multi_seed_index.json").read_text(encoding="utf-8"))
     if not isinstance(payload, list) or not payload:
@@ -94,12 +199,14 @@ def _validate_prior(
     metric_mode: str,
     direction: str,
     minimum_relative_effect: float,
+    response_ticks: int,
+    candidate_signature_sha256: str,
     seeds: set[int],
 ) -> dict[str, Any]:
     required_stage = {"replication": "screen", "confirmation": "replication"}.get(stage)
     if required_stage is None:
         raise ValueError("a prior assessment is only valid for replication or confirmation")
-    if prior.get("schema") != ASSESSMENT_SCHEMA:
+    if prior.get("schema") not in {ASSESSMENT_SCHEMA, LEGACY_ASSESSMENT_SCHEMA}:
         raise ValueError("unsupported prior paired assessment schema")
     if prior.get("stage") != required_stage:
         raise ValueError(f"{stage} requires a prior {required_stage} assessment")
@@ -127,6 +234,11 @@ def _validate_prior(
         abs_tol=1e-15,
     ):
         raise ValueError("prior paired assessment changes minimum_relative_effect")
+    if prior.get("response_ticks") is not None and int(prior["response_ticks"]) != int(response_ticks):
+        raise ValueError("prior paired assessment changes response_ticks")
+    prior_signature = prior.get("candidate_signature_sha256")
+    if prior_signature is not None and str(prior_signature) != candidate_signature_sha256:
+        raise ValueError("prior paired assessment changes candidate scientific specification")
     prior_seeds = {int(value) for value in prior.get("all_stage_seeds", prior.get("seeds", []))}
     overlap = sorted(prior_seeds.intersection(seeds))
     if overlap:
@@ -136,6 +248,7 @@ def _validate_prior(
         "recommendation": prior["recommendation"],
         "all_stage_seeds": sorted(prior_seeds),
         "assessment_sha256": _canonical_sha(prior),
+        "candidate_signature_sha256": str(prior_signature or candidate_signature_sha256),
     }
 
 
@@ -169,6 +282,10 @@ def build_plan(
     backend: str = "auto",
     prior_assessment: dict[str, Any] | None = None,
     allow_large_long_confirmation: bool = False,
+    manipulation_checks: Sequence[dict[str, Any]] | None = None,
+    candidate_spec_sha256: str | None = None,
+    candidate_spec_schema: str | None = None,
+    decision_ledger: Path | None = None,
 ) -> dict[str, Any]:
     if stage not in _STAGE_ORDER:
         raise ValueError(f"unsupported stage: {stage}")
@@ -185,6 +302,30 @@ def build_plan(
     spec = resolve_intervention(intervention)
     spec.require_mode(ExperimentMode.SCIENTIFIC)
     intervention = spec.name
+    normalized_checks = _normalize_manipulation_checks(manipulation_checks)
+    signature_payload = _candidate_signature_payload(
+        intervention=intervention,
+        primary_metric=primary_metric,
+        metric_mode=metric_mode,
+        direction=direction,
+        minimum_relative_effect=minimum_relative_effect,
+        response_ticks=response_ticks,
+        manipulation_checks=normalized_checks,
+    )
+    candidate_signature_sha256 = candidate_signature(signature_payload)
+    output = output.resolve()
+    ledger_path = (
+        decision_ledger.resolve()
+        if decision_ledger is not None
+        else output.parent / "exploration_candidate_ledger.json"
+    )
+    ledger = load_ledger(ledger_path)
+    validate_candidate_for_plan(
+        ledger,
+        candidate_id=candidate_id,
+        signature=candidate_signature_sha256,
+        stage=stage,
+    )
     source_root = source_root.resolve()
     rows = _source_index(source_root)
     seeds = [int(row["seed"]) for row in rows]
@@ -249,15 +390,19 @@ def build_plan(
             metric_mode=metric_mode,
             direction=direction,
             minimum_relative_effect=minimum_relative_effect,
+            response_ticks=response_ticks,
+            candidate_signature_sha256=candidate_signature_sha256,
             seeds=set(seeds),
         )
         all_stage_seeds.update(int(value) for value in prior_ref["all_stage_seeds"])
-    output = output.resolve()
     plan_path = output / "paired_exploration_plan.json"
     return {
         "schema": PLAN_SCHEMA,
         "stage": stage,
         "candidate_id": candidate_id,
+        "candidate_signature_sha256": candidate_signature_sha256,
+        "candidate_spec_schema": candidate_spec_schema,
+        "candidate_spec_sha256": candidate_spec_sha256,
         "source_root": str(source_root),
         "source_plan_schema": source_plan.get("schema"),
         "source_plan_sha256": _sha256_file(source_plan_path),
@@ -273,6 +418,7 @@ def build_plan(
         "metric_mode": metric_mode,
         "direction": direction,
         "minimum_relative_effect": float(minimum_relative_effect),
+        "manipulation_checks": normalized_checks,
         "minimum_eligible_seed_fraction": 0.75,
         "minimum_direction_consistency": 0.75,
         "independent_unit": "seed",
@@ -282,6 +428,7 @@ def build_plan(
         "failed_or_ineligible_seeds_replaced": False,
         "requested_backend": backend,
         "output": str(output),
+        "decision_ledger": str(ledger_path),
         "prior_assessment": prior_ref,
         "selection_claim_allowed": False,
         "acute_mechanism_claim_allowed": stage == "confirmation",
@@ -298,8 +445,17 @@ def build_plan(
 
 def _load_plan(path: Path) -> dict[str, Any]:
     payload = _read_json(path)
-    if payload.get("schema") != PLAN_SCHEMA:
+    if payload.get("schema") not in {PLAN_SCHEMA, LEGACY_PLAN_SCHEMA}:
         raise ValueError(f"unsupported paired exploration plan schema: {payload.get('schema')!r}")
+    if payload.get("schema") == LEGACY_PLAN_SCHEMA:
+        payload = dict(payload)
+        payload["schema"] = PLAN_SCHEMA
+        payload.setdefault("manipulation_checks", [])
+        payload.setdefault("candidate_signature_sha256", candidate_signature(payload))
+        payload.setdefault(
+            "decision_ledger",
+            str(Path(str(payload["output"])).resolve().parent / "exploration_candidate_ledger.json"),
+        )
     return payload
 
 
@@ -319,6 +475,41 @@ def _metric_value(row: dict[str, Any], name: str) -> float:
     if not isinstance(value, (int, float)):
         raise KeyError(f"numeric metric {name!r} is unavailable")
     return float(value)
+
+
+def _compare(value: float, operator: str, expected: float) -> bool:
+    if operator == "<":
+        return value < expected
+    if operator == "<=":
+        return value <= expected
+    if operator == ">":
+        return value > expected
+    if operator == ">=":
+        return value >= expected
+    if operator == "==":
+        return math.isclose(value, expected, rel_tol=0.0, abs_tol=1e-12)
+    raise ValueError(f"unsupported comparison operator: {operator}")
+
+
+def _evaluate_manipulation_checks(
+    checks: Sequence[dict[str, Any]],
+    *,
+    pre_intervention: dict[str, Any],
+    baseline: dict[str, Any],
+    intervention: dict[str, Any],
+) -> tuple[list[dict[str, Any]], bool]:
+    rows = {"baseline": baseline, "intervention": intervention}
+    results: list[dict[str, Any]] = []
+    for check in checks:
+        branch = str(check["branch"])
+        metric = str(check["metric"])
+        value = _metric_value(rows[branch], metric)
+        if check.get("metric_mode", "endpoint") == "cumulative":
+            value -= _metric_value(pre_intervention, metric)
+        expected = float(check["value"])
+        passed = _compare(value, str(check["operator"]), expected)
+        results.append({**check, "observed": value, "passed": passed})
+    return results, all(bool(item["passed"]) for item in results)
 
 
 def _branch_support(
@@ -380,6 +571,10 @@ def _direction_match(effect: float, direction: str) -> bool:
 
 
 def assess_results(plan: dict[str, Any], panels: list[dict[str, Any]]) -> dict[str, Any]:
+    manipulation_required = bool(plan.get("manipulation_checks"))
+    manipulation_supported = [
+        panel for panel in panels if bool(panel.get("manipulation_supported", not manipulation_required))
+    ]
     eligible = [panel for panel in panels if panel["eligible"]]
     effects = [float(panel["relative_effect"]) for panel in eligible]
     positive = sum(value > 0.0 for value in effects)
@@ -393,47 +588,101 @@ def assess_results(plan: dict[str, Any], panels: list[dict[str, Any]]) -> dict[s
         matching = sum(_direction_match(value, plan["direction"]) for value in effects)
         inferred_direction = plan["direction"]
     eligible_fraction = float(len(eligible)) / float(len(panels)) if panels else 0.0
+    manipulation_fraction = (
+        float(len(manipulation_supported)) / float(len(panels)) if panels else 0.0
+    )
     direction_consistency = float(matching) / float(len(eligible)) if eligible else 0.0
     median_effect = median(effects) if effects else None
     practical = bool(
         median_effect is not None
         and abs(float(median_effect)) >= float(plan["minimum_relative_effect"])
     )
-    gate = bool(
-        len(eligible) >= _STAGE_MINIMUM_SEEDS[plan["stage"]]
-        and eligible_fraction >= float(plan["minimum_eligible_seed_fraction"])
-        and direction_consistency >= float(plan["minimum_direction_consistency"])
-        and practical
-    )
+    gate_components = {
+        "minimum_eligible_seed_count": len(eligible) >= _STAGE_MINIMUM_SEEDS[plan["stage"]],
+        "eligible_seed_fraction": eligible_fraction
+        >= float(plan["minimum_eligible_seed_fraction"]),
+        "manipulation_confirmed": (
+            not manipulation_required
+            or manipulation_fraction >= float(plan["minimum_eligible_seed_fraction"])
+        ),
+        "direction_consistency": direction_consistency
+        >= float(plan["minimum_direction_consistency"]),
+        "practical_effect": practical,
+    }
+    gate = all(gate_components.values())
+    reason_codes: list[str] = []
+    if not gate_components["minimum_eligible_seed_count"]:
+        reason_codes.append("insufficient-eligible-seed-panels")
+    if not gate_components["eligible_seed_fraction"]:
+        reason_codes.append("eligible-seed-fraction-below-threshold")
+    if not gate_components["manipulation_confirmed"]:
+        reason_codes.append("intervention-manipulation-not-confirmed")
+    if not gate_components["direction_consistency"]:
+        reason_codes.append("direction-not-replicated-across-seeds")
+    if not gate_components["practical_effect"]:
+        reason_codes.append("effect-below-preregistered-practical-threshold")
+
     recommendation = "stop-no-replicated-paired-effect"
+    decision_outcome = "stop"
+    terminal = True
     if gate and plan["stage"] == "smoke":
         recommendation = "mechanism-smoke-passed-create-independent-screen"
+        decision_outcome = "promote"
+        terminal = False
     elif gate and plan["stage"] == "screen":
         recommendation = "promote-to-disjoint-replication"
+        decision_outcome = "promote"
+        terminal = False
     elif gate and plan["stage"] == "replication":
         recommendation = "promote-to-explicit-confirmation"
+        decision_outcome = "promote"
+        terminal = False
     elif gate and plan["stage"] == "confirmation":
         recommendation = "confirmation-gate-passed-interpret-acute-mechanism-only"
-    elif len(eligible) < _STAGE_MINIMUM_SEEDS[plan["stage"]]:
+        decision_outcome = "confirmed-acute"
+        terminal = True
+    elif not gate_components["manipulation_confirmed"]:
+        recommendation = "stop-intervention-manipulation-not-confirmed"
+    elif not gate_components["minimum_eligible_seed_count"]:
         recommendation = "stop-insufficient-eligible-seed-panels"
-    elif direction_consistency < float(plan["minimum_direction_consistency"]):
+    elif not gate_components["direction_consistency"]:
         recommendation = "stop-direction-not-replicated-across-seeds"
     elif not practical:
         recommendation = "stop-effect-below-preregistered-practical-threshold"
+
+    signature = str(
+        plan.get("candidate_signature_sha256")
+        or candidate_signature(_candidate_signature_payload(
+            intervention=str(plan["intervention"]),
+            primary_metric=str(plan["primary_metric"]),
+            metric_mode=str(plan["metric_mode"]),
+            direction=str(plan["direction"]),
+            minimum_relative_effect=float(plan["minimum_relative_effect"]),
+            response_ticks=int(plan.get("response_ticks", 0)),
+            manipulation_checks=plan.get("manipulation_checks", []),
+        ))
+    )
     return {
         "schema": ASSESSMENT_SCHEMA,
         "stage": plan["stage"],
         "candidate_id": plan["candidate_id"],
+        "candidate_signature_sha256": signature,
+        "candidate_spec_schema": plan.get("candidate_spec_schema"),
+        "candidate_spec_sha256": plan.get("candidate_spec_sha256"),
         "intervention": plan["intervention"],
         "primary_metric": plan["primary_metric"],
         "metric_mode": plan["metric_mode"],
         "direction": plan["direction"],
         "minimum_relative_effect": plan["minimum_relative_effect"],
+        "response_ticks": int(plan.get("response_ticks", 0)),
+        "manipulation_checks": list(plan.get("manipulation_checks", [])),
         "seeds": list(plan["seeds"]),
         "all_stage_seeds": list(plan["all_stage_seeds"]),
         "panel_count": len(panels),
         "eligible_seed_count": len(eligible),
         "eligible_seed_fraction": eligible_fraction,
+        "manipulation_supported_seed_count": len(manipulation_supported),
+        "manipulation_supported_seed_fraction": manipulation_fraction,
         "positive_seed_count": positive,
         "negative_seed_count": negative,
         "direction_consistency": direction_consistency,
@@ -444,14 +693,22 @@ def assess_results(plan: dict[str, Any], panels: list[dict[str, Any]]) -> dict[s
         "maximum_effect": max(effects) if effects else None,
         "exact_two_sided_sign_flip_p": _exact_sign_flip_p(effects),
         "practical_effect_threshold_met": practical,
+        "promotion_gate_components": gate_components,
         "promotion_gate_passed": gate,
         "recommendation": recommendation,
+        "decision": {
+            "outcome": decision_outcome,
+            "terminal": terminal,
+            "reason_codes": reason_codes or [recommendation],
+            "failed_candidate_reopened_automatically": False,
+        },
         "independent_unit": "seed",
         "windows_entities_and_events_are_independent_replicates": False,
         "interpretation_boundary": (
             "This is a matched acute checkpoint panel. It can screen a mechanism effect but "
             "does not establish long-horizon evolutionary selection, stable niches, or a "
-            "population source rule."
+            "population source rule. A stopped candidate requires an explicit new scientific "
+            "revision rather than a relabeling or threshold change."
         ),
     }
 
@@ -491,6 +748,12 @@ def execute_plan(plan: dict[str, Any]) -> dict[str, Any]:
             intervention_response = intervention_value
         effect = intervention_response - baseline_response
         relative_effect = effect / max(abs(baseline_response), 1e-12)
+        manipulation_results, manipulation_supported = _evaluate_manipulation_checks(
+            plan.get("manipulation_checks", []),
+            pre_intervention=result.pre_intervention,
+            baseline=result.baseline,
+            intervention=result.intervention,
+        )
         initial_entities = int(simulation.cfg.world.initial_entities)
         minimum_source_alive = max(64, int(math.ceil(initial_entities * 0.08)))
         minimum_source_lineages = max(32.0, float(initial_entities) * 0.04)
@@ -521,6 +784,7 @@ def execute_plan(plan: dict[str, Any]) -> dict[str, Any]:
             source_supported
             and baseline_support["supported"]
             and intervention_support["supported"]
+            and manipulation_supported
         )
         panels.append(
             {
@@ -544,9 +808,15 @@ def execute_plan(plan: dict[str, Any]) -> dict[str, Any]:
                 "intervention_response": intervention_response,
                 "effect_intervention_minus_baseline": effect,
                 "relative_effect": relative_effect,
+                "manipulation_checks": manipulation_results,
+                "manipulation_supported": manipulation_supported,
+                "intervention_record": result.intervention_record,
+                "scientific_warnings": list(result.scientific_warnings),
+                "baseline_scientific_validity": result.baseline_scientific_validity,
+                "intervention_scientific_validity": result.intervention_scientific_validity,
                 "eligible": eligible,
                 "counterfactual_summary": str(
-                    seed_dir / "counterfactual_summary.json"
+                    Path(f"seed_{seed}") / "counterfactual_summary.json"
                 ),
             }
         )
@@ -557,10 +827,15 @@ def execute_plan(plan: dict[str, Any]) -> dict[str, Any]:
         "plan_sha256": _canonical_sha(plan),
         "stage": plan["stage"],
         "candidate_id": plan["candidate_id"],
+        "candidate_signature_sha256": plan.get("candidate_signature_sha256"),
+        "candidate_spec_schema": plan.get("candidate_spec_schema"),
+        "candidate_spec_sha256": plan.get("candidate_spec_sha256"),
         "intervention": plan["intervention"],
         "primary_metric": plan["primary_metric"],
         "metric_mode": plan["metric_mode"],
         "direction": plan["direction"],
+        "response_ticks": plan.get("response_ticks"),
+        "manipulation_checks": plan.get("manipulation_checks", []),
         "panels": panels,
         "assessment": assessment,
     }
@@ -572,6 +847,18 @@ def execute_plan(plan: dict[str, Any]) -> dict[str, Any]:
     )
     (output / "paired_exploration_results.md").write_text(
         render_results_markdown(report), encoding="utf-8"
+    )
+    ledger, decision_entry = record_assessment(
+        Path(str(plan["decision_ledger"])), assessment
+    )
+    (output / "candidate_decision.json").write_text(
+        json.dumps(decision_entry, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    report["candidate_decision"] = decision_entry
+    report["candidate_ledger_schema"] = ledger["schema"]
+    (output / "paired_exploration_results.json").write_text(
+        json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     return report
 
@@ -641,42 +928,89 @@ def plan_main(argv: Sequence[str] | None = None) -> int:
         description="Create a fixed-checkpoint matched exploration panel."
     )
     parser.add_argument("--stage", required=True, choices=tuple(_STAGE_ORDER))
-    parser.add_argument("--candidate", required=True)
+    parser.add_argument("--candidate")
+    parser.add_argument("--candidate-spec")
     parser.add_argument("--source-root", required=True)
     parser.add_argument("--checkpoint-tick", type=int, required=True)
-    parser.add_argument("--response-ticks", type=int, required=True)
+    parser.add_argument("--response-ticks", type=int)
     parser.add_argument(
         "--intervention",
-        required=True,
         choices=intervention_names(mode=ExperimentMode.SCIENTIFIC),
     )
-    parser.add_argument("--primary-metric", required=True)
-    parser.add_argument("--metric-mode", choices=("cumulative", "endpoint"), required=True)
+    parser.add_argument("--primary-metric")
+    parser.add_argument("--metric-mode", choices=("cumulative", "endpoint"))
     parser.add_argument(
-        "--direction", choices=("increase", "decrease", "two-sided"), required=True
+        "--direction", choices=("increase", "decrease", "two-sided")
     )
-    parser.add_argument("--minimum-relative-effect", type=float, required=True)
+    parser.add_argument("--minimum-relative-effect", type=float)
     parser.add_argument("--output", required=True)
     parser.add_argument("--backend", default="auto", choices=("auto", "cpu", "gpu"))
     parser.add_argument("--prior-assessment")
+    parser.add_argument("--decision-ledger")
     parser.add_argument("--allow-large-long-confirmation", action="store_true")
     args = parser.parse_args(argv)
     prior = _read_json(Path(args.prior_assessment)) if args.prior_assessment else None
+    candidate_payload: dict[str, Any] | None = None
+    candidate_spec_sha256 = None
+    if args.candidate_spec:
+        candidate_payload, candidate_spec_sha256 = load_candidate_spec(args.candidate_spec)
+        supplied = {
+            "candidate_id": args.candidate,
+            "response_ticks": args.response_ticks,
+            "intervention": args.intervention,
+            "primary_metric": args.primary_metric,
+            "metric_mode": args.metric_mode,
+            "direction": args.direction,
+            "minimum_relative_effect": args.minimum_relative_effect,
+        }
+        for key, value in supplied.items():
+            if value is not None and value != candidate_payload[key]:
+                parser.error(f"--candidate-spec conflicts with --{key.replace('_', '-')}")
+    else:
+        missing = [
+            flag
+            for flag, value in (
+                ("--candidate", args.candidate),
+                ("--response-ticks", args.response_ticks),
+                ("--intervention", args.intervention),
+                ("--primary-metric", args.primary_metric),
+                ("--metric-mode", args.metric_mode),
+                ("--direction", args.direction),
+                ("--minimum-relative-effect", args.minimum_relative_effect),
+            )
+            if value is None
+        ]
+        if missing:
+            parser.error("missing required arguments without --candidate-spec: " + ", ".join(missing))
+        candidate_payload = {
+            "candidate_id": args.candidate,
+            "response_ticks": args.response_ticks,
+            "intervention": args.intervention,
+            "primary_metric": args.primary_metric,
+            "metric_mode": args.metric_mode,
+            "direction": args.direction,
+            "minimum_relative_effect": args.minimum_relative_effect,
+            "manipulation_checks": [],
+        }
     plan = build_plan(
         stage=args.stage,
-        candidate_id=args.candidate,
+        candidate_id=str(candidate_payload["candidate_id"]),
         source_root=Path(args.source_root),
         checkpoint_tick=args.checkpoint_tick,
-        response_ticks=args.response_ticks,
-        intervention=args.intervention,
-        primary_metric=args.primary_metric,
-        metric_mode=args.metric_mode,
-        direction=args.direction,
-        minimum_relative_effect=args.minimum_relative_effect,
+        response_ticks=int(candidate_payload["response_ticks"]),
+        intervention=str(candidate_payload["intervention"]),
+        primary_metric=str(candidate_payload["primary_metric"]),
+        metric_mode=str(candidate_payload["metric_mode"]),
+        direction=str(candidate_payload["direction"]),
+        minimum_relative_effect=float(candidate_payload["minimum_relative_effect"]),
         output=Path(args.output),
         backend=args.backend,
         prior_assessment=prior,
         allow_large_long_confirmation=args.allow_large_long_confirmation,
+        manipulation_checks=candidate_payload.get("manipulation_checks", []),
+        candidate_spec_sha256=candidate_spec_sha256,
+        candidate_spec_schema=(candidate_payload.get("schema") if args.candidate_spec else None),
+        decision_ledger=Path(args.decision_ledger) if args.decision_ledger else None,
     )
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
@@ -705,6 +1039,7 @@ __all__ = [
     "assess_results",
     "build_plan",
     "execute_plan",
+    "load_candidate_spec",
     "plan_main",
     "run_main",
 ]

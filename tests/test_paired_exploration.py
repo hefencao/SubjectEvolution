@@ -91,6 +91,8 @@ def test_build_plan_uses_exact_per_seed_checkpoints(tmp_path: Path) -> None:
     assert all(item["checkpoint_tick"] == 1 for item in plan["panels"])
     assert plan["fixed_checkpoint_selected_before_branch_outcomes"] is True
     assert plan["selection_claim_allowed"] is False
+    assert len(plan["candidate_signature_sha256"]) == 64
+    assert plan["schema"] == "tiered-paired-exploration-plan-v2"
 
 
 def test_build_plan_rejects_missing_predeclared_checkpoint(tmp_path: Path) -> None:
@@ -160,7 +162,71 @@ def test_execute_smoke_panel_writes_matched_results(tmp_path: Path) -> None:
         backend="cpu",
     )
     report = execute_plan(plan)
-    assert report["schema"] == "tiered-paired-exploration-results-v1"
+    assert report["schema"] == "tiered-paired-exploration-results-v2"
     assert len(report["panels"]) == 2
     assert all((tmp_path / "paired" / f"seed_{seed}" / "counterfactual_summary.json").is_file() for seed in (11, 12))
     assert (tmp_path / "paired" / "paired_exploration_assessment.json").is_file()
+    assert (tmp_path / "paired" / "candidate_decision.json").is_file()
+    assert (tmp_path / "exploration_candidate_ledger.json").is_file()
+    assert all("intervention_record" in panel for panel in report["panels"])
+
+
+def test_candidate_spec_adds_operational_manipulation_checks(tmp_path: Path) -> None:
+    from se.experiments.paired_exploration import load_candidate_spec
+
+    root = _source_root(tmp_path, seeds=[21, 22])
+    spec, spec_sha = load_candidate_spec(
+        "protocols/candidates/d3p_elastic_capacity_acute_effect.json"
+    )
+    plan = build_plan(
+        stage="smoke",
+        candidate_id=spec["candidate_id"],
+        source_root=root,
+        checkpoint_tick=1,
+        response_ticks=2,
+        intervention=spec["intervention"],
+        primary_metric=spec["primary_metric"],
+        metric_mode=spec["metric_mode"],
+        direction=spec["direction"],
+        minimum_relative_effect=0.0,
+        manipulation_checks=spec["manipulation_checks"],
+        candidate_spec_sha256=spec_sha,
+        candidate_spec_schema=spec["schema"],
+        output=tmp_path / "capacity-paired",
+        backend="cpu",
+    )
+    report = execute_plan(plan)
+    assert all(panel["manipulation_supported"] for panel in report["panels"])
+    assert report["assessment"]["manipulation_supported_seed_count"] == 2
+    assert report["assessment"]["promotion_gate_components"]["manipulation_confirmed"] is True
+
+
+def test_assessment_stops_when_manipulation_is_not_confirmed() -> None:
+    plan = {
+        "stage": "screen",
+        "candidate_id": "candidate-b",
+        "candidate_signature_sha256": "a" * 64,
+        "intervention": "neutralize-elastic-capacities",
+        "primary_metric": "knowledge-working-memory-active-dimensions-total",
+        "metric_mode": "cumulative",
+        "direction": "two-sided",
+        "minimum_relative_effect": 0.01,
+        "response_ticks": 120,
+        "manipulation_checks": [{"metric": "capacity_effective_dimensions"}],
+        "minimum_eligible_seed_fraction": 0.75,
+        "minimum_direction_consistency": 0.75,
+        "seeds": list(range(8)),
+        "all_stage_seeds": list(range(8)),
+    }
+    panels = [
+        {
+            "eligible": False,
+            "manipulation_supported": False,
+            "relative_effect": 0.2,
+        }
+        for _ in range(8)
+    ]
+    assessment = assess_results(plan, panels)
+    assert assessment["promotion_gate_passed"] is False
+    assert assessment["recommendation"] == "stop-intervention-manipulation-not-confirmed"
+    assert "intervention-manipulation-not-confirmed" in assessment["decision"]["reason_codes"]

@@ -157,4 +157,5 @@ def test_protocol_audit_records_tiered_exploration_boundary() -> None:
     assert protocol["default_stages"]["screen"]["minimum_seeds"] == 8
     assert protocol["source_checkpoint"]["demographic_turnover_required_for_acute_panel"] is False
     assert protocol["source_checkpoint"]["free_run_endpoint_is_candidate_effect"] is False
-    assert protocol["paired_plan_schema"] == "tiered-paired-exploration-plan-v1"
+    assert protocol["paired_plan_schema"] == "tiered-paired-exploration-plan-v2"
+    assert protocol["candidate_ledger_schema"] == "paired-exploration-candidate-ledger-v1"

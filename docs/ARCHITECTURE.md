@@ -630,3 +630,12 @@ Free-running startup endpoints and intervention effects are separate evidence ob
 The acute source gate scales with initial population and does not require demographic turnover. It answers only whether a checkpoint contains enough living and lineage state for a short mechanism panel. Long-horizon evolutionary selection continues to use the demographic-selection-validity protocol.
 
 Paired results calculate one matched response per seed. Seed-level effects receive equal weight; windows, entities, births, deaths, moves, and actions remain nested measurements. Stage promotion requires eligible-seed coverage, direction replication, and a predeclared practical-effect threshold. Replication and confirmation require disjoint seeds and a passing prior assessment.
+
+
+## v0.73 candidate decision and manipulation boundary
+
+Paired exploration candidates have a deterministic scientific signature over the intervention, estimand, direction, practical threshold, response horizon and manipulation contract. Completed assessments are appended to a non-feedback decision ledger.
+
+A terminal stop prevents the same candidate or same signature from being silently reused. A changed scientific specification requires a new candidate revision.
+
+Operational manipulation checks are evaluated separately from the primary downstream effect. A branch can only enter the inferential set when source support, branch support and every preregistered manipulation check pass. Passing a manipulation check does not count as a mechanism benefit.

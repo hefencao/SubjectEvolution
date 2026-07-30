@@ -81,7 +81,7 @@ def test_readiness_markdown_keeps_checkpoint_pairing_boundary() -> None:
 
 
 def test_current_documented_audit_is_machine_readable() -> None:
-    path = Path("docs/v0.72/D3N_SUPPLIED_SCREEN_AUDIT.json")
+    path = Path("docs/v0.73/D3N_SUPPLIED_SCREEN_AUDIT.json")
     if not path.exists():
         return
     payload = json.loads(path.read_text(encoding="utf-8"))

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.73.0
+
+- Records the supplied eight-seed D3-O resource-affinity screen as a terminal promotion stop: all panels are eligible, but direction consistency and the preregistered practical effect both fail; the compact legacy bundle is not reinterpreted as a universal causal null.
+- Adds `paired-exploration-candidate-ledger-v1` and `se-exploration-candidate-record`; terminal candidates cannot be silently reopened, relabeled or changed in place.
+- Upgrades paired plans, results and assessments to v2 while accepting legacy v1 plans and assessments.
+- Adds deterministic candidate signatures over intervention, primary metric, metric mode, direction, practical threshold, response horizon and operational manipulation checks.
+- Makes paired result bundles self-contained with intervention records, branch scientific-validity records, scientific warnings and per-seed manipulation-check observations.
+- Adds `paired-exploration-candidate-v1` and the bounded D3-P elastic-capacity acute-use candidate specification.
+- Adds cumulative aliases for working-memory active dimensions, committed entities and knowledge-capacity rejections.
+- Upgrades the protocol audit to v41 and project version to 0.73.0.
+
 ## 0.72.0
 
 ### Fixed-checkpoint paired exploration

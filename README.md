@@ -1,59 +1,49 @@
-# SE v0.72
+# SE v0.73
 
 SE is a deterministic artificial-life and subject-structure research platform. The current main line retains role-free four-channel resources, conservative storage and recycling, persistent abiotic renewal, costed physiology and information processing, GPU-first execution, matched controls, and explicit scientific-validity gates.
 
-## Why v0.72
+## Current result
 
-The completed D3-N free-run screen used eight independent seeds at 1,125 initial entities. All eight runs reached tick 480 with 138–165 living entities. The endpoint decline was highly repeatable and energy-depletion dominated, while each run still retained enough living entities, founder-lineage breadth, and current strategy variation for a short acute intervention panel.
+The D3-O resource-affinity paired screen is complete:
 
-This reveals a protocol distinction:
+- eight of eight seed panels are eligible;
+- five effects are positive and three are negative;
+- direction consistency is 0.625, below the preregistered 0.75 gate;
+- the equal-seed median relative effect is about 0.00334, below the 0.01 practical threshold.
 
-```text
-free-running startup trajectory
-≠ candidate-effect screen
+The candidate is stopped before replication. The compact legacy bundle proves that the promotion gates failed, but it does not contain a self-contained direct manipulation check; the decision is therefore a terminal promotion stop, not a universal causal-null claim. Prior local or channel-specific affinity effects remain bounded evidence.
 
-fixed per-seed checkpoint
-→ matched baseline/intervention branches
-→ seed-level paired effect
-```
+## Candidate decision ledger
 
-A free-run endpoint may identify a reproducible source phase, but it does not measure a candidate effect. v0.72 therefore converts the exploration stages from endpoint screening to fixed-checkpoint paired panels.
-
-## Re-audit an existing source panel
+Completed paired assessments are recorded in a deterministic ledger:
 
 ```bash
-se-exploration-readiness \
-  --selection-audit analyses/d3n_screen/selection_validity_audit.json \
-  --long-run-analysis analyses/d3n_screen/long_run_analysis.json \
-  --output analyses/d3n_screen/readiness_v2
+se-exploration-candidate-record \
+  --assessment analyses/d3o_affinity_paired_screen/paired_exploration_assessment.json \
+  --ledger analyses/exploration_candidate_ledger.json
 ```
 
-The readiness audit uses scale-normalized acute thresholds. Demographic turnover and a stable population source are not required for a short paired mechanism panel; they remain required for long-horizon evolutionary interpretation.
+A terminal candidate cannot be silently reopened by changing its label, threshold, response horizon, metric, direction, or intervention. A changed scientific specification requires an explicit new candidate revision.
 
-## Create a paired screen from existing checkpoints
+## Next bounded screen
 
-The D3-N screen wrote full checkpoints every 120 ticks. A predeclared tick-480 checkpoint can be reused without rerunning the shared prefix:
+D3-P tests the still-open elastic-capacity realized-use question using the existing tick-480 discovery checkpoints:
 
 ```bash
 se-exploration-paired-plan \
   --stage screen \
-  --candidate resource-affinity-acute-effect \
+  --candidate-spec protocols/candidates/d3p_elastic_capacity_acute_effect.json \
   --source-root analyses/d3n_screen \
   --checkpoint-tick 480 \
-  --response-ticks 120 \
-  --intervention neutralize-resource-affinity \
-  --primary-metric harvested-resource-total \
-  --metric-mode cumulative \
-  --direction two-sided \
-  --minimum-relative-effect 0.01 \
-  --output analyses/d3o_affinity_paired_screen \
+  --output analyses/d3p_capacity_paired_screen \
+  --decision-ledger analyses/exploration_candidate_ledger.json \
   --backend auto
 
 se-exploration-paired \
-  --plan analyses/d3o_affinity_paired_screen/paired_exploration_plan.json
+  --plan analyses/d3p_capacity_paired_screen/paired_exploration_plan.json
 ```
 
-The plan locks every checkpoint hash before branch execution. Baseline and intervention branches start from the same full checkpoint and preserve keyed randomness. The output reports one matched effect per seed, equal seed weighting, direction consistency, a predeclared practical-effect threshold, and an exact sign-flip statistic.
+The candidate specification locks the intervention, primary metric, direction, practical threshold, response horizon, and direct manipulation checks. A seed panel is inferentially eligible only when source support, both branch-support checks, and every manipulation check pass.
 
 ## Promotion boundary
 
@@ -61,10 +51,10 @@ The plan locks every checkpoint hash before branch execution. Baseline and inter
 paired smoke
 → eight-seed paired screen
 → eight new-seed paired replication
-→ explicit confirmation on new seeds
+→ explicit acute confirmation on new seeds
 ```
 
-Replication requires a passing screen assessment and disjoint seeds. Confirmation requires a passing replication assessment, disjoint seeds across all prior stages, and explicit authorization. Large long runs remain confirmation-only.
+Even a passed paired confirmation supports only the preregistered acute mechanism effect. Long-horizon evolutionary selection requires a separate protocol.
 
 ## Workflow
 
@@ -77,7 +67,7 @@ make release-check
 
 ## Current version documents
 
-- [Implementation report](docs/v0.72/IMPLEMENTATION_REPORT.md)
-- [D3-N supplied screen audit](docs/v0.72/D3N_SUPPLIED_SCREEN_AUDIT.md)
-- [D3-O paired exploration protocol](docs/v0.72/D3O_PAIRED_EXPLORATION_PROTOCOL.md)
-- [Protocol audit](docs/v0.72/protocol_audit.md)
+- [Implementation report](docs/v0.73/IMPLEMENTATION_REPORT.md)
+- [D3-O supplied candidate decision](docs/v0.73/D3O_SUPPLIED_CANDIDATE_DECISION.md)
+- [D3-P capacity candidate protocol](docs/v0.73/D3P_CAPACITY_CANDIDATE_PROTOCOL.md)
+- [Protocol audit](docs/v0.73/protocol_audit.md)

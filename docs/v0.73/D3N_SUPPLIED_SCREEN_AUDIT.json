@@ -1,0 +1,331 @@
+{
+  "schema": "exploration-readiness-audit-v2",
+  "thresholds": {
+    "minimum_independent_seeds_for_confirmation": 8,
+    "minimum_acute_alive_absolute": 64,
+    "minimum_acute_alive_fraction_to_initial": 0.08,
+    "minimum_acute_effective_lineages_absolute": 32.0,
+    "minimum_acute_effective_lineages_fraction_to_initial": 0.04,
+    "maximum_acute_largest_lineage_fraction": 0.25,
+    "minimum_strategy_effective_dimensions": 4.0,
+    "minimum_descendant_alive_fraction_for_long_horizon": 0.75,
+    "minimum_effective_successful_parents_for_long_horizon": 80.0,
+    "maximum_largest_parent_contribution_fraction": 0.05,
+    "startup_transient_maximum_alive_fraction": 0.25,
+    "startup_transient_maximum_cross_seed_alive_cv": 0.15,
+    "startup_transient_minimum_energy_death_fraction": 0.9
+  },
+  "selection_audit_schema": "demographic-selection-validity-audit-v3",
+  "long_run_analysis_schema": "multi-seed-long-run-analysis-v18",
+  "run_count": 8,
+  "runs": [
+    {
+      "label": "seed_71101",
+      "summary_tick": 480,
+      "initial_population": 1125,
+      "final_alive": 151,
+      "alive_fraction_to_initial": 0.13422222222222221,
+      "required_acute_alive": 90,
+      "effective_founder_lineages": 124.59562841530054,
+      "required_acute_effective_lineages": 45.0,
+      "largest_lineage_fraction": 0.019867549668874173,
+      "strategy_effective_dimensions": 57.72436328553811,
+      "acute_paired_source_support": true,
+      "acute_paired_source_checks": {
+        "alive_support": true,
+        "effective_lineage_support": true,
+        "largest_lineage_support": true,
+        "current_strategy_variation_support": true
+      },
+      "descendant_alive_fraction": 0.09933774834437085,
+      "effective_successful_parents": 5.0,
+      "largest_parent_contribution_fraction": 0.2,
+      "long_horizon_selection_support": false,
+      "long_horizon_checks": {
+        "descendant_turnover_support": false,
+        "reproductive_contributor_support": false,
+        "settled_population_support": false
+      },
+      "future_source_ready": false,
+      "classification": "post-bottleneck-active-decline",
+      "energy_depleted_death_fraction": 1.0
+    },
+    {
+      "label": "seed_71102",
+      "summary_tick": 480,
+      "initial_population": 1125,
+      "final_alive": 157,
+      "alive_fraction_to_initial": 0.13955555555555554,
+      "required_acute_alive": 90,
+      "effective_founder_lineages": 125.1218274111675,
+      "required_acute_effective_lineages": 45.0,
+      "largest_lineage_fraction": 0.01910828025477707,
+      "strategy_effective_dimensions": 57.763296347518896,
+      "acute_paired_source_support": true,
+      "acute_paired_source_checks": {
+        "alive_support": true,
+        "effective_lineage_support": true,
+        "largest_lineage_support": true,
+        "current_strategy_variation_support": true
+      },
+      "descendant_alive_fraction": 0.11464968152866242,
+      "effective_successful_parents": 4.0,
+      "largest_parent_contribution_fraction": 0.25,
+      "long_horizon_selection_support": false,
+      "long_horizon_checks": {
+        "descendant_turnover_support": false,
+        "reproductive_contributor_support": false,
+        "settled_population_support": false
+      },
+      "future_source_ready": false,
+      "classification": "post-bottleneck-active-decline",
+      "energy_depleted_death_fraction": 1.0
+    },
+    {
+      "label": "seed_71103",
+      "summary_tick": 480,
+      "initial_population": 1125,
+      "final_alive": 148,
+      "alive_fraction_to_initial": 0.13155555555555556,
+      "required_acute_alive": 90,
+      "effective_founder_lineages": 115.28421052631575,
+      "required_acute_effective_lineages": 45.0,
+      "largest_lineage_fraction": 0.02702702702702703,
+      "strategy_effective_dimensions": 57.863310278212296,
+      "acute_paired_source_support": true,
+      "acute_paired_source_checks": {
+        "alive_support": true,
+        "effective_lineage_support": true,
+        "largest_lineage_support": true,
+        "current_strategy_variation_support": true
+      },
+      "descendant_alive_fraction": 0.10810810810810811,
+      "effective_successful_parents": 7.0,
+      "largest_parent_contribution_fraction": 0.14285714285714285,
+      "long_horizon_selection_support": false,
+      "long_horizon_checks": {
+        "descendant_turnover_support": false,
+        "reproductive_contributor_support": false,
+        "settled_population_support": false
+      },
+      "future_source_ready": false,
+      "classification": "post-bottleneck-active-decline",
+      "energy_depleted_death_fraction": 1.0
+    },
+    {
+      "label": "seed_71104",
+      "summary_tick": 480,
+      "initial_population": 1125,
+      "final_alive": 154,
+      "alive_fraction_to_initial": 0.1368888888888889,
+      "required_acute_alive": 90,
+      "effective_founder_lineages": 127.50537634408602,
+      "required_acute_effective_lineages": 45.0,
+      "largest_lineage_fraction": 0.01948051948051948,
+      "strategy_effective_dimensions": 58.6692710686662,
+      "acute_paired_source_support": true,
+      "acute_paired_source_checks": {
+        "alive_support": true,
+        "effective_lineage_support": true,
+        "largest_lineage_support": true,
+        "current_strategy_variation_support": true
+      },
+      "descendant_alive_fraction": 0.09740259740259741,
+      "effective_successful_parents": 2.0,
+      "largest_parent_contribution_fraction": 0.5,
+      "long_horizon_selection_support": false,
+      "long_horizon_checks": {
+        "descendant_turnover_support": false,
+        "reproductive_contributor_support": false,
+        "settled_population_support": false
+      },
+      "future_source_ready": false,
+      "classification": "post-bottleneck-active-decline",
+      "energy_depleted_death_fraction": 1.0
+    },
+    {
+      "label": "seed_71105",
+      "summary_tick": 480,
+      "initial_population": 1125,
+      "final_alive": 139,
+      "alive_fraction_to_initial": 0.12355555555555556,
+      "required_acute_alive": 90,
+      "effective_founder_lineages": 118.53374233128834,
+      "required_acute_effective_lineages": 45.0,
+      "largest_lineage_fraction": 0.02158273381294964,
+      "strategy_effective_dimensions": 56.4253420799181,
+      "acute_paired_source_support": true,
+      "acute_paired_source_checks": {
+        "alive_support": true,
+        "effective_lineage_support": true,
+        "largest_lineage_support": true,
+        "current_strategy_variation_support": true
+      },
+      "descendant_alive_fraction": 0.07913669064748201,
+      "effective_successful_parents": 0.0,
+      "largest_parent_contribution_fraction": 0.0,
+      "long_horizon_selection_support": false,
+      "long_horizon_checks": {
+        "descendant_turnover_support": false,
+        "reproductive_contributor_support": false,
+        "settled_population_support": false
+      },
+      "future_source_ready": false,
+      "classification": "post-bottleneck-active-decline",
+      "energy_depleted_death_fraction": 1.0
+    },
+    {
+      "label": "seed_71106",
+      "summary_tick": 480,
+      "initial_population": 1125,
+      "final_alive": 138,
+      "alive_fraction_to_initial": 0.12266666666666666,
+      "required_acute_alive": 90,
+      "effective_founder_lineages": 110.72093023255813,
+      "required_acute_effective_lineages": 45.0,
+      "largest_lineage_fraction": 0.021739130434782608,
+      "strategy_effective_dimensions": 55.57262826994051,
+      "acute_paired_source_support": true,
+      "acute_paired_source_checks": {
+        "alive_support": true,
+        "effective_lineage_support": true,
+        "largest_lineage_support": true,
+        "current_strategy_variation_support": true
+      },
+      "descendant_alive_fraction": 0.10869565217391304,
+      "effective_successful_parents": 3.0,
+      "largest_parent_contribution_fraction": 0.3333333333333333,
+      "long_horizon_selection_support": false,
+      "long_horizon_checks": {
+        "descendant_turnover_support": false,
+        "reproductive_contributor_support": false,
+        "settled_population_support": false
+      },
+      "future_source_ready": false,
+      "classification": "post-bottleneck-active-decline",
+      "energy_depleted_death_fraction": 1.0
+    },
+    {
+      "label": "seed_71107",
+      "summary_tick": 480,
+      "initial_population": 1125,
+      "final_alive": 165,
+      "alive_fraction_to_initial": 0.14666666666666667,
+      "required_acute_alive": 90,
+      "effective_founder_lineages": 136.80904522613065,
+      "required_acute_effective_lineages": 45.0,
+      "largest_lineage_fraction": 0.01818181818181818,
+      "strategy_effective_dimensions": 60.53263056308321,
+      "acute_paired_source_support": true,
+      "acute_paired_source_checks": {
+        "alive_support": true,
+        "effective_lineage_support": true,
+        "largest_lineage_support": true,
+        "current_strategy_variation_support": true
+      },
+      "descendant_alive_fraction": 0.10303030303030303,
+      "effective_successful_parents": 3.0,
+      "largest_parent_contribution_fraction": 0.3333333333333333,
+      "long_horizon_selection_support": false,
+      "long_horizon_checks": {
+        "descendant_turnover_support": false,
+        "reproductive_contributor_support": false,
+        "settled_population_support": false
+      },
+      "future_source_ready": false,
+      "classification": "post-bottleneck-active-decline",
+      "energy_depleted_death_fraction": 1.0
+    },
+    {
+      "label": "seed_71108",
+      "summary_tick": 480,
+      "initial_population": 1125,
+      "final_alive": 150,
+      "alive_fraction_to_initial": 0.13333333333333333,
+      "required_acute_alive": 90,
+      "effective_founder_lineages": 129.31034482758616,
+      "required_acute_effective_lineages": 45.0,
+      "largest_lineage_fraction": 0.013333333333333334,
+      "strategy_effective_dimensions": 59.08488540526699,
+      "acute_paired_source_support": true,
+      "acute_paired_source_checks": {
+        "alive_support": true,
+        "effective_lineage_support": true,
+        "largest_lineage_support": true,
+        "current_strategy_variation_support": true
+      },
+      "descendant_alive_fraction": 0.08666666666666667,
+      "effective_successful_parents": 3.0,
+      "largest_parent_contribution_fraction": 0.3333333333333333,
+      "long_horizon_selection_support": false,
+      "long_horizon_checks": {
+        "descendant_turnover_support": false,
+        "reproductive_contributor_support": false,
+        "settled_population_support": false
+      },
+      "future_source_ready": false,
+      "classification": "post-bottleneck-active-decline",
+      "energy_depleted_death_fraction": 1.0
+    }
+  ],
+  "sample_diagnosis": {
+    "independent_unit": "run-seed",
+    "event_or_window_pseudoreplication_allowed": false,
+    "independent_seed_count": 8,
+    "independent_seed_count_meets_confirmation_floor": true,
+    "acute_paired_source_support_count": 8,
+    "all_runs_support_fixed_checkpoint_paired_panel": true,
+    "long_horizon_selection_support_count": 0,
+    "future_source_ready_count": 0,
+    "free_run_endpoint_is_candidate_effect_measurement": false,
+    "startup_transient": {
+      "common_active_decline": true,
+      "mean_final_alive_fraction": 0.13355555555555557,
+      "cross_seed_final_alive_fraction_cv": 0.05565966284085767,
+      "energy_depletion_death_dominant": true,
+      "common_startup_transient_supported": true,
+      "interpretation": "A repeatable startup collapse can be a shared source trajectory for a predeclared paired acute panel, but free-running endpoints from that transient are not candidate-effect measurements."
+    },
+    "sample_issue": false,
+    "sample_issue_reasons": []
+  },
+  "exploration_protocol": {
+    "schema": "tiered-paired-exploration-protocol-v2",
+    "independent_unit": "seed",
+    "windows_entities_and_events_are_nested_observations": true,
+    "large_long_run_required_for_exploration": false,
+    "large_long_run_reserved_for_confirmation": true,
+    "free_run_screen_endpoint_allowed_as_candidate_effect": false,
+    "screen_requires_shared_checkpoint_matched_branches": true,
+    "source_checkpoint_requirements_are_scale_normalized": true,
+    "stages": {
+      "smoke": {
+        "purpose": "mechanism, schema, ledger, checkpoint, and parity validation",
+        "minimum_seeds": 2,
+        "selection_claim_allowed": false
+      },
+      "screen": {
+        "purpose": "paired acute effect screening from fixed checkpoints",
+        "minimum_seeds": 8,
+        "selection_claim_allowed": false
+      },
+      "replication": {
+        "purpose": "repeat a promoted paired screen on disjoint seeds",
+        "minimum_seeds": 8,
+        "selection_claim_allowed": false
+      },
+      "confirmation": {
+        "purpose": "confirm only candidates that pass screen and replication",
+        "minimum_seeds": 8,
+        "requires_disjoint_prior_stage_seeds": true,
+        "requires_explicit_large_long_authorization": true,
+        "selection_claim_allowed": true
+      }
+    },
+    "failed_runs_replaced": false,
+    "promotion_based_on_same_seed_reuse": false,
+    "feedback_to_world": false
+  },
+  "recommendation": "reuse-fixed-checkpoints-for-paired-acute-screen-do-not-promote-free-run-endpoints",
+  "interpretation_boundary": "A fixed checkpoint may support a short paired mechanism panel even when the free-running trajectory has not completed demographic turnover. The paired seed is the independent unit. Free-running endpoints, repeated windows, entities, births, and moves do not become candidate-effect replicates."
+}

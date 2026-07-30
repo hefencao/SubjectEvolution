@@ -1,0 +1,28 @@
+{
+  "schema": "supplied-paired-candidate-decision-v1",
+  "candidate_id": "resource-affinity-acute-effect",
+  "stage": "screen",
+  "intervention": "neutralize-resource-affinity",
+  "primary_metric": "harvested-resource-total",
+  "metric_mode": "cumulative",
+  "response_ticks": 120,
+  "independent_seed_count": 8,
+  "eligible_seed_count": 8,
+  "positive_seed_count": 5,
+  "negative_seed_count": 3,
+  "direction_consistency": 0.625,
+  "minimum_direction_consistency": 0.75,
+  "equal_seed_mean_relative_effect": 0.0012959441050600727,
+  "equal_seed_median_relative_effect": 0.0033445924735386744,
+  "minimum_relative_effect": 0.01,
+  "exact_two_sided_sign_flip_p": 0.71875,
+  "decision": "stop",
+  "terminal": true,
+  "reason_codes": [
+    "direction-not-replicated-across-seeds",
+    "effect-below-preregistered-practical-threshold"
+  ],
+  "replication_allowed": false,
+  "selection_claim_allowed": false,
+  "interpretation": "The matched source support is adequate and the preregistered promotion gates fail. The compact legacy bundle does not contain self-contained direct manipulation values, so this is a terminal promotion stop rather than a universal causal-null claim. It does not erase local or channel-specific affinity evidence."
+}
