@@ -1,0 +1,64 @@
+{
+  "schema": "paired-exploration-candidate-v1",
+  "candidate_id": "functional-regulatory-oxygen-uptake-acute-effect-v1",
+  "candidate_revision": 1,
+  "scientific_issue": "D2-16",
+  "mechanism_family": "functional-regulatory-output",
+  "mechanism_family_revision": 1,
+  "family_role": "bounded-output-path",
+  "terminal_negative_closes_family": false,
+  "hypothesis": "Neutralizing functional-module regulatory physiology output changes cumulative realized oxygen uptake over a fixed acute response window.",
+  "intervention": "neutralize-functional-module-physiology-output",
+  "primary_metric": "physiology-oxygen-uptake-total",
+  "metric_mode": "cumulative",
+  "direction": "two-sided",
+  "minimum_relative_effect": 0.02,
+  "response_ticks": 120,
+  "manipulation_checks": [
+    {
+      "metric": "functional_module_physiology_output_ablation_enabled",
+      "metric_mode": "endpoint",
+      "branch": "baseline",
+      "operator": "==",
+      "value": 0
+    },
+    {
+      "metric": "functional_module_physiology_output_ablation_enabled",
+      "metric_mode": "endpoint",
+      "branch": "intervention",
+      "operator": "==",
+      "value": 1
+    },
+    {
+      "metric": "functional_physiology_output_changed_entity_fraction",
+      "metric_mode": "endpoint",
+      "branch": "baseline",
+      "operator": ">",
+      "value": 0
+    },
+    {
+      "metric": "functional_physiology_output_changed_entity_fraction",
+      "metric_mode": "endpoint",
+      "branch": "intervention",
+      "operator": "==",
+      "value": 0
+    },
+    {
+      "metric": "functional_physiology_output_effective_dimensions",
+      "metric_mode": "endpoint",
+      "branch": "baseline",
+      "operator": ">",
+      "value": 0.25
+    },
+    {
+      "metric": "functional_physiology_output_effective_dimensions",
+      "metric_mode": "endpoint",
+      "branch": "intervention",
+      "operator": "<=",
+      "value": 1e-12
+    }
+  ],
+  "independent_unit": "seed",
+  "selection_claim_allowed": false,
+  "interpretation_boundary": "This candidate tests a bounded acute causal path from functional-module regulatory output to realized oxygen uptake. It does not establish long-horizon selection, organ identity, ecological specialization, or the value of individual module slots."
+}

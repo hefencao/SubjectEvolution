@@ -13,8 +13,11 @@ import json
 from pathlib import Path
 from typing import Any, Sequence
 
-LEDGER_SCHEMA = "paired-exploration-candidate-ledger-v2"
-LEGACY_LEDGER_SCHEMA = "paired-exploration-candidate-ledger-v1"
+LEDGER_SCHEMA = "paired-exploration-candidate-ledger-v3"
+LEGACY_LEDGER_SCHEMAS = {
+    "paired-exploration-candidate-ledger-v1",
+    "paired-exploration-candidate-ledger-v2",
+}
 SUPPORTED_ASSESSMENT_SCHEMAS = {
     "tiered-paired-exploration-assessment-v1",
     "tiered-paired-exploration-assessment-v2",
@@ -58,6 +61,27 @@ def candidate_signature(payload: dict[str, Any]) -> str:
     if isinstance(supplied, str) and len(supplied) == 64:
         return supplied
     return canonical_sha(candidate_spec_from_payload(payload))
+
+
+def candidate_portfolio_metadata(payload: dict[str, Any]) -> dict[str, Any]:
+    """Return non-inferential portfolio metadata for family-level stop rules."""
+
+    raw_family = payload.get("mechanism_family")
+    family = str(raw_family).strip() if raw_family not in {None, ""} else ""
+    raw_revision = payload.get("mechanism_family_revision")
+    revision = int(1 if raw_revision is None else raw_revision) if family else None
+    if revision is not None and revision <= 0:
+        raise ValueError("mechanism_family_revision must be positive")
+    rationale = str(payload.get("family_revision_rationale", "")).strip()
+    return {
+        "mechanism_family": family or None,
+        "mechanism_family_revision": revision,
+        "family_role": str(payload.get("family_role", "")).strip() or None,
+        "terminal_negative_closes_family": bool(
+            payload.get("terminal_negative_closes_family", False)
+        ),
+        "family_revision_rationale": rationale or None,
+    }
 
 
 def assessment_decision(assessment: dict[str, Any]) -> tuple[str, list[str], bool]:
@@ -115,6 +139,10 @@ def _upgrade_entry(entry: dict[str, Any]) -> dict[str, Any]:
     upgraded.setdefault("negative_seed_count", None)
     upgraded.setdefault("exact_two_sided_sign_flip_p", None)
     upgraded.setdefault("practical_effect_threshold_met", None)
+    metadata = candidate_portfolio_metadata(upgraded)
+    for key, value in metadata.items():
+        upgraded.setdefault(key, value)
+    upgraded.setdefault("family_terminal", False)
     upgraded.setdefault(
         "evidence_class",
         _evidence_class(
@@ -134,11 +162,12 @@ def load_ledger(path: str | Path) -> dict[str, Any]:
             "entries": [],
             "world_feedback": False,
             "failed_candidates_reopened_automatically": False,
+            "terminal_families_reopened_automatically": False,
         }
     payload = json.loads(ledger_path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict) or payload.get("schema") not in {
         LEDGER_SCHEMA,
-        LEGACY_LEDGER_SCHEMA,
+        *LEGACY_LEDGER_SCHEMAS,
     }:
         raise ValueError(f"unsupported candidate ledger schema in {ledger_path}")
     entries = payload.get("entries")
@@ -149,6 +178,7 @@ def load_ledger(path: str | Path) -> dict[str, Any]:
         "entries": [_upgrade_entry(dict(entry)) for entry in entries],
         "world_feedback": False,
         "failed_candidates_reopened_automatically": False,
+        "terminal_families_reopened_automatically": False,
     }
 
 
@@ -174,6 +204,13 @@ def _entry_from_assessment(assessment: dict[str, Any]) -> dict[str, Any]:
         check_count
         and manipulation_fraction is not None
         and float(manipulation_fraction) >= 0.75
+    )
+    metadata = candidate_portfolio_metadata(assessment)
+    family_terminal = bool(
+        outcome == "stop"
+        and terminal
+        and manipulation_confirmed
+        and metadata["terminal_negative_closes_family"]
     )
     return {
         "candidate_id": str(assessment["candidate_id"]),
@@ -219,6 +256,8 @@ def _entry_from_assessment(assessment: dict[str, Any]) -> dict[str, Any]:
             check_count=check_count,
             manipulation_confirmed=manipulation_confirmed,
         ),
+        **metadata,
+        "family_terminal": family_terminal,
         "all_stage_seeds": [
             int(value)
             for value in assessment.get("all_stage_seeds", assessment.get("seeds", []))
@@ -233,8 +272,28 @@ def validate_candidate_for_plan(
     candidate_id: str,
     signature: str,
     stage: str,
+    mechanism_family: str | None = None,
+    mechanism_family_revision: int | None = None,
+    family_revision_rationale: str | None = None,
 ) -> None:
+    family = str(mechanism_family or "").strip()
+    family_revision = int(mechanism_family_revision or 1) if family else None
+    rationale = str(family_revision_rationale or "").strip()
     for entry in ledger.get("entries", []):
+        if family and bool(entry.get("family_terminal", False)):
+            closed_family = str(entry.get("mechanism_family") or "")
+            if closed_family == family:
+                closed_revision = int(entry.get("mechanism_family_revision") or 1)
+                if family_revision is None or family_revision <= closed_revision:
+                    raise ValueError(
+                        "mechanism family is terminal in the decision ledger; "
+                        "an explicit higher family revision with rationale is required"
+                    )
+                if not rationale:
+                    raise ValueError(
+                        "reopening a terminal mechanism family requires "
+                        "family_revision_rationale"
+                    )
         entry_id = str(entry.get("candidate_id", ""))
         entry_signature = str(entry.get("candidate_signature_sha256", ""))
         if entry_id == candidate_id and entry_signature != signature:
@@ -297,6 +356,7 @@ def record_assessment(
         "entries": entries,
         "world_feedback": False,
         "failed_candidates_reopened_automatically": False,
+        "terminal_families_reopened_automatically": False,
     }
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -314,14 +374,15 @@ def render_markdown(ledger: dict[str, Any]) -> str:
         "",
         f"Schema: `{ledger['schema']}`",
         "",
-        "| Candidate | Stage | Decision | Evidence | Eligible seeds | Manipulation | Direction | Median relative effect |",
-        "|---|---|---|---|---:|---:|---:|---:|",
+        "| Candidate | Family | Stage | Decision | Evidence | Eligible seeds | Manipulation | Direction | Median relative effect |",
+        "|---|---|---|---|---|---:|---:|---:|---:|",
     ]
     for entry in ledger.get("entries", []):
         manipulation = entry.get("manipulation_supported_seed_fraction")
         lines.append(
-            f"| {entry['candidate_id']} | {entry['stage']} | {entry['decision']} | "
-            f"{entry.get('evidence_class')} | {entry['eligible_seed_count']} | "
+            f"| {entry['candidate_id']} | {entry.get('mechanism_family')} | "
+            f"{entry['stage']} | {entry['decision']} | {entry.get('evidence_class')} | "
+            f"{entry['eligible_seed_count']} | "
             f"{manipulation} | {entry['direction_consistency']} | "
             f"{entry['equal_seed_median_relative_effect']} |"
         )
@@ -331,6 +392,10 @@ def render_markdown(ledger: dict[str, Any]) -> str:
             "A terminal failed candidate cannot be automatically reopened or relabeled. "
             "A changed intervention, metric, direction, threshold, horizon, or manipulation "
             "contract requires an explicit new candidate revision.",
+            "",
+            "A manipulation-confirmed terminal aggregate-family gate can close its mechanism "
+            "family. Reopening requires a higher family revision and an explicit scientific "
+            "rationale; relabeling a child candidate is insufficient.",
             "",
             "Manipulation-confirmed promotion failure means the predeclared target was engaged "
             "but the candidate failed its seed-level direction or practical-effect gate. It is "
@@ -347,6 +412,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument("--assessment", required=True)
     parser.add_argument("--ledger", required=True)
+    parser.add_argument("--candidate-spec")
     args = parser.parse_args(argv)
     source_path = Path(args.assessment)
     source = json.loads(source_path.read_text(encoding="utf-8"))
@@ -373,6 +439,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                     assessment["manipulation_checks"] = result.get(
                         "manipulation_checks", []
                     )
+    if args.candidate_spec:
+        candidate_payload = json.loads(Path(args.candidate_spec).read_text(encoding="utf-8"))
+        if str(candidate_payload.get("candidate_id")) != str(assessment.get("candidate_id")):
+            raise ValueError("candidate spec id does not match assessment")
+        for key, value in candidate_portfolio_metadata(candidate_payload).items():
+            if value is not None:
+                assessment[key] = value
     ledger, _ = record_assessment(Path(args.ledger), assessment)
     Path(args.ledger).with_suffix(".md").write_text(
         render_markdown(ledger), encoding="utf-8"
@@ -382,8 +455,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 __all__ = [
     "LEDGER_SCHEMA",
-    "LEGACY_LEDGER_SCHEMA",
+    "LEGACY_LEDGER_SCHEMAS",
     "assessment_decision",
+    "candidate_portfolio_metadata",
     "candidate_signature",
     "candidate_spec_from_payload",
     "canonical_sha",

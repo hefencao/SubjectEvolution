@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v42"
+SCHEMA = "structural-measurement-protocol-audit-v43"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -218,10 +218,11 @@ def build_protocol_audit(
             "paired_result_schema": "tiered-paired-exploration-results-v2",
             "paired_assessment_schema": "tiered-paired-exploration-assessment-v2",
             "candidate_spec_schema": "paired-exploration-candidate-v1",
-            "candidate_ledger_schema": "paired-exploration-candidate-ledger-v2",
+            "candidate_ledger_schema": "paired-exploration-candidate-ledger-v3",
             "accepted_candidate_ledger_schemas": [
                 "paired-exploration-candidate-ledger-v1",
                 "paired-exploration-candidate-ledger-v2",
+                "paired-exploration-candidate-ledger-v3",
             ],
             "independent_unit": "seed",
             "nested_observations": [
@@ -282,6 +283,10 @@ def build_protocol_audit(
                 "threshold_or_horizon_change_requires_new_revision": True,
                 "manipulation_engagement_recorded_separately_from_effect_gate": True,
                 "manipulation_confirmed_negative_is_candidate_specific": True,
+                "mechanism_family_metadata_is_non_inferential": True,
+                "aggregate_family_gate_can_close_current_family_revision": True,
+                "family_reopening_requires_higher_revision_and_rationale": True,
+                "family_closure_feedback_to_world": False,
                 "feedback_to_world": False,
             },
             "large_long_run_required_for_exploration": False,

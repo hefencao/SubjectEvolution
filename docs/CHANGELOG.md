@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.75.0
+
+- Records the supplied eight-seed D3-Q knowledge-policy screen as a terminal manipulation-confirmed practical-effect stop: target engagement passes in every seed and seven effects reduce harvest, but the equal-seed median reduction remains below the preregistered 2% threshold.
+- Upgrades the candidate ledger to `paired-exploration-candidate-ledger-v3` while accepting legacy v1/v2 ledgers.
+- Adds mechanism-family revision metadata and permits an aggregate manipulation-confirmed terminal negative to close a family revision against silent child-candidate reopening.
+- Requires a strictly higher family revision and an explicit scientific rationale before a closed family can be reopened.
+- Adds self-contained functional regulatory-output diagnostics to periodic and final summaries without feeding them back into world state.
+- Adds the bounded D3-R functional-regulatory oxygen-uptake candidate with direct output-neutralization checks and a 2% practical-effect threshold.
+- Upgrades the protocol audit to v43 and project version to 0.75.0.
+
 ## 0.74.0
 
 - Records the supplied eight-seed D3-P elastic-capacity screen as a terminal manipulation-confirmed promotion stop: all target checks pass, but effects split four positive/four negative and the median relative effect is below the preregistered threshold.

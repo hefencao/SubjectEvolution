@@ -180,7 +180,7 @@ def evaluate_functional_outputs(
 
     if not evaluation_due:
         return {}
-    return functional_module_diagnostics(
+    diagnostics = functional_module_diagnostics(
         ent.genotype[active],
         active_preference,
         effective_resource_affinity_q[active],
@@ -188,6 +188,13 @@ def evaluate_functional_outputs(
         gene_start=ParametricPolicy.functional_module_gene_start(cfg),
         evaluation=evaluation,
     )
+    simulation.last_functional_physiology_output_changed_entity_fraction = float(
+        diagnostics.get("functional_physiology_output_changed_entity_fraction", 0.0)
+    )
+    simulation.last_functional_physiology_output_effective_dimensions = float(
+        diagnostics.get("functional_physiology_output_effective_dimensions", 0.0)
+    )
+    return diagnostics
 
 
 def record_physiology_capacity_development_cost(
@@ -345,6 +352,8 @@ def initialize_functional_runtime_state(simulation: Any) -> None:
         setattr(simulation, f"total_{name}", 0.0)
     simulation.functional_module_embodied_output_ablation_enabled = False
     simulation.functional_module_physiology_output_ablation_enabled = False
+    simulation.last_functional_physiology_output_changed_entity_fraction = 0.0
+    simulation.last_functional_physiology_output_effective_dimensions = 0.0
     simulation.physiology_messenger_receptor_blockade_enabled = False
     simulation.physiology_state_clamps = {}
 

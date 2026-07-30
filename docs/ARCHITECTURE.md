@@ -651,3 +651,11 @@ Candidate decisions distinguish two evidence layers:
 A manipulation-confirmed negative screen is terminal for that candidate specification but is not a universal zero-effect statement. Legacy candidates without a direct manipulation contract remain explicitly distinguishable in the ledger.
 
 After the capacity-use screen fails, the next bounded experiment moves upward to the full knowledge-policy residual rather than continuing with narrower capacity subcomponents. The D3-Q screen requires changed baseline actions, zero changed intervention actions and a downstream harvest effect.
+
+## v0.75 mechanism-family revision boundary
+
+Candidate decisions remain non-feedback experimental metadata. A candidate may declare a mechanism family, a positive integer family revision, and a role inside that family. An aggregate-path gate can declare that a manipulation-confirmed terminal negative closes the current family revision. Once closed, the decision ledger rejects child candidates in the same revision, including candidates that merely change names, metrics, thresholds or horizons.
+
+Reopening is permitted only with a strictly higher family revision and a non-empty scientific rationale that identifies a new directly measurable interface. This is an experiment-portfolio constraint, not a simulation-state intervention. It does not alter policies, entities, environments, random streams or checkpoint semantics.
+
+Functional regulatory-output manipulation evidence is self-contained in periodic and final summaries through the changed-entity fraction and effective output dimensions. These values are copied from fixed evaluation diagnostics and never feed back into the world. D3-R uses them only to establish target engagement before evaluating cumulative oxygen uptake. A passing acute panel cannot authorize organ, niche, ecological differentiation or evolutionary-selection claims.

@@ -21,6 +21,7 @@ from typing import Any, Sequence
 import numpy as np
 
 from se.analysis.candidate_ledger import (
+    candidate_portfolio_metadata,
     candidate_signature,
     load_ledger,
     record_assessment,
@@ -61,6 +62,9 @@ _CUMULATIVE_ALIASES: dict[str, tuple[str, ...]] = {
     ),
     "knowledge-policy-influenced-actions-total": (
         "knowledge_policy_influenced_actions_total",
+    ),
+    "physiology-oxygen-uptake-total": (
+        "physiology_oxygen_uptake_total",
     ),
 }
 
@@ -157,6 +161,7 @@ def load_candidate_spec(path: str | Path) -> tuple[dict[str, Any], str]:
     normalized["manipulation_checks"] = _normalize_manipulation_checks(
         payload.get("manipulation_checks")
     )
+    normalized.update(candidate_portfolio_metadata(payload))
     return normalized, _sha256_file(candidate_path)
 
 
@@ -291,6 +296,7 @@ def build_plan(
     manipulation_checks: Sequence[dict[str, Any]] | None = None,
     candidate_spec_sha256: str | None = None,
     candidate_spec_schema: str | None = None,
+    candidate_metadata: dict[str, Any] | None = None,
     decision_ledger: Path | None = None,
 ) -> dict[str, Any]:
     if stage not in _STAGE_ORDER:
@@ -326,11 +332,15 @@ def build_plan(
         else output.parent / "exploration_candidate_ledger.json"
     )
     ledger = load_ledger(ledger_path)
+    portfolio = candidate_portfolio_metadata(candidate_metadata or {})
     validate_candidate_for_plan(
         ledger,
         candidate_id=candidate_id,
         signature=candidate_signature_sha256,
         stage=stage,
+        mechanism_family=portfolio["mechanism_family"],
+        mechanism_family_revision=portfolio["mechanism_family_revision"],
+        family_revision_rationale=portfolio["family_revision_rationale"],
     )
     source_root = source_root.resolve()
     rows = _source_index(source_root)
@@ -409,6 +419,7 @@ def build_plan(
         "candidate_signature_sha256": candidate_signature_sha256,
         "candidate_spec_schema": candidate_spec_schema,
         "candidate_spec_sha256": candidate_spec_sha256,
+        **portfolio,
         "source_root": str(source_root),
         "source_plan_schema": source_plan.get("schema"),
         "source_plan_sha256": _sha256_file(source_plan_path),
@@ -675,6 +686,7 @@ def assess_results(plan: dict[str, Any], panels: list[dict[str, Any]]) -> dict[s
         "candidate_signature_sha256": signature,
         "candidate_spec_schema": plan.get("candidate_spec_schema"),
         "candidate_spec_sha256": plan.get("candidate_spec_sha256"),
+        **candidate_portfolio_metadata(plan),
         "intervention": plan["intervention"],
         "primary_metric": plan["primary_metric"],
         "metric_mode": plan["metric_mode"],
@@ -836,6 +848,7 @@ def execute_plan(plan: dict[str, Any]) -> dict[str, Any]:
         "candidate_signature_sha256": plan.get("candidate_signature_sha256"),
         "candidate_spec_schema": plan.get("candidate_spec_schema"),
         "candidate_spec_sha256": plan.get("candidate_spec_sha256"),
+        **candidate_portfolio_metadata(plan),
         "intervention": plan["intervention"],
         "primary_metric": plan["primary_metric"],
         "metric_mode": plan["metric_mode"],
@@ -958,8 +971,10 @@ def plan_main(argv: Sequence[str] | None = None) -> int:
     prior = _read_json(Path(args.prior_assessment)) if args.prior_assessment else None
     candidate_payload: dict[str, Any] | None = None
     candidate_spec_sha256 = None
+    candidate_metadata: dict[str, Any] | None = None
     if args.candidate_spec:
         candidate_payload, candidate_spec_sha256 = load_candidate_spec(args.candidate_spec)
+        candidate_metadata = candidate_portfolio_metadata(candidate_payload)
         supplied = {
             "candidate_id": args.candidate,
             "response_ticks": args.response_ticks,
@@ -1016,6 +1031,7 @@ def plan_main(argv: Sequence[str] | None = None) -> int:
         manipulation_checks=candidate_payload.get("manipulation_checks", []),
         candidate_spec_sha256=candidate_spec_sha256,
         candidate_spec_schema=(candidate_payload.get("schema") if args.candidate_spec else None),
+        candidate_metadata=candidate_metadata,
         decision_ledger=Path(args.decision_ledger) if args.decision_ledger else None,
     )
     output = Path(args.output)

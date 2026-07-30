@@ -209,7 +209,7 @@ def test_repair_primitive_conserves_material_energy_and_integrity() -> None:
 
 def test_v3_protocol_audit_records_physical_and_causal_boundaries() -> None:
     audit = build_protocol_audit(CONFIG)
-    assert audit["schema"] == "structural-measurement-protocol-audit-v42"
+    assert audit["schema"] == "structural-measurement-protocol-audit-v43"
     protocol = audit["functional_module_protocol"]
     assert protocol["architecture_class"] == "feed-forward-compositional-embodied"
     assert protocol["new_world_physics"] is True

@@ -1232,7 +1232,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             movement_speed_multiplier=movement_speed_multiplier,
             signal_strength_multiplier=signal_strength_multiplier,
         )
-
         if self.local_stress_diagnostics is not None:
             local_hazard = (
                 self.gpu_runtime.hazard_for_cells(cells)

@@ -1,47 +1,46 @@
 # SE project status
 
-Version: **0.74.0**
+Version: **0.75.0**
 
 ## Current result
 
-The D3-P fixed-checkpoint elastic-capacity screen yields a terminal negative promotion decision:
+The D3-Q fixed-checkpoint knowledge-policy screen yields a terminal negative promotion decision:
 
 - eight of eight seed panels satisfy source, branch and manipulation support;
-- baseline effective capacity dimensions remain about 3.75–3.92 while every intervention branch is zero;
-- four seed effects are positive and four are negative;
-- direction consistency is 0.5, below the preregistered 0.75 gate;
-- the equal-seed median relative effect is about 0.00243, below the preregistered 0.05 practical threshold.
+- the baseline knowledge-policy residual changes actions and the intervention residual changes none;
+- seven seed effects reduce cumulative harvest and one increases it;
+- direction consistency is 0.875, above the preregistered 0.75 gate;
+- the equal-seed median relative effect is about -0.00685, below the preregistered 0.02 practical threshold.
 
-The intervention target is therefore confirmed, but cumulative realized working-memory use does not show a replicated practical acute effect under this candidate specification. The candidate is stopped before replication.
+Target engagement is confirmed, but the complete knowledge-policy residual does not produce a practically material acute total-harvest effect under this specification. The candidate stops before replication.
+
+## Mechanism-family policy
+
+Candidate portfolio metadata is separate from the inferential candidate signature. A manipulation-confirmed terminal aggregate gate can close its current mechanism-family revision. A later candidate in the same family requires:
+
+1. a strictly higher family revision;
+2. an explicit scientific rationale describing the newly measurable causal interface;
+3. a new candidate specification and independent decision record.
+
+Relabeling an internal component, lowering a threshold or changing the horizon does not reopen a closed family.
+
+The current `knowledge-policy` family revision is closed by D3-Q. D3-P remains a component-level negative result inside that family.
 
 ## Current exploration policy
 
 ```text
 candidate specification
 → fixed checkpoint matched screen
-→ manipulation engagement assessment
-→ durable promote/stop decision
-→ disjoint-seed matched replication only after promotion
+→ direct manipulation assessment
+→ seed-level practical-effect gate
+→ durable candidate and family decision
+→ disjoint-seed replication only after promotion
 → explicit acute confirmation only after replication
 ```
 
-## Current gates
-
-1. Fix the checkpoint tick before branch outcomes.
-2. Hash-lock every source checkpoint.
-3. Give each seed equal inferential weight.
-4. Do not count windows, entities or events as independent replicates.
-5. Require a predeclared primary metric, direction and practical effect.
-6. Require preregistered operational manipulation checks when a direct target metric exists.
-7. Record target engagement separately from downstream promotion evidence.
-8. Record every promotion or stop decision in the candidate ledger.
-9. Do not silently reopen a terminal candidate by relabeling or changing thresholds.
-10. Keep large long execution reserved for explicitly promoted confirmation.
-11. Keep migration, specialization, coexistence and ecotype gates closed.
-
 ## Next bounded candidate
 
-D3-Q tests whether disabling the complete knowledge-policy residual publication layer changes cumulative harvested resource by at least 2% over the same fixed 120-tick window. It requires direct evidence that the baseline residual changes actions and the intervention residual changes none.
+D3-R tests whether neutralizing functional-module regulatory physiology output changes cumulative realized oxygen uptake by at least 2% over the same fixed 120-tick window. It requires direct evidence that baseline regulatory output is active and the intervention output is exactly neutralized.
 
 ## Still incomplete
 

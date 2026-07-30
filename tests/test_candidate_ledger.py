@@ -150,3 +150,85 @@ def test_manipulation_confirmed_negative_is_distinguished(tmp_path: Path) -> Non
     _, entry = record_assessment(tmp_path / "ledger.json", assessment)
     assert entry["manipulation_confirmed"] is True
     assert entry["evidence_class"] == "manipulation-confirmed-promotion-negative"
+
+
+def test_terminal_aggregate_gate_closes_mechanism_family(tmp_path: Path) -> None:
+    assessment = _assessment(candidate_id="knowledge-aggregate")
+    assessment.update(
+        {
+            "candidate_signature_sha256": "6" * 64,
+            "mechanism_family": "knowledge-policy",
+            "mechanism_family_revision": 1,
+            "family_role": "aggregate-path-gate",
+            "terminal_negative_closes_family": True,
+            "manipulation_checks": [
+                {
+                    "metric": "knowledge_policy_effective_enabled",
+                    "metric_mode": "endpoint",
+                    "branch": "intervention",
+                    "operator": "==",
+                    "value": 0.0,
+                }
+            ],
+            "manipulation_supported_seed_count": 8,
+            "manipulation_supported_seed_fraction": 1.0,
+            "practical_effect_threshold_met": False,
+        }
+    )
+    path = tmp_path / "ledger.json"
+    _, entry = record_assessment(path, assessment)
+    assert entry["family_terminal"] is True
+
+    with pytest.raises(ValueError, match="mechanism family is terminal"):
+        validate_candidate_for_plan(
+            load_ledger(path),
+            candidate_id="knowledge-child",
+            signature="7" * 64,
+            stage="screen",
+            mechanism_family="knowledge-policy",
+            mechanism_family_revision=1,
+        )
+
+
+def test_terminal_family_requires_higher_revision_and_rationale(tmp_path: Path) -> None:
+    assessment = _assessment(candidate_id="aggregate")
+    assessment.update(
+        {
+            "candidate_signature_sha256": "8" * 64,
+            "mechanism_family": "family-a",
+            "mechanism_family_revision": 1,
+            "terminal_negative_closes_family": True,
+            "manipulation_checks": [
+                {
+                    "metric": "target",
+                    "metric_mode": "endpoint",
+                    "branch": "intervention",
+                    "operator": "==",
+                    "value": 0.0,
+                }
+            ],
+            "manipulation_supported_seed_count": 8,
+            "manipulation_supported_seed_fraction": 1.0,
+        }
+    )
+    path = tmp_path / "ledger.json"
+    record_assessment(path, assessment)
+    ledger = load_ledger(path)
+    with pytest.raises(ValueError, match="family_revision_rationale"):
+        validate_candidate_for_plan(
+            ledger,
+            candidate_id="revised",
+            signature="9" * 64,
+            stage="screen",
+            mechanism_family="family-a",
+            mechanism_family_revision=2,
+        )
+    validate_candidate_for_plan(
+        ledger,
+        candidate_id="revised",
+        signature="9" * 64,
+        stage="screen",
+        mechanism_family="family-a",
+        mechanism_family_revision=2,
+        family_revision_rationale="A new directly measured causal interface is available.",
+    )
