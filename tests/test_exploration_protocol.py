@@ -155,3 +155,6 @@ def test_protocol_audit_records_tiered_exploration_boundary() -> None:
     assert protocol["large_long_run_required_for_exploration"] is False
     assert protocol["large_long_run_reserved_for_confirmation"] is True
     assert protocol["default_stages"]["screen"]["minimum_seeds"] == 8
+    assert protocol["source_checkpoint"]["demographic_turnover_required_for_acute_panel"] is False
+    assert protocol["source_checkpoint"]["free_run_endpoint_is_candidate_effect"] is False
+    assert protocol["paired_plan_schema"] == "tiered-paired-exploration-plan-v1"

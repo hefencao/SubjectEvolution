@@ -161,7 +161,10 @@ def build_plan(
         "failed_runs_replaced": False,
         "outcome_conditioned_seed_or_horizon_changes": False,
         "pilot_seeds_reused_for_later_stage": False,
-        "selection_claim_allowed": stage == "confirmation",
+        "source_run_only": True,
+        "free_run_endpoint_is_candidate_effect": False,
+        "paired_panel_required_for_promotion": stage in {"screen", "replication", "confirmation"},
+        "selection_claim_allowed": False,
         "execution_command": command,
     }
 
@@ -182,6 +185,8 @@ def render_markdown(plan: dict[str, Any]) -> str:
             "```bash",
             command,
             "```",
+            "",
+            "This plan creates source trajectories and checkpoints only. Its free-running endpoint is not a candidate-effect measurement.",
             "",
             "Repeated windows, entities, and events are nested observations. The seed is the independent unit.",
             "",

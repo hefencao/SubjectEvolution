@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.72.0
+
+### Fixed-checkpoint paired exploration
+
+- Re-audits the D3-N eight-seed free-run screen as a common startup transient rather than a candidate-effect test.
+- Adds scale-normalized acute checkpoint support while keeping demographic-turnover requirements separate.
+- Adds fixed-checkpoint paired plan, result, and assessment schemas.
+- Adds matched baseline/intervention execution with checkpoint hash locking and equal seed weighting.
+- Adds cumulative and endpoint primary metrics, direction consistency, practical-effect gates, and exact sign-flip reporting.
+- Requires passing prior-stage assessments and disjoint seeds for replication and confirmation.
+- Reserves large long runs for explicitly promoted confirmation.
+- Upgrades the protocol audit to v40 and project version to 0.72.0.
+- Changes no world mechanism, survival, reproduction, diversity, reward, or role semantics.
+
 ## 0.71.0
 
 ### Tiered exploration and sample adequacy

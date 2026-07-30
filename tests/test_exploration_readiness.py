@@ -6,61 +6,84 @@ from pathlib import Path
 from se.analysis.exploration_readiness import build_audit, render_markdown
 
 
-def _run(label: str, *, source_ready: bool = False) -> dict:
+def _run(
+    label: str,
+    *,
+    initial: int = 1125,
+    alive: int = 150,
+    classification: str = "post-bottleneck-active-decline",
+    energy_fraction: float = 1.0,
+) -> dict:
     return {
         "label": label,
-        "summary_tick": 5000,
+        "summary_tick": 480,
+        "initial_population": initial,
         "final_population": {
-            "tick": 5000,
-            "alive": 24000,
-            "descendant_alive_fraction": 1.0,
-            "effective_successful_parents_window": 2200.0,
-            "largest_parent_contribution_fraction_window": 0.002,
-            "effective_lineages": 25.0,
-            "strategy_effective_dimensions": 14.0,
+            "tick": 480,
+            "alive": alive,
+            "alive_fraction_to_initial": alive / initial,
+            "descendant_alive_fraction": 0.1,
+            "effective_successful_parents_window": 5.0,
+            "largest_parent_contribution_fraction_window": 0.2,
+            "effective_lineages": 120.0,
+            "largest_lineage_fraction": 0.02,
+            "strategy_effective_dimensions": 58.0,
         },
+        "death_causes": {"energy_depleted_fraction": energy_fraction},
         "post_bottleneck_regime": {
-            "settled_population_supported": True,
-            "source_ready_for_future_independent_runs": source_ready,
-            "classification": "post-bottleneck-rebound-insufficient-source-readiness",
+            "settled_population_supported": False,
+            "source_ready_for_future_independent_runs": False,
+            "classification": classification,
         },
     }
 
 
-def test_large_runs_can_have_within_run_support_without_confirmation_support() -> None:
+def test_short_declining_runs_can_support_paired_sources_without_selection_claims() -> None:
     selection = {
         "schema": "demographic-selection-validity-audit-v3",
-        "runs": [_run("a"), _run("b"), _run("c")],
+        "runs": [_run(f"seed_{index}", alive=138 + index * 3) for index in range(8)],
     }
     report = build_audit(selection)
     diagnosis = report["sample_diagnosis"]
-    assert diagnosis["within_run_observational_support"] is True
-    assert diagnosis["independent_seed_count"] == 3
-    assert diagnosis["independent_seed_confirmation_support"] is False
-    assert diagnosis["sample_issue"] is True
-    assert report["exploration_protocol"]["large_long_run_required_for_exploration"] is False
+    assert diagnosis["all_runs_support_fixed_checkpoint_paired_panel"] is True
+    assert diagnosis["independent_seed_count_meets_confirmation_floor"] is True
+    assert diagnosis["startup_transient"]["common_startup_transient_supported"] is True
+    assert diagnosis["free_run_endpoint_is_candidate_effect_measurement"] is False
     assert report["recommendation"] == (
-        "use-tiered-small-panel-exploration-add-independent-seeds-before-confirmation"
+        "reuse-fixed-checkpoints-for-paired-acute-screen-do-not-promote-free-run-endpoints"
     )
 
 
-def test_readiness_markdown_keeps_seed_as_independent_unit() -> None:
+def test_acute_source_threshold_scales_with_initial_population() -> None:
     report = build_audit(
         {
             "schema": "demographic-selection-validity-audit-v3",
-            "runs": [_run("seed_1"), _run("seed_2"), _run("seed_3")],
+            "runs": [_run("small", initial=500, alive=64)],
+        }
+    )
+    run = report["runs"][0]
+    assert run["required_acute_alive"] == 64
+    assert run["acute_paired_source_support"] is True
+    assert run["long_horizon_selection_support"] is False
+
+
+def test_readiness_markdown_keeps_checkpoint_pairing_boundary() -> None:
+    report = build_audit(
+        {
+            "schema": "demographic-selection-validity-audit-v3",
+            "runs": [_run(f"seed_{index}") for index in range(8)],
         }
     )
     text = render_markdown(report)
-    assert "independent seed count: `3`" in text
-    assert "large long runs: confirmation only" in text
-    assert "repeated windows" not in text.lower() or "independent" in text.lower()
+    assert "acute paired source checkpoints: `8`" in text
+    assert "same full checkpoint" in text
+    assert "free-run endpoint is a candidate-effect measurement: `False`" in text
 
 
 def test_current_documented_audit_is_machine_readable() -> None:
-    path = Path("docs/v0.71/D3M_SAMPLE_ADEQUACY_AUDIT.json")
+    path = Path("docs/v0.72/D3N_SUPPLIED_SCREEN_AUDIT.json")
     if not path.exists():
         return
     payload = json.loads(path.read_text(encoding="utf-8"))
-    assert payload["schema"] == "exploration-readiness-audit-v1"
-    assert payload["sample_diagnosis"]["within_run_observational_support"] is True
+    assert payload["schema"] == "exploration-readiness-audit-v2"
+    assert payload["sample_diagnosis"]["all_runs_support_fixed_checkpoint_paired_panel"] is True

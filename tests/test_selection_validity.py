@@ -468,7 +468,7 @@ def test_multi_seed_writes_plan_before_first_simulation_and_auto_audit(
     assert plan["automatic_selection_validity_audit"] is True
     assert audit["schema"] == "demographic-selection-validity-audit-v3"
     assert long_run["automatic_selection_validity_audit"]["run_count"] == 1
-    assert readiness["schema"] == "exploration-readiness-audit-v1"
+    assert readiness["schema"] == "exploration-readiness-audit-v2"
     assert long_run["automatic_exploration_readiness_audit"]["independent_seed_count"] == 1
 
 

@@ -1,51 +1,43 @@
 # SE project status
 
-Version: **0.71.0**
+Version: **0.72.0**
 
-## Current sample diagnosis
+## Current result
 
-The D3-M scale-4 runs have adequate within-run observational support:
+The D3-N eight-seed screen is dominated by a shared initialization decline:
 
-- final alive: 23,533–28,523;
-- descendant alive fraction: 1.0;
-- effective successful parents in the final window: about 2,278–2,480;
-- largest parent contribution remains very small;
-- current strategy effective dimensions remain about 13–27.
+- final alive at tick 480: 138–165 from 1,125 initial entities;
+- energy depletion accounts for the recorded deaths;
+- effective founder lineages remain about 111–137;
+- current strategy variation remains broad;
+- demographic turnover and reproductive-contributor support remain insufficient.
 
-The remaining sample limitations are cross-run and source-regime limitations:
-
-- only three independent seeds;
-- founder-lineage inverse-Simpson counts about 14–35;
-- no common future source rule;
-- population remains slightly increasing at the final observation windows.
-
-Thus the completed large runs are useful demographic and operational anchors, but not confirmation-level selection evidence.
+The endpoints are not candidate-effect measurements. The fixed tick-480 checkpoints are adequate sources for short matched intervention panels.
 
 ## Current exploration policy
 
 ```text
-mechanism smoke
-→ 8-seed small screen
-→ 8 new-seed medium replication
-→ explicit large long confirmation only for promoted candidates
+fixed checkpoint source
+→ matched baseline/intervention screen
+→ disjoint-seed matched replication
+→ explicit confirmation only after promotion
 ```
-
-`se-exploration-plan` pre-registers the stage and `se-multi` verifies the exact config hash, seeds, output, backend and horizon before execution.
 
 ## Current gates
 
-1. Do not count entities, windows, births or moves as independent replicates.
-2. Do not repeat large long runs for ordinary exploratory iteration.
-3. Require at least eight seeds for screen and replication.
-4. Require disjoint seeds across all stages.
-5. Require explicit authorization before large long confirmation.
-6. Preserve every failed or insufficient run.
-7. Keep migration, specialization, coexistence and ecotype gates closed.
+1. Fix the checkpoint tick before branch outcomes.
+2. Hash-lock every source checkpoint.
+3. Give each seed equal inferential weight.
+4. Do not count windows, entities, or events as independent replicates.
+5. Require a predeclared primary metric, direction, and practical effect.
+6. Preserve all failed and ineligible panels.
+7. Keep large long execution reserved for promoted confirmation.
+8. Keep migration, specialization, coexistence, and ecotype gates closed.
 
 ## Still incomplete
 
+- a replicated paired effect for the next scientific candidate;
 - a stable common post-bottleneck source rule;
-- confirmation-level independent replication;
+- confirmation-level long-horizon selection evidence;
 - causal decomposition of founder-lineage contraction;
-- replicated positive processing-response evidence;
-- device-resident action settlement, lifecycle and graph updates.
+- device-resident action settlement, lifecycle, and graph updates.

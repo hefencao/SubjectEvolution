@@ -1,61 +1,70 @@
-# SE v0.71
+# SE v0.72
 
-SE is a deterministic artificial-life and subject-structure research platform. The current main line retains role-free four-channel resources, conservative storage and recycling, persistent abiotic renewal, costed spatial processing, GPU-first execution, matched controls and explicit scientific-validity gates.
+SE is a deterministic artificial-life and subject-structure research platform. The current main line retains role-free four-channel resources, conservative storage and recycling, persistent abiotic renewal, costed physiology and information processing, GPU-first execution, matched controls, and explicit scientific-validity gates.
 
-## Why v0.71
+## Why v0.72
 
-The completed D3-M scale-4 panel establishes that long trajectories can provide substantial within-run demographic evidence without providing confirmation-level independent replication.
+The completed D3-N free-run screen used eight independent seeds at 1,125 initial entities. All eight runs reached tick 480 with 138–165 living entities. The endpoint decline was highly repeatable and energy-depletion dominated, while each run still retained enough living entities, founder-lineage breadth, and current strategy variation for a short acute intervention panel.
 
-At tick 5000, the three runs contain 23,533–28,523 living entities, complete descendant replacement and roughly 2,278–2,480 effective successful parents in the final window. These are adequate within-run observational samples. However, there are only three independent seeds, founder-lineage inverse-Simpson counts remain about 14–35, and no common future source rule is supported.
-
-The correct response is not to repeat large long runs during every exploratory step. v0.71 introduces a tiered protocol:
+This reveals a protocol distinction:
 
 ```text
-smoke
-→ small independent-seed screen
-→ disjoint-seed replication
-→ large long confirmation only for promoted candidates
+free-running startup trajectory
+≠ candidate-effect screen
+
+fixed per-seed checkpoint
+→ matched baseline/intervention branches
+→ seed-level paired effect
 ```
 
-Repeated windows, entities, births, moves and policy events remain nested observations. The seed is the independent unit.
+A free-run endpoint may identify a reproducible source phase, but it does not measure a candidate effect. v0.72 therefore converts the exploration stages from endpoint screening to fixed-checkpoint paired panels.
 
-## Exploration readiness
-
-Audit an existing multi-seed result:
+## Re-audit an existing source panel
 
 ```bash
 se-exploration-readiness \
-  --selection-audit analyses/<run>/selection_validity_audit.json \
-  --long-run-analysis analyses/<run>/long_run_analysis.json \
-  --output analyses/<run>/exploration_readiness
+  --selection-audit analyses/d3n_screen/selection_validity_audit.json \
+  --long-run-analysis analyses/d3n_screen/long_run_analysis.json \
+  --output analyses/d3n_screen/readiness_v2
 ```
 
-`se-multi` now emits this audit automatically after its selection-validity audit.
+The readiness audit uses scale-normalized acute thresholds. Demographic turnover and a stable population source are not required for a short paired mechanism panel; they remain required for long-horizon evolutionary interpretation.
 
-## Bounded exploration stages
+## Create a paired screen from existing checkpoints
 
-Generate a screen plan:
+The D3-N screen wrote full checkpoints every 120 ticks. A predeclared tick-480 checkpoint can be reused without rerunning the shared prefix:
 
 ```bash
-se-exploration-plan \
+se-exploration-paired-plan \
   --stage screen \
-  --candidate d3-next-candidate \
-  --config configs/mvp_d3n_exploration_screen.json \
-  --seeds 71101,71102,71103,71104,71105,71106,71107,71108 \
-  --output analyses/d3n_screen \
+  --candidate resource-affinity-acute-effect \
+  --source-root analyses/d3n_screen \
+  --checkpoint-tick 480 \
+  --response-ticks 120 \
+  --intervention neutralize-resource-affinity \
+  --primary-metric harvested-resource-total \
+  --metric-mode cumulative \
+  --direction two-sided \
+  --minimum-relative-effect 0.01 \
+  --output analyses/d3o_affinity_paired_screen \
   --backend auto
+
+se-exploration-paired \
+  --plan analyses/d3o_affinity_paired_screen/paired_exploration_plan.json
 ```
 
-Then run the exact pre-registered invocation printed by the plan. `se-multi --exploration-plan ...` rejects changes to the config hash, seeds, output, backend or horizon.
+The plan locks every checkpoint hash before branch execution. Baseline and intervention branches start from the same full checkpoint and preserve keyed randomness. The output reports one matched effect per seed, equal seed weighting, direction consistency, a predeclared practical-effect threshold, and an exact sign-flip statistic.
 
-Default limits:
+## Promotion boundary
 
-- smoke: at most 512 initial entities and 180 ticks;
-- screen: at most 2,048 initial entities and 600 ticks, at least eight seeds;
-- replication: at most 4,096 initial entities and 900 ticks, at least eight new seeds;
-- confirmation: explicit authorization, after a disjoint-seed replication plan.
+```text
+paired smoke
+→ eight-seed paired screen
+→ eight new-seed paired replication
+→ explicit confirmation on new seeds
+```
 
-Large long execution remains available, but it is no longer the default exploratory path.
+Replication requires a passing screen assessment and disjoint seeds. Confirmation requires a passing replication assessment, disjoint seeds across all prior stages, and explicit authorization. Large long runs remain confirmation-only.
 
 ## Workflow
 
@@ -68,7 +77,7 @@ make release-check
 
 ## Current version documents
 
-- [Implementation report](docs/v0.71/IMPLEMENTATION_REPORT.md)
-- [D3-M sample adequacy audit](docs/v0.71/D3M_SAMPLE_ADEQUACY_AUDIT.md)
-- [D3-N tiered exploration protocol](docs/v0.71/D3N_TIERED_EXPLORATION_PROTOCOL.md)
-- [Protocol audit](docs/v0.71/protocol_audit.md)
+- [Implementation report](docs/v0.72/IMPLEMENTATION_REPORT.md)
+- [D3-N supplied screen audit](docs/v0.72/D3N_SUPPLIED_SCREEN_AUDIT.md)
+- [D3-O paired exploration protocol](docs/v0.72/D3O_PAIRED_EXPLORATION_PROTOCOL.md)
+- [Protocol audit](docs/v0.72/protocol_audit.md)

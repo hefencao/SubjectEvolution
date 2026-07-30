@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v39"
+SCHEMA = "structural-measurement-protocol-audit-v40"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -208,8 +208,11 @@ def build_protocol_audit(
             ),
         },
         "tiered_exploration_protocol": {
-            "readiness_audit_schema": "exploration-readiness-audit-v1",
-            "plan_schema": "tiered-exploration-plan-v1",
+            "readiness_audit_schema": "exploration-readiness-audit-v2",
+            "source_plan_schema": "tiered-exploration-plan-v1",
+            "paired_plan_schema": "tiered-paired-exploration-plan-v1",
+            "paired_result_schema": "tiered-paired-exploration-results-v1",
+            "paired_assessment_schema": "tiered-paired-exploration-assessment-v1",
             "independent_unit": "seed",
             "nested_observations": [
                 "time windows",
@@ -217,32 +220,53 @@ def build_protocol_audit(
                 "births and deaths",
                 "moves and policy events",
             ],
+            "source_checkpoint": {
+                "exact_tick_predeclared": True,
+                "full_checkpoint_hash_locked": True,
+                "scale_normalized_acute_support": {
+                    "minimum_alive": "max(64, 0.08 * initial population)",
+                    "minimum_effective_lineages": "max(32, 0.04 * initial population)",
+                    "maximum_largest_lineage_fraction": 0.25,
+                },
+                "demographic_turnover_required_for_acute_panel": False,
+                "free_run_endpoint_is_candidate_effect": False,
+            },
+            "matched_branches": ["baseline", "intervention"],
+            "paired_randomness": True,
+            "primary_effect": (
+                "intervention response minus baseline response within seed; equal seed weight"
+            ),
             "default_stages": {
                 "smoke": {
                     "minimum_seeds": 2,
-                    "maximum_initial_entities": 512,
-                    "maximum_ticks": 180,
+                    "purpose": "mechanism and measurement validation",
                 },
                 "screen": {
                     "minimum_seeds": 8,
-                    "maximum_initial_entities": 2048,
-                    "maximum_ticks": 600,
+                    "requires_fixed_checkpoint_matched_branches": True,
                 },
                 "replication": {
                     "minimum_seeds": 8,
-                    "maximum_initial_entities": 4096,
-                    "maximum_ticks": 900,
                     "requires_disjoint_screen_seeds": True,
+                    "requires_passing_screen_assessment": True,
                 },
                 "confirmation": {
                     "minimum_seeds": 8,
                     "requires_disjoint_all_prior_stage_seeds": True,
+                    "requires_passing_replication_assessment": True,
                     "requires_explicit_large_long_authorization": True,
                 },
+            },
+            "promotion_gate": {
+                "minimum_eligible_seed_fraction": 0.75,
+                "minimum_direction_consistency": 0.75,
+                "practical_relative_effect_predeclared": True,
+                "exact_sign_flip_descriptive": True,
             },
             "large_long_run_required_for_exploration": False,
             "large_long_run_reserved_for_confirmation": True,
             "failed_runs_replaced": False,
+            "outcome_conditioned_checkpoint_selection": False,
             "outcome_conditioned_seed_or_horizon_changes": False,
             "feedback_to_world": False,
         },
@@ -1310,9 +1334,12 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         "## Tiered exploration",
         "",
-        f"- readiness / plan: `{exploration['readiness_audit_schema']}` / `{exploration['plan_schema']}`",
+        f"- readiness / source plan / paired plan: `{exploration['readiness_audit_schema']}` / `{exploration['source_plan_schema']}` / `{exploration['paired_plan_schema']}`",
         f"- independent unit: `{exploration['independent_unit']}`",
         f"- nested observations: {exploration['nested_observations']}",
+        f"- source checkpoint: {exploration['source_checkpoint']}",
+        f"- matched branches: {exploration['matched_branches']}",
+        f"- promotion gate: {exploration['promotion_gate']}",
         f"- stages: {exploration['default_stages']}",
         f"- large long required for exploration: {exploration['large_long_run_required_for_exploration']}",
         f"- large long reserved for confirmation: {exploration['large_long_run_reserved_for_confirmation']}",

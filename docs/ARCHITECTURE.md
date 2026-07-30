@@ -620,3 +620,13 @@ large long confirmation on new seeds
 `tiered-exploration-plan-v1` fixes the candidate, config hash, seed set, output, backend and horizon before execution. `se-multi` validates the invocation against this plan. Stage promotion cannot reuse seeds, and large long execution requires an explicit confirmation-stage flag.
 
 The protocol is observational and scheduling-only. It does not alter simulation state, thresholds inside the world, survival, reproduction, diversity or selection pressure.
+
+## v0.72 fixed-checkpoint paired exploration boundary
+
+Free-running startup endpoints and intervention effects are separate evidence objects.
+
+`tiered-exploration-plan-v1` remains the source-run schedule. `tiered-paired-exploration-plan-v1` consumes its completed full checkpoints at one exact predeclared tick. Each seed produces a baseline and intervention branch from the same checkpoint. Checkpoint file hashes, embedded seeds, ticks, and configuration semantics are verified before execution.
+
+The acute source gate scales with initial population and does not require demographic turnover. It answers only whether a checkpoint contains enough living and lineage state for a short mechanism panel. Long-horizon evolutionary selection continues to use the demographic-selection-validity protocol.
+
+Paired results calculate one matched response per seed. Seed-level effects receive equal weight; windows, entities, births, deaths, moves, and actions remain nested measurements. Stage promotion requires eligible-seed coverage, direction replication, and a predeclared practical-effect threshold. Replication and confirmation require disjoint seeds and a passing prior assessment.
