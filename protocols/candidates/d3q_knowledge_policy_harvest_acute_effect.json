@@ -1,0 +1,46 @@
+{
+  "schema": "paired-exploration-candidate-v1",
+  "candidate_id": "knowledge-policy-harvest-acute-effect-v1",
+  "candidate_revision": 1,
+  "scientific_issue": "D1-03",
+  "hypothesis": "Disabling knowledge-policy residual publication changes total realized resource harvest over a fixed acute response window.",
+  "intervention": "disable-knowledge-policy",
+  "primary_metric": "harvested-resource-total",
+  "metric_mode": "cumulative",
+  "direction": "two-sided",
+  "minimum_relative_effect": 0.02,
+  "response_ticks": 120,
+  "manipulation_checks": [
+    {
+      "metric": "knowledge_policy_effective_enabled",
+      "metric_mode": "endpoint",
+      "branch": "baseline",
+      "operator": "==",
+      "value": 1
+    },
+    {
+      "metric": "knowledge_policy_effective_enabled",
+      "metric_mode": "endpoint",
+      "branch": "intervention",
+      "operator": "==",
+      "value": 0
+    },
+    {
+      "metric": "knowledge-policy-changed-actions-total",
+      "metric_mode": "cumulative",
+      "branch": "baseline",
+      "operator": ">",
+      "value": 0
+    },
+    {
+      "metric": "knowledge-policy-changed-actions-total",
+      "metric_mode": "cumulative",
+      "branch": "intervention",
+      "operator": "==",
+      "value": 0
+    }
+  ],
+  "independent_unit": "seed",
+  "selection_claim_allowed": false,
+  "interpretation_boundary": "This candidate tests whether the complete knowledge-policy residual has a practically material acute effect on total harvest. It does not establish long-horizon selection for knowledge, working memory, transfer, or latent-routing genes."
+}

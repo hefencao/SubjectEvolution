@@ -639,3 +639,15 @@ Paired exploration candidates have a deterministic scientific signature over the
 A terminal stop prevents the same candidate or same signature from being silently reused. A changed scientific specification requires a new candidate revision.
 
 Operational manipulation checks are evaluated separately from the primary downstream effect. A branch can only enter the inferential set when source support, branch support and every preregistered manipulation check pass. Passing a manipulation check does not count as a mechanism benefit.
+
+
+## v0.74 manipulation evidence and aggregate-path gate
+
+Candidate decisions distinguish two evidence layers:
+
+1. **target engagement** — whether the declared intervention changed its direct operational target in enough independent seeds;
+2. **effect promotion** — whether the preregistered downstream metric reaches the seed-level direction and practical-effect gates.
+
+A manipulation-confirmed negative screen is terminal for that candidate specification but is not a universal zero-effect statement. Legacy candidates without a direct manipulation contract remain explicitly distinguishable in the ledger.
+
+After the capacity-use screen fails, the next bounded experiment moves upward to the full knowledge-policy residual rather than continuing with narrower capacity subcomponents. The D3-Q screen requires changed baseline actions, zero changed intervention actions and a downstream harvest effect.

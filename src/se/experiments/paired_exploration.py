@@ -56,6 +56,12 @@ _CUMULATIVE_ALIASES: dict[str, tuple[str, ...]] = {
         "knowledge_transfer_capacity_rejected_total",
         "knowledge_learning_capacity_rejected_total",
     ),
+    "knowledge-policy-changed-actions-total": (
+        "knowledge_policy_changed_actions_total",
+    ),
+    "knowledge-policy-influenced-actions-total": (
+        "knowledge_policy_influenced_actions_total",
+    ),
 }
 
 

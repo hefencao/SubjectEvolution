@@ -2,7 +2,7 @@
 
 The ledger records promoted and stopped candidate specifications so a failed
 screen cannot be silently revived by relabeling it, lowering its threshold, or
-reusing the same discovery result as a new hypothesis.  It is an analysis
+reusing the same discovery result as a new hypothesis. It is an analysis
 artifact only and never feeds back into the simulated world.
 """
 from __future__ import annotations
@@ -13,7 +13,8 @@ import json
 from pathlib import Path
 from typing import Any, Sequence
 
-LEDGER_SCHEMA = "paired-exploration-candidate-ledger-v1"
+LEDGER_SCHEMA = "paired-exploration-candidate-ledger-v2"
+LEGACY_LEDGER_SCHEMA = "paired-exploration-candidate-ledger-v1"
 SUPPORTED_ASSESSMENT_SCHEMAS = {
     "tiered-paired-exploration-assessment-v1",
     "tiered-paired-exploration-assessment-v2",
@@ -68,13 +69,61 @@ def assessment_decision(assessment: dict[str, Any]) -> tuple[str, list[str], boo
         terminal = bool(explicit.get("terminal", outcome in {"stop", "confirmed-acute"}))
         return outcome, reasons, terminal
 
-    if recommendation.startswith("promote-") or recommendation.startswith("mechanism-smoke-passed"):
+    if recommendation.startswith("promote-") or recommendation.startswith(
+        "mechanism-smoke-passed"
+    ):
         return "promote", [recommendation], False
     if recommendation.startswith("confirmation-gate-passed"):
         return "confirmed-acute", [recommendation], True
     if recommendation.startswith("stop-"):
         return "stop", [recommendation], True
     return "review", [recommendation or "assessment-without-decision"], False
+
+
+def _evidence_class(
+    *, outcome: str, check_count: int, manipulation_confirmed: bool
+) -> str:
+    if check_count == 0:
+        return (
+            "promotion-negative-without-direct-manipulation-contract"
+            if outcome == "stop"
+            else "assessment-without-direct-manipulation-contract"
+        )
+    if not manipulation_confirmed:
+        return "manipulation-unconfirmed"
+    if outcome == "stop":
+        return "manipulation-confirmed-promotion-negative"
+    if outcome in {"promote", "confirmed-acute"}:
+        return "manipulation-confirmed-promotion-positive"
+    return "manipulation-confirmed-review"
+
+
+def _upgrade_entry(entry: dict[str, Any]) -> dict[str, Any]:
+    upgraded = dict(entry)
+    checks = upgraded.get("candidate_spec", {}).get("manipulation_checks", [])
+    check_count = len(checks) if isinstance(checks, list) else 0
+    upgraded.setdefault("manipulation_check_count", check_count)
+    upgraded.setdefault("manipulation_supported_seed_count", None)
+    upgraded.setdefault("manipulation_supported_seed_fraction", None)
+    if check_count == 0:
+        manipulation_confirmed = False
+    else:
+        fraction = upgraded.get("manipulation_supported_seed_fraction")
+        manipulation_confirmed = bool(fraction is not None and float(fraction) >= 0.75)
+    upgraded.setdefault("manipulation_confirmed", manipulation_confirmed)
+    upgraded.setdefault("positive_seed_count", None)
+    upgraded.setdefault("negative_seed_count", None)
+    upgraded.setdefault("exact_two_sided_sign_flip_p", None)
+    upgraded.setdefault("practical_effect_threshold_met", None)
+    upgraded.setdefault(
+        "evidence_class",
+        _evidence_class(
+            outcome=str(upgraded.get("decision", "review")),
+            check_count=check_count,
+            manipulation_confirmed=bool(upgraded["manipulation_confirmed"]),
+        ),
+    )
+    return upgraded
 
 
 def load_ledger(path: str | Path) -> dict[str, Any]:
@@ -87,12 +136,20 @@ def load_ledger(path: str | Path) -> dict[str, Any]:
             "failed_candidates_reopened_automatically": False,
         }
     payload = json.loads(ledger_path.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict) or payload.get("schema") != LEDGER_SCHEMA:
+    if not isinstance(payload, dict) or payload.get("schema") not in {
+        LEDGER_SCHEMA,
+        LEGACY_LEDGER_SCHEMA,
+    }:
         raise ValueError(f"unsupported candidate ledger schema in {ledger_path}")
     entries = payload.get("entries")
     if not isinstance(entries, list):
         raise ValueError("candidate ledger entries must be a list")
-    return payload
+    return {
+        "schema": LEDGER_SCHEMA,
+        "entries": [_upgrade_entry(dict(entry)) for entry in entries],
+        "world_feedback": False,
+        "failed_candidates_reopened_automatically": False,
+    }
 
 
 def _entry_from_assessment(assessment: dict[str, Any]) -> dict[str, Any]:
@@ -109,6 +166,15 @@ def _entry_from_assessment(assessment: dict[str, Any]) -> dict[str, Any]:
         if derived:
             reasons = derived
     spec = candidate_spec_from_payload(assessment)
+    checks = spec["manipulation_checks"]
+    check_count = len(checks)
+    manipulation_count = assessment.get("manipulation_supported_seed_count")
+    manipulation_fraction = assessment.get("manipulation_supported_seed_fraction")
+    manipulation_confirmed = bool(
+        check_count
+        and manipulation_fraction is not None
+        and float(manipulation_fraction) >= 0.75
+    )
     return {
         "candidate_id": str(assessment["candidate_id"]),
         "candidate_signature_sha256": candidate_signature(assessment),
@@ -122,9 +188,36 @@ def _entry_from_assessment(assessment: dict[str, Any]) -> dict[str, Any]:
         "assessment_sha256": canonical_sha(assessment),
         "eligible_seed_count": int(assessment.get("eligible_seed_count", 0)),
         "eligible_seed_fraction": float(assessment.get("eligible_seed_fraction", 0.0)),
+        "manipulation_check_count": check_count,
+        "manipulation_supported_seed_count": (
+            int(manipulation_count) if manipulation_count is not None else None
+        ),
+        "manipulation_supported_seed_fraction": (
+            float(manipulation_fraction) if manipulation_fraction is not None else None
+        ),
+        "manipulation_confirmed": manipulation_confirmed,
+        "positive_seed_count": (
+            int(assessment["positive_seed_count"])
+            if assessment.get("positive_seed_count") is not None
+            else None
+        ),
+        "negative_seed_count": (
+            int(assessment["negative_seed_count"])
+            if assessment.get("negative_seed_count") is not None
+            else None
+        ),
         "direction_consistency": float(assessment.get("direction_consistency", 0.0)),
         "equal_seed_median_relative_effect": assessment.get(
             "equal_seed_median_relative_effect"
+        ),
+        "exact_two_sided_sign_flip_p": assessment.get("exact_two_sided_sign_flip_p"),
+        "practical_effect_threshold_met": assessment.get(
+            "practical_effect_threshold_met"
+        ),
+        "evidence_class": _evidence_class(
+            outcome=outcome,
+            check_count=check_count,
+            manipulation_confirmed=manipulation_confirmed,
         ),
         "all_stage_seeds": [
             int(value)
@@ -221,13 +314,15 @@ def render_markdown(ledger: dict[str, Any]) -> str:
         "",
         f"Schema: `{ledger['schema']}`",
         "",
-        "| Candidate | Stage | Decision | Recommendation | Eligible seeds | Median relative effect |",
-        "|---|---|---|---|---:|---:|",
+        "| Candidate | Stage | Decision | Evidence | Eligible seeds | Manipulation | Direction | Median relative effect |",
+        "|---|---|---|---|---:|---:|---:|---:|",
     ]
     for entry in ledger.get("entries", []):
+        manipulation = entry.get("manipulation_supported_seed_fraction")
         lines.append(
             f"| {entry['candidate_id']} | {entry['stage']} | {entry['decision']} | "
-            f"{entry['recommendation']} | {entry['eligible_seed_count']} | "
+            f"{entry.get('evidence_class')} | {entry['eligible_seed_count']} | "
+            f"{manipulation} | {entry['direction_consistency']} | "
             f"{entry['equal_seed_median_relative_effect']} |"
         )
     lines.extend(
@@ -236,6 +331,10 @@ def render_markdown(ledger: dict[str, Any]) -> str:
             "A terminal failed candidate cannot be automatically reopened or relabeled. "
             "A changed intervention, metric, direction, threshold, horizon, or manipulation "
             "contract requires an explicit new candidate revision.",
+            "",
+            "Manipulation-confirmed promotion failure means the predeclared target was engaged "
+            "but the candidate failed its seed-level direction or practical-effect gate. It is "
+            "not a universal zero-effect claim outside that candidate specification.",
             "",
         ]
     )
@@ -266,10 +365,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                     panels = result.get("panels", [])
                     if response_ticks is None and panels:
                         first = panels[0]
-                        response_ticks = int(first["until_tick"]) - int(first["checkpoint_tick"])
+                        response_ticks = int(first["until_tick"]) - int(
+                            first["checkpoint_tick"]
+                        )
                     assessment["response_ticks"] = response_ticks
                 if not assessment.get("manipulation_checks"):
-                    assessment["manipulation_checks"] = result.get("manipulation_checks", [])
+                    assessment["manipulation_checks"] = result.get(
+                        "manipulation_checks", []
+                    )
     ledger, _ = record_assessment(Path(args.ledger), assessment)
     Path(args.ledger).with_suffix(".md").write_text(
         render_markdown(ledger), encoding="utf-8"
@@ -279,6 +382,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 __all__ = [
     "LEDGER_SCHEMA",
+    "LEGACY_LEDGER_SCHEMA",
     "assessment_decision",
     "candidate_signature",
     "candidate_spec_from_payload",

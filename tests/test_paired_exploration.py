@@ -230,3 +230,33 @@ def test_assessment_stops_when_manipulation_is_not_confirmed() -> None:
     assert assessment["promotion_gate_passed"] is False
     assert assessment["recommendation"] == "stop-intervention-manipulation-not-confirmed"
     assert "intervention-manipulation-not-confirmed" in assessment["decision"]["reason_codes"]
+
+
+def test_knowledge_policy_harvest_candidate_has_proximal_engagement_checks() -> None:
+    from se.experiments.paired_exploration import load_candidate_spec
+
+    spec, spec_sha = load_candidate_spec(
+        "protocols/candidates/d3q_knowledge_policy_harvest_acute_effect.json"
+    )
+    assert len(spec_sha) == 64
+    assert spec["intervention"] == "disable-knowledge-policy"
+    assert spec["primary_metric"] == "harvested-resource-total"
+    assert spec["minimum_relative_effect"] == 0.02
+    checks = spec["manipulation_checks"]
+    assert {item["metric"] for item in checks} == {
+        "knowledge_policy_effective_enabled",
+        "knowledge-policy-changed-actions-total",
+    }
+    assert any(
+        item["branch"] == "baseline"
+        and item["metric"] == "knowledge-policy-changed-actions-total"
+        and item["operator"] == ">"
+        for item in checks
+    )
+    assert any(
+        item["branch"] == "intervention"
+        and item["metric"] == "knowledge-policy-changed-actions-total"
+        and item["operator"] == "=="
+        and item["value"] == 0.0
+        for item in checks
+    )

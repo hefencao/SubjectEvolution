@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v41"
+SCHEMA = "structural-measurement-protocol-audit-v42"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -218,7 +218,11 @@ def build_protocol_audit(
             "paired_result_schema": "tiered-paired-exploration-results-v2",
             "paired_assessment_schema": "tiered-paired-exploration-assessment-v2",
             "candidate_spec_schema": "paired-exploration-candidate-v1",
-            "candidate_ledger_schema": "paired-exploration-candidate-ledger-v1",
+            "candidate_ledger_schema": "paired-exploration-candidate-ledger-v2",
+            "accepted_candidate_ledger_schemas": [
+                "paired-exploration-candidate-ledger-v1",
+                "paired-exploration-candidate-ledger-v2",
+            ],
             "independent_unit": "seed",
             "nested_observations": [
                 "time windows",
@@ -276,6 +280,8 @@ def build_protocol_audit(
                 "terminal_failed_candidate_reopened_automatically": False,
                 "candidate_relabeling_allowed": False,
                 "threshold_or_horizon_change_requires_new_revision": True,
+                "manipulation_engagement_recorded_separately_from_effect_gate": True,
+                "manipulation_confirmed_negative_is_candidate_specific": True,
                 "feedback_to_world": False,
             },
             "large_long_run_required_for_exploration": False,

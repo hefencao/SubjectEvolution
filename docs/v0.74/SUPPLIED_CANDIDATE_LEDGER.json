@@ -1,0 +1,116 @@
+{
+  "schema": "paired-exploration-candidate-ledger-v2",
+  "entries": [
+    {
+      "candidate_id": "elastic-capacity-use-acute-effect-v1",
+      "candidate_signature_sha256": "18ab7b3b9a72a64b67cade1eb0dd592a5e63c5259a606750c63d0e3a1aa905f0",
+      "candidate_spec": {
+        "intervention": "neutralize-elastic-capacities",
+        "primary_metric": "knowledge-working-memory-active-dimensions-total",
+        "metric_mode": "cumulative",
+        "direction": "two-sided",
+        "minimum_relative_effect": 0.05,
+        "response_ticks": 120,
+        "manipulation_checks": [
+          {
+            "metric": "capacity_effective_dimensions",
+            "metric_mode": "endpoint",
+            "branch": "baseline",
+            "operator": ">",
+            "value": 0.25
+          },
+          {
+            "metric": "capacity_effective_dimensions",
+            "metric_mode": "endpoint",
+            "branch": "intervention",
+            "operator": "<=",
+            "value": 1e-12
+          }
+        ]
+      },
+      "stage": "screen",
+      "decision": "stop",
+      "terminal": true,
+      "recommendation": "stop-direction-not-replicated-across-seeds",
+      "reason_codes": [
+        "direction-not-replicated-across-seeds",
+        "effect-below-preregistered-practical-threshold"
+      ],
+      "assessment_schema": "tiered-paired-exploration-assessment-v2",
+      "assessment_sha256": "1b3b886810a72d5865bac6acfeb56ccb51d216f3607725b44b31120e1dcf3645",
+      "eligible_seed_count": 8,
+      "eligible_seed_fraction": 1.0,
+      "manipulation_check_count": 2,
+      "manipulation_supported_seed_count": 8,
+      "manipulation_supported_seed_fraction": 1.0,
+      "manipulation_confirmed": true,
+      "positive_seed_count": 4,
+      "negative_seed_count": 4,
+      "direction_consistency": 0.5,
+      "equal_seed_median_relative_effect": 0.0024330854786726187,
+      "exact_two_sided_sign_flip_p": 0.625,
+      "practical_effect_threshold_met": false,
+      "evidence_class": "manipulation-confirmed-promotion-negative",
+      "all_stage_seeds": [
+        71101,
+        71102,
+        71103,
+        71104,
+        71105,
+        71106,
+        71107,
+        71108
+      ],
+      "selection_claim_allowed": false
+    },
+    {
+      "candidate_id": "resource-affinity-acute-effect",
+      "candidate_signature_sha256": "441768df8ca9f655de1e3acadf0476a69e05b79970e2f352e4f0061ac3d4cc88",
+      "candidate_spec": {
+        "intervention": "neutralize-resource-affinity",
+        "primary_metric": "harvested-resource-total",
+        "metric_mode": "cumulative",
+        "direction": "two-sided",
+        "minimum_relative_effect": 0.01,
+        "response_ticks": 120,
+        "manipulation_checks": []
+      },
+      "stage": "screen",
+      "decision": "stop",
+      "terminal": true,
+      "recommendation": "stop-direction-not-replicated-across-seeds",
+      "reason_codes": [
+        "direction-not-replicated-across-seeds",
+        "effect-below-preregistered-practical-threshold"
+      ],
+      "assessment_schema": "tiered-paired-exploration-assessment-v1",
+      "assessment_sha256": "dc5061254e47b6256b5dec4b6ef12c52003bf2acb654244f41227c28d711155a",
+      "eligible_seed_count": 8,
+      "eligible_seed_fraction": 1.0,
+      "direction_consistency": 0.625,
+      "equal_seed_median_relative_effect": 0.0033445924735386744,
+      "all_stage_seeds": [
+        71101,
+        71102,
+        71103,
+        71104,
+        71105,
+        71106,
+        71107,
+        71108
+      ],
+      "selection_claim_allowed": false,
+      "manipulation_check_count": 0,
+      "manipulation_supported_seed_count": null,
+      "manipulation_supported_seed_fraction": null,
+      "manipulation_confirmed": false,
+      "positive_seed_count": null,
+      "negative_seed_count": null,
+      "exact_two_sided_sign_flip_p": null,
+      "practical_effect_threshold_met": null,
+      "evidence_class": "promotion-negative-without-direct-manipulation-contract"
+    }
+  ],
+  "world_feedback": false,
+  "failed_candidates_reopened_automatically": false
+}

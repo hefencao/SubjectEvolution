@@ -1,0 +1,89 @@
+{
+  "schema": "supplied-paired-candidate-decision-v2",
+  "candidate_id": "elastic-capacity-use-acute-effect-v1",
+  "stage": "screen",
+  "intervention": "neutralize-elastic-capacities",
+  "primary_metric": "knowledge-working-memory-active-dimensions-total",
+  "metric_mode": "cumulative",
+  "response_ticks": 120,
+  "independent_seed_count": 8,
+  "eligible_seed_count": 8,
+  "manipulation_supported_seed_count": 8,
+  "manipulation_supported_seed_fraction": 1.0,
+  "positive_seed_count": 4,
+  "negative_seed_count": 4,
+  "direction_consistency": 0.5,
+  "minimum_direction_consistency": 0.75,
+  "equal_seed_mean_relative_effect": 0.004523577338251407,
+  "equal_seed_median_relative_effect": 0.0024330854786726187,
+  "minimum_relative_effect": 0.05,
+  "exact_two_sided_sign_flip_p": 0.625,
+  "decision": "stop",
+  "terminal": true,
+  "reason_codes": [
+    "direction-not-replicated-across-seeds",
+    "effect-below-preregistered-practical-threshold"
+  ],
+  "evidence_class": "manipulation-confirmed-promotion-negative",
+  "replication_allowed": false,
+  "selection_claim_allowed": false,
+  "panels": [
+    {
+      "seed": 71101,
+      "baseline_capacity_effective_dimensions": 3.8699099258668435,
+      "intervention_capacity_effective_dimensions": 0.0,
+      "manipulation_supported": true,
+      "relative_effect": -0.013581064803661768
+    },
+    {
+      "seed": 71102,
+      "baseline_capacity_effective_dimensions": 3.9138057030775197,
+      "intervention_capacity_effective_dimensions": 0.0,
+      "manipulation_supported": true,
+      "relative_effect": 0.005114501623423268
+    },
+    {
+      "seed": 71103,
+      "baseline_capacity_effective_dimensions": 3.9210812676446722,
+      "intervention_capacity_effective_dimensions": 0.0,
+      "manipulation_supported": true,
+      "relative_effect": 0.045204427666517374
+    },
+    {
+      "seed": 71104,
+      "baseline_capacity_effective_dimensions": 3.876014697262328,
+      "intervention_capacity_effective_dimensions": 0.0,
+      "manipulation_supported": true,
+      "relative_effect": -0.019950331125827815
+    },
+    {
+      "seed": 71105,
+      "baseline_capacity_effective_dimensions": 3.8969931551781194,
+      "intervention_capacity_effective_dimensions": 0.0,
+      "manipulation_supported": true,
+      "relative_effect": 0.011879494408717965
+    },
+    {
+      "seed": 71106,
+      "baseline_capacity_effective_dimensions": 3.754244086644904,
+      "intervention_capacity_effective_dimensions": 0.0,
+      "manipulation_supported": true,
+      "relative_effect": 0.0202860430708532
+    },
+    {
+      "seed": 71107,
+      "baseline_capacity_effective_dimensions": 3.8890882746066278,
+      "intervention_capacity_effective_dimensions": 0.0,
+      "manipulation_supported": true,
+      "relative_effect": -0.000248330666078031
+    },
+    {
+      "seed": 71108,
+      "baseline_capacity_effective_dimensions": 3.8272885156658565,
+      "intervention_capacity_effective_dimensions": 0.0,
+      "manipulation_supported": true,
+      "relative_effect": -0.012516121467932935
+    }
+  ],
+  "interpretation": "The capacity-expression intervention engaged in every eligible seed, but the realized working-memory-use effect was mixed and below the preregistered practical threshold. This closes the candidate specification without claiming that all capacity effects are universally zero."
+}

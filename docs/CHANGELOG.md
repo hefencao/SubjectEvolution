@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.74.0
+
+- Records the supplied eight-seed D3-P elastic-capacity screen as a terminal manipulation-confirmed promotion stop: all target checks pass, but effects split four positive/four negative and the median relative effect is below the preregistered threshold.
+- Upgrades the deterministic candidate ledger to `paired-exploration-candidate-ledger-v2` while accepting and upgrading v1 ledgers.
+- Separates target engagement from downstream promotion evidence and records an explicit evidence class for every candidate decision.
+- Adds readable cumulative aliases for knowledge-policy changed and influenced actions.
+- Adds the bounded D3-Q knowledge-policy acute-harvest candidate with action-level manipulation checks and a 2% practical-effect threshold.
+- Uses the supplied project-root `.gitignore` without normalization or deduplication.
+- Upgrades the protocol audit to v42 and project version to 0.74.0.
+
 ## 0.73.0
 
 - Records the supplied eight-seed D3-O resource-affinity screen as a terminal promotion stop: all panels are eligible, but direction consistency and the preregistered practical effect both fail; the compact legacy bundle is not reinterpreted as a universal causal null.
