@@ -1619,6 +1619,12 @@ class SimulationReportingMixin:
             "functional_module_physiology_output_ablation_enabled": int(
                 self.functional_module_physiology_output_ablation_enabled
             ),
+            "functional_module_changed_entity_fraction": float(
+                self.last_functional_module_changed_entity_fraction
+            ),
+            "functional_module_residual_effective_dimensions": float(
+                self.last_functional_module_residual_effective_dimensions
+            ),
             "functional_physiology_output_changed_entity_fraction": float(
                 self.last_functional_physiology_output_changed_entity_fraction
             ),

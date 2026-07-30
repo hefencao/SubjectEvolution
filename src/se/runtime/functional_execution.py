@@ -188,6 +188,12 @@ def evaluate_functional_outputs(
         gene_start=ParametricPolicy.functional_module_gene_start(cfg),
         evaluation=evaluation,
     )
+    simulation.last_functional_module_changed_entity_fraction = float(
+        diagnostics.get("functional_module_changed_entity_fraction", 0.0)
+    )
+    simulation.last_functional_module_residual_effective_dimensions = float(
+        diagnostics.get("functional_module_residual_effective_dimensions", 0.0)
+    )
     simulation.last_functional_physiology_output_changed_entity_fraction = float(
         diagnostics.get("functional_physiology_output_changed_entity_fraction", 0.0)
     )
@@ -352,6 +358,8 @@ def initialize_functional_runtime_state(simulation: Any) -> None:
         setattr(simulation, f"total_{name}", 0.0)
     simulation.functional_module_embodied_output_ablation_enabled = False
     simulation.functional_module_physiology_output_ablation_enabled = False
+    simulation.last_functional_module_changed_entity_fraction = 0.0
+    simulation.last_functional_module_residual_effective_dimensions = 0.0
     simulation.last_functional_physiology_output_changed_entity_fraction = 0.0
     simulation.last_functional_physiology_output_effective_dimensions = 0.0
     simulation.physiology_messenger_receptor_blockade_enabled = False

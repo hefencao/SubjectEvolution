@@ -13,10 +13,11 @@ import json
 from pathlib import Path
 from typing import Any, Sequence
 
-LEDGER_SCHEMA = "paired-exploration-candidate-ledger-v3"
+LEDGER_SCHEMA = "paired-exploration-candidate-ledger-v4"
 LEGACY_LEDGER_SCHEMAS = {
     "paired-exploration-candidate-ledger-v1",
     "paired-exploration-candidate-ledger-v2",
+    "paired-exploration-candidate-ledger-v3",
 }
 SUPPORTED_ASSESSMENT_SCHEMAS = {
     "tiered-paired-exploration-assessment-v1",
@@ -84,6 +85,26 @@ def candidate_portfolio_metadata(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _family_gate_class(role: str | None) -> str:
+    normalized = str(role or "").strip().lower()
+    if normalized == "aggregate-path" or normalized.startswith("aggregate-"):
+        return "aggregate"
+    if normalized.startswith("bounded-") or normalized == "bounded-output-path":
+        return "bounded"
+    return "other"
+
+
+def _family_revision_entries(
+    ledger: dict[str, Any], *, family: str, revision: int
+) -> list[dict[str, Any]]:
+    return [
+        dict(entry)
+        for entry in ledger.get("entries", [])
+        if str(entry.get("mechanism_family") or "") == family
+        and int(entry.get("mechanism_family_revision") or 1) == revision
+    ]
+
+
 def assessment_decision(assessment: dict[str, Any]) -> tuple[str, list[str], bool]:
     recommendation = str(assessment.get("recommendation", ""))
     explicit = assessment.get("decision")
@@ -144,6 +165,9 @@ def _upgrade_entry(entry: dict[str, Any]) -> dict[str, Any]:
         upgraded.setdefault(key, value)
     upgraded.setdefault("family_terminal", False)
     upgraded.setdefault(
+        "family_gate_class", _family_gate_class(upgraded.get("family_role"))
+    )
+    upgraded.setdefault(
         "evidence_class",
         _evidence_class(
             outcome=str(upgraded.get("decision", "review")),
@@ -163,6 +187,7 @@ def load_ledger(path: str | Path) -> dict[str, Any]:
             "world_feedback": False,
             "failed_candidates_reopened_automatically": False,
             "terminal_families_reopened_automatically": False,
+            "bounded_negative_requires_aggregate_gate": True,
         }
     payload = json.loads(ledger_path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict) or payload.get("schema") not in {
@@ -179,6 +204,7 @@ def load_ledger(path: str | Path) -> dict[str, Any]:
         "world_feedback": False,
         "failed_candidates_reopened_automatically": False,
         "terminal_families_reopened_automatically": False,
+        "bounded_negative_requires_aggregate_gate": True,
     }
 
 
@@ -258,6 +284,7 @@ def _entry_from_assessment(assessment: dict[str, Any]) -> dict[str, Any]:
         ),
         **metadata,
         "family_terminal": family_terminal,
+        "family_gate_class": _family_gate_class(metadata["family_role"]),
         "all_stage_seeds": [
             int(value)
             for value in assessment.get("all_stage_seeds", assessment.get("seeds", []))
@@ -274,11 +301,33 @@ def validate_candidate_for_plan(
     stage: str,
     mechanism_family: str | None = None,
     mechanism_family_revision: int | None = None,
+    family_role: str | None = None,
     family_revision_rationale: str | None = None,
 ) -> None:
     family = str(mechanism_family or "").strip()
     family_revision = int(mechanism_family_revision or 1) if family else None
     rationale = str(family_revision_rationale or "").strip()
+    proposed_gate_class = _family_gate_class(family_role)
+    if family and family_revision is not None:
+        revision_entries = _family_revision_entries(
+            ledger, family=family, revision=family_revision
+        )
+        bounded_negative = any(
+            entry.get("family_gate_class") == "bounded"
+            and bool(entry.get("terminal", False))
+            and bool(entry.get("manipulation_confirmed", False))
+            and str(entry.get("decision")) == "stop"
+            for entry in revision_entries
+        )
+        aggregate_recorded = any(
+            entry.get("family_gate_class") == "aggregate"
+            for entry in revision_entries
+        )
+        if bounded_negative and proposed_gate_class == "bounded" and not aggregate_recorded:
+            raise ValueError(
+                "a manipulation-confirmed bounded-path negative requires an aggregate "
+                "family gate before another bounded candidate in the same family revision"
+            )
     for entry in ledger.get("entries", []):
         if family and bool(entry.get("family_terminal", False)):
             closed_family = str(entry.get("mechanism_family") or "")
@@ -357,6 +406,7 @@ def record_assessment(
         "world_feedback": False,
         "failed_candidates_reopened_automatically": False,
         "terminal_families_reopened_automatically": False,
+        "bounded_negative_requires_aggregate_gate": True,
     }
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -392,6 +442,10 @@ def render_markdown(ledger: dict[str, Any]) -> str:
             "A terminal failed candidate cannot be automatically reopened or relabeled. "
             "A changed intervention, metric, direction, threshold, horizon, or manipulation "
             "contract requires an explicit new candidate revision.",
+            "",
+            "After a manipulation-confirmed bounded-path negative, the same family revision "
+            "must run an aggregate gate before any additional bounded candidate. This prevents "
+            "open-ended component fishing.",
             "",
             "A manipulation-confirmed terminal aggregate-family gate can close its mechanism "
             "family. Reopening requires a higher family revision and an explicit scientific "

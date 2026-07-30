@@ -1,0 +1,65 @@
+{
+  "schema": "paired-exploration-candidate-v1",
+  "candidate_id": "functional-modules-harvest-acute-effect-v1",
+  "candidate_revision": 1,
+  "scientific_issue": "D2-17",
+  "mechanism_family": "functional-modules",
+  "mechanism_family_revision": 1,
+  "family_role": "aggregate-path",
+  "terminal_negative_closes_family": true,
+  "family_revision_rationale": "Aggregate family gate required after the manipulation-confirmed negative bounded physiology-output screen.",
+  "hypothesis": "Neutralizing the complete functional-module phenotype changes cumulative realized resource harvest over a fixed acute response window.",
+  "intervention": "neutralize-functional-modules",
+  "primary_metric": "harvested-resource-total",
+  "metric_mode": "cumulative",
+  "direction": "two-sided",
+  "minimum_relative_effect": 0.02,
+  "response_ticks": 120,
+  "manipulation_checks": [
+    {
+      "metric": "functional_modules_ablation_enabled",
+      "metric_mode": "endpoint",
+      "branch": "baseline",
+      "operator": "==",
+      "value": 0
+    },
+    {
+      "metric": "functional_modules_ablation_enabled",
+      "metric_mode": "endpoint",
+      "branch": "intervention",
+      "operator": "==",
+      "value": 1
+    },
+    {
+      "metric": "functional_module_changed_entity_fraction",
+      "metric_mode": "endpoint",
+      "branch": "baseline",
+      "operator": ">",
+      "value": 0
+    },
+    {
+      "metric": "functional_module_changed_entity_fraction",
+      "metric_mode": "endpoint",
+      "branch": "intervention",
+      "operator": "==",
+      "value": 0
+    },
+    {
+      "metric": "functional_module_residual_effective_dimensions",
+      "metric_mode": "endpoint",
+      "branch": "baseline",
+      "operator": ">",
+      "value": 0.25
+    },
+    {
+      "metric": "functional_module_residual_effective_dimensions",
+      "metric_mode": "endpoint",
+      "branch": "intervention",
+      "operator": "<=",
+      "value": 1e-12
+    }
+  ],
+  "independent_unit": "seed",
+  "selection_claim_allowed": false,
+  "interpretation_boundary": "This aggregate gate tests whether the complete functional-module phenotype has a practically material acute effect on realized harvest. It does not identify individual module slots, establish long-horizon selection, or assign organ or ecological-role semantics."
+}

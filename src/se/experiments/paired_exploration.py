@@ -340,6 +340,7 @@ def build_plan(
         stage=stage,
         mechanism_family=portfolio["mechanism_family"],
         mechanism_family_revision=portfolio["mechanism_family_revision"],
+        family_role=portfolio["family_role"],
         family_revision_rationale=portfolio["family_revision_rationale"],
     )
     source_root = source_root.resolve()

@@ -232,3 +232,54 @@ def test_terminal_family_requires_higher_revision_and_rationale(tmp_path: Path) 
         mechanism_family_revision=2,
         family_revision_rationale="A new directly measured causal interface is available.",
     )
+
+
+def test_bounded_negative_requires_aggregate_gate_before_another_bounded_path(
+    tmp_path: Path,
+) -> None:
+    assessment = _assessment(candidate_id="bounded-a")
+    assessment.update(
+        {
+            "candidate_signature_sha256": "a" * 64,
+            "mechanism_family": "functional-modules",
+            "mechanism_family_revision": 1,
+            "family_role": "bounded-physiology-output-path",
+            "terminal_negative_closes_family": False,
+            "manipulation_checks": [
+                {
+                    "metric": "target",
+                    "metric_mode": "endpoint",
+                    "branch": "intervention",
+                    "operator": "==",
+                    "value": 0.0,
+                }
+            ],
+            "manipulation_supported_seed_count": 8,
+            "manipulation_supported_seed_fraction": 1.0,
+        }
+    )
+    path = tmp_path / "ledger.json"
+    _, entry = record_assessment(path, assessment)
+    assert entry["family_gate_class"] == "bounded"
+    ledger = load_ledger(path)
+
+    with pytest.raises(ValueError, match="requires an aggregate family gate"):
+        validate_candidate_for_plan(
+            ledger,
+            candidate_id="bounded-b",
+            signature="b" * 64,
+            stage="screen",
+            mechanism_family="functional-modules",
+            mechanism_family_revision=1,
+            family_role="bounded-coupling-path",
+        )
+
+    validate_candidate_for_plan(
+        ledger,
+        candidate_id="aggregate",
+        signature="c" * 64,
+        stage="screen",
+        mechanism_family="functional-modules",
+        mechanism_family_revision=1,
+        family_role="aggregate-path",
+    )

@@ -1,0 +1,118 @@
+{
+  "schema": "tiered-paired-exploration-assessment-v2",
+  "stage": "screen",
+  "candidate_id": "functional-regulatory-oxygen-uptake-acute-effect-v1",
+  "candidate_signature_sha256": "762600634f7a5cd49575f72a4377f23536721b4b2b52c8f3aa726a22d7623eb5",
+  "candidate_spec_schema": "paired-exploration-candidate-v1",
+  "candidate_spec_sha256": "68753e459425529988114bd6331c3fb3f293a59941779c499745ea830647bb46",
+  "mechanism_family": "functional-regulatory-output",
+  "mechanism_family_revision": 1,
+  "family_role": "bounded-output-path",
+  "terminal_negative_closes_family": false,
+  "family_revision_rationale": "None",
+  "intervention": "neutralize-functional-module-physiology-output",
+  "primary_metric": "physiology-oxygen-uptake-total",
+  "metric_mode": "cumulative",
+  "direction": "two-sided",
+  "minimum_relative_effect": 0.02,
+  "response_ticks": 120,
+  "manipulation_checks": [
+    {
+      "metric": "functional_module_physiology_output_ablation_enabled",
+      "metric_mode": "endpoint",
+      "branch": "baseline",
+      "operator": "==",
+      "value": 0.0
+    },
+    {
+      "metric": "functional_module_physiology_output_ablation_enabled",
+      "metric_mode": "endpoint",
+      "branch": "intervention",
+      "operator": "==",
+      "value": 1.0
+    },
+    {
+      "metric": "functional_physiology_output_changed_entity_fraction",
+      "metric_mode": "endpoint",
+      "branch": "baseline",
+      "operator": ">",
+      "value": 0.0
+    },
+    {
+      "metric": "functional_physiology_output_changed_entity_fraction",
+      "metric_mode": "endpoint",
+      "branch": "intervention",
+      "operator": "==",
+      "value": 0.0
+    },
+    {
+      "metric": "functional_physiology_output_effective_dimensions",
+      "metric_mode": "endpoint",
+      "branch": "baseline",
+      "operator": ">",
+      "value": 0.25
+    },
+    {
+      "metric": "functional_physiology_output_effective_dimensions",
+      "metric_mode": "endpoint",
+      "branch": "intervention",
+      "operator": "<=",
+      "value": 1e-12
+    }
+  ],
+  "seeds": [
+    71101,
+    71102,
+    71103,
+    71104,
+    71105,
+    71106,
+    71107,
+    71108
+  ],
+  "all_stage_seeds": [
+    71101,
+    71102,
+    71103,
+    71104,
+    71105,
+    71106,
+    71107,
+    71108
+  ],
+  "panel_count": 8,
+  "eligible_seed_count": 8,
+  "eligible_seed_fraction": 1.0,
+  "manipulation_supported_seed_count": 8,
+  "manipulation_supported_seed_fraction": 1.0,
+  "positive_seed_count": 2,
+  "negative_seed_count": 6,
+  "direction_consistency": 0.75,
+  "inferred_direction": "decrease",
+  "equal_seed_mean_relative_effect": 0.00016192294292896738,
+  "equal_seed_median_relative_effect": -0.00010983013069538439,
+  "minimum_effect": -0.000561013644652407,
+  "maximum_effect": 0.0018177621110049115,
+  "exact_two_sided_sign_flip_p": 0.6640625,
+  "practical_effect_threshold_met": false,
+  "promotion_gate_components": {
+    "minimum_eligible_seed_count": true,
+    "eligible_seed_fraction": true,
+    "manipulation_confirmed": true,
+    "direction_consistency": true,
+    "practical_effect": false
+  },
+  "promotion_gate_passed": false,
+  "recommendation": "stop-effect-below-preregistered-practical-threshold",
+  "decision": {
+    "outcome": "stop",
+    "terminal": true,
+    "reason_codes": [
+      "effect-below-preregistered-practical-threshold"
+    ],
+    "failed_candidate_reopened_automatically": false
+  },
+  "independent_unit": "seed",
+  "windows_entities_and_events_are_independent_replicates": false,
+  "interpretation_boundary": "This is a matched acute checkpoint panel. It can screen a mechanism effect but does not establish long-horizon evolutionary selection, stable niches, or a population source rule. A stopped candidate requires an explicit new scientific revision rather than a relabeling or threshold change."
+}

@@ -305,7 +305,7 @@ def test_functional_regulatory_oxygen_candidate_has_direct_output_checks() -> No
     assert len(spec_sha) == 64
     assert spec["intervention"] == "neutralize-functional-module-physiology-output"
     assert spec["primary_metric"] == "physiology-oxygen-uptake-total"
-    assert spec["mechanism_family"] == "functional-regulatory-output"
+    assert spec["mechanism_family"] == "functional-modules"
     checks = {(item["branch"], item["metric"], item["operator"], item["value"]) for item in spec["manipulation_checks"]}
     assert ("baseline", "functional_physiology_output_changed_entity_fraction", ">", 0.0) in checks
     assert ("intervention", "functional_physiology_output_changed_entity_fraction", "==", 0.0) in checks
@@ -340,8 +340,68 @@ def test_functional_regulatory_candidate_manipulation_is_observable(tmp_path: Pa
     )
     report = execute_plan(plan)
     assert report["assessment"]["manipulation_supported_seed_count"] == 2
-    assert report["assessment"]["mechanism_family"] == "functional-regulatory-output"
+    assert report["assessment"]["mechanism_family"] == "functional-modules"
     for panel in report["panels"]:
         observed = {item["metric"]: item["observed"] for item in panel["manipulation_checks"] if item["branch"] == "intervention"}
         assert observed["functional_physiology_output_changed_entity_fraction"] == 0.0
         assert observed["functional_physiology_output_effective_dimensions"] == 0.0
+
+
+def test_functional_modules_aggregate_candidate_has_direct_residual_checks() -> None:
+    from se.experiments.paired_exploration import load_candidate_spec
+
+    spec, spec_sha = load_candidate_spec(
+        "protocols/candidates/d3s_functional_modules_harvest_acute_effect.json"
+    )
+    assert len(spec_sha) == 64
+    assert spec["intervention"] == "neutralize-functional-modules"
+    assert spec["primary_metric"] == "harvested-resource-total"
+    assert spec["mechanism_family"] == "functional-modules"
+    assert spec["family_role"] == "aggregate-path"
+    assert spec["terminal_negative_closes_family"] is True
+    checks = {
+        (item["branch"], item["metric"], item["operator"], item["value"])
+        for item in spec["manipulation_checks"]
+    }
+    assert ("baseline", "functional_module_changed_entity_fraction", ">", 0.0) in checks
+    assert ("intervention", "functional_module_changed_entity_fraction", "==", 0.0) in checks
+    assert ("intervention", "functional_modules_ablation_enabled", "==", 1.0) in checks
+
+
+def test_functional_modules_aggregate_manipulation_is_observable(tmp_path: Path) -> None:
+    from se.analysis.candidate_ledger import candidate_portfolio_metadata
+    from se.experiments.paired_exploration import load_candidate_spec
+
+    root = _source_root(tmp_path, seeds=[41, 42])
+    spec, spec_sha = load_candidate_spec(
+        "protocols/candidates/d3s_functional_modules_harvest_acute_effect.json"
+    )
+    plan = build_plan(
+        stage="smoke",
+        candidate_id=spec["candidate_id"],
+        source_root=root,
+        checkpoint_tick=1,
+        response_ticks=2,
+        intervention=spec["intervention"],
+        primary_metric=spec["primary_metric"],
+        metric_mode=spec["metric_mode"],
+        direction=spec["direction"],
+        minimum_relative_effect=0.0,
+        manipulation_checks=spec["manipulation_checks"],
+        candidate_spec_sha256=spec_sha,
+        candidate_spec_schema=spec["schema"],
+        candidate_metadata=candidate_portfolio_metadata(spec),
+        output=tmp_path / "functional-aggregate-paired",
+        backend="cpu",
+    )
+    report = execute_plan(plan)
+    assert report["assessment"]["manipulation_supported_seed_count"] == 2
+    assert report["assessment"]["family_role"] == "aggregate-path"
+    for panel in report["panels"]:
+        observed = {
+            item["metric"]: item["observed"]
+            for item in panel["manipulation_checks"]
+            if item["branch"] == "intervention"
+        }
+        assert observed["functional_module_changed_entity_fraction"] == 0.0
+        assert observed["functional_module_residual_effective_dimensions"] == 0.0
