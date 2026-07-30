@@ -147,7 +147,7 @@ def test_d2_intervention_persists_through_checkpoint_and_is_analyzed(
     final = report["runs"][0]["functional_module_final"]
     assert final["functional_module_schema"] == FUNCTIONAL_MODULE_SCHEMA
     protocol = build_protocol_audit(CONFIG)
-    assert protocol["schema"] == "structural-measurement-protocol-audit-v44"
+    assert protocol["schema"] == "structural-measurement-protocol-audit-v45"
     functional = protocol["functional_module_protocol"]
     assert functional["action_selection"] is False
     assert functional["new_world_physics"] is False

@@ -342,6 +342,7 @@ def build_plan(
         mechanism_family_revision=portfolio["mechanism_family_revision"],
         family_role=portfolio["family_role"],
         family_revision_rationale=portfolio["family_revision_rationale"],
+        family_revision_interface=portfolio["family_revision_interface"],
     )
     source_root = source_root.resolve()
     rows = _source_index(source_root)

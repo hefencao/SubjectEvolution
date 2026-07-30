@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v44"
+SCHEMA = "structural-measurement-protocol-audit-v45"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -218,12 +218,13 @@ def build_protocol_audit(
             "paired_result_schema": "tiered-paired-exploration-results-v2",
             "paired_assessment_schema": "tiered-paired-exploration-assessment-v2",
             "candidate_spec_schema": "paired-exploration-candidate-v1",
-            "candidate_ledger_schema": "paired-exploration-candidate-ledger-v4",
+            "candidate_ledger_schema": "paired-exploration-candidate-ledger-v5",
             "accepted_candidate_ledger_schemas": [
                 "paired-exploration-candidate-ledger-v1",
                 "paired-exploration-candidate-ledger-v2",
                 "paired-exploration-candidate-ledger-v3",
                 "paired-exploration-candidate-ledger-v4",
+                "paired-exploration-candidate-ledger-v5",
             ],
             "independent_unit": "seed",
             "nested_observations": [
@@ -288,7 +289,11 @@ def build_protocol_audit(
                 "additional_bounded_children_before_aggregate_gate": False,
                 "mechanism_family_metadata_is_non_inferential": True,
                 "aggregate_family_gate_can_close_current_family_revision": True,
+                "non_aggregate_candidate_can_close_family_revision": False,
                 "family_reopening_requires_higher_revision_and_rationale": True,
+                "family_reopening_requires_new_directly_measurable_interface": True,
+                "portfolio_audit_schema": "paired-exploration-portfolio-audit-v1",
+                "automatic_new_candidate_selection": False,
                 "family_closure_feedback_to_world": False,
                 "feedback_to_world": False,
             },
@@ -1369,6 +1374,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- source checkpoint: {exploration['source_checkpoint']}",
         f"- matched branches: {exploration['matched_branches']}",
         f"- promotion gate: {exploration['promotion_gate']}",
+        f"- candidate ledger: {exploration['candidate_decision_ledger']}",
         f"- stages: {exploration['default_stages']}",
         f"- large long required for exploration: {exploration['large_long_run_required_for_exploration']}",
         f"- large long reserved for confirmation: {exploration['large_long_run_reserved_for_confirmation']}",

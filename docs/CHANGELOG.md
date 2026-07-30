@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.77.0
+
+- Records the supplied eight-seed D3-S aggregate functional-module screen as a terminal manipulation-confirmed practical-effect stop: seven effects increase harvest, but the equal-seed median increase is about 0.107%, below the preregistered 2% threshold.
+- Closes `functional-modules` revision 1 through the aggregate family gate and does not authorize replication or another bounded child.
+- Upgrades the candidate ledger to `paired-exploration-candidate-ledger-v5` while accepting legacy v1-v4 ledgers.
+- Publishes deterministic family-revision status summaries and rejects family-closing declarations on non-aggregate candidates.
+- Requires a named directly measurable interface, in addition to a higher revision and rationale, before reopening a closed mechanism family.
+- Adds `paired-exploration-portfolio-audit-v1` and `se-exploration-portfolio-audit`; it reports candidate/ledger completeness without automatically selecting a new mechanism.
+- Stores the recurring lightweight governance check in the repository and records that portfolio exhaustion does not authorize automatic replacement-candidate selection.
+- Upgrades the protocol audit to v45 and project version to 0.77.0.
+- Changes no world mechanism, reward, cost, inheritance rule, checkpoint, random stream or source population.
+
+## 0.76.0
+
+- Records the supplied eight-seed D3-R functional-regulatory screen as a terminal manipulation-confirmed practical-effect stop: physiology-output neutralization passes in every seed, but the median oxygen-uptake effect is about -0.011%, below the preregistered 2% threshold.
+- Upgrades the candidate ledger to `paired-exploration-candidate-ledger-v4`.
+- Requires one aggregate family gate after a manipulation-confirmed bounded-path negative before any additional bounded child in the same family revision.
+- Regroups D3-R under `functional-modules` revision 1 without changing its inferential specification.
+- Adds D3-S as the aggregate functional-module total-harvest gate with direct complete-ablation checks.
+- Upgrades the protocol audit to v44 and project version to 0.76.0.
+- Changes no world mechanism, reward, cost, inheritance rule, checkpoint, random stream or source population.
+
 ## 0.75.0
 
 - Records the supplied eight-seed D3-Q knowledge-policy screen as a terminal manipulation-confirmed practical-effect stop: target engagement passes in every seed and seven effects reduce harvest, but the equal-seed median reduction remains below the preregistered 2% threshold.

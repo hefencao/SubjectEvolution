@@ -197,6 +197,7 @@ def test_terminal_family_requires_higher_revision_and_rationale(tmp_path: Path) 
             "candidate_signature_sha256": "8" * 64,
             "mechanism_family": "family-a",
             "mechanism_family_revision": 1,
+            "family_role": "aggregate-path",
             "terminal_negative_closes_family": True,
             "manipulation_checks": [
                 {
@@ -223,6 +224,16 @@ def test_terminal_family_requires_higher_revision_and_rationale(tmp_path: Path) 
             mechanism_family="family-a",
             mechanism_family_revision=2,
         )
+    with pytest.raises(ValueError, match="family_revision_interface"):
+        validate_candidate_for_plan(
+            ledger,
+            candidate_id="revised",
+            signature="9" * 64,
+            stage="screen",
+            mechanism_family="family-a",
+            mechanism_family_revision=2,
+            family_revision_rationale="A new directly measured causal interface is available.",
+        )
     validate_candidate_for_plan(
         ledger,
         candidate_id="revised",
@@ -231,6 +242,7 @@ def test_terminal_family_requires_higher_revision_and_rationale(tmp_path: Path) 
         mechanism_family="family-a",
         mechanism_family_revision=2,
         family_revision_rationale="A new directly measured causal interface is available.",
+        family_revision_interface="measured-new-causal-residual-v1",
     )
 
 
@@ -283,3 +295,67 @@ def test_bounded_negative_requires_aggregate_gate_before_another_bounded_path(
         mechanism_family_revision=1,
         family_role="aggregate-path",
     )
+
+
+def test_non_aggregate_candidate_cannot_declare_family_closure(tmp_path: Path) -> None:
+    assessment = _assessment(candidate_id="invalid-closure")
+    assessment.update(
+        {
+            "candidate_signature_sha256": "d" * 64,
+            "mechanism_family": "family-b",
+            "mechanism_family_revision": 1,
+            "family_role": "bounded-output-path",
+            "terminal_negative_closes_family": True,
+            "manipulation_checks": [
+                {
+                    "metric": "target",
+                    "metric_mode": "endpoint",
+                    "branch": "intervention",
+                    "operator": "==",
+                    "value": 0.0,
+                }
+            ],
+            "manipulation_supported_seed_count": 8,
+            "manipulation_supported_seed_fraction": 1.0,
+        }
+    )
+    with pytest.raises(ValueError, match="only for an aggregate family gate"):
+        record_assessment(tmp_path / "ledger.json", assessment)
+
+
+def test_ledger_publishes_family_revision_statuses(tmp_path: Path) -> None:
+    assessment = _assessment(candidate_id="aggregate-status")
+    assessment.update(
+        {
+            "candidate_signature_sha256": "e" * 64,
+            "mechanism_family": "family-c",
+            "mechanism_family_revision": 1,
+            "family_role": "aggregate-path",
+            "terminal_negative_closes_family": True,
+            "manipulation_checks": [
+                {
+                    "metric": "target",
+                    "metric_mode": "endpoint",
+                    "branch": "intervention",
+                    "operator": "==",
+                    "value": 0.0,
+                }
+            ],
+            "manipulation_supported_seed_count": 8,
+            "manipulation_supported_seed_fraction": 1.0,
+        }
+    )
+    ledger, _ = record_assessment(tmp_path / "ledger.json", assessment)
+    assert ledger["family_revision_statuses"] == [
+        {
+            "mechanism_family": "family-c",
+            "mechanism_family_revision": 1,
+            "status": "closed",
+            "candidate_ids": ["aggregate-status"],
+            "bounded_negative_candidate_ids": [],
+            "aggregate_candidate_ids": ["aggregate-status"],
+            "closed_by_candidate_ids": ["aggregate-status"],
+        }
+    ]
+    assert ledger["family_closure_requires_aggregate_gate"] is True
+    assert ledger["family_reopening_requires_new_interface"] is True

@@ -659,3 +659,11 @@ Candidate decisions remain non-feedback experimental metadata. A candidate may d
 Reopening is permitted only with a strictly higher family revision and a non-empty scientific rationale that identifies a new directly measurable interface. This is an experiment-portfolio constraint, not a simulation-state intervention. It does not alter policies, entities, environments, random streams or checkpoint semantics.
 
 Functional regulatory-output manipulation evidence is self-contained in periodic and final summaries through the changed-entity fraction and effective output dimensions. These values are copied from fixed evaluation diagnostics and never feed back into the world. D3-R uses them only to establish target engagement before evaluating cumulative oxygen uptake. A passing acute panel cannot authorize organ, niche, ecological differentiation or evolutionary-selection claims.
+## v0.77 candidate-portfolio exhaustion boundary
+
+A manipulation-confirmed terminal negative may close a mechanism-family revision only when the recorded candidate is an aggregate family gate. Bounded or component candidates cannot close a family merely by setting portfolio metadata. The decision ledger publishes a deterministic status for each family revision: open, aggregate gate required, aggregate gate recorded, or closed.
+
+Reopening a closed family requires a strictly higher revision, an explicit scientific rationale, and a named directly measurable interface that was not available to the closed revision. A rationale alone is insufficient. These fields remain non-inferential portfolio metadata and do not alter candidate signatures, world state, checkpoint semantics, seeds or random streams.
+
+When all shipped candidate specifications are terminal and none is awaiting assessment, the portfolio state is `scientific-revision-required`. This state does not automatically choose a replacement mechanism, lower thresholds, extend horizons or authorize a neighboring component screen.
+
