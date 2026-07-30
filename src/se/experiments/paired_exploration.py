@@ -47,6 +47,12 @@ _CUMULATIVE_ALIASES: dict[str, tuple[str, ...]] = {
     ),
     "resource-stored-total": tuple(f"resource_stored_{index}_total" for index in range(4)),
     "resource-converted-total": ("resource_converted_total",),
+    "resource-processing-requested-total": (
+        "resource_processing_requested_total",
+    ),
+    "resource-processing-support-absolute-deviation-total": (
+        "resource_processing_support_absolute_deviation_total",
+    ),
     "knowledge-working-memory-active-dimensions-total": (
         "knowledge_working_memory_active_dimensions_total",
     ),
@@ -131,6 +137,68 @@ def _normalize_manipulation_checks(checks: Sequence[dict[str, Any]] | None) -> l
     return normalized
 
 
+def _validate_intervention_specific_candidate_contract(
+    *, intervention: str, checks: Sequence[dict[str, Any]]
+) -> None:
+    """Require direct exposure evidence where an intervention can be inactive.
+
+    The spatial-support switch can be enabled while no inventory-bearing entity
+    actually encounters non-neutral support.  An intervention flag alone is
+    therefore not target engagement.  Candidate specifications for this
+    interface must preregister both non-zero requested conversion and the
+    demand-weighted non-neutral support exposure that the intervention removes.
+    """
+
+    if intervention != "neutralize-spatial-processing-support":
+        return
+    observed = {
+        (
+            str(check.get("branch")),
+            str(check.get("metric")),
+            str(check.get("metric_mode", "endpoint")),
+            str(check.get("operator")),
+            float(check.get("value")),
+        )
+        for check in checks
+    }
+    required = {
+        (
+            "baseline",
+            "resource-processing-requested-total",
+            "cumulative",
+            ">",
+            0.0,
+        ),
+        (
+            "intervention",
+            "resource-processing-requested-total",
+            "cumulative",
+            ">",
+            0.0,
+        ),
+        (
+            "baseline",
+            "resource-processing-support-absolute-deviation-total",
+            "cumulative",
+            ">",
+            0.0,
+        ),
+        (
+            "intervention",
+            "resource-processing-support-absolute-deviation-total",
+            "cumulative",
+            "==",
+            0.0,
+        ),
+    }
+    missing = sorted(required - observed)
+    if missing:
+        raise ValueError(
+            "neutralize-spatial-processing-support candidate requires direct "
+            f"requested-flow and support-exposure checks; missing {missing!r}"
+        )
+
+
 def load_candidate_spec(path: str | Path) -> tuple[dict[str, Any], str]:
     candidate_path = Path(path)
     payload = _read_json(candidate_path)
@@ -160,6 +228,10 @@ def load_candidate_spec(path: str | Path) -> tuple[dict[str, Any], str]:
     normalized["response_ticks"] = int(payload["response_ticks"])
     normalized["manipulation_checks"] = _normalize_manipulation_checks(
         payload.get("manipulation_checks")
+    )
+    _validate_intervention_specific_candidate_contract(
+        intervention=spec.name,
+        checks=normalized["manipulation_checks"],
     )
     normalized.update(candidate_portfolio_metadata(payload))
     return normalized, _sha256_file(candidate_path)

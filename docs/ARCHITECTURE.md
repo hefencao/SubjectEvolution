@@ -679,3 +679,31 @@ The canonical baseline is visible at `protocols/decisions/exploration_candidate_
 
 `se-exploration-ledger-hydrate` materializes the effective merged ledger into `analyses/` when an operator wants a self-contained workspace artifact. Hydration does not create, revise, promote or stop a candidate.
 
+
+## v0.79 exposure-qualified spatial-processing candidate boundary
+
+D3-T isolates an existing world-to-body material-flow interface rather than adding another controller or functional output:
+
+```text
+raw resource already present in bounded entity stores
+        ↓ requested conversion = min(store, inherited conversion capacity)
+local phase-shifted processing support
+        ↓ multiplies conversion capacity
+energy availability + fixed per-unit processing cost
+        ↓
+realized converted channel flow
+        ↓ versioned resource-effect matrix
+body outcomes
+```
+
+`neutralize-spatial-processing-support` replaces only the local support multiplier with 1.0. It does not alter genotype, inherited capacities, current stores, resource or residue fields, movement, policy observations, processing energy price, checkpoint contents or random streams.
+
+The intervention flag alone is insufficient because no inventory-bearing entity may encounter non-neutral support. D3-T therefore preregisters the cumulative direct exposure measure:
+
+```text
+Σ abs(local support - 1) × requested conservative conversion
+```
+
+The baseline must have positive requested conversion and positive direct support exposure; the neutral-support branch must retain positive requested conversion and have exactly zero direct support exposure. This establishes target exposure only. Promotion still depends on the separate seed-level practical-effect gate for cumulative realized conversion.
+
+Earlier D3-F/G movement-response and alignment results remain separate evidence objects. D3-T cannot establish migration, specialization, stable niches or long-horizon selection.

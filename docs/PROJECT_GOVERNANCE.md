@@ -39,3 +39,20 @@ Run the required validation every iteration. When validation succeeds, the deliv
 - Immutable decision history, conflict rejection and explicit workspace hydration are enforced by code and tests.
 - The new delivery rules about concise successful-validation reporting and suggested commands are now repository principles rather than chat-only instructions.
 
+
+## 7. Exposure-qualified manipulation evidence
+
+An intervention-state flag is not sufficient target engagement when the affected interface can receive zero or effectively neutral exposure. When a direct exposure-weighted measure is available, the candidate must preregister it and distinguish:
+
+- the interface being enabled or disabled;
+- material exposure to that interface;
+- the downstream effect used for promotion.
+
+Exposure diagnostics remain read-only and cannot substitute for the practical-effect gate.
+
+## v0.79 check
+
+- The supplied portfolio audit is valid and does not require another history repair.
+- D3-T is a distinct conserved material-flow interface, not a child of the closed policy or functional-module families.
+- The direct support-exposure metric is report-only and is required by candidate-spec validation for this intervention.
+- No threshold, horizon, seed, source checkpoint, reward or world rule is changed.

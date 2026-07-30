@@ -1606,6 +1606,9 @@ class SimulationReportingMixin:
             "resource_affinity_ablation_enabled": int(
                 self.resource_affinity_ablation_enabled
             ),
+            "resource_processing_support_ablation_enabled": int(
+                self.resource_processing_support_ablation_enabled
+            ),
             "functional_modules_schema": self.cfg.functional_modules.schema,
             "functional_modules_ablation_enabled": int(
                 self.functional_modules_ablation_enabled
@@ -1684,6 +1687,7 @@ class SimulationReportingMixin:
                             "resource_processing_support_limited_total": self.total_resource_processing_support_limited.tolist(),
                             "resource_processing_support_accelerated_total": self.total_resource_processing_support_accelerated.tolist(),
                             "resource_processing_energy_rejected_total": self.total_resource_processing_energy_rejected.tolist(),
+                            "resource_processing_support_absolute_deviation_total": self.total_resource_processing_support_absolute_deviation.tolist(),
                             "resource_processing_support_weighted_mean": np.divide(
                                 self.total_resource_processing_support_weighted_sum,
                                 self.total_resource_processing_support_weight,
@@ -1998,6 +2002,18 @@ class SimulationReportingMixin:
                             **{
                                 f"resource_processing_energy_rejected_{index}_total": float(
                                     self.total_resource_processing_energy_rejected[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_processing_support_absolute_deviation_{index}_step": float(
+                                    stats.resource_processing_support_absolute_deviation[index]
+                                )
+                                for index in range(4)
+                            },
+                            **{
+                                f"resource_processing_support_absolute_deviation_{index}_total": float(
+                                    self.total_resource_processing_support_absolute_deviation[index]
                                 )
                                 for index in range(4)
                             },

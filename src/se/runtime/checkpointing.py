@@ -202,6 +202,7 @@ class SimulationCheckpointMixin:
                     "total_resource_processing_energy_rejected": self.total_resource_processing_energy_rejected.copy(),
                     "total_resource_processing_support_weighted_sum": self.total_resource_processing_support_weighted_sum.copy(),
                     "total_resource_processing_support_weight": self.total_resource_processing_support_weight.copy(),
+                    "total_resource_processing_support_absolute_deviation": self.total_resource_processing_support_absolute_deviation.copy(),
                     "total_resource_processing_energy_cost": float(
                         self.total_resource_processing_energy_cost
                     ),
@@ -558,6 +559,13 @@ class SimulationCheckpointMixin:
             ).copy()
             self.total_resource_processing_support_weight = np.asarray(
                 state.get("total_resource_processing_support_weight", np.zeros(4)),
+                dtype=np.float64,
+            ).copy()
+            self.total_resource_processing_support_absolute_deviation = np.asarray(
+                state.get(
+                    "total_resource_processing_support_absolute_deviation",
+                    np.zeros(4),
+                ),
                 dtype=np.float64,
             ).copy()
             self.total_resource_processing_energy_cost = float(
@@ -939,6 +947,9 @@ class SimulationCheckpointMixin:
             )
             branch.total_resource_processing_support_weight = (
                 self.total_resource_processing_support_weight.copy()
+            )
+            branch.total_resource_processing_support_absolute_deviation = (
+                self.total_resource_processing_support_absolute_deviation.copy()
             )
             branch.total_resource_processing_energy_cost = (
                 self.total_resource_processing_energy_cost

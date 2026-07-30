@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v46"
+SCHEMA = "structural-measurement-protocol-audit-v47"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -785,6 +785,16 @@ def build_protocol_audit(
                 "neutralization_intervention": "neutralize-spatial-processing-support",
                 "processing_execution_cost_preserved_in_ablation": True,
                 "genotype_and_resource_fields_preserved_in_ablation": True,
+                "direct_support_engagement_metric": (
+                    "resource-processing-support-absolute-deviation-total"
+                ),
+                "direct_support_engagement_definition": (
+                    "sum(abs(local support - 1) * requested conservative conversion)"
+                ),
+                "paired_candidate_spec": (
+                    "protocols/candidates/"
+                    "d3t_spatial_processing_conversion_acute_effect.json"
+                ),
                 "support_phase_relation": "quarter-cycle-shifted-from-renewal-wave-basis",
                 "direct_action_or_harvest_reward": False,
                 "entity_lineage_and_group_feedback": False,

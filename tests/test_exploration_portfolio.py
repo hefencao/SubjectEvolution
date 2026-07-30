@@ -124,8 +124,10 @@ def test_portfolio_audit_uses_builtin_history_for_partial_workspace(
         "protocols/candidates",
         include_builtin_baseline=True,
     )
-    assert report["portfolio_state"] == "scientific-revision-required"
-    assert report["unrecorded_candidate_spec_ids"] == []
+    assert report["portfolio_state"] == "candidate-specs-awaiting-assessment"
+    assert report["unrecorded_candidate_spec_ids"] == [
+        "spatial-processing-conversion-acute-effect-v1"
+    ]
     assert report["workspace_ledger_entry_count"] == 2
     assert report["decision_baseline_entry_count"] == 5
     assert report["workspace_hydration_required"] is True

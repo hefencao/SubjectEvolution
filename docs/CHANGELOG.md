@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.79.0
+
+- Accepts the supplied reconciled portfolio audit as valid and advances from portfolio repair to a preregistered scientific revision.
+- Adds D3-T as the aggregate `spatial-processing-support` revision-1 candidate, distinct from closed policy and functional-module families.
+- Tests the direct conserved support-to-conversion interface with cumulative converted resource, a fixed 120-tick response window and the unchanged 2% practical-effect threshold.
+- Adds a demand-weighted absolute support-deviation accumulator to periodic/final reporting and full checkpoint/clone state.
+- Requires spatial-support candidate specifications to preregister positive requested conversion and direct non-neutral support exposure, rather than relying on an intervention flag alone.
+- Preserves genotype, stores, resource fields, residue, per-unit processing cost, checkpoints and random streams under neutralization.
+- Upgrades the protocol audit to v47 and project version to 0.79.0.
+- Adds no reward, sensor, action, population protection, ecological role, threshold relaxation or long-horizon claim.
+
 ## 0.78.0
 
 - Diagnoses the supplied `candidate-specs-awaiting-assessment` result as incomplete workspace decision history rather than new empirical evidence.

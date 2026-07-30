@@ -83,6 +83,7 @@ def test_processing_support_constrains_and_accelerates_with_explicit_cost() -> N
     )
     assert np.any(step.processing_support_limited > 0.0)
     assert np.any(step.processing_support_accelerated > 0.0)
+    assert np.all(step.processing_support_absolute_deviation > 0.0)
     assert step.processing_energy_cost > 0.0
     rates = np.asarray(cfg.physiology.resource_processing_energy_per_unit)
     assert step.processing_energy_cost == pytest.approx(float(step.converted @ rates))
@@ -176,10 +177,20 @@ def test_d3e_shared_checkpoint_pair_and_protocol(tmp_path: Path) -> None:
         atol=1.0e-12,
         rtol=0.0,
     )
+    assert sum(
+        branches["spatial-support"]["final"][
+            "resource_processing_support_absolute_deviation_total"
+        ]
+    ) > 0.0
+    assert sum(
+        branches["neutral-support"]["final"][
+            "resource_processing_support_absolute_deviation_total"
+        ]
+    ) == 0.0
     assert all(row["valid"] for row in payload["external_resource_ledger"])
     assert all(row["valid"] for row in payload["external_recycling_ledger"])
     audit = build_protocol_audit(D3E)
-    assert audit["schema"] == "structural-measurement-protocol-audit-v46"
+    assert audit["schema"] == "structural-measurement-protocol-audit-v47"
     protocol = audit["functional_module_protocol"]["spatial_processing_experiment"]
     assert protocol["shared_checkpoint_tick"] == 0
     assert protocol["processing_execution_cost_preserved_in_ablation"]

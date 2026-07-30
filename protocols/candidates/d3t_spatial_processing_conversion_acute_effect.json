@@ -1,0 +1,66 @@
+{
+  "schema": "paired-exploration-candidate-v1",
+  "candidate_id": "spatial-processing-conversion-acute-effect-v1",
+  "candidate_revision": 1,
+  "scientific_issue": "D3-27",
+  "mechanism_family": "spatial-processing-support",
+  "mechanism_family_revision": 1,
+  "family_role": "aggregate-path-gate",
+  "terminal_negative_closes_family": true,
+  "family_revision_rationale": "This family isolates the existing conserved environment-to-processing interface rather than another control-policy or functional-module output. Earlier D3-F/G results tested movement response and ecological alignment, not the direct effect of support on realized raw-resource conversion.",
+  "family_revision_interface": "Demand-weighted absolute deviation of the phase-shifted local processing multiplier from neutral support, measured on requested conservative raw-resource conversion flow.",
+  "hypothesis": "Neutralizing phase-shifted spatial processing support changes cumulative realized raw-resource conversion over a fixed acute response window.",
+  "intervention": "neutralize-spatial-processing-support",
+  "primary_metric": "resource-converted-total",
+  "metric_mode": "cumulative",
+  "direction": "two-sided",
+  "minimum_relative_effect": 0.02,
+  "response_ticks": 120,
+  "manipulation_checks": [
+    {
+      "metric": "resource_processing_support_ablation_enabled",
+      "metric_mode": "endpoint",
+      "branch": "baseline",
+      "operator": "==",
+      "value": 0
+    },
+    {
+      "metric": "resource_processing_support_ablation_enabled",
+      "metric_mode": "endpoint",
+      "branch": "intervention",
+      "operator": "==",
+      "value": 1
+    },
+    {
+      "metric": "resource-processing-requested-total",
+      "metric_mode": "cumulative",
+      "branch": "baseline",
+      "operator": ">",
+      "value": 0
+    },
+    {
+      "metric": "resource-processing-requested-total",
+      "metric_mode": "cumulative",
+      "branch": "intervention",
+      "operator": ">",
+      "value": 0
+    },
+    {
+      "metric": "resource-processing-support-absolute-deviation-total",
+      "metric_mode": "cumulative",
+      "branch": "baseline",
+      "operator": ">",
+      "value": 0
+    },
+    {
+      "metric": "resource-processing-support-absolute-deviation-total",
+      "metric_mode": "cumulative",
+      "branch": "intervention",
+      "operator": "==",
+      "value": 0
+    }
+  ],
+  "independent_unit": "seed",
+  "selection_claim_allowed": false,
+  "interpretation_boundary": "This aggregate gate tests the direct conserved interface from spatial support to realized raw-resource conversion while preserving per-unit processing cost, genotype, stores, resource fields and checkpoint state. It does not establish movement response, ecological specialization, stable niches or long-horizon selection."
+}

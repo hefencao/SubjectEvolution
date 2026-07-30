@@ -104,6 +104,9 @@ class StepStats:
     resource_processing_support_weight: np.ndarray = field(
         default_factory=lambda: np.zeros(4, dtype=np.float64)
     )
+    resource_processing_support_absolute_deviation: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
     resource_processing_energy_cost: float = 0.0
     resource_store_decay: np.ndarray = field(
         default_factory=lambda: np.zeros(4, dtype=np.float64)

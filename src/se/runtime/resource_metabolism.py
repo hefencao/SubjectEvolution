@@ -44,6 +44,7 @@ class ResourceMetabolismStep:
     processing_energy_rejected: np.ndarray
     processing_support_weighted_sum: np.ndarray
     processing_support_weight: np.ndarray
+    processing_support_absolute_deviation: np.ndarray
     processing_energy_cost: float
 
     @classmethod
@@ -64,6 +65,9 @@ class ResourceMetabolismStep:
                 RESOURCE_CHANNELS, dtype=np.float64
             ),
             processing_support_weight=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
+            processing_support_absolute_deviation=np.zeros(
+                RESOURCE_CHANNELS, dtype=np.float64
+            ),
             processing_energy_cost=0.0,
         )
 
@@ -256,6 +260,11 @@ def settle_resource_metabolism(
         processing_support_weight = np.sum(
             np.maximum(store_before, 0.0), axis=0, dtype=np.float64
         )
+        processing_support_absolute_deviation = np.sum(
+            np.abs(support - 1.0) * processing_requested_by_entity,
+            axis=0,
+            dtype=np.float64,
+        )
     else:
         converted = np.minimum(np.maximum(store_before, 0.0), conversion_capacity)
         processing_requested_by_entity = np.zeros_like(store_before)
@@ -268,6 +277,9 @@ def settle_resource_metabolism(
             RESOURCE_CHANNELS, dtype=np.float64
         )
         processing_support_weight = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
+        processing_support_absolute_deviation = np.zeros(
+            RESOURCE_CHANNELS, dtype=np.float64
+        )
     after_conversion = np.maximum(store_before - converted, 0.0)
     decay_rate = np.asarray(
         cfg.physiology.resource_store_decay_per_tick, dtype=np.float64
@@ -338,6 +350,9 @@ def settle_resource_metabolism(
         ),
         processing_support_weighted_sum=processing_support_weighted_sum,
         processing_support_weight=processing_support_weight,
+        processing_support_absolute_deviation=(
+            processing_support_absolute_deviation
+        ),
         processing_energy_cost=float(
             processing_energy_cost_by_entity.sum(dtype=np.float64)
         ),
@@ -435,6 +450,9 @@ def initialize_resource_metabolism_state(simulation: Any) -> None:
     simulation.total_resource_processing_support_weight = np.zeros(
         RESOURCE_CHANNELS, dtype=np.float64
     )
+    simulation.total_resource_processing_support_absolute_deviation = np.zeros(
+        RESOURCE_CHANNELS, dtype=np.float64
+    )
     simulation.total_resource_processing_energy_cost = 0.0
     if external_resource_recycling_enabled(simulation.cfg):
         simulation.total_resource_residue_deposited = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
@@ -484,6 +502,9 @@ def settle_resource_metabolism_before_step(simulation: Any, stats: Any) -> None:
         step.processing_support_weighted_sum
     )
     stats.resource_processing_support_weight = step.processing_support_weight
+    stats.resource_processing_support_absolute_deviation = (
+        step.processing_support_absolute_deviation
+    )
     stats.resource_processing_energy_cost = step.processing_energy_cost
     simulation.total_resource_converted += step.converted
     simulation.total_resource_store_decay += step.decayed
@@ -504,6 +525,9 @@ def settle_resource_metabolism_before_step(simulation: Any, stats: Any) -> None:
     )
     simulation.total_resource_processing_support_weight += (
         step.processing_support_weight
+    )
+    simulation.total_resource_processing_support_absolute_deviation += (
+        step.processing_support_absolute_deviation
     )
     simulation.total_resource_processing_energy_cost += step.processing_energy_cost
     if external_resource_recycling_enabled(simulation.cfg) and rows.size:
