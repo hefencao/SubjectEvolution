@@ -1,0 +1,21 @@
+{
+  "schema": "se-study-bundle-v1",
+  "study_id": "d3r-functional-regulatory-oxygen-v1",
+  "candidate_id": "functional-regulatory-oxygen-uptake-acute-effect-v1",
+  "summary": "Bounded acute matched screen of whether functional regulatory physiology materially changes oxygen uptake.",
+  "candidate_spec": {
+    "path": "studies/d3r_functional_regulatory_oxygen_v1/protocol/candidate.json",
+    "signature_sha256": "762600634f7a5cd49575f72a4377f23536721b4b2b52c8f3aa726a22d7623eb5",
+    "content_sha256": "bba111f2d65e4ff7f38c0bf03fe9d73da40ef555a32a57bcbb08edecf1d7fdb8"
+  },
+  "workspace_layout": {
+    "source_runs": "runs/base/d3r_functional_regulatory_oxygen_v1/<stage>",
+    "intervention_runs": "runs/interventions/d3r_functional_regulatory_oxygen_v1/<stage>",
+    "analyses": "analyses/d3r_functional_regulatory_oxygen_v1/<stage>",
+    "decision_overlay": "state/decisions/exploration_candidate_ledger.json"
+  },
+  "current_state": "terminal-legacy-decision-only",
+  "next_authorized_stage": null,
+  "evidence_completeness": "legacy-decision-only",
+  "selection_claim_allowed": false
+}

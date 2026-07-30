@@ -1,0 +1,135 @@
+{
+  "schema": "se-study-stage-freeze-v2",
+  "study_id": "d3t-spatial-processing-conversion-v1",
+  "candidate_id": "spatial-processing-conversion-acute-effect-v1",
+  "candidate_signature_sha256": "a5d19852cbe51f8015ea65f362bf887c6f7c32fa8d05e4c972fe4f27317ccffd",
+  "stage": "confirmation",
+  "frozen_by_version": "0.81.0",
+  "source_binding": {
+    "mode": "exact-candidate",
+    "source_candidate_id": "spatial-processing-conversion-acute-effect-v1",
+    "candidate_id": "spatial-processing-conversion-acute-effect-v1"
+  },
+  "source_protocol_sha256": "709daa77f95ebeb2adb6d9a5e6d29b478f59b91aac32b0dbde8571021522d2ab",
+  "source_config": {
+    "path": "studies/d3t_spatial_processing_conversion_v1/protocol/source_confirmation.json",
+    "sha256": "a59eff12cfbc6dfcfb165db5dcc102f9b1412a163a2f05fb5ef5b2d6cad2f0e6",
+    "role": "source-protocol"
+  },
+  "seeds": [
+    71301,
+    71302,
+    71303,
+    71304,
+    71305,
+    71306,
+    71307,
+    71308
+  ],
+  "decision": "confirmed-acute",
+  "terminal": true,
+  "recommendation": "confirmation-gate-passed-interpret-acute-mechanism-only",
+  "median_relative_effect": 0.02827052106409674,
+  "direction_consistency": 1.0,
+  "exact_two_sided_sign_flip_p": 0.0078125,
+  "evidence": {
+    "source_plan": {
+      "source_name": "exploration_plan.json",
+      "frozen_path": "source_plan.json",
+      "schema": "tiered-exploration-plan-v3",
+      "sha256": "bd525afb0318c58f48fd6cc46b9f51bee7fd7c8ddd9620ed2c85fdc0d8b693ae"
+    },
+    "paired_plan": {
+      "source_name": "paired_exploration_plan.json",
+      "frozen_path": "paired_plan.json",
+      "schema": "tiered-paired-exploration-plan-v3",
+      "sha256": "7938fd0e4731073511852df6c767577ca0b20e9ed6d58de5b1effaca83e07c58"
+    },
+    "assessment": {
+      "source_name": "paired_exploration_assessment.json",
+      "frozen_path": "assessment.json",
+      "schema": "tiered-paired-exploration-assessment-v2",
+      "sha256": "14a33a14b6746baecd74beb9e9f438e366e3501fcc191c2202823e6e6bdf7895"
+    },
+    "decision": {
+      "source_name": "candidate_decision.json",
+      "frozen_path": "decision.json",
+      "schema": null,
+      "sha256": "2507a6ad322beee57a9cdc89fbf918c0616dc45ee0bb0a18ff7eeb7a29782e8d"
+    },
+    "results": {
+      "source_name": "paired_exploration_results.json",
+      "frozen_path": "results.json",
+      "schema": "tiered-paired-exploration-results-v2",
+      "sha256": "7a545f8a3908a69c8f7e5d11fc9358642791f523b7ce41faa39e358ecfeca075"
+    }
+  },
+  "external_runtime_artifacts": [
+    {
+      "role": "source-checkpoint",
+      "seed": 71301,
+      "tick": 480,
+      "path": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71301/checkpoint_00000480.sechk",
+      "legacy_location_hint": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71301/checkpoint_00000480.sechk",
+      "sha256": "ac9354803da2f97a4b5cb318863eb2a897a83c011ae673a0b3351056a215b5a5"
+    },
+    {
+      "role": "source-checkpoint",
+      "seed": 71302,
+      "tick": 480,
+      "path": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71302/checkpoint_00000480.sechk",
+      "legacy_location_hint": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71302/checkpoint_00000480.sechk",
+      "sha256": "7a97ccd9e1810d3b9fc804dbf647f114a98fa79d74dc836d34e0abb5660ad6e2"
+    },
+    {
+      "role": "source-checkpoint",
+      "seed": 71303,
+      "tick": 480,
+      "path": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71303/checkpoint_00000480.sechk",
+      "legacy_location_hint": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71303/checkpoint_00000480.sechk",
+      "sha256": "c579b9b644dbe81f5178ca26180d5b9f2b3a83f40f5156187f1f301fc7604533"
+    },
+    {
+      "role": "source-checkpoint",
+      "seed": 71304,
+      "tick": 480,
+      "path": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71304/checkpoint_00000480.sechk",
+      "legacy_location_hint": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71304/checkpoint_00000480.sechk",
+      "sha256": "0d0791da9c1836eb8b3850b56582c713b85432e0568dc1c25faa0553b25c1454"
+    },
+    {
+      "role": "source-checkpoint",
+      "seed": 71305,
+      "tick": 480,
+      "path": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71305/checkpoint_00000480.sechk",
+      "legacy_location_hint": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71305/checkpoint_00000480.sechk",
+      "sha256": "be181edd34aabced7105f1cec4e1993ef09ed841682fa181d2f1094a26d68a98"
+    },
+    {
+      "role": "source-checkpoint",
+      "seed": 71306,
+      "tick": 480,
+      "path": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71306/checkpoint_00000480.sechk",
+      "legacy_location_hint": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71306/checkpoint_00000480.sechk",
+      "sha256": "11ffa8755cd88d50412a5811a2b2753e272f3d396a877cb1c4510147e963467a"
+    },
+    {
+      "role": "source-checkpoint",
+      "seed": 71307,
+      "tick": 480,
+      "path": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71307/checkpoint_00000480.sechk",
+      "legacy_location_hint": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71307/checkpoint_00000480.sechk",
+      "sha256": "652ab70ec9fab4ac64d229da826e3d45d71e59a578ce52ffd8f55fc223d3212e"
+    },
+    {
+      "role": "source-checkpoint",
+      "seed": 71308,
+      "tick": 480,
+      "path": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71308/checkpoint_00000480.sechk",
+      "legacy_location_hint": "runs/base/d3t_spatial_processing_conversion_v1/confirmation/seed_71308/checkpoint_00000480.sechk",
+      "sha256": "3590539c31df1dcb7bac56e0d2b48d7d968961fb90ac0dd1994bb056b479fe35"
+    }
+  ],
+  "raw_runtime_copied_into_study": false,
+  "selection_claim_allowed": false
+}

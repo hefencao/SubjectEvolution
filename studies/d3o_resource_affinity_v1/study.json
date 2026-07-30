@@ -1,0 +1,21 @@
+{
+  "schema": "se-study-bundle-v1",
+  "study_id": "d3o-resource-affinity-v1",
+  "candidate_id": "resource-affinity-acute-effect",
+  "summary": "Legacy acute screen of whether inherited resource-affinity expression materially changes total realized harvest.",
+  "candidate_spec": {
+    "path": "studies/d3o_resource_affinity_v1/protocol/candidate.json",
+    "signature_sha256": "441768df8ca9f655de1e3acadf0476a69e05b79970e2f352e4f0061ac3d4cc88",
+    "content_sha256": "0abe68d5a2c60527b6a4243a5077f5507b2b844c5bfa3d270baae8befe22df54"
+  },
+  "workspace_layout": {
+    "source_runs": "runs/base/d3o_resource_affinity_v1/<stage>",
+    "intervention_runs": "runs/interventions/d3o_resource_affinity_v1/<stage>",
+    "analyses": "analyses/d3o_resource_affinity_v1/<stage>",
+    "decision_overlay": "state/decisions/exploration_candidate_ledger.json"
+  },
+  "current_state": "terminal-legacy-decision-only",
+  "next_authorized_stage": null,
+  "evidence_completeness": "legacy-decision-only",
+  "selection_claim_allowed": false
+}

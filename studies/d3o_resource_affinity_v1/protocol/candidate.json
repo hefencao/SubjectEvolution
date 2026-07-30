@@ -1,0 +1,21 @@
+{
+  "schema": "paired-exploration-candidate-v1",
+  "candidate_id": "resource-affinity-acute-effect",
+  "candidate_revision": 1,
+  "scientific_issue": "D1-01",
+  "mechanism_family": "resource-affinity",
+  "mechanism_family_revision": 1,
+  "family_role": "bounded-output-path",
+  "terminal_negative_closes_family": false,
+  "hypothesis": "Neutralizing inherited resource-affinity expression changes total realized resource harvest over a fixed acute response window.",
+  "intervention": "neutralize-resource-affinity",
+  "primary_metric": "harvested-resource-total",
+  "metric_mode": "cumulative",
+  "direction": "two-sided",
+  "minimum_relative_effect": 0.01,
+  "response_ticks": 120,
+  "manipulation_checks": [],
+  "independent_unit": "seed",
+  "selection_claim_allowed": false,
+  "interpretation_boundary": "This compact legacy candidate lacked self-contained direct manipulation values. Its terminal screen does not establish a universal null for local or channel-specific affinity effects."
+}

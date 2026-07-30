@@ -1,0 +1,27 @@
+# d3q-knowledge-policy-harvest-v1 frozen run chain
+
+Candidate: `knowledge-policy-harvest-acute-effect-v1`
+Study schema: `se-study-bundle-v1`
+Chain schema: `se-study-chain-lock-v1`
+
+This file summarizes immutable evidence only. Executable next-stage commands, when authorized, are kept in a separate numerically ordered `commands/` directory.
+
+## Design
+
+Aggregate acute matched screen of whether the complete knowledge-policy residual materially changes total harvest.
+
+## Legacy decision-only stages
+
+These rows preserve the strongest surviving release evidence. Missing raw artifacts are declared rather than reconstructed.
+
+| Stage | Seeds | Decision | Recommendation | Completeness | Lock |
+|---|---:|---|---|---|---|
+| screen | 8 | stop | stop-effect-below-preregistered-practical-threshold | legacy-decision-only | `studies/d3q_knowledge_policy_harvest_v1/frozen/legacy/screen.lock.json` |
+
+## Path roles
+
+- source trajectories and checkpoints belong under `runs/base/`;
+- intervention branches belong under `runs/interventions/`;
+- derived assessments and audits belong under `analyses/`;
+- mutable workspace decision overlays belong under `state/decisions/`;
+- this study directory contains only protocol, commands and frozen evidence.

@@ -1,0 +1,38 @@
+{
+  "schema": "se-study-chain-lock-v1",
+  "study_id": "d3s-functional-modules-harvest-v1",
+  "candidate_id": "functional-modules-harvest-acute-effect-v1",
+  "candidate_signature_sha256": "78e11dd94842ab04d396a69bcd662558254252fc5705500a0b2cfa08f442bf71",
+  "candidate_spec": {
+    "path": "studies/d3s_functional_modules_harvest_v1/protocol/candidate.json",
+    "sha256": "b3c953449fead5ab5121e10076b6387610271af0305286d5b3d5a85f8dc597d3",
+    "role": "candidate-spec"
+  },
+  "stages": [],
+  "legacy_decisions": [
+    {
+      "stage": "screen",
+      "lock_path": "studies/d3s_functional_modules_harvest_v1/frozen/legacy/screen.lock.json",
+      "lock_sha256": "04900aab45460966cc0051862d0d616ce1a9a178e0d561cdac86ffd5a4c64dd7",
+      "decision": "stop",
+      "terminal": true,
+      "recommendation": "stop-effect-below-preregistered-practical-threshold",
+      "seeds": [
+        71101,
+        71102,
+        71103,
+        71104,
+        71105,
+        71106,
+        71107,
+        71108
+      ],
+      "evidence_completeness": "legacy-decision-only"
+    }
+  ],
+  "all_stage_seeds": [],
+  "source_protocol_sha256": null,
+  "latest_stage": "screen",
+  "latest_recommendation": "stop-effect-below-preregistered-practical-threshold",
+  "selection_claim_allowed": false
+}

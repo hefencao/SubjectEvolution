@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.81.0
+
+- Records the supplied D3-T disjoint-seed replication as promotion-positive: all eight manipulation contracts pass, all eight effects retain the screen direction, and the equal-seed median relative effect is about +2.546%, above the unchanged 2% threshold.
+- Advances D3-T to exact-protocol confirmation without changing scale, horizon, checkpoint tick, response window, threshold, cost, or world mechanism.
+- Introduces a canonical study workspace separating definitions and frozen evidence (`studies/`), runtime and checkpoints (`runs/`), derived reports (`analyses/`), and mutable overlays (`state/`).
+- Moves candidate-specific specifications and D3-T source configs into their owning study while leaving reusable project presets under `configs/`.
+- Restores D3-O as a candidate study and freezes D3-O through D3-S as explicit `legacy-decision-only` bundles; unavailable historical plans, assessments, results, and checkpoints are declared rather than reconstructed.
+- Adds portable stage and chain locks that bind candidate signature, source-plan content, protocol fingerprint, assessment, decision, evidence hashes, and disjoint seeds across versions.
+- Adds preflighted, idempotent `se-study-layout-migrate` and `se-study-runtime-migrate` commands for content-addressed separation or relocation of legacy runtime artifacts.
+- Upgrades source and paired plans to v3 with workspace-relative runtime/analysis destinations while continuing to read v1/v2 evidence.
+- Standardizes each study runbook as one numerically ordered command file per executable step; README files no longer duplicate mixed command blocks.
+- Adds `.vscode/` to `.gitignore`, upgrades the protocol audit to v49, and sets project version to 0.81.0.
+- Makes `se-study-verify` strictly read-only and excludes generated `*.egg-info`, bytecode, and build outputs from release freshness fingerprints without excluding source changes.
+- Adds no reward, selection pressure, population rescue, sensor, action, or post-hoc threshold change.
+
 ## 0.80.0
 
 - Records the supplied D3-T eight-seed screen as promotion-positive: all manipulation checks pass, all effects have the same sign, and neutralization increases cumulative conversion by a median of about 3.03%, above the preregistered 2% threshold.

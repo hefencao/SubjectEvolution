@@ -1,0 +1,28 @@
+{
+  "schema": "d3t-replication-result-v1",
+  "study_id": "d3t-spatial-processing-conversion-v1",
+  "candidate_id": "spatial-processing-conversion-acute-effect-v1",
+  "stage": "replication",
+  "seeds": [
+    71201,
+    71202,
+    71203,
+    71204,
+    71205,
+    71206,
+    71207,
+    71208
+  ],
+  "eligible_seed_count": 8,
+  "manipulation_supported_seed_count": 8,
+  "positive_seed_count": 8,
+  "negative_seed_count": 0,
+  "direction_consistency": 1.0,
+  "equal_seed_median_relative_effect": 0.025460716932186538,
+  "minimum_relative_effect": 0.02,
+  "practical_effect_threshold_met": true,
+  "exact_two_sided_sign_flip_p": 0.0078125,
+  "recommendation": "promote-to-explicit-confirmation",
+  "selection_claim_allowed": false,
+  "frozen_chain": "studies/d3t_spatial_processing_conversion_v1/frozen/chain.lock.json"
+}

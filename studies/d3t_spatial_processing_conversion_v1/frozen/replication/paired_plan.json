@@ -1,0 +1,238 @@
+{
+  "schema": "tiered-paired-exploration-plan-v2",
+  "stage": "replication",
+  "candidate_id": "spatial-processing-conversion-acute-effect-v1",
+  "candidate_signature_sha256": "a5d19852cbe51f8015ea65f362bf887c6f7c32fa8d05e4c972fe4f27317ccffd",
+  "candidate_spec_schema": "paired-exploration-candidate-v1",
+  "candidate_spec_sha256": "5121a01a8f638208ac63bea472879e91bc4eaea78e20d2b69abea0e0e5e02a48",
+  "mechanism_family": "spatial-processing-support",
+  "mechanism_family_revision": 1,
+  "family_role": "aggregate-path-gate",
+  "terminal_negative_closes_family": true,
+  "family_revision_rationale": "This family isolates the existing conserved environment-to-processing interface rather than another control-policy or functional-module output. Earlier D3-F/G results tested movement response and ecological alignment, not the direct effect of support on realized raw-resource conversion.",
+  "family_revision_interface": "Demand-weighted absolute deviation of the phase-shifted local processing multiplier from neutral support, measured on requested conservative raw-resource conversion flow.",
+  "source_root": "/home/unkloser/projects/SubjectEvolution/analyses/d3n_replication",
+  "source_plan_schema": "tiered-exploration-plan-v2",
+  "source_plan_sha256": "4d430b1cc0ec2888c58c4ac54fbf4aac569e6b543f932a9b58cbbe10a8bae6b4",
+  "source_replication_protocol_sha256": "709daa77f95ebeb2adb6d9a5e6d29b478f59b91aac32b0dbde8571021522d2ab",
+  "source_replication_protocol_locked_to_prior": true,
+  "source_checkpoint_tick": 480,
+  "response_ticks": 120,
+  "seeds": [
+    71201,
+    71202,
+    71203,
+    71204,
+    71205,
+    71206,
+    71207,
+    71208
+  ],
+  "all_stage_seeds": [
+    71101,
+    71102,
+    71103,
+    71104,
+    71105,
+    71106,
+    71107,
+    71108,
+    71201,
+    71202,
+    71203,
+    71204,
+    71205,
+    71206,
+    71207,
+    71208
+  ],
+  "panels": [
+    {
+      "seed": 71201,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/analyses/d3n_replication/seed_71201/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "055258e881f3cd72298ed2f11af3a3b6ca4565c9fbc30b6a1580c76e768c6e27",
+      "checkpoint_config_sha256": "44bb56d6b83e67669f578f03f1ed05c58c0b4c7fd9e77f3b54ff9a71cfd70f68",
+      "source_alive": 158,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 134.21505376344086,
+      "source_largest_lineage_fraction": 0.02531645569620253,
+      "until_tick": 600
+    },
+    {
+      "seed": 71202,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/analyses/d3n_replication/seed_71202/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "6a9143f3aedb5533ea0b4aabbc67a0c75f857422c2968b3fe0ccddd1b5709e9a",
+      "checkpoint_config_sha256": "811096cf1d03ff31ffd0cf1b6699a946dca78c51a11d96e1c6b72dde555c4fe1",
+      "source_alive": 157,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 129.05235602094243,
+      "source_largest_lineage_fraction": 0.01910828025477707,
+      "until_tick": 600
+    },
+    {
+      "seed": 71203,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/analyses/d3n_replication/seed_71203/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "428fd63229d9f494ef615529962c1f3de040c4782c4999f6b167bbd2b7982a91",
+      "checkpoint_config_sha256": "970593b49434b072a635d8884383bee0fc0242ba1faba810ecbfe7491a1dcaaf",
+      "source_alive": 176,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 143.40740740740742,
+      "source_largest_lineage_fraction": 0.017045454545454544,
+      "until_tick": 600
+    },
+    {
+      "seed": 71204,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/analyses/d3n_replication/seed_71204/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "883a06bcd1588574d48275e9ef2a0796a8192d5ec73457799baee8044dca2920",
+      "checkpoint_config_sha256": "6de85ba86533d9f73515dee125dea97073c9e304322caf9f31f2780825305abb",
+      "source_alive": 180,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 155.76923076923075,
+      "source_largest_lineage_fraction": 0.011111111111111112,
+      "until_tick": 600
+    },
+    {
+      "seed": 71205,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/analyses/d3n_replication/seed_71205/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "a175fd37ef704aa8ca9012f6b948f6efa9f4790ba28adbb249cfd60aeed15362",
+      "checkpoint_config_sha256": "a26b9220cd917c347127612be3fc57d6de9c7a1dc42203dcabaa3f34a24ae310",
+      "source_alive": 144,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 113.93406593406593,
+      "source_largest_lineage_fraction": 0.020833333333333332,
+      "until_tick": 600
+    },
+    {
+      "seed": 71206,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/analyses/d3n_replication/seed_71206/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "22f1c330fa77a6e9c2ee789365675da8db69bee69ef0bc5c79bac5266dda3bb9",
+      "checkpoint_config_sha256": "fa0c21fd1723e08e27724138bc074a351066b920be28240ea62c3d66ce93a2b6",
+      "source_alive": 146,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 121.11363636363637,
+      "source_largest_lineage_fraction": 0.02054794520547945,
+      "until_tick": 600
+    },
+    {
+      "seed": 71207,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/analyses/d3n_replication/seed_71207/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "bd1915d9aa9649aee2d379f712378c5f0f09b94a350173be2106d4f58abd5f87",
+      "checkpoint_config_sha256": "e5c577c6f9835026c9a51d7a0822b3a4eda6809b9b91659466484de0b203c739",
+      "source_alive": 187,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 146.31380753138075,
+      "source_largest_lineage_fraction": 0.016042780748663103,
+      "until_tick": 600
+    },
+    {
+      "seed": 71208,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "/home/unkloser/projects/SubjectEvolution/analyses/d3n_replication/seed_71208/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "81814a54b804c7275add30a469253d9453d71e9c8d58582cf37706ab25c5d746",
+      "checkpoint_config_sha256": "d966427f728b2d13bbb3e99807c6cc4a7193b830d23e064691df872c7eef1345",
+      "source_alive": 169,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 126.93777777777774,
+      "source_largest_lineage_fraction": 0.023668639053254437,
+      "until_tick": 600
+    }
+  ],
+  "branches": [
+    "baseline",
+    "intervention"
+  ],
+  "intervention": "neutralize-spatial-processing-support",
+  "intervention_kind": "modify-rules",
+  "primary_metric": "resource-converted-total",
+  "metric_mode": "cumulative",
+  "direction": "two-sided",
+  "minimum_relative_effect": 0.02,
+  "manipulation_checks": [
+    {
+      "metric": "resource_processing_support_ablation_enabled",
+      "metric_mode": "endpoint",
+      "branch": "baseline",
+      "operator": "==",
+      "value": 0.0
+    },
+    {
+      "metric": "resource_processing_support_ablation_enabled",
+      "metric_mode": "endpoint",
+      "branch": "intervention",
+      "operator": "==",
+      "value": 1.0
+    },
+    {
+      "metric": "resource-processing-requested-total",
+      "metric_mode": "cumulative",
+      "branch": "baseline",
+      "operator": ">",
+      "value": 0.0
+    },
+    {
+      "metric": "resource-processing-requested-total",
+      "metric_mode": "cumulative",
+      "branch": "intervention",
+      "operator": ">",
+      "value": 0.0
+    },
+    {
+      "metric": "resource-processing-support-absolute-deviation-total",
+      "metric_mode": "cumulative",
+      "branch": "baseline",
+      "operator": ">",
+      "value": 0.0
+    },
+    {
+      "metric": "resource-processing-support-absolute-deviation-total",
+      "metric_mode": "cumulative",
+      "branch": "intervention",
+      "operator": "==",
+      "value": 0.0
+    }
+  ],
+  "minimum_eligible_seed_fraction": 0.75,
+  "minimum_direction_consistency": 0.75,
+  "independent_unit": "seed",
+  "windows_entities_and_events_are_independent_replicates": false,
+  "fixed_checkpoint_selected_before_branch_outcomes": true,
+  "outcome_conditioned_checkpoint_selection": false,
+  "failed_or_ineligible_seeds_replaced": false,
+  "requested_backend": "auto",
+  "output": "/home/unkloser/projects/SubjectEvolution/analyses/d3t_spatial_processing_conversion_paired_replication",
+  "decision_ledger": "/home/unkloser/projects/SubjectEvolution/analyses/exploration_candidate_ledger.json",
+  "decision_baseline": null,
+  "builtin_decision_baseline": true,
+  "decision_history_entry_count": 6,
+  "prior_assessment": {
+    "stage": "screen",
+    "recommendation": "promote-to-disjoint-replication",
+    "all_stage_seeds": [
+      71101,
+      71102,
+      71103,
+      71104,
+      71105,
+      71106,
+      71107,
+      71108
+    ],
+    "assessment_sha256": "3b385e666766637e70b7e01c2c3250549f029de2e0b5956baba78046babc98a3",
+    "candidate_signature_sha256": "a5d19852cbe51f8015ea65f362bf887c6f7c32fa8d05e4c972fe4f27317ccffd"
+  },
+  "selection_claim_allowed": false,
+  "acute_mechanism_claim_allowed": false,
+  "large_long_confirmation_explicitly_authorized": false,
+  "execution_command": [
+    "se-exploration-paired",
+    "--plan",
+    "/home/unkloser/projects/SubjectEvolution/analyses/d3t_spatial_processing_conversion_paired_replication/paired_exploration_plan.json"
+  ]
+}

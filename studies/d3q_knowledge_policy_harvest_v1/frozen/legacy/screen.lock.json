@@ -1,0 +1,113 @@
+{
+  "schema": "se-study-legacy-decision-lock-v1",
+  "study_id": "d3q-knowledge-policy-harvest-v1",
+  "candidate_id": "knowledge-policy-harvest-acute-effect-v1",
+  "candidate_signature_sha256": "2a4c4c02528def78acf5063b65ed2762a0adac362b1b530c1f03c94273a8a341",
+  "stage": "screen",
+  "frozen_by_version": "0.81.0",
+  "decision_entry": {
+    "candidate_id": "knowledge-policy-harvest-acute-effect-v1",
+    "candidate_signature_sha256": "2a4c4c02528def78acf5063b65ed2762a0adac362b1b530c1f03c94273a8a341",
+    "candidate_spec": {
+      "intervention": "disable-knowledge-policy",
+      "primary_metric": "harvested-resource-total",
+      "metric_mode": "cumulative",
+      "direction": "two-sided",
+      "minimum_relative_effect": 0.02,
+      "response_ticks": 120,
+      "manipulation_checks": [
+        {
+          "metric": "knowledge_policy_effective_enabled",
+          "metric_mode": "endpoint",
+          "branch": "baseline",
+          "operator": "==",
+          "value": 1.0
+        },
+        {
+          "metric": "knowledge_policy_effective_enabled",
+          "metric_mode": "endpoint",
+          "branch": "intervention",
+          "operator": "==",
+          "value": 0.0
+        },
+        {
+          "metric": "knowledge-policy-changed-actions-total",
+          "metric_mode": "cumulative",
+          "branch": "baseline",
+          "operator": ">",
+          "value": 0.0
+        },
+        {
+          "metric": "knowledge-policy-changed-actions-total",
+          "metric_mode": "cumulative",
+          "branch": "intervention",
+          "operator": "==",
+          "value": 0.0
+        }
+      ]
+    },
+    "stage": "screen",
+    "decision": "stop",
+    "terminal": true,
+    "recommendation": "stop-effect-below-preregistered-practical-threshold",
+    "reason_codes": [
+      "effect-below-preregistered-practical-threshold"
+    ],
+    "assessment_schema": "tiered-paired-exploration-assessment-v2",
+    "assessment_sha256": "9c6a90e2c0a2c00dfefee0978de99db052d5d1018e4d053d53568652268efa57",
+    "eligible_seed_count": 8,
+    "eligible_seed_fraction": 1.0,
+    "manipulation_check_count": 4,
+    "manipulation_supported_seed_count": 8,
+    "manipulation_supported_seed_fraction": 1.0,
+    "manipulation_confirmed": true,
+    "positive_seed_count": 1,
+    "negative_seed_count": 7,
+    "direction_consistency": 0.875,
+    "equal_seed_median_relative_effect": -0.006848291263809552,
+    "exact_two_sided_sign_flip_p": 0.0703125,
+    "practical_effect_threshold_met": false,
+    "evidence_class": "manipulation-confirmed-promotion-negative",
+    "mechanism_family": "knowledge-policy",
+    "mechanism_family_revision": 1,
+    "family_role": "aggregate-path-gate",
+    "terminal_negative_closes_family": true,
+    "family_revision_rationale": null,
+    "family_terminal": true,
+    "all_stage_seeds": [
+      71101,
+      71102,
+      71103,
+      71104,
+      71105,
+      71106,
+      71107,
+      71108
+    ],
+    "selection_claim_allowed": false,
+    "family_gate_class": "other",
+    "family_revision_interface": null
+  },
+  "decision_entry_sha256": "3c21884b772cb2d859b7bfcf62f784e72cbb037efdfaa8458ab57a782202419d",
+  "decision_source": {
+    "path": "protocols/decisions/exploration_candidate_ledger.json",
+    "role": "immutable-decision-baseline",
+    "ledger_schema": "paired-exploration-candidate-ledger-v5"
+  },
+  "evidence_completeness": "legacy-decision-only",
+  "available_evidence": [
+    "candidate specification",
+    "canonical decision-ledger entry",
+    "assessment content hash recorded by the decision entry",
+    "seed set and bounded outcome summary recorded by the decision entry"
+  ],
+  "unavailable_evidence": [
+    "source plan payload",
+    "paired plan payload",
+    "assessment payload",
+    "result payload",
+    "source checkpoint content hashes"
+  ],
+  "missing_evidence_was_reconstructed": false,
+  "selection_claim_allowed": false
+}

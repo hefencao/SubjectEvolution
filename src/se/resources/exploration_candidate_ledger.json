@@ -458,6 +458,116 @@
           }
         ]
       },
+      "stage": "replication",
+      "decision": "promote",
+      "terminal": false,
+      "recommendation": "promote-to-explicit-confirmation",
+      "reason_codes": [
+        "promote-to-explicit-confirmation"
+      ],
+      "assessment_schema": "tiered-paired-exploration-assessment-v2",
+      "assessment_sha256": "24603150668188a80447388482a68781e2107908d251a1c8c070cf54d202c948",
+      "source_plan_schema": "tiered-exploration-plan-v2",
+      "source_plan_sha256": "4d430b1cc0ec2888c58c4ac54fbf4aac569e6b543f932a9b58cbbe10a8bae6b4",
+      "source_checkpoint_tick": 480,
+      "source_replication_protocol_sha256": "709daa77f95ebeb2adb6d9a5e6d29b478f59b91aac32b0dbde8571021522d2ab",
+      "source_replication_protocol_locked_to_prior": true,
+      "eligible_seed_count": 8,
+      "eligible_seed_fraction": 1.0,
+      "manipulation_check_count": 6,
+      "manipulation_supported_seed_count": 8,
+      "manipulation_supported_seed_fraction": 1.0,
+      "manipulation_confirmed": true,
+      "positive_seed_count": 8,
+      "negative_seed_count": 0,
+      "direction_consistency": 1.0,
+      "equal_seed_median_relative_effect": 0.025460716932186538,
+      "exact_two_sided_sign_flip_p": 0.0078125,
+      "practical_effect_threshold_met": true,
+      "evidence_class": "manipulation-confirmed-promotion-positive",
+      "mechanism_family": "spatial-processing-support",
+      "mechanism_family_revision": 1,
+      "family_role": "aggregate-path-gate",
+      "terminal_negative_closes_family": true,
+      "family_revision_rationale": "This family isolates the existing conserved environment-to-processing interface rather than another control-policy or functional-module output. Earlier D3-F/G results tested movement response and ecological alignment, not the direct effect of support on realized raw-resource conversion.",
+      "family_revision_interface": "Demand-weighted absolute deviation of the phase-shifted local processing multiplier from neutral support, measured on requested conservative raw-resource conversion flow.",
+      "family_terminal": false,
+      "family_gate_class": "aggregate",
+      "all_stage_seeds": [
+        71101,
+        71102,
+        71103,
+        71104,
+        71105,
+        71106,
+        71107,
+        71108,
+        71201,
+        71202,
+        71203,
+        71204,
+        71205,
+        71206,
+        71207,
+        71208
+      ],
+      "selection_claim_allowed": false
+    },
+    {
+      "candidate_id": "spatial-processing-conversion-acute-effect-v1",
+      "candidate_signature_sha256": "a5d19852cbe51f8015ea65f362bf887c6f7c32fa8d05e4c972fe4f27317ccffd",
+      "candidate_spec": {
+        "intervention": "neutralize-spatial-processing-support",
+        "primary_metric": "resource-converted-total",
+        "metric_mode": "cumulative",
+        "direction": "two-sided",
+        "minimum_relative_effect": 0.02,
+        "response_ticks": 120,
+        "manipulation_checks": [
+          {
+            "metric": "resource_processing_support_ablation_enabled",
+            "metric_mode": "endpoint",
+            "branch": "baseline",
+            "operator": "==",
+            "value": 0.0
+          },
+          {
+            "metric": "resource_processing_support_ablation_enabled",
+            "metric_mode": "endpoint",
+            "branch": "intervention",
+            "operator": "==",
+            "value": 1.0
+          },
+          {
+            "metric": "resource-processing-requested-total",
+            "metric_mode": "cumulative",
+            "branch": "baseline",
+            "operator": ">",
+            "value": 0.0
+          },
+          {
+            "metric": "resource-processing-requested-total",
+            "metric_mode": "cumulative",
+            "branch": "intervention",
+            "operator": ">",
+            "value": 0.0
+          },
+          {
+            "metric": "resource-processing-support-absolute-deviation-total",
+            "metric_mode": "cumulative",
+            "branch": "baseline",
+            "operator": ">",
+            "value": 0.0
+          },
+          {
+            "metric": "resource-processing-support-absolute-deviation-total",
+            "metric_mode": "cumulative",
+            "branch": "intervention",
+            "operator": "==",
+            "value": 0.0
+          }
+        ]
+      },
       "stage": "screen",
       "decision": "promote",
       "terminal": false,
@@ -557,10 +667,12 @@
       "mechanism_family_revision": 1,
       "status": "aggregate-gate-recorded",
       "candidate_ids": [
+        "spatial-processing-conversion-acute-effect-v1",
         "spatial-processing-conversion-acute-effect-v1"
       ],
       "bounded_negative_candidate_ids": [],
       "aggregate_candidate_ids": [
+        "spatial-processing-conversion-acute-effect-v1",
         "spatial-processing-conversion-acute-effect-v1"
       ],
       "closed_by_candidate_ids": []

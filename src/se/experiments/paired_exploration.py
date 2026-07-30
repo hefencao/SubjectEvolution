@@ -32,9 +32,11 @@ from se.checkpointing import read_checkpoint_bundle
 from se.experiments.counterfactual import run_paired
 from se.experiments.interventions import ExperimentMode, intervention_names, resolve_intervention
 from se.runtime.sim import Simulation
+from se import __version__
+from se.workspace import portable_or_absolute, resolve_path, workspace_root
 
-PLAN_SCHEMA = "tiered-paired-exploration-plan-v2"
-LEGACY_PLAN_SCHEMA = "tiered-paired-exploration-plan-v1"
+PLAN_SCHEMA = "tiered-paired-exploration-plan-v3"
+LEGACY_PLAN_SCHEMAS = {"tiered-paired-exploration-plan-v1", "tiered-paired-exploration-plan-v2"}
 RESULT_SCHEMA = "tiered-paired-exploration-results-v2"
 ASSESSMENT_SCHEMA = "tiered-paired-exploration-assessment-v2"
 LEGACY_ASSESSMENT_SCHEMA = "tiered-paired-exploration-assessment-v1"
@@ -363,6 +365,7 @@ def build_plan(
     direction: str,
     minimum_relative_effect: float,
     output: Path,
+    analysis_output: Path | None = None,
     backend: str = "auto",
     prior_assessment: dict[str, Any] | None = None,
     allow_large_long_confirmation: bool = False,
@@ -373,6 +376,8 @@ def build_plan(
     decision_ledger: Path | None = None,
     decision_baseline: Path | None = None,
     include_builtin_decision_baseline: bool = False,
+    workspace: str | Path | None = None,
+    study_id: str | None = None,
 ) -> dict[str, Any]:
     if stage not in _STAGE_ORDER:
         raise ValueError(f"unsupported stage: {stage}")
@@ -400,11 +405,17 @@ def build_plan(
         manipulation_checks=normalized_checks,
     )
     candidate_signature_sha256 = candidate_signature(signature_payload)
-    output = output.resolve()
+    root = workspace_root(workspace)
+    output = resolve_path(output, root=root)
+    analysis_output = resolve_path(analysis_output or output, root=root)
     ledger_path = (
-        decision_ledger.resolve()
+        resolve_path(decision_ledger, root=root)
         if decision_ledger is not None
-        else output.parent / "exploration_candidate_ledger.json"
+        else (
+            root / "state/decisions/exploration_candidate_ledger.json"
+            if workspace is not None
+            else output.parent / "exploration_candidate_ledger.json"
+        )
     )
     ledger, history = load_effective_ledger(
         ledger_path,
@@ -423,7 +434,7 @@ def build_plan(
         family_revision_rationale=portfolio["family_revision_rationale"],
         family_revision_interface=portfolio["family_revision_interface"],
     )
-    source_root = source_root.resolve()
+    source_root = resolve_path(source_root, root=root)
     rows = _source_index(source_root)
     seeds = [int(row["seed"]) for row in rows]
     if len(seeds) < _STAGE_MINIMUM_SEEDS[stage]:
@@ -434,28 +445,37 @@ def build_plan(
         raise ValueError("source seeds must be unique")
     if stage == "confirmation" and not allow_large_long_confirmation:
         raise ValueError(
-            "confirmation requires explicit large/long authorization even when the current panel is small"
+            "confirmation requires --authorize-confirmation even when the current panel is small"
         )
     source_plan_path = source_root / "exploration_plan.json"
     source_plan = _read_json(source_plan_path)
     if source_plan.get("stage") != stage:
         raise ValueError("source exploration stage does not match paired stage")
-    if stage == "replication":
+    if stage in {"replication", "confirmation"}:
         try:
-            source_plan = load_source_exploration_plan(source_plan_path)
+            source_plan = load_source_exploration_plan(source_plan_path, workspace=root)
         except ValueError as exc:
             raise ValueError(
-                f"replication source plan is not protocol-locked: {exc}"
+                f"{stage} source plan is not protocol-locked: {exc}"
             ) from exc
-        if not bool(source_plan.get("replication_protocol_locked_to_prior", False)):
-            raise ValueError(
-                "replication source plan must be protocol-locked to its prior screen; "
-                "regenerate it with se-exploration-plan --stage replication --prior-plan"
+        if not bool(source_plan.get("source_protocol_locked_to_prior", False)):
+            legacy_lock = bool(
+                stage == "replication"
+                and source_plan.get("replication_protocol_locked_to_prior", False)
             )
-        if not bool(source_plan.get("replication_changes_only_independent_seeds", False)):
-            raise ValueError(
-                "replication source plan must change only the independent seed set"
+            if not legacy_lock:
+                raise ValueError(
+                    f"{stage} source plan must be protocol-locked to its prior stage"
+                )
+        if not bool(source_plan.get("stage_changes_only_independent_seeds", False)):
+            legacy_seed_lock = bool(
+                stage == "replication"
+                and source_plan.get("replication_changes_only_independent_seeds", False)
             )
+            if not legacy_seed_lock:
+                raise ValueError(
+                    f"{stage} source plan must change only the independent seed set"
+                )
     panels: list[dict[str, Any]] = []
     config_hashes: set[str] = set()
     for seed in seeds:
@@ -477,7 +497,7 @@ def build_plan(
             {
                 "seed": seed,
                 "checkpoint_tick": checkpoint_tick,
-                "checkpoint_path": str(checkpoint),
+                "checkpoint_path": portable_or_absolute(checkpoint, root=root, strict=workspace is not None),
                 "checkpoint_sha256": _sha256_file(checkpoint),
                 "checkpoint_config_sha256": str(metadata["config_sha256"]),
                 "source_alive": source_alive,
@@ -508,20 +528,35 @@ def build_plan(
             seeds=set(seeds),
         )
         all_stage_seeds.update(int(value) for value in prior_ref["all_stage_seeds"])
-    plan_path = output / "paired_exploration_plan.json"
+    strict_paths = workspace is not None
+    run_root_ref = portable_or_absolute(output, root=root, strict=strict_paths)
+    analysis_output_ref = portable_or_absolute(analysis_output, root=root, strict=strict_paths)
+    plan_path = f"{run_root_ref}/paired_exploration_plan.json"
     return {
         "schema": PLAN_SCHEMA,
+        "workspace_layout": "se-workspace-layout-v1",
+        "path_base": "workspace-root",
+        "producer_version": __version__,
+        "study_id": study_id,
         "stage": stage,
         "candidate_id": candidate_id,
         "candidate_signature_sha256": candidate_signature_sha256,
         "candidate_spec_schema": candidate_spec_schema,
         "candidate_spec_sha256": candidate_spec_sha256,
         **portfolio,
-        "source_root": str(source_root),
+        "source_root": portable_or_absolute(source_root, root=root, strict=strict_paths),
         "source_plan_schema": source_plan.get("schema"),
         "source_plan_sha256": _sha256_file(source_plan_path),
         "source_replication_protocol_sha256": source_plan.get(
             "replication_protocol_sha256"
+        ),
+        "source_protocol_locked_to_prior": bool(
+            source_plan.get("source_protocol_locked_to_prior", False)
+            or source_plan.get("replication_protocol_locked_to_prior", False)
+        ),
+        "source_stage_changes_only_independent_seeds": bool(
+            source_plan.get("stage_changes_only_independent_seeds", False)
+            or source_plan.get("replication_changes_only_independent_seeds", False)
         ),
         "source_replication_protocol_locked_to_prior": bool(
             source_plan.get("replication_protocol_locked_to_prior", False)
@@ -547,10 +582,11 @@ def build_plan(
         "outcome_conditioned_checkpoint_selection": False,
         "failed_or_ineligible_seeds_replaced": False,
         "requested_backend": backend,
-        "output": str(output),
-        "decision_ledger": str(ledger_path),
+        "run_root": run_root_ref,
+        "analysis_output": analysis_output_ref,
+        "decision_ledger": portable_or_absolute(ledger_path, root=root, strict=strict_paths),
         "decision_baseline": (
-            str(decision_baseline.resolve()) if decision_baseline is not None else None
+            portable_or_absolute(resolve_path(decision_baseline, root=root), root=root, strict=strict_paths) if decision_baseline is not None else None
         ),
         "builtin_decision_baseline": bool(include_builtin_decision_baseline),
         "decision_history_entry_count": history["effective_ledger_entry_count"],
@@ -563,24 +599,27 @@ def build_plan(
         "execution_command": [
             "se-exploration-paired",
             "--plan",
-            str(plan_path),
+            plan_path,
         ],
     }
 
 
-def _load_plan(path: Path) -> dict[str, Any]:
+def _load_plan(path: Path, *, workspace: str | Path | None = None) -> dict[str, Any]:
     payload = _read_json(path)
-    if payload.get("schema") not in {PLAN_SCHEMA, LEGACY_PLAN_SCHEMA}:
+    if payload.get("schema") not in {PLAN_SCHEMA, *LEGACY_PLAN_SCHEMAS}:
         raise ValueError(f"unsupported paired exploration plan schema: {payload.get('schema')!r}")
-    if payload.get("schema") == LEGACY_PLAN_SCHEMA:
+    if payload.get("schema") in LEGACY_PLAN_SCHEMAS:
         payload = dict(payload)
+        payload.setdefault("legacy_schema", payload.get("schema"))
         payload["schema"] = PLAN_SCHEMA
         payload.setdefault("manipulation_checks", [])
         payload.setdefault("candidate_signature_sha256", candidate_signature(payload))
         payload.setdefault(
             "decision_ledger",
-            str(Path(str(payload["output"])).resolve().parent / "exploration_candidate_ledger.json"),
+            str(Path(str(payload.get("output", "."))).resolve().parent / "exploration_candidate_ledger.json"),
         )
+    payload.setdefault("run_root", payload.get("output"))
+    payload.setdefault("analysis_output", payload.get("output", payload.get("run_root")))
     payload.setdefault("decision_baseline", None)
     payload.setdefault("builtin_decision_baseline", True)
     return payload
@@ -850,13 +889,18 @@ def assess_results(plan: dict[str, Any], panels: list[dict[str, Any]]) -> dict[s
     }
 
 
-def execute_plan(plan: dict[str, Any]) -> dict[str, Any]:
-    output = Path(str(plan["output"]))
+def execute_plan(
+    plan: dict[str, Any], *, workspace: str | Path | None = None
+) -> dict[str, Any]:
+    root = workspace_root(workspace)
+    output = resolve_path(str(plan.get("run_root", plan.get("output"))), root=root)
+    analysis_output = resolve_path(str(plan.get("analysis_output", plan.get("output", plan.get("run_root")))), root=root)
     output.mkdir(parents=True, exist_ok=True)
+    analysis_output.mkdir(parents=True, exist_ok=True)
     panels: list[dict[str, Any]] = []
     for item in plan["panels"]:
         seed = int(item["seed"])
-        checkpoint = Path(str(item["checkpoint_path"]))
+        checkpoint = resolve_path(str(item["checkpoint_path"]), root=root)
         if _sha256_file(checkpoint) != item["checkpoint_sha256"]:
             raise ValueError(f"checkpoint hash changed for seed {seed}")
         seed_dir = output / f"seed_{seed}"
@@ -986,32 +1030,32 @@ def execute_plan(plan: dict[str, Any]) -> dict[str, Any]:
         "panels": panels,
         "assessment": assessment,
     }
-    (output / "paired_exploration_results.json").write_text(
+    (analysis_output / "paired_exploration_results.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
-    (output / "paired_exploration_assessment.json").write_text(
+    (analysis_output / "paired_exploration_assessment.json").write_text(
         json.dumps(assessment, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
-    (output / "paired_exploration_results.md").write_text(
+    (analysis_output / "paired_exploration_results.md").write_text(
         render_results_markdown(report), encoding="utf-8"
     )
     ledger, decision_entry = record_assessment(
-        Path(str(plan["decision_ledger"])),
+        resolve_path(str(plan["decision_ledger"]), root=root),
         assessment,
         decision_baseline=(
-            Path(str(plan["decision_baseline"]))
+            resolve_path(str(plan["decision_baseline"]), root=root)
             if plan.get("decision_baseline")
             else None
         ),
         include_builtin_baseline=bool(plan.get("builtin_decision_baseline", False)),
     )
-    (output / "candidate_decision.json").write_text(
+    (analysis_output / "candidate_decision.json").write_text(
         json.dumps(decision_entry, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
     report["candidate_decision"] = decision_entry
     report["candidate_ledger_schema"] = ledger["schema"]
-    (output / "paired_exploration_results.json").write_text(
+    (analysis_output / "paired_exploration_results.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     return report
@@ -1097,7 +1141,10 @@ def plan_main(argv: Sequence[str] | None = None) -> int:
         "--direction", choices=("increase", "decrease", "two-sided")
     )
     parser.add_argument("--minimum-relative-effect", type=float)
-    parser.add_argument("--output", required=True)
+    destination = parser.add_mutually_exclusive_group(required=True)
+    destination.add_argument("--run-root")
+    destination.add_argument("--output", help=argparse.SUPPRESS)
+    parser.add_argument("--analysis-output")
     parser.add_argument("--backend", default="auto", choices=("auto", "cpu", "gpu"))
     parser.add_argument("--prior-assessment")
     parser.add_argument("--decision-ledger")
@@ -1105,14 +1152,22 @@ def plan_main(argv: Sequence[str] | None = None) -> int:
         "--decision-baseline",
         help="optional explicit immutable decision baseline; built-in history is used by default",
     )
-    parser.add_argument("--allow-large-long-confirmation", action="store_true")
+    parser.add_argument("--authorize-confirmation", action="store_true")
+    parser.add_argument(
+        "--allow-large-long-confirmation",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument("--study-id")
+    parser.add_argument("--workspace-root", default=".")
     args = parser.parse_args(argv)
-    prior = _read_json(Path(args.prior_assessment)) if args.prior_assessment else None
+    root = workspace_root(args.workspace_root)
+    prior = _read_json(resolve_path(args.prior_assessment, root=root)) if args.prior_assessment else None
     candidate_payload: dict[str, Any] | None = None
     candidate_spec_sha256 = None
     candidate_metadata: dict[str, Any] | None = None
     if args.candidate_spec:
-        candidate_payload, candidate_spec_sha256 = load_candidate_spec(args.candidate_spec)
+        candidate_payload, candidate_spec_sha256 = load_candidate_spec(resolve_path(args.candidate_spec, root=root))
         candidate_metadata = candidate_portfolio_metadata(candidate_payload)
         supplied = {
             "candidate_id": args.candidate,
@@ -1155,7 +1210,7 @@ def plan_main(argv: Sequence[str] | None = None) -> int:
     plan = build_plan(
         stage=args.stage,
         candidate_id=str(candidate_payload["candidate_id"]),
-        source_root=Path(args.source_root),
+        source_root=resolve_path(args.source_root, root=root),
         checkpoint_tick=args.checkpoint_tick,
         response_ticks=int(candidate_payload["response_ticks"]),
         intervention=str(candidate_payload["intervention"]),
@@ -1163,19 +1218,24 @@ def plan_main(argv: Sequence[str] | None = None) -> int:
         metric_mode=str(candidate_payload["metric_mode"]),
         direction=str(candidate_payload["direction"]),
         minimum_relative_effect=float(candidate_payload["minimum_relative_effect"]),
-        output=Path(args.output),
+        output=resolve_path(args.run_root or args.output, root=root),
+        analysis_output=resolve_path(args.analysis_output or (args.run_root or args.output), root=root),
         backend=args.backend,
         prior_assessment=prior,
-        allow_large_long_confirmation=args.allow_large_long_confirmation,
+        allow_large_long_confirmation=(
+            args.authorize_confirmation or args.allow_large_long_confirmation
+        ),
         manipulation_checks=candidate_payload.get("manipulation_checks", []),
         candidate_spec_sha256=candidate_spec_sha256,
         candidate_spec_schema=(candidate_payload.get("schema") if args.candidate_spec else None),
         candidate_metadata=candidate_metadata,
-        decision_ledger=Path(args.decision_ledger) if args.decision_ledger else None,
-        decision_baseline=Path(args.decision_baseline) if args.decision_baseline else None,
+        decision_ledger=resolve_path(args.decision_ledger, root=root) if args.decision_ledger else None,
+        decision_baseline=resolve_path(args.decision_baseline, root=root) if args.decision_baseline else None,
         include_builtin_decision_baseline=args.decision_baseline is None,
+        workspace=root,
+        study_id=args.study_id,
     )
-    output = Path(args.output)
+    output = resolve_path(args.run_root or args.output, root=root)
     output.mkdir(parents=True, exist_ok=True)
     (output / "paired_exploration_plan.json").write_text(
         json.dumps(plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
@@ -1189,9 +1249,11 @@ def plan_main(argv: Sequence[str] | None = None) -> int:
 def run_main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Execute a fixed-checkpoint paired panel.")
     parser.add_argument("--plan", required=True)
+    parser.add_argument("--workspace-root", default=".")
     args = parser.parse_args(argv)
-    plan = _load_plan(Path(args.plan))
-    execute_plan(plan)
+    root = workspace_root(args.workspace_root)
+    plan = _load_plan(resolve_path(args.plan, root=root), workspace=root)
+    execute_plan(plan, workspace=root)
     return 0
 
 

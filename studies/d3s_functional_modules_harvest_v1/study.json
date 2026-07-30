@@ -1,0 +1,21 @@
+{
+  "schema": "se-study-bundle-v1",
+  "study_id": "d3s-functional-modules-harvest-v1",
+  "candidate_id": "functional-modules-harvest-acute-effect-v1",
+  "summary": "Aggregate acute matched screen of whether complete functional-module expression materially changes total harvest.",
+  "candidate_spec": {
+    "path": "studies/d3s_functional_modules_harvest_v1/protocol/candidate.json",
+    "signature_sha256": "78e11dd94842ab04d396a69bcd662558254252fc5705500a0b2cfa08f442bf71",
+    "content_sha256": "b3c953449fead5ab5121e10076b6387610271af0305286d5b3d5a85f8dc597d3"
+  },
+  "workspace_layout": {
+    "source_runs": "runs/base/d3s_functional_modules_harvest_v1/<stage>",
+    "intervention_runs": "runs/interventions/d3s_functional_modules_harvest_v1/<stage>",
+    "analyses": "analyses/d3s_functional_modules_harvest_v1/<stage>",
+    "decision_overlay": "state/decisions/exploration_candidate_ledger.json"
+  },
+  "current_state": "terminal-legacy-decision-only",
+  "next_authorized_stage": null,
+  "evidence_completeness": "legacy-decision-only",
+  "selection_claim_allowed": false
+}

@@ -1,0 +1,38 @@
+{
+  "schema": "se-study-chain-lock-v1",
+  "study_id": "d3p-elastic-capacity-use-v1",
+  "candidate_id": "elastic-capacity-use-acute-effect-v1",
+  "candidate_signature_sha256": "18ab7b3b9a72a64b67cade1eb0dd592a5e63c5259a606750c63d0e3a1aa905f0",
+  "candidate_spec": {
+    "path": "studies/d3p_elastic_capacity_use_v1/protocol/candidate.json",
+    "sha256": "16d8f411239ad8fe9133e60de2ece114c88e94be3f42c3ea466c371bc893da8d",
+    "role": "candidate-spec"
+  },
+  "stages": [],
+  "legacy_decisions": [
+    {
+      "stage": "screen",
+      "lock_path": "studies/d3p_elastic_capacity_use_v1/frozen/legacy/screen.lock.json",
+      "lock_sha256": "45f15fc4c01158c7bd43e281148389ee7d877ecbacfd271a37c493b6d303e39d",
+      "decision": "stop",
+      "terminal": true,
+      "recommendation": "stop-direction-not-replicated-across-seeds",
+      "seeds": [
+        71101,
+        71102,
+        71103,
+        71104,
+        71105,
+        71106,
+        71107,
+        71108
+      ],
+      "evidence_completeness": "legacy-decision-only"
+    }
+  ],
+  "all_stage_seeds": [],
+  "source_protocol_sha256": null,
+  "latest_stage": "screen",
+  "latest_recommendation": "stop-direction-not-replicated-across-seeds",
+  "selection_claim_allowed": false
+}

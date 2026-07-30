@@ -2,7 +2,7 @@
 
 from .backend import Backend, BackendUnavailableError, resolve_backend, to_backend, to_numpy
 
-__version__ = "0.80.0"
+__version__ = "0.81.0"
 
 __all__ = [
     "Backend",

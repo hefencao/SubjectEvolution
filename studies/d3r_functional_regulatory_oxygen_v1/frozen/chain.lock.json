@@ -1,0 +1,38 @@
+{
+  "schema": "se-study-chain-lock-v1",
+  "study_id": "d3r-functional-regulatory-oxygen-v1",
+  "candidate_id": "functional-regulatory-oxygen-uptake-acute-effect-v1",
+  "candidate_signature_sha256": "762600634f7a5cd49575f72a4377f23536721b4b2b52c8f3aa726a22d7623eb5",
+  "candidate_spec": {
+    "path": "studies/d3r_functional_regulatory_oxygen_v1/protocol/candidate.json",
+    "sha256": "bba111f2d65e4ff7f38c0bf03fe9d73da40ef555a32a57bcbb08edecf1d7fdb8",
+    "role": "candidate-spec"
+  },
+  "stages": [],
+  "legacy_decisions": [
+    {
+      "stage": "screen",
+      "lock_path": "studies/d3r_functional_regulatory_oxygen_v1/frozen/legacy/screen.lock.json",
+      "lock_sha256": "0d4e020aafad21c9cf7e43f1aaf8f0eb25e8c7319c7318e32d8dc07b0ba57a41",
+      "decision": "stop",
+      "terminal": true,
+      "recommendation": "stop-effect-below-preregistered-practical-threshold",
+      "seeds": [
+        71101,
+        71102,
+        71103,
+        71104,
+        71105,
+        71106,
+        71107,
+        71108
+      ],
+      "evidence_completeness": "legacy-decision-only"
+    }
+  ],
+  "all_stage_seeds": [],
+  "source_protocol_sha256": null,
+  "latest_stage": "screen",
+  "latest_recommendation": "stop-effect-below-preregistered-practical-threshold",
+  "selection_claim_allowed": false
+}

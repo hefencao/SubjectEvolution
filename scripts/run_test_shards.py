@@ -4,13 +4,17 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
 import time
+
+try:
+    from .source_fingerprint import source_tree_fingerprint
+except ImportError:  # direct script execution
+    from source_fingerprint import source_tree_fingerprint
 
 
 def run(project: Path, shards: int, report: Path | None) -> int:
@@ -51,21 +55,10 @@ def run(project: Path, shards: int, report: Path | None) -> int:
                 "stdout_tail": stdout.splitlines()[-8:],
             }
         )
-    digest = hashlib.sha256()
-    fingerprint_paths = [project / "Makefile", project / "pyproject.toml"]
-    for root_name in ("src", "scripts", "tests", "configs"):
-        fingerprint_paths.extend(sorted((project / root_name).rglob("*")))
-    for path in fingerprint_paths:
-        if not path.is_file() or "__pycache__" in path.parts:
-            continue
-        digest.update(str(path.relative_to(project)).encode("utf-8"))
-        digest.update(b"\0")
-        digest.update(path.read_bytes())
-        digest.update(b"\0")
     payload = {
         "passed": passed,
         "schema": "deterministic-pytest-file-shards-v1",
-        "source_tree_sha256": digest.hexdigest(),
+        "source_tree_sha256": source_tree_fingerprint(project),
         "python": sys.executable,
         "shard_count": shard_count,
         "test_file_count": len(files),

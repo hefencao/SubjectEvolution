@@ -1,0 +1,100 @@
+{
+  "schema": "se-study-legacy-decision-lock-v1",
+  "study_id": "d3p-elastic-capacity-use-v1",
+  "candidate_id": "elastic-capacity-use-acute-effect-v1",
+  "candidate_signature_sha256": "18ab7b3b9a72a64b67cade1eb0dd592a5e63c5259a606750c63d0e3a1aa905f0",
+  "stage": "screen",
+  "frozen_by_version": "0.81.0",
+  "decision_entry": {
+    "candidate_id": "elastic-capacity-use-acute-effect-v1",
+    "candidate_signature_sha256": "18ab7b3b9a72a64b67cade1eb0dd592a5e63c5259a606750c63d0e3a1aa905f0",
+    "candidate_spec": {
+      "intervention": "neutralize-elastic-capacities",
+      "primary_metric": "knowledge-working-memory-active-dimensions-total",
+      "metric_mode": "cumulative",
+      "direction": "two-sided",
+      "minimum_relative_effect": 0.05,
+      "response_ticks": 120,
+      "manipulation_checks": [
+        {
+          "metric": "capacity_effective_dimensions",
+          "metric_mode": "endpoint",
+          "branch": "baseline",
+          "operator": ">",
+          "value": 0.25
+        },
+        {
+          "metric": "capacity_effective_dimensions",
+          "metric_mode": "endpoint",
+          "branch": "intervention",
+          "operator": "<=",
+          "value": 1e-12
+        }
+      ]
+    },
+    "stage": "screen",
+    "decision": "stop",
+    "terminal": true,
+    "recommendation": "stop-direction-not-replicated-across-seeds",
+    "reason_codes": [
+      "direction-not-replicated-across-seeds",
+      "effect-below-preregistered-practical-threshold"
+    ],
+    "assessment_schema": "tiered-paired-exploration-assessment-v2",
+    "assessment_sha256": "1b3b886810a72d5865bac6acfeb56ccb51d216f3607725b44b31120e1dcf3645",
+    "eligible_seed_count": 8,
+    "eligible_seed_fraction": 1.0,
+    "manipulation_check_count": 2,
+    "manipulation_supported_seed_count": 8,
+    "manipulation_supported_seed_fraction": 1.0,
+    "manipulation_confirmed": true,
+    "positive_seed_count": 4,
+    "negative_seed_count": 4,
+    "direction_consistency": 0.5,
+    "equal_seed_median_relative_effect": 0.0024330854786726187,
+    "exact_two_sided_sign_flip_p": 0.625,
+    "practical_effect_threshold_met": false,
+    "evidence_class": "manipulation-confirmed-promotion-negative",
+    "all_stage_seeds": [
+      71101,
+      71102,
+      71103,
+      71104,
+      71105,
+      71106,
+      71107,
+      71108
+    ],
+    "selection_claim_allowed": false,
+    "mechanism_family": "knowledge-policy",
+    "mechanism_family_revision": 1,
+    "family_role": "component-gate",
+    "terminal_negative_closes_family": false,
+    "family_revision_rationale": null,
+    "family_terminal": false,
+    "family_gate_class": "other",
+    "family_revision_interface": null
+  },
+  "decision_entry_sha256": "3d34df5839b5fe51681598648b5d9a53e2069514bcbf7d1de80ede02cabdb5ee",
+  "decision_source": {
+    "path": "protocols/decisions/exploration_candidate_ledger.json",
+    "role": "immutable-decision-baseline",
+    "ledger_schema": "paired-exploration-candidate-ledger-v5"
+  },
+  "evidence_completeness": "legacy-decision-only",
+  "available_evidence": [
+    "candidate specification",
+    "canonical decision-ledger entry",
+    "assessment content hash recorded by the decision entry",
+    "seed set and bounded outcome summary recorded by the decision entry"
+  ],
+  "unavailable_evidence": [
+    "source plan payload",
+    "paired plan payload",
+    "assessment payload",
+    "result payload",
+    "source checkpoint content hashes"
+  ],
+  "missing_evidence_was_reconstructed": false,
+  "selection_claim_allowed": false
+}

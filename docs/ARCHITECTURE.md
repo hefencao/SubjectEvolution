@@ -722,3 +722,28 @@ The replication planner requires this fingerprint to match the prior screen plan
 A scale or horizon change can still be scientifically useful, but it is a separate robustness or confirmation design. It must be preregistered under an explicit purpose and cannot inherit a screen promotion solely because its candidate ID matches.
 
 The paired replication runner accepts only a source plan that records both `replication_protocol_locked_to_prior=true` and `replication_changes_only_independent_seeds=true`. These checks affect experiment scheduling only and never feed back into simulation state.
+
+## v0.81 study workspace and cross-version evidence chain
+
+```text
+studies/<study>/
+    DESIGN.md + study.json
+    protocol/                 immutable scientific inputs
+    commands/                 one ordered executable step per file
+    frozen/<stage>/           copied compact evidence + stage.lock.json
+    frozen/chain.lock.json    candidate/stage/seed/hash chain
+
+runs/base/<study>/<stage>/            source trajectories + checkpoints
+runs/interventions/<study>/<stage>/   matched branch runtime
+analyses/<study>/<stage>/              derived results and assessments
+state/decisions/                       mutable workspace ledger overlay
+protocols/decisions/                   immutable release decision baseline
+```
+
+Plans produced in v0.81 use workspace-relative paths and explicit runtime versus analysis destinations. Replication and confirmation use the complete source-protocol fingerprint and differ from the prior stage only by independent seeds.
+
+A frozen stage copies only compact evidence. Large checkpoints remain runtime artifacts and are represented by canonical `runs/` destinations plus SHA-256 identities. `se-study-layout-migrate` first validates frozen compact evidence and every checkpoint anchor, then separates legacy source runtime, intervention runtime, and derived analysis. `se-study-runtime-migrate` performs checkpoint-only relocation when the rest of the stage tree is unavailable. Both complete evidence preflight before writing and are idempotent if interrupted; originals are never deleted automatically.
+
+Legacy source plans may carry generic candidate IDs or obsolete absolute paths. They are never rewritten as historical evidence. Candidate binding is accepted only when the paired plan and assessment reference the exact source-plan hash; later stages consume the frozen chain and protocol fingerprint rather than the old path string.
+
+Study verification is read-only: it derives the expected chain and summary in memory and compares them with frozen files. Only explicit freeze or rebuild operations may write immutable evidence. Release freshness fingerprints ignore generated package metadata and build outputs while retaining all tracked source inputs.

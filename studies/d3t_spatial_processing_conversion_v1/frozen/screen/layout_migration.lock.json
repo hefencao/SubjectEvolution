@@ -1,0 +1,25 @@
+{
+  "schema": "se-study-layout-migration-v1",
+  "study_id": "d3t-spatial-processing-conversion-v1",
+  "stage": "screen",
+  "materialize": "auto",
+  "legacy_source_hint": "analyses/d3n_screen",
+  "legacy_paired_hint": "analyses/d3t_spatial_processing_conversion_paired_screen",
+  "source_run_root": "runs/base/d3t_spatial_processing_conversion_v1/screen",
+  "intervention_run_root": "runs/interventions/d3t_spatial_processing_conversion_v1/screen",
+  "analysis_root": "analyses/d3t_spatial_processing_conversion_v1/screen",
+  "validated_evidence_roles": [
+    "assessment",
+    "decision",
+    "paired_plan",
+    "results",
+    "source_plan"
+  ],
+  "validated_checkpoint_count": 8,
+  "materialized_file_counts": {
+    "source_runtime": 220,
+    "intervention_runtime": 338,
+    "analysis": 12
+  },
+  "legacy_roots_deleted": false
+}

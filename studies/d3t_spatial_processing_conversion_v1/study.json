@@ -1,0 +1,26 @@
+{
+  "schema": "se-study-bundle-v1",
+  "study_id": "d3t-spatial-processing-conversion-v1",
+  "candidate_id": "spatial-processing-conversion-acute-effect-v1",
+  "summary": "Matched fixed-checkpoint test of the direct effect of phase-shifted spatial processing support on realized conservative raw-resource conversion. The intervention neutralizes support while preserving conversion cost, genotype, resource fields and shared checkpoints.",
+  "candidate_spec": {
+    "path": "studies/d3t_spatial_processing_conversion_v1/protocol/candidate.json",
+    "signature_sha256": "a5d19852cbe51f8015ea65f362bf887c6f7c32fa8d05e4c972fe4f27317ccffd",
+    "content_sha256": "5121a01a8f638208ac63bea472879e91bc4eaea78e20d2b69abea0e0e5e02a48"
+  },
+  "workspace_layout": {
+    "source_runs": "runs/base/d3t_spatial_processing_conversion_v1/<stage>",
+    "intervention_runs": "runs/interventions/d3t_spatial_processing_conversion_v1/<stage>",
+    "analyses": "analyses/d3t_spatial_processing_conversion_v1/<stage>",
+    "decision_overlay": "state/decisions/exploration_candidate_ledger.json"
+  },
+  "protocols": {
+    "screen": "studies/d3t_spatial_processing_conversion_v1/protocol/source_screen.json",
+    "replication": "studies/d3t_spatial_processing_conversion_v1/protocol/source_replication.json",
+    "confirmation": "studies/d3t_spatial_processing_conversion_v1/protocol/source_confirmation.json",
+    "scale_robustness": "studies/d3t_spatial_processing_conversion_v1/protocol/scale_robustness.json"
+  },
+  "current_state": "replication-promoted",
+  "next_authorized_stage": "confirmation",
+  "selection_claim_allowed": false
+}

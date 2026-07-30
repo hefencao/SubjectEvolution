@@ -20,7 +20,7 @@ from se.runtime.sim import Simulation
 def _source_root(tmp_path: Path, *, seeds: list[int], stage: str = "smoke") -> Path:
     root = tmp_path / "source"
     root.mkdir()
-    cfg0 = load_config("configs/mvp_d3n_exploration_screen.json")
+    cfg0 = load_config("studies/d3t_spatial_processing_conversion_v1/protocol/source_screen.json")
     rows = []
     for seed in seeds:
         cfg = replace(
@@ -92,7 +92,7 @@ def test_build_plan_uses_exact_per_seed_checkpoints(tmp_path: Path) -> None:
     assert plan["fixed_checkpoint_selected_before_branch_outcomes"] is True
     assert plan["selection_claim_allowed"] is False
     assert len(plan["candidate_signature_sha256"]) == 64
-    assert plan["schema"] == "tiered-paired-exploration-plan-v2"
+    assert plan["schema"] == "tiered-paired-exploration-plan-v3"
 
 
 def test_build_plan_rejects_missing_predeclared_checkpoint(tmp_path: Path) -> None:
@@ -231,7 +231,7 @@ def test_candidate_spec_adds_operational_manipulation_checks(tmp_path: Path) -> 
 
     root = _source_root(tmp_path, seeds=[21, 22])
     spec, spec_sha = load_candidate_spec(
-        "protocols/candidates/d3p_elastic_capacity_acute_effect.json"
+        "studies/d3p_elastic_capacity_use_v1/protocol/candidate.json"
     )
     plan = build_plan(
         stage="smoke",
@@ -291,7 +291,7 @@ def test_knowledge_policy_harvest_candidate_has_proximal_engagement_checks() -> 
     from se.experiments.paired_exploration import load_candidate_spec
 
     spec, spec_sha = load_candidate_spec(
-        "protocols/candidates/d3q_knowledge_policy_harvest_acute_effect.json"
+        "studies/d3q_knowledge_policy_harvest_v1/protocol/candidate.json"
     )
     assert len(spec_sha) == 64
     assert spec["intervention"] == "disable-knowledge-policy"
@@ -355,7 +355,7 @@ def test_functional_regulatory_oxygen_candidate_has_direct_output_checks() -> No
     from se.experiments.paired_exploration import load_candidate_spec
 
     spec, spec_sha = load_candidate_spec(
-        "protocols/candidates/d3r_functional_regulatory_oxygen_acute_effect.json"
+        "studies/d3r_functional_regulatory_oxygen_v1/protocol/candidate.json"
     )
     assert len(spec_sha) == 64
     assert spec["intervention"] == "neutralize-functional-module-physiology-output"
@@ -373,7 +373,7 @@ def test_functional_regulatory_candidate_manipulation_is_observable(tmp_path: Pa
 
     root = _source_root(tmp_path, seeds=[31, 32])
     spec, spec_sha = load_candidate_spec(
-        "protocols/candidates/d3r_functional_regulatory_oxygen_acute_effect.json"
+        "studies/d3r_functional_regulatory_oxygen_v1/protocol/candidate.json"
     )
     plan = build_plan(
         stage="smoke",
@@ -406,7 +406,7 @@ def test_functional_modules_aggregate_candidate_has_direct_residual_checks() -> 
     from se.experiments.paired_exploration import load_candidate_spec
 
     spec, spec_sha = load_candidate_spec(
-        "protocols/candidates/d3s_functional_modules_harvest_acute_effect.json"
+        "studies/d3s_functional_modules_harvest_v1/protocol/candidate.json"
     )
     assert len(spec_sha) == 64
     assert spec["intervention"] == "neutralize-functional-modules"
@@ -429,7 +429,7 @@ def test_functional_modules_aggregate_manipulation_is_observable(tmp_path: Path)
 
     root = _source_root(tmp_path, seeds=[41, 42])
     spec, spec_sha = load_candidate_spec(
-        "protocols/candidates/d3s_functional_modules_harvest_acute_effect.json"
+        "studies/d3s_functional_modules_harvest_v1/protocol/candidate.json"
     )
     plan = build_plan(
         stage="smoke",
@@ -466,7 +466,7 @@ def test_spatial_processing_conversion_candidate_has_direct_flow_checks() -> Non
     from se.experiments.paired_exploration import load_candidate_spec
 
     spec, spec_sha = load_candidate_spec(
-        "protocols/candidates/d3t_spatial_processing_conversion_acute_effect.json"
+        "studies/d3t_spatial_processing_conversion_v1/protocol/candidate.json"
     )
     assert len(spec_sha) == 64
     assert spec["intervention"] == "neutralize-spatial-processing-support"
@@ -505,7 +505,7 @@ def test_spatial_processing_conversion_manipulation_is_observable(tmp_path: Path
 
     root = _source_root(tmp_path, seeds=[51, 52])
     spec, spec_sha = load_candidate_spec(
-        "protocols/candidates/d3t_spatial_processing_conversion_acute_effect.json"
+        "studies/d3t_spatial_processing_conversion_v1/protocol/candidate.json"
     )
     plan = build_plan(
         stage="smoke",
@@ -548,7 +548,7 @@ def test_spatial_processing_candidate_requires_direct_exposure_contract(
 
     source = json.loads(
         Path(
-            "protocols/candidates/d3t_spatial_processing_conversion_acute_effect.json"
+            "studies/d3t_spatial_processing_conversion_v1/protocol/candidate.json"
         ).read_text(encoding="utf-8")
     )
     source["manipulation_checks"] = [

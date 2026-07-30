@@ -1,0 +1,38 @@
+{
+  "schema": "se-study-chain-lock-v1",
+  "study_id": "d3q-knowledge-policy-harvest-v1",
+  "candidate_id": "knowledge-policy-harvest-acute-effect-v1",
+  "candidate_signature_sha256": "2a4c4c02528def78acf5063b65ed2762a0adac362b1b530c1f03c94273a8a341",
+  "candidate_spec": {
+    "path": "studies/d3q_knowledge_policy_harvest_v1/protocol/candidate.json",
+    "sha256": "e693d9538accf806243dbc6284f7fe67a90ccdcbba8ec650d9b04c17b4589226",
+    "role": "candidate-spec"
+  },
+  "stages": [],
+  "legacy_decisions": [
+    {
+      "stage": "screen",
+      "lock_path": "studies/d3q_knowledge_policy_harvest_v1/frozen/legacy/screen.lock.json",
+      "lock_sha256": "2bcae4fb70d4a0145493220ac4cf2fe455cb5c9e898fa37b4b91d6744a169e6f",
+      "decision": "stop",
+      "terminal": true,
+      "recommendation": "stop-effect-below-preregistered-practical-threshold",
+      "seeds": [
+        71101,
+        71102,
+        71103,
+        71104,
+        71105,
+        71106,
+        71107,
+        71108
+      ],
+      "evidence_completeness": "legacy-decision-only"
+    }
+  ],
+  "all_stage_seeds": [],
+  "source_protocol_sha256": null,
+  "latest_stage": "screen",
+  "latest_recommendation": "stop-effect-below-preregistered-practical-threshold",
+  "selection_claim_allowed": false
+}

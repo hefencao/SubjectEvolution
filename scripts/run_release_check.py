@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
 """Verify a fresh full-test report and audit isolated distribution artifacts."""
 from __future__ import annotations
-import argparse, hashlib, json, subprocess, sys
+import argparse, json, subprocess, sys
 from pathlib import Path
+
+try:
+    from .source_fingerprint import source_tree_fingerprint
+except ImportError:  # direct script execution
+    from source_fingerprint import source_tree_fingerprint
+
 
 
 def fingerprint(project: Path) -> str:
-    digest=hashlib.sha256()
-    paths=[project/"Makefile",project/"pyproject.toml"]
-    for root_name in ("src","scripts","tests","configs"):
-        paths.extend(sorted((project/root_name).rglob("*")))
-    for path in paths:
-        if not path.is_file() or "__pycache__" in path.parts:
-            continue
-        digest.update(str(path.relative_to(project)).encode("utf-8")); digest.update(b"\0")
-        digest.update(path.read_bytes()); digest.update(b"\0")
-    return digest.hexdigest()
+    return source_tree_fingerprint(project)
 
 def main() -> None:
     parser=argparse.ArgumentParser(description=__doc__)

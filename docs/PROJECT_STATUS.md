@@ -1,64 +1,66 @@
 # SE project status
 
-Version: **0.80.0**
+Version: **0.81.0**
 
 ## Current result
 
-The supplied D3-T screen is promotion-positive under its preregistered two-sided gate:
+D3-T has passed its preregistered screen and disjoint-seed replication under the same acute fixed-checkpoint protocol.
+
+Replication result:
 
 - 8/8 seeds are eligible;
 - 8/8 manipulation contracts pass;
-- 8/8 effects increase converted resource under support neutralization;
-- equal-seed median relative effect: about **+3.026%**;
-- preregistered practical threshold: **2%**;
-- recommendation: `promote-to-disjoint-replication`.
+- 8/8 effects retain the screen direction;
+- equal-seed median relative effect: about **+2.546%**;
+- unchanged practical threshold: **2%**;
+- recommendation: `promote-to-explicit-confirmation`.
 
-The result is not a reward signal and does not establish long-horizon selection, stable niches, adaptive specialization or a population source rule. It is a bounded acute causal effect on the fixed tick-480 checkpoints. The observed direction means the active spatial support surface suppresses realized conversion relative to neutral support on this panel; replication must retain that result without post-hoc reinterpretation.
+The intervention neutralizes spatial-processing support, so the positive effect means active support remains acutely suppressive for cumulative realized resource conversion on the replication panel. This is not a reward, adaptive-benefit claim, stable-niche result, population source rule, or long-horizon selection result.
 
-## D3-T mechanism-family state
+## D3-T stage state
 
-- family: `spatial-processing-support`;
-- revision: 1;
-- role: aggregate path gate;
-- screen decision: promoted, non-terminal;
-- next authorized stage: disjoint-seed replication;
-- primary metric: cumulative `resource-converted-total`;
-- response window: 120 ticks;
-- practical-effect threshold: 2%;
+- study: `d3t-spatial-processing-conversion-v1`;
+- candidate: `spatial-processing-conversion-acute-effect-v1`;
+- family: `spatial-processing-support` revision 1;
+- frozen stages: screen and replication;
+- next authorized stage: confirmation;
+- confirmation source protocol: unchanged except for a third disjoint seed set;
+- response window: 120 ticks from tick-480 checkpoints;
+- practical threshold: 2%;
 - independent unit: seed.
 
-## Replication protocol
+The canonical design, protocols, ordered commands, and immutable evidence are under `studies/d3t_spatial_processing_conversion_v1/`.
 
-Replication now means an inferential repeat with the source protocol fixed except for the independent seed set. The source-plan fingerprint includes world scale, initial and maximum entities, environment and mechanism configuration, run horizon, metric cadence, checkpoint cadence and all other configuration fields except `run.seed`.
+## Workspace boundary
 
-The canonical D3-T replication source therefore uses:
+- study definitions and frozen chains: `studies/`;
+- source trajectories and checkpoints: `runs/base/`;
+- intervention branch runtime: `runs/interventions/`;
+- derived assessments and audits: `analyses/`;
+- mutable decision overlays: `state/decisions/`;
+- immutable release decisions: `protocols/decisions/` and installed package resources.
 
-- seeds 71201–71208;
-- the same 192×192 world and 48×48 grid as screen;
-- 1,125 initial entities and 4,608 maximum entities;
-- tick 480 checkpoints;
-- the same 60-tick metric/evolution cadence and 120-tick checkpoint cadence.
-
-The former 256×256, 2,000-entity, 720-tick configuration is retained as `mvp_d3n_exploration_scale_robustness.json`. It is not an authorized replication and requires a separate preregistration before use.
+Legacy runtime paths are not rewritten in historical evidence. Their checkpoint hashes are bound to canonical `runs/` destinations, and migration is content-addressed rather than path-addressed.
 
 ## Mechanism-family state
 
 - `knowledge-policy` revision 1: closed by D3-Q;
 - `functional-modules` revision 1: closed by D3-S;
 - `resource-affinity` revision 1: D3-O terminal, with no replacement specification;
-- `spatial-processing-support` revision 1: open after D3-T screen promotion.
+- `spatial-processing-support` revision 1: open after D3-T replication promotion.
 
-The effective portfolio state is `promoted-candidate-open`.
+The effective portfolio state remains `promoted-candidate-open`.
 
 ## Current task
 
-Generate the protocol-locked D3-N replication source trajectories on seeds 71201–71208, then run the D3-T matched replication from tick 480 with the unchanged candidate specification. Do not change the source scale, checkpoint tick, response window, practical threshold or manipulation contract.
+Run the exact-protocol D3-T confirmation on seeds 71301–71308 through the numbered command files in `studies/d3t_spatial_processing_conversion_v1/commands/`. Do not change source scale, source horizon, checkpoint tick, response window, practical threshold, cost, or manipulation contract.
+
+Scale or horizon changes remain a separately preregistered robustness study and cannot inherit confirmation status.
 
 ## Still incomplete
 
-- D3-T disjoint-seed replication;
-- a confirmation-level acute mechanism result;
+- D3-T confirmation;
+- any long-horizon selection interpretation;
 - a stable common post-bottleneck source rule;
-- confirmation-level long-horizon selection evidence;
 - causal decomposition of founder-lineage contraction;
-- device-resident action settlement, lifecycle and graph updates.
+- device-resident action settlement, lifecycle, and graph updates.

@@ -403,9 +403,9 @@ def test_effective_ledger_restores_missing_builtin_history(tmp_path: Path) -> No
     effective, metadata = load_effective_ledger(
         path, include_builtin_baseline=True
     )
-    assert len(effective["entries"]) == 6
+    assert len(effective["entries"]) == 7
     assert metadata["workspace_ledger_entry_count"] == 2
-    assert metadata["decision_baseline_entry_count"] == 6
+    assert metadata["decision_baseline_entry_count"] == 7
     assert metadata["workspace_hydration_required"] is True
     statuses = {
         (item["mechanism_family"], item["mechanism_family_revision"]): item["status"]
@@ -436,7 +436,7 @@ def test_recording_duplicate_hydrates_partial_workspace(tmp_path: Path) -> None:
     )
     record_assessment(path, assessment, include_builtin_baseline=True)
     hydrated = load_ledger(path)
-    assert len(hydrated["entries"]) == 6
+    assert len(hydrated["entries"]) == 7
 
 
 def test_effective_ledger_rejects_conflicting_workspace_history(tmp_path: Path) -> None:
@@ -469,7 +469,7 @@ def test_hydrate_ledger_writes_complete_builtin_history(tmp_path: Path) -> None:
     path.write_text(json.dumps(partial), encoding="utf-8")
 
     hydrated, metadata = hydrate_ledger(path, include_builtin_baseline=True)
-    assert len(hydrated["entries"]) == 6
-    assert len(load_ledger(path)["entries"]) == 6
+    assert len(hydrated["entries"]) == 7
+    assert len(load_ledger(path)["entries"]) == 7
     assert path.with_suffix(".md").is_file()
     assert metadata["workspace_hydration_required"] is True

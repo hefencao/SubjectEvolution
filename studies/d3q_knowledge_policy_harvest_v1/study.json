@@ -1,0 +1,21 @@
+{
+  "schema": "se-study-bundle-v1",
+  "study_id": "d3q-knowledge-policy-harvest-v1",
+  "candidate_id": "knowledge-policy-harvest-acute-effect-v1",
+  "summary": "Aggregate acute matched screen of whether the complete knowledge-policy residual materially changes total harvest.",
+  "candidate_spec": {
+    "path": "studies/d3q_knowledge_policy_harvest_v1/protocol/candidate.json",
+    "signature_sha256": "2a4c4c02528def78acf5063b65ed2762a0adac362b1b530c1f03c94273a8a341",
+    "content_sha256": "e693d9538accf806243dbc6284f7fe67a90ccdcbba8ec650d9b04c17b4589226"
+  },
+  "workspace_layout": {
+    "source_runs": "runs/base/d3q_knowledge_policy_harvest_v1/<stage>",
+    "intervention_runs": "runs/interventions/d3q_knowledge_policy_harvest_v1/<stage>",
+    "analyses": "analyses/d3q_knowledge_policy_harvest_v1/<stage>",
+    "decision_overlay": "state/decisions/exploration_candidate_ledger.json"
+  },
+  "current_state": "terminal-legacy-decision-only",
+  "next_authorized_stage": null,
+  "evidence_completeness": "legacy-decision-only",
+  "selection_claim_allowed": false
+}

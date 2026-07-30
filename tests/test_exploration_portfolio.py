@@ -121,7 +121,7 @@ def test_portfolio_audit_uses_builtin_history_for_partial_workspace(
 
     report = build_portfolio_audit(
         ledger_path,
-        "protocols/candidates",
+        "studies",
         include_builtin_baseline=True,
     )
     assert report["portfolio_state"] == "promoted-candidate-open"
@@ -130,6 +130,6 @@ def test_portfolio_audit_uses_builtin_history_for_partial_workspace(
         "spatial-processing-conversion-acute-effect-v1"
     ]
     assert report["workspace_ledger_entry_count"] == 2
-    assert report["decision_baseline_entry_count"] == 6
+    assert report["decision_baseline_entry_count"] == 7
     assert report["workspace_hydration_required"] is True
-    assert "immutable baseline entries: 6" in render_markdown(report)
+    assert "immutable baseline entries: 7" in render_markdown(report)

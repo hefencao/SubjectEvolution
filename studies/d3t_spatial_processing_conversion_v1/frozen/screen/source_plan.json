@@ -1,0 +1,62 @@
+{
+  "schema": "tiered-exploration-plan-v1",
+  "stage": "screen",
+  "candidate_id": "d3-next-candidate",
+  "config": "configs/mvp_d3n_exploration_screen.json",
+  "resolved_config_sha256": "ffa38c2bb9b7db38f4fb2339e05b278387018fb526b31e46886f1cf23fe901b0",
+  "initial_entities": 1125,
+  "target_tick": 480,
+  "seeds": [
+    71101,
+    71102,
+    71103,
+    71104,
+    71105,
+    71106,
+    71107,
+    71108
+  ],
+  "all_stage_seeds": [
+    71101,
+    71102,
+    71103,
+    71104,
+    71105,
+    71106,
+    71107,
+    71108
+  ],
+  "independent_unit": "seed",
+  "windows_entities_and_events_are_independent_replicates": false,
+  "output": "/home/unkloser/projects/SubjectEvolution/analyses/d3n_screen",
+  "requested_backend": "auto",
+  "stage_limits": {
+    "minimum_seeds": 8,
+    "maximum_initial_entities": 2048,
+    "maximum_ticks": 600
+  },
+  "prior_plan": null,
+  "large_long_confirmation_explicitly_authorized": false,
+  "failed_runs_replaced": false,
+  "outcome_conditioned_seed_or_horizon_changes": false,
+  "pilot_seeds_reused_for_later_stage": false,
+  "source_run_only": true,
+  "free_run_endpoint_is_candidate_effect": false,
+  "paired_panel_required_for_promotion": true,
+  "selection_claim_allowed": false,
+  "execution_command": [
+    "se-multi",
+    "--config",
+    "configs/mvp_d3n_exploration_screen.json",
+    "--seeds",
+    "71101,71102,71103,71104,71105,71106,71107,71108",
+    "--output",
+    "/home/unkloser/projects/SubjectEvolution/analyses/d3n_screen",
+    "--backend",
+    "auto",
+    "--until-tick",
+    "480",
+    "--exploration-plan",
+    "/home/unkloser/projects/SubjectEvolution/analyses/d3n_screen/exploration_plan.json"
+  ]
+}

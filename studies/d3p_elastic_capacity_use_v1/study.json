@@ -1,0 +1,21 @@
+{
+  "schema": "se-study-bundle-v1",
+  "study_id": "d3p-elastic-capacity-use-v1",
+  "candidate_id": "elastic-capacity-use-acute-effect-v1",
+  "summary": "Acute matched screen of whether inherited elastic capacity expression materially changes realized working-memory use.",
+  "candidate_spec": {
+    "path": "studies/d3p_elastic_capacity_use_v1/protocol/candidate.json",
+    "signature_sha256": "18ab7b3b9a72a64b67cade1eb0dd592a5e63c5259a606750c63d0e3a1aa905f0",
+    "content_sha256": "16d8f411239ad8fe9133e60de2ece114c88e94be3f42c3ea466c371bc893da8d"
+  },
+  "workspace_layout": {
+    "source_runs": "runs/base/d3p_elastic_capacity_use_v1/<stage>",
+    "intervention_runs": "runs/interventions/d3p_elastic_capacity_use_v1/<stage>",
+    "analyses": "analyses/d3p_elastic_capacity_use_v1/<stage>",
+    "decision_overlay": "state/decisions/exploration_candidate_ledger.json"
+  },
+  "current_state": "terminal-legacy-decision-only",
+  "next_authorized_stage": null,
+  "evidence_completeness": "legacy-decision-only",
+  "selection_claim_allowed": false
+}

@@ -21,7 +21,10 @@ def _load_candidate_specs(candidate_dir: Path) -> list[dict[str, Any]]:
     specs: list[dict[str, Any]] = []
     if not candidate_dir.is_dir():
         raise ValueError(f"candidate directory does not exist: {candidate_dir}")
-    for path in sorted(candidate_dir.glob("*.json")):
+    paths = sorted(candidate_dir.rglob("protocol/candidate.json"))
+    if not paths:
+        paths = sorted(candidate_dir.glob("*.json"))
+    for path in paths:
         payload, _ = load_candidate_spec(path)
         if payload.get("schema") != SUPPORTED_CANDIDATE_SCHEMA:
             raise ValueError(f"unsupported candidate schema in {path}")
@@ -225,7 +228,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         description="Audit paired-exploration candidate and family planning state."
     )
     parser.add_argument("--ledger", required=True)
-    parser.add_argument("--candidate-dir", default="protocols/candidates")
+    parser.add_argument("--candidate-dir", default="studies")
     parser.add_argument(
         "--decision-baseline",
         help="optional explicit immutable decision baseline; built-in history is used by default",

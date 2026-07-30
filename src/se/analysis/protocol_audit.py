@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v48"
+SCHEMA = "structural-measurement-protocol-audit-v49"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -209,15 +209,17 @@ def build_protocol_audit(
         },
         "tiered_exploration_protocol": {
             "readiness_audit_schema": "exploration-readiness-audit-v2",
-            "source_plan_schema": "tiered-exploration-plan-v2",
+            "source_plan_schema": "tiered-exploration-plan-v3",
             "accepted_source_plan_schemas": [
                 "tiered-exploration-plan-v1",
                 "tiered-exploration-plan-v2",
+                "tiered-exploration-plan-v3",
             ],
-            "paired_plan_schema": "tiered-paired-exploration-plan-v2",
+            "paired_plan_schema": "tiered-paired-exploration-plan-v3",
             "accepted_paired_plan_schemas": [
                 "tiered-paired-exploration-plan-v1",
                 "tiered-paired-exploration-plan-v2",
+                "tiered-paired-exploration-plan-v3",
             ],
             "paired_result_schema": "tiered-paired-exploration-results-v2",
             "paired_assessment_schema": "tiered-paired-exploration-assessment-v2",
@@ -273,10 +275,13 @@ def build_protocol_audit(
                     "minimum_seeds": 8,
                     "requires_disjoint_all_prior_stage_seeds": True,
                     "requires_passing_replication_assessment": True,
-                    "requires_explicit_large_long_authorization": True,
+                    "requires_explicit_confirmation_authorization": True,
+                    "requires_source_protocol_fingerprint_match": True,
+                    "changes_only_independent_seed_set": True,
                 },
             },
             "replication_protocol_changes_only_independent_seeds": True,
+            "confirmation_protocol_changes_only_independent_seeds": True,
             "scale_or_horizon_change_counts_as_replication": False,
             "scale_or_horizon_change_requires_separate_preregistration": True,
             "promotion_gate": {
@@ -286,6 +291,25 @@ def build_protocol_audit(
                 "operational_manipulation_checks_predeclared": True,
                 "operational_manipulation_checks_required_when_present": True,
                 "exact_sign_flip_descriptive": True,
+            },
+            "study_workspace": {
+                "study_schema": "se-study-bundle-v1",
+                "stage_freeze_schema": "se-study-stage-freeze-v2",
+                "chain_lock_schema": "se-study-chain-lock-v1",
+                "legacy_decision_schema": "se-study-legacy-decision-lock-v1",
+                "runtime_migration_schema": "se-study-runtime-migration-v1",
+                "layout_migration_schema": "se-study-layout-migration-v1",
+                "source_runtime_root": "runs/base/<study>/<stage>",
+                "intervention_runtime_root": "runs/interventions/<study>/<stage>",
+                "derived_analysis_root": "analyses/<study>/<stage>",
+                "mutable_state_root": "state/decisions",
+                "cross_version_identity": "content hashes plus candidate and protocol signatures",
+                "legacy_candidate_binding_by_path_only": False,
+                "migration_preflight_completes_before_write": True,
+                "migration_is_idempotent_after_interruption": True,
+                "missing_evidence_is_reconstructed": False,
+                "readme_contains_authoritative_command_chain": False,
+                "ordered_command_files_are_authoritative": True,
             },
             "candidate_decision_ledger": {
                 "automatic_record_after_execution": True,
@@ -312,7 +336,8 @@ def build_protocol_audit(
                 "feedback_to_world": False,
             },
             "large_long_run_required_for_exploration": False,
-            "large_long_run_reserved_for_confirmation": True,
+            "large_long_run_reserved_for_confirmation": False,
+            "scale_or_horizon_robustness_is_separate_study": True,
             "failed_runs_replaced": False,
             "outcome_conditioned_checkpoint_selection": False,
             "outcome_conditioned_seed_or_horizon_changes": False,
@@ -801,8 +826,8 @@ def build_protocol_audit(
                     "sum(abs(local support - 1) * requested conservative conversion)"
                 ),
                 "paired_candidate_spec": (
-                    "protocols/candidates/"
-                    "d3t_spatial_processing_conversion_acute_effect.json"
+                    "studies/d3t_spatial_processing_conversion_v1/"
+                    "protocol/candidate.json"
                 ),
                 "support_phase_relation": "quarter-cycle-shifted-from-renewal-wave-basis",
                 "direct_action_or_harvest_reward": False,

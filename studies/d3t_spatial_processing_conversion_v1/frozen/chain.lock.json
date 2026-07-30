@@ -1,0 +1,113 @@
+{
+  "schema": "se-study-chain-lock-v1",
+  "study_id": "d3t-spatial-processing-conversion-v1",
+  "candidate_id": "spatial-processing-conversion-acute-effect-v1",
+  "candidate_signature_sha256": "a5d19852cbe51f8015ea65f362bf887c6f7c32fa8d05e4c972fe4f27317ccffd",
+  "candidate_spec": {
+    "path": "studies/d3t_spatial_processing_conversion_v1/protocol/candidate.json",
+    "sha256": "5121a01a8f638208ac63bea472879e91bc4eaea78e20d2b69abea0e0e5e02a48",
+    "role": "candidate-spec"
+  },
+  "stages": [
+    {
+      "stage": "screen",
+      "manifest_path": "studies/d3t_spatial_processing_conversion_v1/frozen/screen/stage.lock.json",
+      "manifest_sha256": "de1b29de44a9daed2f738153cc0765295c7b79239ff24d0ed507cb11b53136e0",
+      "decision": "promote",
+      "terminal": false,
+      "recommendation": "promote-to-disjoint-replication",
+      "source_protocol_sha256": "709daa77f95ebeb2adb6d9a5e6d29b478f59b91aac32b0dbde8571021522d2ab",
+      "source_binding_mode": "paired-plan-source-hash-binding",
+      "median_relative_effect": 0.030264630111609556,
+      "direction_consistency": 1.0,
+      "exact_two_sided_sign_flip_p": 0.0078125,
+      "seeds": [
+        71101,
+        71102,
+        71103,
+        71104,
+        71105,
+        71106,
+        71107,
+        71108
+      ]
+    },
+    {
+      "stage": "replication",
+      "manifest_path": "studies/d3t_spatial_processing_conversion_v1/frozen/replication/stage.lock.json",
+      "manifest_sha256": "85e9edbaed6badfbfb77078a6df58d40eccb07ccd8139cfdcd556d49ab56b00c",
+      "decision": "promote",
+      "terminal": false,
+      "recommendation": "promote-to-explicit-confirmation",
+      "source_protocol_sha256": "709daa77f95ebeb2adb6d9a5e6d29b478f59b91aac32b0dbde8571021522d2ab",
+      "source_binding_mode": "exact-candidate",
+      "median_relative_effect": 0.025460716932186538,
+      "direction_consistency": 1.0,
+      "exact_two_sided_sign_flip_p": 0.0078125,
+      "seeds": [
+        71201,
+        71202,
+        71203,
+        71204,
+        71205,
+        71206,
+        71207,
+        71208
+      ]
+    },
+    {
+      "stage": "confirmation",
+      "manifest_path": "studies/d3t_spatial_processing_conversion_v1/frozen/confirmation/stage.lock.json",
+      "manifest_sha256": "3588ad79b6823db768c00b70ddc262c684663c2d4c412757119dbb9cac20075f",
+      "decision": "confirmed-acute",
+      "terminal": true,
+      "recommendation": "confirmation-gate-passed-interpret-acute-mechanism-only",
+      "source_protocol_sha256": "709daa77f95ebeb2adb6d9a5e6d29b478f59b91aac32b0dbde8571021522d2ab",
+      "source_binding_mode": "exact-candidate",
+      "median_relative_effect": 0.02827052106409674,
+      "direction_consistency": 1.0,
+      "exact_two_sided_sign_flip_p": 0.0078125,
+      "seeds": [
+        71301,
+        71302,
+        71303,
+        71304,
+        71305,
+        71306,
+        71307,
+        71308
+      ]
+    }
+  ],
+  "legacy_decisions": [],
+  "all_stage_seeds": [
+    71101,
+    71102,
+    71103,
+    71104,
+    71105,
+    71106,
+    71107,
+    71108,
+    71201,
+    71202,
+    71203,
+    71204,
+    71205,
+    71206,
+    71207,
+    71208,
+    71301,
+    71302,
+    71303,
+    71304,
+    71305,
+    71306,
+    71307,
+    71308
+  ],
+  "source_protocol_sha256": "709daa77f95ebeb2adb6d9a5e6d29b478f59b91aac32b0dbde8571021522d2ab",
+  "latest_stage": "confirmation",
+  "latest_recommendation": "confirmation-gate-passed-interpret-acute-mechanism-only",
+  "selection_claim_allowed": false
+}

@@ -70,3 +70,27 @@ Changing scale, horizon, checkpoint cadence, source-population construction or m
 - The prior replication configuration mixed new seeds with a larger world, larger population and longer source run. This is corrected as a protocol-design issue, not as an empirical failure.
 - Exact source-protocol locking and the distinction between replication and scale robustness are enforced by code, configuration and tests rather than remaining chat-only rules.
 - No reward, threshold, response horizon, checkpoint tick or world mechanism is changed.
+
+## 9. Workspace and frozen-result boundary
+
+Executable runtime, derived analysis, mutable state, and immutable scientific evidence are distinct artifact classes:
+
+- all source and intervention runtime, including checkpoints, belongs under `runs/`;
+- `analyses/` contains only derived reports and assessments;
+- mutable overlays belong under `state/`;
+- a completed stage is frozen under its owning `studies/<study>/frozen/<stage>/` with content hashes and a complete chain manifest.
+
+Cross-version identity is content-addressed. A legacy candidate label or machine path cannot authorize a later stage by itself. Source-plan hashes, candidate signatures, protocol fingerprints, assessment hashes, decision hashes, and disjoint seed sets must form one verified chain. Legacy runtime may be relocated only by matching the frozen content hashes.
+
+README files are descriptive navigation. Exact commands belong in one numerically ordered command file per step and must not be duplicated across unrelated documentation.
+
+## v0.81 check
+
+- The supplied D3-T replication is valid and independently retains the screen direction and practical effect; the task advances to exact-protocol confirmation.
+- The previous directory layout mixed source runs, interventions, checkpoints, derived analyses, and mutable ledgers. This is corrected as an artifact-governance root cause rather than handled with another one-off candidate binding.
+- Screen and replication are frozen as one portable study chain. The legacy generic screen candidate ID is accepted only through the original paired-plan source hash, not through a rewritten historical plan.
+- D3-O through D3-S now have decision-only legacy study bundles. Their missing raw evidence is explicit, and no plan, assessment, result, or checkpoint identity is fabricated.
+- Legacy stage migration verifies compact evidence and all checkpoint anchors before splitting source runtime, intervention runtime, and analyses; checkpoint-only relocation also completes hash preflight before writing and is safe to resume idempotently.
+- Study-specific configs and candidate specs are colocated with design and ordered commands; project-level configs remain reusable presets.
+- `.vscode/` is excluded from version control.
+- No reward, world mechanism, cost, threshold, checkpoint tick, response horizon, or seed result is changed.
