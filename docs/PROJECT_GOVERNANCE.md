@@ -56,3 +56,17 @@ Exposure diagnostics remain read-only and cannot substitute for the practical-ef
 - D3-T is a distinct conserved material-flow interface, not a child of the closed policy or functional-module families.
 - The direct support-exposure metric is report-only and is required by candidate-spec validation for this intervention.
 - No threshold, horizon, seed, source checkpoint, reward or world rule is changed.
+
+## 8. Inferential replication protocol lock
+
+A stage called replication must repeat the same inferential source protocol on a disjoint independent seed set. The protocol fingerprint excludes only `run.seed`; it includes world scale, population limits, horizon, cadence, environment, mechanisms and every other configuration field.
+
+Changing scale, horizon, checkpoint cadence, source-population construction or mechanism settings is a robustness or confirmation question, not replication. Such a change requires its own preregistration and cannot inherit a screen promotion automatically.
+
+## v0.80 check
+
+- The supplied D3-T screen passes its preregistered manipulation, direction and practical-effect gates; the task advances to replication rather than another candidate search.
+- The positive intervention effect is retained as evidence that active support is acutely suppressive on the screen estimand; no beneficial interpretation is imposed.
+- The prior replication configuration mixed new seeds with a larger world, larger population and longer source run. This is corrected as a protocol-design issue, not as an empirical failure.
+- Exact source-protocol locking and the distinction between replication and scale robustness are enforced by code, configuration and tests rather than remaining chat-only rules.
+- No reward, threshold, response horizon, checkpoint tick or world mechanism is changed.

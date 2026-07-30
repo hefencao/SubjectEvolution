@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.80.0
+
+- Records the supplied D3-T eight-seed screen as promotion-positive: all manipulation checks pass, all effects have the same sign, and neutralization increases cumulative conversion by a median of about 3.03%, above the preregistered 2% threshold.
+- Keeps the result bounded to an acute mechanism effect and does not infer reward, benefit, niches or long-horizon selection.
+- Upgrades source plans to `tiered-exploration-plan-v2` with a full replication-protocol fingerprint that normalizes only `run.seed`.
+- Requires replication to preserve scale, population, horizon, cadence, environment and mechanism configuration while using disjoint seeds.
+- Corrects `mvp_d3n_exploration_replication.json` to match the screen protocol and retains the former larger configuration as unregistered scale robustness.
+- Rejects paired replication sources that were not protocol-locked to their prior screen.
+- Adds source-plan provenance to new paired assessments and candidate-ledger entries.
+- Upgrades the protocol audit to v48 and project version to 0.80.0.
+- Changes no world mechanism, reward, threshold, response window, checkpoint tick or per-unit processing cost.
+
 ## 0.79.0
 
 - Accepts the supplied reconciled portfolio audit as valid and advances from portfolio repair to a preregistered scientific revision.

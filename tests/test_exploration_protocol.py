@@ -7,6 +7,7 @@ import pytest
 
 from se.analysis.exploration_protocol import (
     build_plan,
+    load_plan,
     validate_multi_seed_invocation,
 )
 
@@ -22,9 +23,10 @@ def test_screen_plan_is_bounded_and_seed_based(tmp_path: Path) -> None:
         output=output,
         backend="auto",
     )
-    assert plan["schema"] == "tiered-exploration-plan-v1"
+    assert plan["schema"] == "tiered-exploration-plan-v2"
     assert plan["target_tick"] == 480
     assert plan["initial_entities"] == 1125
+    assert len(plan["replication_protocol_sha256"]) == 64
     assert plan["selection_claim_allowed"] is False
     assert plan["windows_entities_and_events_are_independent_replicates"] is False
 
@@ -70,6 +72,52 @@ def test_replication_requires_disjoint_screen_seeds(tmp_path: Path) -> None:
         prior_plan=screen,
     )
     assert plan["prior_plan"]["stage"] == "screen"
+    assert plan["replication_protocol_locked_to_prior"] is True
+    assert plan["replication_changes_only_independent_seeds"] is True
+
+
+def test_replication_rejects_scale_change_even_with_disjoint_seeds(tmp_path: Path) -> None:
+    screen = build_plan(
+        stage="screen",
+        candidate_id="candidate-a",
+        config_path=Path("configs/mvp_d3n_exploration_screen.json"),
+        seeds=list(range(100, 108)),
+        output=tmp_path / "screen",
+        backend="auto",
+    )
+    with pytest.raises(ValueError, match="preserve the source protocol exactly"):
+        build_plan(
+            stage="replication",
+            candidate_id="candidate-a",
+            config_path=Path("configs/mvp_d3n_exploration_scale_robustness.json"),
+            seeds=list(range(200, 208)),
+            output=tmp_path / "replication",
+            backend="auto",
+            prior_plan=screen,
+        )
+
+
+def test_legacy_screen_plan_reconstructs_protocol_fingerprint(tmp_path: Path) -> None:
+    screen = build_plan(
+        stage="screen",
+        candidate_id="candidate-a",
+        config_path=Path("configs/mvp_d3n_exploration_screen.json"),
+        seeds=list(range(100, 108)),
+        output=tmp_path / "screen",
+        backend="auto",
+    )
+    legacy = dict(screen)
+    legacy["schema"] = "tiered-exploration-plan-v1"
+    legacy.pop("replication_protocol_sha256")
+    legacy.pop("replication_protocol_locked_to_prior")
+    legacy.pop("replication_changes_only_independent_seeds")
+    legacy.pop("scale_or_horizon_change_is_replication")
+    path = tmp_path / "legacy.json"
+    path.write_text(json.dumps(legacy), encoding="utf-8")
+
+    loaded = load_plan(path)
+    assert len(loaded["replication_protocol_sha256"]) == 64
+    assert loaded["replication_protocol_fingerprint_reconstructed"] is True
 
 
 def test_confirmation_requires_explicit_authorization(tmp_path: Path) -> None:
@@ -158,6 +206,9 @@ def test_protocol_audit_records_tiered_exploration_boundary() -> None:
     assert protocol["source_checkpoint"]["demographic_turnover_required_for_acute_panel"] is False
     assert protocol["source_checkpoint"]["free_run_endpoint_is_candidate_effect"] is False
     assert protocol["paired_plan_schema"] == "tiered-paired-exploration-plan-v2"
+    assert protocol["source_plan_schema"] == "tiered-exploration-plan-v2"
+    assert protocol["replication_protocol_changes_only_independent_seeds"] is True
+    assert protocol["scale_or_horizon_change_counts_as_replication"] is False
     assert protocol["candidate_ledger_schema"] == "paired-exploration-candidate-ledger-v5"
     decision = protocol["candidate_decision_ledger"]
     assert decision["bounded_negative_requires_aggregate_gate"] is True

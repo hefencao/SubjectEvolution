@@ -114,6 +114,61 @@ def test_build_plan_rejects_missing_predeclared_checkpoint(tmp_path: Path) -> No
         )
 
 
+def test_replication_rejects_unlocked_source_plan_before_checkpoint_reads(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "source"
+    root.mkdir()
+    seeds = list(range(100, 108))
+    (root / "multi_seed_index.json").write_text(
+        json.dumps(
+            [
+                {
+                    "seed": seed,
+                    "output": str(root / f"seed_{seed}"),
+                    "final_tick": 1,
+                    "alive": 64,
+                    "status": "completed",
+                }
+                for seed in seeds
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (root / "exploration_plan.json").write_text(
+        json.dumps({"schema": "tiered-exploration-plan-v1", "stage": "replication"}),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="protocol-locked"):
+        build_plan(
+            stage="replication",
+            candidate_id="candidate-a",
+            source_root=root,
+            checkpoint_tick=1,
+            response_ticks=2,
+            intervention="neutralize-resource-affinity",
+            primary_metric="harvested-resource-total",
+            metric_mode="cumulative",
+            direction="two-sided",
+            minimum_relative_effect=0.0,
+            output=tmp_path / "paired",
+            backend="cpu",
+            prior_assessment={
+                "schema": ASSESSMENT_SCHEMA,
+                "stage": "screen",
+                "recommendation": "promote-to-disjoint-replication",
+                "candidate_id": "candidate-a",
+                "intervention": "neutralize-resource-affinity",
+                "primary_metric": "harvested-resource-total",
+                "metric_mode": "cumulative",
+                "direction": "two-sided",
+                "minimum_relative_effect": 0.0,
+                "response_ticks": 2,
+                "all_stage_seeds": list(range(8)),
+            },
+        )
+
+
 def test_assessment_promotes_only_seed_level_consistent_effects() -> None:
     plan = {
         "stage": "screen",

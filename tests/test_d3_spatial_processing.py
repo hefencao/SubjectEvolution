@@ -190,7 +190,7 @@ def test_d3e_shared_checkpoint_pair_and_protocol(tmp_path: Path) -> None:
     assert all(row["valid"] for row in payload["external_resource_ledger"])
     assert all(row["valid"] for row in payload["external_recycling_ledger"])
     audit = build_protocol_audit(D3E)
-    assert audit["schema"] == "structural-measurement-protocol-audit-v47"
+    assert audit["schema"] == "structural-measurement-protocol-audit-v48"
     protocol = audit["functional_module_protocol"]["spatial_processing_experiment"]
     assert protocol["shared_checkpoint_tick"] == 0
     assert protocol["processing_execution_cost_preserved_in_ablation"]

@@ -617,7 +617,7 @@ large long confirmation on new seeds
 
 `exploration-readiness-audit-v1` reads completed selection-validity output and separates population, descendant, reproductive-contributor and current-strategy support from independent-seed count, founder-lineage breadth and stable-source readiness.
 
-`tiered-exploration-plan-v1` fixes the candidate, config hash, seed set, output, backend and horizon before execution. `se-multi` validates the invocation against this plan. Stage promotion cannot reuse seeds, and large long execution requires an explicit confirmation-stage flag.
+`tiered-exploration-plan-v2` fixes the candidate, resolved config hash, seed set, output, backend and horizon before execution. It also stores a replication-protocol fingerprint over every configuration field except `run.seed`. `se-multi` validates the invocation against this plan. Stage promotion cannot reuse seeds, replication must preserve the fingerprint, and large long execution requires an explicit confirmation-stage flag.
 
 The protocol is observational and scheduling-only. It does not alter simulation state, thresholds inside the world, survival, reproduction, diversity or selection pressure.
 
@@ -625,7 +625,7 @@ The protocol is observational and scheduling-only. It does not alter simulation 
 
 Free-running startup endpoints and intervention effects are separate evidence objects.
 
-`tiered-exploration-plan-v1` remains the source-run schedule. `tiered-paired-exploration-plan-v1` consumes its completed full checkpoints at one exact predeclared tick. Each seed produces a baseline and intervention branch from the same checkpoint. Checkpoint file hashes, embedded seeds, ticks, and configuration semantics are verified before execution.
+`tiered-exploration-plan-v2` is the source-run schedule, while legacy v1 plans are accepted only when their original config can be resolved and verified. `tiered-paired-exploration-plan-v2` consumes completed full checkpoints at one exact predeclared tick. Each seed produces a baseline and intervention branch from the same checkpoint. Checkpoint file hashes, embedded seeds, ticks, and configuration semantics are verified before execution.
 
 The acute source gate scales with initial population and does not require demographic turnover. It answers only whether a checkpoint contains enough living and lineage state for a short mechanism panel. Long-horizon evolutionary selection continues to use the demographic-selection-validity protocol.
 
@@ -707,3 +707,18 @@ The intervention flag alone is insufficient because no inventory-bearing entity 
 The baseline must have positive requested conversion and positive direct support exposure; the neutral-support branch must retain positive requested conversion and have exactly zero direct support exposure. This establishes target exposure only. Promotion still depends on the separate seed-level practical-effect gate for cumulative realized conversion.
 
 Earlier D3-F/G movement-response and alignment results remain separate evidence objects. D3-T cannot establish migration, specialization, stable niches or long-horizon selection.
+
+
+## v0.80 protocol-locked replication boundary
+
+A promotion-positive screen authorizes only a disjoint-seed repeat of the same inferential protocol. The source plan computes:
+
+```text
+replication protocol fingerprint = SHA-256(canonical full config with run.seed = 0)
+```
+
+The replication planner requires this fingerprint to match the prior screen plan. It also requires a disjoint seed set and the same candidate identity. This prevents a larger world, different initial population, altered source horizon, changed reporting/checkpoint cadence or modified mechanism setting from being mislabeled as replication.
+
+A scale or horizon change can still be scientifically useful, but it is a separate robustness or confirmation design. It must be preregistered under an explicit purpose and cannot inherit a screen promotion solely because its candidate ID matches.
+
+The paired replication runner accepts only a source plan that records both `replication_protocol_locked_to_prior=true` and `replication_changes_only_independent_seeds=true`. These checks affect experiment scheduling only and never feed back into simulation state.

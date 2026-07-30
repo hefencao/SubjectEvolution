@@ -27,6 +27,7 @@ from se.analysis.candidate_ledger import (
     record_assessment,
     validate_candidate_for_plan,
 )
+from se.analysis.exploration_protocol import load_plan as load_source_exploration_plan
 from se.checkpointing import read_checkpoint_bundle
 from se.experiments.counterfactual import run_paired
 from se.experiments.interventions import ExperimentMode, intervention_names, resolve_intervention
@@ -439,6 +440,22 @@ def build_plan(
     source_plan = _read_json(source_plan_path)
     if source_plan.get("stage") != stage:
         raise ValueError("source exploration stage does not match paired stage")
+    if stage == "replication":
+        try:
+            source_plan = load_source_exploration_plan(source_plan_path)
+        except ValueError as exc:
+            raise ValueError(
+                f"replication source plan is not protocol-locked: {exc}"
+            ) from exc
+        if not bool(source_plan.get("replication_protocol_locked_to_prior", False)):
+            raise ValueError(
+                "replication source plan must be protocol-locked to its prior screen; "
+                "regenerate it with se-exploration-plan --stage replication --prior-plan"
+            )
+        if not bool(source_plan.get("replication_changes_only_independent_seeds", False)):
+            raise ValueError(
+                "replication source plan must change only the independent seed set"
+            )
     panels: list[dict[str, Any]] = []
     config_hashes: set[str] = set()
     for seed in seeds:
@@ -503,6 +520,12 @@ def build_plan(
         "source_root": str(source_root),
         "source_plan_schema": source_plan.get("schema"),
         "source_plan_sha256": _sha256_file(source_plan_path),
+        "source_replication_protocol_sha256": source_plan.get(
+            "replication_protocol_sha256"
+        ),
+        "source_replication_protocol_locked_to_prior": bool(
+            source_plan.get("replication_protocol_locked_to_prior", False)
+        ),
         "source_checkpoint_tick": checkpoint_tick,
         "response_ticks": response_ticks,
         "seeds": seeds,
@@ -773,6 +796,15 @@ def assess_results(plan: dict[str, Any], panels: list[dict[str, Any]]) -> dict[s
         "candidate_signature_sha256": signature,
         "candidate_spec_schema": plan.get("candidate_spec_schema"),
         "candidate_spec_sha256": plan.get("candidate_spec_sha256"),
+        "source_plan_schema": plan.get("source_plan_schema"),
+        "source_plan_sha256": plan.get("source_plan_sha256"),
+        "source_checkpoint_tick": plan.get("source_checkpoint_tick"),
+        "source_replication_protocol_sha256": plan.get(
+            "source_replication_protocol_sha256"
+        ),
+        "source_replication_protocol_locked_to_prior": bool(
+            plan.get("source_replication_protocol_locked_to_prior", False)
+        ),
         **candidate_portfolio_metadata(plan),
         "intervention": plan["intervention"],
         "primary_metric": plan["primary_metric"],
@@ -935,6 +967,15 @@ def execute_plan(plan: dict[str, Any]) -> dict[str, Any]:
         "candidate_signature_sha256": plan.get("candidate_signature_sha256"),
         "candidate_spec_schema": plan.get("candidate_spec_schema"),
         "candidate_spec_sha256": plan.get("candidate_spec_sha256"),
+        "source_plan_schema": plan.get("source_plan_schema"),
+        "source_plan_sha256": plan.get("source_plan_sha256"),
+        "source_checkpoint_tick": plan.get("source_checkpoint_tick"),
+        "source_replication_protocol_sha256": plan.get(
+            "source_replication_protocol_sha256"
+        ),
+        "source_replication_protocol_locked_to_prior": bool(
+            plan.get("source_replication_protocol_locked_to_prior", False)
+        ),
         **candidate_portfolio_metadata(plan),
         "intervention": plan["intervention"],
         "primary_metric": plan["primary_metric"],

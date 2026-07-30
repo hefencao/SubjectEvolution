@@ -453,6 +453,15 @@ def _entry_from_assessment(assessment: dict[str, Any]) -> dict[str, Any]:
         "reason_codes": reasons,
         "assessment_schema": str(schema),
         "assessment_sha256": canonical_sha(assessment),
+        "source_plan_schema": assessment.get("source_plan_schema"),
+        "source_plan_sha256": assessment.get("source_plan_sha256"),
+        "source_checkpoint_tick": assessment.get("source_checkpoint_tick"),
+        "source_replication_protocol_sha256": assessment.get(
+            "source_replication_protocol_sha256"
+        ),
+        "source_replication_protocol_locked_to_prior": bool(
+            assessment.get("source_replication_protocol_locked_to_prior", False)
+        ),
         "eligible_seed_count": int(assessment.get("eligible_seed_count", 0)),
         "eligible_seed_fraction": float(assessment.get("eligible_seed_fraction", 0.0)),
         "manipulation_check_count": check_count,

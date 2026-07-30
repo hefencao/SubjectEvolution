@@ -79,7 +79,7 @@ def test_run_plan_is_written_before_normal_run_outputs(tmp_path: Path) -> None:
     metadata = json.loads((output / "run_metadata.json").read_text())
 
     assert plan["schema"] == "simulation-run-plan-v1"
-    assert plan["version"] == "0.79.0"
+    assert plan["version"] == "0.80.0"
     assert plan["start_tick"] == 0
     assert plan["target_tick"] == 2
     assert plan["reporting"]["summary_schema"] == "authoritative-reporting-snapshot-v1"

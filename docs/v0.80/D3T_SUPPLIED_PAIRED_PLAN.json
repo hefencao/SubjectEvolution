@@ -1,0 +1,213 @@
+{
+  "schema": "tiered-paired-exploration-plan-v2",
+  "stage": "screen",
+  "candidate_id": "spatial-processing-conversion-acute-effect-v1",
+  "candidate_signature_sha256": "a5d19852cbe51f8015ea65f362bf887c6f7c32fa8d05e4c972fe4f27317ccffd",
+  "candidate_spec_schema": "paired-exploration-candidate-v1",
+  "candidate_spec_sha256": "5121a01a8f638208ac63bea472879e91bc4eaea78e20d2b69abea0e0e5e02a48",
+  "mechanism_family": "spatial-processing-support",
+  "mechanism_family_revision": 1,
+  "family_role": "aggregate-path-gate",
+  "terminal_negative_closes_family": true,
+  "family_revision_rationale": "This family isolates the existing conserved environment-to-processing interface rather than another control-policy or functional-module output. Earlier D3-F/G results tested movement response and ecological alignment, not the direct effect of support on realized raw-resource conversion.",
+  "family_revision_interface": "Demand-weighted absolute deviation of the phase-shifted local processing multiplier from neutral support, measured on requested conservative raw-resource conversion flow.",
+  "source_root": "analyses/d3n_screen",
+  "source_plan_schema": "tiered-exploration-plan-v1",
+  "source_plan_sha256": "17e2d0141805021a6beb42fa7ab4a564b82e83a1b16e14fea490913c41dcc8a3",
+  "source_checkpoint_tick": 480,
+  "response_ticks": 120,
+  "seeds": [
+    71101,
+    71102,
+    71103,
+    71104,
+    71105,
+    71106,
+    71107,
+    71108
+  ],
+  "all_stage_seeds": [
+    71101,
+    71102,
+    71103,
+    71104,
+    71105,
+    71106,
+    71107,
+    71108
+  ],
+  "panels": [
+    {
+      "seed": 71101,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "analyses/d3n_screen/seed_71101/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "28f70eb76bd39efa07e627d2da2402776d94e3f860c422812f20fdf2e2c9a01b",
+      "checkpoint_config_sha256": "ea0ac59a6e4b33b54dbf8c56581928db80ebd0b26f94cf07a79a0ba09e6f14b2",
+      "source_alive": 151,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 124.59562841530054,
+      "source_largest_lineage_fraction": 0.019867549668874173,
+      "until_tick": 600
+    },
+    {
+      "seed": 71102,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "analyses/d3n_screen/seed_71102/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "0256ccc16c778c1c6e852b58a22342ab6277e51f93f284ff2a840eabf32decc8",
+      "checkpoint_config_sha256": "9c4f258f5441982b541ab4d95af9d578054e9fa6248db9483bef945dd876c926",
+      "source_alive": 157,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 125.1218274111675,
+      "source_largest_lineage_fraction": 0.01910828025477707,
+      "until_tick": 600
+    },
+    {
+      "seed": 71103,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "analyses/d3n_screen/seed_71103/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "8b57e1ab83be543e910ec437f9271b4454a9124e0566a25252dd0344a1b82239",
+      "checkpoint_config_sha256": "e62866c2a130c22acb39c55f949d061ba24ceda40e5bffdb5fbec534641b658d",
+      "source_alive": 148,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 115.28421052631575,
+      "source_largest_lineage_fraction": 0.02702702702702703,
+      "until_tick": 600
+    },
+    {
+      "seed": 71104,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "analyses/d3n_screen/seed_71104/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "e4d26f7b1f14e7c2a770d0a9fc7f8df589d8253cc270ea30ef073f8656f01682",
+      "checkpoint_config_sha256": "d60e500b835c4109462307bc97adc6b76a4ed7f2164903c9d8e39bb51b584718",
+      "source_alive": 154,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 127.50537634408602,
+      "source_largest_lineage_fraction": 0.01948051948051948,
+      "until_tick": 600
+    },
+    {
+      "seed": 71105,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "analyses/d3n_screen/seed_71105/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "80e44fd6102bd37fe6d45e006d03db8bdbbf786aa9104056a7c3fe8915e193df",
+      "checkpoint_config_sha256": "7af15353a3cfe090f87b3d8e391cc8228fb4496e96d187d428f78536fc5b0509",
+      "source_alive": 139,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 118.53374233128834,
+      "source_largest_lineage_fraction": 0.02158273381294964,
+      "until_tick": 600
+    },
+    {
+      "seed": 71106,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "analyses/d3n_screen/seed_71106/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "fcf59eba438ae7fcd1a286e531ca5422edc6cd0aacea2d389893c68211f2e09a",
+      "checkpoint_config_sha256": "40bfd7147015cb24e9eef948d330e399c2f71b3173e50d91d7cae34e13d4dc17",
+      "source_alive": 138,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 110.72093023255813,
+      "source_largest_lineage_fraction": 0.021739130434782608,
+      "until_tick": 600
+    },
+    {
+      "seed": 71107,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "analyses/d3n_screen/seed_71107/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "8cc31add42ebedcbf67c96a7a48e7e603b7788b25d15f247abe41dfdfd463556",
+      "checkpoint_config_sha256": "c1cf8e88bc6468c50e90ceaba64cc35d13f0ea1aef57103724b05d1ed7fa1eb1",
+      "source_alive": 165,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 136.80904522613065,
+      "source_largest_lineage_fraction": 0.01818181818181818,
+      "until_tick": 600
+    },
+    {
+      "seed": 71108,
+      "checkpoint_tick": 480,
+      "checkpoint_path": "analyses/d3n_screen/seed_71108/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "e2a02bb567f2ff2eae35cb93b146c40818593f27dced77a1f864754b62b22d02",
+      "checkpoint_config_sha256": "6040080bc073dbeece846a043eea159b1b235212ef15d8cfca7a61e3fc250ab2",
+      "source_alive": 150,
+      "source_initial_entities": 1125,
+      "source_effective_lineages": 129.31034482758616,
+      "source_largest_lineage_fraction": 0.013333333333333334,
+      "until_tick": 600
+    }
+  ],
+  "branches": [
+    "baseline",
+    "intervention"
+  ],
+  "intervention": "neutralize-spatial-processing-support",
+  "intervention_kind": "modify-rules",
+  "primary_metric": "resource-converted-total",
+  "metric_mode": "cumulative",
+  "direction": "two-sided",
+  "minimum_relative_effect": 0.02,
+  "manipulation_checks": [
+    {
+      "metric": "resource_processing_support_ablation_enabled",
+      "metric_mode": "endpoint",
+      "branch": "baseline",
+      "operator": "==",
+      "value": 0.0
+    },
+    {
+      "metric": "resource_processing_support_ablation_enabled",
+      "metric_mode": "endpoint",
+      "branch": "intervention",
+      "operator": "==",
+      "value": 1.0
+    },
+    {
+      "metric": "resource-processing-requested-total",
+      "metric_mode": "cumulative",
+      "branch": "baseline",
+      "operator": ">",
+      "value": 0.0
+    },
+    {
+      "metric": "resource-processing-requested-total",
+      "metric_mode": "cumulative",
+      "branch": "intervention",
+      "operator": ">",
+      "value": 0.0
+    },
+    {
+      "metric": "resource-processing-support-absolute-deviation-total",
+      "metric_mode": "cumulative",
+      "branch": "baseline",
+      "operator": ">",
+      "value": 0.0
+    },
+    {
+      "metric": "resource-processing-support-absolute-deviation-total",
+      "metric_mode": "cumulative",
+      "branch": "intervention",
+      "operator": "==",
+      "value": 0.0
+    }
+  ],
+  "minimum_eligible_seed_fraction": 0.75,
+  "minimum_direction_consistency": 0.75,
+  "independent_unit": "seed",
+  "windows_entities_and_events_are_independent_replicates": false,
+  "fixed_checkpoint_selected_before_branch_outcomes": true,
+  "outcome_conditioned_checkpoint_selection": false,
+  "failed_or_ineligible_seeds_replaced": false,
+  "requested_backend": "auto",
+  "output": "analyses/d3t_spatial_processing_conversion_paired_screen",
+  "decision_ledger": "analyses/exploration_candidate_ledger.json",
+  "decision_baseline": null,
+  "builtin_decision_baseline": true,
+  "decision_history_entry_count": 5,
+  "prior_assessment": null,
+  "selection_claim_allowed": false,
+  "acute_mechanism_claim_allowed": false,
+  "large_long_confirmation_explicitly_authorized": false,
+  "execution_command": [
+    "se-exploration-paired",
+    "--plan",
+    "analyses/d3t_spatial_processing_conversion_paired_screen/paired_exploration_plan.json"
+  ]
+}

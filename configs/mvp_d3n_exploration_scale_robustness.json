@@ -1,12 +1,12 @@
 {
   "run": {
     "seed": 71201,
-    "ticks": 480,
-    "metrics_period": 60,
-    "checkpoint_period": 120,
+    "ticks": 720,
+    "metrics_period": 90,
+    "checkpoint_period": 180,
     "gpu_harvest_conflict_planner": true,
     "experiment_mode": "scientific",
-    "evolution_evaluation_period": 60,
+    "evolution_evaluation_period": 90,
     "validation_mode": false,
     "gpu_semantics_mode": "hybrid-accelerated",
     "full_checkpoint_enabled": true,
@@ -40,12 +40,12 @@
     "gpu_memory_pool_trim_period": 1
   },
   "world": {
-    "width": 192.0,
-    "height": 192.0,
-    "grid_x": 48,
-    "grid_y": 48,
-    "initial_entities": 1125,
-    "max_entities": 4608,
+    "width": 256.0,
+    "height": 256.0,
+    "grid_x": 64,
+    "grid_y": 64,
+    "initial_entities": 2000,
+    "max_entities": 8192,
     "periodic": true
   },
   "environment": {

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 from dataclasses import asdict
 import hashlib
 import json
@@ -10,7 +11,8 @@ from typing import Any, Sequence
 
 from ..cfg import load_config
 
-SCHEMA = "tiered-exploration-plan-v1"
+SCHEMA = "tiered-exploration-plan-v2"
+LEGACY_SCHEMAS = {"tiered-exploration-plan-v1"}
 _STAGE_ORDER = {"smoke": 0, "screen": 1, "replication": 2, "confirmation": 3}
 _STAGE_LIMITS: dict[str, dict[str, int | None]] = {
     "smoke": {"minimum_seeds": 2, "maximum_initial_entities": 512, "maximum_ticks": 180},
@@ -20,13 +22,24 @@ _STAGE_LIMITS: dict[str, dict[str, int | None]] = {
 }
 
 
-def _canonical_config(path: Path) -> tuple[dict[str, Any], str]:
+def _canonical_sha(payload: dict[str, Any]) -> str:
+    return hashlib.sha256(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def _canonical_config(path: Path) -> tuple[dict[str, Any], str, str]:
     cfg = load_config(path)
     payload = asdict(cfg)
-    encoded = json.dumps(
-        payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
-    ).encode("utf-8")
-    return payload, hashlib.sha256(encoded).hexdigest()
+    resolved_sha = _canonical_sha(payload)
+    protocol_payload = deepcopy(payload)
+    protocol_payload["run"]["seed"] = 0
+    return payload, resolved_sha, _canonical_sha(protocol_payload)
 
 
 def parse_seeds(text: str) -> list[int]:
@@ -40,9 +53,39 @@ def parse_seeds(text: str) -> list[int]:
 
 def _read_plan(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
-    if payload.get("schema") != SCHEMA:
+    if payload.get("schema") not in {SCHEMA, *LEGACY_SCHEMAS}:
         raise ValueError(f"unsupported exploration plan schema in {path}")
+    if payload.get("replication_protocol_sha256") is None:
+        config_ref = Path(str(payload.get("config", "")))
+        candidates = [config_ref]
+        if not config_ref.is_absolute():
+            candidates.extend([Path.cwd() / config_ref, path.parent / config_ref])
+        config_path = next((candidate for candidate in candidates if candidate.is_file()), None)
+        if config_path is None:
+            raise ValueError(
+                "legacy exploration plan lacks a replication protocol fingerprint and its "
+                f"config cannot be resolved: {payload.get('config')!r}"
+            )
+        _, resolved_sha, protocol_sha = _canonical_config(config_path)
+        expected_sha = payload.get("resolved_config_sha256")
+        if expected_sha is not None and str(expected_sha) != resolved_sha:
+            raise ValueError("legacy exploration plan config no longer matches its recorded hash")
+        payload = dict(payload)
+        payload["replication_protocol_sha256"] = protocol_sha
+        payload["replication_protocol_fingerprint_reconstructed"] = True
     return payload
+
+
+def load_plan(path: str | Path) -> dict[str, Any]:
+    """Load and normalize a source exploration plan.
+
+    Legacy v1 plans are accepted only when their original configuration can be
+    resolved and still matches the recorded configuration hash. This lets an
+    existing screen authorize a protocol-locked replication without silently
+    weakening the replication contract.
+    """
+
+    return _read_plan(Path(path))
 
 
 def build_plan(
@@ -63,7 +106,7 @@ def build_plan(
         raise ValueError("candidate id cannot be empty")
     if len(set(int(seed) for seed in seeds)) != len(seeds):
         raise ValueError("seeds must be unique")
-    config_payload, config_sha = _canonical_config(config_path)
+    config_payload, config_sha, replication_protocol_sha = _canonical_config(config_path)
     initial_entities = int(config_payload["world"]["initial_entities"])
     target_tick = int(until_tick or config_payload["run"]["ticks"])
     limits = _STAGE_LIMITS[stage]
@@ -97,11 +140,24 @@ def build_plan(
         overlap = sorted(prior_seeds.intersection(int(seed) for seed in seeds))
         if overlap:
             raise ValueError(f"stage seeds must be disjoint; overlap: {overlap}")
+        prior_protocol_sha = str(prior_plan.get("replication_protocol_sha256") or "")
+        if stage == "replication":
+            if not prior_protocol_sha:
+                raise ValueError(
+                    "replication requires a prior source plan with a protocol fingerprint"
+                )
+            if replication_protocol_sha != prior_protocol_sha:
+                raise ValueError(
+                    "replication must preserve the source protocol exactly except for the "
+                    "independent seed set; changed scale, horizon, cadence, or mechanism "
+                    "settings require a separately preregistered robustness stage"
+                )
         prior_ref = {
             "stage": prior_plan["stage"],
             "candidate_id": prior_plan["candidate_id"],
             "seeds": list(prior_plan["seeds"]),
             "all_stage_seeds": sorted(prior_seeds),
+            "replication_protocol_sha256": prior_protocol_sha or None,
             "plan_sha256": hashlib.sha256(
                 json.dumps(
                     prior_plan,
@@ -138,6 +194,7 @@ def build_plan(
         "candidate_id": candidate_id,
         "config": str(config_path),
         "resolved_config_sha256": config_sha,
+        "replication_protocol_sha256": replication_protocol_sha,
         "initial_entities": initial_entities,
         "target_tick": target_tick,
         "seeds": [int(seed) for seed in seeds],
@@ -155,6 +212,9 @@ def build_plan(
         "requested_backend": backend,
         "stage_limits": limits,
         "prior_plan": prior_ref,
+        "replication_protocol_locked_to_prior": bool(stage == "replication"),
+        "replication_changes_only_independent_seeds": bool(stage == "replication"),
+        "scale_or_horizon_change_is_replication": False,
         "large_long_confirmation_explicitly_authorized": bool(
             stage == "confirmation" and allow_large_long_confirmation
         ),
@@ -204,9 +264,12 @@ def validate_multi_seed_invocation(
     target_tick: int,
 ) -> dict[str, Any]:
     plan = _read_plan(plan_path)
-    _, config_sha = _canonical_config(config_path)
+    _, config_sha, replication_protocol_sha = _canonical_config(config_path)
     checks = {
         "resolved_config_sha256": config_sha == plan.get("resolved_config_sha256"),
+        "replication_protocol_sha256": (
+            replication_protocol_sha == plan.get("replication_protocol_sha256")
+        ),
         "seeds": [int(seed) for seed in seeds] == [int(seed) for seed in plan.get("seeds", [])],
         "output": output.resolve() == Path(str(plan.get("output"))).resolve(),
         "backend": backend == plan.get("requested_backend"),
@@ -256,3 +319,15 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+__all__ = [
+    "LEGACY_SCHEMAS",
+    "SCHEMA",
+    "build_plan",
+    "load_plan",
+    "main",
+    "parse_seeds",
+    "render_markdown",
+    "validate_multi_seed_invocation",
+]

@@ -1,0 +1,184 @@
+{
+  "schema": "paired-exploration-portfolio-audit-v1",
+  "ledger_path": "analyses/exploration_candidate_ledger.json",
+  "ledger_schema": "paired-exploration-candidate-ledger-v5",
+  "decision_baseline_path": "package:se/resources/exploration_candidate_ledger.json",
+  "decision_baseline_entry_count": 6,
+  "workspace_ledger_entry_count": 0,
+  "effective_ledger_entry_count": 6,
+  "workspace_missing_baseline_assessment_sha256": [
+    "1b3b886810a72d5865bac6acfeb56ccb51d216f3607725b44b31120e1dcf3645",
+    "39e4c221a79a171a14c2b6e9e06963137541cc6c9ad9e91e7e9bd9344719d8e8",
+    "45396f0d8f1e9925de6f46a278e2a51ac44d1de0e767241e475f3805150e1dac",
+    "9c6a90e2c0a2c00dfefee0978de99db052d5d1018e4d053d53568652268efa57",
+    "da2db7e9f68e056b76b952fe95caf6d9bcfbd95f6068157e8026aa78bcae4de1",
+    "dc5061254e47b6256b5dec4b6ef12c52003bf2acb654244f41227c28d711155a"
+  ],
+  "workspace_hydration_required": true,
+  "candidate_dir": "protocols/candidates",
+  "candidate_spec_count": 5,
+  "ledger_entry_count": 6,
+  "candidate_records": [
+    {
+      "path": "protocols/candidates/d3p_elastic_capacity_acute_effect.json",
+      "candidate_id": "elastic-capacity-use-acute-effect-v1",
+      "candidate_signature_sha256": "18ab7b3b9a72a64b67cade1eb0dd592a5e63c5259a606750c63d0e3a1aa905f0",
+      "mechanism_family": "knowledge-policy",
+      "mechanism_family_revision": 1,
+      "family_role": "component-gate",
+      "terminal_negative_closes_family": false,
+      "family_revision_rationale": null,
+      "family_revision_interface": null,
+      "status": "terminal-recorded",
+      "recorded_stages": [
+        "screen"
+      ],
+      "recorded_decisions": [
+        "stop"
+      ]
+    },
+    {
+      "path": "protocols/candidates/d3q_knowledge_policy_harvest_acute_effect.json",
+      "candidate_id": "knowledge-policy-harvest-acute-effect-v1",
+      "candidate_signature_sha256": "2a4c4c02528def78acf5063b65ed2762a0adac362b1b530c1f03c94273a8a341",
+      "mechanism_family": "knowledge-policy",
+      "mechanism_family_revision": 1,
+      "family_role": "aggregate-path-gate",
+      "terminal_negative_closes_family": true,
+      "family_revision_rationale": null,
+      "family_revision_interface": null,
+      "status": "terminal-recorded",
+      "recorded_stages": [
+        "screen"
+      ],
+      "recorded_decisions": [
+        "stop"
+      ]
+    },
+    {
+      "path": "protocols/candidates/d3r_functional_regulatory_oxygen_acute_effect.json",
+      "candidate_id": "functional-regulatory-oxygen-uptake-acute-effect-v1",
+      "candidate_signature_sha256": "762600634f7a5cd49575f72a4377f23536721b4b2b52c8f3aa726a22d7623eb5",
+      "mechanism_family": "functional-modules",
+      "mechanism_family_revision": 1,
+      "family_role": "bounded-physiology-output-path",
+      "terminal_negative_closes_family": false,
+      "family_revision_rationale": "Portfolio regrouping only: the inferential intervention, metric, threshold, horizon, and manipulation contract are unchanged.",
+      "family_revision_interface": null,
+      "status": "terminal-recorded",
+      "recorded_stages": [
+        "screen"
+      ],
+      "recorded_decisions": [
+        "stop"
+      ]
+    },
+    {
+      "path": "protocols/candidates/d3s_functional_modules_harvest_acute_effect.json",
+      "candidate_id": "functional-modules-harvest-acute-effect-v1",
+      "candidate_signature_sha256": "78e11dd94842ab04d396a69bcd662558254252fc5705500a0b2cfa08f442bf71",
+      "mechanism_family": "functional-modules",
+      "mechanism_family_revision": 1,
+      "family_role": "aggregate-path",
+      "terminal_negative_closes_family": true,
+      "family_revision_rationale": "Aggregate family gate required after the manipulation-confirmed negative bounded physiology-output screen.",
+      "family_revision_interface": null,
+      "status": "terminal-recorded",
+      "recorded_stages": [
+        "screen"
+      ],
+      "recorded_decisions": [
+        "stop"
+      ]
+    },
+    {
+      "path": "protocols/candidates/d3t_spatial_processing_conversion_acute_effect.json",
+      "candidate_id": "spatial-processing-conversion-acute-effect-v1",
+      "candidate_signature_sha256": "a5d19852cbe51f8015ea65f362bf887c6f7c32fa8d05e4c972fe4f27317ccffd",
+      "mechanism_family": "spatial-processing-support",
+      "mechanism_family_revision": 1,
+      "family_role": "aggregate-path-gate",
+      "terminal_negative_closes_family": true,
+      "family_revision_rationale": "This family isolates the existing conserved environment-to-processing interface rather than another control-policy or functional-module output. Earlier D3-F/G results tested movement response and ecological alignment, not the direct effect of support on realized raw-resource conversion.",
+      "family_revision_interface": "Demand-weighted absolute deviation of the phase-shifted local processing multiplier from neutral support, measured on requested conservative raw-resource conversion flow.",
+      "status": "open-recorded",
+      "recorded_stages": [
+        "screen"
+      ],
+      "recorded_decisions": [
+        "promote"
+      ]
+    }
+  ],
+  "unrecorded_candidate_spec_ids": [],
+  "open_candidate_ids": [
+    "spatial-processing-conversion-acute-effect-v1"
+  ],
+  "family_revision_statuses": [
+    {
+      "mechanism_family": "functional-modules",
+      "mechanism_family_revision": 1,
+      "status": "closed",
+      "candidate_ids": [
+        "functional-modules-harvest-acute-effect-v1",
+        "functional-regulatory-oxygen-uptake-acute-effect-v1"
+      ],
+      "bounded_negative_candidate_ids": [
+        "functional-regulatory-oxygen-uptake-acute-effect-v1"
+      ],
+      "aggregate_candidate_ids": [
+        "functional-modules-harvest-acute-effect-v1"
+      ],
+      "closed_by_candidate_ids": [
+        "functional-modules-harvest-acute-effect-v1"
+      ]
+    },
+    {
+      "mechanism_family": "knowledge-policy",
+      "mechanism_family_revision": 1,
+      "status": "closed",
+      "candidate_ids": [
+        "elastic-capacity-use-acute-effect-v1",
+        "knowledge-policy-harvest-acute-effect-v1"
+      ],
+      "bounded_negative_candidate_ids": [],
+      "aggregate_candidate_ids": [
+        "knowledge-policy-harvest-acute-effect-v1"
+      ],
+      "closed_by_candidate_ids": [
+        "knowledge-policy-harvest-acute-effect-v1"
+      ]
+    },
+    {
+      "mechanism_family": "resource-affinity",
+      "mechanism_family_revision": 1,
+      "status": "open",
+      "candidate_ids": [
+        "resource-affinity-acute-effect"
+      ],
+      "bounded_negative_candidate_ids": [],
+      "aggregate_candidate_ids": [],
+      "closed_by_candidate_ids": []
+    },
+    {
+      "mechanism_family": "spatial-processing-support",
+      "mechanism_family_revision": 1,
+      "status": "aggregate-gate-recorded",
+      "candidate_ids": [
+        "spatial-processing-conversion-acute-effect-v1"
+      ],
+      "bounded_negative_candidate_ids": [],
+      "aggregate_candidate_ids": [
+        "spatial-processing-conversion-acute-effect-v1"
+      ],
+      "closed_by_candidate_ids": []
+    }
+  ],
+  "conflicts": [],
+  "portfolio_state": "promoted-candidate-open",
+  "next_action": "plan only the next ledger-authorized disjoint-seed stage",
+  "same_revision_child_relabeling_authorized": false,
+  "threshold_or_horizon_relaxation_authorized": false,
+  "automatic_new_candidate_selection": false,
+  "world_feedback": false
+}

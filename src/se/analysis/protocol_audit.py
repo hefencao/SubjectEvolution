@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v47"
+SCHEMA = "structural-measurement-protocol-audit-v48"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -209,7 +209,11 @@ def build_protocol_audit(
         },
         "tiered_exploration_protocol": {
             "readiness_audit_schema": "exploration-readiness-audit-v2",
-            "source_plan_schema": "tiered-exploration-plan-v1",
+            "source_plan_schema": "tiered-exploration-plan-v2",
+            "accepted_source_plan_schemas": [
+                "tiered-exploration-plan-v1",
+                "tiered-exploration-plan-v2",
+            ],
             "paired_plan_schema": "tiered-paired-exploration-plan-v2",
             "accepted_paired_plan_schemas": [
                 "tiered-paired-exploration-plan-v1",
@@ -262,6 +266,8 @@ def build_protocol_audit(
                     "minimum_seeds": 8,
                     "requires_disjoint_screen_seeds": True,
                     "requires_passing_screen_assessment": True,
+                    "requires_source_protocol_fingerprint_match": True,
+                    "changes_only_independent_seed_set": True,
                 },
                 "confirmation": {
                     "minimum_seeds": 8,
@@ -270,6 +276,9 @@ def build_protocol_audit(
                     "requires_explicit_large_long_authorization": True,
                 },
             },
+            "replication_protocol_changes_only_independent_seeds": True,
+            "scale_or_horizon_change_counts_as_replication": False,
+            "scale_or_horizon_change_requires_separate_preregistration": True,
             "promotion_gate": {
                 "minimum_eligible_seed_fraction": 0.75,
                 "minimum_direction_consistency": 0.75,
