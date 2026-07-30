@@ -192,6 +192,17 @@ class StepStats:
     gpu_device_preprocess_rows: int = 0
     gpu_device_resident_host_bytes_avoided: int = 0
     gpu_device_latent_root_rows: int = 0
+    gpu_memory_used_bytes: int = 0
+    gpu_memory_pool_total_bytes: int = 0
+    gpu_memory_pool_cached_bytes: int = 0
+    gpu_memory_pool_total_bytes_after_trim: int = 0
+    gpu_memory_pool_cached_bytes_after_trim: int = 0
+    gpu_memory_pool_peak_used_bytes: int = 0
+    gpu_memory_pool_peak_total_bytes: int = 0
+    gpu_memory_pool_trim_count: int = 0
+    gpu_memory_pool_trimmed_step: int = 0
+    gpu_memory_pool_released_bytes_step: int = 0
+    gpu_pinned_memory_pool_free_blocks: int = 0
     autonomy_module_actions: int = 0
     autonomy_restored_active: int = 0
     autonomy_harvest_attempts: int = 0

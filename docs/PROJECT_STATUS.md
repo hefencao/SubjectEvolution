@@ -1,6 +1,15 @@
 # SE project status
 
-Version: **0.69.0**
+Version: **0.70.0**
+
+
+## Current GPU memory boundary
+
+D3-L scale-4 runs reached 22,369–26,596 living entities before the fixed horizon stopped. Persistent knowledge state remained measured in megabytes, while device residency grew to the device limit. The current diagnosis is allocator-cache retention from monotonically changing transient batch shapes, not a tens-of-gigabytes biological state.
+
+v0.70 uses a bounded unused-cache policy and records live, total, cached, peak, trim and released-byte telemetry. The policy cannot evict live arrays, alter world state, lower the population or trigger a CPU fallback.
+
+The next operational gate is completion of the fixed D3-M horizon with post-trim cached bytes within the configured bound. Demographic regime and selection-validity gates remain unchanged.
 
 ## Current demographic interpretation
 

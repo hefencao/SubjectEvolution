@@ -134,10 +134,22 @@ def test_gpu_transfer_stats_expose_device_preprocessing_telemetry() -> None:
         device_preprocess_rows=32,
         device_resident_host_bytes_avoided=1024,
         device_latent_root_rows=12,
+        memory_used_bytes=256,
+        memory_pool_total_bytes=512,
+        memory_pool_cached_bytes=256,
+        memory_pool_peak_used_bytes=300,
+        memory_pool_peak_total_bytes=1024,
+        memory_pool_trim_count=2,
+        memory_pool_trimmed_step=True,
+        memory_pool_released_bytes_step=768,
+        pinned_memory_pool_free_blocks=0,
     )
     assert stats.device_preprocess_rows == 32
     assert stats.device_resident_host_bytes_avoided == 1024
     assert stats.device_latent_root_rows == 12
+    assert stats.memory_pool_cached_bytes == 256
+    assert stats.memory_pool_trim_count == 2
+    assert stats.memory_pool_released_bytes_step == 768
 
 def test_deferred_gpu_physiology_reads_current_device_cells() -> None:
     cfg = _cfg()

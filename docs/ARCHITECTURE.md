@@ -593,3 +593,12 @@ The runtime tracks successful parent contributions by stable entity ID. Sample c
 `se-multi` writes `multi-seed-run-plan-v3` before starting the first seed and runs `demographic-selection-validity-audit-v3` after all available progress streams complete. Outcome-dependent seed replacement remains forbidden.
 
 An active rebound is not a settled source. A post-bottleneck source rule is design provenance, not retrospective evidence. It can only be applied as a fixed burn-in rule to new independent seeds. Pilot windows used to derive the rule cannot be reused as confirmatory effect samples.
+
+
+## v0.70 bounded GPU allocator-cache boundary
+
+The hybrid runtime separates live semantic device state from allocator-owned free blocks. `GpuMemoryPoolController` runs only after a completed step, when transient observation and policy arrays have left scope. It may call the backend allocator's free-block operation only when unused cached bytes exceed the configured limit.
+
+Persistent entity mirrors, environment fields, information fields and spatial buffers remain referenced and cannot be released by this operation. The controller therefore changes allocation lifetime, not simulation state. Memory-pressure fallback is deliberately absent: a run either continues on its resolved backend or fails while retaining its latest scheduled checkpoint.
+
+Allocator telemetry belongs to operational provenance. It is not included in checkpoint semantic parity and is not evidence of selection validity.

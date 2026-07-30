@@ -70,6 +70,15 @@ def _performance(records: Sequence[dict[str, Any]]) -> dict[str, Any]:
         "gpu_device_preprocess_rows",
         "gpu_device_resident_host_bytes_avoided",
         "gpu_device_latent_root_rows",
+        "gpu_memory_used_bytes",
+        "gpu_memory_pool_total_bytes",
+        "gpu_memory_pool_cached_bytes",
+        "gpu_memory_pool_peak_used_bytes",
+        "gpu_memory_pool_peak_total_bytes",
+        "gpu_memory_pool_trim_count",
+        "gpu_memory_pool_trimmed_step",
+        "gpu_memory_pool_released_bytes_step",
+        "gpu_pinned_memory_pool_free_blocks",
     )
     result: dict[str, Any] = {}
     for field in fields:

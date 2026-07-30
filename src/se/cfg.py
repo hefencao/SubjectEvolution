@@ -33,6 +33,14 @@ class RunConfig:
     # CPU/GPU semantic validation belongs to the parity suite rather than the
     # production run path.
     gpu_semantics_mode: str = "hybrid-accelerated"
+    # CuPy retains freed blocks in its default allocator cache.  A population
+    # whose active batch grows every tick can otherwise leave a staircase of
+    # obsolete block sizes resident.  The bounded policy releases only unused
+    # blocks at end-of-step boundaries; live arrays and world semantics are
+    # unaffected.
+    gpu_memory_pool_policy: str = "bounded-cache-v1"
+    gpu_memory_pool_cache_limit_bytes: int = 536870912
+    gpu_memory_pool_trim_period: int = 1
     # Full-world bundles are opt-in because they are larger than the legacy
     # analysis-only NPZ snapshots.  When enabled they use checkpoint_period.
     full_checkpoint_enabled: bool = False
@@ -1045,6 +1053,30 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError(
             "run.gpu_semantics_mode must be one of: "
             "'strict-reference', 'hybrid-accelerated'"
+        )
+    if cfg.run.gpu_memory_pool_policy not in {
+        "bounded-cache-v1",
+        "unbounded-default-v1",
+    }:
+        raise ValueError(
+            "run.gpu_memory_pool_policy must be one of: "
+            "'bounded-cache-v1', 'unbounded-default-v1'"
+        )
+    if (
+        not isinstance(cfg.run.gpu_memory_pool_cache_limit_bytes, int)
+        or isinstance(cfg.run.gpu_memory_pool_cache_limit_bytes, bool)
+        or cfg.run.gpu_memory_pool_cache_limit_bytes < 0
+    ):
+        raise ValueError(
+            "run.gpu_memory_pool_cache_limit_bytes must be a non-negative integer"
+        )
+    if (
+        not isinstance(cfg.run.gpu_memory_pool_trim_period, int)
+        or isinstance(cfg.run.gpu_memory_pool_trim_period, bool)
+        or cfg.run.gpu_memory_pool_trim_period <= 0
+    ):
+        raise ValueError(
+            "run.gpu_memory_pool_trim_period must be a positive integer"
         )
     if len(cfg.environment.resource_regeneration) != 4 or len(cfg.environment.resource_capacity) != 4:
         raise ValueError("MVP requires exactly four resource channels")

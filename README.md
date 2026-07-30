@@ -1,54 +1,66 @@
-# SE v0.69
+# SE v0.70
 
 SE is a deterministic artificial-life and subject-structure research platform. The current main line retains role-free four-channel resources, conservative storage and recycling, persistent abiotic renewal, costed spatial processing, matched controls, GPU-first execution, and explicit scientific-validity gates.
 
-## Why v0.69
+## Why v0.70
 
-The supplied D3-K aggregate shows a severe early contraction followed by a strong rebound. At tick 3000 the three runs contain 6,056–7,339 living entities, more than 92% are descendants, mean generation is about 2.6–3.0, and recent reproduction is distributed across hundreds of effective parents. However, the last three 100-tick windows are still growing by about 10.5%–12.6% of their recent mean population per window. They are not a settled demographic platform.
+The supplied D3-L scale-4 runs exposed an execution-lifetime failure rather than a biological state-size limit. One run grew from 14,342 living entities at tick 3700 to 22,369 at tick 4500 while active encoded knowledge grew by less than 2 MiB, yet reported device residency rose from about 2 GiB to about 32 GiB and the fixed horizon could not finish.
 
-v0.69 therefore fixes the regime classifier rather than changing the world. A rebound is no longer called settled merely because its coefficient of variation and per-window growth remain below broad limits. Recent population slope and total cross-window change must also approach zero.
+The hybrid path creates temporary arrays whose sizes follow the active population and selected latent-copy count. CuPy's default allocator caches freed blocks. During a long monotonic rebound, progressively larger shapes can leave many obsolete smaller blocks resident even though they are no longer live simulation state.
 
-The same audit now reports founder-lineage concentration separately from current strategy and policy variation. Founder lineages are inherited historical labels; their concentration is informative, but it is not a complete substitute for measuring current heritable variation.
+v0.70 bounds only that unused allocator cache. It does not cap live arrays, reduce the population, alter knowledge, change selection pressure, or silently switch to CPU.
 
-No population is rescued. No death, birth, resource, carrying-capacity, reward, sensing, diversity or lineage-protection parameter is changed.
+## Bounded GPU allocator cache
 
-## Demographic regime audit
+Normal GPU runs use:
 
-`se-multi` writes `multi_seed_plan.json` before the first seed starts and automatically emits long-run and selection-validity artifacts after all available seeds finish.
+```text
+gpu_memory_pool_policy = bounded-cache-v1
+gpu_memory_pool_cache_limit_bytes = 536870912
+gpu_memory_pool_trim_period = 1
+```
 
-A post-bottleneck source requires all of the following in recent fixed windows:
+At the start of the next step, after the preceding `step()` frame has exited, the runtime releases stale unused blocks; the completed step then reports:
 
-- adequate absolute population;
-- low population coefficient of variation;
-- low per-window net growth;
-- near-zero recent population slope;
-- small total population change across the settled window span;
-- descendant and generation replacement;
-- broad reproductive contribution;
-- conservative founder-lineage concentration checks.
+- live device bytes;
+- total allocator-pool bytes;
+- unused cached bytes;
+- peak live and peak pool bytes;
+- trim count and bytes released;
+- pinned-pool free blocks.
 
-Run the fixed D3-L regime-resolution panel:
+Only unused blocks above the configured cache limit are released at this safe inter-step boundary. End-of-step cache and post-trim cache are reported separately. Persistent entity, field, spatial and policy state remains live.
+
+## D3-M memory-stability run
 
 ```bash
 se-multi \
-  --config configs/mvp_d3l_gpu_scale4_regime_resolution.json \
-  --seeds 69001,69002,69003 \
-  --output analyses/d3l_scale4_regime_resolution \
+  --config configs/mvp_d3m_gpu_scale4_memory_stability.json \
+  --seeds 70001,70002,70003 \
+  --output analyses/d3m_scale4_memory_stability \
   --backend auto \
   --until-tick 5000
 ```
 
-The horizon and seeds are fixed before execution. Failed or unresolved runs remain in the analysis.
+Audit allocator stability:
 
-## GPU execution and parity
+```bash
+se-gpu-memory-audit \
+  --run 70001=analyses/d3m_scale4_memory_stability/seed_70001 \
+  --run 70002=analyses/d3m_scale4_memory_stability/seed_70002 \
+  --run 70003=analyses/d3m_scale4_memory_stability/seed_70003 \
+  --output analyses/d3m_scale4_memory_stability/gpu_memory_audit
+```
 
-Normal runs default to `--backend auto`. A compatible CUDA/CuPy stack uses the hybrid GPU runtime; otherwise execution follows the recorded fallback path. Device semantics are validated independently through:
+Memory stability, execution provenance, CPU/GPU parity and scientific validity remain separate claims.
+
+## GPU parity
 
 ```bash
 make parity-gpu
 ```
 
-Execution provenance, semantic parity and scientific-effect inference remain separate claims.
+The allocator-cache policy is outside world semantics, while all checkpoint-authoritative world state remains covered by parity.
 
 ## Workflow
 
@@ -61,7 +73,7 @@ make release-check
 
 ## Current version documents
 
-- [Implementation report](docs/v0.69/IMPLEMENTATION_REPORT.md)
-- [D3-K regime reinterpretation](docs/v0.69/D3K_3000_REGIME_REINTERPRETATION.md)
-- [D3-L fixed-horizon plan](docs/v0.69/D3L_REGIME_RESOLUTION_PLAN.md)
-- [Protocol audit](docs/v0.69/protocol_audit.md)
+- [Implementation report](docs/v0.70/IMPLEMENTATION_REPORT.md)
+- [D3-L GPU memory failure analysis](docs/v0.70/D3L_GPU_MEMORY_FAILURE_ANALYSIS.md)
+- [D3-M memory-stability plan](docs/v0.70/D3M_GPU_MEMORY_STABILITY_PLAN.md)
+- [Protocol audit](docs/v0.70/protocol_audit.md)

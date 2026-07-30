@@ -166,6 +166,14 @@ class SimulationReportingMixin:
             "gpu_acceleration_enabled": bool(self.gpu_acceleration_enabled),
             "gpu_fallback_used": bool(self.gpu_fallback_used),
             "gpu_fallback_reason": self.gpu_fallback_reason,
+            "gpu_memory_pool": {
+                "policy": self.cfg.run.gpu_memory_pool_policy,
+                "cache_limit_bytes": (
+                    self.cfg.run.gpu_memory_pool_cache_limit_bytes
+                ),
+                "trim_period": self.cfg.run.gpu_memory_pool_trim_period,
+                "live_allocations_unmodified": True,
+            },
             "experiment_mode": self.experiment_mode.value,
             "resolved_config_sha256": hashlib.sha256(canonical).hexdigest(),
             "reporting": {
@@ -2205,6 +2213,36 @@ class SimulationReportingMixin:
                 stats.gpu_device_resident_host_bytes_avoided
             ),
             "gpu_device_latent_root_rows": stats.gpu_device_latent_root_rows,
+            "gpu_memory_pool_policy": self.cfg.run.gpu_memory_pool_policy,
+            "gpu_memory_pool_cache_limit_bytes": (
+                self.cfg.run.gpu_memory_pool_cache_limit_bytes
+            ),
+            "gpu_memory_pool_trim_period": (
+                self.cfg.run.gpu_memory_pool_trim_period
+            ),
+            "gpu_memory_used_bytes": stats.gpu_memory_used_bytes,
+            "gpu_memory_pool_total_bytes": stats.gpu_memory_pool_total_bytes,
+            "gpu_memory_pool_cached_bytes": stats.gpu_memory_pool_cached_bytes,
+            "gpu_memory_pool_total_bytes_after_trim": (
+                stats.gpu_memory_pool_total_bytes_after_trim
+            ),
+            "gpu_memory_pool_cached_bytes_after_trim": (
+                stats.gpu_memory_pool_cached_bytes_after_trim
+            ),
+            "gpu_memory_pool_peak_used_bytes": (
+                stats.gpu_memory_pool_peak_used_bytes
+            ),
+            "gpu_memory_pool_peak_total_bytes": (
+                stats.gpu_memory_pool_peak_total_bytes
+            ),
+            "gpu_memory_pool_trim_count": stats.gpu_memory_pool_trim_count,
+            "gpu_memory_pool_trimmed_step": stats.gpu_memory_pool_trimmed_step,
+            "gpu_memory_pool_released_bytes_step": (
+                stats.gpu_memory_pool_released_bytes_step
+            ),
+            "gpu_pinned_memory_pool_free_blocks": (
+                stats.gpu_pinned_memory_pool_free_blocks
+            ),
             "step_seconds": elapsed,
             "wall_elapsed_seconds": wall_elapsed,
             "window_seconds": window_seconds,

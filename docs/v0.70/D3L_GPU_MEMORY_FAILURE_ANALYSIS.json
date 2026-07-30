@@ -1,0 +1,91 @@
+{
+  "schema": "d3l-gpu-memory-failure-analysis-v1",
+  "source": "analyses(13).zip",
+  "reported_device_observation": {
+    "tick_3700_alive": 14342,
+    "tick_3700_groups": 239,
+    "tick_3700_vram_bytes_approx": 2147483648,
+    "tick_4500_alive": 22369,
+    "tick_4500_groups": 404,
+    "tick_4500_vram_bytes_approx": 34359738368,
+    "tick_4500_outcome": "out-of-memory-before-completing-fixed-horizon"
+  },
+  "runs": [
+    {
+      "seed": 69001,
+      "last_tick": 200,
+      "last_alive": 3062,
+      "tick_3700": null,
+      "tick_4500": null,
+      "gpu_memory_telemetry_available": false
+    },
+    {
+      "seed": 69002,
+      "last_tick": 4500,
+      "last_alive": 22369,
+      "tick_3700": {
+        "tick": 3700,
+        "alive": 14342,
+        "groups": 239,
+        "knowledge_content_count": 162564,
+        "knowledge_copy_count": 64197,
+        "knowledge_active_encoded_bytes": 3458480,
+        "knowledge_selection_selected_copies_step": 11140,
+        "window_seconds_per_tick": 0.7179551165500015
+      },
+      "tick_4500": {
+        "tick": 4500,
+        "alive": 22369,
+        "groups": 404,
+        "knowledge_content_count": 290161,
+        "knowledge_copy_count": 102384,
+        "knowledge_active_encoded_bytes": 5394048,
+        "knowledge_selection_selected_copies_step": 18817,
+        "window_seconds_per_tick": 1.117242960939984
+      },
+      "gpu_memory_telemetry_available": false
+    },
+    {
+      "seed": 69003,
+      "last_tick": 4500,
+      "last_alive": 26596,
+      "tick_3700": {
+        "tick": 3700,
+        "alive": 18215,
+        "groups": 324,
+        "knowledge_content_count": 182615,
+        "knowledge_copy_count": 76383,
+        "knowledge_active_encoded_bytes": 4082000,
+        "knowledge_selection_selected_copies_step": 11734,
+        "window_seconds_per_tick": 0.8030274263599858
+      },
+      "tick_4500": {
+        "tick": 4500,
+        "alive": 26596,
+        "groups": 510,
+        "knowledge_content_count": 319515,
+        "knowledge_copy_count": 114266,
+        "knowledge_active_encoded_bytes": 5966416,
+        "knowledge_selection_selected_copies_step": 19894,
+        "window_seconds_per_tick": 1.312189962150005
+      },
+      "gpu_memory_telemetry_available": false
+    }
+  ],
+  "persistent_state_check": {
+    "seed_69002_knowledge_encoded_growth_bytes": 1935568,
+    "seed_69002_alive_growth": 8027,
+    "interpretation": "Persistent knowledge and entity-count growth are far too small to explain approximately 30 GiB of additional device residency."
+  },
+  "inference": {
+    "primary": "unused-cupy-memory-pool-cache-retention-under-monotonically-growing-transient-batch-shapes",
+    "confidence": "strong-structural-inference; old artifacts lack allocator telemetry",
+    "alternatives_to_measure": "live transient peak growth and external device allocations"
+  },
+  "required_fix": [
+    "bound only stale unused allocator cache at the next-step start after the preceding step frame exits",
+    "publish live, end-of-step, post-trim, peak, trim and released-byte telemetry",
+    "preserve live device arrays and simulation semantics",
+    "do not silently fall back to CPU under memory pressure"
+  ]
+}

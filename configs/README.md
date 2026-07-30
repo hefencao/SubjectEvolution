@@ -38,3 +38,7 @@ Demographic source audit presets:
 - `mvp_d3l_gpu_scale4_regime_resolution.json`: fixed 5,000-tick regime-resolution run. It retains the same world and mechanisms while requiring recent population slope and cross-window change to approach zero before a rebound can be called settled.
 
 `se-multi` writes `multi_seed_plan.json` before the first seed and automatically emits `selection_validity_plan.json`, `selection_validity_audit.json` and Markdown after all available seed progress streams complete. These outputs never alter the simulation or replace failed seeds.
+
+GPU memory-stability preset:
+
+- `mvp_d3m_gpu_scale4_memory_stability.json`: fixed 5,000-tick repetition of the D3-L world with `bounded-cache-v1`, a 512 MiB unused-cache limit and safe next-step-start trimming. Live arrays and model state are unchanged. Use `se-gpu-memory-audit` on the resulting seed directories to distinguish live memory from allocator cache.

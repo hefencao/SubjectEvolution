@@ -1,0 +1,23 @@
+{
+  "schema": "d3m-gpu-memory-stability-plan-v1",
+  "config": "configs/mvp_d3m_gpu_scale4_memory_stability.json",
+  "world_and_evolution_mechanisms_changed": false,
+  "fixed_horizon_ticks": 5000,
+  "gpu_memory_pool_policy": "bounded-cache-v1",
+  "gpu_memory_pool_cache_limit_bytes": 536870912,
+  "gpu_memory_pool_trim_period": 1,
+  "required_telemetry": [
+    "gpu_memory_used_bytes",
+    "gpu_memory_pool_total_bytes",
+    "gpu_memory_pool_cached_bytes",
+    "gpu_memory_pool_total_bytes_after_trim",
+    "gpu_memory_pool_cached_bytes_after_trim",
+    "gpu_memory_pool_peak_used_bytes",
+    "gpu_memory_pool_peak_total_bytes",
+    "gpu_memory_pool_trim_count",
+    "gpu_memory_pool_released_bytes_step"
+  ],
+  "success_boundary": "complete the fixed horizon without allocator-cache growth exceeding the configured post-trim cache bound",
+  "scientific_boundary": "memory stability does not establish selection validity, parity or performance speedup",
+  "trim_boundary": "next-step-start-after-prior-step-frame-exit"
+}

@@ -17,6 +17,7 @@ from typing import Any
 import numpy as np
 
 from .backend import Backend, resolve_backend
+from .gpu_memory import GpuMemoryPoolController
 from .cfg import SimulationConfig
 from .device_state import EntityDeviceCommitPlan
 from se.env.danger_evidence import DANGER_EVIDENCE_SCALE, danger_evidence_enabled, danger_evidence_quantized
@@ -81,6 +82,17 @@ class GpuTransferStats:
     device_preprocess_rows: int = 0
     device_resident_host_bytes_avoided: int = 0
     device_latent_root_rows: int = 0
+    memory_used_bytes: int = 0
+    memory_pool_total_bytes: int = 0
+    memory_pool_cached_bytes: int = 0
+    memory_pool_total_bytes_after_trim: int = 0
+    memory_pool_cached_bytes_after_trim: int = 0
+    memory_pool_peak_used_bytes: int = 0
+    memory_pool_peak_total_bytes: int = 0
+    memory_pool_trim_count: int = 0
+    memory_pool_trimmed_step: bool = False
+    memory_pool_released_bytes_step: int = 0
+    pinned_memory_pool_free_blocks: int = 0
 
     def record_into(self, stats: Any) -> None:
         """Publish this transfer snapshot into one backend-neutral step record."""
@@ -95,6 +107,25 @@ class GpuTransferStats:
             self.device_resident_host_bytes_avoided
         )
         stats.gpu_device_latent_root_rows = self.device_latent_root_rows
+        stats.gpu_memory_used_bytes = self.memory_used_bytes
+        stats.gpu_memory_pool_total_bytes = self.memory_pool_total_bytes
+        stats.gpu_memory_pool_cached_bytes = self.memory_pool_cached_bytes
+        stats.gpu_memory_pool_total_bytes_after_trim = (
+            self.memory_pool_total_bytes_after_trim
+        )
+        stats.gpu_memory_pool_cached_bytes_after_trim = (
+            self.memory_pool_cached_bytes_after_trim
+        )
+        stats.gpu_memory_pool_peak_used_bytes = self.memory_pool_peak_used_bytes
+        stats.gpu_memory_pool_peak_total_bytes = self.memory_pool_peak_total_bytes
+        stats.gpu_memory_pool_trim_count = self.memory_pool_trim_count
+        stats.gpu_memory_pool_trimmed_step = int(self.memory_pool_trimmed_step)
+        stats.gpu_memory_pool_released_bytes_step = (
+            self.memory_pool_released_bytes_step
+        )
+        stats.gpu_pinned_memory_pool_free_blocks = (
+            self.pinned_memory_pool_free_blocks
+        )
 
 
 @dataclass
@@ -268,8 +299,15 @@ class HybridGpuRuntime:
         self._device_preprocess_rows = 0
         self._device_resident_host_bytes_avoided = 0
         self._device_latent_root_rows = 0
+        self.memory_pool = GpuMemoryPoolController(
+            self.backend.xp,
+            policy=cfg.run.gpu_memory_pool_policy,
+            cache_limit_bytes=cfg.run.gpu_memory_pool_cache_limit_bytes,
+            trim_period=cfg.run.gpu_memory_pool_trim_period,
+        )
 
     def begin_step_transfer_measurement(self) -> None:
+        self.memory_pool.begin_step()
         self._measure_transfers = True
         self._host_to_device_bytes = 0
         self._device_to_host_bytes = 0
@@ -281,6 +319,7 @@ class HybridGpuRuntime:
         self._device_latent_root_rows = 0
 
     def finish_step_transfer_measurement(self) -> GpuTransferStats:
+        memory = self.memory_pool.finish_step()
         result = GpuTransferStats(
             host_to_device_bytes=self._host_to_device_bytes,
             device_to_host_bytes=self._device_to_host_bytes,
@@ -292,6 +331,17 @@ class HybridGpuRuntime:
                 self._device_resident_host_bytes_avoided
             ),
             device_latent_root_rows=self._device_latent_root_rows,
+            memory_used_bytes=memory.used_bytes,
+            memory_pool_total_bytes=memory.total_bytes,
+            memory_pool_cached_bytes=memory.cached_bytes,
+            memory_pool_total_bytes_after_trim=memory.total_bytes_after_trim,
+            memory_pool_cached_bytes_after_trim=memory.cached_bytes_after_trim,
+            memory_pool_peak_used_bytes=memory.peak_used_bytes,
+            memory_pool_peak_total_bytes=memory.peak_total_bytes,
+            memory_pool_trim_count=memory.trim_count,
+            memory_pool_trimmed_step=memory.trimmed_step,
+            memory_pool_released_bytes_step=memory.released_bytes_step,
+            pinned_memory_pool_free_blocks=memory.pinned_free_blocks,
         )
         self._measure_transfers = False
         return result

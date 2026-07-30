@@ -79,11 +79,15 @@ def test_run_plan_is_written_before_normal_run_outputs(tmp_path: Path) -> None:
     metadata = json.loads((output / "run_metadata.json").read_text())
 
     assert plan["schema"] == "simulation-run-plan-v1"
-    assert plan["version"] == "0.69.0"
+    assert plan["version"] == "0.70.0"
     assert plan["start_tick"] == 0
     assert plan["target_tick"] == 2
     assert plan["reporting"]["summary_schema"] == "authoritative-reporting-snapshot-v1"
     assert plan["reporting"]["device_state_materialized_at_every_report"] is True
+    assert plan["gpu_memory_pool"]["policy"] == "bounded-cache-v1"
+    assert plan["gpu_memory_pool"]["cache_limit_bytes"] == 536870912
+    assert plan["gpu_memory_pool"]["trim_period"] == 1
+    assert plan["gpu_memory_pool"]["live_allocations_unmodified"] is True
     assert plan["checkpoints"]["period"] == 99
     assert plan["outcome_conditioned_schedule_changes"] is False
     assert summary["reporting_state_tick"] == 2

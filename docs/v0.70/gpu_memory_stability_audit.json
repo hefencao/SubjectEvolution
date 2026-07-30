@@ -1,0 +1,50 @@
+{
+  "schema": "gpu-memory-stability-audit-v1",
+  "runs": [
+    {
+      "label": "69001",
+      "run": "analyses/d3l_scale4_regime_resolution/seed_69001",
+      "metrics_rows": 3,
+      "first_tick": 1,
+      "last_tick": 200,
+      "initial_reported_alive": 8000,
+      "maximum_alive": 8000,
+      "final_alive": 3062,
+      "memory_telemetry_available": false,
+      "memory_pool_policy_counts": {},
+      "allocator_cache_bounded": null,
+      "recommendation": "rerun-with-gpu-memory-pool-telemetry"
+    },
+    {
+      "label": "69002",
+      "run": "analyses/d3l_scale4_regime_resolution/seed_69002",
+      "metrics_rows": 46,
+      "first_tick": 1,
+      "last_tick": 4500,
+      "initial_reported_alive": 8000,
+      "maximum_alive": 22369,
+      "final_alive": 22369,
+      "memory_telemetry_available": false,
+      "memory_pool_policy_counts": {},
+      "allocator_cache_bounded": null,
+      "recommendation": "rerun-with-gpu-memory-pool-telemetry"
+    },
+    {
+      "label": "69003",
+      "run": "analyses/d3l_scale4_regime_resolution/seed_69003",
+      "metrics_rows": 46,
+      "first_tick": 1,
+      "last_tick": 4500,
+      "initial_reported_alive": 8000,
+      "maximum_alive": 26596,
+      "final_alive": 26596,
+      "memory_telemetry_available": false,
+      "memory_pool_policy_counts": {},
+      "allocator_cache_bounded": null,
+      "recommendation": "rerun-with-gpu-memory-pool-telemetry"
+    }
+  ],
+  "all_runs_have_memory_telemetry": false,
+  "all_telemetry_runs_bound_allocator_cache": false,
+  "interpretation_boundary": "Allocator telemetry distinguishes live device state from unused CuPy cache. It does not establish scientific validity or CPU/GPU parity."
+}

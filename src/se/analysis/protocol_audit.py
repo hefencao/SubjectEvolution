@@ -31,7 +31,7 @@ from se.differentiation.physiology import (
 )
 
 
-SCHEMA = "structural-measurement-protocol-audit-v37"
+SCHEMA = "structural-measurement-protocol-audit-v38"
 
 
 def _canonical_sha256(payload: dict[str, Any]) -> str:
@@ -128,6 +128,14 @@ def build_protocol_audit(
             "parity_certificate_schema": "gpu-parity-certificate-v1",
             "parity_report_emitter": "tests/test_parity.py under make parity-gpu",
             "gpu_execution_audit_schema": "gpu-execution-audit-v1",
+            "gpu_memory_pool": {
+                "policy": cfg.run.gpu_memory_pool_policy,
+                "cache_limit_bytes": cfg.run.gpu_memory_pool_cache_limit_bytes,
+                "trim_period": cfg.run.gpu_memory_pool_trim_period,
+                "semantic_scope": (
+                    "allocator-cache lifecycle only; live arrays and world state are unchanged"
+                ),
+            },
             "device_resident_preprocessing": [
                 "resource-affinity quantization",
                 "danger-evidence quantization",

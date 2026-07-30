@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.70.0
+
+### Bounded GPU allocator cache for growing long-run batches
+
+- Diagnoses the supplied D3-L failure as device allocator-cache growth rather than persistent biological or knowledge state growth.
+- Adds `bounded-cache-v1`, which releases only unused CuPy blocks after completed steps and never changes live arrays or backend semantics.
+- Adds live, total, cached, peak, trim, released-byte and pinned-pool telemetry to metrics and summaries.
+- Adds `gpu-memory-stability-audit-v1` and the `se-gpu-memory-audit` console entry.
+- Adds a fixed D3-M scale-4 memory-stability configuration with the same world and evolutionary mechanisms as D3-L.
+- Records the allocator policy in pre-run plans and protocol provenance.
+- Upgrades protocol audit to v38 and project version to 0.70.0.
+- Adds no population cap, rescue, diversity protection, sensor, reward, role or memory-pressure CPU fallback.
+
 ## 0.69.0
 
 ### Active-rebound classification and portable release documentation
