@@ -666,4 +666,16 @@ A manipulation-confirmed terminal negative may close a mechanism-family revision
 Reopening a closed family requires a strictly higher revision, an explicit scientific rationale, and a named directly measurable interface that was not available to the closed revision. A rationale alone is insufficient. These fields remain non-inferential portfolio metadata and do not alter candidate signatures, world state, checkpoint semantics, seeds or random streams.
 
 When all shipped candidate specifications are terminal and none is awaiting assessment, the portfolio state is `scientific-revision-required`. This state does not automatically choose a replacement mechanism, lower thresholds, extend horizons or authorize a neighboring component screen.
+## v0.78 immutable decision-history boundary
+
+The candidate decision ledger has two distinct persistence layers:
+
+1. **immutable release baseline** — terminal and promoted decisions already accepted into the project release;
+2. **workspace overlay** — new analysis assessments produced by the current checkout.
+
+Every planning or audit operation uses a deterministic merge. Candidate ID/signature mismatches, same-stage assessment conflicts and stages appended after a terminal decision are rejected. The workspace cannot delete a baseline entry by omission. The merge affects only experiment governance and never feeds information into simulation state.
+
+The canonical baseline is visible at `protocols/decisions/exploration_candidate_ledger.json` and is also packaged as `se/resources/exploration_candidate_ledger.json` so installed console entries retain the same history outside an editable checkout. Repository and package copies are tested for equality.
+
+`se-exploration-ledger-hydrate` materializes the effective merged ledger into `analyses/` when an operator wants a self-contained workspace artifact. Hydration does not create, revise, promote or stop a candidate.
 

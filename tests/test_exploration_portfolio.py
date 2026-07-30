@@ -95,3 +95,38 @@ def test_portfolio_audit_reports_unrecorded_candidate_spec(tmp_path: Path) -> No
     report = build_portfolio_audit(tmp_path / "missing-ledger.json", candidate_dir)
     assert report["portfolio_state"] == "candidate-specs-awaiting-assessment"
     assert report["unrecorded_candidate_spec_ids"] == ["pending-a"]
+
+
+def test_portfolio_audit_uses_builtin_history_for_partial_workspace(
+    tmp_path: Path,
+) -> None:
+    canonical = json.loads(
+        Path("protocols/decisions/exploration_candidate_ledger.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    partial_entries = [
+        entry
+        for entry in canonical["entries"]
+        if entry["candidate_id"]
+        in {
+            "functional-regulatory-oxygen-uptake-acute-effect-v1",
+            "functional-modules-harvest-acute-effect-v1",
+        }
+    ]
+    ledger_path = tmp_path / "partial.json"
+    ledger_path.write_text(
+        json.dumps({**canonical, "entries": partial_entries}), encoding="utf-8"
+    )
+
+    report = build_portfolio_audit(
+        ledger_path,
+        "protocols/candidates",
+        include_builtin_baseline=True,
+    )
+    assert report["portfolio_state"] == "scientific-revision-required"
+    assert report["unrecorded_candidate_spec_ids"] == []
+    assert report["workspace_ledger_entry_count"] == 2
+    assert report["decision_baseline_entry_count"] == 5
+    assert report["workspace_hydration_required"] is True
+    assert "immutable baseline entries: 5" in render_markdown(report)

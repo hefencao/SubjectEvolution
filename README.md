@@ -1,35 +1,28 @@
-# SE v0.77
+# SE v0.78
 
 Reference implementation for nested-subject existence evolution simulation.
 
 ## Current bounded result
 
-The supplied D3-S aggregate functional-module screen is complete:
+The supplied portfolio audit used a workspace decision ledger containing only D3-R and D3-S, so it incorrectly reported D3-P and D3-Q as awaiting assessment. This was not new scientific evidence and did not authorize rerunning either candidate.
 
-- all eight fixed-checkpoint seed panels are eligible;
-- complete functional-module ablation is confirmed in every intervention branch;
-- seven of eight seed effects increase cumulative total harvest;
-- the equal-seed median relative increase is about 0.107%, below the preregistered 2% threshold.
+v0.78 ships an immutable five-entry decision baseline and merges it with the workspace ledger in candidate recording, portfolio audit and paired-plan validation. Reconciliation restores the established state:
 
-D3-S stops before replication and closes `functional-modules` revision 1. This is a candidate-specific acute result, not a universal claim that functional modules have no effect.
+- `knowledge-policy` revision 1 is closed by D3-Q;
+- `functional-modules` revision 1 is closed by D3-S;
+- no shipped candidate is open or awaiting assessment;
+- the portfolio remains `scientific-revision-required`.
 
-## Exploration portfolio state
+A partial workspace can no longer erase terminal history. Conflicting workspace history is rejected.
 
-The bundled candidate ledger now reports family-revision state explicitly. `knowledge-policy` revision 1 and `functional-modules` revision 1 are closed by manipulation-confirmed aggregate gates. No shipped candidate is open or awaiting assessment.
+## Suggested commands
 
-The portfolio audit therefore reports `scientific-revision-required`. Another paired plan requires either a genuinely new mechanism family or a higher closed-family revision with both:
-
-- an explicit scientific rationale;
-- a named, directly measurable interface that was not available to the closed revision.
-
-The audit does not choose a new mechanism, lower a threshold, extend a horizon, or feed back into the world.
-
-## Governance commands
+Because v0.78 adds a console entry and package resource, update the editable Conda installation first:
 
 ```bash
-se-exploration-candidate-record \
-  --assessment analyses/d3s_functional_modules_paired_screen/paired_exploration_assessment.json \
-  --candidate-spec protocols/candidates/d3s_functional_modules_harvest_acute_effect.json \
+make conda-sync
+
+se-exploration-ledger-hydrate \
   --ledger analyses/exploration_candidate_ledger.json
 
 se-exploration-portfolio-audit \
@@ -38,10 +31,11 @@ se-exploration-portfolio-audit \
   --output analyses/exploration_portfolio_audit
 ```
 
+The hydrate command only reconstructs the complete historical ledger. It does not alter any scientific decision or feed information back into the world.
+
 ## Validation workflow
 
 ```bash
-make conda-sync
 make test
 make conda-check
 make parity-gpu
@@ -54,9 +48,9 @@ make parity-gpu
 - [Project status](docs/PROJECT_STATUS.md)
 - [Scientific issues](docs/SCIENTIFIC_ISSUES.md)
 - [Recurring governance check](docs/PROJECT_GOVERNANCE.md)
-- [Implementation report](docs/v0.77/IMPLEMENTATION_REPORT.md)
-- [D3-S supplied candidate decision](docs/v0.77/D3S_SUPPLIED_CANDIDATE_DECISION.md)
-- [Candidate decision ledger](docs/v0.77/SUPPLIED_CANDIDATE_LEDGER.md)
-- [Exploration portfolio audit](docs/v0.77/exploration_portfolio_audit.md)
-- [Protocol audit](docs/v0.77/protocol_audit.md)
-- [Validation report](docs/v0.77/VALIDATION_REPORT.md)
+- [Implementation report](docs/v0.78/IMPLEMENTATION_REPORT.md)
+- [Governance check](docs/v0.78/GOVERNANCE_CHECK.md)
+- [Supplied partial-workspace audit](docs/v0.78/SUPPLIED_PORTFOLIO_AUDIT.md)
+- [Reconciled portfolio audit](docs/v0.78/RECONCILED_PORTFOLIO_AUDIT.md)
+- [Immutable decision baseline](docs/v0.78/DECISION_BASELINE.json)
+- [Protocol audit](docs/v0.78/protocol_audit.md)

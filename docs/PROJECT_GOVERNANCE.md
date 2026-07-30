@@ -24,3 +24,18 @@ A closed or exhausted candidate portfolio does not authorize automatic selection
 - The task is adjusted from another same-architecture component screen to scientific revision design.
 - The previously documented “new directly measurable interface” requirement is now enforced by code and tests.
 - The recurring governance check and the prohibition on automatic replacement-candidate selection are now repository principles rather than chat-only instructions.
+## 5. Decision-history continuity
+
+Terminal candidate and family decisions are release state, not disposable analysis output. Every clean package must carry an immutable decision baseline. Workspace ledgers are append-only overlays: they may add compatible later assessments but may not erase or override baseline history.
+
+## 6. Iteration delivery
+
+Run the required validation every iteration. When validation succeeds, the delivery response may omit a detailed validation report. Every iteration must still provide the recommended next commands.
+
+## v0.78 check
+
+- The supplied audit mismatch is traced to incomplete workspace history rather than new scientific evidence.
+- D3-P and D3-Q remain terminal; the scientific task is not changed to rerun them.
+- Immutable decision history, conflict rejection and explicit workspace hydration are enforced by code and tests.
+- The new delivery rules about concise successful-validation reporting and suggested commands are now repository principles rather than chat-only instructions.
+

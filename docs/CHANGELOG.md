@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.78.0
+
+- Diagnoses the supplied `candidate-specs-awaiting-assessment` result as incomplete workspace decision history rather than new empirical evidence.
+- Ships the canonical five-entry candidate decision history as both a repository protocol artifact and an installed package resource.
+- Merges immutable baseline history with the append-only workspace ledger in candidate recording, portfolio audit and paired-plan validation.
+- Rejects candidate identity, same-stage assessment and post-terminal history conflicts across baseline and workspace ledgers.
+- Adds `se-exploration-ledger-hydrate` to materialize complete effective history without changing scientific decisions.
+- Reconciles the supplied two-entry workspace to `scientific-revision-required`; D3-P and D3-Q remain terminal.
+- Records that successful validation need not be described in detail in each delivery, while recommended next commands remain mandatory.
+- Upgrades the protocol audit to v46 and project version to 0.78.0.
+- Changes no world mechanism, reward, cost, inheritance rule, checkpoint, random stream, candidate threshold or source population.
+
 ## 0.77.0
 
 - Records the supplied eight-seed D3-S aggregate functional-module screen as a terminal manipulation-confirmed practical-effect stop: seven effects increase harvest, but the equal-seed median increase is about 0.107%, below the preregistered 2% threshold.

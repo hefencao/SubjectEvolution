@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from typing import Any, Sequence
 
-from .candidate_ledger import candidate_signature, load_ledger
+from .candidate_ledger import candidate_signature, load_effective_ledger
 from se.experiments.paired_exploration import load_candidate_spec
 
 SCHEMA = "paired-exploration-portfolio-audit-v1"
@@ -46,10 +46,17 @@ def _load_candidate_specs(candidate_dir: Path) -> list[dict[str, Any]]:
 def build_portfolio_audit(
     ledger_path: str | Path,
     candidate_dir: str | Path,
+    *,
+    decision_baseline: str | Path | None = None,
+    include_builtin_baseline: bool = False,
 ) -> dict[str, Any]:
     ledger_ref = Path(ledger_path)
     candidate_root = Path(candidate_dir)
-    ledger = load_ledger(ledger_ref)
+    ledger, history = load_effective_ledger(
+        ledger_ref,
+        decision_baseline=decision_baseline,
+        include_builtin_baseline=include_builtin_baseline,
+    )
     entries = [dict(entry) for entry in ledger.get("entries", [])]
     specs = _load_candidate_specs(candidate_root)
 
@@ -141,6 +148,7 @@ def build_portfolio_audit(
         "schema": SCHEMA,
         "ledger_path": str(ledger_ref),
         "ledger_schema": ledger["schema"],
+        **history,
         "candidate_dir": str(candidate_root),
         "candidate_spec_count": len(specs),
         "ledger_entry_count": len(entries),
@@ -164,6 +172,8 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         f"Schema: `{report['schema']}`",
         f"Portfolio state: `{report['portfolio_state']}`",
+        f"Decision baseline: `{report.get('decision_baseline_path')}`",
+        f"Workspace hydration required: `{report.get('workspace_hydration_required')}`",
         "",
         "## Candidate specifications",
         "",
@@ -199,6 +209,9 @@ def render_markdown(report: dict[str, Any]) -> str:
             f"- unrecorded candidate specs: {report['unrecorded_candidate_spec_ids']}",
             f"- open candidates: {report['open_candidate_ids']}",
             f"- conflicts: {report['conflicts']}",
+            f"- workspace ledger entries: {report['workspace_ledger_entry_count']}",
+            f"- immutable baseline entries: {report['decision_baseline_entry_count']}",
+            f"- effective merged entries: {report['effective_ledger_entry_count']}",
             "- no threshold, horizon, seed, or family status is changed by this audit",
             "- feedback to world: false",
             "",
@@ -213,11 +226,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument("--ledger", required=True)
     parser.add_argument("--candidate-dir", default="protocols/candidates")
+    parser.add_argument(
+        "--decision-baseline",
+        help="optional explicit immutable decision baseline; built-in history is used by default",
+    )
     parser.add_argument("--output", required=True)
     args = parser.parse_args(argv)
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
-    report = build_portfolio_audit(args.ledger, args.candidate_dir)
+    report = build_portfolio_audit(
+        args.ledger,
+        args.candidate_dir,
+        decision_baseline=Path(args.decision_baseline) if args.decision_baseline else None,
+        include_builtin_baseline=args.decision_baseline is None,
+    )
     (output / "exploration_portfolio_audit.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )

@@ -1,14 +1,15 @@
 """Deterministic decision ledger for tiered paired exploration candidates.
 
-The ledger records promoted and stopped candidate specifications so a failed
-screen cannot be silently revived by relabeling it, lowering its threshold, or
-reusing the same discovery result as a new hypothesis. It is an analysis
-artifact only and never feeds back into the simulated world.
+The immutable release baseline and append-only workspace overlay record promoted
+and stopped candidate specifications so a failed screen cannot be silently
+revived by relabeling it, lowering its threshold, or reusing the same discovery
+result as a new hypothesis. Decision history never feeds back into the world.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
+from importlib import resources
 import json
 from pathlib import Path
 from typing import Any, Sequence
@@ -20,6 +21,8 @@ LEGACY_LEDGER_SCHEMAS = {
     "paired-exploration-candidate-ledger-v3",
     "paired-exploration-candidate-ledger-v4",
 }
+BUILTIN_DECISION_BASELINE_RESOURCE = "resources/exploration_candidate_ledger.json"
+
 SUPPORTED_ASSESSMENT_SCHEMAS = {
     "tiered-paired-exploration-assessment-v1",
     "tiered-paired-exploration-assessment-v2",
@@ -267,20 +270,146 @@ def _upgrade_entry(entry: dict[str, Any]) -> dict[str, Any]:
     return upgraded
 
 
+
+
+def _load_ledger_payload(payload: Any, *, source: str) -> dict[str, Any]:
+    if not isinstance(payload, dict) or payload.get("schema") not in {
+        LEDGER_SCHEMA,
+        *LEGACY_LEDGER_SCHEMAS,
+    }:
+        raise ValueError(f"unsupported candidate ledger schema in {source}")
+    entries = payload.get("entries")
+    if not isinstance(entries, list):
+        raise ValueError("candidate ledger entries must be a list")
+    return _ledger_payload([_upgrade_entry(dict(entry)) for entry in entries])
+
+
+def load_builtin_decision_baseline() -> dict[str, Any]:
+    resource = resources.files("se").joinpath(BUILTIN_DECISION_BASELINE_RESOURCE)
+    payload = json.loads(resource.read_text(encoding="utf-8"))
+    return _load_ledger_payload(
+        payload, source=f"package:se/{BUILTIN_DECISION_BASELINE_RESOURCE}"
+    )
+
+
+def merge_ledgers(*ledgers: dict[str, Any]) -> dict[str, Any]:
+    """Merge compatible ledger histories without allowing silent replacement."""
+
+    entries: list[dict[str, Any]] = []
+    seen_assessments: set[str] = set()
+    for ledger in ledgers:
+        for raw in ledger.get("entries", []):
+            entry = _upgrade_entry(dict(raw))
+            assessment_hash = str(entry.get("assessment_sha256", ""))
+            if assessment_hash and assessment_hash in seen_assessments:
+                continue
+            candidate_id = str(entry.get("candidate_id", ""))
+            signature = str(entry.get("candidate_signature_sha256", ""))
+            stage = str(entry.get("stage", ""))
+            for existing in entries:
+                existing_id = str(existing.get("candidate_id", ""))
+                existing_signature = str(
+                    existing.get("candidate_signature_sha256", "")
+                )
+                if existing_id == candidate_id and existing_signature != signature:
+                    raise ValueError(
+                        "candidate id exists with different scientific specifications across ledgers"
+                    )
+                if existing_signature == signature and existing_id != candidate_id:
+                    raise ValueError(
+                        "candidate specification exists under different candidate ids across ledgers"
+                    )
+                if (
+                    existing_id == candidate_id
+                    and str(existing.get("stage", "")) == stage
+                    and str(existing.get("assessment_sha256", "")) != assessment_hash
+                ):
+                    raise ValueError(
+                        "candidate stage has conflicting assessments across ledgers"
+                    )
+            entries.append(entry)
+            if assessment_hash:
+                seen_assessments.add(assessment_hash)
+
+    stage_order = {"smoke": 0, "screen": 1, "replication": 2, "confirmation": 3}
+    by_candidate: dict[str, list[dict[str, Any]]] = {}
+    for entry in entries:
+        by_candidate.setdefault(str(entry.get("candidate_id", "")), []).append(entry)
+    for candidate_id, candidate_entries in by_candidate.items():
+        ordered = sorted(
+            candidate_entries,
+            key=lambda item: (
+                stage_order.get(str(item.get("stage", "")), 99),
+                str(item.get("stage", "")),
+            ),
+        )
+        terminal_positions = [
+            index for index, item in enumerate(ordered) if bool(item.get("terminal", False))
+        ]
+        if terminal_positions and terminal_positions[0] != len(ordered) - 1:
+            raise ValueError(
+                f"candidate {candidate_id!r} has a stage recorded after a terminal decision"
+            )
+
+    entries.sort(
+        key=lambda item: (
+            str(item.get("candidate_id", "")),
+            str(item.get("candidate_signature_sha256", "")),
+            stage_order.get(str(item.get("stage", "")), 99),
+            str(item.get("stage", "")),
+        )
+    )
+    return _ledger_payload(entries)
+
+
+def load_effective_ledger(
+    workspace_path: str | Path,
+    *,
+    decision_baseline: str | Path | None = None,
+    include_builtin_baseline: bool = False,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    workspace_ref = Path(workspace_path)
+    workspace = load_ledger(workspace_ref)
+    baseline_ref: str | None = None
+    if decision_baseline is not None:
+        baseline_path = Path(decision_baseline)
+        if not baseline_path.is_file():
+            raise ValueError(f"decision baseline does not exist: {baseline_path}")
+        baseline = load_ledger(baseline_path)
+        baseline_ref = str(baseline_path)
+    elif include_builtin_baseline:
+        baseline = load_builtin_decision_baseline()
+        baseline_ref = f"package:se/{BUILTIN_DECISION_BASELINE_RESOURCE}"
+    else:
+        baseline = _ledger_payload([])
+
+    effective = merge_ledgers(baseline, workspace)
+    baseline_hashes = {
+        str(entry.get("assessment_sha256", ""))
+        for entry in baseline.get("entries", [])
+    }
+    workspace_hashes = {
+        str(entry.get("assessment_sha256", ""))
+        for entry in workspace.get("entries", [])
+    }
+    missing = sorted(value for value in baseline_hashes - workspace_hashes if value)
+    metadata = {
+        "decision_baseline_path": baseline_ref,
+        "decision_baseline_entry_count": len(baseline.get("entries", [])),
+        "workspace_ledger_entry_count": len(workspace.get("entries", [])),
+        "effective_ledger_entry_count": len(effective.get("entries", [])),
+        "workspace_missing_baseline_assessment_sha256": missing,
+        "workspace_hydration_required": bool(missing),
+    }
+    return effective, metadata
+
+
 def load_ledger(path: str | Path) -> dict[str, Any]:
     ledger_path = Path(path)
     if not ledger_path.is_file():
         return _ledger_payload([])
     payload = json.loads(ledger_path.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict) or payload.get("schema") not in {
-        LEDGER_SCHEMA,
-        *LEGACY_LEDGER_SCHEMAS,
-    }:
-        raise ValueError(f"unsupported candidate ledger schema in {ledger_path}")
-    entries = payload.get("entries")
-    if not isinstance(entries, list):
-        raise ValueError("candidate ledger entries must be a list")
-    return _ledger_payload([_upgrade_entry(dict(entry)) for entry in entries])
+    return _load_ledger_payload(payload, source=str(ledger_path))
 
 
 def _entry_from_assessment(assessment: dict[str, Any]) -> dict[str, Any]:
@@ -444,17 +573,54 @@ def validate_candidate_for_plan(
             raise ValueError(f"candidate stage {stage!r} is already recorded in the decision ledger")
 
 
+
+
+def _write_ledger(path: Path, ledger: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(
+        json.dumps(ledger, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    temporary.replace(path)
+
+
+def hydrate_ledger(
+    ledger_path: str | Path,
+    *,
+    decision_baseline: str | Path | None = None,
+    include_builtin_baseline: bool = False,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    path = Path(ledger_path)
+    ledger, metadata = load_effective_ledger(
+        path,
+        decision_baseline=decision_baseline,
+        include_builtin_baseline=include_builtin_baseline,
+    )
+    _write_ledger(path, ledger)
+    path.with_suffix(".md").write_text(render_markdown(ledger), encoding="utf-8")
+    return ledger, metadata
+
+
 def record_assessment(
     ledger_path: str | Path,
     assessment: dict[str, Any],
+    *,
+    decision_baseline: str | Path | None = None,
+    include_builtin_baseline: bool = False,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     path = Path(ledger_path)
-    ledger = load_ledger(path)
+    ledger, _ = load_effective_ledger(
+        path,
+        decision_baseline=decision_baseline,
+        include_builtin_baseline=include_builtin_baseline,
+    )
     entry = _entry_from_assessment(assessment)
     entries = list(ledger.get("entries", []))
 
     for existing in entries:
         if existing.get("assessment_sha256") == entry["assessment_sha256"]:
+            _write_ledger(path, ledger)
             return ledger, existing
         same_id = existing.get("candidate_id") == entry["candidate_id"]
         same_signature = (
@@ -483,13 +649,7 @@ def record_assessment(
         )
     )
     updated = _ledger_payload(entries)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(
-        json.dumps(updated, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    temporary.replace(path)
+    _write_ledger(path, updated)
     return updated, entry
 
 
@@ -553,6 +713,28 @@ def render_markdown(ledger: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+
+
+def hydrate_main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Hydrate a workspace candidate ledger from the immutable decision baseline "
+            "without changing any scientific decision."
+        )
+    )
+    parser.add_argument("--ledger", required=True)
+    parser.add_argument(
+        "--decision-baseline",
+        help="optional explicit immutable decision baseline; built-in history is used by default",
+    )
+    args = parser.parse_args(argv)
+    hydrate_ledger(
+        Path(args.ledger),
+        decision_baseline=Path(args.decision_baseline) if args.decision_baseline else None,
+        include_builtin_baseline=args.decision_baseline is None,
+    )
+    return 0
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Record a paired exploration assessment in a deterministic decision ledger."
@@ -560,6 +742,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--assessment", required=True)
     parser.add_argument("--ledger", required=True)
     parser.add_argument("--candidate-spec")
+    parser.add_argument(
+        "--decision-baseline",
+        help="optional explicit immutable decision baseline; built-in history is used by default",
+    )
     args = parser.parse_args(argv)
     source_path = Path(args.assessment)
     source = json.loads(source_path.read_text(encoding="utf-8"))
@@ -593,7 +779,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         for key, value in candidate_portfolio_metadata(candidate_payload).items():
             if value is not None:
                 assessment[key] = value
-    ledger, _ = record_assessment(Path(args.ledger), assessment)
+    ledger, _ = record_assessment(
+        Path(args.ledger),
+        assessment,
+        decision_baseline=Path(args.decision_baseline) if args.decision_baseline else None,
+        include_builtin_baseline=args.decision_baseline is None,
+    )
     Path(args.ledger).with_suffix(".md").write_text(
         render_markdown(ledger), encoding="utf-8"
     )
@@ -601,6 +792,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 __all__ = [
+    "BUILTIN_DECISION_BASELINE_RESOURCE",
     "LEDGER_SCHEMA",
     "LEGACY_LEDGER_SCHEMAS",
     "assessment_decision",
@@ -609,7 +801,12 @@ __all__ = [
     "candidate_spec_from_payload",
     "canonical_sha",
     "family_revision_statuses",
+    "hydrate_ledger",
+    "hydrate_main",
+    "load_builtin_decision_baseline",
+    "load_effective_ledger",
     "load_ledger",
+    "merge_ledgers",
     "record_assessment",
     "render_markdown",
     "validate_candidate_for_plan",

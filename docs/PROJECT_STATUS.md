@@ -1,18 +1,32 @@
 # SE project status
 
-Version: **0.77.0**
+Version: **0.78.0**
 
 ## Current result
 
-D3-S confirms complete functional-module ablation in all eight eligible fixed-checkpoint seed panels. Seven seed effects increase cumulative total harvest, but the equal-seed median relative effect is approximately 0.00107, below the preregistered 0.02 practical threshold. The candidate stops before replication and closes `functional-modules` revision 1.
+The supplied portfolio audit reported D3-P and D3-Q as awaiting assessment because the workspace ledger contained only the recent D3-R and D3-S decisions. This is an incomplete-history reconstruction error, not a new empirical result.
+
+v0.78 merges an immutable five-entry release baseline with the workspace ledger. The reconciled portfolio contains every terminal decision already established by the project.
 
 ## Mechanism-family state
 
 - `knowledge-policy` revision 1: closed by the D3-Q aggregate gate;
 - `functional-modules` revision 1: closed by the D3-S aggregate gate;
-- `resource-affinity` revision 1: no aggregate closure, but its existing D3-O candidate is terminal and no replacement candidate is preregistered.
+- `resource-affinity` revision 1: no aggregate closure, but D3-O is terminal and no replacement candidate is preregistered.
 
-No shipped paired candidate is open or awaiting assessment. The current portfolio state is therefore `scientific-revision-required`, not “run another nearby component screen.”
+No shipped paired candidate is open or awaiting assessment. The effective portfolio state is `scientific-revision-required`.
+
+## Decision-history architecture
+
+```text
+immutable release decision baseline
+                +
+append-only workspace analysis ledger
+                ↓ deterministic conflict-checked merge
+candidate recording / portfolio audit / paired-plan validation
+```
+
+A partial workspace cannot erase historical terminal decisions. An incompatible workspace entry fails validation instead of replacing release history. `se-exploration-ledger-hydrate` can write the effective merged history back to the workspace without changing any scientific decision.
 
 ## Current exploration policy
 
@@ -24,13 +38,14 @@ candidate specification
 → bounded negative requires aggregate family gate
 → aggregate terminal negative closes the family revision
 → reopening requires higher revision + rationale + new measurable interface
+→ immutable terminal history survives clean packaging and workspace resets
 → no automatic replacement-candidate selection
 → disjoint-seed replication only after promotion
 ```
 
-## Current task adjustment
+## Current task
 
-The supplied result matches the preregistered manipulation and support expectations; the mismatch is only between target engagement and practical downstream effect. There is no evidence of a broken sample or failed intervention. The immediate task therefore changes from executing another acute candidate to defining a scientifically distinct revision or family with a new causal interface.
+Do not rerun D3-P or D3-Q. The next scientific task remains defining a genuinely distinct family or a higher closed-family revision with an explicit new directly measurable interface. No candidate is selected automatically in v0.78.
 
 ## Still incomplete
 

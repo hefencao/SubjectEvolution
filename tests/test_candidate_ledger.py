@@ -359,3 +359,117 @@ def test_ledger_publishes_family_revision_statuses(tmp_path: Path) -> None:
     ]
     assert ledger["family_closure_requires_aggregate_gate"] is True
     assert ledger["family_reopening_requires_new_interface"] is True
+
+
+def test_builtin_decision_baseline_matches_repository_protocol() -> None:
+    import json
+
+    from se.analysis.candidate_ledger import load_builtin_decision_baseline
+
+    builtin = load_builtin_decision_baseline()
+    repository = json.loads(
+        Path("protocols/decisions/exploration_candidate_ledger.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert builtin == load_ledger(
+        Path("protocols/decisions/exploration_candidate_ledger.json")
+    )
+    assert repository["schema"] == LEDGER_SCHEMA
+
+
+def test_effective_ledger_restores_missing_builtin_history(tmp_path: Path) -> None:
+    import json
+
+    from se.analysis.candidate_ledger import load_effective_ledger
+
+    canonical = load_ledger("protocols/decisions/exploration_candidate_ledger.json")
+    partial = {
+        **canonical,
+        "entries": [
+            entry
+            for entry in canonical["entries"]
+            if entry["candidate_id"]
+            in {
+                "functional-regulatory-oxygen-uptake-acute-effect-v1",
+                "functional-modules-harvest-acute-effect-v1",
+            }
+        ],
+    }
+    partial.pop("family_revision_statuses", None)
+    path = tmp_path / "partial.json"
+    path.write_text(json.dumps(partial), encoding="utf-8")
+
+    effective, metadata = load_effective_ledger(
+        path, include_builtin_baseline=True
+    )
+    assert len(effective["entries"]) == 5
+    assert metadata["workspace_ledger_entry_count"] == 2
+    assert metadata["decision_baseline_entry_count"] == 5
+    assert metadata["workspace_hydration_required"] is True
+    statuses = {
+        (item["mechanism_family"], item["mechanism_family_revision"]): item["status"]
+        for item in effective["family_revision_statuses"]
+    }
+    assert statuses[("knowledge-policy", 1)] == "closed"
+    assert statuses[("functional-modules", 1)] == "closed"
+
+
+def test_recording_duplicate_hydrates_partial_workspace(tmp_path: Path) -> None:
+    import json
+
+    from se.analysis.candidate_ledger import load_builtin_decision_baseline
+
+    canonical = load_builtin_decision_baseline()
+    d3s = next(
+        entry
+        for entry in canonical["entries"]
+        if entry["candidate_id"] == "functional-modules-harvest-acute-effect-v1"
+    )
+    partial = {**canonical, "entries": [d3s]}
+    partial.pop("family_revision_statuses", None)
+    path = tmp_path / "partial.json"
+    path.write_text(json.dumps(partial), encoding="utf-8")
+
+    assessment = json.loads(
+        Path("docs/v0.78/D3S_SUPPLIED_ASSESSMENT.json").read_text(encoding="utf-8")
+    )
+    record_assessment(path, assessment, include_builtin_baseline=True)
+    hydrated = load_ledger(path)
+    assert len(hydrated["entries"]) == 5
+
+
+def test_effective_ledger_rejects_conflicting_workspace_history(tmp_path: Path) -> None:
+    import json
+
+    from se.analysis.candidate_ledger import load_builtin_decision_baseline, load_effective_ledger
+
+    canonical = load_builtin_decision_baseline()
+    conflict = dict(canonical["entries"][0])
+    conflict["assessment_sha256"] = "f" * 64
+    conflict["equal_seed_median_relative_effect"] = 999.0
+    workspace = {**canonical, "entries": [conflict]}
+    workspace.pop("family_revision_statuses", None)
+    path = tmp_path / "conflict.json"
+    path.write_text(json.dumps(workspace), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="conflicting assessments"):
+        load_effective_ledger(path, include_builtin_baseline=True)
+
+
+def test_hydrate_ledger_writes_complete_builtin_history(tmp_path: Path) -> None:
+    import json
+
+    from se.analysis.candidate_ledger import hydrate_ledger, load_builtin_decision_baseline
+
+    canonical = load_builtin_decision_baseline()
+    partial = {**canonical, "entries": canonical["entries"][-2:]}
+    partial.pop("family_revision_statuses", None)
+    path = tmp_path / "ledger.json"
+    path.write_text(json.dumps(partial), encoding="utf-8")
+
+    hydrated, metadata = hydrate_ledger(path, include_builtin_baseline=True)
+    assert len(hydrated["entries"]) == 5
+    assert len(load_ledger(path)["entries"]) == 5
+    assert path.with_suffix(".md").is_file()
+    assert metadata["workspace_hydration_required"] is True

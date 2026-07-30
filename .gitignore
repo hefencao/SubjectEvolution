@@ -1,5 +1,6 @@
 *.egg-info/
 *.py[cod]
+.vscode/
 .validation/
 .venv/
 __pycache__/

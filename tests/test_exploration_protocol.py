@@ -163,6 +163,10 @@ def test_protocol_audit_records_tiered_exploration_boundary() -> None:
     assert decision["bounded_negative_requires_aggregate_gate"] is True
     assert decision["non_aggregate_candidate_can_close_family_revision"] is False
     assert decision["family_reopening_requires_new_directly_measurable_interface"] is True
+    assert decision["immutable_decision_baseline_schema"] == "paired-exploration-candidate-ledger-v5"
+    assert decision["workspace_ledger_is_append_only_overlay"] is True
+    assert decision["partial_workspace_can_erase_terminal_history"] is False
+    assert decision["baseline_workspace_conflicts_rejected"] is True
     assert decision["portfolio_audit_schema"] == "paired-exploration-portfolio-audit-v1"
     assert decision["automatic_new_candidate_selection"] is False
     assert decision["additional_bounded_children_before_aggregate_gate"] is False

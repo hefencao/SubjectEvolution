@@ -23,7 +23,7 @@ import numpy as np
 from se.analysis.candidate_ledger import (
     candidate_portfolio_metadata,
     candidate_signature,
-    load_ledger,
+    load_effective_ledger,
     record_assessment,
     validate_candidate_for_plan,
 )
@@ -298,6 +298,8 @@ def build_plan(
     candidate_spec_schema: str | None = None,
     candidate_metadata: dict[str, Any] | None = None,
     decision_ledger: Path | None = None,
+    decision_baseline: Path | None = None,
+    include_builtin_decision_baseline: bool = False,
 ) -> dict[str, Any]:
     if stage not in _STAGE_ORDER:
         raise ValueError(f"unsupported stage: {stage}")
@@ -331,7 +333,11 @@ def build_plan(
         if decision_ledger is not None
         else output.parent / "exploration_candidate_ledger.json"
     )
-    ledger = load_ledger(ledger_path)
+    ledger, history = load_effective_ledger(
+        ledger_path,
+        decision_baseline=decision_baseline,
+        include_builtin_baseline=include_builtin_decision_baseline,
+    )
     portfolio = candidate_portfolio_metadata(candidate_metadata or {})
     validate_candidate_for_plan(
         ledger,
@@ -448,6 +454,11 @@ def build_plan(
         "requested_backend": backend,
         "output": str(output),
         "decision_ledger": str(ledger_path),
+        "decision_baseline": (
+            str(decision_baseline.resolve()) if decision_baseline is not None else None
+        ),
+        "builtin_decision_baseline": bool(include_builtin_decision_baseline),
+        "decision_history_entry_count": history["effective_ledger_entry_count"],
         "prior_assessment": prior_ref,
         "selection_claim_allowed": False,
         "acute_mechanism_claim_allowed": stage == "confirmation",
@@ -475,6 +486,8 @@ def _load_plan(path: Path) -> dict[str, Any]:
             "decision_ledger",
             str(Path(str(payload["output"])).resolve().parent / "exploration_candidate_ledger.json"),
         )
+    payload.setdefault("decision_baseline", None)
+    payload.setdefault("builtin_decision_baseline", True)
     return payload
 
 
@@ -870,7 +883,14 @@ def execute_plan(plan: dict[str, Any]) -> dict[str, Any]:
         render_results_markdown(report), encoding="utf-8"
     )
     ledger, decision_entry = record_assessment(
-        Path(str(plan["decision_ledger"])), assessment
+        Path(str(plan["decision_ledger"])),
+        assessment,
+        decision_baseline=(
+            Path(str(plan["decision_baseline"]))
+            if plan.get("decision_baseline")
+            else None
+        ),
+        include_builtin_baseline=bool(plan.get("builtin_decision_baseline", False)),
     )
     (output / "candidate_decision.json").write_text(
         json.dumps(decision_entry, ensure_ascii=False, indent=2) + "\n",
@@ -968,6 +988,10 @@ def plan_main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--backend", default="auto", choices=("auto", "cpu", "gpu"))
     parser.add_argument("--prior-assessment")
     parser.add_argument("--decision-ledger")
+    parser.add_argument(
+        "--decision-baseline",
+        help="optional explicit immutable decision baseline; built-in history is used by default",
+    )
     parser.add_argument("--allow-large-long-confirmation", action="store_true")
     args = parser.parse_args(argv)
     prior = _read_json(Path(args.prior_assessment)) if args.prior_assessment else None
@@ -1035,6 +1059,8 @@ def plan_main(argv: Sequence[str] | None = None) -> int:
         candidate_spec_schema=(candidate_payload.get("schema") if args.candidate_spec else None),
         candidate_metadata=candidate_metadata,
         decision_ledger=Path(args.decision_ledger) if args.decision_ledger else None,
+        decision_baseline=Path(args.decision_baseline) if args.decision_baseline else None,
+        include_builtin_decision_baseline=args.decision_baseline is None,
     )
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)

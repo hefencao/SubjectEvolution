@@ -3,6 +3,7 @@ include run_gpu.sh
 include run_gpu.ps1
 recursive-include configs *.json
 recursive-include docs *.md *.json *.txt
+recursive-include protocols *.json
 recursive-include scripts *.py *.sh *.ps1
 recursive-include tests *.py
 prune docs/archive
