@@ -1,4 +1,4 @@
-# SE v0.88
+# SE v0.89
 
 Reference implementation for nested-subject existence and ecological evolution
 simulation.
@@ -10,14 +10,13 @@ Audit expansion remains paused. The active mainline follows
 diversity and costed inherited carrier capabilities before ecological or social
 claims.
 
-D1-H is frozen under
-[`studies/d1h_demand_gated_resource_sensing_v1/`](studies/d1h_demand_gated_resource_sensing_v1/README.md).
-Demand gating reaches the observation path, but all three shared-checkpoint
-pairs are demographically identical because almost every internal resource store
-remains open at once. v0.88 adds D1-I: the existing four resource-conversion
-genes now allocate one fixed total conversion capacity across channels, creating
-an internal opportunity cost without changing rewards, actions, or environment
-amplitudes.
+D1-I is frozen under
+[`studies/d1i_fixed_budget_resource_conversion_v1/`](studies/d1i_fixed_budget_resource_conversion_v1/README.md).
+Fixed-total conversion allocation produces repeatable energetic differences but
+only weak allocation separation and no repeated demographic direction. v0.89
+adds D1-J: the existing four storage genes allocate one fixed total internal
+volume across channels, creating a conserved material-capacity opportunity cost
+without changing rewards, actions, conversion effects, or environment amplitudes.
 
 ## Workspace layout
 
@@ -50,8 +49,8 @@ Study operations are declared in `workflow.toml`, not executable shell files.
 After editable installation:
 
 ```text
-se-study show studies/d1i_fixed_budget_resource_conversion_v1
-se-study run studies/d1i_fixed_budget_resource_conversion_v1 source-pilot --dry-run
+se-study show studies/d1j_fixed_budget_resource_storage_v1
+se-study run studies/d1j_fixed_budget_resource_storage_v1 source-pilot --dry-run
 ```
 
 Every parameter is declared and can be overridden explicitly. The resolved argv
@@ -77,4 +76,4 @@ runtime results are never included.
 - [Governance principles](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.88 D1-I iteration](docs/迭代/v0.88_D1-I_固定总量的可遗传四资源转化分配.md)
+- [v0.89 D1-J iteration](docs/迭代/v0.89_D1-J_固定总量的可遗传四资源储存分配.md)

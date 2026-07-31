@@ -150,6 +150,12 @@ INTERVENTIONS = (
         aliases=("resource-conversion-uniform", "conversion-allocation-neutral"),
     ),
     InterventionSpec(
+        "neutralize-resource-store-allocation",
+        InterventionKind.MODIFY_RULES,
+        "inherited-fixed-total-four-resource-store-allocation",
+        aliases=("resource-store-uniform", "store-allocation-neutral"),
+    ),
+    InterventionSpec(
         "neutralize-spatial-processing-support",
         InterventionKind.MODIFY_RULES,
         "phase-shifted-four-channel-processing-support",

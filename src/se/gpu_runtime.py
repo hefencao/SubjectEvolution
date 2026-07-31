@@ -763,6 +763,7 @@ class HybridGpuRuntime:
         knowledge: KnowledgeSystem | None = None,
         resource_affinity_ablation_enabled: bool = False,
         resource_sensing_ablation_enabled: bool = False,
+        resource_store_allocation_ablation_enabled: bool = False,
         danger_evidence_ablation_enabled: bool = False,
         knowledge_policy_ablation_enabled: bool = False,
     ) -> GpuPreparedStep:
@@ -902,6 +903,9 @@ class HybridGpuRuntime:
             self.cfg,
             genotype=entity.genotype[active_host],
             gene_start=ParametricPolicy.physiology_gene_start(self.cfg),
+            neutralize_store_allocation=(
+                resource_store_allocation_ablation_enabled
+            ),
         )
         room_device = (
             None

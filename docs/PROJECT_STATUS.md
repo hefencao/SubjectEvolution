@@ -1,41 +1,42 @@
 # SE project status
 
-Version: **0.88.0**
+Version: **0.89.0**
 
 ## Current development direction
 
 Audit expansion remains paused. The active mainline follows `PROJECT_CHARTER`:
 effective environmental diversity, inherited carrier capability, conservative
-multi-resource demand, and ecology built from their interaction.
+multi-resource opportunity costs, and ecology built from their interaction.
 
-## D1-H frozen calibration
+## D1-I frozen calibration
 
-The supplied D1-H result satisfies exact shared-checkpoint, paired-randomness,
-genotype, resource-field, radius-budget, observation-weight, and sensing-cost
-contracts. Demand gating changes expressed channel radii, but all three pairs
-have zero living-count, birth, and death differences. Mean-energy differences
-are -0.016338, +0.001318, and -0.002991.
+The supplied D1-I result satisfies exact shared-checkpoint, paired-randomness,
+genotype, current-store, fixed conversion-total, physiology-cost, and
+resource-field contracts. Living-count differences are +1, -1, and -2;
+mean-energy differences are +0.011291, +0.089248, and +0.112791.
 
-About 3.6 of four stores remain open per entity. Current room therefore behaves
-mostly as an all-channel shortage signal rather than an independent internal
-demand axis. D1-H is frozen as a valid but nearly consequence-neutral substrate
-calibration; it authorizes no ecological or selection claim.
+Inherited conversion allocation therefore enters realized resource and body
+flows, but its effective allocation dimensions differ from the neutral vector
+by only -0.034772, -0.040508, and -0.044177. The result is frozen as a valid
+energetic substrate effect without an ecological or selection claim.
 
-## Active D1-I capability
+## Active D1-J capability
 
-`transport-metabolism-messenger-tissue-resource-v8` gives the existing four
-resource-conversion genes a fixed-total allocation semantics. Their positive
-inherited weights divide exactly the configured total conversion capacity among
-four channels. Increasing one channel necessarily reduces another.
+`transport-metabolism-messenger-tissue-resource-v9` retains D1-I fixed-total
+conversion allocation and gives the existing four resource-store genes a
+fixed-total volume semantics. Positive inherited weights divide exactly the
+configured total internal storage capacity among four channels. Increasing one
+channel necessarily reduces another.
 
-Storage capacity genes, resource stores, the resource-effect matrix, sensing,
-harvest, actions, and the persistent multiscale environment remain unchanged.
-Physiology maintenance and development costs depend on the fixed total rather
-than allocation direction.
+Current store contents are not truncated when expressed capacities change. The
+new capacity constrains future intake, while conversion allocation, resource
+effects, sensing, harvest, actions, and the persistent multiscale environment
+remain unchanged. Physiology maintenance and development costs depend on fixed
+storage and conversion totals rather than allocation direction.
 
-`neutralize-resource-conversion-allocation` restores the configured neutral
-channel-base allocation while preserving genotype, stores, total conversion
-capacity, physiology costs, resource fields, random keys, and future offspring
+`neutralize-resource-store-allocation` restores the configured neutral channel
+base while preserving genotype, current stores, total volume, conversion
+allocation, physiology costs, resource fields, random keys, and future-offspring
 neutralization.
 
 ## Study execution and result storage
@@ -51,15 +52,16 @@ a disposable artifact tree.
 
 ## Current task
 
-Run the D1-I three-seed source and 120-tick shared-checkpoint calibration.
-Confirm exact total conversion-budget closure, non-neutral inherited allocation,
-unchanged costs, and differentiated store/body flows. Do not add a threshold or
-post-hoc ecological interpretation.
+Run the D1-J three-seed source and 120-tick shared-checkpoint calibration.
+Confirm exact total storage-volume closure, non-neutral inherited allocation,
+unchanged current stores, conversion allocation and costs, and differentiated
+intake/store/body flows. Do not add a threshold or post-hoc ecological
+interpretation.
 
 ## Still incomplete
 
+- repeated conditional outcomes from fixed storage and conversion opportunity costs;
 - sufficiently independent environmental and internal demand axes;
-- repeated conditional outcomes from inherited conversion allocation;
 - coexistence, reversal, and removal tests required for a niche claim;
 - long-horizon selection interpretation;
 - device-resident action settlement, lifecycle, and graph updates.

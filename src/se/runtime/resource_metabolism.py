@@ -18,7 +18,9 @@ from se.cfg import SimulationConfig
 from se.differentiation.physiology import (
     physiology_phenotype,
     neutral_resource_conversion_capacity,
+    neutral_resource_store_capacity,
     fixed_budget_resource_conversion_enabled,
+    fixed_budget_resource_storage_enabled,
     resource_metabolism_enabled,
     storage_constrained_intake_enabled,
     external_resource_recycling_enabled,
@@ -89,8 +91,9 @@ def resource_store_capacity_and_room(
     *,
     genotype: np.ndarray,
     gene_start: int,
+    neutralize_store_allocation: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Return inherited store capacity and current non-negative room."""
+    """Return effective store capacity and current non-negative room."""
 
     indices = np.asarray(rows, dtype=np.int32)
     if indices.size == 0 or not resource_metabolism_enabled(cfg):
@@ -98,6 +101,12 @@ def resource_store_capacity_and_room(
         return empty, empty.copy()
     phenotype = physiology_phenotype(genotype, cfg, gene_start=gene_start)
     capacity = np.asarray(phenotype.resource_store_capacity, dtype=np.float64)
+    if neutralize_store_allocation:
+        if not fixed_budget_resource_storage_enabled(cfg):
+            raise ValueError(
+                "storage-allocation neutralization requires physiology resource-v9"
+            )
+        capacity = neutral_resource_store_capacity(indices.size, cfg)
     current = np.asarray(entities.resource_store[indices], dtype=np.float64)
     room = np.maximum(capacity - current, 0.0)
     _check_non_negative_finite("store capacity", capacity)
@@ -113,6 +122,7 @@ def raw_harvest_room(
     genotype: np.ndarray,
     gene_start: int,
     resource_affinity_q: np.ndarray,
+    neutralize_store_allocation: bool = False,
 ) -> np.ndarray | None:
     """Return maximum raw extraction that can be assimilated without overflow.
 
@@ -135,6 +145,7 @@ def raw_harvest_room(
         cfg,
         genotype=genotype,
         gene_start=gene_start,
+        neutralize_store_allocation=neutralize_store_allocation,
     )
     raw_room = room * float(AFFINITY_SCALE) / np.maximum(affinity, 1)
     _check_non_negative_finite("raw harvest room", raw_room)
@@ -148,13 +159,19 @@ def storage_room_fraction(
     *,
     genotype: np.ndarray,
     gene_start: int,
+    neutralize_store_allocation: bool = False,
 ) -> np.ndarray | None:
     """Return per-channel room fraction for the v5 policy resource view."""
 
     if not storage_constrained_intake_enabled(cfg):
         return None
     capacity, room = resource_store_capacity_and_room(
-        entities, rows, cfg, genotype=genotype, gene_start=gene_start
+        entities,
+        rows,
+        cfg,
+        genotype=genotype,
+        gene_start=gene_start,
+        neutralize_store_allocation=neutralize_store_allocation,
     )
     fraction = np.clip(room / np.maximum(capacity, 1.0e-12), 0.0, 1.0)
     fraction = np.where(room <= np.maximum(capacity, 1.0) * 1.0e-7, 0.0, fraction)
@@ -169,8 +186,9 @@ def store_assimilated_resources(
     *,
     genotype: np.ndarray,
     gene_start: int,
+    neutralize_store_allocation: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Place assimilated raw channels into inherited bounded stores."""
+    """Place assimilated raw channels into effective bounded stores."""
 
     indices = np.asarray(rows, dtype=np.int32)
     values = np.asarray(assimilated, dtype=np.float64)
@@ -184,7 +202,12 @@ def store_assimilated_resources(
     if not resource_metabolism_enabled(cfg):
         raise ValueError("resource buffering requires physiology resource-v4")
     capacity, room = resource_store_capacity_and_room(
-        entities, indices, cfg, genotype=genotype, gene_start=gene_start
+        entities,
+        indices,
+        cfg,
+        genotype=genotype,
+        gene_start=gene_start,
+        neutralize_store_allocation=neutralize_store_allocation,
     )
     current = np.asarray(entities.resource_store[indices], dtype=np.float64)
     stored = np.minimum(np.maximum(values, 0.0), room)
@@ -220,7 +243,7 @@ def settle_resource_metabolism(
     if neutralize_conversion_allocation:
         if not fixed_budget_resource_conversion_enabled(cfg):
             raise ValueError(
-                "conversion-allocation neutralization requires physiology resource-v8"
+                "conversion-allocation neutralization requires physiology resource-v8/v9"
             )
         conversion_capacity = neutral_resource_conversion_capacity(rows.size, cfg)
     if spatial_processing_enabled(cfg):
@@ -374,6 +397,7 @@ def resource_metabolism_diagnostics(
     *,
     gene_start: int,
     neutralize_conversion_allocation: bool = False,
+    neutralize_store_allocation: bool = False,
 ) -> dict[str, object]:
     active = np.flatnonzero(np.asarray(entities.alive, dtype=bool)).astype(np.int32)
     if active.size == 0 or not resource_metabolism_enabled(cfg):
@@ -384,6 +408,10 @@ def resource_metabolism_diagnostics(
             "resource_store_total": [0.0] * RESOURCE_CHANNELS,
             "resource_store_occupancy_mean": [0.0] * RESOURCE_CHANNELS,
             "resource_store_capacity_mean": [0.0] * RESOURCE_CHANNELS,
+            "resource_store_total_capacity_mean": 0.0,
+            "resource_store_allocation_effective_dimensions_mean": 0.0,
+            "resource_store_allocation_specialization_mean": 0.0,
+            "resource_store_fixed_budget_closed": False,
             "resource_conversion_capacity_mean": [0.0] * RESOURCE_CHANNELS,
             "resource_conversion_total_capacity_mean": 0.0,
             "resource_conversion_allocation_effective_dimensions_mean": 0.0,
@@ -395,7 +423,14 @@ def resource_metabolism_diagnostics(
         entities.genotype[active], cfg, gene_start=gene_start
     )
     stores = np.asarray(entities.resource_store[active], dtype=np.float64)
-    capacity = np.asarray(phenotype.resource_store_capacity, dtype=np.float64)
+    inherited_capacity = np.asarray(
+        phenotype.resource_store_capacity, dtype=np.float64
+    )
+    capacity = (
+        neutral_resource_store_capacity(active.size, cfg)
+        if neutralize_store_allocation
+        else inherited_capacity
+    )
     inherited_conversion = np.asarray(
         phenotype.resource_conversion_capacity, dtype=np.float64
     )
@@ -406,7 +441,7 @@ def resource_metabolism_diagnostics(
     )
     normalized = np.column_stack(
         (
-            capacity
+            inherited_capacity
             / np.maximum(
                 np.asarray(cfg.physiology.resource_store_base_capacity, dtype=np.float64)[None, :],
                 1.0e-12,
@@ -427,6 +462,14 @@ def resource_metabolism_diagnostics(
         )
     else:
         effective = 0.0
+    storage_totals = capacity.sum(axis=1)
+    storage_shares = capacity / np.maximum(storage_totals[:, None], 1.0e-30)
+    storage_allocation_effective = 1.0 / np.maximum(
+        np.sum(storage_shares * storage_shares, axis=1), 1.0e-30
+    )
+    fixed_storage_total = float(
+        np.asarray(cfg.physiology.resource_store_base_capacity, dtype=np.float64).sum()
+    )
     conversion_totals = conversion.sum(axis=1)
     conversion_shares = conversion / np.maximum(conversion_totals[:, None], 1.0e-30)
     allocation_effective = 1.0 / np.maximum(
@@ -444,6 +487,18 @@ def resource_metabolism_diagnostics(
             stores / np.maximum(capacity, 1.0e-12)
         ).mean(axis=0).tolist(),
         "resource_store_capacity_mean": capacity.mean(axis=0).tolist(),
+        "resource_store_total_capacity_mean": float(storage_totals.mean()),
+        "resource_store_allocation_effective_dimensions_mean": float(
+            storage_allocation_effective.mean()
+        ),
+        "resource_store_allocation_specialization_mean": float(
+            storage_shares.max(axis=1).mean()
+        ),
+        "resource_store_fixed_budget_closed": bool(
+            np.allclose(
+                storage_totals, fixed_storage_total, atol=1.0e-12, rtol=0.0
+            )
+        ),
         "resource_conversion_capacity_mean": conversion.mean(axis=0).tolist(),
         "resource_conversion_total_capacity_mean": float(conversion_totals.mean()),
         "resource_conversion_allocation_effective_dimensions_mean": float(
@@ -609,6 +664,9 @@ def commit_assimilated_harvest(
         simulation.cfg,
         genotype=simulation.entities.genotype[harvesters],
         gene_start=simulation.policy.physiology_gene_start(simulation.cfg),
+        neutralize_store_allocation=getattr(
+            simulation, "resource_store_allocation_ablation_enabled", False
+        ),
     )
     stats.resource_stored = stored.sum(axis=0, dtype=np.float64)
     stats.resource_store_overflow = overflow.sum(axis=0, dtype=np.float64)

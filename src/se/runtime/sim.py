@@ -451,7 +451,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.freeze_genotype = False
         self.capacity_ablation_enabled = False
         self.resource_affinity_ablation_enabled = False
-        self.resource_sensing_ablation_enabled = self.resource_conversion_allocation_ablation_enabled = False
+        self.resource_sensing_ablation_enabled = self.resource_conversion_allocation_ablation_enabled = self.resource_store_allocation_ablation_enabled = False
         self.resource_processing_support_ablation_enabled = False
         self.functional_modules_ablation_enabled = False
         self.functional_module_coupling_ablation_enabled = False
@@ -572,18 +572,15 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             + self.benefit_flow_energy_total[BenefitFlowKind.GROUP_TO_UNGROUPED]
             + self.benefit_flow_energy_total[BenefitFlowKind.UNGROUPED_TO_GROUP]
         )
-
     @property
     def benefit_unbounded_energy_total(self) -> float:
         return float(self.benefit_flow_energy_total[BenefitFlowKind.UNBOUNDED])
-
     def _finalize_share_capacity(
         self,
         share: ShareResolution,
         resolutions: ActionResolutionBatch,
     ) -> ShareResolution:
         """Re-arbitrate receiver capacity against post-harvest energy.
-
         The intent resolver observes the pre-commit snapshot.  A target may
         harvest in the same commit phase, so its remaining capacity can be
         smaller by the time shares are applied.  Re-scaling here preserves the
@@ -633,7 +630,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             valid_target=share.valid_target,
             relation_updates=relation_updates,
         )
-
     def _commit_shares(self, share: ShareResolution) -> float:
         """Apply one self-contained share plan without consulting last-step state."""
         if share.rows.size == 0:
@@ -653,7 +649,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         # semantics; this only makes the diagnostic conservation residual
         # meaningful over long windows.
         return float(np.asarray(share.amounts[committed], dtype=np.float64).sum())
-
     def _record_benefit_boundary(
         self,
         share: ShareResolution,
@@ -671,7 +666,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         flow_totals = benefit_flow_totals(owner_groups, target_groups, amounts)
         stats.benefit_flow_energy += flow_totals
         self.benefit_flow_energy_total += flow_totals
-
         if self.local_stress_diagnostics is not None:
             self.local_stress_diagnostics.observe_benefits(
                 owner_indices=owners,
@@ -896,6 +890,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 cfg,
                 genotype=ent.genotype[active],
                 gene_start=self.policy.physiology_gene_start(cfg),
+                neutralize_store_allocation=self.resource_store_allocation_ablation_enabled,
             )
             policy_local_resources = policy_resource_view(
                 local_resources,
@@ -1164,6 +1159,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 knowledge=self.knowledge if cfg.knowledge.enabled else None,
                 resource_affinity_ablation_enabled=self.resource_affinity_ablation_enabled,
                 resource_sensing_ablation_enabled=self.resource_sensing_ablation_enabled,
+                resource_store_allocation_ablation_enabled=self.resource_store_allocation_ablation_enabled,
                 danger_evidence_ablation_enabled=self.danger_evidence_ablation_enabled,
                 knowledge_policy_ablation_enabled=self.knowledge_policy_ablation_enabled,
             )
@@ -1193,6 +1189,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 cfg,
                 genotype=ent.genotype[active],
                 gene_start=self.policy.physiology_gene_start(cfg),
+                neutralize_store_allocation=self.resource_store_allocation_ablation_enabled,
             )
             policy_local_resources = policy_resource_view(
                 local_resources,
@@ -1445,6 +1442,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             genotype=ent.genotype[active],
             gene_start=self.policy.physiology_gene_start(cfg),
             resource_affinity_q=effective_resource_affinity_q[active],
+            neutralize_store_allocation=self.resource_store_allocation_ablation_enabled,
         )
         raw_harvest_storage_room = None
         if active_raw_harvest_room is not None:
@@ -2369,6 +2367,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             "capacity_ablation_enabled": self.capacity_ablation_enabled,
             "resource_sensing_ablation_enabled": self.resource_sensing_ablation_enabled,
             "resource_conversion_allocation_ablation_enabled": self.resource_conversion_allocation_ablation_enabled,
+            "resource_store_allocation_ablation_enabled": self.resource_store_allocation_ablation_enabled,
             "environment_spatial_reversed": self.environment.spatial_reversed,
             "environment_resource_spatial_reversed": bool(
                 getattr(self.environment, "resource_spatial_reversed", False)

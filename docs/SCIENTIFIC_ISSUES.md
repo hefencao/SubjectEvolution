@@ -132,3 +132,22 @@ D1-I addresses that boundary by fixing total resource-conversion capacity and
 making its inherited channel allocation zero-sum. The first panel remains a
 capability calibration. Niche or adaptive claims still require repeated
 conditional outcomes, environment reversal, coexistence, and removal evidence.
+
+## D1-I weak conversion-allocation differentiation
+
+The supplied D1-I panel validates the fixed-total conversion contract and all
+three inherited-allocation branches finish with higher mean energy than their
+uniform-allocation controls. Living-count differences are +1, -1, and -2,
+however, and the inherited allocation reduces effective dimensionality by only
+about 0.035--0.044 relative to the uniform four-channel baseline. Conversion
+opportunity cost therefore reaches resource flow, but the inherited phenotype
+remains close to uniform and does not yet produce a repeated demographic
+response.
+
+The remaining independent store capacities allow all four internal resource
+buffers to expand together. D1-J fixes aggregate storage volume and makes its
+channel allocation zero-sum while preserving D1-I conversion allocation,
+physiology costs, environment, checkpoints, and random streams. This is a new
+internal constraint, not a threshold or cost adjustment. The first shared-
+checkpoint panel remains capability calibration only and cannot authorize niche,
+adaptation, coexistence, or selection claims.

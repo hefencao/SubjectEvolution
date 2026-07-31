@@ -911,3 +911,23 @@ fields, total conversion capacity, physiology costs, random streams, and future
 offspring neutralization remain unchanged. Store conversion remains CPU-
 authoritative before observation and is synchronized to the GPU entity mirror
 through the existing resource-metabolism boundary.
+
+## D1-J fixed-total resource-storage allocation
+
+`transport-metabolism-messenger-tissue-resource-v9` retains the D1-I fixed-total
+resource-conversion allocation and adds a second zero-sum boundary for the four
+conservative resource stores. The existing four store genes become positive
+allocation weights over one configured total storage volume. Every entity can
+change the channel distribution but cannot increase aggregate storage volume.
+
+The effective storage vector is used consistently by harvest-room calculation,
+store assimilation, demand-gated sensing, diagnostics, CPU/GPU observation
+preparation, checkpoint restore, and branch cloning. Maintenance and development
+costs depend on the fixed aggregate volume rather than allocation direction.
+
+`neutralize-resource-store-allocation` replaces only the expressed store-capacity
+vector with the configured equal channel baseline. It preserves genotype,
+current stored amounts, conversion allocation, aggregate store volume,
+physiology costs, resource fields, random streams, and the neutralization state
+of descendants. Existing stores above a neutralized channel capacity are not
+discarded; they simply provide no additional room until use reduces occupancy.

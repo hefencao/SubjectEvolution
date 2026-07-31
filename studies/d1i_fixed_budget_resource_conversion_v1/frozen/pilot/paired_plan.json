@@ -1,0 +1,47 @@
+{
+  "schema": "d1-resource-conversion-shared-checkpoint-plan-v1",
+  "source_root": "runs/base/d1i_fixed_budget_resource_conversion_v1/pilot",
+  "checkpoint_tick": 480,
+  "horizon_ticks": 120,
+  "runtime_root": "runs/interventions/d1i_fixed_budget_resource_conversion_v1/pilot",
+  "sources": [
+    {
+      "seed": 88001,
+      "run_dir": "runs/base/d1i_fixed_budget_resource_conversion_v1/pilot/seed_88001",
+      "checkpoint_path": "runs/base/d1i_fixed_budget_resource_conversion_v1/pilot/seed_88001/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "ae56462b6fc7ad68533b1785bc1b99e1e3d2aaa03c05e95fda5613e9533f6716",
+      "checkpoint_tick": 480,
+      "resolved_config_sha256": "33a4f1590eb1cb86bd415889c5442f366ce0189cd2b4a72ae4c43f976456451b"
+    },
+    {
+      "seed": 88002,
+      "run_dir": "runs/base/d1i_fixed_budget_resource_conversion_v1/pilot/seed_88002",
+      "checkpoint_path": "runs/base/d1i_fixed_budget_resource_conversion_v1/pilot/seed_88002/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "a995efb0429d2cdc7298688d264135371df9afe9e49410f8e610d23581519d72",
+      "checkpoint_tick": 480,
+      "resolved_config_sha256": "a093137cfaec5f44d1ac9630a6857beb9d805ff782df35ea83a0ae407780a2ee"
+    },
+    {
+      "seed": 88003,
+      "run_dir": "runs/base/d1i_fixed_budget_resource_conversion_v1/pilot/seed_88003",
+      "checkpoint_path": "runs/base/d1i_fixed_budget_resource_conversion_v1/pilot/seed_88003/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "846f795dceb31f1cc92eb5bebd7a31f988660cc230e51a83bfe8997e8ea23340",
+      "checkpoint_tick": 480,
+      "resolved_config_sha256": "24a8a1988799f2e4137778d8ac9847efdbfbf8b6b9a8839de872b7b578b4abdc"
+    }
+  ],
+  "branches": [
+    "inherited-allocation",
+    "uniform-allocation-neutral"
+  ],
+  "intervention": "neutralize-resource-conversion-allocation",
+  "paired_randomness": true,
+  "genotype_preserved": true,
+  "resource_fields_preserved_at_intervention": true,
+  "resource_stores_preserved_at_intervention": true,
+  "total_conversion_capacity_preserved": true,
+  "physiology_costs_preserved": true,
+  "pass_fail_gate": false,
+  "ecological_claim_authorized": false,
+  "selection_claim_authorized": false
+}

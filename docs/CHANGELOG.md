@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.89.0
+
+- Freezes the D1-I fixed-total conversion pilot as a valid energetic substrate effect without repeated demographic direction.
+- Adds physiology `transport-metabolism-messenger-tissue-resource-v9` with inherited fixed-total four-channel storage-volume allocation while retaining D1-I fixed conversion allocation.
+- Adds a genotype-, current-store-, conversion-, cost-, total-volume-, and resource-field-preserving storage-allocation neutralization.
+- Adds the parameterized D1-J source, paired, and external result-packaging workflow.
+- Keeps audit expansion paused and adds no threshold, reward, role label, population protection, or result feedback.
+
 ## v0.88.0
 
 - Freezes the D1-H demand-gated sensing pilot as valid but consequence-neutral.

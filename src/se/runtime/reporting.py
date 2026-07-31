@@ -760,6 +760,14 @@ class SimulationReportingMixin:
                     if self.resource_conversion_allocation_ablation_enabled
                     else self.cfg.physiology.schema
                 ),
+                "resource_store_allocation_ablation_enabled": (
+                    self.resource_store_allocation_ablation_enabled
+                ),
+                "resource_store_allocation_effective_schema": (
+                    "configured-neutral-channel-base-ablation-v1"
+                    if self.resource_store_allocation_ablation_enabled
+                    else self.cfg.physiology.schema
+                ),
                 "resource_processing_support_ablation_enabled": (
                     self.resource_processing_support_ablation_enabled
                 ),
@@ -1441,6 +1449,9 @@ class SimulationReportingMixin:
             neutralize_conversion_allocation=(
                 self.resource_conversion_allocation_ablation_enabled
             ),
+            neutralize_store_allocation=(
+                self.resource_store_allocation_ablation_enabled
+            ),
         )
         affinity_metrics = resource_affinity_diagnostics(
             ent.alive, ent.genotype, self.cfg
@@ -1455,6 +1466,9 @@ class SimulationReportingMixin:
             self.cfg,
             genotype=ent.genotype[sensing_active],
             gene_start=ParametricPolicy.physiology_gene_start(self.cfg),
+            neutralize_store_allocation=(
+                self.resource_store_allocation_ablation_enabled
+            ),
         )
         resource_sensing_metrics = resource_sensing_diagnostics(
             ent.alive,
@@ -1928,6 +1942,9 @@ class SimulationReportingMixin:
             ),
             "resource_conversion_allocation_ablation_enabled": bool(
                 self.resource_conversion_allocation_ablation_enabled
+            ),
+            "resource_store_allocation_ablation_enabled": bool(
+                self.resource_store_allocation_ablation_enabled
             ),
             "resource_sensing_effective_radius_mean": (
                 1.0

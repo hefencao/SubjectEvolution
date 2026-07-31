@@ -33,7 +33,10 @@ from se.env.danger_evidence import (
 )
 from se.env.world import Environment
 from se.env.resource_sensing import resource_sensing_enabled
-from se.differentiation.physiology import fixed_budget_resource_conversion_enabled
+from se.differentiation.physiology import (
+    fixed_budget_resource_conversion_enabled,
+    fixed_budget_resource_storage_enabled,
+)
 from se.env.diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
     resource_field_diversity_metrics,
@@ -495,9 +498,10 @@ class SimulationExperimentMixin:
                 "transport-metabolism-messenger-tissue-resource-v6",
                 "transport-metabolism-messenger-tissue-resource-v7",
                 "transport-metabolism-messenger-tissue-resource-v8",
+                "transport-metabolism-messenger-tissue-resource-v9",
             }:
                 raise ValueError(
-                    "messenger receptor blockade requires regulatory physiology v2-v8"
+                    "messenger receptor blockade requires regulatory physiology v2-v9"
                 )
             canonical = "block-physiology-messenger-receptors"
             self.physiology_messenger_receptor_blockade_enabled = True
@@ -584,7 +588,7 @@ class SimulationExperimentMixin:
         elif normalized == "neutralize-resource-conversion-allocation":
             if not fixed_budget_resource_conversion_enabled(self.cfg):
                 raise ValueError(
-                    "neutralize-resource-conversion-allocation requires physiology resource-v8"
+                    "neutralize-resource-conversion-allocation requires physiology resource-v8/v9"
                 )
             canonical = "neutralize-resource-conversion-allocation"
             self.resource_conversion_allocation_ablation_enabled = True
@@ -594,6 +598,25 @@ class SimulationExperimentMixin:
                 "physiology_maintenance_cost_preserved": True,
                 "physiology_development_cost_preserved": True,
                 "resource_stores_preserved": True,
+                "resource_fields_modified": False,
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+                "future_offspring_expression_neutralized": True,
+            }
+        elif normalized == "neutralize-resource-store-allocation":
+            if not fixed_budget_resource_storage_enabled(self.cfg):
+                raise ValueError(
+                    "neutralize-resource-store-allocation requires physiology resource-v9"
+                )
+            canonical = "neutralize-resource-store-allocation"
+            self.resource_store_allocation_ablation_enabled = True
+            details = {
+                "effective_store_allocation": "configured-neutral-channel-base",
+                "total_store_capacity_preserved": True,
+                "current_resource_stores_preserved": True,
+                "conversion_allocation_preserved": True,
+                "physiology_maintenance_cost_preserved": True,
+                "physiology_development_cost_preserved": True,
                 "resource_fields_modified": False,
                 "genotype_coordinates_modified": 0,
                 "inheritance_modified": False,

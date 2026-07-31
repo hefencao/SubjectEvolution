@@ -321,6 +321,9 @@ class SimulationCheckpointMixin:
             "resource_conversion_allocation_ablation_enabled": bool(
                 self.resource_conversion_allocation_ablation_enabled
             ),
+            "resource_store_allocation_ablation_enabled": bool(
+                self.resource_store_allocation_ablation_enabled
+            ),
             "resource_processing_support_ablation_enabled": bool(
                 self.resource_processing_support_ablation_enabled
             ),
@@ -732,6 +735,9 @@ class SimulationCheckpointMixin:
         self.resource_conversion_allocation_ablation_enabled = bool(
             state.get("resource_conversion_allocation_ablation_enabled", False)
         )
+        self.resource_store_allocation_ablation_enabled = bool(
+            state.get("resource_store_allocation_ablation_enabled", False)
+        )
         self.resource_processing_support_ablation_enabled = bool(
             state.get("resource_processing_support_ablation_enabled", False)
         )
@@ -1066,6 +1072,9 @@ class SimulationCheckpointMixin:
         )
         branch.resource_conversion_allocation_ablation_enabled = (
             self.resource_conversion_allocation_ablation_enabled
+        )
+        branch.resource_store_allocation_ablation_enabled = (
+            self.resource_store_allocation_ablation_enabled
         )
         branch.resource_processing_support_ablation_enabled = (
             self.resource_processing_support_ablation_enabled
