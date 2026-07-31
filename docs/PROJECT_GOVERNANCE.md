@@ -173,10 +173,13 @@ stage, the source must pass preregistered checks for absolute and relative
 population size, cumulative births, living descendants, generation depth,
 founder replacement, and checkpoint-to-checkpoint stability.
 
-A failed source-health gate terminates the chain. The resulting files may prove
-runtime, conservation, or intervention wiring, but cannot be mined for gene,
-ecology, selection, or adaptation effects. More nested ticks and more analysis
-windows do not repair a failed source.
+Source-health execution has three distinct outcomes. An advisory miss is retained
+as trajectory evidence and does not terminate a recoverable run. A catastrophic
+hard floor terminates execution. A completed source that misses a required final
+qualification blocks the next stage without being relabeled as catastrophic.
+Hard-stopped and final-failed files may prove runtime or conservation wiring, but
+cannot be mined for gene, ecology, selection, or adaptation effects. More nested
+ticks and more analysis windows do not repair an unqualified source.
 
 Capability design must state its structural, use, development, and combination
 maturation costs against a qualified per-capita energy budget. When positive

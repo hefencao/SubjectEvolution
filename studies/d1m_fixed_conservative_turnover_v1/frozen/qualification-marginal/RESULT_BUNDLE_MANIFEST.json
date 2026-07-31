@@ -1,0 +1,141 @@
+{
+  "schema": "se-required-result-bundle-v1",
+  "study_root": "studies/d1m_fixed_conservative_turnover_v1",
+  "include_checkpoints": false,
+  "capability": "result-review-and-next-step-planning",
+  "files": [
+    {
+      "path": "analyses/d1m_fixed_conservative_turnover_v1/qualification/source_health_gate.json",
+      "size": 7383,
+      "sha256": "17599a2f427480b213cc159eff9ba364061bd0aa6bb8b74a072a08452ffe5fe4"
+    },
+    {
+      "path": "analyses/d1m_fixed_conservative_turnover_v1/qualification/source_health_gate.md",
+      "size": 703,
+      "sha256": "ad7bcf6bab23914e64e49dd2df481d829d758dd48d6cf9fda77ae9831d3bafd9"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/long_run_analysis.json",
+      "size": 248970,
+      "sha256": "bb7454be9e940fbb3a4d9d0fe7f68f530cfca0833d160b93b6b5d5109334c6f2"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/long_run_analysis.md",
+      "size": 36061,
+      "sha256": "5fed75a5f2fe19cc3b8ce666a56475fcd684ce10c909a9fe08c97b7f44344b0d"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/multi_seed_index.json",
+      "size": 1686,
+      "sha256": "4eabb12b2f7692f269e30c77c3dbc552ff5a76b32db2aab7d10c5e45a4f7e4a2"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/seed_92101/resolved_config.json",
+      "size": 15673,
+      "sha256": "99b4ad477789a74ce03d83f603ba716280b7ea5a58433e622c498928be06adb2"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/seed_92101/run_manifest.json",
+      "size": 14273,
+      "sha256": "c804950accc4a442a607ac6f1c030441d38839b07907b93bb69ac06140baf51b"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/seed_92101/source_health_runtime_events.json",
+      "size": 3098,
+      "sha256": "59ea46d34c7f778d97c33e36bae6a46e82ff4a5c92de3aabe1c69bff06fc5fdd"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/seed_92101/summary.json",
+      "size": 34770,
+      "sha256": "59289b0ce3cb363db652e173fc4d56f7bab4ce8be41985e413598f8f5738567a"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/seed_92102/resolved_config.json",
+      "size": 15673,
+      "sha256": "9b3d119559e180ef23203839f4d432fd13ef73763bfb35c60e97a818f44b52b7"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/seed_92102/run_manifest.json",
+      "size": 14273,
+      "sha256": "4aef61e5f034514dfc6998e95de0561d9acf788a501de43a7691da24397ae891"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/seed_92102/source_health_runtime_events.json",
+      "size": 4843,
+      "sha256": "3480acc4a2945ba4b70331dac6baf1da9137300171c2bd767d2a5ec5243fa5f8"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/seed_92102/summary.json",
+      "size": 35184,
+      "sha256": "561e3cdcab81a64279bc4556f3489c9417eef3a21699a0e6a3f9018c1ecf1e34"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/seed_92103/resolved_config.json",
+      "size": 15673,
+      "sha256": "ec466c3989e3d44f8c1b1806163586917cb0754d9366499c22f2cbfcea037d35"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/seed_92103/run_manifest.json",
+      "size": 14273,
+      "sha256": "0203b39b1feee30cbe9222608be1dcba861f6bbbbf749959b938c6c90cc369f6"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/seed_92103/source_health_runtime_events.json",
+      "size": 4835,
+      "sha256": "bb4a9be3a0f0ab4de0fb742f94590bb99fbbf0877cdefed558fd1c1bc8847590"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/seed_92103/summary.json",
+      "size": 35068,
+      "sha256": "21c95df431fff04c46239baabf03c247942f58b4a9a5e3743453c5b3fddd165c"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/source_health_gate.json",
+      "size": 7383,
+      "sha256": "17599a2f427480b213cc159eff9ba364061bd0aa6bb8b74a072a08452ffe5fe4"
+    },
+    {
+      "path": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/source_health_gate.md",
+      "size": 703,
+      "sha256": "ad7bcf6bab23914e64e49dd2df481d829d758dd48d6cf9fda77ae9831d3bafd9"
+    },
+    {
+      "path": "state/studies/d1m_fixed_conservative_turnover_v1/source_config.json",
+      "size": 14528,
+      "sha256": "c73af891d6887d84d7a866796f74355f015537d004672a8ffb9cbbef86d0f796"
+    },
+    {
+      "path": "state/studies/d1m_fixed_conservative_turnover_v1/source_config.json.manifest.json",
+      "size": 1015,
+      "sha256": "eebb74cce539f81aa4b0dab62753c0970cacf36d6fe866c9fee5333d72bbbaf1"
+    },
+    {
+      "path": "studies/d1m_fixed_conservative_turnover_v1/DESIGN.md",
+      "size": 1244,
+      "sha256": "d77af743af8be21774baf18e8138191dcc5b798acafa6a351d928879c9fbaa46"
+    },
+    {
+      "path": "studies/d1m_fixed_conservative_turnover_v1/README.md",
+      "size": 345,
+      "sha256": "01bc1d12cc6ac9c7c98a7ea8e3412ab85cb5fd57eb7f057846df6d3f20b3dc68"
+    },
+    {
+      "path": "studies/d1m_fixed_conservative_turnover_v1/protocol/source_health.json",
+      "size": 1408,
+      "sha256": "4bb40debae0b9aebfb0d56057e230e0863db3f0f7c44f9c29fc43c8bd9824176"
+    },
+    {
+      "path": "studies/d1m_fixed_conservative_turnover_v1/protocol/source_template.json",
+      "size": 14314,
+      "sha256": "4c6bd879e3057f8a1dcd9c5d2ef7d8a3f780580b61de4a2bc70567cef33fe077"
+    },
+    {
+      "path": "studies/d1m_fixed_conservative_turnover_v1/workflow.toml",
+      "size": 4657,
+      "sha256": "fe637a6877c6c729165a3ae6c04d9439beb20e43a34db43883cfe0490782ea91"
+    }
+  ],
+  "omitted": [
+    "checkpoint bytes (*.sechk); hashes remain in paired plans/results"
+  ]
+}

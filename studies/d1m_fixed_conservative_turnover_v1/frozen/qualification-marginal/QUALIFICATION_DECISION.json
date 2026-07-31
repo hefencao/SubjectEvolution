@@ -1,0 +1,13 @@
+{
+  "schema": "d1m-turnover-substrate-qualification-decision-v1",
+  "decision": "rerun-required-after-health-gate-semantics-fix",
+  "substrate_failure_claimed": false,
+  "source_qualified": false,
+  "new_capability_authorized": false,
+  "paired_plan_authorized": false,
+  "ready_seed_count": 2,
+  "requested_seed_count": 3,
+  "root_cause": "source-health-contract-v1 used the same narrow qualification threshold as an immediate runtime stop; seed 92101 was stopped at tick 240 when its checkpoint decline was 0.3043478261 versus a 0.30 qualification threshold despite retaining 128 entities, 98 births, 56 living descendants and mean generation 0.4375",
+  "next_action": "repeat the unchanged non-heritable substrate on disjoint seeds under source-health-contract-v2, where advisory trajectory misses continue unless a separate catastrophic floor is crossed and only the required final checkpoint authorizes the next stage",
+  "effect_interpretation_authorized": false
+}

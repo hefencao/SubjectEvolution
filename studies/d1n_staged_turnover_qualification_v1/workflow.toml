@@ -1,0 +1,117 @@
+schema = "se-study-workflow-v1"
+study_id = "d1n_staged_turnover_qualification_v1"
+title = "D1-N staged healthy-turnover qualification"
+
+[parameters.backend]
+type = "choice"
+default = "auto"
+choices = ["auto", "cpu", "gpu"]
+description = "Execution backend."
+
+[parameters.seeds]
+type = "csv-int"
+default = "93101,93102,93103"
+description = "Independent qualification seeds disjoint from D1-M and implementation calibration."
+
+[parameters.initial_entities]
+type = "int"
+default = 128
+minimum = 32
+description = "Founder count; unchanged from D1-M."
+
+[parameters.initial_energy]
+type = "float"
+default = 2.4
+minimum = 0.0
+description = "Founder body energy; unchanged from D1-M."
+
+[parameters.maintenance_cost]
+type = "float"
+default = 0.010
+minimum = 0.0
+description = "Uniform base maintenance calibrated before formal seeds; no genotype receives a discount."
+
+[parameters.harvest_multiplier]
+type = "float"
+default = 1.30
+minimum = 0.0
+description = "Uniform four-channel harvest throughput calibrated before formal seeds."
+
+[parameters.resource_regeneration]
+type = "float"
+default = 0.027
+minimum = 0.0
+description = "Uniform abiotic regeneration calibrated before formal seeds."
+
+[parameters.reproduction_threshold]
+type = "float"
+default = 1.8
+minimum = 0.0
+description = "Fixed total reproduction eligibility requirement."
+
+[parameters.reproduction_cost]
+type = "float"
+default = 0.1
+minimum = 0.0
+description = "Non-transfer event overhead."
+
+[parameters.offspring_endowment]
+type = "float"
+default = 0.9
+minimum = 0.000001
+description = "Fixed conservative parent-to-offspring energy transfer."
+
+[parameters.parent_reserve]
+type = "float"
+default = 0.8
+minimum = 0.0
+description = "Energy retained by the parent after reproduction."
+
+[parameters.target_tick]
+type = "int"
+default = 480
+minimum = 480
+description = "Sustained turnover qualification horizon."
+
+[parameters.generated_config]
+type = "path"
+default = "state/studies/d1n_staged_turnover_qualification_v1/source_config.json"
+description = "Generated local substrate config."
+
+[parameters.source_root]
+type = "path"
+default = "runs/base/d1n_staged_turnover_qualification_v1/qualification"
+description = "Health-gated source output root."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1n_staged_turnover_qualification_v1/qualification"
+description = "Final health report root."
+
+[parameters.output]
+type = "result-path"
+default = "d1n_staged_turnover_qualification_v1_results.zip"
+description = "External result bundle."
+
+[parameters.include_checkpoints]
+type = "bool"
+default = false
+description = "Include checkpoints for exact replay."
+
+[steps.prepare-config]
+description = "Generate the fixed conservative substrate with preregistered uniform physical-throughput calibration."
+command = ["se-turnover-substrate-config", "--template", "{study_dir}/protocol/source_template.json", "--output", "{generated_config}", "--initial-entities", "{initial_entities}", "--initial-energy", "{initial_energy}", "--maintenance-cost", "{maintenance_cost}", "--harvest-multiplier", "{harvest_multiplier}", "--resource-regeneration", "{resource_regeneration}", "--reproduction-threshold", "{reproduction_threshold}", "--reproduction-cost", "{reproduction_cost}", "--offspring-endowment", "{offspring_endowment}", "--parent-reserve", "{parent_reserve}", "--target-tick", "{target_tick}"]
+
+[steps.source-pilot]
+description = "Run disjoint sources with advisory checkpoints, catastrophic floors, and one required final qualification."
+command = ["se-multi", "--config", "{generated_config}", "--seeds", "{seeds}", "--output", "{source_root}", "--backend", "{backend}", "--until-tick", "{target_tick}", "--checkpoint-ticks", "120,240,360,480", "--source-health-contract", "{study_dir}/protocol/source_health.json", "--skip-post-run-audits"]
+requires_json = [{ path = "{generated_config}.manifest.json", field = "schema", equals = "d1-turnover-substrate-config-v2" }]
+
+[steps.source-health]
+description = "Re-evaluate required final qualification and preserve all advisory warnings."
+command = ["se-source-health-gate", "--source-root", "{source_root}", "--contract", "{study_dir}/protocol/source_health.json", "--output", "{analysis_root}/source_health_gate.json"]
+
+[steps.pack-results]
+description = "Package config, contract, staged warnings, hard-stop evidence and final qualification externally."
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "analyses/d1n_staged_turnover_qualification_v1", "--runtime-root", "runs/base/d1n_staged_turnover_qualification_v1", "--required-file", "{generated_config}", "--required-file", "{generated_config}.manifest.json", "--output", "{output}"]
+boolean_flags = { include_checkpoints = "--include-checkpoints" }

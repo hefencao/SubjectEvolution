@@ -1,65 +1,72 @@
 # SE project status
 
-Version: **0.92.0**
+Version: **0.93.0**
 
 ## Current development direction
 
-Audit expansion and new-gene work remain paused. D1-L failed its short source
-qualification after two seeds and did not run the third. v0.92 advances D1-M,
-which changes only reproduction bookkeeping and substrate throughput: every
-entity uses the same fixed conservative offspring endowment, so no inherited
-trait is being screened.
+Audit expansion and new-gene work remain paused. D1-M showed that the fixed
+conservative reproduction substrate is promising but not formally qualified:
+two seeds passed tick 360, while one source was prematurely stopped at tick 240
+by an execution-contract defect. v0.93 advances D1-N, which separates advisory
+trajectory diagnostics, catastrophic runtime floors, and required final source
+qualification.
 
-## D1-L terminal qualification
+## D1-M frozen result
 
-At tick 240 the two completed D1-L seeds retain 84 and 88 entities from 160
-founders. Cumulative births are 49 and 58, but only 9 and 14 descendants remain
-alive. The supplied compact bundle omitted aggregate health events and the
-generated config sidecar because of the v0.91 packaging bug; the final summaries
-are frozen without reconstructing absent evidence. No capability or evolution
-interpretation is authorized.
+Seeds 92102 and 92103 completed tick 360 and passed every v1 health condition.
+Seed 92101 was stopped when its tick-120 to tick-240 population decline was
+30.43%, narrowly above a 30% desired trajectory bound. At the stop it still had
+128 living entities from 128 founders, 98 cumulative births, 56 living
+descendants, and mean generation 0.4375. D1-M is therefore neither promoted nor
+classified as a failed substrate. The original result and decision are frozen.
 
-## v0.91 manifest and failed-result handoff fix
+## Source-health contract v2
 
-The generated sidecar is canonically `<config>.manifest.json`, for example
-`source_config.json.manifest.json`. The generator, workflow precondition, and
-result packager now use the same path. Failed health bundles include source
-config, sidecar, panel index, aggregate health report, staged runtime events,
-and long-run summary.
+`source-health-contract-v2` separates three meanings that v1 conflated:
 
-## D1-M fixed conservative substrate
+1. advisory checkpoints record whether maturation is on schedule;
+2. broad catastrophic floors alone may terminate a run early;
+3. required final checkpoints alone authorize the next stage.
 
-The legacy rule debited 0.6 parent energy but transferred only 0.27 to the
-newborn. D1-M instead uses a fixed, non-heritable conservative transfer:
-0.1 event overhead, 0.9 newborn endowment, and 0.8 required parent reserve.
-The total eligibility requirement is 1.8. Existing architecture costs remain
-active.
+A marginal advisory miss remains visible but does not destroy a recoverable
+source. A catastrophic floor still stops the run and may stop the remaining
+panel. Final qualification thresholds are fixed before formal seeds execute.
 
-The source panel uses 128 founders and preregistered tick-120, tick-240, and
-tick-360 health checks. Three new independent seeds must all retain population
-scale, living descendants, generation depth, founder replacement, and bounded
-checkpoint decline. Internal implementation-calibration seeds are not part of
-the requested evidence.
+## D1-N stable-turnover substrate
+
+D1-N adds no inherited trait, reward, role, or population protection. It retains
+the fixed conservative reproduction settlement and applies one uniform physical
+substrate calibration to every entity:
+
+- maintenance cost: 0.010 energy/tick;
+- four-channel harvest multiplier: 1.30;
+- four-channel abiotic regeneration: 0.027;
+- 128 founders, fixed 0.9 offspring transfer, 0.1 event overhead, 0.8 parent reserve.
+
+The formal panel uses disjoint seeds 93101--93103 and a required tick-480
+checkpoint. Internal calibration seeds proved only that the default is not known
+to be invalid; they are not project evidence.
 
 ## Development-order rule
 
-1. Qualify the non-heritable substrate on independent seeds.
-2. Estimate per-capita energy throughput and reserve before attaching a gene.
-3. Bound structural, use, development, and combination-maturation costs against
-   that budget.
-4. Re-run source health after capability attachment.
-5. Only then authorize paired or evolutionary measurement.
+1. Run the complete D1-N formal panel.
+2. Require all three seeds to pass the required tick-480 qualification.
+3. Derive a per-capita energy and reserve budget from those formal trajectories.
+4. Declare structural, use, development, and combination-maturation costs before
+   attaching another inherited capability.
+5. Re-run source health after capability attachment.
+6. Only then authorize paired or evolutionary measurement.
 
 ## Current task
 
-Run only the D1-M 360-tick qualification panel and package its full staged health
-evidence. Do not add another inherited capability or create a paired branch until
-all three independent seeds pass.
+Run only the D1-N formal qualification workflow and package all staged warnings,
+hard-stop evidence, final health results, source config, and manifest. Do not add
+a new gene or paired branch unless all three formal seeds pass.
 
 ## Still incomplete
 
-- repeated qualification of the D1-M turnover substrate on independent seeds;
-- a formal capability-affordability budget derived from qualified throughput;
+- formal D1-N qualification on seeds 93101--93103;
+- a capability-affordability budget derived from qualified formal throughput;
 - a combination-maturation protocol;
 - independent evolutionary evidence for any D1 inherited allocation;
 - coexistence, reversal, and removal tests required for a niche claim.

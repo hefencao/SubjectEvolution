@@ -1,0 +1,78 @@
+{
+  "schema": "source-health-contract-v2",
+  "purpose": "Qualify sustained multi-generation turnover without converting marginal intermediate trajectory deviations into premature source termination.",
+  "required_ready_seed_count": 3,
+  "stop_panel_after_failed_seed_count": 2,
+  "paired_plan_authorized_only_when_ready": true,
+  "checkpoints": [
+    {
+      "tick": 120,
+      "minimum_alive_count": 96,
+      "minimum_alive_fraction_to_initial": 0.75,
+      "minimum_cumulative_births_per_initial": 0.2,
+      "minimum_living_descendants_per_initial": 0.1,
+      "minimum_mean_generation": 0.1,
+      "maximum_founder_alive_fraction": 0.9,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 1.0,
+      "required_for_final": false,
+      "hard_stop": {
+        "minimum_alive_count": 48,
+        "minimum_alive_fraction_to_initial": 0.375
+      }
+    },
+    {
+      "tick": 240,
+      "minimum_alive_count": 96,
+      "minimum_alive_fraction_to_initial": 0.75,
+      "minimum_cumulative_births_per_initial": 0.5,
+      "minimum_living_descendants_per_initial": 0.25,
+      "minimum_mean_generation": 0.3,
+      "maximum_founder_alive_fraction": 0.7,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.3,
+      "required_for_final": false,
+      "hard_stop": {
+        "minimum_alive_count": 56,
+        "minimum_alive_fraction_to_initial": 0.4375,
+        "minimum_cumulative_births_per_initial": 0.1,
+        "minimum_living_descendants_per_initial": 0.05,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+      }
+    },
+    {
+      "tick": 360,
+      "minimum_alive_count": 96,
+      "minimum_alive_fraction_to_initial": 0.75,
+      "minimum_cumulative_births_per_initial": 0.75,
+      "minimum_living_descendants_per_initial": 0.35,
+      "minimum_mean_generation": 0.45,
+      "maximum_founder_alive_fraction": 0.6,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.3,
+      "required_for_final": false,
+      "hard_stop": {
+        "minimum_alive_count": 64,
+        "minimum_alive_fraction_to_initial": 0.5,
+        "minimum_cumulative_births_per_initial": 0.25,
+        "minimum_living_descendants_per_initial": 0.1,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.5
+      }
+    },
+    {
+      "tick": 480,
+      "minimum_alive_count": 96,
+      "minimum_alive_fraction_to_initial": 0.75,
+      "minimum_cumulative_births_per_initial": 0.85,
+      "minimum_living_descendants_per_initial": 0.4,
+      "minimum_mean_generation": 0.65,
+      "maximum_founder_alive_fraction": 0.5,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.3,
+      "required_for_final": true,
+      "hard_stop": {
+        "minimum_alive_count": 64,
+        "minimum_alive_fraction_to_initial": 0.5,
+        "minimum_cumulative_births_per_initial": 0.4,
+        "minimum_living_descendants_per_initial": 0.15,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.5
+      }
+    }
+  ]
+}

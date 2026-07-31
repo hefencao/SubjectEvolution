@@ -190,3 +190,24 @@ substrate health with an implicit offspring-quality penalty.
 D1-M replaces this with one fixed conservative transfer shared by every entity.
 It adds no inherited trait. The next evidence is the complete three-seed staged
 health panel, not an effect comparison.
+
+## D1-M marginal qualification and source-health gate semantics
+
+D1-M does not justify a substrate-success or substrate-failure claim. Two formal
+seeds passed every tick-360 condition. Seed 92101 was terminated at tick 240 when
+its decline from an early overshoot was 30.43%, only 0.43 percentage points above
+the desired trajectory bound, despite retaining the founder-scale population and
+substantial descendants. The root cause is `source-health-contract-v1`, which
+used every qualification miss as an immediate stop.
+
+D1-N introduces `source-health-contract-v2`. Advisory checkpoints preserve the
+full trajectory, separate broad catastrophic floors stop genuinely collapsing
+sources, and required final checkpoints alone authorize the next stage. Historical
+v1 runs retain their original semantics. No D1-M result is reclassified after the
+fact.
+
+D1-N also calibrates one uniform, non-heritable physical substrate before formal
+seeds: maintenance 0.010, harvest multiplier 1.30 and regeneration 0.027. This is
+not a reward or genotype-specific subsidy. The formal tick-480 seeds are disjoint
+from all calibration seeds, and no capability or evolutionary stage is authorized
+until all three pass.

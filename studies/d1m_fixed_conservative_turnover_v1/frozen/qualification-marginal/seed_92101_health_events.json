@@ -1,0 +1,94 @@
+{
+  "schema": "source-health-runtime-events-v1",
+  "events": [
+    {
+      "tick": 120,
+      "requirements": {
+        "tick": 120,
+        "minimum_alive_count": 96,
+        "minimum_alive_fraction_to_initial": 0.75,
+        "minimum_cumulative_births_per_initial": 0.2,
+        "minimum_living_descendants_per_initial": 0.1,
+        "minimum_mean_generation": 0.1,
+        "maximum_founder_alive_fraction": 0.9,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 1.0
+      },
+      "metrics": {
+        "tick": 120,
+        "alive": 184,
+        "alive_fraction_to_initial": 1.4375,
+        "births_total": 78,
+        "cumulative_births_per_initial": 0.609375,
+        "living_descendants_per_initial": 0.484375,
+        "mean_generation": 0.33695652173913043,
+        "max_generation": 1,
+        "founder_alive_fraction": 0.6630434782608695,
+        "descendant_alive_fraction": 0.33695652173913043
+      },
+      "previous_metrics": null,
+      "alive_decline_fraction_from_previous_checkpoint": 0.0,
+      "checks": {
+        "alive_count_met": true,
+        "alive_fraction_met": true,
+        "birth_turnover_met": true,
+        "living_descendants_met": true,
+        "mean_generation_met": true,
+        "founder_fraction_met": true,
+        "checkpoint_decline_met": true
+      },
+      "ready": true,
+      "failed_checks": []
+    },
+    {
+      "tick": 240,
+      "requirements": {
+        "tick": 240,
+        "minimum_alive_count": 96,
+        "minimum_alive_fraction_to_initial": 0.75,
+        "minimum_cumulative_births_per_initial": 0.5,
+        "minimum_living_descendants_per_initial": 0.25,
+        "minimum_mean_generation": 0.3,
+        "maximum_founder_alive_fraction": 0.7,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.3
+      },
+      "metrics": {
+        "tick": 240,
+        "alive": 128,
+        "alive_fraction_to_initial": 1.0,
+        "births_total": 98,
+        "cumulative_births_per_initial": 0.765625,
+        "living_descendants_per_initial": 0.4375,
+        "mean_generation": 0.4375,
+        "max_generation": 1,
+        "founder_alive_fraction": 0.5625,
+        "descendant_alive_fraction": 0.4375
+      },
+      "previous_metrics": {
+        "tick": 120,
+        "alive": 184,
+        "alive_fraction_to_initial": 1.4375,
+        "births_total": 78,
+        "cumulative_births_per_initial": 0.609375,
+        "living_descendants_per_initial": 0.484375,
+        "mean_generation": 0.33695652173913043,
+        "max_generation": 1,
+        "founder_alive_fraction": 0.6630434782608695,
+        "descendant_alive_fraction": 0.33695652173913043
+      },
+      "alive_decline_fraction_from_previous_checkpoint": 0.30434782608695654,
+      "checks": {
+        "alive_count_met": true,
+        "alive_fraction_met": true,
+        "birth_turnover_met": true,
+        "living_descendants_met": true,
+        "mean_generation_met": true,
+        "founder_fraction_met": true,
+        "checkpoint_decline_met": false
+      },
+      "ready": false,
+      "failed_checks": [
+        "checkpoint_decline_met"
+      ]
+    }
+  ]
+}

@@ -945,3 +945,17 @@ This schema deliberately does not activate morphology gene 6. It separates a
 healthy reproduction substrate from the later inherited-investment capability.
 Source qualification is evaluated during execution at registered checkpoints,
 and failed bundles preserve staged gate events and the exact generated config.
+
+## Staged source-health execution
+
+`source-health-contract-v2` separates qualification from termination. Each
+checkpoint contains full qualification requirements, a `required_for_final`
+marker, and optional nested `hard_stop` thresholds. Runtime events record both
+sets. Advisory misses produce `continue-warning`; only hard-stop failures return
+a termination reason. The aggregate report authorizes the next stage only when
+all required checkpoints are observed and pass for the required number of seeds.
+Runtime event streams include the canonical contract SHA-256; a report refuses
+to evaluate v2 events against a different contract.
+
+Version-1 contracts remain supported with their original stop-on-any-failure
+semantics for exact historical replay.

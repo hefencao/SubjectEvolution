@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.93.0
+
+- Adds `source-health-contract-v2`, separating advisory trajectory checks, catastrophic runtime floors, and required final qualification.
+- Anchors v2 runtime events to the canonical contract SHA-256 so later threshold or protocol edits cannot reinterpret old trajectories.
+- Preserves v1 source-health behavior for historical replay while preventing marginal intermediate misses from prematurely destroying recoverable v2 sources.
+- Freezes D1-M as a marginal, non-promoted result: two final passes and one execution-gate false negative.
+- Adds D1-N, a no-new-gene tick-480 turnover qualification with uniform maintenance and four-resource throughput calibration.
+- Keeps formal seeds disjoint from all implementation-calibration panels and blocks capability attachment until all three formal sources qualify.
+
 ## 0.92.0
 
 - Corrects the v0.91 turnover-config sidecar to the canonical

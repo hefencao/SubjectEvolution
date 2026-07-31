@@ -1,0 +1,209 @@
+{
+  "schema": "source-health-gate-report-v1",
+  "source_root": "runs/base/d1m_fixed_conservative_turnover_v1/qualification",
+  "contract": {
+    "schema": "source-health-contract-v1",
+    "purpose": "Qualify stable multi-generation turnover before inherited capability attachment.",
+    "required_ready_seed_count": 3,
+    "paired_plan_authorized_only_when_ready": true,
+    "final_checkpoint": {
+      "tick": 360,
+      "minimum_alive_count": 96,
+      "minimum_alive_fraction_to_initial": 0.75,
+      "minimum_cumulative_births_per_initial": 0.75,
+      "minimum_living_descendants_per_initial": 0.35,
+      "minimum_mean_generation": 0.45,
+      "maximum_founder_alive_fraction": 0.6,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.3
+    }
+  },
+  "seed_count": 3,
+  "ready_seed_count": 2,
+  "ready": false,
+  "paired_plan_authorized": false,
+  "seeds": [
+    {
+      "tick": 240,
+      "requirements": {
+        "tick": 240,
+        "minimum_alive_count": 96,
+        "minimum_alive_fraction_to_initial": 0.75,
+        "minimum_cumulative_births_per_initial": 0.5,
+        "minimum_living_descendants_per_initial": 0.25,
+        "minimum_mean_generation": 0.3,
+        "maximum_founder_alive_fraction": 0.7,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.3
+      },
+      "metrics": {
+        "tick": 240,
+        "alive": 128,
+        "alive_fraction_to_initial": 1.0,
+        "births_total": 98,
+        "cumulative_births_per_initial": 0.765625,
+        "living_descendants_per_initial": 0.4375,
+        "mean_generation": 0.4375,
+        "max_generation": 1,
+        "founder_alive_fraction": 0.5625,
+        "descendant_alive_fraction": 0.4375
+      },
+      "previous_metrics": {
+        "tick": 120,
+        "alive": 184,
+        "alive_fraction_to_initial": 1.4375,
+        "births_total": 78,
+        "cumulative_births_per_initial": 0.609375,
+        "living_descendants_per_initial": 0.484375,
+        "mean_generation": 0.33695652173913043,
+        "max_generation": 1,
+        "founder_alive_fraction": 0.6630434782608695,
+        "descendant_alive_fraction": 0.33695652173913043
+      },
+      "alive_decline_fraction_from_previous_checkpoint": 0.30434782608695654,
+      "checks": {
+        "alive_count_met": true,
+        "alive_fraction_met": true,
+        "birth_turnover_met": true,
+        "living_descendants_met": true,
+        "mean_generation_met": true,
+        "founder_fraction_met": true,
+        "checkpoint_decline_met": false
+      },
+      "ready": false,
+      "failed_checks": [
+        "checkpoint_decline_met"
+      ],
+      "runtime_event_count": 2,
+      "seed": 92101,
+      "run_dir": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/seed_92101",
+      "termination": {
+        "schema": "run-termination-v1",
+        "requested_tick": 360,
+        "completed_tick": 240,
+        "terminated_early": true,
+        "reason": "source-health-gate:checkpoint_decline_met",
+        "scientific_effect_interpretation_authorized": false
+      }
+    },
+    {
+      "tick": 360,
+      "requirements": {
+        "tick": 360,
+        "minimum_alive_count": 96,
+        "minimum_alive_fraction_to_initial": 0.75,
+        "minimum_cumulative_births_per_initial": 0.75,
+        "minimum_living_descendants_per_initial": 0.35,
+        "minimum_mean_generation": 0.45,
+        "maximum_founder_alive_fraction": 0.6,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.3
+      },
+      "metrics": {
+        "tick": 360,
+        "alive": 127,
+        "alive_fraction_to_initial": 0.9921875,
+        "births_total": 117,
+        "cumulative_births_per_initial": 0.9140625,
+        "living_descendants_per_initial": 0.5390625,
+        "mean_generation": 0.6299212598425197,
+        "max_generation": 2,
+        "founder_alive_fraction": 0.4566929133858268,
+        "descendant_alive_fraction": 0.5433070866141733
+      },
+      "previous_metrics": {
+        "tick": 240,
+        "alive": 140,
+        "alive_fraction_to_initial": 1.09375,
+        "births_total": 98,
+        "cumulative_births_per_initial": 0.765625,
+        "living_descendants_per_initial": 0.4765625,
+        "mean_generation": 0.44285714285714284,
+        "max_generation": 2,
+        "founder_alive_fraction": 0.5642857142857143,
+        "descendant_alive_fraction": 0.4357142857142857
+      },
+      "alive_decline_fraction_from_previous_checkpoint": 0.09285714285714286,
+      "checks": {
+        "alive_count_met": true,
+        "alive_fraction_met": true,
+        "birth_turnover_met": true,
+        "living_descendants_met": true,
+        "mean_generation_met": true,
+        "founder_fraction_met": true,
+        "checkpoint_decline_met": true
+      },
+      "ready": true,
+      "failed_checks": [],
+      "runtime_event_count": 3,
+      "seed": 92102,
+      "run_dir": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/seed_92102",
+      "termination": {
+        "schema": "run-termination-v1",
+        "requested_tick": 360,
+        "completed_tick": 360,
+        "terminated_early": false,
+        "reason": null,
+        "scientific_effect_interpretation_authorized": null
+      }
+    },
+    {
+      "tick": 360,
+      "requirements": {
+        "tick": 360,
+        "minimum_alive_count": 96,
+        "minimum_alive_fraction_to_initial": 0.75,
+        "minimum_cumulative_births_per_initial": 0.75,
+        "minimum_living_descendants_per_initial": 0.35,
+        "minimum_mean_generation": 0.45,
+        "maximum_founder_alive_fraction": 0.6,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.3
+      },
+      "metrics": {
+        "tick": 360,
+        "alive": 122,
+        "alive_fraction_to_initial": 0.953125,
+        "births_total": 126,
+        "cumulative_births_per_initial": 0.984375,
+        "living_descendants_per_initial": 0.53125,
+        "mean_generation": 0.7377049180327869,
+        "max_generation": 3,
+        "founder_alive_fraction": 0.4426229508196721,
+        "descendant_alive_fraction": 0.5573770491803278
+      },
+      "previous_metrics": {
+        "tick": 240,
+        "alive": 152,
+        "alive_fraction_to_initial": 1.1875,
+        "births_total": 104,
+        "cumulative_births_per_initial": 0.8125,
+        "living_descendants_per_initial": 0.578125,
+        "mean_generation": 0.5263157894736842,
+        "max_generation": 2,
+        "founder_alive_fraction": 0.5131578947368421,
+        "descendant_alive_fraction": 0.4868421052631579
+      },
+      "alive_decline_fraction_from_previous_checkpoint": 0.19736842105263158,
+      "checks": {
+        "alive_count_met": true,
+        "alive_fraction_met": true,
+        "birth_turnover_met": true,
+        "living_descendants_met": true,
+        "mean_generation_met": true,
+        "founder_fraction_met": true,
+        "checkpoint_decline_met": true
+      },
+      "ready": true,
+      "failed_checks": [],
+      "runtime_event_count": 3,
+      "seed": 92103,
+      "run_dir": "runs/base/d1m_fixed_conservative_turnover_v1/qualification/seed_92103",
+      "termination": {
+        "schema": "run-termination-v1",
+        "requested_tick": 360,
+        "completed_tick": 360,
+        "terminated_early": false,
+        "reason": null,
+        "scientific_effect_interpretation_authorized": null
+      }
+    }
+  ],
+  "interpretation": "source-collapse-or-insufficient-generational-turnover"
+}

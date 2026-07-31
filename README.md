@@ -1,16 +1,15 @@
-# SE v0.92
+# SE v0.93
 
 Reference implementation for nested-subject existence and ecological evolution
 simulation.
 
 ## Current direction
 
-Audit expansion remains paused. D1-L correctly rejected a founder-dominated
-substrate after two failed seeds, and v0.91 now has a corrected manifest
-sidecar/failed-result packaging path. v0.92 advances D1-M: a non-heritable,
-fixed conservative parent-to-offspring energy transfer plus a three-stage
-source-health qualification. No new gene or paired effect branch is authorized
-until three independent sources pass tick 120, 240, and 360 turnover gates.
+Audit expansion and new-gene work remain paused. D1-M exposed a source-health
+execution flaw: a marginal intermediate trajectory miss was treated as an
+immediate collapse. v0.93 adds a staged v2 health contract and D1-N, a no-new-gene
+tick-480 formal turnover qualification. Advisory misses continue, catastrophic
+floors stop, and only the required final checkpoint authorizes the next stage.
 
 ## Workspace layout
 
@@ -43,8 +42,8 @@ Study operations are declared in `workflow.toml`, not executable shell files.
 After editable installation:
 
 ```text
-se-study show studies/d1m_fixed_conservative_turnover_v1
-se-study run studies/d1m_fixed_conservative_turnover_v1 prepare-config --dry-run
+se-study show studies/d1n_staged_turnover_qualification_v1
+se-study run studies/d1n_staged_turnover_qualification_v1 prepare-config --dry-run
 ```
 
 Every parameter is declared and can be overridden explicitly. The resolved argv
@@ -70,4 +69,4 @@ runtime results are never included.
 - [Governance principles](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.92 D1-M iteration](docs/迭代/v0.92_D1-M_固定保守后代投入的周转基底.md)
+- [v0.93 D1-N iteration](docs/迭代/v0.93_D1-N_分层健康门与稳定代际周转资格.md)

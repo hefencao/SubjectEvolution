@@ -280,7 +280,9 @@ def main() -> None:
         )
         source_health_failed = bool(
             isinstance(termination, dict)
-            and str(termination.get("reason", "")).startswith("source-health-gate:")
+            and str(termination.get("reason", "")).startswith(
+                ("source-health-gate:", "source-health-hard-stop:")
+            )
         )
         index.append(
             {
