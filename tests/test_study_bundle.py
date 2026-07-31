@@ -4,11 +4,14 @@ import json
 from pathlib import Path
 import subprocess
 import shutil
+import zipfile
 
 import pytest
 
 from se.analysis.study_bundle import (
+    export_study_result,
     freeze_legacy_decision,
+    import_study_result,
     migrate_runtime_artifacts,
     migrate_stage_layout,
     verify_study,
@@ -29,16 +32,22 @@ def _write_json(path: Path, payload: dict) -> None:
 def test_frozen_d3t_chain_is_portable_and_complete() -> None:
     report = verify_study(D3T / "study.json", workspace=ROOT)
     assert report["passed"] is True
-    assert report["frozen_stage_count"] == 2
-    assert report["latest_stage"] == "replication"
+    assert report["frozen_stage_count"] == 3
+    assert report["latest_stage"] == "confirmation"
 
     screen = json.loads((D3T / "frozen/screen/stage.lock.json").read_text())
     replication = json.loads(
         (D3T / "frozen/replication/stage.lock.json").read_text()
     )
+    confirmation = json.loads(
+        (D3T / "frozen/confirmation/stage.lock.json").read_text()
+    )
     assert screen["source_binding"]["mode"] == "paired-plan-source-hash-binding"
     assert replication["source_binding"]["mode"] == "exact-candidate"
-    for stage in (screen, replication):
+    assert confirmation["source_binding"]["mode"] == "exact-candidate"
+    assert confirmation["decision"] == "confirmed-acute"
+    assert confirmation["terminal"] is True
+    for stage in (screen, replication, confirmation):
         assert stage["schema"] == "se-study-stage-freeze-v2"
         assert all("original_path" not in ref for ref in stage["evidence"].values())
         assert all(
@@ -48,6 +57,118 @@ def test_frozen_d3t_chain_is_portable_and_complete() -> None:
         )
 
 
+
+
+def _copy_d3t_workspace(tmp_path: Path) -> Path:
+    target = tmp_path / "studies/d3t_spatial_processing_conversion_v1"
+    shutil.copytree(D3T, target)
+    decision_target = tmp_path / "protocols/decisions"
+    decision_target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(ROOT / "protocols/decisions", decision_target)
+    return target
+
+
+def test_result_bundle_export_is_deterministic_and_self_describing(tmp_path: Path) -> None:
+    first = tmp_path / "first.zip"
+    second = tmp_path / "second.zip"
+    one = export_study_result(D3T / "study.json", output=first, workspace=ROOT)
+    two = export_study_result(D3T / "study.json", output=second, workspace=ROOT)
+    assert one["sha256"] == two["sha256"]
+    assert first.read_bytes() == second.read_bytes()
+    with zipfile.ZipFile(first) as bundle:
+        names = set(bundle.namelist())
+        manifest = json.loads(bundle.read("bundle.json"))
+    assert "study.json" in names
+    assert "DESIGN.md" in names
+    assert "RUN_CHAIN.md" in names
+    assert "commands/20_confirmation_source_plan.sh" in names
+    assert "protocol/candidate.json" in names
+    assert "frozen/confirmation/stage.lock.json" in names
+    assert manifest["schema"] == "se-study-result-bundle-v1"
+    assert manifest["latest_stage"] == "confirmation"
+    assert manifest["design_and_runbook_included"] is True
+    assert manifest["sufficient_for_decision_import"] is True
+    assert manifest["sufficient_for_checkpoint_replay"] is False
+
+
+def test_result_bundle_import_appends_stage_and_rebuilds_summary(tmp_path: Path) -> None:
+    target = _copy_d3t_workspace(tmp_path)
+    shutil.rmtree(target / "frozen/confirmation")
+    from se.analysis.study_bundle import rebuild_chain_lock
+
+    rebuild_chain_lock(target / "study.json", workspace=tmp_path)
+    stale_summary = (target / "RUN_CHAIN.md").read_text(encoding="utf-8")
+    assert "| confirmation |" not in stale_summary
+
+    archive = tmp_path / "result.zip"
+    export_study_result(D3T / "study.json", output=archive, workspace=ROOT)
+    before_check = (target / "RUN_CHAIN.md").read_bytes()
+    check = import_study_result(
+        target / "study.json", bundle=archive, workspace=tmp_path, check_only=True
+    )
+    assert check["schema"] == "se-study-result-import-check-v1"
+    assert check["would_modify_study"] is True
+    assert (target / "RUN_CHAIN.md").read_bytes() == before_check
+
+    report = import_study_result(
+        target / "study.json", bundle=archive, workspace=tmp_path
+    )
+    assert report["previous_stage_count"] == 2
+    assert report["imported_stage_count"] == 3
+    assert report["latest_stage"] == "confirmation"
+    assert report["sufficient_for_checkpoint_replay"] is False
+    assert "| confirmation |" in (target / "RUN_CHAIN.md").read_text(encoding="utf-8")
+    assert verify_study(target / "study.json", workspace=tmp_path)["passed"] is True
+
+
+def test_legacy_frozen_only_bundle_is_accepted_against_matching_protocols(
+    tmp_path: Path,
+) -> None:
+    target = _copy_d3t_workspace(tmp_path)
+    report = import_study_result(
+        target / "study.json",
+        bundle=D3T / "frozen",
+        workspace=tmp_path,
+        check_only=True,
+    )
+    assert report["legacy_frozen_only"] is True
+    assert report["latest_stage"] == "confirmation"
+    assert report["would_modify_study"] is False
+
+
+def test_result_bundle_import_rejects_existing_stage_rewrite_atomically(tmp_path: Path) -> None:
+    target = _copy_d3t_workspace(tmp_path)
+    before_frozen = {
+        path.relative_to(target).as_posix(): path.read_bytes()
+        for path in (target / "frozen").rglob("*")
+        if path.is_file()
+    }
+    before_summary = (target / "RUN_CHAIN.md").read_bytes()
+    bundle = tmp_path / "bundle"
+    shutil.copytree(D3T / "frozen", bundle)
+    lock_path = bundle / "screen/stage.lock.json"
+    lock = json.loads(lock_path.read_text())
+    lock["decision"] = "stop"
+    _write_json(lock_path, lock)
+    with pytest.raises(ValueError, match="rewrite or remove existing frozen stage"):
+        import_study_result(target / "study.json", bundle=bundle, workspace=tmp_path)
+    after_frozen = {
+        path.relative_to(target).as_posix(): path.read_bytes()
+        for path in (target / "frozen").rglob("*")
+        if path.is_file()
+    }
+    assert after_frozen == before_frozen
+    assert (target / "RUN_CHAIN.md").read_bytes() == before_summary
+
+
+def test_result_bundle_import_rejects_zip_traversal(tmp_path: Path) -> None:
+    target = _copy_d3t_workspace(tmp_path)
+    archive = tmp_path / "unsafe.zip"
+    with zipfile.ZipFile(archive, "w") as bundle:
+        bundle.writestr("../outside.json", "{}")
+    with pytest.raises(ValueError, match="unsafe study result archive member"):
+        import_study_result(target / "study.json", bundle=archive, workspace=tmp_path)
+    assert not (tmp_path.parent / "outside.json").exists()
 
 
 def test_legacy_decision_survives_unrelated_baseline_append(tmp_path: Path) -> None:

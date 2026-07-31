@@ -6,6 +6,7 @@ import pytest
 
 from se.analysis.candidate_ledger import (
     LEDGER_SCHEMA,
+    family_revision_statuses,
     load_ledger,
     record_assessment,
     validate_candidate_for_plan,
@@ -361,6 +362,32 @@ def test_ledger_publishes_family_revision_statuses(tmp_path: Path) -> None:
     assert ledger["family_reopening_requires_new_interface"] is True
 
 
+
+def test_family_revision_statuses_deduplicate_multistage_candidate_ids() -> None:
+    entries = [
+        {
+            "candidate_id": "aggregate-multistage",
+            "mechanism_family": "family-m",
+            "mechanism_family_revision": 1,
+            "family_role": "aggregate-path-gate",
+            "stage": stage,
+            "terminal": stage == "confirmation",
+            "family_terminal": False,
+        }
+        for stage in ("screen", "replication", "confirmation")
+    ]
+    assert family_revision_statuses(entries) == [
+        {
+            "mechanism_family": "family-m",
+            "mechanism_family_revision": 1,
+            "status": "aggregate-gate-recorded",
+            "candidate_ids": ["aggregate-multistage"],
+            "bounded_negative_candidate_ids": [],
+            "aggregate_candidate_ids": ["aggregate-multistage"],
+            "closed_by_candidate_ids": [],
+        }
+    ]
+
 def test_builtin_decision_baseline_matches_repository_protocol() -> None:
     import json
 
@@ -403,9 +430,9 @@ def test_effective_ledger_restores_missing_builtin_history(tmp_path: Path) -> No
     effective, metadata = load_effective_ledger(
         path, include_builtin_baseline=True
     )
-    assert len(effective["entries"]) == 7
+    assert len(effective["entries"]) == 8
     assert metadata["workspace_ledger_entry_count"] == 2
-    assert metadata["decision_baseline_entry_count"] == 7
+    assert metadata["decision_baseline_entry_count"] == 8
     assert metadata["workspace_hydration_required"] is True
     statuses = {
         (item["mechanism_family"], item["mechanism_family_revision"]): item["status"]
@@ -436,7 +463,7 @@ def test_recording_duplicate_hydrates_partial_workspace(tmp_path: Path) -> None:
     )
     record_assessment(path, assessment, include_builtin_baseline=True)
     hydrated = load_ledger(path)
-    assert len(hydrated["entries"]) == 7
+    assert len(hydrated["entries"]) == 8
 
 
 def test_effective_ledger_rejects_conflicting_workspace_history(tmp_path: Path) -> None:
@@ -469,7 +496,7 @@ def test_hydrate_ledger_writes_complete_builtin_history(tmp_path: Path) -> None:
     path.write_text(json.dumps(partial), encoding="utf-8")
 
     hydrated, metadata = hydrate_ledger(path, include_builtin_baseline=True)
-    assert len(hydrated["entries"]) == 7
-    assert len(load_ledger(path)["entries"]) == 7
+    assert len(hydrated["entries"]) == 8
+    assert len(load_ledger(path)["entries"]) == 8
     assert path.with_suffix(".md").is_file()
     assert metadata["workspace_hydration_required"] is True

@@ -9,9 +9,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import shutil
+import tempfile
 from typing import Any, Sequence
+import zipfile
 
 from .. import __version__
 from ..workspace import artifact_ref, portable_path, resolve_path, sha256_file, workspace_root
@@ -23,6 +26,9 @@ STUDY_SCHEMA = "se-study-bundle-v1"
 STAGE_SCHEMA = "se-study-stage-freeze-v2"
 CHAIN_SCHEMA = "se-study-chain-lock-v1"
 LEGACY_DECISION_SCHEMA = "se-study-legacy-decision-lock-v1"
+RESULT_BUNDLE_SCHEMA = "se-study-result-bundle-v1"
+_MAX_RESULT_BUNDLE_FILES = 4096
+_MAX_RESULT_BUNDLE_BYTES = 128 * 1024 * 1024
 _STAGE_ORDER = {"smoke": 0, "screen": 1, "replication": 2, "confirmation": 3}
 _REQUIRED_ROLES = ("source_plan", "paired_plan", "assessment", "decision")
 
@@ -741,6 +747,530 @@ def verify_study(
 
 
 
+def _zip_member_is_symlink(info: zipfile.ZipInfo) -> bool:
+    mode = (info.external_attr >> 16) & 0o170000
+    return mode == 0o120000
+
+
+def _safe_extract_zip(archive: Path, destination: Path) -> None:
+    """Extract a result archive without path traversal or link materialization."""
+
+    with zipfile.ZipFile(archive) as bundle:
+        members = bundle.infolist()
+        if not members:
+            raise ValueError("study result archive is empty")
+        if len(members) > _MAX_RESULT_BUNDLE_FILES:
+            raise ValueError("study result archive contains too many members")
+        if sum(info.file_size for info in members) > _MAX_RESULT_BUNDLE_BYTES:
+            raise ValueError("study result archive exceeds the compact-result size limit")
+        normalized_names: set[str] = set()
+        for info in members:
+            name = info.filename.replace("\\", "/")
+            path = Path(name)
+            if path.is_absolute() or ".." in path.parts:
+                raise ValueError(f"unsafe study result archive member: {info.filename!r}")
+            if name in normalized_names:
+                raise ValueError(f"duplicate study result archive member: {info.filename!r}")
+            normalized_names.add(name)
+            if info.flag_bits & 0x1:
+                raise ValueError("encrypted study result archives are not supported")
+            if _zip_member_is_symlink(info):
+                raise ValueError(
+                    f"study result archive cannot contain symlinks: {info.filename!r}"
+                )
+        bundle.extractall(destination)
+
+
+def _locate_result_bundle_root(path: Path) -> tuple[Path, bool]:
+    """Return the directory containing ``frozen`` or legacy frozen evidence."""
+
+    if (path / "bundle.json").is_file() and (path / "frozen/chain.lock.json").is_file():
+        return path, False
+    if (path / "frozen/chain.lock.json").is_file():
+        return path, False
+    if (path / "chain.lock.json").is_file():
+        return path, True
+    candidates = sorted(
+        parent
+        for parent in path.rglob("chain.lock.json")
+        if parent.is_file()
+        for parent in [parent.parent]
+    )
+    if len(candidates) != 1:
+        raise ValueError(
+            "study result bundle must contain exactly one frozen/chain.lock.json "
+            "or legacy chain.lock.json"
+        )
+    candidate = candidates[0]
+    if candidate.name == "frozen":
+        return candidate.parent, False
+    return candidate, True
+
+
+def _study_state_from_chain(
+    study: dict[str, Any], chain: dict[str, Any]
+) -> dict[str, Any]:
+    """Return the study definition with planning state derived from frozen evidence."""
+
+    updated = dict(study)
+    stages = chain.get("stages", [])
+    if not isinstance(stages, list) or not stages:
+        return updated
+    latest = dict(stages[-1])
+    stage = str(latest.get("stage", ""))
+    decision = str(latest.get("decision", ""))
+    terminal = bool(latest.get("terminal", False))
+    updated["latest_stage"] = stage
+    updated["latest_decision"] = decision
+    updated["latest_recommendation"] = latest.get("recommendation")
+    updated["selection_claim_allowed"] = bool(
+        chain.get("selection_claim_allowed", False)
+    )
+    if terminal:
+        updated["current_state"] = decision or f"{stage}-terminal"
+        updated["next_authorized_stage"] = None
+        updated["terminal_stage"] = stage
+    else:
+        updated["current_state"] = (
+            f"{stage}-promoted" if decision == "promote" else f"{stage}-{decision}"
+        )
+        updated["next_authorized_stage"] = {
+            "smoke": "screen",
+            "screen": "replication",
+            "replication": "confirmation",
+        }.get(stage)
+        updated.pop("terminal_stage", None)
+    return updated
+
+
+def _bundle_file_records(root: Path, relative_paths: Sequence[Path]) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for relative in sorted(relative_paths, key=lambda value: value.as_posix()):
+        path = root / relative
+        if not path.is_file():
+            raise ValueError(f"study result bundle input is missing: {path}")
+        records.append(
+            {
+                "path": relative.as_posix(),
+                "sha256": sha256_file(path),
+                "size": path.stat().st_size,
+            }
+        )
+    return records
+
+
+def _write_deterministic_zip(archive: Path, root: Path, relative_paths: Sequence[Path]) -> None:
+    archive.parent.mkdir(parents=True, exist_ok=True)
+    temporary = archive.with_suffix(archive.suffix + ".tmp")
+    if temporary.exists():
+        temporary.unlink()
+    with zipfile.ZipFile(temporary, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as bundle:
+        for relative in sorted(relative_paths, key=lambda value: value.as_posix()):
+            path = root / relative
+            info = zipfile.ZipInfo(
+                relative.as_posix(), date_time=(1980, 1, 1, 0, 0, 0)
+            )
+            info.compress_type = zipfile.ZIP_DEFLATED
+            mode = 0o100755 if relative.parts[0] == "commands" else 0o100644
+            info.external_attr = mode << 16
+            bundle.writestr(info, path.read_bytes())
+    temporary.replace(archive)
+
+
+def export_study_result(
+    study_path: str | Path,
+    *,
+    output: str | Path,
+    workspace: str | Path | None = None,
+) -> dict[str, Any]:
+    """Export a deterministic, self-describing compact study result bundle.
+
+    Raw runtime and checkpoints remain external. Their canonical locations and
+    hashes are retained in stage locks, so the compact bundle is sufficient for
+    decision import and interpretation but not for checkpoint replay.
+    """
+
+    root = workspace_root(workspace)
+    study_file = resolve_path(study_path, root=root)
+    study = load_study(study_file)
+    verification = verify_study(study_file, workspace=root)
+    if not verification["passed"]:
+        raise ValueError(
+            "cannot export an invalid study: "
+            + json.dumps(verification["failures"], ensure_ascii=False)
+        )
+    study_dir = study_file.parent
+    chain = _read_json(study_dir / "frozen/chain.lock.json")
+    derived_study = _study_state_from_chain(study, chain)
+    if study != derived_study:
+        raise ValueError(
+            "cannot export a study whose planning state is stale relative to frozen evidence"
+        )
+    protocol_files = sorted(
+        path for path in (study_dir / "protocol").rglob("*") if path.is_file()
+    )
+    frozen_files = sorted(
+        path for path in (study_dir / "frozen").rglob("*") if path.is_file()
+    )
+    command_files = sorted(
+        path for path in (study_dir / "commands").rglob("*") if path.is_file()
+    )
+    document_paths = [
+        Path(name)
+        for name in ("study.json", "README.md", "DESIGN.md", "RUN_CHAIN.md")
+        if (study_dir / name).is_file()
+    ]
+    payload_paths = [
+        *document_paths,
+        *(Path("protocol") / path.relative_to(study_dir / "protocol") for path in protocol_files),
+        *(Path("commands") / path.relative_to(study_dir / "commands") for path in command_files),
+        *(Path("frozen") / path.relative_to(study_dir / "frozen") for path in frozen_files),
+    ]
+    with tempfile.TemporaryDirectory(prefix="se-study-result-export-", dir=root) as temp_name:
+        temp = Path(temp_name)
+        for relative in payload_paths:
+            source = study_dir / relative
+            target = temp / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+        records = _bundle_file_records(temp, payload_paths)
+        manifest = {
+            "schema": RESULT_BUNDLE_SCHEMA,
+            "producer_version": __version__,
+            "study_id": study["study_id"],
+            "candidate_id": study["candidate_id"],
+            "candidate_signature_sha256": chain.get("candidate_signature_sha256"),
+            "chain_sha256": sha256_file(study_dir / "frozen/chain.lock.json"),
+            "latest_stage": chain.get("latest_stage"),
+            "latest_recommendation": chain.get("latest_recommendation"),
+            "selection_claim_allowed": bool(chain.get("selection_claim_allowed", False)),
+            "frozen_stage_count": len(chain.get("stages", [])),
+            "external_runtime_artifact_count": sum(
+                len(_read_json(path).get("external_runtime_artifacts", []))
+                for path in (study_dir / "frozen").glob("*/stage.lock.json")
+            ),
+            "raw_runtime_included": False,
+            "design_and_runbook_included": True,
+            "sufficient_for_decision_import": True,
+            "sufficient_for_checkpoint_replay": False,
+            "files": records,
+        }
+        (temp / "bundle.json").write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        archive_paths = [Path("bundle.json"), *payload_paths]
+        output_path = resolve_path(output, root=root)
+        _write_deterministic_zip(output_path, temp, archive_paths)
+    try:
+        output_display = portable_path(output_path, root=root)
+    except ValueError:
+        output_display = output_path.as_posix()
+    return {
+        "schema": "se-study-result-export-v1",
+        "study_id": study["study_id"],
+        "candidate_id": study["candidate_id"],
+        "output": output_display,
+        "sha256": sha256_file(output_path),
+        "latest_stage": chain.get("latest_stage"),
+        "raw_runtime_included": False,
+        "design_and_runbook_included": True,
+        "sufficient_for_decision_import": True,
+        "sufficient_for_checkpoint_replay": False,
+    }
+
+
+def _validate_result_manifest(bundle_root: Path) -> dict[str, Any] | None:
+    manifest_path = bundle_root / "bundle.json"
+    if not manifest_path.is_file():
+        return None
+    manifest = _read_json(manifest_path)
+    if manifest.get("schema") != RESULT_BUNDLE_SCHEMA:
+        raise ValueError(f"unsupported study result bundle schema: {manifest.get('schema')!r}")
+    files = manifest.get("files")
+    if not isinstance(files, list) or not files:
+        raise ValueError("study result bundle manifest has no files")
+    observed: set[str] = set()
+    for record in files:
+        if not isinstance(record, dict):
+            raise ValueError("study result bundle file record must be an object")
+        relative = Path(str(record.get("path", "")))
+        if relative.is_absolute() or ".." in relative.parts or not relative.parts:
+            raise ValueError(f"unsafe study result manifest path: {relative}")
+        path = bundle_root / relative
+        if not path.is_file():
+            raise ValueError(f"study result bundle file is missing: {relative.as_posix()}")
+        if path.stat().st_size != int(record.get("size", -1)):
+            raise ValueError(f"study result bundle size mismatch: {relative.as_posix()}")
+        if sha256_file(path) != str(record.get("sha256", "")):
+            raise ValueError(f"study result bundle hash mismatch: {relative.as_posix()}")
+        observed.add(relative.as_posix())
+    allowed = observed | {"bundle.json"}
+    actual = {
+        path.relative_to(bundle_root).as_posix()
+        for path in bundle_root.rglob("*")
+        if path.is_file()
+    }
+    extras = sorted(actual - allowed)
+    if extras:
+        raise ValueError(f"study result bundle contains unmanifested files: {extras!r}")
+    return manifest
+
+
+def _copy_study_definition_for_validation(
+    study_file: Path, *, root: Path, temporary_root: Path
+) -> Path:
+    relative_study_dir = study_file.parent.relative_to(root)
+    temporary_study_dir = temporary_root / relative_study_dir
+    shutil.copytree(
+        study_file.parent,
+        temporary_study_dir,
+        ignore=shutil.ignore_patterns("frozen", "RUN_CHAIN.md"),
+    )
+    decision_dir = root / "protocols/decisions"
+    if decision_dir.is_dir():
+        target = temporary_root / "protocols/decisions"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(decision_dir, target)
+    return temporary_study_dir / study_file.name
+
+
+def import_study_result(
+    study_path: str | Path,
+    *,
+    bundle: str | Path,
+    workspace: str | Path | None = None,
+    check_only: bool = False,
+) -> dict[str, Any]:
+    """Atomically import a compact result bundle into an existing study.
+
+    Existing frozen stages are immutable: the imported bundle must retain them
+    byte-for-byte and may only append later stages. The run-chain summary is
+    deterministically regenerated from validated frozen evidence.
+    """
+
+    root = workspace_root(workspace)
+    study_file = resolve_path(study_path, root=root)
+    study = load_study(study_file)
+    bundle_path = resolve_path(bundle, root=root)
+    if not bundle_path.exists():
+        raise ValueError(f"study result bundle does not exist: {bundle_path}")
+    existing_manifests = {
+        stage: sha256_file(path)
+        for stage, path, _ in _stage_manifests(study_file.parent)
+    }
+    with tempfile.TemporaryDirectory(prefix="se-study-result-import-", dir=root) as temp_name:
+        temp = Path(temp_name)
+        extracted = temp / "input"
+        extracted.mkdir()
+        if bundle_path.is_dir():
+            shutil.copytree(bundle_path, extracted / "bundle", dirs_exist_ok=True)
+        elif zipfile.is_zipfile(bundle_path):
+            _safe_extract_zip(bundle_path, extracted)
+        else:
+            raise ValueError("study result bundle must be a directory or zip archive")
+        bundle_root, frozen_at_root = _locate_result_bundle_root(extracted)
+        manifest = _validate_result_manifest(bundle_root)
+        legacy_frozen_only = manifest is None
+        frozen_source = bundle_root if frozen_at_root else bundle_root / "frozen"
+        chain = _read_json(frozen_source / "chain.lock.json")
+        if chain.get("schema") != CHAIN_SCHEMA:
+            raise ValueError("study result bundle has an unsupported chain lock")
+        if chain.get("study_id") != study["study_id"]:
+            raise ValueError("study result bundle study_id does not match target study")
+        if chain.get("candidate_id") != study["candidate_id"]:
+            raise ValueError("study result bundle candidate_id does not match target study")
+        if manifest is not None:
+            if manifest.get("study_id") != study["study_id"]:
+                raise ValueError("study result manifest study_id does not match target study")
+            if manifest.get("candidate_id") != study["candidate_id"]:
+                raise ValueError("study result manifest candidate_id does not match target study")
+            if manifest.get("candidate_signature_sha256") != chain.get(
+                "candidate_signature_sha256"
+            ):
+                raise ValueError("study result manifest candidate signature mismatch")
+            if manifest.get("chain_sha256") != sha256_file(
+                frozen_source / "chain.lock.json"
+            ):
+                raise ValueError("study result manifest chain hash mismatch")
+            bundled_study = _read_json(bundle_root / "study.json")
+            if bundled_study.get("study_id") != study["study_id"]:
+                raise ValueError("bundled study definition does not match target study")
+            if bundled_study != _study_state_from_chain(bundled_study, chain):
+                raise ValueError(
+                    "bundled study planning state is stale relative to frozen evidence"
+                )
+            bundled_candidate = bundle_root / "protocol/candidate.json"
+            target_candidate = _candidate_path(study_file, study, root)
+            if sha256_file(bundled_candidate) != sha256_file(target_candidate):
+                raise ValueError("bundled candidate specification does not match target study")
+            for protocol in sorted((bundle_root / "protocol").glob("*.json")):
+                target = study_file.parent / "protocol" / protocol.name
+                if not target.is_file() or sha256_file(protocol) != sha256_file(target):
+                    raise ValueError(
+                        f"bundled protocol does not match target study: {protocol.name}"
+                    )
+        imported_manifests = {
+            stage: sha256_file(path)
+            for stage, path, _ in _stage_manifests(bundle_root)
+        }
+        # A chain placed directly at the archive root has no enclosing study directory.
+        if frozen_at_root:
+            imported_manifests = {
+                path.parent.name: sha256_file(path)
+                for path in frozen_source.glob("*/stage.lock.json")
+            }
+        for stage, expected_sha in existing_manifests.items():
+            if imported_manifests.get(stage) != expected_sha:
+                raise ValueError(
+                    f"study result import would rewrite or remove existing frozen stage: {stage}"
+                )
+        validation_root = temp / "workspace"
+        temporary_study = _copy_study_definition_for_validation(
+            study_file, root=root, temporary_root=validation_root
+        )
+        temporary_frozen = temporary_study.parent / "frozen"
+        shutil.copytree(frozen_source, temporary_frozen)
+        expected_chain = _build_chain_lock(temporary_study, root=validation_root)
+        if chain != expected_chain:
+            raise ValueError("study result bundle chain lock does not match stage evidence")
+        temporary_study_payload = _study_state_from_chain(
+            load_study(temporary_study), expected_chain
+        )
+        temporary_study.write_text(
+            json.dumps(temporary_study_payload, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        expected_run_chain = _render_run_chain_text(
+            temporary_study_payload, expected_chain
+        )
+        (temporary_study.parent / "RUN_CHAIN.md").write_text(
+            expected_run_chain, encoding="utf-8"
+        )
+        verification = verify_study(temporary_study, workspace=validation_root)
+        if not verification["passed"]:
+            raise ValueError(
+                "study result bundle verification failed: "
+                + json.dumps(verification["failures"], ensure_ascii=False)
+            )
+        if check_only:
+            return {
+                "schema": "se-study-result-import-check-v1",
+                "study_id": study["study_id"],
+                "candidate_id": study["candidate_id"],
+                "legacy_frozen_only": legacy_frozen_only,
+                "previous_stage_count": len(existing_manifests),
+                "imported_stage_count": len(imported_manifests),
+                "latest_stage": expected_chain.get("latest_stage"),
+                "derived_current_state": temporary_study_payload.get("current_state"),
+                "would_modify_study": (
+                    len(imported_manifests) != len(existing_manifests)
+                    or study != temporary_study_payload
+                ),
+                "runtime_verified": False,
+                "sufficient_for_decision_import": True,
+                "sufficient_for_checkpoint_replay": False,
+            }
+        incoming = study_file.parent / f".frozen.import-{os.getpid()}"
+        backup = study_file.parent / f".frozen.backup-{os.getpid()}"
+        run_chain_temp = study_file.parent / f".RUN_CHAIN.import-{os.getpid()}.md"
+        run_chain_backup = study_file.parent / f".RUN_CHAIN.backup-{os.getpid()}.md"
+        study_temp = study_file.parent / f".study.import-{os.getpid()}.json"
+        study_backup = study_file.parent / f".study.backup-{os.getpid()}.json"
+        for path in (incoming, backup):
+            if path.exists():
+                shutil.rmtree(path)
+        for path in (run_chain_temp, run_chain_backup, study_temp, study_backup):
+            if path.exists():
+                path.unlink()
+        shutil.copytree(temporary_frozen, incoming)
+        run_chain_temp.write_text(expected_run_chain, encoding="utf-8")
+        study_temp.write_text(
+            json.dumps(temporary_study_payload, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        destination = study_file.parent / "frozen"
+        run_chain = study_file.parent / "RUN_CHAIN.md"
+        if run_chain.is_file():
+            shutil.copy2(run_chain, run_chain_backup)
+        shutil.copy2(study_file, study_backup)
+        try:
+            if destination.exists():
+                destination.replace(backup)
+            incoming.replace(destination)
+            run_chain_temp.replace(run_chain)
+            study_temp.replace(study_file)
+        except Exception:
+            if destination.exists():
+                shutil.rmtree(destination)
+            if backup.exists():
+                backup.replace(destination)
+            if run_chain_backup.is_file():
+                run_chain_backup.replace(run_chain)
+            elif run_chain.exists():
+                run_chain.unlink()
+            if study_backup.is_file():
+                study_backup.replace(study_file)
+            raise
+        finally:
+            if incoming.exists():
+                shutil.rmtree(incoming)
+            for path in (run_chain_temp, study_temp):
+                if path.exists():
+                    path.unlink()
+        if backup.exists():
+            shutil.rmtree(backup)
+        for path in (run_chain_backup, study_backup):
+            if path.exists():
+                path.unlink()
+    final_report = verify_study(study_file, workspace=root)
+    if not final_report["passed"]:
+        raise RuntimeError("imported study failed post-commit verification")
+    return {
+        "schema": "se-study-result-import-v1",
+        "study_id": study["study_id"],
+        "candidate_id": study["candidate_id"],
+        "legacy_frozen_only": legacy_frozen_only,
+        "previous_stage_count": len(existing_manifests),
+        "imported_stage_count": final_report["frozen_stage_count"],
+        "latest_stage": final_report["latest_stage"],
+        "derived_current_state": load_study(study_file).get("current_state"),
+        "runtime_verified": False,
+        "sufficient_for_decision_import": True,
+        "sufficient_for_checkpoint_replay": False,
+    }
+
+
+def export_main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Export a deterministic compact study result bundle.")
+    parser.add_argument("--study", required=True)
+    parser.add_argument("--output", required=True)
+    parser.add_argument("--workspace-root", default=".")
+    args = parser.parse_args(argv)
+    report = export_study_result(
+        args.study, output=args.output, workspace=args.workspace_root
+    )
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+    return 0
+
+
+def import_main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Atomically import a compact study result bundle.")
+    parser.add_argument("--study", required=True)
+    parser.add_argument("--bundle", required=True)
+    parser.add_argument("--check-only", action="store_true")
+    parser.add_argument("--workspace-root", default=".")
+    args = parser.parse_args(argv)
+    report = import_study_result(
+        args.study,
+        bundle=args.bundle,
+        workspace=args.workspace_root,
+        check_only=args.check_only,
+    )
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+    return 0
+
+
 
 def _copy_or_link_file(source: Path, target: Path, *, materialize: str) -> str:
     if source.is_symlink():
@@ -1133,12 +1663,17 @@ def verify_main(argv: Sequence[str] | None = None) -> int:
 __all__ = [
     "CHAIN_SCHEMA",
     "LEGACY_DECISION_SCHEMA",
+    "RESULT_BUNDLE_SCHEMA",
     "STAGE_SCHEMA",
     "STUDY_SCHEMA",
     "freeze_legacy_decision",
     "freeze_legacy_main",
     "freeze_main",
+    "export_main",
+    "export_study_result",
     "freeze_stage",
+    "import_main",
+    "import_study_result",
     "layout_migrate_main",
     "load_study",
     "migrate_main",

@@ -11,4 +11,6 @@ Each study keeps its candidate specification, source configurations, design, ord
 
 `se-study-freeze` copies compact plans, results, assessments, and decisions into `frozen/<stage>/`, binds legacy generic source plans by recorded content hash, and records canonical checkpoint destinations plus their hashes. `se-study-layout-migrate` splits a verified legacy stage into canonical source-run, intervention-run, and analysis roots. `se-study-runtime-migrate` can materialize checkpoint anchors alone when only recovery state is retained. `se-study-verify` validates the complete frozen chain without requiring the original project version or machine path.
 
+`se-study-result-export` creates a deterministic, manifested compact archive containing the study definition, protocols, runbook, and frozen chain. `se-study-result-import` validates that archive in a temporary workspace, prohibits changes to existing frozen stages, derives the study state from the terminal evidence, and commits the update atomically. Compact archives preserve decision continuity; exact checkpoint replay still requires the separately anchored runtime files.
+
 README files are descriptive only. Exact executable steps belong in each study's numerically ordered `commands/` directory.

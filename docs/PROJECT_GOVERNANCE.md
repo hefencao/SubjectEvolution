@@ -94,3 +94,35 @@ README files are descriptive navigation. Exact commands belong in one numericall
 - Study-specific configs and candidate specs are colocated with design and ordered commands; project-level configs remain reusable presets.
 - `.vscode/` is excluded from version control.
 - No reward, world mechanism, cost, threshold, checkpoint tick, response horizon, or seed result is changed.
+
+## 10. Compact result transport and terminal-stage dominance
+
+A compact result is sufficient for decision continuity only when its study
+identity, candidate identity, protocol content, stage evidence, chain lock, and
+file hashes are mutually verified. Raw checkpoints may remain external, but the
+bundle must state that it cannot support checkpoint replay without them.
+
+Result import is append-only and atomic. Existing frozen stages cannot be
+removed, rewritten, or silently rebound. The run-chain summary is derived from
+validated evidence rather than trusted as an independent source. A later
+terminal candidate decision dominates earlier promotion entries when portfolio
+openness is computed.
+
+Canonical exports are self-describing and deterministic. A legacy frozen-only
+archive is acceptable only when the receiving project already has matching
+content-addressed study protocols; otherwise the missing protocol material must
+be supplied rather than reconstructed.
+
+## v0.82 check
+
+- The supplied compact archive contains complete screen, replication, and
+  confirmation evidence and is sufficient for scientific decision import.
+- The only initial verification mismatch was a stale two-stage `RUN_CHAIN.md` in
+  the receiving v0.81 tree; the summary is deterministically regenerated from
+  the three-stage frozen chain rather than treated as missing empirical data.
+- D3-T confirmation is terminal `confirmed-acute`; earlier promotion entries no
+  longer leave the candidate falsely open in portfolio audit.
+- Raw checkpoints are explicitly unnecessary for decision import but remain
+  necessary for exact replay or unfrozen secondary analyses.
+- No reward, cost, threshold, checkpoint tick, response horizon, seed result, or
+  world mechanism is changed.

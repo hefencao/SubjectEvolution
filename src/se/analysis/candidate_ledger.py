@@ -166,16 +166,16 @@ def family_revision_statuses(entries: Sequence[dict[str, Any]]) -> list[dict[str
                 "mechanism_family_revision": revision,
                 "status": status,
                 "candidate_ids": sorted(
-                    str(entry.get("candidate_id", "")) for entry in family_entries
+                    {str(entry.get("candidate_id", "")) for entry in family_entries}
                 ),
                 "bounded_negative_candidate_ids": sorted(
-                    str(entry.get("candidate_id", "")) for entry in bounded_negatives
+                    {str(entry.get("candidate_id", "")) for entry in bounded_negatives}
                 ),
                 "aggregate_candidate_ids": sorted(
-                    str(entry.get("candidate_id", "")) for entry in aggregate_entries
+                    {str(entry.get("candidate_id", "")) for entry in aggregate_entries}
                 ),
                 "closed_by_candidate_ids": sorted(
-                    str(entry.get("candidate_id", "")) for entry in terminal_entries
+                    {str(entry.get("candidate_id", "")) for entry in terminal_entries}
                 ),
             }
         )

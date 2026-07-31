@@ -747,3 +747,46 @@ A frozen stage copies only compact evidence. Large checkpoints remain runtime ar
 Legacy source plans may carry generic candidate IDs or obsolete absolute paths. They are never rewritten as historical evidence. Candidate binding is accepted only when the paired plan and assessment reference the exact source-plan hash; later stages consume the frozen chain and protocol fingerprint rather than the old path string.
 
 Study verification is read-only: it derives the expected chain and summary in memory and compares them with frozen files. Only explicit freeze or rebuild operations may write immutable evidence. Release freshness fingerprints ignore generated package metadata and build outputs while retaining all tracked source inputs.
+
+## v0.82 compact study-result transport
+
+A portable result has two evidence levels:
+
+```text
+compact decision bundle
+    study.json
+    protocol/*.json
+    frozen/<stage>/{plans,results,assessment,decision,stage.lock.json}
+    frozen/chain.lock.json
+    RUN_CHAIN.md
+    bundle.json with every file hash
+
+external replay material
+    runs/base/.../*.sechk
+    runs/interventions/...
+```
+
+The compact level is sufficient to verify candidate identity, protocol
+fingerprint, disjoint seeds, manipulation support, stage decisions, and the
+terminal scientific interpretation. It is not sufficient to restore a
+checkpoint or compute an analysis that was not frozen. Stage locks retain the
+canonical runtime paths and checkpoint hashes so external replay material can
+be reattached content-addressably later.
+
+`se-study-result-import` extracts archives without links or path traversal,
+validates manifested file hashes, checks bundled protocols against the target
+study, prohibits any change to existing frozen stage locks, reconstructs the
+expected chain in a temporary workspace, and only then atomically replaces the
+frozen directory and derived run-chain summary. A failed import leaves the
+existing study unchanged.
+
+`se-study-result-export` writes deterministic ZIP metadata and includes the
+study definition, protocol files, frozen evidence, run-chain summary, and an
+explicit capability statement: decision import is supported, checkpoint replay
+is not. Legacy `frozen/`-only archives can be imported against an already
+matching study but are not the preferred cross-version transport format.
+
+Candidate openness is evaluated over the complete history. A terminal
+confirmation entry suppresses earlier screen or replication promotions for the
+same candidate signature; historical promotions remain evidence but no longer
+authorize another stage.

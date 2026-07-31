@@ -20,7 +20,11 @@
     "confirmation": "studies/d3t_spatial_processing_conversion_v1/protocol/source_confirmation.json",
     "scale_robustness": "studies/d3t_spatial_processing_conversion_v1/protocol/scale_robustness.json"
   },
-  "current_state": "replication-promoted",
-  "next_authorized_stage": "confirmation",
-  "selection_claim_allowed": false
+  "current_state": "confirmed-acute",
+  "next_authorized_stage": null,
+  "selection_claim_allowed": false,
+  "terminal_stage": "confirmation",
+  "latest_recommendation": "confirmation-gate-passed-interpret-acute-mechanism-only",
+  "latest_stage": "confirmation",
+  "latest_decision": "confirmed-acute"
 }

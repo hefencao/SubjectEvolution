@@ -124,12 +124,10 @@ def test_portfolio_audit_uses_builtin_history_for_partial_workspace(
         "studies",
         include_builtin_baseline=True,
     )
-    assert report["portfolio_state"] == "promoted-candidate-open"
+    assert report["portfolio_state"] == "scientific-revision-required"
     assert report["unrecorded_candidate_spec_ids"] == []
-    assert report["open_candidate_ids"] == [
-        "spatial-processing-conversion-acute-effect-v1"
-    ]
+    assert report["open_candidate_ids"] == []
     assert report["workspace_ledger_entry_count"] == 2
-    assert report["decision_baseline_entry_count"] == 7
+    assert report["decision_baseline_entry_count"] == 8
     assert report["workspace_hydration_required"] is True
-    assert "immutable baseline entries: 7" in render_markdown(report)
+    assert "immutable baseline entries: 8" in render_markdown(report)

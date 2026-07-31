@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.82.0
+
+- Imports the supplied complete D3-T compact frozen result and records exact-protocol confirmation as terminal `confirmed-acute`: all eight manipulation contracts pass, all eight effects retain the prior direction, and the equal-seed median relative effect is about +2.827%, above the unchanged 2% threshold.
+- Extends the immutable release decision baseline with the confirmation assessment and prevents earlier screen/replication promotions from keeping a later terminal candidate falsely open.
+- Adds `se-study-result-import`, which safely reads directories or ZIP archives, rejects path traversal and links, verifies content manifests and protocol identity, prohibits existing-stage rewrites, reconstructs the chain in a temporary workspace, and commits frozen evidence plus `RUN_CHAIN.md` atomically.
+- Adds deterministic self-describing `se-study-result-export` archives containing study identity, protocol files, frozen evidence, chain summary, and explicit decision-import versus checkpoint-replay capability boundaries.
+- Continues to accept legacy frozen-only archives when the receiving project already contains matching content-addressed protocols; missing raw runtime is not reconstructed.
+- Marks D3-T terminal as an acute mechanism result only and returns the portfolio to `scientific-revision-required`; another paired plan requires a distinct preregistered estimand and direct manipulation contract.
+- Adds ordered result import/export command files without duplicating executable command blocks in README files.
+- Sets project version to 0.82.0 without changing rewards, world mechanisms, costs, thresholds, horizons, checkpoints, seeds, or simulation state.
+
 ## 0.81.0
 
 - Records the supplied D3-T disjoint-seed replication as promotion-positive: all eight manipulation contracts pass, all eight effects retain the screen direction, and the equal-seed median relative effect is about +2.546%, above the unchanged 2% threshold.

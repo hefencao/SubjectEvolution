@@ -25,3 +25,12 @@ Screen, replication and confirmation use disjoint seed sets. Replication and
 confirmation preserve the complete source protocol except for seed. Scale or
 horizon changes are a separate robustness study, not a replication or
 confirmation.
+
+## Frozen conclusion
+
+All three eight-seed stages pass the manipulation contract and retain the same
+sign. Neutralizing support increases realized conversion by median relative
+effects of about 3.026%, 2.546%, and 2.827% in screen, replication, and
+confirmation respectively. This confirms an acute suppressive effect on the
+registered conversion estimand only. It does not establish adaptive benefit,
+long-horizon selection, stable niches, or a population source rule.

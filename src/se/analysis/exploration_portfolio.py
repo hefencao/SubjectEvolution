@@ -122,11 +122,24 @@ def build_portfolio_audit(
             }
         )
 
+    terminal_candidate_keys = {
+        (
+            str(entry.get("candidate_id", "")),
+            str(entry.get("candidate_signature_sha256", "")),
+        )
+        for entry in entries
+        if bool(entry.get("terminal", False))
+    }
     open_entries = [
         entry
         for entry in entries
         if not bool(entry.get("terminal", False))
         and str(entry.get("decision")) in {"promote", "review"}
+        and (
+            str(entry.get("candidate_id", "")),
+            str(entry.get("candidate_signature_sha256", "")),
+        )
+        not in terminal_candidate_keys
     ]
     open_candidate_ids = sorted(
         {str(entry.get("candidate_id", "")) for entry in open_entries}
@@ -143,8 +156,9 @@ def build_portfolio_audit(
     else:
         state = "scientific-revision-required"
         next_action = (
-            "define a genuinely new candidate family or a higher closed-family revision "
-            "with an explicit new directly measurable interface before another paired plan"
+            "define an explicit new candidate with a distinct estimand and direct manipulation "
+            "contract before another paired plan; a closed family additionally requires a "
+            "higher revision and a new directly measurable interface"
         )
 
     return {

@@ -1,14 +1,21 @@
-# SE v0.81
+# SE v0.82
 
 Reference implementation for nested-subject existence evolution simulation.
 
 ## Current bounded result
 
-D3-T has now passed both its preregistered screen and disjoint-seed replication. In the supplied replication, 8/8 manipulation contracts pass, 8/8 effects retain the screen direction, and neutralizing spatial-processing support increases cumulative realized resource conversion by an equal-seed median of about **2.546%**, above the unchanged 2% practical threshold.
+D3-T has completed preregistered screen, disjoint-seed replication, and exact-
+protocol confirmation. All three eight-seed panels pass their manipulation
+contracts and retain the same direction. In confirmation, neutralizing spatial-
+processing support increases cumulative realized resource conversion by an
+equal-seed median of about **2.827%**, above the unchanged 2% practical
+threshold.
 
-This remains an acute fixed-checkpoint mechanism result. It does not establish long-horizon selection, adaptive benefit, stable niches, or a population source rule. The observed direction remains suppressive on this estimand: active support reduces realized conversion relative to neutral support on both independent panels.
-
-The next authorized stage is exact-protocol confirmation on a third disjoint seed set.
+The candidate is terminal as `confirmed-acute`. Active support is repeatedly
+suppressive on this acute estimand, but the result does not establish long-
+horizon selection, adaptive benefit, stable niches, or a population source
+rule. Another paired experiment requires a distinct preregistered estimand and
+direct manipulation contract.
 
 ## Workspace layout
 
@@ -19,15 +26,28 @@ The next authorized stage is exact-protocol confirmation on a third disjoint see
 - [`protocols/`](protocols/README.md): project-wide registries and immutable release decisions.
 - [`configs/`](configs/README.md): reusable project-level configuration presets; study-specific configs live with their study.
 
-## D3-T runbook
+## D3-T result chain
 
-The canonical design and complete frozen screen-to-replication chain are under [`studies/d3t_spatial_processing_conversion_v1/`](studies/d3t_spatial_processing_conversion_v1/README.md).
+The canonical design and complete frozen screen-to-confirmation chain are under
+[`studies/d3t_spatial_processing_conversion_v1/`](studies/d3t_spatial_processing_conversion_v1/README.md).
 
-Executable commands are intentionally isolated in the numbered files under [`studies/d3t_spatial_processing_conversion_v1/commands/`](studies/d3t_spatial_processing_conversion_v1/commands/). Run only the command file for the intended step; README files do not duplicate executable command blocks.
+Executable commands remain isolated in numbered files under
+[`studies/d3t_spatial_processing_conversion_v1/commands/`](studies/d3t_spatial_processing_conversion_v1/commands/).
+The compact result import/export commands make cross-version transfer explicit;
+README files do not duplicate executable command blocks.
+
+## Compact result capability
+
+A canonical exported result bundle contains the study definition, protocols,
+frozen evidence, chain summary, and a file manifest. It is sufficient for
+scientific decision import. Large checkpoints remain external and are required
+only for exact replay or analyses not already frozen.
 
 ## Validation workflow
 
-Project validation targets remain defined in the [`Makefile`](Makefile). Target-device GPU parity remains a release gate and requires a usable CUDA/CuPy environment.
+Project validation targets remain defined in the [`Makefile`](Makefile). Target-
+device GPU parity remains a release gate and requires a usable CUDA/CuPy
+environment.
 
 ## Current documents
 
@@ -35,5 +55,5 @@ Project validation targets remain defined in the [`Makefile`](Makefile). Target-
 - [Scientific issues](docs/SCIENTIFIC_ISSUES.md)
 - [Recurring governance check](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
-- [v0.81 implementation report](docs/v0.81/IMPLEMENTATION_REPORT.md)
-- [v0.81 governance check](docs/v0.81/GOVERNANCE_CHECK.md)
+- [v0.82 result integration](docs/v0.82/RESULT_INTEGRATION.md)
+- [v0.82 governance check](docs/v0.82/GOVERNANCE_CHECK.md)
