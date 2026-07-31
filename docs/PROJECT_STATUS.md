@@ -1,6 +1,22 @@
 # SE project status
 
-Version: **0.82.0**
+Version: **0.83.0**
+
+## Current development direction
+
+Audit expansion is paused. Following `PROJECT_CHARTER`, the active mainline is
+ecosystem substrate construction and inherited carrier capability. D1-D adds an
+opt-in, role-free inherited resource-sensing scale to the existing four-resource
+utility gradient. Morphology coordinate 7 selects radius 1, 2, 4, or 8; broader
+scales lose fine locality and pay explicit maintenance, use, and development
+energy costs.
+
+The cost-preserving intervention `neutralize-resource-sensing-radius` fixes only
+the effective gradient radius at one while retaining genotype, inherited
+capacity, all three costs, resource fields, actions, and keyed randomness. The
+first three-seed shared-checkpoint run is substrate calibration with no gate and
+no ecological or selection claim. Ordered commands live under
+`studies/d1d_inherited_resource_sensing_v1/commands/`.
 
 ## Current result
 
@@ -74,12 +90,11 @@ a later terminal decision. The effective portfolio state is now
 
 ## Current task
 
-Do not rerun D3-T confirmation or reinterpret the acute result as selection.
-Before another paired plan, define a distinct estimand and direct manipulation
-contract. A same-family causal decomposition is allowed because the family is
-not closed, but it must be explicitly preregistered rather than inferred from
-the confirmed result. Scale or horizon changes remain a separate robustness
-study and cannot inherit acute confirmation status.
+Keep D3-T frozen and pause portfolio/candidate audit work. Execute the D1-D
+three-seed source pilot and its cost-preserving shared-checkpoint radius-one
+neutralization. Inspect whether inherited radii remain expressed, costs are
+material but not immediately destructive, and the direct observation interface
+is active. Do not promote the calibration into an ecological or selection claim.
 
 ## Still incomplete
 

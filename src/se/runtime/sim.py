@@ -103,6 +103,7 @@ from se.evolution.lifecycle import (
     plan_death_events,
 )
 from ..metrics import MetricsWriter
+from .resource_sensing import add_resource_sensing_operating_cost, effective_resource_sensing_radius, record_resource_sensing_development_cost
 from se.env.local_stress import LocalStressDiagnostics
 from ..event_cohort import EventCohortDiagnostics
 from se.subjects.succession import SubjectStructureDiagnostics
@@ -450,12 +451,11 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.freeze_genotype = False
         self.capacity_ablation_enabled = False
         self.resource_affinity_ablation_enabled = False
+        self.resource_sensing_ablation_enabled = False
         self.resource_processing_support_ablation_enabled = False
         self.functional_modules_ablation_enabled = False
         self.functional_module_coupling_ablation_enabled = False
-        self.functional_module_ablation_mask = np.zeros(
-            int(cfg.functional_modules.module_count), dtype=bool
-        )
+        self.functional_module_ablation_mask = np.zeros(int(cfg.functional_modules.module_count), dtype=bool)
         # Experimental lineage-targeted D2 ablations are empty on the
         # authoritative path. They are populated only by the paired lineage
         # audit and never modify genotype or lineage membership.
@@ -933,6 +933,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 ent.alive.size,
                 effective_resource_affinity_q,
                 effective_danger_evidence_q,
+                effective_resource_sensing_radius(self),
             )
             resource_gradient = augment_gradient_with_oxygen(self, resource_gradient)
             if cfg.knowledge.enabled and cfg.knowledge.learning_enabled:
@@ -1160,15 +1161,10 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     else None
                 ),
                 knowledge=self.knowledge if cfg.knowledge.enabled else None,
-                resource_affinity_ablation_enabled=(
-                    self.resource_affinity_ablation_enabled
-                ),
-                danger_evidence_ablation_enabled=(
-                    self.danger_evidence_ablation_enabled
-                ),
-                knowledge_policy_ablation_enabled=(
-                    self.knowledge_policy_ablation_enabled
-                ),
+                resource_affinity_ablation_enabled=self.resource_affinity_ablation_enabled,
+                resource_sensing_ablation_enabled=self.resource_sensing_ablation_enabled,
+                danger_evidence_ablation_enabled=self.danger_evidence_ablation_enabled,
+                knowledge_policy_ablation_enabled=self.knowledge_policy_ablation_enabled,
             )
             active = prepared.active
             if active.size == 0:
@@ -1718,6 +1714,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 record_physiology_capacity_development_cost(
                     self, newborns, stats
                 )
+                record_resource_sensing_development_cost(self, newborns, stats)
                 # Recovery is a treatment of the selected living cohort, not
                 # a hereditary trait in the current experiment.
                 self.autonomy_restored[newborns] = False
@@ -2026,6 +2023,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 module_cost.sum(dtype=np.float64)
             )
             cost = cost.astype(np.float64) + module_cost
+        cost = add_resource_sensing_operating_cost(self, current_active, active, cost, stats)
         cost = add_physiology_capacity_maintenance_cost(
             self, current_active, cost, stats
         )
@@ -2368,6 +2366,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             "direct_messages_enabled": self.direct_messages_enabled,
             "freeze_genotype": self.freeze_genotype,
             "capacity_ablation_enabled": self.capacity_ablation_enabled,
+            "resource_sensing_ablation_enabled": self.resource_sensing_ablation_enabled,
             "environment_spatial_reversed": self.environment.spatial_reversed,
             "environment_resource_spatial_reversed": bool(
                 getattr(self.environment, "resource_spatial_reversed", False)

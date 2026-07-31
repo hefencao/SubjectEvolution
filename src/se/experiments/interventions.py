@@ -138,6 +138,12 @@ INTERVENTIONS = (
         aliases=("resource-affinity-off", "affinity-off"),
     ),
     InterventionSpec(
+        "neutralize-resource-sensing-radius",
+        InterventionKind.MODIFY_RULES,
+        "inherited-resource-gradient-sensing-radius",
+        aliases=("resource-sensing-radius-one", "sensing-radius-neutral"),
+    ),
+    InterventionSpec(
         "neutralize-spatial-processing-support",
         InterventionKind.MODIFY_RULES,
         "phase-shifted-four-channel-processing-support",

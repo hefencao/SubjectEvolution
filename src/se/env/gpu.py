@@ -481,6 +481,7 @@ class DeviceEnvironment:
         capacity: int,
         resource_affinity_q: Any | None = None,
         danger_evidence_q: Any | None = None,
+        resource_sensing_radius: Any | None = None,
     ) -> tuple[tuple[Any, Any], tuple[Any, Any]]:
         xp = self.backend.xp
         cells = validate_cell_ids(
@@ -495,12 +496,51 @@ class DeviceEnvironment:
             result = values.reshape(-1)[safe_cells]
             return xp.where(cells >= 0, result, 0.0).astype(xp.float32)
 
+        sensing_radius = None
+        if resource_sensing_radius is not None:
+            sensing_radius = xp.asarray(resource_sensing_radius, dtype=xp.int16)
+            if sensing_radius.shape != (capacity,):
+                raise ValueError("resource sensing radius must match world capacity")
+
+        def resource_gradient_components(values: Any) -> tuple[Any, Any]:
+            if sensing_radius is None:
+                return (
+                    xp.float32(0.5)
+                    * (xp.roll(values, -1, axis=1) - xp.roll(values, 1, axis=1)),
+                    xp.float32(0.5)
+                    * (xp.roll(values, -1, axis=0) - xp.roll(values, 1, axis=0)),
+                )
+            gx = xp.zeros(capacity, dtype=xp.float32)
+            gy = xp.zeros(capacity, dtype=xp.float32)
+            matched = xp.zeros(capacity, dtype=bool)
+            for raw_radius in self.cfg.entities.resource_sensing_radius_levels:
+                radius = int(raw_radius)
+                scale = xp.float32(0.5 / radius)
+                field_x = scale * (
+                    xp.roll(values, -radius, axis=1)
+                    - xp.roll(values, radius, axis=1)
+                )
+                field_y = scale * (
+                    xp.roll(values, -radius, axis=0)
+                    - xp.roll(values, radius, axis=0)
+                )
+                selected = sensing_radius == radius
+                gx = xp.where(selected, gather(field_x), gx)
+                gy = xp.where(selected, gather(field_y), gy)
+                matched |= selected
+            if bool(xp.any(~matched).item()):
+                raise ValueError("resource sensing radius contains an unconfigured level")
+            return gx, gy
+
         if self.cfg.environment.schema == "legacy-four-channel-v1" or resource_affinity_q is None:
             resource = self.resources[0]
-            resource_x = 0.5 * (xp.roll(resource, -1, axis=1) - xp.roll(resource, 1, axis=1))
-            resource_y = 0.5 * (xp.roll(resource, -1, axis=0) - xp.roll(resource, 1, axis=0))
-            rgx = gather(resource_x)
-            rgy = gather(resource_y)
+            resource_x, resource_y = resource_gradient_components(resource)
+            if sensing_radius is None:
+                rgx = gather(resource_x)
+                rgy = gather(resource_y)
+            else:
+                rgx = resource_x
+                rgy = resource_y
         else:
             affinity = xp.asarray(resource_affinity_q, dtype=xp.int32)
             if affinity.shape != (capacity, self.RESOURCE_CHANNELS):
@@ -511,13 +551,14 @@ class DeviceEnvironment:
                 normalized = self.resources[channel] / max(
                     float(self.cfg.environment.resource_capacity[channel]), 1e-6
                 )
-                channel_x = 0.5 * (xp.roll(normalized, -1, axis=1) - xp.roll(normalized, 1, axis=1))
-                channel_y = 0.5 * (xp.roll(normalized, -1, axis=0) - xp.roll(normalized, 1, axis=0))
+                channel_x, channel_y = resource_gradient_components(normalized)
                 weight = affinity[:, channel].astype(xp.float64) / (
                     self.RESOURCE_CHANNELS * 4096
                 )
-                rgx += gather(channel_x).astype(xp.float64) * weight
-                rgy += gather(channel_y).astype(xp.float64) * weight
+                gathered_x = gather(channel_x) if sensing_radius is None else channel_x
+                gathered_y = gather(channel_y) if sensing_radius is None else channel_y
+                rgx += gathered_x.astype(xp.float64) * weight
+                rgy += gathered_y.astype(xp.float64) * weight
             rgx = rgx.astype(xp.float32)
             rgy = rgy.astype(xp.float32)
 

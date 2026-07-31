@@ -1,21 +1,21 @@
-# SE v0.82
+# SE v0.83
 
 Reference implementation for nested-subject existence evolution simulation.
 
-## Current bounded result
+## Current direction
 
-D3-T has completed preregistered screen, disjoint-seed replication, and exact-
-protocol confirmation. All three eight-seed panels pass their manipulation
-contracts and retain the same direction. In confirmation, neutralizing spatial-
-processing support increases cumulative realized resource conversion by an
-equal-seed median of about **2.827%**, above the unchanged 2% practical
-threshold.
+D3-T remains frozen as terminal `confirmed-acute`; no long-horizon selection or
+stable-niche claim follows from it. New candidate-audit work is paused. The
+active mainline follows `PROJECT_CHARTER`: expand costed inherited carrier
+capabilities that enter real world interaction before returning to ecological
+claims or social control.
 
-The candidate is terminal as `confirmed-acute`. Active support is repeatedly
-suppressive on this acute estimand, but the result does not establish long-
-horizon selection, adaptive benefit, stable niches, or a population source
-rule. Another paired experiment requires a distinct preregistered estimand and
-direct manipulation contract.
+v0.83 adds D1-D inherited resource-sensing scale. Morphology coordinate 7
+selects a resource-gradient radius of 1, 2, 4, or 8 and pays separate
+maintenance, use, and development costs. A shared-checkpoint radius-one
+neutralization preserves genotype and costs. The active calibration design and
+numbered commands are under
+[`studies/d1d_inherited_resource_sensing_v1/`](studies/d1d_inherited_resource_sensing_v1/README.md).
 
 ## Workspace layout
 
@@ -55,5 +55,5 @@ environment.
 - [Scientific issues](docs/SCIENTIFIC_ISSUES.md)
 - [Recurring governance check](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
-- [v0.82 result integration](docs/v0.82/RESULT_INTEGRATION.md)
-- [v0.82 governance check](docs/v0.82/GOVERNANCE_CHECK.md)
+- [v0.83 capability implementation](docs/v0.83/CAPABILITY_IMPLEMENTATION.md)
+- [v0.82 frozen D3-T result integration](docs/v0.82/RESULT_INTEGRATION.md)

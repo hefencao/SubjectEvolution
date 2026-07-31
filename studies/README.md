@@ -14,3 +14,8 @@ Each study keeps its candidate specification, source configurations, design, ord
 `se-study-result-export` creates a deterministic, manifested compact archive containing the study definition, protocols, runbook, and frozen chain. `se-study-result-import` validates that archive in a temporary workspace, prohibits changes to existing frozen stages, derives the study state from the terminal evidence, and commits the update atomically. Compact archives preserve decision continuity; exact checkpoint replay still requires the separately anchored runtime files.
 
 README files are descriptive only. Exact executable steps belong in each study's numerically ordered `commands/` directory.
+
+Active capability-development directories may use `capability.json` before any
+result is scientifically frozen. They still keep design, protocol, and ordered
+commands together, but are not accepted by `se-study-result-export` and must not
+pretend that calibration output is a terminal study decision.

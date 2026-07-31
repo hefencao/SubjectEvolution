@@ -4,6 +4,7 @@ from typing import Any
 import numpy as np
 
 from ..cfg import SimulationConfig
+from .resource_sensing import RESOURCE_SENSING_GENE_INDEX, resource_sensing_enabled
 
 RESOURCE_CHANNELS = 4
 BODY_OUTCOME_WIDTH = 5
@@ -120,6 +121,9 @@ def active_morphology_traits(cfg: SimulationConfig) -> tuple[tuple[int, ...], tu
     if cfg.entities.danger_evidence_schema == "inherited-direct-trace-mixture-v1":
         indices.append(6)
         names.append("danger_direct_trace_mixture")
+    if resource_sensing_enabled(cfg):
+        indices.append(RESOURCE_SENSING_GENE_INDEX)
+        names.append("resource_sensing_radius")
     return tuple(indices), tuple(names)
 
 

@@ -55,6 +55,15 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Delete and restart an incomplete seed directory.",
     )
+    parser.add_argument(
+        "--skip-post-run-audits",
+        action="store_true",
+        help=(
+            "Skip automatic selection-validity and exploration-readiness audits. "
+            "The simulation, checkpoints, index, and descriptive long-run analysis "
+            "are still produced."
+        ),
+    )
     return parser
 
 
@@ -130,7 +139,12 @@ def main() -> None:
         "failed_or_partial_seed_replaced_by_outcome": False,
         "overwrite_partial_requires_explicit_flag": True,
         "automatic_long_run_analysis": True,
-        "automatic_selection_validity_audit": True,
+        "automatic_selection_validity_audit": not args.skip_post_run_audits,
+        "post_run_audit_mode": (
+            "paused-by-explicit-invocation"
+            if args.skip_post_run_audits
+            else "automatic"
+        ),
         "exploration_protocol": (
             {
                 "schema": exploration_plan["schema"],
@@ -274,7 +288,7 @@ def main() -> None:
             + report["reason"]
             + "\n"
         )
-    if auditable_runs:
+    if auditable_runs and not args.skip_post_run_audits:
         selection_report = build_selection_audit(
             auditable_runs, thresholds=selection_thresholds
         )
@@ -326,13 +340,22 @@ def main() -> None:
         }
         markdown += "\n" + render_selection_markdown(selection_report)
     else:
+        reason = (
+            "post-run audits were explicitly paused"
+            if args.skip_post_run_audits
+            else "no evolution progress streams were available"
+        )
         report["automatic_selection_validity_audit"] = {
             "available": False,
-            "reason": "no evolution progress streams were available",
+            "reason": reason,
         }
         report["automatic_exploration_readiness_audit"] = {
             "available": False,
-            "reason": "no selection-validity audit was available",
+            "reason": (
+                "post-run audits were explicitly paused"
+                if args.skip_post_run_audits
+                else "no selection-validity audit was available"
+            ),
         }
     (output / "long_run_analysis.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"

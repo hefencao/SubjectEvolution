@@ -1,0 +1,29 @@
+{
+  "schema": "se-capability-development-v1",
+  "capability_id": "d1d-inherited-resource-sensing-v1",
+  "status": "implemented-awaiting-calibration",
+  "charter_priority": [
+    "effective-environmental-diversity",
+    "entity-trait-function-capacity-differentiation"
+  ],
+  "world_interface": "existing four-resource utility gradient",
+  "inherited_coordinate": 7,
+  "radius_levels": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "costs": {
+    "maintenance_energy_per_radius": 0.00015,
+    "use_energy_per_radius": 0.0002,
+    "development_energy_per_radius": 0.01
+  },
+  "ablation": "neutralize-resource-sensing-radius",
+  "shared_checkpoint_tick": 480,
+  "paired_horizon_ticks": 120,
+  "pass_fail_gate": false,
+  "ecological_claim_allowed": false,
+  "selection_claim_allowed": false,
+  "audit_work_paused": true
+}

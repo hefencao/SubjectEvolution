@@ -108,6 +108,7 @@ from se.evolution.lifecycle import (
 )
 from ..metrics import MetricsWriter
 from se.env.local_stress import LocalStressDiagnostics
+from se.env.resource_sensing import resource_sensing_diagnostics
 from ..event_cohort import EventCohortDiagnostics
 from se.differentiation.capacity import capacity_diagnostics, capacity_use_diagnostics
 from se.subjects.succession import SubjectStructureDiagnostics
@@ -732,6 +733,14 @@ class SimulationReportingMixin:
                 "resource_affinity_ablation_enabled": (
                     self.resource_affinity_ablation_enabled
                 ),
+                "resource_sensing_ablation_enabled": (
+                    self.resource_sensing_ablation_enabled
+                ),
+                "resource_sensing_effective_schema": (
+                    "fixed-radius-one-ablation-v1"
+                    if self.resource_sensing_ablation_enabled
+                    else self.cfg.entities.resource_sensing_schema
+                ),
                 "resource_processing_support_ablation_enabled": (
                     self.resource_processing_support_ablation_enabled
                 ),
@@ -903,7 +912,18 @@ class SimulationReportingMixin:
                         == "inherited-direct-trace-mixture-v1"
                         else None
                     ),
-                    "reserved_neutral": [7],
+                    "resource_sensing_radius": (
+                        7
+                        if self.cfg.entities.resource_sensing_schema
+                        == "inherited-discrete-gradient-radius-v1"
+                        else None
+                    ),
+                    "reserved_neutral": (
+                        []
+                        if self.cfg.entities.resource_sensing_schema
+                        == "inherited-discrete-gradient-radius-v1"
+                        else [7]
+                    ),
                 },
                 "knowledge_preference_gene_semantics": (
                     {
@@ -1396,6 +1416,9 @@ class SimulationReportingMixin:
         danger_evidence_metrics = danger_evidence_diagnostics(
             ent.alive, ent.genotype, self.cfg
         )
+        resource_sensing_metrics = resource_sensing_diagnostics(
+            ent.alive, ent.genotype, self.cfg
+        )
         capacity_metrics = (
             capacity_diagnostics(
                 ent.capacity_phenotype(),
@@ -1851,6 +1874,19 @@ class SimulationReportingMixin:
             "danger_trace_weight_mean": float(danger_evidence_metrics["danger_trace_weight_mean"]),
             "danger_trace_weight_std": float(danger_evidence_metrics["danger_trace_weight_std"]),
             "danger_evidence_effective_dimensions": float(danger_evidence_metrics["danger_evidence_effective_dimensions"]),
+            "resource_sensing_schema": resource_sensing_metrics["resource_sensing_schema"],
+            "resource_sensing_radius_mean": float(resource_sensing_metrics["resource_sensing_radius_mean"]),
+            "resource_sensing_radius_std": float(resource_sensing_metrics["resource_sensing_radius_std"]),
+            "resource_sensing_radius_min": int(resource_sensing_metrics["resource_sensing_radius_min"]),
+            "resource_sensing_radius_max": int(resource_sensing_metrics["resource_sensing_radius_max"]),
+            "resource_sensing_ablation_enabled": bool(
+                self.resource_sensing_ablation_enabled
+            ),
+            "resource_sensing_effective_radius_mean": (
+                1.0
+                if self.resource_sensing_ablation_enabled
+                else float(resource_sensing_metrics["resource_sensing_radius_mean"])
+            ),
             "environment_process_schema": str(
                 self.environment.environment_process_metadata["schema"]
             ),
@@ -2157,6 +2193,9 @@ class SimulationReportingMixin:
             ),
             "shared_energy_step": stats.shared_energy,
             "shared_energy_total": self.total_shared_energy,
+            "resource_sensing_maintenance_energy_step": stats.resource_sensing_maintenance_energy,
+            "resource_sensing_use_energy_step": stats.resource_sensing_use_energy,
+            "resource_sensing_development_energy_step": stats.resource_sensing_development_energy,
             "benefit_classification_residual_step": (
                 stats.shared_energy - float(stats.benefit_flow_energy.sum())
             ),

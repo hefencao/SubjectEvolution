@@ -32,6 +32,7 @@ from se.env.danger_evidence import (
     danger_evidence_quantized,
 )
 from se.env.world import Environment
+from se.env.resource_sensing import resource_sensing_enabled
 from se.env.diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
     resource_field_diversity_metrics,
@@ -559,6 +560,22 @@ class SimulationExperimentMixin:
                 "effective_affinity_q": [AFFINITY_SCALE] * RESOURCE_CHANNELS,
                 "genotype_coordinates_modified": 0,
                 "inheritance_modified": False,
+            }
+        elif normalized == "neutralize-resource-sensing-radius":
+            if not resource_sensing_enabled(self.cfg):
+                raise ValueError(
+                    "neutralize-resource-sensing-radius requires inherited resource sensing"
+                )
+            canonical = "neutralize-resource-sensing-radius"
+            self.resource_sensing_ablation_enabled = True
+            details = {
+                "effective_resource_gradient_radius": 1,
+                "maintenance_cost_preserved": True,
+                "use_cost_preserved": True,
+                "development_cost_preserved": True,
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+                "future_offspring_expression_neutralized": True,
             }
         elif normalized == "neutralize-spatial-processing-support":
             if not spatial_processing_enabled(self.cfg):

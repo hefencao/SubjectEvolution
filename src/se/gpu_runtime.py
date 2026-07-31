@@ -227,6 +227,26 @@ def device_danger_evidence_quantized(
     return xp.stack((direct, trace), axis=1).astype(xp.int32)
 
 
+def device_resource_sensing_radius(
+    genotype: Any,
+    cfg: SimulationConfig,
+    *,
+    xp: Any,
+) -> Any:
+    """Map morphology gene 7 to the configured discrete gradient radius."""
+
+    values = xp.asarray(genotype, dtype=xp.float32)
+    if values.ndim != 2 or values.shape[1] <= 7:
+        raise ValueError("genotype does not contain the resource-sensing trait")
+    if cfg.entities.resource_sensing_schema == "disabled":
+        return xp.ones(int(values.shape[0]), dtype=xp.int16)
+    levels = xp.asarray(cfg.entities.resource_sensing_radius_levels, dtype=xp.int16)
+    trait = xp.clip(values[:, 7], -1.0, 1.0).astype(xp.float64)
+    scaled = xp.float64(0.5) * (trait + xp.float64(1.0)) * int(levels.size)
+    indices = xp.minimum(xp.floor(scaled).astype(xp.int64), int(levels.size) - 1)
+    return levels[indices].astype(xp.int16)
+
+
 def device_policy_resource_view(
     local_resources: Any,
     cfg: SimulationConfig,
@@ -643,6 +663,7 @@ class HybridGpuRuntime:
         physiology_environment: Any | None = None,
         knowledge: KnowledgeSystem | None = None,
         resource_affinity_ablation_enabled: bool = False,
+        resource_sensing_ablation_enabled: bool = False,
         danger_evidence_ablation_enabled: bool = False,
         knowledge_policy_ablation_enabled: bool = False,
     ) -> GpuPreparedStep:
@@ -818,6 +839,8 @@ class HybridGpuRuntime:
             avoided = capacity * RESOURCE_CHANNELS * np.dtype(np.int32).itemsize
             if danger_evidence_device is not None:
                 avoided += capacity * 2 * np.dtype(np.int32).itemsize
+            if self.cfg.entities.resource_sensing_schema != "disabled":
+                avoided += capacity * np.dtype(np.int16).itemsize
             if active_storage_room_fraction is None:
                 avoided += active_host.size * RESOURCE_CHANNELS * np.dtype(np.float32).itemsize
             if physiology_environment is not None:
@@ -839,11 +862,17 @@ class HybridGpuRuntime:
             run_seed=run_seed,
             tick=tick,
         )
+        sensing_radius_device = (
+            xp.ones(capacity, dtype=xp.int16)
+            if resource_sensing_ablation_enabled
+            else device_resource_sensing_radius(genotype, self.cfg, xp=xp)
+        )
         resource_gradient, danger_gradient = self.environment.gradients_for_entities(
             self.spatial.entity_cells,
             entity.alive.size,
             affinity_device,
             danger_evidence_device,
+            sensing_radius_device,
         )
         cells_result: np.ndarray | None = None
         if physiology_environment is not None:

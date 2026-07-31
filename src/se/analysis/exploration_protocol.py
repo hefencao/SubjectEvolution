@@ -38,6 +38,27 @@ def _canonical_sha(payload: dict[str, Any]) -> str:
 def _canonical_config(path: Path) -> tuple[dict[str, Any], str, str]:
     cfg = load_config(path)
     payload = asdict(cfg)
+    # Opt-in capabilities must not invalidate historical protocol identities
+    # merely because a later release adds disabled dataclass defaults.  Remove
+    # the exact inactive resource-sensing extension so pre-v0.83 plans retain
+    # their original resolved/protocol hashes. Enabled configurations keep all
+    # fields and therefore receive a distinct identity.
+    entities = payload.get("entities", {})
+    if (
+        entities.get("resource_sensing_schema") == "disabled"
+        and tuple(entities.get("resource_sensing_radius_levels", (1,))) == (1,)
+        and float(entities.get("resource_sensing_maintenance_energy_per_radius", 0.0)) == 0.0
+        and float(entities.get("resource_sensing_use_energy_per_radius", 0.0)) == 0.0
+        and float(entities.get("resource_sensing_development_energy_per_radius", 0.0)) == 0.0
+    ):
+        for key in (
+            "resource_sensing_schema",
+            "resource_sensing_radius_levels",
+            "resource_sensing_maintenance_energy_per_radius",
+            "resource_sensing_use_energy_per_radius",
+            "resource_sensing_development_energy_per_radius",
+        ):
+            entities.pop(key, None)
     resolved_sha = _canonical_sha(payload)
     protocol_payload = deepcopy(payload)
     protocol_payload["run"]["seed"] = 0

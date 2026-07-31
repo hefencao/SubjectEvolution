@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.83.0
+
+- Pauses new portfolio/candidate audit work and returns the implementation mainline to the charter priorities of effective environment use and inherited carrier capability.
+- Adds opt-in inherited discrete resource-gradient sensing radii on morphology coordinate 7, with radius levels selected monotonically from genotype and identical CPU/device semantics.
+- Keeps the historical radius-one observation path unchanged when disabled; larger radii bridge broader spatial structure while losing fine local variation.
+- Adds separate radius-proportional maintenance, active-use, and newborn-development energy costs; no reward, role label, action, resource, or population protection is introduced.
+- Adds `neutralize-resource-sensing-radius`, which fixes only effective observation radius at one while preserving genotype, inherited capacity, all registered costs, resource fields, and keyed randomness across checkpoints and clones.
+- Adds a content-locked shared-checkpoint calibration runner and the active D1-D study runbook under `studies/d1d_inherited_resource_sensing_v1/`; the calibration has no pass/fail gate and authorizes no ecological or selection claim.
+- Adds `se-multi --skip-post-run-audits` so capability-development runs can retain checkpoints and descriptive long-run output while explicitly pausing automatic selection/readiness audits.
+- Updates project version to 0.83.0.
+
 ## 0.82.0
 
 - Imports the supplied complete D3-T compact frozen result and records exact-protocol confirmation as terminal `confirmed-acute`: all eight manipulation contracts pass, all eight effects retain the prior direction, and the equal-seed median relative effect is about +2.827%, above the unchanged 2% threshold.

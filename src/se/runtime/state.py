@@ -22,6 +22,7 @@ from ..differentiation.physiology import (
     physiology_genome_energy,
     resource_metabolism_enabled,
 )
+from se.env.resource_sensing import resource_sensing_energy
 from se.evolution.progress import BENEFIT_FLOW_COUNT, BenefitFlowKind
 from se.knowledge import KnowledgeStepStats
 from se.evolution.lifecycle import BirthAllocationPlan, DeathCause, DeathEventPlan
@@ -124,6 +125,9 @@ class StepStats:
         default_factory=lambda: np.zeros(5, dtype=np.float64)
     )
     shared_energy: float = 0.0
+    resource_sensing_maintenance_energy: float = 0.0
+    resource_sensing_use_energy: float = 0.0
+    resource_sensing_development_energy: float = 0.0
     capacity_maintenance_energy: float = 0.0
     capacity_development_energy: float = 0.0
     functional_module_maintenance_energy: float = 0.0
@@ -592,6 +596,14 @@ class EntityState:
         if np.any(physiology_cost):
             self.energy[slots] = np.maximum(
                 self.energy[slots].astype(np.float64) - physiology_cost,
+                0.0,
+            ).astype(np.float32)
+        sensing_cost = resource_sensing_energy(
+            self.genotype[slots], self.cfg, development=True
+        )
+        if np.any(sensing_cost):
+            self.energy[slots] = np.maximum(
+                self.energy[slots].astype(np.float64) - sensing_cost,
                 0.0,
             ).astype(np.float32)
         return parents, slots

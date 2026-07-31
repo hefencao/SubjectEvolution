@@ -493,6 +493,7 @@ class Environment:
         capacity: int,
         resource_affinity_q: np.ndarray | None = None,
         danger_evidence_q: np.ndarray | None = None,
+        resource_sensing_radius: np.ndarray | None = None,
     ) -> tuple[tuple[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray]]:
         """Return per-entity resource-utility and hazard gradients.
 
@@ -512,19 +513,55 @@ class Environment:
             result = values.reshape(-1)[safe_cells]
             return np.where(cells >= 0, result, 0.0).astype(np.float32)
 
+        sensing_radius: np.ndarray | None = None
+        if resource_sensing_radius is not None:
+            sensing_radius = np.asarray(resource_sensing_radius, dtype=np.int16)
+            if sensing_radius.shape != (capacity,):
+                raise ValueError("resource sensing radius must match world capacity")
+            allowed = np.asarray(
+                self.cfg.entities.resource_sensing_radius_levels, dtype=np.int16
+            )
+            if np.any(~np.isin(sensing_radius, allowed)):
+                raise ValueError("resource sensing radius contains an unconfigured level")
+
+        def resource_gradient_components(values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+            if sensing_radius is None:
+                return (
+                    0.5 * (np.roll(values, -1, axis=1) - np.roll(values, 1, axis=1)),
+                    0.5 * (np.roll(values, -1, axis=0) - np.roll(values, 1, axis=0)),
+                )
+            gx = np.zeros(capacity, dtype=np.float32)
+            gy = np.zeros(capacity, dtype=np.float32)
+            for raw_radius in self.cfg.entities.resource_sensing_radius_levels:
+                radius = int(raw_radius)
+                scale = np.float32(0.5 / radius)
+                field_x = scale * (
+                    np.roll(values, -radius, axis=1)
+                    - np.roll(values, radius, axis=1)
+                )
+                field_y = scale * (
+                    np.roll(values, -radius, axis=0)
+                    - np.roll(values, radius, axis=0)
+                )
+                selected = sensing_radius == radius
+                gathered_x = gather(field_x)
+                gathered_y = gather(field_y)
+                gx[selected] = gathered_x[selected]
+                gy[selected] = gathered_y[selected]
+            return gx, gy
+
         if (
             self.cfg.environment.schema == "legacy-four-channel-v1"
             or resource_affinity_q is None
         ):
             resource = self.resources[0]
-            resource_x = 0.5 * (
-                np.roll(resource, -1, axis=1) - np.roll(resource, 1, axis=1)
-            )
-            resource_y = 0.5 * (
-                np.roll(resource, -1, axis=0) - np.roll(resource, 1, axis=0)
-            )
-            rgx = gather(resource_x)
-            rgy = gather(resource_y)
+            resource_x, resource_y = resource_gradient_components(resource)
+            if sensing_radius is None:
+                rgx = gather(resource_x)
+                rgy = gather(resource_y)
+            else:
+                rgx = resource_x
+                rgy = resource_y
         else:
             affinity = np.asarray(resource_affinity_q, dtype=np.int32)
             if affinity.shape != (capacity, self.RESOURCE_CHANNELS):
@@ -535,19 +572,14 @@ class Environment:
                 normalized = self.resources[channel] / max(
                     float(self.cfg.environment.resource_capacity[channel]), 1e-6
                 )
-                channel_x = 0.5 * (
-                    np.roll(normalized, -1, axis=1)
-                    - np.roll(normalized, 1, axis=1)
-                )
-                channel_y = 0.5 * (
-                    np.roll(normalized, -1, axis=0)
-                    - np.roll(normalized, 1, axis=0)
-                )
+                channel_x, channel_y = resource_gradient_components(normalized)
                 weight = affinity[:, channel].astype(np.float64) / (
                     self.RESOURCE_CHANNELS * AFFINITY_SCALE
                 )
-                rgx64 += gather(channel_x).astype(np.float64) * weight
-                rgy64 += gather(channel_y).astype(np.float64) * weight
+                gathered_x = gather(channel_x) if sensing_radius is None else channel_x
+                gathered_y = gather(channel_y) if sensing_radius is None else channel_y
+                rgx64 += gathered_x.astype(np.float64) * weight
+                rgy64 += gathered_y.astype(np.float64) * weight
             rgx = rgx64.astype(np.float32)
             rgy = rgy64.astype(np.float32)
 

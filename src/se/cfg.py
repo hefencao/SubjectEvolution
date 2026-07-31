@@ -243,6 +243,15 @@ class EntityConfig:
     danger_evidence_strength: float = 0.0
     danger_evidence_min_efficiency: float = 0.25
     danger_evidence_max_efficiency: float = 1.75
+    # Morphology gene 7 can select the spatial scale of the existing resource
+    # utility gradient. Disabled configs retain the historical radius-one
+    # central difference. Larger radii provide broader but less local spatial
+    # information and pay separate structure, use, and development costs.
+    resource_sensing_schema: str = "disabled"
+    resource_sensing_radius_levels: tuple[int, ...] = (1,)
+    resource_sensing_maintenance_energy_per_radius: float = 0.0
+    resource_sensing_use_energy_per_radius: float = 0.0
+    resource_sensing_development_energy_per_radius: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -849,7 +858,17 @@ def load_config(path: str | Path) -> SimulationConfig:
                 _require(raw, "environment").get("wear_phase_offset", 0.0)
             ),
         ),
-        entities=EntityConfig(**_require(raw, "entities")),
+        entities=EntityConfig(
+            **{
+                **_require(raw, "entities"),
+                "resource_sensing_radius_levels": tuple(
+                    int(value)
+                    for value in _require(raw, "entities").get(
+                        "resource_sensing_radius_levels", (1,)
+                    )
+                ),
+            }
+        ),
         information=InformationConfig(
             **{
                 **information_raw,
@@ -919,6 +938,36 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("max_entities must be >= initial_entities")
     if cfg.world.grid_x <= 0 or cfg.world.grid_y <= 0:
         raise ValueError("grid dimensions must be positive")
+    sensing_schema = cfg.entities.resource_sensing_schema
+    if sensing_schema not in {"disabled", "inherited-discrete-gradient-radius-v1"}:
+        raise ValueError(
+            "entities.resource_sensing_schema must be 'disabled' or "
+            "'inherited-discrete-gradient-radius-v1'"
+        )
+    sensing_levels = tuple(int(value) for value in cfg.entities.resource_sensing_radius_levels)
+    if not sensing_levels or any(value <= 0 for value in sensing_levels):
+        raise ValueError("resource sensing radius levels must be positive")
+    if tuple(sorted(set(sensing_levels))) != sensing_levels:
+        raise ValueError("resource sensing radius levels must be strictly increasing")
+    max_periodic_radius = min(cfg.world.grid_x, cfg.world.grid_y) // 2
+    if max(sensing_levels) > max_periodic_radius:
+        raise ValueError("resource sensing radius exceeds half the smallest grid dimension")
+    sensing_costs = (
+        cfg.entities.resource_sensing_maintenance_energy_per_radius,
+        cfg.entities.resource_sensing_use_energy_per_radius,
+        cfg.entities.resource_sensing_development_energy_per_radius,
+    )
+    if any(not math.isfinite(value) or value < 0.0 for value in sensing_costs):
+        raise ValueError("resource sensing costs must be finite and non-negative")
+    if sensing_schema == "disabled":
+        if sensing_levels != (1,) or any(value != 0.0 for value in sensing_costs):
+            raise ValueError(
+                "disabled resource sensing requires radius level (1,) and zero costs"
+            )
+    elif not all(value > 0.0 for value in sensing_costs):
+        raise ValueError(
+            "inherited resource sensing requires positive maintenance, use, and development costs"
+        )
     if (
         not math.isfinite(cfg.world.width)
         or not math.isfinite(cfg.world.height)

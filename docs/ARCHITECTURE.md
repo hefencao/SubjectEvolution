@@ -1,3 +1,33 @@
+## D1-D inherited resource-sensing boundary
+
+```text
+morphology coordinate 7
+        ↓ monotonic discrete mapping
+resource-gradient radius ∈ {1, 2, 4, 8}
+        ↓
+existing affinity-weighted four-resource utility gradient
+        ↓
+unchanged policy observation and action vocabulary
+```
+
+The radius affects only the spatial scale of the existing resource-gradient
+port. Danger evidence retains its original local scale. Disabled configurations
+remain exactly radius one. Larger radii use normalized central differences so
+they bridge broader structure rather than increasing vector magnitude merely by
+distance; they necessarily discard fine local variation.
+
+Inherited radius pays separate maintenance and active-use energy every tick,
+and newborns pay a development cost. The scientific neutralization fixes only
+the effective radius at one. It preserves the gene, inherited-radius
+diagnostics, all costs, resources, actions, random keys, and future offspring
+treatment state. The flag is authoritative checkpoint state and is copied by
+branch cloning.
+
+The D1-D calibration runner locks exact source checkpoint and resolved-config
+hashes, then creates inherited-radius and radius-one-neutral branches under
+`runs/interventions/`. Its result is a substrate contract with no acceptance
+threshold; runtime does not depend on the analysis result.
+
 ## D4-A resource-geography × inherited-affinity boundary
 
 ```text
