@@ -856,3 +856,30 @@ The v2 resource-sensing schema derives one reach capacity from morphology gene
 7 and routes that reach to the strongest inherited resource-affinity channel.
 World and GPU gradient APIs accept either `[capacity]` legacy radii or
 `[capacity, 4]` channel radii.
+
+
+## External result-bundle workspace
+
+Study runtime remains inside `runs/` and derived analyses inside `analyses/`, but
+portable ZIP result bundles are operator artifacts and must not be created in
+the source tree. `se-study config --set-result-dir <absolute-directory>` writes
+an ignored `.se-workspace.toml` pointer. Workflow parameters of type
+`result-path` resolve relative filenames under that external directory; an
+absolute one-off output is allowed only when it also resolves outside the
+project. Source, analysis, and runtime path parameters retain project-relative
+semantics.
+
+`se-study show` remains usable before configuration and displays a
+`<result-bundle-dir>` placeholder. Only execution of a step that actually uses a
+`result-path` requires the setting. Complete project archives omit the local
+workspace file.
+
+## D1-G fixed sensing-budget allocation
+
+D1-G retains one inherited radius capacity but treats the carrier's non-local
+reach as an integer budget. Every resource channel begins at radius one and the
+remaining `capacity - 1` units are allocated by Hamilton apportionment over the
+existing normalized inherited affinity vector. The allocation sum is exact,
+ties are stable, and the same algorithm is implemented in CPU reference and
+device paths. Costs remain functions of inherited total capacity, not the
+number of extended channels or the intervention state.

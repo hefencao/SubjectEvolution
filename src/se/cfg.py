@@ -943,11 +943,13 @@ def validate_config(cfg: SimulationConfig) -> None:
         "disabled",
         "inherited-discrete-gradient-radius-v1",
         "inherited-affinity-routed-gradient-radius-v2",
+        "inherited-affinity-budgeted-gradient-radius-v3",
     }:
         raise ValueError(
             "entities.resource_sensing_schema must be 'disabled', "
-            "'inherited-discrete-gradient-radius-v1', or "
-            "'inherited-affinity-routed-gradient-radius-v2'"
+            "'inherited-discrete-gradient-radius-v1', "
+            "'inherited-affinity-routed-gradient-radius-v2', or "
+            "'inherited-affinity-budgeted-gradient-radius-v3'"
         )
     sensing_levels = tuple(int(value) for value in cfg.entities.resource_sensing_radius_levels)
     if not sensing_levels or any(value <= 0 for value in sensing_levels):
@@ -974,7 +976,10 @@ def validate_config(cfg: SimulationConfig) -> None:
             "inherited resource sensing requires positive maintenance, use, and development costs"
         )
     if (
-        sensing_schema == "inherited-affinity-routed-gradient-radius-v2"
+        sensing_schema in {
+            "inherited-affinity-routed-gradient-radius-v2",
+            "inherited-affinity-budgeted-gradient-radius-v3",
+        }
         and cfg.entities.resource_affinity_schema
         != "normalized-four-resource-affinity-v1"
     ):

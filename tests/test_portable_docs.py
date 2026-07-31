@@ -34,5 +34,5 @@ def test_portable_docs_rejects_delivery_environment_limitations(tmp_path: Path) 
 def test_iteration_docs_use_dedicated_history_directory() -> None:
     iteration = Path("docs/迭代")
     assert iteration.is_dir()
-    assert any(path.name.startswith("v0.85_") for path in iteration.iterdir())
+    assert any(path.name.startswith("v0.86_") for path in iteration.iterdir())
     assert not [path for path in Path("docs").iterdir() if path.is_dir() and path.name.startswith("v0.")]

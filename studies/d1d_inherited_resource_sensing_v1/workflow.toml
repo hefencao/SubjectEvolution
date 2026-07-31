@@ -41,7 +41,7 @@ default = "analyses/d1d_inherited_resource_sensing_v1/pilot"
 description = "Paired plan and result output root."
 
 [parameters.output]
-type = "path"
+type = "result-path"
 default = "d1d_inherited_resource_sensing_v1_results.zip"
 description = "Compact result bundle path."
 

@@ -928,6 +928,7 @@ class SimulationReportingMixin:
                         in {
                             "inherited-discrete-gradient-radius-v1",
                             "inherited-affinity-routed-gradient-radius-v2",
+                            "inherited-affinity-budgeted-gradient-radius-v3",
                         }
                         else None
                     ),
@@ -937,6 +938,7 @@ class SimulationReportingMixin:
                         in {
                             "inherited-discrete-gradient-radius-v1",
                             "inherited-affinity-routed-gradient-radius-v2",
+                            "inherited-affinity-budgeted-gradient-radius-v3",
                         }
                         else [7]
                     ),
@@ -1929,6 +1931,24 @@ class SimulationReportingMixin:
             ),
             "resource_sensing_channel_3_extended_fraction": float(
                 resource_sensing_metrics["resource_sensing_extended_channel_fractions"][3]
+            ),
+            "resource_sensing_extended_channel_count_mean": (
+                0.0
+                if self.resource_sensing_ablation_enabled
+                else float(
+                    resource_sensing_metrics[
+                        "resource_sensing_extended_channel_count_mean"
+                    ]
+                )
+            ),
+            "resource_sensing_allocated_extra_radius_mean": (
+                0.0
+                if self.resource_sensing_ablation_enabled
+                else float(
+                    resource_sensing_metrics[
+                        "resource_sensing_allocated_extra_radius_mean"
+                    ]
+                )
             ),
             "environment_process_schema": str(
                 self.environment.environment_process_metadata["schema"]

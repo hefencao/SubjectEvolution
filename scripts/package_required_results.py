@@ -54,6 +54,12 @@ def build_bundle(
 ) -> dict[str, object]:
     project_root = project_root.resolve()
     output = output.resolve()
+    try:
+        output.relative_to(project_root)
+    except ValueError:
+        pass
+    else:
+        raise ValueError("result bundle output must be outside the project tree")
     selected: dict[str, Path] = {}
 
     def add(path: Path) -> None:

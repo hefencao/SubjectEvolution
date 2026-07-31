@@ -2,7 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from se.cmd.study import describe, load_workflow, resolve_step
+import pytest
+
+from se.cmd.study import (
+    configure_result_bundle_dir,
+    describe,
+    load_workflow,
+    load_workspace_settings,
+    resolve_step,
+)
 
 
 def test_study_workflows_are_declarative_and_renderable() -> None:
@@ -14,14 +22,19 @@ def test_study_workflows_are_declarative_and_renderable() -> None:
         rendered = describe(workflow_path, workflow, None)
         assert rendered["steps"]
         for step in workflow["steps"]:
-            command, values = resolve_step(workflow_path, workflow, step)
+            command, values = resolve_step(
+                workflow_path,
+                workflow,
+                step,
+                allow_unconfigured_result=True,
+            )
             assert command
             assert values["project_root"] == str(Path.cwd().resolve())
 
 
 def test_workflow_parameters_are_explicitly_overridable() -> None:
     path, workflow = load_workflow(
-        "studies/d1f_channel_selective_resource_sensing_v1"
+        "studies/d1g_affinity_budgeted_resource_sensing_v1"
     )
     command, values = resolve_step(
         path,
@@ -34,3 +47,55 @@ def test_workflow_parameters_are_explicitly_overridable() -> None:
     assert "cpu" in command
     assert "1,2" in command
     assert command.count("90") == 2
+
+
+def _write_minimal_workflow(project: Path) -> Path:
+    study = project / "studies" / "example"
+    study.mkdir(parents=True)
+    (project / "pyproject.toml").write_text(
+        '[project]\nname = "example"\nversion = "0.0.0"\n', encoding="utf-8"
+    )
+    (study / "workflow.toml").write_text(
+        '''schema = "se-study-workflow-v1"
+study_id = "example"
+title = "Example"
+
+[parameters.output]
+type = "result-path"
+default = "example.zip"
+description = "External result bundle."
+
+[steps.pack-results]
+description = "Pack."
+command = ["python", "pack.py", "--output", "{output}"]
+''',
+        encoding="utf-8",
+    )
+    return study / "workflow.toml"
+
+
+def test_result_bundle_path_requires_external_workspace_configuration(
+    tmp_path: Path,
+) -> None:
+    project = tmp_path / "project"
+    workflow_path = _write_minimal_workflow(project)
+    path, workflow = load_workflow(workflow_path)
+    with pytest.raises(ValueError, match="result bundle directory is not configured"):
+        resolve_step(path, workflow, "pack-results")
+
+    external = tmp_path / "results"
+    settings = configure_result_bundle_dir(project, external)
+    assert settings["configured"] is True
+    assert load_workspace_settings(project)["result_bundle_dir"] == str(
+        external.resolve()
+    )
+    command, values = resolve_step(path, workflow, "pack-results")
+    assert values["output"] == str((external / "example.zip").resolve())
+    assert command[-1] == values["output"]
+
+
+def test_result_bundle_directory_cannot_be_inside_project(tmp_path: Path) -> None:
+    project = tmp_path / "project"
+    _write_minimal_workflow(project)
+    with pytest.raises(ValueError, match="outside the project tree"):
+        configure_result_bundle_dir(project, project / "results")

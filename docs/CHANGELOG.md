@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.86.0
+
+- Freezes the supplied D1-F three-seed shared-checkpoint calibration; the strongest-channel branch is mixed rather than uniformly beneficial and remains outside ecological or selection claims.
+- Adds `inherited-affinity-budgeted-gradient-radius-v3`, which deterministically apportions exactly `capacity - 1` extra radius units across four resource channels by inherited fixed-budget affinity.
+- Preserves the D1-F inherited capacity gene, total extra radius, maintenance/use/development costs, checkpoint state, radius-one neutralization, and CPU/device semantics.
+- Adds diagnostics for mean extended-channel count and allocated extra-radius budget.
+- Adds project-local ignored `.se-workspace.toml` settings and `se-study config --set-result-dir`; relative result bundle outputs now require an external configured directory and project-internal destinations are rejected.
+- Changes workflow result destinations to the typed `result-path` parameter and excludes workspace settings from complete project archives.
+- Adds the D1-G study, freezes D1-F evidence, and updates project version to 0.86.0.
+- Adds no reward, role label, threshold, population protection, or result feedback into the simulated world.
+
 ## v0.85.0
 
 - Freezes the supplied D1-E three-seed calibration and records its consistently negative common-radius branch without an ecological claim.

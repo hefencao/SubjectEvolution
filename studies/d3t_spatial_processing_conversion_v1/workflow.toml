@@ -8,7 +8,7 @@ default = "d3t_spatial_processing_conversion_v1_result.zip"
 description = "Result bundle to validate or import."
 
 [parameters.output]
-type = "path"
+type = "result-path"
 default = "d3t_spatial_processing_conversion_v1_result.zip"
 description = "Export bundle destination."
 

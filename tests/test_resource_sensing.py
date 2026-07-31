@@ -288,3 +288,77 @@ def test_channel_routed_gradient_preserves_local_other_channels() -> None:
             resource_affinity_q=affinity,
             resource_sensing_radius=np.ones((cfg.world.max_entities, 3), dtype=np.int16),
         )
+
+
+def test_affinity_budgeted_sensing_distributes_fixed_extra_radius_budget() -> None:
+    from se.env.niches import AFFINITY_SCALE
+    from se.env.resource_sensing import resource_sensing_channel_radii
+    from se.gpu_runtime import device_resource_sensing_channel_radii
+
+    cfg = replace(
+        sensing_cfg(),
+        environment=replace(
+            sensing_cfg().environment,
+            schema="orthogonal-four-resource-niche-v1",
+        ),
+        entities=replace(
+            sensing_cfg().entities,
+            resource_affinity_schema="normalized-four-resource-affinity-v1",
+            resource_affinity_strength=0.75,
+            resource_affinity_min_efficiency=0.25,
+            resource_affinity_max_efficiency=1.75,
+            resource_sensing_schema="inherited-affinity-budgeted-gradient-radius-v3",
+        ),
+    )
+    validate_config(cfg)
+    genotype = np.zeros((3, ParametricPolicy.genome_size_for_config(cfg)), dtype=np.float32)
+    genotype[:, 7] = 1.0  # inherited capacity radius four => three extra units
+    affinity = np.asarray(
+        [
+            [2 * AFFINITY_SCALE, AFFINITY_SCALE, AFFINITY_SCALE, 0],
+            [AFFINITY_SCALE, 3 * AFFINITY_SCALE, 0, 0],
+            [AFFINITY_SCALE, AFFINITY_SCALE, AFFINITY_SCALE, AFFINITY_SCALE],
+        ],
+        dtype=np.int32,
+    )
+    radii = resource_sensing_channel_radii(
+        genotype, cfg, resource_affinity_q=affinity
+    )
+    assert radii.tolist() == [[2, 2, 2, 1], [2, 3, 1, 1], [2, 2, 2, 1]]
+    assert np.array_equal((radii - 1).sum(axis=1), np.asarray([3, 3, 3]))
+    assert np.array_equal(
+        radii,
+        device_resource_sensing_channel_radii(
+            genotype, cfg, resource_affinity_q=affinity, xp=np
+        ),
+    )
+    assert resource_sensing_energy(genotype, cfg).tolist() == pytest.approx(
+        [0.004, 0.004, 0.004]
+    )
+
+
+def test_affinity_budgeted_sensing_keeps_radius_one_capacity_local() -> None:
+    from se.env.niches import AFFINITY_SCALE
+    from se.env.resource_sensing import resource_sensing_channel_radii
+
+    cfg = replace(
+        sensing_cfg(),
+        environment=replace(
+            sensing_cfg().environment,
+            schema="orthogonal-four-resource-niche-v1",
+        ),
+        entities=replace(
+            sensing_cfg().entities,
+            resource_affinity_schema="normalized-four-resource-affinity-v1",
+            resource_affinity_strength=0.75,
+            resource_affinity_min_efficiency=0.25,
+            resource_affinity_max_efficiency=1.75,
+            resource_sensing_schema="inherited-affinity-budgeted-gradient-radius-v3",
+        ),
+    )
+    genotype = np.zeros((1, ParametricPolicy.genome_size_for_config(cfg)), dtype=np.float32)
+    genotype[:, 7] = -1.0
+    affinity = np.full((1, 4), AFFINITY_SCALE, dtype=np.int32)
+    assert resource_sensing_channel_radii(
+        genotype, cfg, resource_affinity_q=affinity
+    ).tolist() == [[1, 1, 1, 1]]

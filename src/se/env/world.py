@@ -6,6 +6,7 @@ import numpy as np
 
 from ..cfg import SimulationConfig
 from .danger_evidence import DANGER_EVIDENCE_SCALE
+from .resource_sensing import effective_resource_sensing_radius_levels
 from .process import build_environment_process, environment_process_metadata
 from .recycling import initialize_resource_residue, update_resource_recycling
 from .diversity import (
@@ -526,9 +527,8 @@ class Environment:
                 raise ValueError(
                     "resource sensing radius must be shaped [capacity] or [capacity, 4]"
                 )
-            allowed = np.asarray(
-                self.cfg.entities.resource_sensing_radius_levels, dtype=np.int16
-            )
+            allowed_levels = effective_resource_sensing_radius_levels(self.cfg)
+            allowed = np.asarray(allowed_levels, dtype=np.int16)
             if np.any(~np.isin(sensing_radius, allowed)):
                 raise ValueError("resource sensing radius contains an unconfigured level")
 
@@ -547,7 +547,7 @@ class Environment:
             )
             gx = np.zeros(capacity, dtype=np.float32)
             gy = np.zeros(capacity, dtype=np.float32)
-            for raw_radius in self.cfg.entities.resource_sensing_radius_levels:
+            for raw_radius in effective_resource_sensing_radius_levels(self.cfg):
                 radius = int(raw_radius)
                 scale = np.float32(0.5 / radius)
                 field_x = scale * (

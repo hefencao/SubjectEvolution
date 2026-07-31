@@ -1,4 +1,4 @@
-# SE v0.85
+# SE v0.86
 
 Reference implementation for nested-subject existence and ecological evolution
 simulation.
@@ -10,16 +10,13 @@ Audit expansion remains paused. The active mainline follows
 diversity and costed inherited carrier capabilities before ecological or social
 claims.
 
-The supplied D1-E panel is frozen under
-[`studies/d1e_persistent_multiscale_resources_v1/`](studies/d1e_persistent_multiscale_resources_v1/README.md).
-Its persistent resource fields remain non-degenerate, but one common sensing
-radius across all resource channels has a consistently negative acute paired
-outcome.
-
-v0.85 adds D1-F affinity-routed resource sensing. One inherited reach capacity
-is routed to the strongest inherited resource-affinity channel while the other
-three channels retain local radius-one gradients. Costs and the shared
-checkpoint neutralization remain unchanged.
+D1-F is frozen under
+[`studies/d1f_channel_selective_resource_sensing_v1/`](studies/d1f_channel_selective_resource_sensing_v1/README.md).
+Concentrating the complete extra-radius budget into one strongest-affinity
+channel reduced the uniform D1-E penalty, but the three-seed outcome remained
+mixed. v0.86 adds D1-G, which distributes the same fixed integer extra-radius
+budget across resource channels by inherited affinity without changing total
+reach capacity or any registered cost.
 
 ## Workspace layout
 
@@ -30,14 +27,30 @@ checkpoint neutralization remain unchanged.
 - [`protocols/`](protocols/README.md): project-wide registries and immutable release decisions.
 - [`configs/`](configs/README.md): reusable project-level configuration presets.
 
+## Configure external result storage
+
+Compact result archives must not be written into the project tree. Configure one
+project-local pointer to an external directory after editable installation:
+
+```text
+mkdir -p ../SubjectEvolution-results
+se-study config --set-result-dir ../SubjectEvolution-results
+se-study config
+```
+
+The setting is stored in ignored `.se-workspace.toml`; the result directory must
+resolve outside the project. Relative `pack-results --output` values are placed
+under that configured directory. An absolute external `--output` can still be
+used for a one-off destination.
+
 ## Study commands
 
 Study operations are declared in `workflow.toml`, not executable shell files.
 After editable installation:
 
 ```text
-se-study show studies/d1f_channel_selective_resource_sensing_v1
-se-study run studies/d1f_channel_selective_resource_sensing_v1 source-pilot --dry-run
+se-study show studies/d1g_affinity_budgeted_resource_sensing_v1
+se-study run studies/d1g_affinity_budgeted_resource_sensing_v1 source-pilot --dry-run
 ```
 
 Every parameter is declared and can be overridden explicitly. The resolved argv
@@ -52,7 +65,8 @@ iteration history.
 
 Local iteration notes live under `docs/迭代/`. `make package` builds a disposable
 artifact copy, removes old iteration notes from that copy, and keeps only the
-current version note in the complete project archive.
+current version note in the complete project archive. Workspace settings and
+runtime results are never included.
 
 ## Current documents
 
@@ -62,4 +76,4 @@ current version note in the complete project archive.
 - [Governance principles](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.85 D1-F iteration](docs/迭代/v0.85_D1-F_按资源通道分配的可遗传感知尺度.md)
+- [v0.86 D1-G iteration](docs/迭代/v0.86_D1-G_亲和度预算分配的可遗传感知尺度.md)

@@ -17,7 +17,106 @@ import tomllib
 from typing import Any
 
 WORKFLOW_SCHEMA = "se-study-workflow-v1"
+WORKSPACE_SCHEMA = "se-workspace-v1"
+WORKSPACE_CONFIG_NAME = ".se-workspace.toml"
 
+
+
+
+def _project_root_from_workflow(workflow_path: Path) -> Path:
+    return workflow_path.parent.parent.parent.resolve()
+
+
+def _find_project_root(start: str | Path = ".") -> Path:
+    current = Path(start).resolve()
+    for candidate in (current, *current.parents):
+        if (candidate / "pyproject.toml").is_file() and (candidate / "studies").is_dir():
+            return candidate
+    raise FileNotFoundError(f"could not locate project root from {current}")
+
+
+def _workspace_config_path(project_root: Path) -> Path:
+    return project_root / WORKSPACE_CONFIG_NAME
+
+
+def load_workspace_settings(project_root: str | Path) -> dict[str, Any]:
+    root = Path(project_root).resolve()
+    path = _workspace_config_path(root)
+    if not path.is_file():
+        return {
+            "schema": WORKSPACE_SCHEMA,
+            "project_root": str(root),
+            "config_path": str(path),
+            "configured": False,
+            "result_bundle_dir": None,
+        }
+    data = tomllib.loads(path.read_text(encoding="utf-8"))
+    if data.get("schema") != WORKSPACE_SCHEMA:
+        raise ValueError(f"unsupported workspace settings schema: {data.get('schema')!r}")
+    raw = data.get("result_bundle_dir")
+    if not isinstance(raw, str) or not raw.strip():
+        raise ValueError("workspace settings must define a non-empty result_bundle_dir")
+    result_dir = Path(raw).expanduser().resolve()
+    try:
+        result_dir.relative_to(root)
+    except ValueError:
+        pass
+    else:
+        raise ValueError("result bundle directory must be outside the project tree")
+    return {
+        "schema": WORKSPACE_SCHEMA,
+        "project_root": str(root),
+        "config_path": str(path),
+        "configured": True,
+        "result_bundle_dir": str(result_dir),
+    }
+
+
+def configure_result_bundle_dir(project_root: str | Path, result_dir: str | Path) -> dict[str, Any]:
+    root = Path(project_root).resolve()
+    destination = Path(result_dir).expanduser().resolve()
+    try:
+        destination.relative_to(root)
+    except ValueError:
+        pass
+    else:
+        raise ValueError("result bundle directory must be outside the project tree")
+    destination.mkdir(parents=True, exist_ok=True)
+    path = _workspace_config_path(root)
+    path.write_text(
+        f'schema = {json.dumps(WORKSPACE_SCHEMA)}\n'
+        f'result_bundle_dir = {json.dumps(str(destination))}\n',
+        encoding="utf-8",
+    )
+    return load_workspace_settings(root)
+
+
+def _resolve_result_path(
+    raw: Any,
+    *,
+    project_root: Path,
+    allow_unconfigured: bool,
+) -> str:
+    candidate = Path(str(raw)).expanduser()
+    if candidate.is_absolute():
+        resolved = candidate.resolve()
+    else:
+        settings = load_workspace_settings(project_root)
+        if not settings["configured"]:
+            if allow_unconfigured:
+                return str(Path("<result-bundle-dir>") / candidate)
+            raise ValueError(
+                "result bundle directory is not configured; run "
+                "`se-study config --set-result-dir ../SubjectEvolution-results` first, "
+                "or pass an absolute --output outside the project"
+            )
+        resolved = Path(str(settings["result_bundle_dir"])) / candidate
+        resolved = resolved.resolve()
+    try:
+        resolved.relative_to(project_root)
+    except ValueError:
+        return str(resolved)
+    raise ValueError("result bundle output must be outside the project tree")
 
 def _workflow_path(study: str | Path) -> Path:
     path = Path(study)
@@ -51,7 +150,7 @@ def _parse_bool(value: str | bool) -> bool:
 
 def _coerce(name: str, raw: Any, spec: dict[str, Any]) -> Any:
     kind = str(spec.get("type", "string"))
-    if kind == "string" or kind == "path" or kind == "choice":
+    if kind in {"string", "path", "result-path", "choice"}:
         value: Any = str(raw)
     elif kind == "int":
         value = int(raw)
@@ -107,6 +206,8 @@ def resolve_step(
     workflow: dict[str, Any],
     step_name: str,
     overrides: dict[str, Any] | None = None,
+    *,
+    allow_unconfigured_result: bool = False,
 ) -> tuple[list[str], dict[str, Any]]:
     steps = workflow["steps"]
     if step_name not in steps:
@@ -114,7 +215,7 @@ def resolve_step(
     step = steps[step_name]
     parameter_specs = workflow.get("parameters", {})
     values: dict[str, Any] = {
-        "project_root": str(workflow_path.parent.parent.parent),
+        "project_root": str(_project_root_from_workflow(workflow_path)),
         "study_dir": str(workflow_path.parent),
         "study_id": str(workflow.get("study_id", workflow_path.parent.name)),
     }
@@ -128,10 +229,27 @@ def resolve_step(
         raise ValueError(f"undeclared workflow parameters: {unknown!r}")
     for name, raw in overrides.items():
         values[name] = _coerce(name, raw, parameter_specs[name])
-
     command = step.get("command")
     if not isinstance(command, list) or not command or not all(isinstance(item, str) for item in command):
         raise ValueError(f"step {step_name!r} must declare a non-empty string command array")
+    used_parameters = {
+        name
+        for name in parameter_specs
+        if any("{" + name + "}" in token for token in command)
+        or name in step.get("boolean_flags", {})
+    }
+    project_root = Path(values["project_root"])
+    for name, spec in parameter_specs.items():
+        if (
+            name in used_parameters
+            and str(spec.get("type", "string")) == "result-path"
+        ):
+            values[name] = _resolve_result_path(
+                values[name],
+                project_root=project_root,
+                allow_unconfigured=allow_unconfigured_result,
+            )
+
     rendered = [item.format_map(values) for item in command]
     for parameter_name, flag in step.get("boolean_flags", {}).items():
         if parameter_name not in parameter_specs:
@@ -151,7 +269,9 @@ def describe(workflow_path: Path, workflow: dict[str, Any], step_name: str | Non
     }
     names = [step_name] if step_name else list(workflow["steps"])
     for name in names:
-        command, values = resolve_step(workflow_path, workflow, name)
+        command, values = resolve_step(
+            workflow_path, workflow, name, allow_unconfigured_result=True
+        )
         step = workflow["steps"][name]
         used = sorted(
             parameter
@@ -204,7 +324,34 @@ def main(argv: list[str] | None = None) -> None:
     run.add_argument("step")
     run.add_argument("--dry-run", action="store_true")
     run.add_argument("--json", action="store_true")
+    config = subparsers.add_parser(
+        "config", help="show or set project-local workspace output settings"
+    )
+    config.add_argument("--set-result-dir")
+    config.add_argument("--json", action="store_true")
     args, unknown = parser.parse_known_args(argv)
+    if args.action == "config":
+        if unknown:
+            parser.error(f"unexpected arguments: {unknown}")
+        try:
+            root = _find_project_root()
+            data = (
+                configure_result_bundle_dir(root, args.set_result_dir)
+                if args.set_result_dir
+                else load_workspace_settings(root)
+            )
+        except (ValueError, FileNotFoundError) as exc:
+            parser.error(str(exc))
+        if args.json:
+            print(json.dumps(data, ensure_ascii=False, indent=2))
+        else:
+            print(f"project root: {data['project_root']}")
+            print(f"settings: {data['config_path']}")
+            print(
+                "result bundle directory: "
+                + (str(data['result_bundle_dir']) if data['configured'] else "not configured")
+            )
+        return
     workflow_path, workflow = load_workflow(args.study)
     if args.action == "show":
         if unknown:

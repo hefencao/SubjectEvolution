@@ -44,7 +44,9 @@ def _copy_project(source: Path, destination: Path) -> None:
         excluded: set[str] = set()
         for name in names:
             path = base / name
-            if name in EXCLUDED_DIR_NAMES or name.endswith(".egg-info"):
+            if name == ".se-workspace.toml":
+                excluded.add(name)
+            elif name in EXCLUDED_DIR_NAMES or name.endswith(".egg-info"):
                 excluded.add(name)
             elif any(fnmatch.fnmatch(name, pattern) for pattern in EXCLUDED_FILE_PATTERNS):
                 excluded.add(name)

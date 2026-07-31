@@ -20,6 +20,7 @@ import numpy as np
 
 from se.cfg import load_config
 from se.env.resource_sensing import (
+    channel_routed_resource_sensing_enabled,
     resource_sensing_channel_radii,
     resource_sensing_enabled,
     resource_sensing_energy,
@@ -213,6 +214,17 @@ def _branch(
         simulation.cfg,
         resource_affinity_q=affinity_before,
     )
+    inherited_extra_radius = np.maximum(
+        inherited_channel_radii.astype(np.int64) - 1, 0
+    ).sum(axis=1)
+    expected_extra_radius = (
+        inherited_radius.astype(np.int64) - 1
+        if channel_routed_resource_sensing_enabled(simulation.cfg)
+        else 4 * (inherited_radius.astype(np.int64) - 1)
+    )
+    allocation_budget_closed = bool(
+        np.array_equal(inherited_extra_radius, expected_extra_radius)
+    )
     maintenance_before = resource_sensing_energy(
         simulation.entities.genotype[alive], simulation.cfg
     )
@@ -247,6 +259,10 @@ def _branch(
             if neutralize
             else inherited_channel_radii[alive].mean(axis=0).tolist()
         ),
+        "inherited_extra_radius_sum_mean_at_branch": float(
+            inherited_extra_radius[alive].mean()
+        ),
+        "inherited_allocation_budget_closed": allocation_budget_closed,
         "maintenance_energy_per_tick_at_branch": float(maintenance_before.sum()),
         "use_energy_per_tick_at_branch": float(use_before.sum()),
         "scientific_validity": simulation.scientific_validity(),
@@ -268,6 +284,8 @@ def _branch(
                 "resource_sensing_channel_1_extended_fraction",
                 "resource_sensing_channel_2_extended_fraction",
                 "resource_sensing_channel_3_extended_fraction",
+                "resource_sensing_extended_channel_count_mean",
+                "resource_sensing_allocated_extra_radius_mean",
                 "resource_sensing_maintenance_energy_step",
                 "resource_sensing_use_energy_step",
                 "resource_sensing_development_energy_step",
@@ -366,6 +384,11 @@ def execute_plan(plan: ResourceSensingPlan, *, backend: str) -> dict[str, Any]:
             "all_branches_retain_positive_registered_cost": all(
                 branch["maintenance_energy_per_tick_at_branch"] > 0.0
                 and branch["use_energy_per_tick_at_branch"] > 0.0
+                for pair in pairs
+                for branch in pair["branches"]
+            ),
+            "all_inherited_allocation_budgets_close": all(
+                branch["inherited_allocation_budget_closed"]
                 for pair in pairs
                 for branch in pair["branches"]
             ),

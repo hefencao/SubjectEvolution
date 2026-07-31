@@ -1,0 +1,12 @@
+{
+  "schema": "inherited-affinity-budgeted-gradient-radius-v3",
+  "inherited_capacity_gene_index": 7,
+  "inherited_capacity_levels": [1, 2, 4, 8],
+  "allocation_input": "normalized-four-resource-affinity-v1",
+  "allocation_rule": "integer Hamilton apportionment of exactly radius-minus-one extra units",
+  "local_radius_floor": 1,
+  "total_extra_radius_preserved": true,
+  "maintenance_use_development_cost_basis": "inherited total reach capacity",
+  "world_feedback": false,
+  "role_labels": false
+}

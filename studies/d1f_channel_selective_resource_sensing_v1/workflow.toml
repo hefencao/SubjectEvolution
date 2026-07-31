@@ -41,7 +41,7 @@ default = "analyses/d1f_channel_selective_resource_sensing_v1/pilot"
 description = "Paired plan and result output root."
 
 [parameters.output]
-type = "path"
+type = "result-path"
 default = "d1f_channel_selective_resource_sensing_v1_results.zip"
 description = "Compact result bundle path."
 

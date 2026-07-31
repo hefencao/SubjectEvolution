@@ -15,6 +15,7 @@ import numpy as np
 from ..backend import Backend, resolve_backend
 from ..cfg import SimulationConfig
 from .danger_evidence import DANGER_EVIDENCE_SCALE
+from .resource_sensing import effective_resource_sensing_radius_levels
 from .process import build_environment_process, environment_process_metadata
 from .physiology import physiology_fields
 from .recycling import initialize_resource_residue, update_resource_recycling
@@ -526,7 +527,7 @@ class DeviceEnvironment:
             gx = xp.zeros(capacity, dtype=xp.float32)
             gy = xp.zeros(capacity, dtype=xp.float32)
             matched = xp.zeros(capacity, dtype=bool)
-            for raw_radius in self.cfg.entities.resource_sensing_radius_levels:
+            for raw_radius in effective_resource_sensing_radius_levels(self.cfg):
                 radius = int(raw_radius)
                 scale = xp.float32(0.5 / radius)
                 field_x = scale * (

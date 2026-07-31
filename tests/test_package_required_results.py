@@ -18,8 +18,9 @@ def test_compact_bundle_is_deterministic_and_omits_checkpoints(tmp_path: Path) -
     (analysis / "paired_results.json").write_text("{}\n", encoding="utf-8")
     (runtime / "resolved_config.json").write_text("{}\n", encoding="utf-8")
     (runtime / "checkpoint_00000001.sechk").write_bytes(b"checkpoint")
-    first = tmp_path / "first.zip"
-    second = tmp_path / "second.zip"
+    external = tmp_path.parent / f"{tmp_path.name}_results"
+    first = external / "first.zip"
+    second = external / "second.zip"
     kwargs = dict(
         project_root=tmp_path,
         study_root=study,
@@ -47,7 +48,7 @@ def test_replay_bundle_can_include_checkpoints(tmp_path: Path) -> None:
     runtime.mkdir(parents=True)
     (study / "DESIGN.md").write_text("design\n", encoding="utf-8")
     (runtime / "checkpoint_00000001.sechk").write_bytes(b"checkpoint")
-    output = tmp_path / "replay.zip"
+    output = tmp_path.parent / f"{tmp_path.name}_results" / "replay.zip"
     manifest = build_bundle(
         project_root=tmp_path,
         study_root=study,
@@ -59,3 +60,19 @@ def test_replay_bundle_can_include_checkpoints(tmp_path: Path) -> None:
     assert manifest["capability"] == "exact-checkpoint-replay"
     with zipfile.ZipFile(output) as archive:
         assert "runs/base/demo/seed_1/checkpoint_00000001.sechk" in archive.namelist()
+
+
+def test_compact_bundle_rejects_project_internal_output(tmp_path: Path) -> None:
+    study = tmp_path / "studies/demo"
+    study.mkdir(parents=True)
+    (study / "DESIGN.md").write_text("design\n", encoding="utf-8")
+    import pytest
+    with pytest.raises(ValueError, match="outside the project tree"):
+        build_bundle(
+            project_root=tmp_path,
+            study_root=study,
+            analysis_roots=[],
+            runtime_roots=[],
+            output=tmp_path / "result.zip",
+            include_checkpoints=False,
+        )

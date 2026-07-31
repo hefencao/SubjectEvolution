@@ -258,15 +258,43 @@ def device_resource_sensing_channel_radii(
 
     base = device_resource_sensing_radius(genotype, cfg, xp=xp)
     rows = int(base.shape[0])
-    if cfg.entities.resource_sensing_schema != "inherited-affinity-routed-gradient-radius-v2":
+    if cfg.entities.resource_sensing_schema not in {
+        "inherited-affinity-routed-gradient-radius-v2",
+        "inherited-affinity-budgeted-gradient-radius-v3",
+    }:
         return xp.repeat(base[:, None], RESOURCE_CHANNELS, axis=1)
     affinity = xp.asarray(resource_affinity_q, dtype=xp.int32)
     if affinity.shape != (rows, RESOURCE_CHANNELS):
         raise ValueError("resource affinity must be shaped [N, 4]")
-    preferred = xp.argmax(affinity, axis=1)
-    result = xp.ones((rows, RESOURCE_CHANNELS), dtype=xp.int16)
-    result[xp.arange(rows), preferred] = base
-    return result
+    if cfg.entities.resource_sensing_schema == "inherited-affinity-routed-gradient-radius-v2":
+        preferred = xp.argmax(affinity, axis=1)
+        result = xp.ones((rows, RESOURCE_CHANNELS), dtype=xp.int16)
+        result[xp.arange(rows), preferred] = base
+        return result
+
+    weights = affinity.astype(xp.int64)
+    totals = xp.sum(weights, axis=1, dtype=xp.int64)
+    if bool(xp.any(totals <= 0)) or bool(xp.any(weights < 0)):
+        raise ValueError("resource affinity must contain a positive non-negative budget")
+    budget = xp.maximum(base.astype(xp.int64) - 1, 0)
+    numerator = weights * budget[:, None]
+    allocation = numerator // totals[:, None]
+    remainder = numerator % totals[:, None]
+    missing = budget - xp.sum(allocation, axis=1, dtype=xp.int64)
+    rows_index = xp.arange(rows)
+    for _ in range(RESOURCE_CHANNELS - 1):
+        selected = xp.argmax(remainder, axis=1)
+        active = missing > 0
+        if not bool(xp.any(active)):
+            break
+        active_rows = rows_index[active]
+        active_selected = selected[active]
+        allocation[active_rows, active_selected] += 1
+        remainder[active_rows, active_selected] = -1
+        missing = missing - active.astype(xp.int64)
+    if bool(xp.any(missing != 0)):
+        raise RuntimeError("resource-sensing radius budget apportionment did not close")
+    return (allocation + 1).astype(xp.int16)
 
 
 def device_policy_resource_view(
@@ -862,7 +890,7 @@ class HybridGpuRuntime:
             if danger_evidence_device is not None:
                 avoided += capacity * 2 * np.dtype(np.int32).itemsize
             if self.cfg.entities.resource_sensing_schema != "disabled":
-                avoided += capacity * (RESOURCE_CHANNELS if self.cfg.entities.resource_sensing_schema == "inherited-affinity-routed-gradient-radius-v2" else 1) * np.dtype(np.int16).itemsize
+                avoided += capacity * (RESOURCE_CHANNELS if self.cfg.entities.resource_sensing_schema in {"inherited-affinity-routed-gradient-radius-v2", "inherited-affinity-budgeted-gradient-radius-v3"} else 1) * np.dtype(np.int16).itemsize
             if active_storage_room_fraction is None:
                 avoided += active_host.size * RESOURCE_CHANNELS * np.dtype(np.float32).itemsize
             if physiology_environment is not None:
@@ -886,7 +914,10 @@ class HybridGpuRuntime:
         )
         channel_routed_sensing = (
             self.cfg.entities.resource_sensing_schema
-            == "inherited-affinity-routed-gradient-radius-v2"
+            in {
+                "inherited-affinity-routed-gradient-radius-v2",
+                "inherited-affinity-budgeted-gradient-radius-v3",
+            }
         )
         sensing_radius_device = (
             xp.ones((capacity, RESOURCE_CHANNELS), dtype=xp.int16)
