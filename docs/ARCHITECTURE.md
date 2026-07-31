@@ -883,3 +883,14 @@ existing normalized inherited affinity vector. The allocation sum is exact,
 ties are stable, and the same algorithm is implemented in CPU reference and
 device paths. Costs remain functions of inherited total capacity, not the
 number of extended channels or the intervention state.
+
+## Demand-gated inherited resource sensing
+
+`inherited-demand-gated-affinity-budgeted-gradient-radius-v4` keeps morphology
+gene 7 as the sole inherited total reach capacity. Current expression is derived
+from objective conservative store room. CPU and GPU quantize each room fraction
+to 4096, multiply by inherited fixed-budget affinity, and Hamilton-apportion the
+original affinity total. The same weights drive channel-radius allocation and
+resource-gradient aggregation. The inherited capacity, cost schedule, action
+vocabulary, resource fields, and random keys are unchanged; radius-one
+neutralization alters only effective sensing reach.

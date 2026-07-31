@@ -1,0 +1,22 @@
+{
+  "schema": "inherited-demand-gated-affinity-budgeted-gradient-radius-v4",
+  "inherited_capacity_gene_index": 7,
+  "radius_levels": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "allocation_bias": "inherited fixed-budget resource affinity",
+  "expression_gate": "current conservative per-channel storage-room fraction",
+  "demand_quantization_scale": 4096,
+  "allocation": "deterministic Hamilton apportionment with lowest-index tie break",
+  "budget_invariant": "sum(channel_radius - 1) == inherited_capacity - 1",
+  "gradient_weight_budget_invariant": "sum(observation_weight_q) == sum(resource_affinity_q)",
+  "cost_basis": "inherited total reach capacity; unchanged by demand or ablation",
+  "ablation": "effective radius one with genotype, storage, affinity, cost, fields and random keys preserved",
+  "claims": [
+    "carrier capability only",
+    "no ecological or selection claim"
+  ]
+}

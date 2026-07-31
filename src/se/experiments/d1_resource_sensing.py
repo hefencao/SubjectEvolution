@@ -24,9 +24,12 @@ from se.env.resource_sensing import (
     resource_sensing_channel_radii,
     resource_sensing_enabled,
     resource_sensing_energy,
+    resource_sensing_observation_weights_q,
     resource_sensing_radius,
 )
 from se.env.niches import resource_affinity_quantized
+from se.policy import ParametricPolicy
+from se.runtime.resource_metabolism import storage_room_fraction
 from se.runtime.sim import Simulation
 
 PLAN_SCHEMA = "d1-resource-sensing-shared-checkpoint-plan-v1"
@@ -209,10 +212,34 @@ def _branch(
     affinity_before = resource_affinity_quantized(
         simulation.entities.genotype, simulation.cfg
     )
+    active_rows = np.flatnonzero(alive).astype(np.int32)
+    active_storage_room = storage_room_fraction(
+        simulation.entities,
+        active_rows,
+        simulation.cfg,
+        genotype=simulation.entities.genotype[active_rows],
+        gene_start=ParametricPolicy.physiology_gene_start(simulation.cfg),
+    )
+    full_storage_room = None
+    if active_storage_room is not None:
+        full_storage_room = np.zeros((simulation.entities.alive.size, 4), dtype=np.float32)
+        full_storage_room[active_rows] = active_storage_room
+    observation_weights = resource_sensing_observation_weights_q(
+        affinity_before,
+        simulation.cfg,
+        storage_room_fraction=full_storage_room,
+    )
+    observation_weight_budget_closed = bool(
+        np.array_equal(
+            observation_weights.sum(axis=1, dtype=np.int64),
+            affinity_before.sum(axis=1, dtype=np.int64),
+        )
+    )
     inherited_channel_radii = resource_sensing_channel_radii(
         simulation.entities.genotype,
         simulation.cfg,
         resource_affinity_q=affinity_before,
+        storage_room_fraction=full_storage_room,
     )
     inherited_extra_radius = np.maximum(
         inherited_channel_radii.astype(np.int64) - 1, 0
@@ -263,6 +290,17 @@ def _branch(
             inherited_extra_radius[alive].mean()
         ),
         "inherited_allocation_budget_closed": allocation_budget_closed,
+        "observation_weight_budget_closed": observation_weight_budget_closed,
+        "open_storage_channel_count_mean_at_branch": (
+            0.0
+            if active_storage_room is None or active_storage_room.size == 0
+            else float((active_storage_room > 0.0).sum(axis=1).mean())
+        ),
+        "full_storage_fallback_fraction_at_branch": (
+            0.0
+            if active_storage_room is None or active_storage_room.size == 0
+            else float((active_storage_room.sum(axis=1) <= 0.0).mean())
+        ),
         "maintenance_energy_per_tick_at_branch": float(maintenance_before.sum()),
         "use_energy_per_tick_at_branch": float(use_before.sum()),
         "scientific_validity": simulation.scientific_validity(),
@@ -286,6 +324,8 @@ def _branch(
                 "resource_sensing_channel_3_extended_fraction",
                 "resource_sensing_extended_channel_count_mean",
                 "resource_sensing_allocated_extra_radius_mean",
+                "resource_sensing_open_storage_channel_count_mean",
+                "resource_sensing_demand_fallback_fraction",
                 "resource_sensing_maintenance_energy_step",
                 "resource_sensing_use_energy_step",
                 "resource_sensing_development_energy_step",
@@ -389,6 +429,11 @@ def execute_plan(plan: ResourceSensingPlan, *, backend: str) -> dict[str, Any]:
             ),
             "all_inherited_allocation_budgets_close": all(
                 branch["inherited_allocation_budget_closed"]
+                for pair in pairs
+                for branch in pair["branches"]
+            ),
+            "all_observation_weight_budgets_close": all(
+                branch["observation_weight_budget_closed"]
                 for pair in pairs
                 for branch in pair["branches"]
             ),

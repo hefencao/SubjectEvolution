@@ -1,0 +1,45 @@
+{
+  "schema": "d1-resource-sensing-shared-checkpoint-plan-v1",
+  "source_root": "runs/base/d1g_affinity_budgeted_resource_sensing_v1/pilot",
+  "checkpoint_tick": 480,
+  "horizon_ticks": 120,
+  "runtime_root": "runs/interventions/d1g_affinity_budgeted_resource_sensing_v1/pilot",
+  "sources": [
+    {
+      "seed": 86001,
+      "run_dir": "runs/base/d1g_affinity_budgeted_resource_sensing_v1/pilot/seed_86001",
+      "checkpoint_path": "runs/base/d1g_affinity_budgeted_resource_sensing_v1/pilot/seed_86001/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "287cc746e2ed61d5114951bc894738484110f228de0a04581673ef3c67958974",
+      "checkpoint_tick": 480,
+      "resolved_config_sha256": "101db75e4150bdfe2cb3dfc63f5af7dc468f440389b6ea0ea5bda4cdf6d16216"
+    },
+    {
+      "seed": 86002,
+      "run_dir": "runs/base/d1g_affinity_budgeted_resource_sensing_v1/pilot/seed_86002",
+      "checkpoint_path": "runs/base/d1g_affinity_budgeted_resource_sensing_v1/pilot/seed_86002/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "6c57f07a69d53462c6e69a77a9974eb9c5fd265772e214c99a77ed26adabaeb6",
+      "checkpoint_tick": 480,
+      "resolved_config_sha256": "991409c62f2c9c842984dd72a83d925d701cb74e4f12964f986e83630459b261"
+    },
+    {
+      "seed": 86003,
+      "run_dir": "runs/base/d1g_affinity_budgeted_resource_sensing_v1/pilot/seed_86003",
+      "checkpoint_path": "runs/base/d1g_affinity_budgeted_resource_sensing_v1/pilot/seed_86003/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "229b1a40c2d6e6d67e9739772c0a8d796d549f7d70e833dd1da8c281cbf66ee1",
+      "checkpoint_tick": 480,
+      "resolved_config_sha256": "6ba10bba11596146548d3ab28a9d8cd576b9c248d3681e5c8839c9dd9d65667d"
+    }
+  ],
+  "branches": [
+    "inherited-radius",
+    "radius-one-neutral"
+  ],
+  "intervention": "neutralize-resource-sensing-radius",
+  "paired_randomness": true,
+  "genotype_preserved": true,
+  "resource_fields_preserved_at_intervention": true,
+  "structure_use_development_costs_preserved": true,
+  "pass_fail_gate": false,
+  "ecological_claim_authorized": false,
+  "selection_claim_authorized": false
+}

@@ -944,12 +944,14 @@ def validate_config(cfg: SimulationConfig) -> None:
         "inherited-discrete-gradient-radius-v1",
         "inherited-affinity-routed-gradient-radius-v2",
         "inherited-affinity-budgeted-gradient-radius-v3",
+        "inherited-demand-gated-affinity-budgeted-gradient-radius-v4",
     }:
         raise ValueError(
             "entities.resource_sensing_schema must be 'disabled', "
             "'inherited-discrete-gradient-radius-v1', "
-            "'inherited-affinity-routed-gradient-radius-v2', or "
-            "'inherited-affinity-budgeted-gradient-radius-v3'"
+            "'inherited-affinity-routed-gradient-radius-v2', "
+            "'inherited-affinity-budgeted-gradient-radius-v3', or "
+            "'inherited-demand-gated-affinity-budgeted-gradient-radius-v4'"
         )
     sensing_levels = tuple(int(value) for value in cfg.entities.resource_sensing_radius_levels)
     if not sensing_levels or any(value <= 0 for value in sensing_levels):
@@ -979,12 +981,26 @@ def validate_config(cfg: SimulationConfig) -> None:
         sensing_schema in {
             "inherited-affinity-routed-gradient-radius-v2",
             "inherited-affinity-budgeted-gradient-radius-v3",
+            "inherited-demand-gated-affinity-budgeted-gradient-radius-v4",
         }
         and cfg.entities.resource_affinity_schema
         != "normalized-four-resource-affinity-v1"
     ):
         raise ValueError(
             "channel-routed resource sensing requires normalized four-resource affinity"
+        )
+    if (
+        sensing_schema
+        == "inherited-demand-gated-affinity-budgeted-gradient-radius-v4"
+        and cfg.physiology.schema
+        not in {
+            "transport-metabolism-messenger-tissue-resource-v5",
+            "transport-metabolism-messenger-tissue-resource-v6",
+            "transport-metabolism-messenger-tissue-resource-v7",
+        }
+    ):
+        raise ValueError(
+            "demand-gated resource sensing requires conservative per-channel storage"
         )
     if (
         not math.isfinite(cfg.world.width)

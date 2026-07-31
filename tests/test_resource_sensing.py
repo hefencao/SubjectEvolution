@@ -362,3 +362,89 @@ def test_affinity_budgeted_sensing_keeps_radius_one_capacity_local() -> None:
     assert resource_sensing_channel_radii(
         genotype, cfg, resource_affinity_q=affinity
     ).tolist() == [[1, 1, 1, 1]]
+
+
+def test_demand_gated_budget_preserves_weight_and_radius_budgets() -> None:
+    from se.cfg import load_config
+    from se.env.niches import AFFINITY_SCALE
+    from se.env.resource_sensing import (
+        resource_sensing_channel_radii,
+        resource_sensing_observation_weights_q,
+    )
+    from se.gpu_runtime import (
+        device_resource_sensing_channel_radii,
+        device_resource_sensing_observation_weights_q,
+    )
+
+    cfg = load_config(
+        "studies/d1h_demand_gated_resource_sensing_v1/protocol/source_pilot.json"
+    )
+    genotype = np.zeros((3, ParametricPolicy.genome_size_for_config(cfg)), dtype=np.float32)
+    genotype[:, 7] = 1.0  # capacity eight => seven extra radius units
+    affinity = np.asarray(
+        [
+            [2 * AFFINITY_SCALE, AFFINITY_SCALE, AFFINITY_SCALE, 0],
+            [AFFINITY_SCALE, 3 * AFFINITY_SCALE, 0, 0],
+            [AFFINITY_SCALE, AFFINITY_SCALE, AFFINITY_SCALE, AFFINITY_SCALE],
+        ],
+        dtype=np.int32,
+    )
+    room = np.asarray(
+        [
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.5, 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+        ],
+        dtype=np.float32,
+    )
+    weights = resource_sensing_observation_weights_q(
+        affinity, cfg, storage_room_fraction=room
+    )
+    radii = resource_sensing_channel_radii(
+        genotype,
+        cfg,
+        resource_affinity_q=affinity,
+        storage_room_fraction=room,
+    )
+    assert np.array_equal(weights.sum(axis=1), affinity.sum(axis=1))
+    assert weights[0].tolist() == [int(affinity[0].sum()), 0, 0, 0]
+    assert weights[2].tolist() == affinity[2].tolist()  # all-full fallback
+    assert np.array_equal((radii - 1).sum(axis=1), np.asarray([7, 7, 7]))
+    assert np.array_equal(
+        weights,
+        device_resource_sensing_observation_weights_q(
+            affinity, cfg, storage_room_fraction=room, xp=np
+        ),
+    )
+    assert np.array_equal(
+        radii,
+        device_resource_sensing_channel_radii(
+            genotype,
+            cfg,
+            resource_affinity_q=affinity,
+            storage_room_fraction=room,
+            xp=np,
+        ),
+    )
+
+
+def test_demand_gated_sensing_requires_conservative_storage() -> None:
+    cfg = replace(
+        sensing_cfg(),
+        environment=replace(
+            sensing_cfg().environment,
+            schema="orthogonal-four-resource-niche-v1",
+        ),
+        entities=replace(
+            sensing_cfg().entities,
+            resource_affinity_schema="normalized-four-resource-affinity-v1",
+            resource_affinity_strength=0.75,
+            resource_affinity_min_efficiency=0.25,
+            resource_affinity_max_efficiency=1.75,
+            resource_sensing_schema=(
+                "inherited-demand-gated-affinity-budgeted-gradient-radius-v4"
+            ),
+        ),
+    )
+    with pytest.raises(ValueError, match="conservative per-channel storage"):
+        validate_config(cfg)

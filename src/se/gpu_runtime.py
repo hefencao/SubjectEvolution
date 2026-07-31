@@ -247,11 +247,73 @@ def device_resource_sensing_radius(
     return levels[indices].astype(xp.int16)
 
 
+def _device_hamilton_apportion(weights: Any, budget: Any, *, xp: Any) -> Any:
+    values = xp.asarray(weights, dtype=xp.int64)
+    target = xp.asarray(budget, dtype=xp.int64)
+    if values.ndim != 2 or int(values.shape[1]) != RESOURCE_CHANNELS:
+        raise ValueError("apportionment weights must be shaped [N, 4]")
+    if target.shape != (int(values.shape[0]),):
+        raise ValueError("apportionment budget must be shaped [N]")
+    totals = xp.sum(values, axis=1, dtype=xp.int64)
+    if bool(xp.any(totals <= 0)) or bool(xp.any(values < 0)) or bool(xp.any(target < 0)):
+        raise ValueError("apportionment requires positive weights and non-negative budgets")
+    numerator = values * target[:, None]
+    allocation = numerator // totals[:, None]
+    remainder = numerator % totals[:, None]
+    missing = target - xp.sum(allocation, axis=1, dtype=xp.int64)
+    rows = xp.arange(int(values.shape[0]))
+    for _ in range(RESOURCE_CHANNELS - 1):
+        selected = xp.argmax(remainder, axis=1)
+        active = missing > 0
+        if not bool(xp.any(active)):
+            break
+        active_rows = rows[active]
+        active_selected = selected[active]
+        allocation[active_rows, active_selected] += 1
+        remainder[active_rows, active_selected] = -1
+        missing = missing - active.astype(xp.int64)
+    if bool(xp.any(missing != 0)):
+        raise RuntimeError("integer apportionment did not close")
+    return allocation
+
+
+def device_resource_sensing_observation_weights_q(
+    resource_affinity_q: Any,
+    cfg: SimulationConfig,
+    *,
+    storage_room_fraction: Any | None,
+    xp: Any,
+) -> Any:
+    affinity = xp.asarray(resource_affinity_q, dtype=xp.int64)
+    if affinity.ndim != 2 or int(affinity.shape[1]) != RESOURCE_CHANNELS:
+        raise ValueError("resource affinity must be shaped [N, 4]")
+    totals = xp.sum(affinity, axis=1, dtype=xp.int64)
+    if bool(xp.any(affinity < 0)) or bool(xp.any(totals <= 0)):
+        raise ValueError("resource affinity must contain a positive non-negative budget")
+    if cfg.entities.resource_sensing_schema != "inherited-demand-gated-affinity-budgeted-gradient-radius-v4":
+        return affinity.astype(xp.int32)
+    if storage_room_fraction is None:
+        raise ValueError("demand-gated resource sensing requires storage room fractions")
+    room = xp.asarray(storage_room_fraction, dtype=xp.float64)
+    if room.shape != affinity.shape:
+        raise ValueError("storage room fraction must be shaped [N, 4]")
+    if bool(xp.any(~xp.isfinite(room))) or bool(xp.any(room < 0.0)):
+        raise ValueError("storage room fraction must be finite and non-negative")
+    demand_q = xp.floor(
+        xp.clip(room, 0.0, 1.0) * xp.float64(4096.0) + xp.float64(0.5)
+    ).astype(xp.int64)
+    weighted = affinity * demand_q
+    empty = xp.sum(weighted, axis=1, dtype=xp.int64) <= 0
+    weighted = xp.where(empty[:, None], affinity, weighted)
+    return _device_hamilton_apportion(weighted, totals, xp=xp).astype(xp.int32)
+
+
 def device_resource_sensing_channel_radii(
     genotype: Any,
     cfg: SimulationConfig,
     *,
     resource_affinity_q: Any,
+    storage_room_fraction: Any | None = None,
     xp: Any,
 ) -> Any:
     """Return device-side per-channel radii for the configured sensing schema."""
@@ -261,6 +323,7 @@ def device_resource_sensing_channel_radii(
     if cfg.entities.resource_sensing_schema not in {
         "inherited-affinity-routed-gradient-radius-v2",
         "inherited-affinity-budgeted-gradient-radius-v3",
+        "inherited-demand-gated-affinity-budgeted-gradient-radius-v4",
     }:
         return xp.repeat(base[:, None], RESOURCE_CHANNELS, axis=1)
     affinity = xp.asarray(resource_affinity_q, dtype=xp.int32)
@@ -272,28 +335,14 @@ def device_resource_sensing_channel_radii(
         result[xp.arange(rows), preferred] = base
         return result
 
-    weights = affinity.astype(xp.int64)
-    totals = xp.sum(weights, axis=1, dtype=xp.int64)
-    if bool(xp.any(totals <= 0)) or bool(xp.any(weights < 0)):
-        raise ValueError("resource affinity must contain a positive non-negative budget")
+    weights = device_resource_sensing_observation_weights_q(
+        affinity,
+        cfg,
+        storage_room_fraction=storage_room_fraction,
+        xp=xp,
+    ).astype(xp.int64)
     budget = xp.maximum(base.astype(xp.int64) - 1, 0)
-    numerator = weights * budget[:, None]
-    allocation = numerator // totals[:, None]
-    remainder = numerator % totals[:, None]
-    missing = budget - xp.sum(allocation, axis=1, dtype=xp.int64)
-    rows_index = xp.arange(rows)
-    for _ in range(RESOURCE_CHANNELS - 1):
-        selected = xp.argmax(remainder, axis=1)
-        active = missing > 0
-        if not bool(xp.any(active)):
-            break
-        active_rows = rows_index[active]
-        active_selected = selected[active]
-        allocation[active_rows, active_selected] += 1
-        remainder[active_rows, active_selected] = -1
-        missing = missing - active.astype(xp.int64)
-    if bool(xp.any(missing != 0)):
-        raise RuntimeError("resource-sensing radius budget apportionment did not close")
+    allocation = _device_hamilton_apportion(weights, budget, xp=xp)
     return (allocation + 1).astype(xp.int16)
 
 
@@ -890,7 +939,7 @@ class HybridGpuRuntime:
             if danger_evidence_device is not None:
                 avoided += capacity * 2 * np.dtype(np.int32).itemsize
             if self.cfg.entities.resource_sensing_schema != "disabled":
-                avoided += capacity * (RESOURCE_CHANNELS if self.cfg.entities.resource_sensing_schema in {"inherited-affinity-routed-gradient-radius-v2", "inherited-affinity-budgeted-gradient-radius-v3"} else 1) * np.dtype(np.int16).itemsize
+                avoided += capacity * (RESOURCE_CHANNELS if self.cfg.entities.resource_sensing_schema in {"inherited-affinity-routed-gradient-radius-v2", "inherited-affinity-budgeted-gradient-radius-v3", "inherited-demand-gated-affinity-budgeted-gradient-radius-v4"} else 1) * np.dtype(np.int16).itemsize
             if active_storage_room_fraction is None:
                 avoided += active_host.size * RESOURCE_CHANNELS * np.dtype(np.float32).itemsize
             if physiology_environment is not None:
@@ -917,7 +966,24 @@ class HybridGpuRuntime:
             in {
                 "inherited-affinity-routed-gradient-radius-v2",
                 "inherited-affinity-budgeted-gradient-radius-v3",
+                "inherited-demand-gated-affinity-budgeted-gradient-radius-v4",
             }
+        )
+        demand_gated_sensing = (
+            self.cfg.entities.resource_sensing_schema
+            == "inherited-demand-gated-affinity-budgeted-gradient-radius-v4"
+        )
+        full_room_device = None
+        if demand_gated_sensing:
+            if room_device is None:
+                raise ValueError("demand-gated resource sensing requires storage room")
+            full_room_device = xp.zeros((capacity, RESOURCE_CHANNELS), dtype=xp.float32)
+            full_room_device[active] = room_device
+        observation_weights_device = device_resource_sensing_observation_weights_q(
+            affinity_device,
+            self.cfg,
+            storage_room_fraction=full_room_device,
+            xp=xp,
         )
         sensing_radius_device = (
             xp.ones((capacity, RESOURCE_CHANNELS), dtype=xp.int16)
@@ -928,6 +994,7 @@ class HybridGpuRuntime:
                 genotype,
                 self.cfg,
                 resource_affinity_q=affinity_device,
+                storage_room_fraction=full_room_device,
                 xp=xp,
             )
             if channel_routed_sensing
@@ -936,7 +1003,7 @@ class HybridGpuRuntime:
         resource_gradient, danger_gradient = self.environment.gradients_for_entities(
             self.spatial.entity_cells,
             entity.alive.size,
-            affinity_device,
+            observation_weights_device,
             danger_evidence_device,
             sensing_radius_device,
         )

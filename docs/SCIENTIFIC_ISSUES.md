@@ -103,3 +103,18 @@ still has high resource-channel correlation and a consistently negative acute
 common-radius branch. The next bounded question is whether preserving local
 evidence on non-target channels changes that mechanism result. This does not
 justify lowering sensor costs or declaring the larger radius maladaptive.
+
+## D1-G static-allocation limitation
+
+The supplied D1-G panel closes the inherited extra-radius budget in all three
+seeds and distributes it over roughly two channels per entity, but living-count
+differences remain -3, -40, and -15 while mean-energy effects change sign. This
+is not evidence that costed sensing is universally harmful. The D1-G source
+protocol has no conservative per-channel stores, so its static affinity weights
+cannot represent current resource demand.
+
+D1-H therefore composes the established resource-v5 store with sensing rather
+than changing costs or rewards. Its fixed observation-weight and extra-radius
+budgets must close exactly under current storage-room gating. The first panel is
+still capability calibration only; ecological interpretation requires later
+independent conditional, reversal, coexistence, and removal evidence.

@@ -111,6 +111,7 @@ from se.evolution.lifecycle import (
 from ..metrics import MetricsWriter
 from se.env.local_stress import LocalStressDiagnostics
 from se.env.resource_sensing import resource_sensing_diagnostics
+from se.runtime.resource_metabolism import storage_room_fraction
 from ..event_cohort import EventCohortDiagnostics
 from se.differentiation.capacity import capacity_diagnostics, capacity_use_diagnostics
 from se.subjects.succession import SubjectStructureDiagnostics
@@ -929,6 +930,7 @@ class SimulationReportingMixin:
                             "inherited-discrete-gradient-radius-v1",
                             "inherited-affinity-routed-gradient-radius-v2",
                             "inherited-affinity-budgeted-gradient-radius-v3",
+                            "inherited-demand-gated-affinity-budgeted-gradient-radius-v4",
                         }
                         else None
                     ),
@@ -939,6 +941,7 @@ class SimulationReportingMixin:
                             "inherited-discrete-gradient-radius-v1",
                             "inherited-affinity-routed-gradient-radius-v2",
                             "inherited-affinity-budgeted-gradient-radius-v3",
+                            "inherited-demand-gated-affinity-budgeted-gradient-radius-v4",
                         }
                         else [7]
                     ),
@@ -1434,11 +1437,20 @@ class SimulationReportingMixin:
         danger_evidence_metrics = danger_evidence_diagnostics(
             ent.alive, ent.genotype, self.cfg
         )
+        sensing_active = np.flatnonzero(ent.alive).astype(np.int32)
+        sensing_storage_room = storage_room_fraction(
+            ent,
+            sensing_active,
+            self.cfg,
+            genotype=ent.genotype[sensing_active],
+            gene_start=ParametricPolicy.physiology_gene_start(self.cfg),
+        )
         resource_sensing_metrics = resource_sensing_diagnostics(
             ent.alive,
             ent.genotype,
             self.cfg,
             resource_affinity_q=resource_affinity_quantized(ent.genotype, self.cfg),
+            storage_room_fraction=sensing_storage_room,
         )
         capacity_metrics = (
             capacity_diagnostics(
@@ -1949,6 +1961,16 @@ class SimulationReportingMixin:
                         "resource_sensing_allocated_extra_radius_mean"
                     ]
                 )
+            ),
+            "resource_sensing_open_storage_channel_count_mean": float(
+                resource_sensing_metrics[
+                    "resource_sensing_open_storage_channel_count_mean"
+                ]
+            ),
+            "resource_sensing_demand_fallback_fraction": float(
+                resource_sensing_metrics[
+                    "resource_sensing_demand_fallback_fraction"
+                ]
             ),
             "environment_process_schema": str(
                 self.environment.environment_process_metadata["schema"]

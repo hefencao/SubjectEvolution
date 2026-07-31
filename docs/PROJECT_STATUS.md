@@ -1,36 +1,38 @@
 # SE project status
 
-Version: **0.86.0**
+Version: **0.87.0**
 
 ## Current development direction
 
 Audit expansion remains paused. The active mainline follows `PROJECT_CHARTER`:
-effective environmental diversity, inherited carrier capability, and later
-ecology built from their interaction.
+effective environmental diversity, inherited carrier capability, conservative
+resource demand, and later ecology built from their interaction.
 
-## D1-F frozen calibration
+## D1-G frozen calibration
 
-The supplied D1-F result satisfies the registered shared-checkpoint,
-paired-randomness, genotype, resource-field, cost-preservation, and radius-one
-neutralization contracts. Paired living-count differences are +11, -20, and
--17; mean-energy differences are -0.019667, +0.014523, and +0.013636.
+The supplied D1-G result satisfies the shared-checkpoint, paired-randomness,
+genotype, resource-field, cost-preservation, radius-one, and fixed extra-radius
+budget contracts. Paired living-count differences are -3, -40, and -15; mean-
+energy differences are -0.089208, +0.090915, and +0.007554.
 
-This is less uniformly negative than D1-E but not a repeated positive ecological
-result. Source affinity specialization remains low (about 0.15–0.17), while the
-v2 capability concentrates all extra range into one winning channel.
+D1-G proves that multi-channel Hamilton allocation reaches the world-facing
+resource gradient while preserving inherited capacity and costs. It does not
+provide repeated positive consequences. Its source protocol has no conservative
+per-channel internal stores, so static affinity cannot express current resource
+demand.
 
-## Active D1-G capability
+## Active D1-H capability
 
-`inherited-affinity-budgeted-gradient-radius-v3` retains the same inherited
-capacity gene, radius levels, and maintenance/use/development costs. Every
-channel starts at radius one. Exactly `capacity - 1` additional integer radius
-units are apportioned across channels by inherited fixed-budget resource
-affinity using deterministic Hamilton allocation.
+`inherited-demand-gated-affinity-budgeted-gradient-radius-v4` combines the same
+inherited reach capacity with the existing conservative four-channel store.
+Affinity remains the inherited channel bias; quantized open store room gates its
+current expression. Both extra-radius allocation and aggregate gradient weights
+use the same fixed-budget demand weights.
 
-For a fixed genotype, D1-F and D1-G therefore have identical total extra radius
-and identical costs. D1-G changes only the distribution of that information
-budget and can preserve non-local evidence for more than one used resource
-channel.
+For every entity, the extra-radius sum remains `capacity - 1`, the observation
+weight sum remains the inherited affinity total, and all sensing costs remain
+based on inherited total capacity. Radius-one neutralization preserves genotype,
+stores, affinity, costs, resource fields, and paired random keys.
 
 ## Study execution and result storage
 
@@ -49,16 +51,16 @@ only in a disposable artifact tree.
 
 ## Current task
 
-Run the D1-G source and cost-preserving paired calibration. Confirm exact extra
-radius budget closure, multi-channel allocation, unchanged genotype-derived
-costs, and non-degenerate paired consequences. Do not add a threshold or
-post-hoc ecological interpretation.
+Run the D1-H source and cost-preserving paired calibration. Confirm conservative
+store demand, fixed observation-weight budget, exact extra-radius closure,
+unchanged genotype-derived costs, and non-degenerate paired consequences. Do
+not add a threshold or post-hoc ecological interpretation.
 
 ## Still incomplete
 
 - sufficiently independent persistent environmental axes;
-- repeated evidence that inherited channel-budget allocation supports
-  conditional outcomes;
+- repeated evidence that demand-gated inherited sensing supports conditional
+  outcomes;
 - coexistence, reversal, and removal tests required for a niche claim;
 - long-horizon selection interpretation;
 - device-resident action settlement, lifecycle, and graph updates.

@@ -103,7 +103,7 @@ from se.evolution.lifecycle import (
     plan_death_events,
 )
 from ..metrics import MetricsWriter
-from .resource_sensing import add_resource_sensing_operating_cost, effective_resource_sensing_radius, record_resource_sensing_development_cost
+from .resource_sensing import add_resource_sensing_operating_cost, effective_resource_sensing_observation, record_resource_sensing_development_cost
 from se.env.local_stress import LocalStressDiagnostics
 from ..event_cohort import EventCohortDiagnostics
 from se.subjects.succession import SubjectStructureDiagnostics
@@ -928,12 +928,13 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 if danger_evidence_enabled(cfg)
                 else None
             )
+            sensing_weights, sensing_radii = effective_resource_sensing_observation(
+                self, effective_resource_affinity_q, active=active,
+                storage_room_fraction=active_storage_room_fraction,
+            )
             resource_gradient, danger_gradient = self.environment.gradients_for_entities(
-                self.spatial.entity_cells,
-                ent.alive.size,
-                effective_resource_affinity_q,
-                effective_danger_evidence_q,
-                effective_resource_sensing_radius(self, effective_resource_affinity_q),
+                self.spatial.entity_cells, ent.alive.size, sensing_weights,
+                effective_danger_evidence_q, sensing_radii,
             )
             resource_gradient = augment_gradient_with_oxygen(self, resource_gradient)
             if cfg.knowledge.enabled and cfg.knowledge.learning_enabled:

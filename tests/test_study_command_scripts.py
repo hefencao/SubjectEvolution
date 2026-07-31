@@ -34,7 +34,7 @@ def test_study_workflows_are_declarative_and_renderable() -> None:
 
 def test_workflow_parameters_are_explicitly_overridable() -> None:
     path, workflow = load_workflow(
-        "studies/d1g_affinity_budgeted_resource_sensing_v1"
+        "studies/d1h_demand_gated_resource_sensing_v1"
     )
     command, values = resolve_step(
         path,

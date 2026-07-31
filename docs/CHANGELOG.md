@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.87.0
+
+- Freezes the D1-G three-seed calibration and records its fixed-budget but demand-blind limitation.
+- Adds `inherited-demand-gated-affinity-budgeted-gradient-radius-v4`, which combines inherited channel bias with quantized current conservative storage demand while preserving total observation weight, extra radius, and registered costs.
+- Adds the D1-H study using persistent multiscale resources and the existing resource-v5 conservative four-channel storage substrate.
+- Extends CPU/GPU semantics, diagnostics, checkpoint branches, and shared-checkpoint calibration outputs for demand-gated sensing.
+- Keeps audit expansion paused and updates project version to 0.87.0.
+
 ## v0.86.0
 
 - Freezes the supplied D1-F three-seed shared-checkpoint calibration; the strongest-channel branch is mixed rather than uniformly beneficial and remains outside ecological or selection claims.
