@@ -118,6 +118,50 @@ def _resolve_result_path(
         return str(resolved)
     raise ValueError("result bundle output must be outside the project tree")
 
+
+
+def _json_field(payload: Any, field: str) -> Any:
+    value = payload
+    for part in field.split("."):
+        if not isinstance(value, dict) or part not in value:
+            raise ValueError(f"JSON precondition field not found: {field!r}")
+        value = value[part]
+    return value
+
+
+def check_step_preconditions(step: dict[str, Any], values: dict[str, Any]) -> list[dict[str, Any]]:
+    results: list[dict[str, Any]] = []
+    for spec in step.get("requires_json", ()):
+        if not isinstance(spec, dict):
+            raise ValueError("requires_json entries must be tables")
+        raw_path = spec.get("path")
+        field = spec.get("field")
+        if not isinstance(raw_path, str) or not isinstance(field, str):
+            raise ValueError("requires_json entries require string path and field")
+        path = Path(raw_path.format_map(values))
+        if not path.is_absolute():
+            path = Path(values["project_root"]) / path
+        if not path.is_file():
+            raise ValueError(f"required JSON precondition is missing: {path}")
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        actual = _json_field(payload, field)
+        expected = spec.get("equals", True)
+        passed = actual == expected
+        result = {
+            "path": str(path),
+            "field": field,
+            "expected": expected,
+            "actual": actual,
+            "passed": passed,
+        }
+        results.append(result)
+        if not passed:
+            raise ValueError(
+                f"step precondition failed: {path}:{field} expected {expected!r}, got {actual!r}"
+            )
+    return results
+
+
 def _workflow_path(study: str | Path) -> Path:
     path = Path(study)
     if path.is_dir():
@@ -285,6 +329,7 @@ def describe(workflow_path: Path, workflow: dict[str, Any], step_name: str | Non
                 "description": step.get("description", ""),
                 "command": command,
                 "command_text": shlex.join(command),
+                "preconditions": step.get("requires_json", []),
                 "parameters": {
                     parameter: {
                         **workflow["parameters"][parameter],
@@ -308,6 +353,15 @@ def _print_description(data: dict[str, Any]) -> None:
                 f"  --{name.replace('_', '-')} <{spec.get('type', 'string')}>"
                 f" default={spec['resolved_default']!r}{choices}"
                 f" — {spec.get('description', '')}"
+            )
+        for precondition in step.get("preconditions", []):
+            print(
+                "  requires: "
+                + str(precondition.get("path"))
+                + ":"
+                + str(precondition.get("field"))
+                + " == "
+                + repr(precondition.get("equals", True))
             )
         print(f"  $ {step['command_text']}")
 
@@ -365,7 +419,8 @@ def main(argv: list[str] | None = None) -> None:
     try:
         overrides = _unknown_options(unknown)
         command, values = resolve_step(workflow_path, workflow, args.step, overrides)
-    except (ValueError, FileNotFoundError) as exc:
+        preconditions = check_step_preconditions(workflow["steps"][args.step], values)
+    except (ValueError, FileNotFoundError, json.JSONDecodeError) as exc:
         parser.error(str(exc))
     payload = {
         "study_id": workflow.get("study_id", workflow_path.parent.name),
@@ -374,6 +429,7 @@ def main(argv: list[str] | None = None) -> None:
         "command_text": shlex.join(command),
         "parameters": values,
         "dry_run": bool(args.dry_run),
+        "preconditions": preconditions,
     }
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))

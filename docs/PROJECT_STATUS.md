@@ -1,69 +1,64 @@
 # SE project status
 
-Version: **0.90.0**
+Version: **0.91.0**
 
 ## Current development direction
 
-Audit expansion remains paused. The active mainline follows `PROJECT_CHARTER`:
-effective environmental diversity, conservative multi-resource ecology,
-inherited carrier capability, and now explicit reproduction investment and
-offspring quality.
+Audit expansion remains paused. No new inherited capability is active. D1-K is
+terminated because its source population collapsed before adequate generational
+replacement. The active task is D1-L: qualify a healthy demographic substrate
+before another gene, cost, ablation, paired branch, or long evolutionary panel
+is introduced.
 
-## D1-J frozen calibration and sample boundary
+## D1-K terminal sample judgment
 
-The supplied D1-J exact shared-checkpoint panel is valid for wiring and acute
-mechanism calibration. Living-count differences are 0, -1, and 0; mean-energy
-differences are +0.002020, +0.021461, and -0.019991.
+The supplied D1-K source runs reach tick 720 with alive counts 12, 15, and 19.
+Cumulative births are 11, 14, and 21 from 160 founders; mean generation remains
+0.42, 0.27, and 0.58; living descendants per initial founder remain 0.025,
+0.025, and 0.056. All deaths are energy-depletion deaths.
 
-It is not an evolutionary sample. At tick 480 the three 500-founder source runs
-retain 53, 55, and 46 entities but contain only 8, 6, and 1 cumulative births.
-Mean living age is approximately 479, 458, and 480 ticks. More nested ticks from
-these same trajectories, or more measurements within their 120-tick branches,
-cannot replace independent multi-generation replication.
+The shared-checkpoint branches remain useful only as runtime and conservation
+contract evidence. The bottleneck makes ordinary effect sizes sensitive to a
+few survivor identities and drift. Gene-effect, ecological, selection, and
+adaptation interpretation is prohibited. Increasing seed count or extending
+these same trajectories is not an acceptable repair.
 
-## Active D1-K capability
+## D1-L execution substrate
 
-`inherited-conservative-offspring-investment-v2` activates morphology gene 6.
-The gene selects one of four energy transfers to the newborn. The parent pays
-that transfer plus explicit event overhead and must retain a configured reserve.
-The transfer is conservative; existing physiology and sensor development costs
-are then charged to the newborn. Larger investment therefore trades lower
-reproduction availability for higher offspring quality.
+D1-L adds no gene. `se-turnover-substrate-config` derives an explicit local
+source config from a study template with declared population, energy,
+maintenance, resource-throughput, and fixed reproduction-budget parameters.
+The generated file is validated and content hashed.
+The canonical sidecar preserves the full config filename, for example
+`source_config.json.manifest.json`; workflow preconditions and compact result
+packaging use that same path.
 
-The configured transfer levels are 0.6, 1.0, 1.4, and 1.8 energy, event overhead
-is 0.2, and parent reserve is 0.45. Mean parent debit across the four levels is
-1.4, matching the former fixed debit while replacing its hidden 45% newborn
-endowment and unreported dissipation with explicit semantics.
+`se-multi --source-health-contract` evaluates preregistered source checkpoints
+during execution. A failed checkpoint writes a termination record and stops the
+run; repeated failed seeds stop the remaining panel. The aggregate
+`source_health_gate.json` must authorize the next stage.
 
-`neutralize-conservative-offspring-endowment` dissipates the already-paid
-transfer while preserving genotype, inherited investment, parent debit, parent
-requirement, fertility debit, stores, resource fields, residue inventory,
-checkpoint state, and random keys.
+`se-study` workflow steps can declare JSON preconditions. A paired plan or
+longer stage therefore cannot run merely because checkpoint files exist.
 
-External same-channel resource recycling remains active because D1-J source
-trajectories also lose raw resources at store decay and death. A one-seed smoke
-shows that recycling or lower founder density alone does not create adequate
-generational turnover; D1-K therefore remains a three-seed substrate calibration.
+## Development-order rule
 
-## Study execution and result storage
-
-Operations remain declared in `studies/<study>/workflow.toml`. Compact results
-require the project-external directory configured in `.se-workspace.toml`.
-Local iteration history under `docs/迭代/` is not part of version or Conda
-validation; release packaging retains only the current note.
+1. Qualify a healthy substrate without the proposed capability.
+2. Attach the capability at a cost bounded against the qualified energy budget.
+3. For combination-dependent mechanisms, allow an explicit maturation window.
+4. Recheck source health before paired or evolutionary measurement.
+5. Treat fast decline as a named screening mode only; never as evolutionary evidence.
 
 ## Current task
 
-Run the D1-K three-seed source to tick 720 and the 240-tick shared-checkpoint
-offspring-endowment neutralization. Report births per initial founder, living
-founder/descendant fractions, mean and maximum generation, parent concentration,
-and branch demographic/energy effects. Do not promote to an evolutionary panel
-unless new independent source trajectories show repeated descendant replacement.
+Run only the D1-L 240-tick qualification panel. Do not create another paired
+plan or add another gene until all three independent seeds pass population,
+descendant, generation, founder, and trajectory-stability requirements.
 
 ## Still incomplete
 
-- a source ecology with sustained multi-generation replacement;
-- independent-seed evolutionary evidence for reproduction-investment frequencies;
-- repeated conditional outcomes from storage and conversion opportunity costs;
-- coexistence, reversal, and removal tests required for a niche claim;
-- device-resident action settlement, lifecycle, and graph updates.
+- a repeated healthy multi-generation substrate;
+- a calibrated capability-cost budget tied to per-capita energy throughput;
+- a combination-maturation protocol;
+- independent evolutionary evidence for any D1 inherited allocation;
+- coexistence, reversal, and removal tests required for a niche claim.

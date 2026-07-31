@@ -1,0 +1,54 @@
+{
+  "schema": "d1k-source-collapse-decision-v1",
+  "decision": "terminate-source-collapse",
+  "effect_interpretation_authorized": false,
+  "paired_branch_effect_interpretation_authorized": false,
+  "reason": "All source panels reached the planned checkpoint under severe demographic bottleneck with insufficient multi-generation replacement. Paired branches are retained only as runtime/contract evidence.",
+  "source_seed_summaries": [
+    {
+      "tick": 720,
+      "alive": 12,
+      "births_total": 11,
+      "deaths_total": 159,
+      "mean_energy": 0.9292910695075989,
+      "mean_generation": 0.4166666666666667,
+      "max_generation": 2,
+      "founder_alive_fraction": 0.6666666666666666,
+      "descendant_alive_fraction": 0.3333333333333333,
+      "cumulative_births_per_initial": 0.06875,
+      "living_descendants_per_initial": 0.025,
+      "seed": 90001
+    },
+    {
+      "tick": 720,
+      "alive": 15,
+      "births_total": 14,
+      "deaths_total": 159,
+      "mean_energy": 1.0287474393844604,
+      "mean_generation": 0.26666666666666666,
+      "max_generation": 1,
+      "founder_alive_fraction": 0.7333333333333333,
+      "descendant_alive_fraction": 0.26666666666666666,
+      "cumulative_births_per_initial": 0.0875,
+      "living_descendants_per_initial": 0.025,
+      "seed": 90002
+    },
+    {
+      "tick": 720,
+      "alive": 19,
+      "births_total": 21,
+      "deaths_total": 162,
+      "mean_energy": 0.6712040901184082,
+      "mean_generation": 0.5789473684210527,
+      "max_generation": 2,
+      "founder_alive_fraction": 0.5263157894736842,
+      "descendant_alive_fraction": 0.47368421052631576,
+      "cumulative_births_per_initial": 0.13125,
+      "living_descendants_per_initial": 0.05625,
+      "seed": 90003
+    }
+  ],
+  "minimum_alive": 12,
+  "maximum_alive": 19,
+  "next_action": "qualify a healthy generational substrate before adding or evaluating another inherited capability"
+}

@@ -103,6 +103,7 @@ from se.evolution.lifecycle import (
     plan_death_events,
 )
 from ..metrics import MetricsWriter
+from .termination import write_run_termination
 from .resource_sensing import add_resource_sensing_operating_cost, effective_resource_sensing_observation, record_resource_sensing_development_cost
 from .reproduction import (
     reproduction_energy_cost,
@@ -2252,20 +2253,10 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 time.perf_counter() - evaluation_started
             )
         return stats
-    def run(
-        self,
-        until_tick: int | None = None,
-        *,
-        tick_observer: Callable[["Simulation", StepStats | None], None] | None = None,
-    ) -> dict[str, object]:
-        """Advance to an absolute tick and finalize this run's outputs.
-        ``until_tick`` is absolute rather than a step count so a simulation
-        can be advanced to a counterfactual branch point with ``step()`` and
-        then finish at the configured horizon without extending the run.
-        ``tick_observer`` is an experiment-only, read-only observation hook. It
-        is called once at the starting checkpoint with ``stats=None`` and after
-        every authoritative step. The default remains ``None`` and therefore
-        cannot change historical trajectories or runtime semantics.
+    def run(self, until_tick: int | None = None, *, tick_observer: Callable[["Simulation", StepStats | None], None] | None = None, stop_condition: Callable[["Simulation"], str | None] | None = None) -> dict[str, object]:
+        """Advance to an absolute tick and finalize outputs.
+        Observers are read-only; a stop condition may terminate cleanly after an
+        authoritative step without authorizing scientific-effect interpretation.
         """
         target_tick = self.cfg.run.ticks if until_tick is None else int(until_tick)
         if target_tick < self.tick:
@@ -2281,6 +2272,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         last_stats: StepStats | None = None
         last_step_seconds = 0.0
         previous_defer_gpu_field_sync = self._defer_gpu_field_sync
+        termination_reason: str | None = None
         if self.gpu_runtime is not None:
             self._defer_gpu_field_sync = True
         try:
@@ -2317,15 +2309,17 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                         f"step={elapsed:.3f}s window_avg={final_row['window_seconds_per_tick']:.3f}s "
                         f"wall={final_row['wall_elapsed_seconds']:.1f}s"
                     )
-                    # Start the next window before output/checkpoint work so
-                    # its average includes the non-step costs users observe.
                     window_started = reported_at
                     window_start_tick = self.tick
                 periodic_checkpoint = self.tick % self.cfg.run.checkpoint_period == 0
                 exact_checkpoint = self.tick in self.cfg.run.checkpoint_ticks
                 if periodic_checkpoint or exact_checkpoint:
                     self._checkpoint()
+                reason = stop_condition(self) if stop_condition is not None else None
+                if reason:
+                    termination_reason = str(reason); break
                 if not np.any(self.entities.alive):
+                    termination_reason = "population-extinct"
                     break
             if not final_row or int(final_row["tick"]) != self.tick:
                 reported_at = time.perf_counter()
@@ -2420,8 +2414,15 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 "harvest_attempts": self.autonomy_harvest_attempts,
                 "harvest_successes": self.autonomy_harvest_successes,
             }
+        termination = write_run_termination(
+            self.output_dir,
+            requested_tick=target_tick,
+            completed_tick=self.tick,
+            reason=termination_reason,
+        )
         metadata = {
             "version": __version__,
+            "termination": termination,
             "execution_backend": self.execution_backend,
             "gpu_semantics_mode": self.gpu_semantics_mode,
             "gpu_device_validated": self.gpu_device_validated,
@@ -2492,5 +2493,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         (self.output_dir / "run_metadata.json").write_text(
             json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8"
         )
+        final_row["termination"] = termination
         return final_row
 __all__ = ["Simulation"]

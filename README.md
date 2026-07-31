@@ -1,22 +1,17 @@
-# SE v0.90
+# SE v0.91
 
 Reference implementation for nested-subject existence and ecological evolution
 simulation.
 
 ## Current direction
 
-Audit expansion remains paused. The active mainline follows
-[`PROJECT_CHARTER`](docs/PROJECT_CHARTER.md): establish effective environmental
-diversity, conservative life-cycle closure, and costed inherited carrier
-capabilities before ecological or social claims.
-
-D1-J is frozen as a valid fixed-storage substrate calibration. Its three source
-seeds contain only 1--8 births by tick 480 and remain founder-dominated, so the
-existing sample and horizon are not evolutionary evidence. v0.90 adds D1-K:
-an inherited, conservative parent-to-offspring energy investment with explicit
-event overhead and parent reserve, composed with same-channel external resource
-recycling. The first panel is still a generational-substrate calibration, not a
-selection experiment.
+Audit expansion remains paused. D1-K is terminated as a source-collapse run:
+its tick-720 sources retain only 12--19 entities and do not authorize gene,
+ecology, or evolution interpretation. v0.91 adds no inherited capability. The
+active task is D1-L, a short, parameterized demographic-substrate qualification
+with staged early-stop health gates. Paired or longer stages are blocked until
+independent sources retain adequate population scale, living descendants, and
+generational turnover without checkpoint-to-checkpoint collapse.
 
 ## Workspace layout
 
@@ -49,8 +44,8 @@ Study operations are declared in `workflow.toml`, not executable shell files.
 After editable installation:
 
 ```text
-se-study show studies/d1k_conservative_reproductive_investment_v1
-se-study run studies/d1k_conservative_reproductive_investment_v1 source-pilot --dry-run
+se-study show studies/d1l_turnover_substrate_v1
+se-study run studies/d1l_turnover_substrate_v1 prepare-config --dry-run
 ```
 
 Every parameter is declared and can be overridden explicitly. The resolved argv
@@ -76,4 +71,4 @@ runtime results are never included.
 - [Governance principles](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.90 D1-K iteration](docs/迭代/v0.90_D1-K_保守亲代投入与代际周转基底.md)
+- [v0.91 D1-L iteration](docs/迭代/v0.91_D1-L_健康代际周转基底与源运行硬门.md)

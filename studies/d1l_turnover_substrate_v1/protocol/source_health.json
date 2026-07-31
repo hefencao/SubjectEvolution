@@ -1,0 +1,29 @@
+{
+  "schema": "source-health-contract-v1",
+  "purpose": "Qualify demographic and generational turnover before any new inherited capability or paired branch is authorized.",
+  "required_ready_seed_count": 3,
+  "stop_panel_after_failed_seed_count": 2,
+  "paired_plan_authorized_only_when_ready": true,
+  "checkpoints": [
+    {
+      "tick": 120,
+      "minimum_alive_count": 80,
+      "minimum_alive_fraction_to_initial": 0.5,
+      "minimum_cumulative_births_per_initial": 0.15,
+      "minimum_living_descendants_per_initial": 0.05,
+      "minimum_mean_generation": 0.05,
+      "maximum_founder_alive_fraction": 0.95,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 1.0
+    },
+    {
+      "tick": 240,
+      "minimum_alive_count": 80,
+      "minimum_alive_fraction_to_initial": 0.5,
+      "minimum_cumulative_births_per_initial": 0.3,
+      "minimum_living_descendants_per_initial": 0.1,
+      "minimum_mean_generation": 0.15,
+      "maximum_founder_alive_fraction": 0.85,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.35
+    }
+  ]
+}

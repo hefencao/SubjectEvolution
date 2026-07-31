@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.91.0
+
+- Terminates D1-K as `source-collapse`; alive 12--19 and founder-dominated sources do not authorize paired-effect or evolutionary interpretation.
+- Adds a staged source-health execution contract with early clean termination and panel-level fail-fast behavior.
+- Adds JSON workflow preconditions so failed source health blocks paired and longer stages.
+- Adds parameterized D1-L substrate config preparation without introducing a new inherited capability.
+- Records the development-order rule: healthy substrate, bounded capability cost, combination maturation, then effect measurement.
+- Keeps post-run audit expansion paused; the new gate is an execution precondition and has no feedback to the world.
+
 ## v0.90.0
 
 - Freezes D1-J as a valid acute storage-allocation calibration and records that its three tick-480 source trajectories are founder-dominated with only 1--8 births.

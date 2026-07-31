@@ -52,11 +52,16 @@ description = "Include checkpoint bytes for exact replay."
 
 [steps.source-pilot]
 description = "Run the three-seed conservative parental-investment source calibration."
-command = ["se-multi", "--config", "{study_dir}/protocol/source_pilot.json", "--seeds", "{seeds}", "--output", "{source_root}", "--backend", "{backend}", "--until-tick", "{checkpoint_tick}", "--checkpoint-ticks", "{checkpoint_tick}", "--skip-post-run-audits"]
+command = ["se-multi", "--config", "{study_dir}/protocol/source_pilot.json", "--seeds", "{seeds}", "--output", "{source_root}", "--backend", "{backend}", "--until-tick", "{checkpoint_tick}", "--checkpoint-ticks", "{checkpoint_tick}", "--source-health-contract", "{study_dir}/protocol/source_health.json", "--skip-post-run-audits"]
+
+[steps.source-health]
+description = "Qualify the source before any paired branch; failure terminates effect interpretation."
+command = ["se-source-health-gate", "--source-root", "{source_root}", "--contract", "{study_dir}/protocol/source_health.json", "--output", "{analysis_root}/source_health_gate.json"]
 
 [steps.paired-plan]
 description = "Create the cost-preserving offspring-endowment neutralization plan."
 command = ["se-d1-reproduction-investment-plan", "--source-root", "{source_root}", "--checkpoint-tick", "{checkpoint_tick}", "--horizon", "{horizon}", "--runtime-root", "{runtime_root}", "--output", "{analysis_root}/paired_plan.json"]
+requires_json = [{ path = "{analysis_root}/source_health_gate.json", field = "paired_plan_authorized", equals = true }]
 
 [steps.paired-run]
 description = "Execute endowment-active and endowment-neutral shared-checkpoint branches."

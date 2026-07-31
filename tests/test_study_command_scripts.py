@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from se.cmd.study import (
+    check_step_preconditions,
     configure_result_bundle_dir,
     describe,
     load_workflow,
@@ -99,3 +100,24 @@ def test_result_bundle_directory_cannot_be_inside_project(tmp_path: Path) -> Non
     _write_minimal_workflow(project)
     with pytest.raises(ValueError, match="outside the project tree"):
         configure_result_bundle_dir(project, project / "results")
+
+
+def test_workflow_json_precondition_blocks_failed_source(tmp_path: Path) -> None:
+    project = tmp_path / "project"
+    workflow_path = _write_minimal_workflow(project)
+    path, workflow = load_workflow(workflow_path)
+    gate = project / "gate.json"
+    gate.write_text('{"paired_plan_authorized": false}', encoding="utf-8")
+    workflow["steps"]["pack-results"]["requires_json"] = [
+        {
+            "path": str(gate),
+            "field": "paired_plan_authorized",
+            "equals": True,
+        }
+    ]
+    _, values = resolve_step(
+        path, workflow, "pack-results", allow_unconfigured_result=True
+    )
+    with pytest.raises(ValueError, match="precondition failed"):
+        check_step_preconditions(workflow["steps"]["pack-results"], values)
+

@@ -22,6 +22,12 @@ _METADATA_NAMES = {
     "summary.json",
     "multi_seed_summary.json",
     "progress_summary.json",
+    "multi_seed_index.json",
+    "source_health_gate.json",
+    "source_health_gate.md",
+    "source_health_runtime_events.json",
+    "long_run_analysis.json",
+    "long_run_analysis.md",
 }
 
 
@@ -49,6 +55,7 @@ def build_bundle(
     study_root: Path,
     analysis_roots: list[Path],
     runtime_roots: list[Path],
+    required_files: list[Path],
     output: Path,
     include_checkpoints: bool,
 ) -> dict[str, object]:
@@ -80,6 +87,10 @@ def build_bundle(
     for root in runtime_roots:
         for path in _collect_runtime(root, include_checkpoints=include_checkpoints):
             add(path)
+    for path in required_files:
+        if not path.is_file():
+            raise FileNotFoundError(f"required result file is missing: {path}")
+        add(path)
 
     files: list[dict[str, object]] = []
     payloads: dict[str, bytes] = {}
@@ -125,6 +136,7 @@ def main() -> None:
     parser.add_argument("--study-root", required=True)
     parser.add_argument("--analysis-root", action="append", default=[])
     parser.add_argument("--runtime-root", action="append", default=[])
+    parser.add_argument("--required-file", action="append", default=[])
     parser.add_argument("--output", required=True)
     parser.add_argument("--include-checkpoints", action="store_true")
     args = parser.parse_args()
@@ -134,6 +146,7 @@ def main() -> None:
         study_root=Path(args.study_root),
         analysis_roots=[Path(value) for value in args.analysis_root],
         runtime_roots=[Path(value) for value in args.runtime_root],
+        required_files=[Path(value) for value in args.required_file],
         output=Path(args.output),
         include_checkpoints=bool(args.include_checkpoints),
     )

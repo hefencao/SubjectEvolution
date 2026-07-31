@@ -164,3 +164,23 @@ Each parameter requires a type, default, and description. `se-study show` must
 render the exact argv before execution, and `se-study run` must invoke it without
 a shell. Result packaging is a named workflow step with explicit output and
 checkpoint parameters.
+
+## 12. Healthy-source and capability-affordability precondition
+
+A new inherited capability may not be evaluated on a source that is already in
+rapid demographic collapse. Before a paired, replication, or evolutionary
+stage, the source must pass preregistered checks for absolute and relative
+population size, cumulative births, living descendants, generation depth,
+founder replacement, and checkpoint-to-checkpoint stability.
+
+A failed source-health gate terminates the chain. The resulting files may prove
+runtime, conservation, or intervention wiring, but cannot be mined for gene,
+ecology, selection, or adaptation effects. More nested ticks and more analysis
+windows do not repair a failed source.
+
+Capability design must state its structural, use, development, and combination
+maturation costs against a qualified per-capita energy budget. When positive
+returns require a gene combination or multiple generations, the protocol must
+include an explicit maturation window before measurement. Rapid population
+loss is allowed only in a study declared in advance as a fast screen, and such a
+study cannot authorize evolutionary claims.

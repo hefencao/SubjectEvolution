@@ -11,6 +11,7 @@ import shutil
 
 from ..cfg import load_config
 from se.analysis.long_run import analyze, render_markdown
+from se.analysis.source_health import RuntimeHealthGate, build_report as build_source_health_report, load_contract as load_source_health_contract, render_markdown as render_source_health_markdown
 from se.analysis.exploration_protocol import validate_multi_seed_invocation
 from se.analysis.exploration_readiness import (
     build_audit as build_exploration_readiness,
@@ -54,6 +55,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--overwrite-partial",
         action="store_true",
         help="Delete and restart an incomplete seed directory.",
+    )
+    parser.add_argument(
+        "--source-health-contract",
+        help="Execution precondition contract with staged early-stop thresholds.",
     )
     parser.add_argument(
         "--skip-post-run-audits",
@@ -107,6 +112,11 @@ def main() -> None:
         raise ValueError(
             f"checkpoint-ticks includes {checkpoint_ticks[-1]} beyond final tick {target_tick}"
         )
+    source_health_contract = (
+        load_source_health_contract(args.source_health_contract)
+        if args.source_health_contract
+        else None
+    )
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
     exploration_plan = None
@@ -139,6 +149,12 @@ def main() -> None:
         "failed_or_partial_seed_replaced_by_outcome": False,
         "overwrite_partial_requires_explicit_flag": True,
         "automatic_long_run_analysis": True,
+        "source_health_contract": (
+            str(Path(args.source_health_contract)) if args.source_health_contract else None
+        ),
+        "source_health_gate_mode": (
+            "staged-execution-precondition" if source_health_contract else "disabled"
+        ),
         "automatic_selection_validity_audit": not args.skip_post_run_audits,
         "post_run_audit_mode": (
             "paused-by-explicit-invocation"
@@ -173,7 +189,8 @@ def main() -> None:
     progress_paths: list[Path] = []
     auditable_runs: list[tuple[str, Path]] = []
     index: list[dict[str, object]] = []
-    for seed in seeds:
+    source_health_failed_seed_count = 0
+    for seed_index, seed in enumerate(seeds):
         run_cfg = replace(
             base,
             run=replace(
@@ -238,26 +255,80 @@ def main() -> None:
         resolved = json.dumps(asdict(run_cfg), ensure_ascii=False, indent=2)
         (run_dir / "resolved_config.json").write_text(resolved, encoding="utf-8")
         simulation = Simulation(run_cfg, run_dir, backend=args.backend)
-        final = simulation.run(until_tick=target_tick)
+        runtime_health_gate = (
+            RuntimeHealthGate(
+                source_health_contract,
+                run_dir / "source_health_runtime_events.json",
+            )
+            if source_health_contract is not None
+            else None
+        )
+        final = simulation.run(
+            until_tick=target_tick,
+            stop_condition=runtime_health_gate,
+        )
         progress = run_dir / "evolution_progress.jsonl"
         progress_value: str | None = None
         if progress.is_file():
             progress_paths.append(progress)
             auditable_runs.append((f"seed_{seed}", run_dir))
             progress_value = str(progress)
+        termination = final.get("termination") if isinstance(final, dict) else None
+        final_tick = int(final.get("tick", target_tick))
+        terminated_early = bool(
+            isinstance(termination, dict) and termination.get("terminated_early")
+        )
+        source_health_failed = bool(
+            isinstance(termination, dict)
+            and str(termination.get("reason", "")).startswith("source-health-gate:")
+        )
         index.append(
             {
                 "seed": seed,
                 "output": str(run_dir),
-                "final_tick": target_tick,
+                "final_tick": final_tick,
                 "alive": int(final.get("alive", 0)),
                 "evolution_progress": progress_value,
-                "status": "completed" if progress_value else "completed-no-progress",
+                "termination": termination,
+                "status": (
+                    "failed-source-health-gate"
+                    if source_health_failed
+                    else ("terminated-early" if terminated_early else ("completed" if progress_value else "completed-no-progress"))
+                ),
             }
         )
         (output / "multi_seed_index.json").write_text(
             json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8"
         )
+        if (
+            source_health_contract is not None
+            and source_health_failed
+        ):
+            source_health_failed_seed_count += 1
+            if source_health_failed_seed_count >= source_health_contract.stop_panel_after_failed_seed_count:
+                for remaining_seed in seeds[seed_index + 1 :]:
+                    index.append(
+                        {
+                            "seed": remaining_seed,
+                            "output": str(output / f"seed_{remaining_seed}"),
+                            "final_tick": 0,
+                            "alive": 0,
+                            "evolution_progress": None,
+                            "termination": {
+                                "schema": "run-termination-v1",
+                                "requested_tick": target_tick,
+                                "completed_tick": 0,
+                                "terminated_early": True,
+                                "reason": "source-health-panel-stop",
+                                "scientific_effect_interpretation_authorized": False,
+                            },
+                            "status": "not-run-source-health-panel-stop",
+                        }
+                    )
+                (output / "multi_seed_index.json").write_text(
+                    json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8"
+                )
+                break
     missing_progress = [
         item["seed"] for item in index if item.get("evolution_progress") is None
     ]
@@ -357,10 +428,30 @@ def main() -> None:
                 else "no selection-validity audit was available"
             ),
         }
+    if source_health_contract is not None:
+        source_health_report = build_source_health_report(output, source_health_contract)
+        (output / "source_health_gate.json").write_text(
+            json.dumps(source_health_report, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        (output / "source_health_gate.md").write_text(
+            render_source_health_markdown(source_health_report),
+            encoding="utf-8",
+        )
+        report["source_health_gate"] = {
+            "ready": source_health_report["ready"],
+            "ready_seed_count": source_health_report["ready_seed_count"],
+            "seed_count": source_health_report["seed_count"],
+            "paired_plan_authorized": source_health_report["paired_plan_authorized"],
+            "interpretation": source_health_report["interpretation"],
+        }
+        markdown += "\n" + render_source_health_markdown(source_health_report)
     (output / "long_run_analysis.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     (output / "long_run_analysis.md").write_text(markdown, encoding="utf-8")
+    if source_health_contract is not None and not source_health_report["ready"]:
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":

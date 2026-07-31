@@ -168,3 +168,12 @@ the hidden legacy newborn fraction as a parameter tweak. The first D1-K panel
 remains calibration only. Evolutionary interpretation requires new independent
 seeds whose source trajectories already contain repeated descendant replacement;
 longer founder-dominated runs do not satisfy that requirement.
+
+## D1-K source collapse invalidates ordinary effect interpretation
+
+The supplied D1-K sources reach tick 720 with only 12--19 living entities,
+0.27--0.58 mean generation, and 2.5%--5.6% living descendants per initial
+founder. The later paired branches are bottleneck dominated. Retain them only
+for runtime and conservation-contract evidence. Do not increase analysis depth,
+seed count, or horizon on the same source construction. D1-L must first qualify
+a healthy generational substrate.

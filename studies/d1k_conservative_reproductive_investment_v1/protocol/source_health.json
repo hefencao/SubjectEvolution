@@ -1,0 +1,39 @@
+{
+  "schema": "source-health-contract-v1",
+  "purpose": "Prevent offspring-investment paired branches from starting after source collapse.",
+  "required_ready_seed_count": 3,
+  "stop_panel_after_failed_seed_count": 2,
+  "paired_plan_authorized_only_when_ready": true,
+  "checkpoints": [
+    {
+      "tick": 240,
+      "minimum_alive_count": 80,
+      "minimum_alive_fraction_to_initial": 0.5,
+      "minimum_cumulative_births_per_initial": 0.2,
+      "minimum_living_descendants_per_initial": 0.08,
+      "minimum_mean_generation": 0.1,
+      "maximum_founder_alive_fraction": 0.9,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 1.0
+    },
+    {
+      "tick": 480,
+      "minimum_alive_count": 64,
+      "minimum_alive_fraction_to_initial": 0.4,
+      "minimum_cumulative_births_per_initial": 0.5,
+      "minimum_living_descendants_per_initial": 0.15,
+      "minimum_mean_generation": 0.4,
+      "maximum_founder_alive_fraction": 0.7,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.35
+    },
+    {
+      "tick": 720,
+      "minimum_alive_count": 64,
+      "minimum_alive_fraction_to_initial": 0.4,
+      "minimum_cumulative_births_per_initial": 1.0,
+      "minimum_living_descendants_per_initial": 0.25,
+      "minimum_mean_generation": 1.0,
+      "maximum_founder_alive_fraction": 0.5,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.25
+    }
+  ]
+}
