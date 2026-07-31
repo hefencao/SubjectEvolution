@@ -204,3 +204,87 @@ def test_sensing_ablation_requires_enabled_capacity(tmp_path: Path) -> None:
         simulation.metrics.close()
         simulation.evolution_progress.close()
         simulation.knowledge.close()
+
+
+def test_channel_routed_sensing_extends_only_strongest_affinity_channel() -> None:
+    from se.env.niches import AFFINITY_SCALE
+    from se.env.resource_sensing import resource_sensing_channel_radii
+
+    cfg = replace(
+        sensing_cfg(),
+        environment=replace(
+            sensing_cfg().environment,
+            schema="orthogonal-four-resource-niche-v1",
+        ),
+        entities=replace(
+            sensing_cfg().entities,
+            resource_affinity_schema="normalized-four-resource-affinity-v1",
+            resource_affinity_strength=0.75,
+            resource_affinity_min_efficiency=0.25,
+            resource_affinity_max_efficiency=1.75,
+            resource_sensing_schema="inherited-affinity-routed-gradient-radius-v2",
+        ),
+    )
+    validate_config(cfg)
+    genotype = np.zeros((3, ParametricPolicy.genome_size_for_config(cfg)), dtype=np.float32)
+    genotype[:, 7] = 1.0
+    affinity = np.asarray(
+        [
+            [2 * AFFINITY_SCALE, AFFINITY_SCALE, AFFINITY_SCALE, 0],
+            [AFFINITY_SCALE, 3 * AFFINITY_SCALE, 0, 0],
+            [AFFINITY_SCALE, AFFINITY_SCALE, AFFINITY_SCALE, AFFINITY_SCALE],
+        ],
+        dtype=np.int32,
+    )
+    radii = resource_sensing_channel_radii(
+        genotype, cfg, resource_affinity_q=affinity
+    )
+    assert radii.tolist() == [[4, 1, 1, 1], [1, 4, 1, 1], [4, 1, 1, 1]]
+    assert resource_sensing_energy(genotype, cfg).tolist() == pytest.approx(
+        [0.004, 0.004, 0.004]
+    )
+
+
+def test_channel_routed_gradient_preserves_local_other_channels() -> None:
+    cfg = replace(
+        sensing_cfg(),
+        environment=replace(
+            sensing_cfg().environment,
+            schema="orthogonal-four-resource-niche-v1",
+        ),
+        entities=replace(
+            sensing_cfg().entities,
+            resource_affinity_schema="normalized-four-resource-affinity-v1",
+            resource_affinity_strength=0.75,
+            resource_affinity_min_efficiency=0.25,
+            resource_affinity_max_efficiency=1.75,
+            resource_sensing_schema="inherited-affinity-routed-gradient-radius-v2",
+        ),
+    )
+    host = Environment(cfg)
+    yy, xx = np.mgrid[0 : cfg.world.grid_y, 0 : cfg.world.grid_x]
+    for channel in range(4):
+        host.resources[channel] = (
+            (channel + 1) * xx.astype(np.float32) ** 2
+            + yy.astype(np.float32)
+        )
+    cells = np.full(cfg.world.max_entities, -1, dtype=np.int32)
+    cells[0] = 8 * cfg.world.grid_x + 8
+    affinity = np.full((cfg.world.max_entities, 4), 4096, dtype=np.int32)
+    affinity[0] = np.asarray([8192, 4096, 4096, 0], dtype=np.int32)
+    radii = np.ones((cfg.world.max_entities, 4), dtype=np.int16)
+    radii[0] = np.asarray([4, 1, 1, 1], dtype=np.int16)
+    gradient, _ = host.gradients_for_entities(
+        cells,
+        cfg.world.max_entities,
+        resource_affinity_q=affinity,
+        resource_sensing_radius=radii,
+    )
+    assert np.isfinite(gradient[0][0])
+    with pytest.raises(ValueError, match="shaped"):
+        host.gradients_for_entities(
+            cells,
+            cfg.world.max_entities,
+            resource_affinity_q=affinity,
+            resource_sensing_radius=np.ones((cfg.world.max_entities, 3), dtype=np.int16),
+        )

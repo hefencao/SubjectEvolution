@@ -933,7 +933,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 ent.alive.size,
                 effective_resource_affinity_q,
                 effective_danger_evidence_q,
-                effective_resource_sensing_radius(self),
+                effective_resource_sensing_radius(self, effective_resource_affinity_q),
             )
             resource_gradient = augment_gradient_with_oxygen(self, resource_gradient)
             if cfg.knowledge.enabled and cfg.knowledge.learning_enabled:

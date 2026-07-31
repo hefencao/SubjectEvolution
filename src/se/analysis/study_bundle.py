@@ -511,7 +511,7 @@ def _render_run_chain_text(study: dict[str, Any], chain: dict[str, Any]) -> str:
         f"Study schema: `{study['schema']}`",
         f"Chain schema: `{chain['schema']}`",
         "",
-        "This file summarizes immutable evidence only. Executable next-stage commands, when authorized, are kept in a separate numerically ordered `commands/` directory.",
+        "This file summarizes immutable evidence only. Authorized operations are declared in `workflow.toml` and rendered by `se-study`; no executable shell runbook is required.",
         "",
         "## Design",
         "",
@@ -566,7 +566,7 @@ def _render_run_chain_text(study: dict[str, Any], chain: dict[str, Any]) -> str:
             "- intervention branches belong under `runs/interventions/`;",
             "- derived assessments and audits belong under `analyses/`;",
             "- mutable workspace decision overlays belong under `state/decisions/`;",
-            "- this study directory contains only protocol, commands and frozen evidence.",
+            "- this study directory contains protocol, a declarative workflow, and frozen evidence.",
             "",
         ]
     )
@@ -871,8 +871,7 @@ def _write_deterministic_zip(archive: Path, root: Path, relative_paths: Sequence
                 relative.as_posix(), date_time=(1980, 1, 1, 0, 0, 0)
             )
             info.compress_type = zipfile.ZIP_DEFLATED
-            mode = 0o100755 if relative.parts[0] == "commands" else 0o100644
-            info.external_attr = mode << 16
+            info.external_attr = 0o100644 << 16
             bundle.writestr(info, path.read_bytes())
     temporary.replace(archive)
 
@@ -912,9 +911,7 @@ def export_study_result(
     frozen_files = sorted(
         path for path in (study_dir / "frozen").rglob("*") if path.is_file()
     )
-    command_files = sorted(
-        path for path in (study_dir / "commands").rglob("*") if path.is_file()
-    )
+    workflow_files = [Path("workflow.toml")] if (study_dir / "workflow.toml").is_file() else []
     document_paths = [
         Path(name)
         for name in ("study.json", "README.md", "DESIGN.md", "RUN_CHAIN.md")
@@ -923,7 +920,7 @@ def export_study_result(
     payload_paths = [
         *document_paths,
         *(Path("protocol") / path.relative_to(study_dir / "protocol") for path in protocol_files),
-        *(Path("commands") / path.relative_to(study_dir / "commands") for path in command_files),
+        *workflow_files,
         *(Path("frozen") / path.relative_to(study_dir / "frozen") for path in frozen_files),
     ]
     with tempfile.TemporaryDirectory(prefix="se-study-result-export-", dir=root) as temp_name:

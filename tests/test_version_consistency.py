@@ -1,13 +1,12 @@
 from pathlib import Path
 from scripts.check_version_consistency import check
 
-ROOT=Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[1]
 
-def test_version_sources_and_version_docs_agree() -> None:
-    report=check(ROOT)
-    assert report['passed']
-    assert report['version']=='0.84.0'
-    assert report['expected_version_docs']=='docs/v0.84'
-    assert report['current_version_docs_present'] is True
-    assert report['stale_version_docs']==[]
-    assert report['version_specific_docs']==['docs/v0.84']
+def test_version_sources_agree_without_inspecting_local_iteration_history() -> None:
+    report = check(ROOT)
+    assert report["passed"]
+    assert report["version"] == "0.85.0"
+    assert report["package_version"] == "0.85.0"
+    assert report["status_version"] == "0.85.0"
+    assert report["iteration_docs_checked"] is False

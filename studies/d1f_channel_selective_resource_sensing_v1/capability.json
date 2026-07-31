@@ -1,0 +1,13 @@
+{
+  "schema": "inherited-affinity-routed-gradient-radius-v2",
+  "capacity_gene_index": 7,
+  "routing_genes": [1, 2, 3, 4],
+  "resource_channels": 4,
+  "extended_channel_count": 1,
+  "other_channel_radius": 1,
+  "cost_basis": "inherited reach capacity; unchanged by channel routing or ablation",
+  "ablation": "neutralize-resource-sensing-radius",
+  "pass_fail_gate": false,
+  "ecological_claim_authorized": false,
+  "selection_claim_authorized": false
+}

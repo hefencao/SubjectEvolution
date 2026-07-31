@@ -925,13 +925,19 @@ class SimulationReportingMixin:
                     "resource_sensing_radius": (
                         7
                         if self.cfg.entities.resource_sensing_schema
-                        == "inherited-discrete-gradient-radius-v1"
+                        in {
+                            "inherited-discrete-gradient-radius-v1",
+                            "inherited-affinity-routed-gradient-radius-v2",
+                        }
                         else None
                     ),
                     "reserved_neutral": (
                         []
                         if self.cfg.entities.resource_sensing_schema
-                        == "inherited-discrete-gradient-radius-v1"
+                        in {
+                            "inherited-discrete-gradient-radius-v1",
+                            "inherited-affinity-routed-gradient-radius-v2",
+                        }
                         else [7]
                     ),
                 },
@@ -1427,7 +1433,10 @@ class SimulationReportingMixin:
             ent.alive, ent.genotype, self.cfg
         )
         resource_sensing_metrics = resource_sensing_diagnostics(
-            ent.alive, ent.genotype, self.cfg
+            ent.alive,
+            ent.genotype,
+            self.cfg,
+            resource_affinity_q=resource_affinity_quantized(ent.genotype, self.cfg),
         )
         capacity_metrics = (
             capacity_diagnostics(
@@ -1895,7 +1904,31 @@ class SimulationReportingMixin:
             "resource_sensing_effective_radius_mean": (
                 1.0
                 if self.resource_sensing_ablation_enabled
-                else float(resource_sensing_metrics["resource_sensing_radius_mean"])
+                else float(resource_sensing_metrics["resource_sensing_channel_radius_mean"])
+            ),
+            "resource_sensing_channel_0_radius_mean": float(
+                resource_sensing_metrics["resource_sensing_channel_radius_means"][0]
+            ),
+            "resource_sensing_channel_1_radius_mean": float(
+                resource_sensing_metrics["resource_sensing_channel_radius_means"][1]
+            ),
+            "resource_sensing_channel_2_radius_mean": float(
+                resource_sensing_metrics["resource_sensing_channel_radius_means"][2]
+            ),
+            "resource_sensing_channel_3_radius_mean": float(
+                resource_sensing_metrics["resource_sensing_channel_radius_means"][3]
+            ),
+            "resource_sensing_channel_0_extended_fraction": float(
+                resource_sensing_metrics["resource_sensing_extended_channel_fractions"][0]
+            ),
+            "resource_sensing_channel_1_extended_fraction": float(
+                resource_sensing_metrics["resource_sensing_extended_channel_fractions"][1]
+            ),
+            "resource_sensing_channel_2_extended_fraction": float(
+                resource_sensing_metrics["resource_sensing_extended_channel_fractions"][2]
+            ),
+            "resource_sensing_channel_3_extended_fraction": float(
+                resource_sensing_metrics["resource_sensing_extended_channel_fractions"][3]
             ),
             "environment_process_schema": str(
                 self.environment.environment_process_metadata["schema"]

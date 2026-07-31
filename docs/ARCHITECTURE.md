@@ -782,7 +782,7 @@ The paired replication runner accepts only a source plan that records both `repl
 studies/<study>/
     DESIGN.md + study.json
     protocol/                 immutable scientific inputs
-    commands/                 one ordered executable step per file
+    workflow.toml             typed steps, defaults and overridable parameters
     frozen/<stage>/           copied compact evidence + stage.lock.json
     frozen/chain.lock.json    candidate/stage/seed/hash chain
 
@@ -843,3 +843,16 @@ Candidate openness is evaluated over the complete history. A terminal
 confirmation entry suppresses earlier screen or replication promotions for the
 same candidate signature; historical promotions remain evidence but no longer
 authorize another stage.
+
+
+## Declarative study workflow
+
+`src/se/cmd/study.py` loads `se-study-workflow-v1` TOML manifests. It validates
+all override names and types, renders a complete argv vector, and executes with
+`subprocess.run(..., shell=False)`. This replaces permission-sensitive shell
+runbooks while retaining exact command visibility and per-run parameter control.
+
+The v2 resource-sensing schema derives one reach capacity from morphology gene
+7 and routes that reach to the strongest inherited resource-affinity channel.
+World and GPU gradient APIs accept either `[capacity]` legacy radii or
+`[capacity, 4]` channel radii.

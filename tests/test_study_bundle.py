@@ -81,7 +81,7 @@ def test_result_bundle_export_is_deterministic_and_self_describing(tmp_path: Pat
     assert "study.json" in names
     assert "DESIGN.md" in names
     assert "RUN_CHAIN.md" in names
-    assert "commands/20_confirmation_source_plan.sh" in names
+    assert "workflow.toml" in names
     assert "protocol/candidate.json" in names
     assert "frozen/confirmation/stage.lock.json" in names
     assert manifest["schema"] == "se-study-result-bundle-v1"
@@ -457,17 +457,10 @@ def test_workspace_layout_and_runbook_boundaries() -> None:
         text = readme.read_text(encoding="utf-8")
         assert "```bash" not in text, f"commands must not be duplicated in {readme}"
 
-    command_files = sorted((D3T / "commands").glob("*.sh"))
-    assert command_files
-    assert [path.name[:2] for path in command_files] == sorted(
-        path.name[:2] for path in command_files
-    )
-    assert all(
-        path.read_text(encoding="utf-8").startswith("#!/usr/bin/env bash")
-        for path in command_files
-    )
-    for path in command_files:
-        subprocess.run(["bash", "-n", str(path)], check=True)
+    assert (D3T / "workflow.toml").is_file()
+    assert not (D3T / "commands").exists()
+    assert not list((ROOT / "studies").glob("*/commands/*.sh"))
+
 
 
 def test_study_source_configs_are_valid_and_protocol_locked() -> None:

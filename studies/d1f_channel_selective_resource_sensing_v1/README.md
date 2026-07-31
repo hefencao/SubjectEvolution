@@ -1,7 +1,11 @@
-# D1-D inherited resource sensing
+# D1-F channel-selective resource sensing
 
 - design: [`DESIGN.md`](DESIGN.md)
 - source protocol: [`protocol/source_pilot.json`](protocol/source_pilot.json)
 - parameterized workflow: [`workflow.toml`](workflow.toml)
 
-Inspect exact steps and defaults with `se-study show studies/d1d_inherited_resource_sensing_v1`.
+Inspect exact commands and available parameters with:
+
+```text
+se-study show studies/d1f_channel_selective_resource_sensing_v1
+```

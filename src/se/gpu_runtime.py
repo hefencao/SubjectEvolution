@@ -233,7 +233,7 @@ def device_resource_sensing_radius(
     *,
     xp: Any,
 ) -> Any:
-    """Map morphology gene 7 to the configured discrete gradient radius."""
+    """Map morphology gene 7 to inherited reach capacity."""
 
     values = xp.asarray(genotype, dtype=xp.float32)
     if values.ndim != 2 or values.shape[1] <= 7:
@@ -245,6 +245,28 @@ def device_resource_sensing_radius(
     scaled = xp.float64(0.5) * (trait + xp.float64(1.0)) * int(levels.size)
     indices = xp.minimum(xp.floor(scaled).astype(xp.int64), int(levels.size) - 1)
     return levels[indices].astype(xp.int16)
+
+
+def device_resource_sensing_channel_radii(
+    genotype: Any,
+    cfg: SimulationConfig,
+    *,
+    resource_affinity_q: Any,
+    xp: Any,
+) -> Any:
+    """Return device-side per-channel radii for the configured sensing schema."""
+
+    base = device_resource_sensing_radius(genotype, cfg, xp=xp)
+    rows = int(base.shape[0])
+    if cfg.entities.resource_sensing_schema != "inherited-affinity-routed-gradient-radius-v2":
+        return xp.repeat(base[:, None], RESOURCE_CHANNELS, axis=1)
+    affinity = xp.asarray(resource_affinity_q, dtype=xp.int32)
+    if affinity.shape != (rows, RESOURCE_CHANNELS):
+        raise ValueError("resource affinity must be shaped [N, 4]")
+    preferred = xp.argmax(affinity, axis=1)
+    result = xp.ones((rows, RESOURCE_CHANNELS), dtype=xp.int16)
+    result[xp.arange(rows), preferred] = base
+    return result
 
 
 def device_policy_resource_view(
@@ -840,7 +862,7 @@ class HybridGpuRuntime:
             if danger_evidence_device is not None:
                 avoided += capacity * 2 * np.dtype(np.int32).itemsize
             if self.cfg.entities.resource_sensing_schema != "disabled":
-                avoided += capacity * np.dtype(np.int16).itemsize
+                avoided += capacity * (RESOURCE_CHANNELS if self.cfg.entities.resource_sensing_schema == "inherited-affinity-routed-gradient-radius-v2" else 1) * np.dtype(np.int16).itemsize
             if active_storage_room_fraction is None:
                 avoided += active_host.size * RESOURCE_CHANNELS * np.dtype(np.float32).itemsize
             if physiology_environment is not None:
@@ -862,9 +884,22 @@ class HybridGpuRuntime:
             run_seed=run_seed,
             tick=tick,
         )
+        channel_routed_sensing = (
+            self.cfg.entities.resource_sensing_schema
+            == "inherited-affinity-routed-gradient-radius-v2"
+        )
         sensing_radius_device = (
-            xp.ones(capacity, dtype=xp.int16)
+            xp.ones((capacity, RESOURCE_CHANNELS), dtype=xp.int16)
+            if resource_sensing_ablation_enabled and channel_routed_sensing
+            else xp.ones(capacity, dtype=xp.int16)
             if resource_sensing_ablation_enabled
+            else device_resource_sensing_channel_radii(
+                genotype,
+                self.cfg,
+                resource_affinity_q=affinity_device,
+                xp=xp,
+            )
+            if channel_routed_sensing
             else device_resource_sensing_radius(genotype, self.cfg, xp=xp)
         )
         resource_gradient, danger_gradient = self.environment.gradients_for_entities(

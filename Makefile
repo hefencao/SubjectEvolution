@@ -1,8 +1,9 @@
-.PHONY: test test-src parity parity-gpu conda-sync conda-check verify-dist release-check release-env release-env-info
+.PHONY: test test-src parity parity-gpu conda-sync conda-check verify-dist release-check release-env release-env-info package
 
 PYTHON ?= python
 PREVIOUS_WHEEL ?=
 RELEASE_ENV ?= .release-env
+PROJECT_ARCHIVE ?= se_project.zip
 
 # Normal test path after ``make conda-sync``.
 test:
@@ -52,3 +53,6 @@ release-env: test-src
 release-env-info:
 	@echo "Local conda runtime: make conda-sync"
 	@echo "Artifact validation only: make release-check or make release-env"
+
+package:
+	$(PYTHON) scripts/package_project_archive.py --project . --output $(PROJECT_ARCHIVE)

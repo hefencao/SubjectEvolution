@@ -31,10 +31,8 @@ def test_portable_docs_rejects_delivery_environment_limitations(tmp_path: Path) 
     assert verify(tmp_path)
 
 
-def test_project_docs_retain_only_current_version_iteration_directory() -> None:
-    docs = Path("docs")
-    version_dirs = sorted(
-        path.name for path in docs.iterdir()
-        if path.is_dir() and path.name.startswith("v0.")
-    )
-    assert version_dirs == ["v0.84"]
+def test_iteration_docs_use_dedicated_history_directory() -> None:
+    iteration = Path("docs/迭代")
+    assert iteration.is_dir()
+    assert any(path.name.startswith("v0.85_") for path in iteration.iterdir())
+    assert not [path for path in Path("docs").iterdir() if path.is_dir() and path.name.startswith("v0.")]

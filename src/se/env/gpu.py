@@ -505,10 +505,12 @@ class DeviceEnvironment:
         sensing_radius = None
         if resource_sensing_radius is not None:
             sensing_radius = xp.asarray(resource_sensing_radius, dtype=xp.int16)
-            if sensing_radius.shape != (capacity,):
-                raise ValueError("resource sensing radius must match world capacity")
+            if sensing_radius.shape not in {(capacity,), (capacity, self.RESOURCE_CHANNELS)}:
+                raise ValueError(
+                    "resource sensing radius must be shaped [capacity] or [capacity, 4]"
+                )
 
-        def resource_gradient_components(values: Any) -> tuple[Any, Any]:
+        def resource_gradient_components(values: Any, channel: int = 0) -> tuple[Any, Any]:
             if sensing_radius is None:
                 return (
                     xp.float32(0.5)
@@ -516,6 +518,11 @@ class DeviceEnvironment:
                     xp.float32(0.5)
                     * (xp.roll(values, -1, axis=0) - xp.roll(values, 1, axis=0)),
                 )
+            selected_radius = (
+                sensing_radius
+                if sensing_radius.ndim == 1
+                else sensing_radius[:, int(channel)]
+            )
             gx = xp.zeros(capacity, dtype=xp.float32)
             gy = xp.zeros(capacity, dtype=xp.float32)
             matched = xp.zeros(capacity, dtype=bool)
@@ -530,7 +537,7 @@ class DeviceEnvironment:
                     xp.roll(values, -radius, axis=0)
                     - xp.roll(values, radius, axis=0)
                 )
-                selected = sensing_radius == radius
+                selected = selected_radius == radius
                 gx = xp.where(selected, gather(field_x), gx)
                 gy = xp.where(selected, gather(field_y), gy)
                 matched |= selected
@@ -557,7 +564,7 @@ class DeviceEnvironment:
                 normalized = self.resources[channel] / max(
                     float(self.cfg.environment.resource_capacity[channel]), 1e-6
                 )
-                channel_x, channel_y = resource_gradient_components(normalized)
+                channel_x, channel_y = resource_gradient_components(normalized, channel)
                 weight = affinity[:, channel].astype(xp.float64) / (
                     self.RESOURCE_CHANNELS * 4096
                 )

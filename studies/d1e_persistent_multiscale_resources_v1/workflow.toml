@@ -1,0 +1,68 @@
+schema = "se-study-workflow-v1"
+study_id = "d1e_persistent_multiscale_resources_v1"
+title = "D1-E persistent multiscale resource landscape"
+
+[parameters.backend]
+type = "choice"
+default = "auto"
+choices = ["auto", "cpu", "gpu"]
+description = "Execution backend."
+
+[parameters.seeds]
+type = "csv-int"
+default = "84001,84002,84003"
+description = "Comma-separated independent source seeds."
+
+[parameters.checkpoint_tick]
+type = "int"
+default = 480
+minimum = 1
+description = "Shared source checkpoint tick."
+
+[parameters.horizon]
+type = "int"
+default = 120
+minimum = 1
+description = "Paired branch horizon in ticks."
+
+[parameters.source_root]
+type = "path"
+default = "runs/base/d1e_persistent_multiscale_resources_v1/pilot"
+description = "Source trajectory output root."
+
+[parameters.runtime_root]
+type = "path"
+default = "runs/interventions/d1e_persistent_multiscale_resources_v1/pilot"
+description = "Paired branch runtime root."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1e_persistent_multiscale_resources_v1/pilot"
+description = "Paired plan and result output root."
+
+[parameters.output]
+type = "path"
+default = "d1e_persistent_multiscale_resources_v1_results.zip"
+description = "Compact result bundle path."
+
+[parameters.include_checkpoints]
+type = "bool"
+default = false
+description = "Include checkpoint bytes for exact replay."
+
+[steps.source-pilot]
+description = "Run source trajectories and write the shared checkpoints."
+command = ["se-multi", "--config", "{study_dir}/protocol/source_pilot.json", "--seeds", "{seeds}", "--output", "{source_root}", "--backend", "{backend}", "--until-tick", "{checkpoint_tick}", "--checkpoint-ticks", "{checkpoint_tick}", "--skip-post-run-audits"]
+
+[steps.paired-plan]
+description = "Create a cost-preserving shared-checkpoint neutralization plan."
+command = ["se-d1-resource-sensing-plan", "--source-root", "{source_root}", "--checkpoint-tick", "{checkpoint_tick}", "--horizon", "{horizon}", "--runtime-root", "{runtime_root}", "--output", "{analysis_root}/paired_plan.json"]
+
+[steps.paired-run]
+description = "Execute both paired branches from the registered plan."
+command = ["se-d1-resource-sensing", "--plan", "{analysis_root}/paired_plan.json", "--output", "{analysis_root}/paired_results.json", "--backend", "{backend}"]
+
+[steps.pack-results]
+description = "Create the compact result bundle required for the next iteration."
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "analyses/d1e_persistent_multiscale_resources_v1", "--runtime-root", "runs/base/d1e_persistent_multiscale_resources_v1", "--runtime-root", "runs/interventions/d1e_persistent_multiscale_resources_v1", "--output", "{output}"]
+boolean_flags = { include_checkpoints = "--include-checkpoints" }

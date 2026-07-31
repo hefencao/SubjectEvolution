@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.85.0
+
+- Freezes the supplied D1-E three-seed calibration and records its consistently negative common-radius branch without an ecological claim.
+- Adds affinity-routed per-channel resource-sensing radii while preserving the existing capacity gene, costs, checkpoint contract, and radius-one ablation.
+- Replaces executable study shell runbooks with typed `workflow.toml` manifests and the shell-free `se-study` runner.
+- Moves iteration notes to `docs/迭代/`; local history is no longer inspected by version consistency or `conda-sync`.
+- Adds artifact-only iteration-note pruning for complete project archives.
+
 ## 0.84.0
 
 - Freezes the supplied D1-D three-seed calibration as a successful mechanism contract with consistently negative short-window inherited-radius outcomes, while retaining the no-gate interpretation boundary.

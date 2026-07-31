@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Fail before installation when durable version sources diverge."""
+"""Fail before installation when durable version sources diverge.
+
+Iteration-note retention is intentionally outside this check.  A developer's
+checkout may keep any history under ``docs/迭代``; release packaging prunes a
+copy without making local history an editable-install concern.
+"""
 from __future__ import annotations
 
 import argparse
@@ -36,38 +41,17 @@ def check(project: Path) -> dict[str, object]:
     project_version = str(pyproject["project"]["version"])
     package = package_version(project / "src/se/__init__.py")
     status = status_version(project / "docs/PROJECT_STATUS.md")
-    version_dirs = sorted(
-        path.relative_to(project).as_posix()
-        for path in (project / "docs").iterdir()
-        if path.is_dir() and path.name.startswith("v0.")
-    )
-    major, minor, *_ = project_version.split(".")
-    expected_version_dir = f"docs/v{major}.{minor}"
-    stale_version_dirs = [
-        path for path in version_dirs if path != expected_version_dir
-    ]
-    current_version_docs_present = expected_version_dir in version_dirs
-    if (
-        package != project_version
-        or status != project_version
-        or stale_version_dirs
-        or not current_version_docs_present
-    ):
+    if package != project_version or status != project_version:
         raise RuntimeError(
             "version mismatch: "
-            f"pyproject={project_version}, package={package}, status={status}, "
-            f"expected_version_docs={expected_version_dir!r}, "
-            f"current_version_docs_present={current_version_docs_present}, "
-            f"stale_version_docs={stale_version_dirs}"
+            f"pyproject={project_version}, package={package}, status={status}"
         )
     return {
         "passed": True,
         "version": project_version,
+        "package_version": package,
         "status_version": status,
-        "expected_version_docs": expected_version_dir,
-        "current_version_docs_present": current_version_docs_present,
-        "stale_version_docs": stale_version_dirs,
-        "version_specific_docs": version_dirs,
+        "iteration_docs_checked": False,
     }
 
 
@@ -81,7 +65,6 @@ def main() -> None:
     if args.report:
         Path(args.report).write_text(text + "\n", encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False))
-
 
 if __name__ == "__main__":
     main()

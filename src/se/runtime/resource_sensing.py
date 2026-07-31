@@ -1,20 +1,42 @@
 """Runtime integration helpers for inherited resource-sensing capacity."""
-
 from __future__ import annotations
 
 from typing import Any
 
 import numpy as np
 
-from se.env.resource_sensing import resource_sensing_energy, resource_sensing_radius
+from se.env.resource_sensing import (
+    channel_routed_resource_sensing_enabled,
+    resource_sensing_channel_radii,
+    resource_sensing_energy,
+)
+from se.env.niches import resource_affinity_quantized
 
 
-def effective_resource_sensing_radius(simulation: Any) -> np.ndarray:
-    """Return the world-facing radius while preserving inherited capacity state."""
+def effective_resource_sensing_radius(
+    simulation: Any,
+    resource_affinity_q: np.ndarray | None = None,
+) -> np.ndarray:
+    """Return world-facing per-channel radii while preserving capacity state."""
 
+    rows = simulation.entities.alive.size
     if simulation.resource_sensing_ablation_enabled:
-        return np.ones(simulation.entities.alive.size, dtype=np.int16)
-    return resource_sensing_radius(simulation.entities.genotype, simulation.cfg)
+        if channel_routed_resource_sensing_enabled(simulation.cfg):
+            return np.ones((rows, 4), dtype=np.int16)
+        return np.ones(rows, dtype=np.int16)
+    affinity = resource_affinity_q
+    if affinity is None and channel_routed_resource_sensing_enabled(simulation.cfg):
+        affinity = resource_affinity_quantized(
+            simulation.entities.genotype, simulation.cfg
+        )
+    channel_radii = resource_sensing_channel_radii(
+        simulation.entities.genotype,
+        simulation.cfg,
+        resource_affinity_q=affinity,
+    )
+    if channel_routed_resource_sensing_enabled(simulation.cfg):
+        return channel_radii
+    return channel_radii[:, 0]
 
 
 def record_resource_sensing_development_cost(
@@ -36,7 +58,7 @@ def add_resource_sensing_operating_cost(
     cost: np.ndarray,
     stats: Any,
 ) -> np.ndarray:
-    """Charge structure and active-use costs without depending on effective radius."""
+    """Charge structure and use costs from inherited capacity, not ablation."""
 
     genotype = simulation.entities.genotype[current_active]
     maintenance = resource_sensing_energy(genotype, simulation.cfg)

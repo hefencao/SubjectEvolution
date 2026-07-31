@@ -94,3 +94,12 @@ channel-specific moving spatial targets. The result therefore cannot distinguish
 "broad sensing is intrinsically harmful" from "the world no longer contains
 useful broad-scale structure." D1-E addresses the latter substrate gap first by
 maintaining distinct channel wavelengths through abiotic moving-target renewal.
+
+
+## D1-E common-radius limitation
+
+Persistent multiscale renewal preserves field variance, but the supplied panel
+still has high resource-channel correlation and a consistently negative acute
+common-radius branch. The next bounded question is whether preserving local
+evidence on non-target channels changes that mechanism result. This does not
+justify lowering sensor costs or declaring the larger radius maladaptive.

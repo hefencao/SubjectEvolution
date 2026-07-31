@@ -5,7 +5,7 @@ This directory is the canonical index for the complete D3-T acute result chain.
 - scientific design: [`DESIGN.md`](DESIGN.md)
 - frozen screen, replication, and confirmation chain: [`RUN_CHAIN.md`](RUN_CHAIN.md)
 - machine-readable study identity: [`study.json`](study.json)
-- ordered historical and transport commands: [`commands/`](commands/)
+- parameterized verification and transport workflow: [`workflow.toml`](workflow.toml)
 - immutable compact evidence: [`frozen/`](frozen/)
 
 The candidate is terminal as `confirmed-acute`. The numbered confirmation files

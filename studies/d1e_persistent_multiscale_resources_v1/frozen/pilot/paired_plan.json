@@ -1,0 +1,45 @@
+{
+  "schema": "d1-resource-sensing-shared-checkpoint-plan-v1",
+  "source_root": "runs/base/d1e_persistent_multiscale_resources_v1/pilot",
+  "checkpoint_tick": 480,
+  "horizon_ticks": 120,
+  "runtime_root": "runs/interventions/d1e_persistent_multiscale_resources_v1/pilot",
+  "sources": [
+    {
+      "seed": 84001,
+      "run_dir": "runs/base/d1e_persistent_multiscale_resources_v1/pilot/seed_84001",
+      "checkpoint_path": "runs/base/d1e_persistent_multiscale_resources_v1/pilot/seed_84001/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "3d0f5be15af059a40febf6cfab1550e69c70dc4bd065d0446c346327defcdcf1",
+      "checkpoint_tick": 480,
+      "resolved_config_sha256": "1c76dc768ec4378aa4c5cc28c01737f23ea87f8d3024c4803c9cba721547f9c5"
+    },
+    {
+      "seed": 84002,
+      "run_dir": "runs/base/d1e_persistent_multiscale_resources_v1/pilot/seed_84002",
+      "checkpoint_path": "runs/base/d1e_persistent_multiscale_resources_v1/pilot/seed_84002/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "a6bb225436b3114e705949d046f1f85937606e333a56a3287599bb1488c0d3e7",
+      "checkpoint_tick": 480,
+      "resolved_config_sha256": "fd2c287ddd0d6cd596990850e5b8501984575a7a169d0b7cd9a1655311b57eef"
+    },
+    {
+      "seed": 84003,
+      "run_dir": "runs/base/d1e_persistent_multiscale_resources_v1/pilot/seed_84003",
+      "checkpoint_path": "runs/base/d1e_persistent_multiscale_resources_v1/pilot/seed_84003/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "5ab085d2c51b8eea3a3cec2c6f4841e729156cf9f6df069e5cafedfb5727f2e3",
+      "checkpoint_tick": 480,
+      "resolved_config_sha256": "6befe0ad72ab9b99d161ad7887c4dfa66f031fd441da0a232e1dda4181115a71"
+    }
+  ],
+  "branches": [
+    "inherited-radius",
+    "radius-one-neutral"
+  ],
+  "intervention": "neutralize-resource-sensing-radius",
+  "paired_randomness": true,
+  "genotype_preserved": true,
+  "resource_fields_preserved_at_intervention": true,
+  "structure_use_development_costs_preserved": true,
+  "pass_fail_gate": false,
+  "ecological_claim_authorized": false,
+  "selection_claim_authorized": false
+}

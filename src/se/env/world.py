@@ -522,20 +522,29 @@ class Environment:
         sensing_radius: np.ndarray | None = None
         if resource_sensing_radius is not None:
             sensing_radius = np.asarray(resource_sensing_radius, dtype=np.int16)
-            if sensing_radius.shape != (capacity,):
-                raise ValueError("resource sensing radius must match world capacity")
+            if sensing_radius.shape not in {(capacity,), (capacity, self.RESOURCE_CHANNELS)}:
+                raise ValueError(
+                    "resource sensing radius must be shaped [capacity] or [capacity, 4]"
+                )
             allowed = np.asarray(
                 self.cfg.entities.resource_sensing_radius_levels, dtype=np.int16
             )
             if np.any(~np.isin(sensing_radius, allowed)):
                 raise ValueError("resource sensing radius contains an unconfigured level")
 
-        def resource_gradient_components(values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        def resource_gradient_components(
+            values: np.ndarray, channel: int = 0
+        ) -> tuple[np.ndarray, np.ndarray]:
             if sensing_radius is None:
                 return (
                     0.5 * (np.roll(values, -1, axis=1) - np.roll(values, 1, axis=1)),
                     0.5 * (np.roll(values, -1, axis=0) - np.roll(values, 1, axis=0)),
                 )
+            selected_radius = (
+                sensing_radius
+                if sensing_radius.ndim == 1
+                else sensing_radius[:, int(channel)]
+            )
             gx = np.zeros(capacity, dtype=np.float32)
             gy = np.zeros(capacity, dtype=np.float32)
             for raw_radius in self.cfg.entities.resource_sensing_radius_levels:
@@ -549,7 +558,7 @@ class Environment:
                     np.roll(values, -radius, axis=0)
                     - np.roll(values, radius, axis=0)
                 )
-                selected = sensing_radius == radius
+                selected = selected_radius == radius
                 gathered_x = gather(field_x)
                 gathered_y = gather(field_y)
                 gx[selected] = gathered_x[selected]
@@ -578,7 +587,7 @@ class Environment:
                 normalized = self.resources[channel] / max(
                     float(self.cfg.environment.resource_capacity[channel]), 1e-6
                 )
-                channel_x, channel_y = resource_gradient_components(normalized)
+                channel_x, channel_y = resource_gradient_components(normalized, channel)
                 weight = affinity[:, channel].astype(np.float64) / (
                     self.RESOURCE_CHANNELS * AFFINITY_SCALE
                 )

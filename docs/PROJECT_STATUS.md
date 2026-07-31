@@ -1,70 +1,61 @@
 # SE project status
 
-Version: **0.84.0**
+Version: **0.85.0**
 
 ## Current development direction
 
-Audit expansion is paused. Following `PROJECT_CHARTER`, the active mainline is
-effective environmental diversity plus inherited carrier capability. D1-D's
-resource-sensing mechanism is implemented and calibrated; D1-E now supplies a
-persistent multiscale resource landscape so inherited radii encounter distinct
-coarse and fine spatial structure rather than a field that relaxes toward a
-uniform carrying-capacity surface.
+Audit expansion remains paused. The active mainline follows `PROJECT_CHARTER`:
+effective environmental diversity, inherited carrier capability, and later
+ecology built from their interaction.
 
-## D1-D calibration result
+## D1-E frozen calibration
 
-The supplied three-seed shared-checkpoint result passes every registered
-mechanism contract: checkpoints match, genotype and resource fields are
-preserved, neutral branches use effective radius one, and all branches retain
-registered costs. The inherited-radius branch ends with 15, 9, and 14 fewer
-living entities than the cost-preserving radius-one branch; median paired alive
-difference is -14 and median paired mean-energy difference is about -0.0552.
+The supplied D1-E result satisfies all shared-checkpoint, genotype, resource
+field, cost-preservation, and radius-one neutralization contracts. Persistent
+resource fields remain non-degenerate at tick 480, but four-channel effective
+dimension is only about 1.77–1.91 and mean absolute channel correlation remains
+about 0.60–0.64.
 
-The source protocol used `orthogonal-four-resource-niche-v1`, whose orthogonal
-geometry is not continuously maintained by moving-target renewal. The result is
-therefore a successful mechanism calibration plus a substrate mismatch. It does
-not authorize an adaptation, niche, coexistence, or selection claim.
+The inherited common-radius branch ends with 55, 40, and 114 fewer living
+entities than the cost-preserving radius-one branch. Mean energy is also lower
+in all three seeds. This is a valid capability-boundary calibration, not an
+adaptation or niche result.
 
-## Active D1-E substrate
+## Active D1-F capability
 
-`persistent-multiscale-four-resource-renewal-v3` preserves the existing four
-resource channels and conservative interaction kernel. Each channel receives a
-distinct primary toroidal spatial frequency, independent secondary mode, cycle
-period, phase, and diffusion rate. The moving renewal target maintains these
-scale differences without entity, lineage, group, or result feedback.
+`inherited-affinity-routed-gradient-radius-v2` retains one inherited sensing
+reach capacity but routes its extended radius to exactly one strongest-affinity
+resource channel. The other three channels remain local at radius one. This
+prevents one broad radius from discarding local detail in every resource channel
+at once.
 
-The active three-seed source and paired calibration commands live under
-`studies/d1e_persistent_multiscale_resources_v1/commands/`. This remains a
-substrate calibration with no pass/fail gate.
+The capacity gene, maintenance/use/development costs, resource fields, and
+neutralization contract remain unchanged. The first three-seed panel has no
+pass/fail threshold and authorizes no ecological or selection claim.
 
-## D3-T frozen result
+## Study execution interface
 
-D3-T remains terminal `confirmed-acute`: screen, disjoint-seed replication, and
-exact-protocol confirmation all retain the registered direction and exceed the
-unchanged 2% acute practical threshold. The result remains bounded to the
-registered fixed-checkpoint estimand and does not establish long-horizon
-selection, stable niches, or adaptive benefit.
+Active operations are declared in `studies/<study>/workflow.toml`. `se-study
+show` displays exact commands and parameter definitions; `se-study run` accepts
+only declared overrides and executes an argv vector without a shell. Study shell
+scripts are no longer required or shipped.
 
-## Result packaging boundary
-
-Every active study provides one numbered Bash script that packages the files
-needed for the next iteration. The deterministic compact bundle includes study
-definitions, protocols, analyses, run metadata, and a file manifest. Checkpoint
-bytes are omitted by default but can be included explicitly when exact replay is
-required. Project `docs/` retains the current iteration directory `docs/v0.84/` plus
-durable canonical documents; older `docs/v0.*` directories are not shipped.
+Iteration notes live under `docs/迭代/`. Local history is not part of version or
+Conda editable-install validation. Release packaging prunes old iteration notes
+only in a disposable artifact tree.
 
 ## Current task
 
-Run the D1-E three-seed source pilot and cost-preserving radius-one paired
-calibration. Inspect whether distinct spatial scales remain present at tick 480,
-whether inherited radii remain expressed, and whether paired effects are
+Run the D1-F source and cost-preserving paired calibration. Confirm that exactly
+one resource channel receives extended reach per entity, the other channels
+remain local, costs remain genotype-derived, and paired consequences are
 non-degenerate. Do not add a threshold or ecological interpretation post hoc.
 
 ## Still incomplete
 
-- repeated evidence that distinct inherited sensing scales support conditional
-  outcomes under persistent multiscale resource geography;
-- coexistence, environment reversal, and removal tests required for a niche claim;
+- sufficiently independent persistent environmental axes;
+- repeated evidence that channel-selective inherited sensing supports
+  conditional outcomes;
+- coexistence, reversal, and removal tests required for a niche claim;
 - long-horizon selection interpretation;
 - device-resident action settlement, lifecycle, and graph updates.

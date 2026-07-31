@@ -1,0 +1,29 @@
+schema = "se-study-workflow-v1"
+study_id = "d3t_spatial_processing_conversion_v1"
+title = "D3-T spatial processing conversion"
+
+[parameters.bundle]
+type = "path"
+default = "d3t_spatial_processing_conversion_v1_result.zip"
+description = "Result bundle to validate or import."
+
+[parameters.output]
+type = "path"
+default = "d3t_spatial_processing_conversion_v1_result.zip"
+description = "Export bundle destination."
+
+[steps.verify]
+description = "Verify the immutable frozen study chain."
+command = ["se-study-verify", "--study", "{study_dir}/study.json"]
+
+[steps.check-result]
+description = "Validate a result bundle without modifying the study."
+command = ["se-study-result-import", "--study", "{study_dir}/study.json", "--bundle", "{bundle}", "--check-only"]
+
+[steps.import-result]
+description = "Atomically import a validated result bundle."
+command = ["se-study-result-import", "--study", "{study_dir}/study.json", "--bundle", "{bundle}"]
+
+[steps.export-result]
+description = "Export the frozen study as a deterministic result bundle."
+command = ["se-study-result-export", "--study", "{study_dir}/study.json", "--output", "{output}"]

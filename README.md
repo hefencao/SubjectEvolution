@@ -1,49 +1,65 @@
-# SE v0.84
+# SE v0.85
 
-Reference implementation for nested-subject existence evolution simulation.
+Reference implementation for nested-subject existence and ecological evolution
+simulation.
 
 ## Current direction
 
-Portfolio/candidate audit expansion remains paused. The active mainline follows
-`PROJECT_CHARTER`: build effective environmental diversity and costed inherited
-carrier capabilities before returning to ecological or social claims.
+Audit expansion remains paused. The active mainline follows
+[`PROJECT_CHARTER`](docs/PROJECT_CHARTER.md): establish effective environmental
+diversity and costed inherited carrier capabilities before ecological or social
+claims.
 
-D1-D established that inherited resource-sensing radius reaches the physical
-observation boundary and can be neutralized while preserving genotype and all
-registered costs. Its three-seed calibration is frozen under
-[`studies/d1d_inherited_resource_sensing_v1/`](studies/d1d_inherited_resource_sensing_v1/README.md).
-The archived source used a non-persistent v1 resource landscape, so the result
-is treated as a substrate mismatch rather than a general fitness conclusion.
-
-v0.84 adds D1-E persistent multiscale resources. Four existing resource channels
-now retain distinct coarse-to-fine spatial modes through moving-target renewal,
-creating a real scale tradeoff for inherited sensing radii without rewards, role
-labels, or result-dependent world feedback. The active runbook is under
+The supplied D1-E panel is frozen under
 [`studies/d1e_persistent_multiscale_resources_v1/`](studies/d1e_persistent_multiscale_resources_v1/README.md).
+Its persistent resource fields remain non-degenerate, but one common sensing
+radius across all resource channels has a consistently negative acute paired
+outcome.
+
+v0.85 adds D1-F affinity-routed resource sensing. One inherited reach capacity
+is routed to the strongest inherited resource-affinity channel while the other
+three channels retain local radius-one gradients. Costs and the shared
+checkpoint neutralization remain unchanged.
 
 ## Workspace layout
 
-- [`studies/`](studies/README.md): study design, protocols, ordered runbooks, and frozen evidence.
+- [`studies/`](studies/README.md): study design, protocols, declarative workflows, and frozen evidence.
 - [`runs/`](runs/README.md): source trajectories, intervention branches, and checkpoints.
-- [`analyses/`](analyses/README.md): derived results and compact reports only.
+- [`analyses/`](analyses/README.md): derived results and compact reports.
 - [`state/`](state/README.md): mutable local decision overlays.
 - [`protocols/`](protocols/README.md): project-wide registries and immutable release decisions.
 - [`configs/`](configs/README.md): reusable project-level configuration presets.
 
-Each active study includes a numbered result-packaging script. Compact bundles
-omit checkpoint bytes by default and can include them explicitly for exact replay.
+## Study commands
 
-## Validation workflow
+Study operations are declared in `workflow.toml`, not executable shell files.
+After editable installation:
 
-Project validation targets remain defined in the [`Makefile`](Makefile). Target-
-device GPU parity requires a usable CUDA/CuPy environment.
+```text
+se-study show studies/d1f_channel_selective_resource_sensing_v1
+se-study run studies/d1f_channel_selective_resource_sensing_v1 source-pilot --dry-run
+```
+
+Every parameter is declared and can be overridden explicitly. The resolved argv
+is printed before execution, and no shell is used.
+
+## Validation and packaging
+
+Validation targets remain in the [`Makefile`](Makefile). `make conda-sync`
+checks only durable version sources, cleans bytecode, refreshes editable install,
+and verifies the active Conda environment. It does not inspect or delete local
+iteration history.
+
+Local iteration notes live under `docs/迭代/`. `make package` builds a disposable
+artifact copy, removes old iteration notes from that copy, and keeps only the
+current version note in the complete project archive.
 
 ## Current documents
 
 - [Project charter](docs/PROJECT_CHARTER.md)
 - [Project status](docs/PROJECT_STATUS.md)
 - [Scientific issues](docs/SCIENTIFIC_ISSUES.md)
-- [Recurring governance principles](docs/PROJECT_GOVERNANCE.md)
+- [Governance principles](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.84 ecosystem implementation](docs/v0.84/ECOSYSTEM_IMPLEMENTATION.md)
+- [v0.85 D1-F iteration](docs/迭代/v0.85_D1-F_按资源通道分配的可遗传感知尺度.md)

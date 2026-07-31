@@ -129,14 +129,15 @@ be supplied rather than reconstructed.
 
 ## 11. Durable documentation and result handoff
 
-Complete project packages retain exactly one iteration-specific documentation
-directory: the directory matching the current package major/minor version. Older
-`docs/v0.*` directories are removed. Durable cross-version conclusions belong in
-`PROJECT_STATUS`, `ARCHITECTURE`, `SCIENTIFIC_ISSUES`,
+Iteration notes live under `docs/迭代/`. A local checkout may retain all prior
+notes. Version consistency and `conda-sync` do not inspect, reject, or delete
+that history. Complete project archives are built from a disposable copy and
+keep only the current major/minor iteration note; durable cross-version
+conclusions belong in `PROJECT_STATUS`, `ARCHITECTURE`, `SCIENTIFIC_ISSUES`,
 `PROJECT_GOVERNANCE`, or `CHANGELOG`.
 
-Every active study must provide one ordered Bash command that creates a
-manifested bundle of the files required for the next iteration. Compact bundles
+Every active study must provide a `pack-results` workflow step. The step declares
+its output path and checkpoint-inclusion parameter explicitly. Compact bundles
 must state whether checkpoint bytes are included and must not imply exact replay
 capability when they are omitted.
 
@@ -148,6 +149,13 @@ capability when they are omitted.
   so the current task changes from tuning sensing radii to maintaining distinct
   resource scales in the world substrate.
 - No reward, role, threshold, replacement seed, or post-hoc horizon is added.
-- The current-version-only documentation rule and per-study result-packaging rule are now
-  repository principles with tests and executable support rather than chat-only
-  instructions.
+- Iteration history retention and artifact-only pruning are separate responsibilities; result packaging is a typed workflow step rather than a permission-sensitive shell script.
+
+
+## Declarative study execution
+
+Study operations must be declared in `workflow.toml`, not executable shell files.
+Each parameter requires a type, default, and description. `se-study show` must
+render the exact argv before execution, and `se-study run` must invoke it without
+a shell. Result packaging is a named workflow step with explicit output and
+checkpoint parameters.

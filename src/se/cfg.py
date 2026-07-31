@@ -939,10 +939,15 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.world.grid_x <= 0 or cfg.world.grid_y <= 0:
         raise ValueError("grid dimensions must be positive")
     sensing_schema = cfg.entities.resource_sensing_schema
-    if sensing_schema not in {"disabled", "inherited-discrete-gradient-radius-v1"}:
+    if sensing_schema not in {
+        "disabled",
+        "inherited-discrete-gradient-radius-v1",
+        "inherited-affinity-routed-gradient-radius-v2",
+    }:
         raise ValueError(
-            "entities.resource_sensing_schema must be 'disabled' or "
-            "'inherited-discrete-gradient-radius-v1'"
+            "entities.resource_sensing_schema must be 'disabled', "
+            "'inherited-discrete-gradient-radius-v1', or "
+            "'inherited-affinity-routed-gradient-radius-v2'"
         )
     sensing_levels = tuple(int(value) for value in cfg.entities.resource_sensing_radius_levels)
     if not sensing_levels or any(value <= 0 for value in sensing_levels):
@@ -967,6 +972,14 @@ def validate_config(cfg: SimulationConfig) -> None:
     elif not all(value > 0.0 for value in sensing_costs):
         raise ValueError(
             "inherited resource sensing requires positive maintenance, use, and development costs"
+        )
+    if (
+        sensing_schema == "inherited-affinity-routed-gradient-radius-v2"
+        and cfg.entities.resource_affinity_schema
+        != "normalized-four-resource-affinity-v1"
+    ):
+        raise ValueError(
+            "channel-routed resource sensing requires normalized four-resource affinity"
         )
     if (
         not math.isfinite(cfg.world.width)

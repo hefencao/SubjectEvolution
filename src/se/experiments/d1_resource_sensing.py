@@ -20,10 +20,12 @@ import numpy as np
 
 from se.cfg import load_config
 from se.env.resource_sensing import (
+    resource_sensing_channel_radii,
     resource_sensing_enabled,
     resource_sensing_energy,
     resource_sensing_radius,
 )
+from se.env.niches import resource_affinity_quantized
 from se.runtime.sim import Simulation
 
 PLAN_SCHEMA = "d1-resource-sensing-shared-checkpoint-plan-v1"
@@ -203,6 +205,14 @@ def _branch(
     resources_before = np.asarray(simulation.environment.resources).copy()
     alive = simulation.entities.alive.copy()
     inherited_radius = resource_sensing_radius(simulation.entities.genotype, simulation.cfg)
+    affinity_before = resource_affinity_quantized(
+        simulation.entities.genotype, simulation.cfg
+    )
+    inherited_channel_radii = resource_sensing_channel_radii(
+        simulation.entities.genotype,
+        simulation.cfg,
+        resource_affinity_q=affinity_before,
+    )
     maintenance_before = resource_sensing_energy(
         simulation.entities.genotype[alive], simulation.cfg
     )
@@ -230,7 +240,12 @@ def _branch(
         "resource_fields_preserved_at_intervention": True,
         "inherited_radius_mean_at_branch": float(inherited_radius[alive].mean()),
         "effective_radius_mean_at_branch": (
-            1.0 if neutralize else float(inherited_radius[alive].mean())
+            1.0 if neutralize else float(inherited_channel_radii[alive].mean())
+        ),
+        "effective_channel_radius_means_at_branch": (
+            [1.0, 1.0, 1.0, 1.0]
+            if neutralize
+            else inherited_channel_radii[alive].mean(axis=0).tolist()
         ),
         "maintenance_energy_per_tick_at_branch": float(maintenance_before.sum()),
         "use_energy_per_tick_at_branch": float(use_before.sum()),
@@ -245,6 +260,14 @@ def _branch(
                 "mean_energy",
                 "resource_sensing_radius_mean",
                 "resource_sensing_effective_radius_mean",
+                "resource_sensing_channel_0_radius_mean",
+                "resource_sensing_channel_1_radius_mean",
+                "resource_sensing_channel_2_radius_mean",
+                "resource_sensing_channel_3_radius_mean",
+                "resource_sensing_channel_0_extended_fraction",
+                "resource_sensing_channel_1_extended_fraction",
+                "resource_sensing_channel_2_extended_fraction",
+                "resource_sensing_channel_3_extended_fraction",
                 "resource_sensing_maintenance_energy_step",
                 "resource_sensing_use_energy_step",
                 "resource_sensing_development_energy_step",
