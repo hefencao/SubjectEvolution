@@ -151,3 +151,20 @@ physiology costs, environment, checkpoints, and random streams. This is a new
 internal constraint, not a threshold or cost adjustment. The first shared-
 checkpoint panel remains capability calibration only and cannot authorize niche,
 adaptation, coexistence, or selection claims.
+
+
+## D1-J sample and generational-turnover boundary
+
+The supplied D1-J panel is sufficient for exact shared-checkpoint wiring and
+large acute-effect calibration, but not for evolution. Its three tick-480 source
+runs contain only 1--8 births and remain almost entirely founder survivors. A
+120-tick branch adds nested observations, not independent generations or seeds.
+
+Exploratory source runs show that same-channel recycling plus lower founder
+density still yields continued decline, and merely lowering the reproduction
+threshold increases births without producing sustained replacement. D1-K makes
+parental energy investment and offspring quality explicit instead of treating
+the hidden legacy newborn fraction as a parameter tweak. The first D1-K panel
+remains calibration only. Evolutionary interpretation requires new independent
+seeds whose source trajectories already contain repeated descendant replacement;
+longer founder-dominated runs do not satisfy that requirement.

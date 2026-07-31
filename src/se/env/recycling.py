@@ -17,6 +17,15 @@ from se.reductions import stable_segmented_sum, validate_cell_ids
 RESOURCE_CHANNELS = 4
 
 
+def resource_recycling_runtime_enabled(environment: Any) -> bool:
+    """Return whether configured recycling is active for this runtime branch."""
+
+    return bool(
+        external_resource_recycling_enabled(environment.cfg)
+        and not bool(getattr(environment, "resource_recycling_ablation_enabled", False))
+    )
+
+
 def initialize_resource_residue(environment: Any) -> None:
     if not external_resource_recycling_enabled(environment.cfg):
         return
@@ -66,7 +75,7 @@ def deposit_resource_residue(
     environment: Any, cell_ids: Any, amounts: Any
 ) -> np.ndarray:
     """Deposit non-negative channel-preserving material at source cells."""
-    if not external_resource_recycling_enabled(environment.cfg):
+    if not resource_recycling_runtime_enabled(environment):
         return np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
     xp = environment.backend.xp if hasattr(environment, "backend") else np
     backend = environment.backend if hasattr(environment, "backend") else None
@@ -108,7 +117,7 @@ def deposit_resource_residue(
 
 def update_resource_recycling(environment: Any) -> np.ndarray:
     """Diffuse residue and release it into same-channel resource capacity."""
-    if not external_resource_recycling_enabled(environment.cfg):
+    if not resource_recycling_runtime_enabled(environment):
         return np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
     xp = environment.backend.xp if hasattr(environment, "backend") else np
     _ensure_settlement_counters(environment)
@@ -159,6 +168,11 @@ def resource_recycling_diagnostics(environment: Any) -> dict[str, object]:
     values = np.asarray(values, dtype=np.float64)
     _ensure_settlement_counters(environment)
     return {
+        "resource_recycling_configured": True,
+        "resource_recycling_ablation_enabled": bool(
+            getattr(environment, "resource_recycling_ablation_enabled", False)
+        ),
+        "resource_recycling_effective_enabled": resource_recycling_runtime_enabled(environment),
         "resource_residue_total": values.sum(axis=(1, 2)).tolist(),
         "resource_residue_mean": values.mean(axis=(1, 2)).tolist(),
         "resource_residue_std": values.std(axis=(1, 2)).tolist(),
@@ -179,5 +193,6 @@ __all__ = [
     "deposit_resource_residue",
     "initialize_resource_residue",
     "resource_recycling_diagnostics",
+    "resource_recycling_runtime_enabled",
     "update_resource_recycling",
 ]

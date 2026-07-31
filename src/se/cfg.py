@@ -220,6 +220,14 @@ class EntityConfig:
     initial_energy: float
     max_energy: float
     max_age: int
+    # Legacy configs use a fixed threshold and dissipative newborn fraction.
+    # The explicit inherited schema uses morphology gene 6 to select a
+    # conservative parent-to-offspring energy transfer. ``reproduction_cost``
+    # then denotes event overhead and the parent must retain the configured
+    # reserve after paying overhead plus investment.
+    reproduction_schema: str = "legacy-fixed-threshold-loss-v1"
+    reproduction_parent_reserve: float = 0.0
+    reproduction_investment_levels: tuple[float, ...] = (0.0,)
     # Capacity contention is a model rule, not an execution optimization.
     # Missing fields retain the historical stable-ID ordering so archived
     # configs remain replayable; bundled current configs opt into the neutral
@@ -867,6 +875,12 @@ def load_config(path: str | Path) -> SimulationConfig:
                         "resource_sensing_radius_levels", (1,)
                     )
                 ),
+                "reproduction_investment_levels": tuple(
+                    float(value)
+                    for value in _require(raw, "entities").get(
+                        "reproduction_investment_levels", (0.0,)
+                    )
+                ),
             }
         ),
         information=InformationConfig(
@@ -938,6 +952,49 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("max_entities must be >= initial_entities")
     if cfg.world.grid_x <= 0 or cfg.world.grid_y <= 0:
         raise ValueError("grid dimensions must be positive")
+    reproduction_schema = cfg.entities.reproduction_schema
+    if reproduction_schema not in {
+        "legacy-fixed-threshold-loss-v1",
+        "inherited-conservative-offspring-investment-v2",
+    }:
+        raise ValueError(
+            "entities.reproduction_schema must be "
+            "'legacy-fixed-threshold-loss-v1' or "
+            "'inherited-conservative-offspring-investment-v2'"
+        )
+    reproduction_values = (
+        cfg.entities.reproduction_threshold,
+        cfg.entities.reproduction_cost,
+        cfg.entities.reproduction_parent_reserve,
+    )
+    if any(not math.isfinite(value) or value < 0.0 for value in reproduction_values):
+        raise ValueError("reproduction thresholds, overhead, and reserve must be finite and non-negative")
+    investment_levels = tuple(float(value) for value in cfg.entities.reproduction_investment_levels)
+    if not investment_levels or any(
+        not math.isfinite(value) or value < 0.0 for value in investment_levels
+    ):
+        raise ValueError("reproduction investment levels must be finite and non-negative")
+    if tuple(sorted(set(investment_levels))) != investment_levels:
+        raise ValueError("reproduction investment levels must be strictly increasing")
+    if reproduction_schema == "legacy-fixed-threshold-loss-v1":
+        if investment_levels != (0.0,) or cfg.entities.reproduction_parent_reserve != 0.0:
+            raise ValueError(
+                "legacy reproduction requires investment levels (0.0,) and zero parent reserve"
+            )
+        if cfg.entities.reproduction_threshold < cfg.entities.reproduction_cost:
+            raise ValueError("legacy reproduction threshold must cover its fixed cost")
+    else:
+        if cfg.entities.danger_evidence_schema == "inherited-direct-trace-mixture-v1":
+            raise ValueError(
+                "inherited reproduction investment and inherited danger mixture both use morphology gene 6"
+            )
+        if not all(value > 0.0 for value in investment_levels):
+            raise ValueError("inherited reproduction investment levels must be positive")
+        if max(investment_levels) + cfg.entities.reproduction_cost + cfg.entities.reproduction_parent_reserve > cfg.entities.max_energy:
+            raise ValueError(
+                "maximum reproduction investment, overhead, and reserve must fit max_energy"
+            )
+
     sensing_schema = cfg.entities.resource_sensing_schema
     if sensing_schema not in {
         "disabled",
@@ -999,6 +1056,7 @@ def validate_config(cfg: SimulationConfig) -> None:
             "transport-metabolism-messenger-tissue-resource-v7",
             "transport-metabolism-messenger-tissue-resource-v8",
             "transport-metabolism-messenger-tissue-resource-v9",
+            "transport-metabolism-messenger-tissue-resource-v10",
         }
     ):
         raise ValueError(
@@ -2107,6 +2165,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         "transport-metabolism-messenger-tissue-resource-v7",
         "transport-metabolism-messenger-tissue-resource-v8",
         "transport-metabolism-messenger-tissue-resource-v9",
+        "transport-metabolism-messenger-tissue-resource-v10",
     }:
         raise ValueError(
             "physiology.schema must be 'disabled', 'oxygen-tissue-structure-v1', "
@@ -2117,7 +2176,8 @@ def validate_config(cfg: SimulationConfig) -> None:
             "'transport-metabolism-messenger-tissue-resource-v6', or "
             "'transport-metabolism-messenger-tissue-resource-v7', or "
             "'transport-metabolism-messenger-tissue-resource-v8', or "
-            "'transport-metabolism-messenger-tissue-resource-v9'"
+            "'transport-metabolism-messenger-tissue-resource-v9', or "
+            "'transport-metabolism-messenger-tissue-resource-v10'"
         )
     if pcfg.enabled != (pcfg.schema != "disabled"):
         raise ValueError("physiology enabled/schema fields must agree")
@@ -2175,6 +2235,7 @@ def validate_config(cfg: SimulationConfig) -> None:
                 "transport-metabolism-messenger-tissue-resource-v7",
                 "transport-metabolism-messenger-tissue-resource-v8",
                 "transport-metabolism-messenger-tissue-resource-v9",
+                "transport-metabolism-messenger-tissue-resource-v10",
             }
             if fcfg.schema == resource_metabolism_schema
             else {
@@ -2235,6 +2296,7 @@ def validate_config(cfg: SimulationConfig) -> None:
                 "transport-metabolism-messenger-tissue-resource-v7",
                 "transport-metabolism-messenger-tissue-resource-v8",
                 "transport-metabolism-messenger-tissue-resource-v9",
+                "transport-metabolism-messenger-tissue-resource-v10",
             }:
                 required_positive.extend(pcfg.resource_store_base_capacity)
                 required_positive.extend(pcfg.resource_conversion_per_tick)
@@ -2257,6 +2319,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         "transport-metabolism-messenger-tissue-resource-v7",
         "transport-metabolism-messenger-tissue-resource-v8",
         "transport-metabolism-messenger-tissue-resource-v9",
+        "transport-metabolism-messenger-tissue-resource-v10",
     } and any(
         value != 0.0
         for values in (
@@ -2268,7 +2331,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         for value in values
     ):
         raise ValueError(
-            "resource storage and conversion settings require physiology resource-v4/v5/v6/v7/v8/v9"
+            "resource storage and conversion settings require physiology resource-v4/v5/v6/v7/v8/v9/v10"
         )
     if pcfg.schema == "transport-metabolism-messenger-tissue-resource-v7":
         if (

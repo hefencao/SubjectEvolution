@@ -1,4 +1,4 @@
-# SE v0.89
+# SE v0.90
 
 Reference implementation for nested-subject existence and ecological evolution
 simulation.
@@ -7,16 +7,16 @@ simulation.
 
 Audit expansion remains paused. The active mainline follows
 [`PROJECT_CHARTER`](docs/PROJECT_CHARTER.md): establish effective environmental
-diversity and costed inherited carrier capabilities before ecological or social
-claims.
+diversity, conservative life-cycle closure, and costed inherited carrier
+capabilities before ecological or social claims.
 
-D1-I is frozen under
-[`studies/d1i_fixed_budget_resource_conversion_v1/`](studies/d1i_fixed_budget_resource_conversion_v1/README.md).
-Fixed-total conversion allocation produces repeatable energetic differences but
-only weak allocation separation and no repeated demographic direction. v0.89
-adds D1-J: the existing four storage genes allocate one fixed total internal
-volume across channels, creating a conserved material-capacity opportunity cost
-without changing rewards, actions, conversion effects, or environment amplitudes.
+D1-J is frozen as a valid fixed-storage substrate calibration. Its three source
+seeds contain only 1--8 births by tick 480 and remain founder-dominated, so the
+existing sample and horizon are not evolutionary evidence. v0.90 adds D1-K:
+an inherited, conservative parent-to-offspring energy investment with explicit
+event overhead and parent reserve, composed with same-channel external resource
+recycling. The first panel is still a generational-substrate calibration, not a
+selection experiment.
 
 ## Workspace layout
 
@@ -49,8 +49,8 @@ Study operations are declared in `workflow.toml`, not executable shell files.
 After editable installation:
 
 ```text
-se-study show studies/d1j_fixed_budget_resource_storage_v1
-se-study run studies/d1j_fixed_budget_resource_storage_v1 source-pilot --dry-run
+se-study show studies/d1k_conservative_reproductive_investment_v1
+se-study run studies/d1k_conservative_reproductive_investment_v1 source-pilot --dry-run
 ```
 
 Every parameter is declared and can be overridden explicitly. The resolved argv
@@ -76,4 +76,4 @@ runtime results are never included.
 - [Governance principles](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.89 D1-J iteration](docs/迭代/v0.89_D1-J_固定总量的可遗传四资源储存分配.md)
+- [v0.90 D1-K iteration](docs/迭代/v0.90_D1-K_保守亲代投入与代际周转基底.md)

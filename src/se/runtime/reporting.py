@@ -112,6 +112,11 @@ from ..metrics import MetricsWriter
 from se.env.local_stress import LocalStressDiagnostics
 from se.env.resource_sensing import resource_sensing_diagnostics
 from se.runtime.resource_metabolism import storage_room_fraction
+from se.runtime.reproduction import (
+    inherited_reproduction_investment_enabled,
+    reproduction_energy_requirement,
+    reproduction_investment,
+)
 from ..event_cohort import EventCohortDiagnostics
 from se.differentiation.capacity import capacity_diagnostics, capacity_use_diagnostics
 from se.subjects.succession import SubjectStructureDiagnostics
@@ -768,6 +773,13 @@ class SimulationReportingMixin:
                     if self.resource_store_allocation_ablation_enabled
                     else self.cfg.physiology.schema
                 ),
+                "resource_recycling_ablation_enabled": (
+                    self.resource_recycling_ablation_enabled
+                ),
+                "resource_recycling_effective_enabled": (
+                    external_resource_recycling_enabled(self.cfg)
+                    and not self.resource_recycling_ablation_enabled
+                ),
                 "resource_processing_support_ablation_enabled": (
                     self.resource_processing_support_ablation_enabled
                 ),
@@ -937,6 +949,11 @@ class SimulationReportingMixin:
                         6
                         if self.cfg.entities.danger_evidence_schema
                         == "inherited-direct-trace-mixture-v1"
+                        else None
+                    ),
+                    "reproduction_investment": (
+                        6
+                        if inherited_reproduction_investment_enabled(self.cfg)
                         else None
                     ),
                     "resource_sensing_radius": (
@@ -1363,6 +1380,13 @@ class SimulationReportingMixin:
             mean_energy = float(ent.energy[active].mean())
             mean_integrity = float(ent.integrity[active].mean())
             mean_age = float(ent.age[active].mean())
+            living_generation = np.asarray(ent.generation[active], dtype=np.uint32)
+            mean_generation = float(living_generation.mean())
+            max_generation = int(living_generation.max())
+            founder_alive_count = int(np.count_nonzero(living_generation == 0))
+            descendant_alive_count = int(alive_count - founder_alive_count)
+            founder_alive_fraction = float(founder_alive_count / alive_count)
+            descendant_alive_fraction = float(descendant_alive_count / alive_count)
             mean_oxygenation = float(ent.oxygenation[active].mean())
             mean_tissue_condition = float(ent.tissue_condition[active].mean())
             mean_structure_condition = float(ent.structure_condition[active].mean())
@@ -1382,6 +1406,18 @@ class SimulationReportingMixin:
                 )
             )
             lineage_count = int(np.unique(ent.lineage_id[active]).size)
+            reproduction_investments = np.asarray(
+                reproduction_investment(ent.genotype[active], self.cfg),
+                dtype=np.float64,
+            )
+            reproduction_requirements = np.asarray(
+                reproduction_energy_requirement(ent.genotype[active], self.cfg),
+                dtype=np.float64,
+            )
+            reproduction_investment_mean = float(reproduction_investments.mean())
+            reproduction_investment_std = float(reproduction_investments.std())
+            reproduction_requirement_mean = float(reproduction_requirements.mean())
+            reproduction_requirement_std = float(reproduction_requirements.std())
             grouped_fraction = float(np.mean(self.social.group_id[active] != 0))
             strategy_genome = ent.genotype[
                 active, ParametricPolicy.STRATEGY_START : ParametricPolicy.STRATEGY_STOP
@@ -1413,6 +1449,10 @@ class SimulationReportingMixin:
                 knowledge_use_strength_mean = 0.0
         else:
             mean_energy = mean_integrity = mean_age = social_dependency = grouped_fraction = 0.0
+            mean_generation = 0.0
+            max_generation = 0
+            founder_alive_count = descendant_alive_count = 0
+            founder_alive_fraction = descendant_alive_fraction = 0.0
             mean_oxygenation = mean_tissue_condition = mean_structure_condition = 0.0
             mean_metabolic_fatigue = 0.0
             mean_mobilization_messenger = 0.0
@@ -1425,6 +1465,10 @@ class SimulationReportingMixin:
             knowledge_preference_mean = np.zeros(5, dtype=np.float64)
             knowledge_preference_diversity = np.zeros(5, dtype=np.float64)
             knowledge_use_strength_mean = 0.0
+            reproduction_investment_mean = 0.0
+            reproduction_investment_std = 0.0
+            reproduction_requirement_mean = 0.0
+            reproduction_requirement_std = 0.0
         if self.gpu_runtime is None:
             physiology_metric_fields = (
                 self.environment.oxygen,
@@ -1624,6 +1668,17 @@ class SimulationReportingMixin:
             "reproduction_rejected_other_total": (
                 self.total_reproduction_rejected_other
             ),
+            "reproduction_schema": self.cfg.entities.reproduction_schema,
+            "reproduction_investment_enabled": bool(
+                inherited_reproduction_investment_enabled(self.cfg)
+            ),
+            "offspring_endowment_ablation_enabled": bool(
+                self.offspring_endowment_ablation_enabled
+            ),
+            "reproduction_investment_mean": reproduction_investment_mean,
+            "reproduction_investment_std": reproduction_investment_std,
+            "reproduction_energy_requirement_mean": reproduction_requirement_mean,
+            "reproduction_energy_requirement_std": reproduction_requirement_std,
             "mean_energy": mean_energy,
             "mean_integrity": mean_integrity,
             "mean_oxygenation": mean_oxygenation,
@@ -1635,6 +1690,18 @@ class SimulationReportingMixin:
             "mean_messenger_precursor": mean_messenger_precursor,
             "mean_physiology_sensor_multiplier": mean_physiology_sensor_multiplier,
             "mean_age": mean_age,
+            "mean_generation": mean_generation,
+            "max_generation": max_generation,
+            "founder_alive_count": founder_alive_count,
+            "descendant_alive_count": descendant_alive_count,
+            "founder_alive_fraction": founder_alive_fraction,
+            "descendant_alive_fraction": descendant_alive_fraction,
+            "cumulative_births_per_initial": float(
+                self.total_births / max(int(self.cfg.world.initial_entities), 1)
+            ),
+            "living_descendants_per_initial": float(
+                descendant_alive_count / max(int(self.cfg.world.initial_entities), 1)
+            ),
             "lineages": lineage_count,
             "groups": stats.group_count,
             "mean_group_size": stats.mean_group_size,
@@ -1945,6 +2012,13 @@ class SimulationReportingMixin:
             ),
             "resource_store_allocation_ablation_enabled": bool(
                 self.resource_store_allocation_ablation_enabled
+            ),
+            "resource_recycling_ablation_enabled": bool(
+                self.resource_recycling_ablation_enabled
+            ),
+            "resource_recycling_effective_enabled": bool(
+                external_resource_recycling_enabled(self.cfg)
+                and not self.resource_recycling_ablation_enabled
             ),
             "resource_sensing_effective_radius_mean": (
                 1.0

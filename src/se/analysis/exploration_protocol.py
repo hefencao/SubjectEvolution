@@ -59,6 +59,17 @@ def _canonical_config(path: Path) -> tuple[dict[str, Any], str, str]:
             "resource_sensing_development_energy_per_radius",
         ):
             entities.pop(key, None)
+    if (
+        entities.get("reproduction_schema") == "legacy-fixed-threshold-loss-v1"
+        and float(entities.get("reproduction_parent_reserve", 0.0)) == 0.0
+        and tuple(entities.get("reproduction_investment_levels", (0.0,))) == (0.0,)
+    ):
+        for key in (
+            "reproduction_schema",
+            "reproduction_parent_reserve",
+            "reproduction_investment_levels",
+        ):
+            entities.pop(key, None)
     resolved_sha = _canonical_sha(payload)
     protocol_payload = deepcopy(payload)
     protocol_payload["run"]["seed"] = 0

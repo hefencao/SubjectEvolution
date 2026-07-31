@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.90.0
+
+- Freezes D1-J as a valid acute storage-allocation calibration and records that its three tick-480 source trajectories are founder-dominated with only 1--8 births.
+- Adds same-channel external resource recycling to the fixed storage/conversion ecology and reports explicit founder/descendant turnover metrics.
+- Adds inherited conservative offspring investment on morphology gene 6 with explicit event overhead, parent reserve, and four parent-to-newborn energy-transfer levels.
+- Adds a cost-, eligibility-, fertility-, genotype-, store-, field-, residue-, checkpoint-, and randomness-preserving offspring-endowment neutralization.
+- Adds the parameterized D1-K source, paired, and external result-packaging workflow. The three-seed panel is calibration only and has no ecological or selection gate.
+
+
 ## v0.89.0
 
 - Freezes the D1-I fixed-total conversion pilot as a valid energetic substrate effect without repeated demographic direction.

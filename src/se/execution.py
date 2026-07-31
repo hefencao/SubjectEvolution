@@ -17,6 +17,11 @@ from .cfg import SimulationConfig
 from .intents import ActionIntentBatch, ActionResolutionBatch, FailureReason, action_rows, empty_resolutions
 from se.evolution.lifecycle import BirthRequestPlan, empty_birth_request_plan
 from .policy import Action
+from .runtime.reproduction import (
+    inherited_reproduction_investment_enabled,
+    reproduction_energy_cost,
+    reproduction_energy_requirement,
+)
 from .random_api import RandomContext, Stream, keys, uniform01
 from se.env.niches import (
     constrain_harvest_request_rates,
@@ -102,6 +107,7 @@ class ActionResolutionSnapshot:
     resource_affinity_q: np.ndarray | None = None
     harvest_preference_q: np.ndarray | None = None
     raw_harvest_storage_room: np.ndarray | None = None
+    genotype: np.ndarray | None = None
 
 
 @dataclass(frozen=True)
@@ -367,8 +373,25 @@ class DeterministicActionConflictResolver:
         )
         if reproduce_rows.size:
             parents = intents.carrier_index[reproduce_rows]
+            if snapshot.genotype is None:
+                if inherited_reproduction_investment_enabled(self.cfg):
+                    raise ValueError(
+                        "inherited reproduction resolution requires genotype state"
+                    )
+                requirements = np.full(
+                    parents.size,
+                    float(self.cfg.entities.reproduction_threshold),
+                    dtype=np.float32,
+                )
+            else:
+                requirements = np.asarray(
+                    reproduction_energy_requirement(
+                        snapshot.genotype[parents], self.cfg
+                    ),
+                    dtype=np.float32,
+                )
             valid_parent = (
-                snapshot.energy[parents] >= self.cfg.entities.reproduction_threshold
+                snapshot.energy[parents] >= requirements
             ) & (snapshot.fertility[parents] >= 0.5)
             invalid_rows = reproduce_rows[~valid_parent]
             resolutions.success[invalid_rows] = False
@@ -384,8 +407,21 @@ class DeterministicActionConflictResolver:
             rejected = candidates[snapshot.free_slot_count :]
             resolutions.success[rejected] = False
             resolutions.failure_reason[rejected] = FailureReason.INSUFFICIENT_CAPACITY
-            resolutions.energy_cost[accepted_reproduce_rows] = self.cfg.entities.reproduction_cost
             accepted_parents = intents.carrier_index[accepted_reproduce_rows]
+            if snapshot.genotype is None:
+                accepted_cost = np.full(
+                    accepted_parents.size,
+                    float(self.cfg.entities.reproduction_cost),
+                    dtype=np.float32,
+                )
+            else:
+                accepted_cost = np.asarray(
+                    reproduction_energy_cost(
+                        snapshot.genotype[accepted_parents], self.cfg
+                    ),
+                    dtype=np.float32,
+                )
+            resolutions.energy_cost[accepted_reproduce_rows] = accepted_cost
             birth_requests = BirthRequestPlan(
                 source_rows=accepted_reproduce_rows.astype(np.int32, copy=False),
                 parent_indices=accepted_parents.astype(np.int32, copy=False),

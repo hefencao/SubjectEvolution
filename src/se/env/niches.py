@@ -121,6 +121,12 @@ def active_morphology_traits(cfg: SimulationConfig) -> tuple[tuple[int, ...], tu
     if cfg.entities.danger_evidence_schema == "inherited-direct-trace-mixture-v1":
         indices.append(6)
         names.append("danger_direct_trace_mixture")
+    elif (
+        cfg.entities.reproduction_schema
+        == "inherited-conservative-offspring-investment-v2"
+    ):
+        indices.append(6)
+        names.append("reproduction_investment")
     if resource_sensing_enabled(cfg):
         indices.append(RESOURCE_SENSING_GENE_INDEX)
         names.append("resource_sensing_radius")

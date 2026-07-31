@@ -156,6 +156,18 @@ INTERVENTIONS = (
         aliases=("resource-store-uniform", "store-allocation-neutral"),
     ),
     InterventionSpec(
+        "neutralize-conservative-offspring-endowment",
+        InterventionKind.MODIFY_RULES,
+        "inherited-parent-to-offspring-energy-transfer-return",
+        aliases=("offspring-endowment-off", "reproduction-investment-return-off"),
+    ),
+    InterventionSpec(
+        "neutralize-external-resource-recycling",
+        InterventionKind.MODIFY_RULES,
+        "future-same-channel-residue-deposition-diffusion-and-release",
+        aliases=("external-recycling-off", "resource-recycling-off"),
+    ),
+    InterventionSpec(
         "neutralize-spatial-processing-support",
         InterventionKind.MODIFY_RULES,
         "phase-shifted-four-channel-processing-support",

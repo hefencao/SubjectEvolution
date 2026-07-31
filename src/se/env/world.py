@@ -96,6 +96,7 @@ class Environment:
             self.last_resource_residue_released = np.zeros(
                 self.RESOURCE_CHANNELS, dtype=np.float64
             )
+        self.resource_recycling_ablation_enabled = False
         self.hazard = self._hazard_pattern(0)
         self.mortality_trace = np.zeros((gy, gx), dtype=np.float32)
         initialize_resource_residue(self)

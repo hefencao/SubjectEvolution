@@ -31,6 +31,7 @@ from se.experiments.d2_lineage_pairs import (
     load_lineage_pair_plan,
 )
 from se.runtime.sim import Simulation
+from se.runtime.reproduction import reproduction_energy_requirement
 from se.runtime.state import StepStats
 
 PLAN_SCHEMA = "d2-lineage-mediation-plan-v1"
@@ -342,7 +343,12 @@ class _LineageTrajectoryObserver:
         material = np.asarray(ent.material[rows], dtype=np.float64)
         information = np.asarray(ent.information_store[rows], dtype=np.float64)
         ready = (
-            (energy >= float(simulation.cfg.entities.reproduction_threshold))
+            (energy >= np.asarray(
+                reproduction_energy_requirement(
+                    ent.genotype[rows], simulation.cfg
+                ),
+                dtype=np.float64,
+            ))
             & (fertility >= 0.5)
         )
         world_energy = np.asarray(ent.energy[world_rows], dtype=np.float64)

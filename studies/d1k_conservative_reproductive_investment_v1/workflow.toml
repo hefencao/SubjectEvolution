@@ -1,0 +1,68 @@
+schema = "se-study-workflow-v1"
+study_id = "d1k_conservative_reproductive_investment_v1"
+title = "D1-K conservative parental investment and generational substrate"
+
+[parameters.backend]
+type = "choice"
+default = "auto"
+choices = ["auto", "cpu", "gpu"]
+description = "Execution backend."
+
+[parameters.seeds]
+type = "csv-int"
+default = "90001,90002,90003"
+description = "Comma-separated independent calibration seeds."
+
+[parameters.checkpoint_tick]
+type = "int"
+default = 720
+minimum = 1
+description = "Common source checkpoint tick; calibration only."
+
+[parameters.horizon]
+type = "int"
+default = 240
+minimum = 1
+description = "Paired branch horizon in ticks."
+
+[parameters.source_root]
+type = "path"
+default = "runs/base/d1k_conservative_reproductive_investment_v1/pilot"
+description = "Source trajectory output root."
+
+[parameters.runtime_root]
+type = "path"
+default = "runs/interventions/d1k_conservative_reproductive_investment_v1/pilot"
+description = "Paired branch runtime root."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1k_conservative_reproductive_investment_v1/pilot"
+description = "Paired plan and result output root."
+
+[parameters.output]
+type = "result-path"
+default = "d1k_conservative_reproductive_investment_v1_results.zip"
+description = "Result bundle filename or absolute external path."
+
+[parameters.include_checkpoints]
+type = "bool"
+default = false
+description = "Include checkpoint bytes for exact replay."
+
+[steps.source-pilot]
+description = "Run the three-seed conservative parental-investment source calibration."
+command = ["se-multi", "--config", "{study_dir}/protocol/source_pilot.json", "--seeds", "{seeds}", "--output", "{source_root}", "--backend", "{backend}", "--until-tick", "{checkpoint_tick}", "--checkpoint-ticks", "{checkpoint_tick}", "--skip-post-run-audits"]
+
+[steps.paired-plan]
+description = "Create the cost-preserving offspring-endowment neutralization plan."
+command = ["se-d1-reproduction-investment-plan", "--source-root", "{source_root}", "--checkpoint-tick", "{checkpoint_tick}", "--horizon", "{horizon}", "--runtime-root", "{runtime_root}", "--output", "{analysis_root}/paired_plan.json"]
+
+[steps.paired-run]
+description = "Execute endowment-active and endowment-neutral shared-checkpoint branches."
+command = ["se-d1-reproduction-investment", "--plan", "{analysis_root}/paired_plan.json", "--output", "{analysis_root}/paired_results.json", "--backend", "{backend}"]
+
+[steps.pack-results]
+description = "Create the compact result bundle in the configured external directory."
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "analyses/d1k_conservative_reproductive_investment_v1", "--runtime-root", "runs/base/d1k_conservative_reproductive_investment_v1", "--runtime-root", "runs/interventions/d1k_conservative_reproductive_investment_v1", "--output", "{output}"]
+boolean_flags = { include_checkpoints = "--include-checkpoints" }

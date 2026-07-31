@@ -33,9 +33,11 @@ from se.env.danger_evidence import (
 )
 from se.env.world import Environment
 from se.env.resource_sensing import resource_sensing_enabled
+from .reproduction import inherited_reproduction_investment_enabled
 from se.differentiation.physiology import (
     fixed_budget_resource_conversion_enabled,
     fixed_budget_resource_storage_enabled,
+    external_resource_recycling_enabled,
 )
 from se.env.diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
@@ -499,9 +501,10 @@ class SimulationExperimentMixin:
                 "transport-metabolism-messenger-tissue-resource-v7",
                 "transport-metabolism-messenger-tissue-resource-v8",
                 "transport-metabolism-messenger-tissue-resource-v9",
+                "transport-metabolism-messenger-tissue-resource-v10",
             }:
                 raise ValueError(
-                    "messenger receptor blockade requires regulatory physiology v2-v9"
+                    "messenger receptor blockade requires regulatory physiology v2-v10"
                 )
             canonical = "block-physiology-messenger-receptors"
             self.physiology_messenger_receptor_blockade_enabled = True
@@ -606,7 +609,7 @@ class SimulationExperimentMixin:
         elif normalized == "neutralize-resource-store-allocation":
             if not fixed_budget_resource_storage_enabled(self.cfg):
                 raise ValueError(
-                    "neutralize-resource-store-allocation requires physiology resource-v9"
+                    "neutralize-resource-store-allocation requires physiology resource-v9/v10"
                 )
             canonical = "neutralize-resource-store-allocation"
             self.resource_store_allocation_ablation_enabled = True
@@ -621,6 +624,42 @@ class SimulationExperimentMixin:
                 "genotype_coordinates_modified": 0,
                 "inheritance_modified": False,
                 "future_offspring_expression_neutralized": True,
+            }
+        elif normalized == "neutralize-conservative-offspring-endowment":
+            if not inherited_reproduction_investment_enabled(self.cfg):
+                raise ValueError(
+                    "neutralize-conservative-offspring-endowment requires inherited reproduction investment"
+                )
+            canonical = "neutralize-conservative-offspring-endowment"
+            self.offspring_endowment_ablation_enabled = True
+            details = {
+                "effective_offspring_energy_endowment": 0.0,
+                "parent_investment_and_overhead_preserved": True,
+                "parent_reserve_requirement_preserved": True,
+                "fertility_cost_preserved": True,
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+                "future_offspring_endowment_neutralized": True,
+            }
+        elif normalized == "neutralize-external-resource-recycling":
+            if not external_resource_recycling_enabled(self.cfg):
+                raise ValueError(
+                    "neutralize-external-resource-recycling requires configured external recycling"
+                )
+            canonical = "neutralize-external-resource-recycling"
+            self.resource_recycling_ablation_enabled = True
+            self.environment.resource_recycling_ablation_enabled = True
+            if self.gpu_runtime is not None:
+                self.gpu_runtime.environment.resource_recycling_ablation_enabled = True
+            details = {
+                "effective_recycling": "future-deposit-diffusion-release-disabled",
+                "existing_residue_inventory_preserved": True,
+                "resource_fields_modified_at_intervention": False,
+                "internal_resource_stores_preserved": True,
+                "storage_and_conversion_allocations_preserved": True,
+                "physiology_costs_preserved": True,
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
             }
         elif normalized == "neutralize-spatial-processing-support":
             if not spatial_processing_enabled(self.cfg):

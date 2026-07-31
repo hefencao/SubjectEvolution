@@ -1,0 +1,2170 @@
+{
+  "schema": "d1-resource-storage-shared-checkpoint-results-v1",
+  "plan": {
+    "schema": "d1-resource-storage-shared-checkpoint-plan-v1",
+    "source_root": "runs/base/d1j_fixed_budget_resource_storage_v1/pilot",
+    "checkpoint_tick": 480,
+    "horizon_ticks": 120,
+    "runtime_root": "runs/interventions/d1j_fixed_budget_resource_storage_v1/pilot",
+    "sources": [
+      {
+        "seed": 89001,
+        "run_dir": "runs/base/d1j_fixed_budget_resource_storage_v1/pilot/seed_89001",
+        "checkpoint_path": "runs/base/d1j_fixed_budget_resource_storage_v1/pilot/seed_89001/checkpoint_00000480.sechk",
+        "checkpoint_sha256": "7c8f2dd64dbaaf3e7b6949fd04d9bc7a3ef8862c4357531a7e6c3eeef76149b6",
+        "checkpoint_tick": 480,
+        "resolved_config_sha256": "eb05475ce52bef3d071177d6cbb2f222ba435623ad858380b38bf427344cca25"
+      },
+      {
+        "seed": 89002,
+        "run_dir": "runs/base/d1j_fixed_budget_resource_storage_v1/pilot/seed_89002",
+        "checkpoint_path": "runs/base/d1j_fixed_budget_resource_storage_v1/pilot/seed_89002/checkpoint_00000480.sechk",
+        "checkpoint_sha256": "54fd7733aedb2f53fcaa01bd9a909cdb803e6b2339717686cd8217f5a898ed5d",
+        "checkpoint_tick": 480,
+        "resolved_config_sha256": "cd8d598b96f6ab93c10782dcb4138358549e3c598a2f35a71b958aadfa5ab584"
+      },
+      {
+        "seed": 89003,
+        "run_dir": "runs/base/d1j_fixed_budget_resource_storage_v1/pilot/seed_89003",
+        "checkpoint_path": "runs/base/d1j_fixed_budget_resource_storage_v1/pilot/seed_89003/checkpoint_00000480.sechk",
+        "checkpoint_sha256": "284a7a7e4ef65532d7cff96c0105640589a6abb38709aca05668a0fdb2b01373",
+        "checkpoint_tick": 480,
+        "resolved_config_sha256": "b22d8b7d25b1af995b080f279f948beaa17cfb65904714d3a791b628e30484ea"
+      }
+    ],
+    "branches": [
+      "inherited-storage",
+      "uniform-storage-neutral"
+    ],
+    "intervention": "neutralize-resource-store-allocation",
+    "paired_randomness": true,
+    "genotype_preserved": true,
+    "resource_fields_preserved_at_intervention": true,
+    "resource_stores_preserved_at_intervention": true,
+    "conversion_allocation_preserved": true,
+    "total_store_capacity_preserved": true,
+    "physiology_costs_preserved": true,
+    "pass_fail_gate": false,
+    "ecological_claim_authorized": false,
+    "selection_claim_authorized": false
+  },
+  "completed_seed_count": 3,
+  "pairs": [
+    {
+      "seed": 89001,
+      "shared_checkpoint_state": true,
+      "branches": [
+        {
+          "branch": "inherited-storage",
+          "output": "runs/interventions/d1j_fixed_budget_resource_storage_v1/pilot/seed_89001/inherited_storage",
+          "source_checkpoint_sha256": "7c8f2dd64dbaaf3e7b6949fd04d9bc7a3ef8862c4357531a7e6c3eeef76149b6",
+          "checkpoint_state_sha256": "a36b56ff4ab44ff9b08b55400d60c0f7366625f5960cb8c47ada9a80502ee8a9",
+          "interventions": [],
+          "genotype_preserved": true,
+          "resource_fields_preserved_at_intervention": true,
+          "resource_stores_preserved_at_intervention": true,
+          "conversion_allocation_preserved": true,
+          "inherited_allocation": {
+            "active_count": 53,
+            "effective_store_capacity_mean": [
+              1.217578334930544,
+              1.2095667833339252,
+              1.1671593649689251,
+              1.2056955167666055
+            ],
+            "effective_store_total_mean": 4.800000000000002,
+            "effective_store_allocation_specialization_mean": 0.27880339801490744,
+            "effective_store_allocation_dimensions_mean": 3.9642019237352066,
+            "store_total_budget_closed": true,
+            "conversion_capacity_mean": [
+              0.04125448942483084,
+              0.03944253775026257,
+              0.03923686323316202,
+              0.04006610959174457
+            ],
+            "maintenance_energy_per_tick_at_branch": 0.010636124451389362,
+            "development_energy_for_active_at_branch": 0.5318062225694681
+          },
+          "effective_allocation": {
+            "active_count": 53,
+            "effective_store_capacity_mean": [
+              1.217578334930544,
+              1.2095667833339252,
+              1.1671593649689251,
+              1.2056955167666055
+            ],
+            "effective_store_total_mean": 4.800000000000002,
+            "effective_store_allocation_specialization_mean": 0.27880339801490744,
+            "effective_store_allocation_dimensions_mean": 3.9642019237352066,
+            "store_total_budget_closed": true,
+            "conversion_capacity_mean": [
+              0.04125448942483084,
+              0.03944253775026257,
+              0.03923686323316202,
+              0.04006610959174457
+            ],
+            "maintenance_energy_per_tick_at_branch": 0.010636124451389362,
+            "development_energy_for_active_at_branch": 0.5318062225694681
+          },
+          "scientific_validity": {
+            "structural_evolution_provenance_valid": true,
+            "strict_unintervened_baseline": true,
+            "violations": [],
+            "backend_semantics": {
+              "requested_backend": "auto",
+              "execution_backend": "gpu-hybrid-accelerated",
+              "gpu_semantics_mode": "hybrid-accelerated",
+              "gpu_device_validated": true,
+              "gpu_acceleration_enabled": true,
+              "gpu_fallback_used": false,
+              "gpu_fallback_reason": null,
+              "gpu_latent_root_hash_batch_enabled": true,
+              "gpu_latent_root_hash_schema": "splitmix64-uint64-device-hash-cpu-ordered-quantization-v1",
+              "cpu_reference_world_authoritative": false,
+              "hybrid_acceleration_validation": "external-test-parity-suite",
+              "hybrid_acceleration_parity_proven": null
+            },
+            "strategy": {
+              "architecture": "inherited-variable-latent-router-mlp-v1",
+              "knowledge_schema": "dynamic-knowledge-latent-v1",
+              "knowledge_outcome_schema": "local-outcome-v1",
+              "knowledge_learning_enabled": true,
+              "knowledge_policy_influence": true,
+              "knowledge_policy_ablation_enabled": false,
+              "knowledge_policy_effective_enabled": true,
+              "knowledge_transfer_ablation_enabled": false,
+              "knowledge_transfer_effective_enabled": true,
+              "knowledge_transfer_trigger_schema": "signal-action-partner-v1",
+              "knowledge_transfer_probability": 0.1,
+              "knowledge_cultural_metrics_require_committed_transfer": true,
+              "capacity_ablation_enabled": false,
+              "capacity_effective_schema": "inherited-elastic-capacities-v1",
+              "resource_affinity_ablation_enabled": false,
+              "resource_sensing_ablation_enabled": false,
+              "resource_sensing_effective_schema": "inherited-demand-gated-affinity-budgeted-gradient-radius-v4",
+              "resource_conversion_allocation_ablation_enabled": false,
+              "resource_conversion_allocation_effective_schema": "transport-metabolism-messenger-tissue-resource-v9",
+              "resource_store_allocation_ablation_enabled": false,
+              "resource_store_allocation_effective_schema": "transport-metabolism-messenger-tissue-resource-v9",
+              "resource_processing_support_ablation_enabled": false,
+              "resource_processing_support_effective_enabled": false,
+              "resource_processing_support_orientation_reversed": false,
+              "functional_modules_ablation_enabled": false,
+              "functional_module_coupling_ablation_enabled": false,
+              "functional_module_ablation_mask": [
+                false,
+                false,
+                false,
+                false
+              ],
+              "functional_module_lineage_output_ablation": {},
+              "functional_module_lineage_cost_ablation": {},
+              "knowledge_policy_residual_schema": "quantized-variable-latent-mlp-residual-v1",
+              "knowledge_outcome_dense_log_enabled": true,
+              "knowledge_policy_dense_log_enabled": true,
+              "knowledge_candidate_tracking": false,
+              "knowledge_candidate_schema": null,
+              "knowledge_candidate_graph_schema": null,
+              "knowledge_candidate_diagnostic_only": true,
+              "knowledge_candidate_subjecthood_truth_claimed": false,
+              "knowledge_latent_policy_enabled": true,
+              "knowledge_latent_schema": "variable-latent-knowledge-v1",
+              "knowledge_latent_router_schema": "quantized-mlp-latent-router-v1",
+              "knowledge_latent_length_levels": [
+                4,
+                8,
+                16,
+                32
+              ],
+              "knowledge_latent_projection_width": 8,
+              "knowledge_latent_mlp_hidden_width": 8,
+              "knowledge_latent_activation": "integer-hard-tanh-v1",
+              "knowledge_latent_publish_quantized": true,
+              "knowledge_routing_cost_enabled": true,
+              "knowledge_routing_cost_dense_log_enabled": true,
+              "knowledge_routing_cost_schema": "latent-routing-compute-cost-v1",
+              "knowledge_routing_budget_mode": "all-or-none-per-entity-v1",
+              "knowledge_routing_cost_commit_boundary": "policy-proposal preflight, energy commit before intent resolution",
+              "knowledge_working_memory_enabled": true,
+              "knowledge_working_memory_dense_log_enabled": true,
+              "knowledge_working_memory_schema": "quantized-working-memory-v1",
+              "knowledge_working_memory_update_boundary": "post-outcome local state commit for next tick",
+              "knowledge_sparse_selection_enabled": true,
+              "knowledge_sparse_selection_dense_log_enabled": true,
+              "knowledge_sparse_selection_schema": "sparse-query-key-topk-router-v1",
+              "knowledge_sparse_selection_top_k": 4,
+              "knowledge_sparse_selection_authoritative_storage": false,
+              "knowledge_sparse_selection_global_category_embedding": false,
+              "knowledge_sparse_selection_softmax": false,
+              "feature_constraints": [
+                "bias",
+                "energy",
+                "integrity",
+                "fertility",
+                "scarcity",
+                "local_resource",
+                "resource_signal",
+                "danger_signal",
+                "social_signal",
+                "partner_exists",
+                "mean_partner_need",
+                "uncertainty",
+                "memory_resource",
+                "memory_social",
+                "memory_danger",
+                "memory_uncertainty"
+              ],
+              "action_preferences_hardcoded": false,
+              "strategy_gene_count": 128,
+              "knowledge_preference_gene_count": 568,
+              "genome_size": 704,
+              "initialization": "bounded stateless random generation",
+              "transmission": "parental inheritance with configured mutation",
+              "mutation_probability_per_gene": 0.01,
+              "mutation_std_conditional": 0.08,
+              "morphology_gene_semantics": {
+                "sensor_quality": 0,
+                "movement_speed": 5,
+                "danger_direct_trace_mixture": null,
+                "resource_sensing_radius": 7,
+                "reserved_neutral": []
+              },
+              "knowledge_preference_gene_semantics": {
+                "knowledge_use_strength_index": 141,
+                "latent_router_gene_start": 142,
+                "latent_router_gene_stop": 704,
+                "latent_router_schema": "quantized-mlp-latent-router-v1",
+                "latent_router_linear_shadow": true,
+                "latent_router_activation": "integer-hard-tanh-v1",
+                "latent_router_public_state": [
+                  "energy_fraction",
+                  "integrity",
+                  "fertility",
+                  "scarcity"
+                ],
+                "latent_router_output": "action_logit_residual",
+                "latent_router_parameter_origin": "inherited genome",
+                "latent_content_origin": "world-internal content lineage and local outcomes",
+                "latent_external_training": false,
+                "latent_publication": "CPU-reference quantized integers with stable aggregation",
+                "sparse_selection_capacity_schema": "inherited-discrete-topk-v1",
+                "sparse_selection_capacity_gene_index": 534,
+                "sparse_selection_capacity_levels": [
+                  0,
+                  1,
+                  2,
+                  4,
+                  8
+                ]
+              }
+            },
+            "state_origins": {
+              "memory": "observation-driven finite-memory dynamics",
+              "generation": "parent generation plus one at committed birth",
+              "candidate_subjects": "derived from bodies, lineages, and relation structure",
+              "knowledge_candidate_subjects": "disabled",
+              "knowledge": "dynamic variable-length latent contents routed by inherited quantized two-layer MLP parameters with an integer hard-tanh through the public action-logit residual boundary",
+              "mortality_trace": "local death-event deposits with public decay/diffusion; observed only through the existing danger boundary",
+              "environment_process": {
+                "api_schema": "additive-environment-field-process-v1",
+                "schema": "disabled",
+                "origin": "core-disabled",
+                "mechanism_class": "none",
+                "interpretation": "scientific-core-only",
+                "default_enabled": false,
+                "parameter_names": [],
+                "parameters_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+              },
+              "moving_hazard_schema": "disabled",
+              "moving_hazard_sources": 0,
+              "danger_evidence_schema": "disabled",
+              "danger_evidence_fixed_budget": true,
+              "subject_shift": "measured from candidate/control provenance; never assigned as a state label"
+            },
+            "evolution_evaluation": {
+              "period_ticks": 30,
+              "feedback_to_world": false,
+              "long_run_diagnostics_schema": "long-run-evolution-diagnostics-v1",
+              "long_run_diagnostics_feedback_to_world": false,
+              "strategy_sample_capacity": 4096,
+              "actual_context_sample_capacity": 4096,
+              "common_panel_strategy_capacity": 1024,
+              "common_panel_context_capacity": 32,
+              "lagged_boundary_identity": "stable-entity-id"
+            },
+            "control_arbiter": {
+              "name": "SingleProposalControlArbiter",
+              "scientific_safe": true
+            },
+            "world_components": {
+              "conflict_resolver": "GpuActionConflictResolver",
+              "conflict_resolver_scientific_safe": true,
+              "group_label_planner": "DeterministicGroupLabelPlanner",
+              "group_label_planner_scientific_safe": true,
+              "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+              "group_label_propagation_rounds": 8,
+              "group_trust_threshold": 0.12,
+              "group_min_members": 6,
+              "group_update_mode": "adaptive-topology-v1",
+              "group_update_period": 50,
+              "group_update_min_period": 100,
+              "group_update_max_period": 300,
+              "reproduction_capacity_arbitration": "stateless-random-v1"
+            },
+            "fixed_constraints": [
+              "physical action semantics and feasibility masks",
+              "sensor feature vocabulary",
+              "inheritance and mutation mechanics",
+              "candidate-subject measurement rules"
+            ],
+            "proof_scope": "structural provenance only; evolutionary or causal claims still require preregistered replicated experiments"
+          },
+          "final": {
+            "tick": 600,
+            "alive": 44,
+            "births_total": 10,
+            "deaths_total": 466,
+            "mean_energy": 1.1932213306427002,
+            "resource_store_total_capacity_mean": 4.800000000000001,
+            "resource_store_allocation_effective_dimensions_mean": 3.9631337989586726,
+            "resource_store_allocation_specialization_mean": 0.27877122227893775,
+            "resource_conversion_total_capacity_mean": 0.16000000000000003,
+            "resource_store_occupancy_mean": [
+              0.6595689097915162,
+              0.5401392810147926,
+              0.5766850528007261,
+              0.5662198533771794
+            ],
+            "resource_store_capacity_mean": [
+              1.2156260886038446,
+              1.2202538145709012,
+              1.15456442709783,
+              1.2095556697274243
+            ],
+            "resource_conversion_capacity_mean": [
+              0.041496569691023305,
+              0.03994559222831177,
+              0.03937605154912966,
+              0.03918178653153526
+            ],
+            "resource_stored_total": [
+              2949.0028259856103,
+              2818.767218281805,
+              2760.367420568637,
+              2858.3909679446515
+            ],
+            "resource_converted_total": [
+              2786.816418649966,
+              2567.6203207379363,
+              2515.095508445378,
+              2595.412321129844
+            ],
+            "resource_store_decay_total": [
+              92.45437086445482,
+              86.40547074560497,
+              79.16328309835924,
+              86.24692288344622
+            ],
+            "resource_body_realized_total": [
+              1449.1445376979805,
+              68.73752110697544,
+              168.38745280698126,
+              574.3843123762788,
+              535.6661419993293
+            ]
+          }
+        },
+        {
+          "branch": "uniform-storage-neutral",
+          "output": "runs/interventions/d1j_fixed_budget_resource_storage_v1/pilot/seed_89001/uniform_storage_neutral",
+          "source_checkpoint_sha256": "7c8f2dd64dbaaf3e7b6949fd04d9bc7a3ef8862c4357531a7e6c3eeef76149b6",
+          "checkpoint_state_sha256": "a36b56ff4ab44ff9b08b55400d60c0f7366625f5960cb8c47ada9a80502ee8a9",
+          "interventions": [
+            "neutralize-resource-store-allocation"
+          ],
+          "genotype_preserved": true,
+          "resource_fields_preserved_at_intervention": true,
+          "resource_stores_preserved_at_intervention": true,
+          "conversion_allocation_preserved": true,
+          "inherited_allocation": {
+            "active_count": 53,
+            "effective_store_capacity_mean": [
+              1.217578334930544,
+              1.2095667833339252,
+              1.1671593649689251,
+              1.2056955167666055
+            ],
+            "effective_store_total_mean": 4.800000000000002,
+            "effective_store_allocation_specialization_mean": 0.27880339801490744,
+            "effective_store_allocation_dimensions_mean": 3.9642019237352066,
+            "store_total_budget_closed": true,
+            "conversion_capacity_mean": [
+              0.04125448942483084,
+              0.03944253775026257,
+              0.03923686323316202,
+              0.04006610959174457
+            ],
+            "maintenance_energy_per_tick_at_branch": 0.010636124451389362,
+            "development_energy_for_active_at_branch": 0.5318062225694681
+          },
+          "effective_allocation": {
+            "active_count": 53,
+            "effective_store_capacity_mean": [
+              1.2000000000000013,
+              1.2000000000000013,
+              1.2000000000000013,
+              1.2000000000000013
+            ],
+            "effective_store_total_mean": 4.800000000000002,
+            "effective_store_allocation_specialization_mean": 0.25,
+            "effective_store_allocation_dimensions_mean": 4.0,
+            "store_total_budget_closed": true,
+            "conversion_capacity_mean": [
+              0.04125448942483084,
+              0.03944253775026257,
+              0.03923686323316202,
+              0.04006610959174457
+            ],
+            "maintenance_energy_per_tick_at_branch": 0.010636124451389362,
+            "development_energy_for_active_at_branch": 0.5318062225694681
+          },
+          "scientific_validity": {
+            "structural_evolution_provenance_valid": true,
+            "strict_unintervened_baseline": false,
+            "violations": [],
+            "backend_semantics": {
+              "requested_backend": "auto",
+              "execution_backend": "gpu-hybrid-accelerated",
+              "gpu_semantics_mode": "hybrid-accelerated",
+              "gpu_device_validated": true,
+              "gpu_acceleration_enabled": true,
+              "gpu_fallback_used": false,
+              "gpu_fallback_reason": null,
+              "gpu_latent_root_hash_batch_enabled": true,
+              "gpu_latent_root_hash_schema": "splitmix64-uint64-device-hash-cpu-ordered-quantization-v1",
+              "cpu_reference_world_authoritative": false,
+              "hybrid_acceleration_validation": "external-test-parity-suite",
+              "hybrid_acceleration_parity_proven": null
+            },
+            "strategy": {
+              "architecture": "inherited-variable-latent-router-mlp-v1",
+              "knowledge_schema": "dynamic-knowledge-latent-v1",
+              "knowledge_outcome_schema": "local-outcome-v1",
+              "knowledge_learning_enabled": true,
+              "knowledge_policy_influence": true,
+              "knowledge_policy_ablation_enabled": false,
+              "knowledge_policy_effective_enabled": true,
+              "knowledge_transfer_ablation_enabled": false,
+              "knowledge_transfer_effective_enabled": true,
+              "knowledge_transfer_trigger_schema": "signal-action-partner-v1",
+              "knowledge_transfer_probability": 0.1,
+              "knowledge_cultural_metrics_require_committed_transfer": true,
+              "capacity_ablation_enabled": false,
+              "capacity_effective_schema": "inherited-elastic-capacities-v1",
+              "resource_affinity_ablation_enabled": false,
+              "resource_sensing_ablation_enabled": false,
+              "resource_sensing_effective_schema": "inherited-demand-gated-affinity-budgeted-gradient-radius-v4",
+              "resource_conversion_allocation_ablation_enabled": false,
+              "resource_conversion_allocation_effective_schema": "transport-metabolism-messenger-tissue-resource-v9",
+              "resource_store_allocation_ablation_enabled": true,
+              "resource_store_allocation_effective_schema": "configured-neutral-channel-base-ablation-v1",
+              "resource_processing_support_ablation_enabled": false,
+              "resource_processing_support_effective_enabled": false,
+              "resource_processing_support_orientation_reversed": false,
+              "functional_modules_ablation_enabled": false,
+              "functional_module_coupling_ablation_enabled": false,
+              "functional_module_ablation_mask": [
+                false,
+                false,
+                false,
+                false
+              ],
+              "functional_module_lineage_output_ablation": {},
+              "functional_module_lineage_cost_ablation": {},
+              "knowledge_policy_residual_schema": "quantized-variable-latent-mlp-residual-v1",
+              "knowledge_outcome_dense_log_enabled": true,
+              "knowledge_policy_dense_log_enabled": true,
+              "knowledge_candidate_tracking": false,
+              "knowledge_candidate_schema": null,
+              "knowledge_candidate_graph_schema": null,
+              "knowledge_candidate_diagnostic_only": true,
+              "knowledge_candidate_subjecthood_truth_claimed": false,
+              "knowledge_latent_policy_enabled": true,
+              "knowledge_latent_schema": "variable-latent-knowledge-v1",
+              "knowledge_latent_router_schema": "quantized-mlp-latent-router-v1",
+              "knowledge_latent_length_levels": [
+                4,
+                8,
+                16,
+                32
+              ],
+              "knowledge_latent_projection_width": 8,
+              "knowledge_latent_mlp_hidden_width": 8,
+              "knowledge_latent_activation": "integer-hard-tanh-v1",
+              "knowledge_latent_publish_quantized": true,
+              "knowledge_routing_cost_enabled": true,
+              "knowledge_routing_cost_dense_log_enabled": true,
+              "knowledge_routing_cost_schema": "latent-routing-compute-cost-v1",
+              "knowledge_routing_budget_mode": "all-or-none-per-entity-v1",
+              "knowledge_routing_cost_commit_boundary": "policy-proposal preflight, energy commit before intent resolution",
+              "knowledge_working_memory_enabled": true,
+              "knowledge_working_memory_dense_log_enabled": true,
+              "knowledge_working_memory_schema": "quantized-working-memory-v1",
+              "knowledge_working_memory_update_boundary": "post-outcome local state commit for next tick",
+              "knowledge_sparse_selection_enabled": true,
+              "knowledge_sparse_selection_dense_log_enabled": true,
+              "knowledge_sparse_selection_schema": "sparse-query-key-topk-router-v1",
+              "knowledge_sparse_selection_top_k": 4,
+              "knowledge_sparse_selection_authoritative_storage": false,
+              "knowledge_sparse_selection_global_category_embedding": false,
+              "knowledge_sparse_selection_softmax": false,
+              "feature_constraints": [
+                "bias",
+                "energy",
+                "integrity",
+                "fertility",
+                "scarcity",
+                "local_resource",
+                "resource_signal",
+                "danger_signal",
+                "social_signal",
+                "partner_exists",
+                "mean_partner_need",
+                "uncertainty",
+                "memory_resource",
+                "memory_social",
+                "memory_danger",
+                "memory_uncertainty"
+              ],
+              "action_preferences_hardcoded": false,
+              "strategy_gene_count": 128,
+              "knowledge_preference_gene_count": 568,
+              "genome_size": 704,
+              "initialization": "bounded stateless random generation",
+              "transmission": "parental inheritance with configured mutation",
+              "mutation_probability_per_gene": 0.01,
+              "mutation_std_conditional": 0.08,
+              "morphology_gene_semantics": {
+                "sensor_quality": 0,
+                "movement_speed": 5,
+                "danger_direct_trace_mixture": null,
+                "resource_sensing_radius": 7,
+                "reserved_neutral": []
+              },
+              "knowledge_preference_gene_semantics": {
+                "knowledge_use_strength_index": 141,
+                "latent_router_gene_start": 142,
+                "latent_router_gene_stop": 704,
+                "latent_router_schema": "quantized-mlp-latent-router-v1",
+                "latent_router_linear_shadow": true,
+                "latent_router_activation": "integer-hard-tanh-v1",
+                "latent_router_public_state": [
+                  "energy_fraction",
+                  "integrity",
+                  "fertility",
+                  "scarcity"
+                ],
+                "latent_router_output": "action_logit_residual",
+                "latent_router_parameter_origin": "inherited genome",
+                "latent_content_origin": "world-internal content lineage and local outcomes",
+                "latent_external_training": false,
+                "latent_publication": "CPU-reference quantized integers with stable aggregation",
+                "sparse_selection_capacity_schema": "inherited-discrete-topk-v1",
+                "sparse_selection_capacity_gene_index": 534,
+                "sparse_selection_capacity_levels": [
+                  0,
+                  1,
+                  2,
+                  4,
+                  8
+                ]
+              }
+            },
+            "state_origins": {
+              "memory": "observation-driven finite-memory dynamics",
+              "generation": "parent generation plus one at committed birth",
+              "candidate_subjects": "derived from bodies, lineages, and relation structure",
+              "knowledge_candidate_subjects": "disabled",
+              "knowledge": "dynamic variable-length latent contents routed by inherited quantized two-layer MLP parameters with an integer hard-tanh through the public action-logit residual boundary",
+              "mortality_trace": "local death-event deposits with public decay/diffusion; observed only through the existing danger boundary",
+              "environment_process": {
+                "api_schema": "additive-environment-field-process-v1",
+                "schema": "disabled",
+                "origin": "core-disabled",
+                "mechanism_class": "none",
+                "interpretation": "scientific-core-only",
+                "default_enabled": false,
+                "parameter_names": [],
+                "parameters_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+              },
+              "moving_hazard_schema": "disabled",
+              "moving_hazard_sources": 0,
+              "danger_evidence_schema": "disabled",
+              "danger_evidence_fixed_budget": true,
+              "subject_shift": "measured from candidate/control provenance; never assigned as a state label"
+            },
+            "evolution_evaluation": {
+              "period_ticks": 30,
+              "feedback_to_world": false,
+              "long_run_diagnostics_schema": "long-run-evolution-diagnostics-v1",
+              "long_run_diagnostics_feedback_to_world": false,
+              "strategy_sample_capacity": 4096,
+              "actual_context_sample_capacity": 4096,
+              "common_panel_strategy_capacity": 1024,
+              "common_panel_context_capacity": 32,
+              "lagged_boundary_identity": "stable-entity-id"
+            },
+            "control_arbiter": {
+              "name": "SingleProposalControlArbiter",
+              "scientific_safe": true
+            },
+            "world_components": {
+              "conflict_resolver": "GpuActionConflictResolver",
+              "conflict_resolver_scientific_safe": true,
+              "group_label_planner": "DeterministicGroupLabelPlanner",
+              "group_label_planner_scientific_safe": true,
+              "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+              "group_label_propagation_rounds": 8,
+              "group_trust_threshold": 0.12,
+              "group_min_members": 6,
+              "group_update_mode": "adaptive-topology-v1",
+              "group_update_period": 50,
+              "group_update_min_period": 100,
+              "group_update_max_period": 300,
+              "reproduction_capacity_arbitration": "stateless-random-v1"
+            },
+            "fixed_constraints": [
+              "physical action semantics and feasibility masks",
+              "sensor feature vocabulary",
+              "inheritance and mutation mechanics",
+              "candidate-subject measurement rules"
+            ],
+            "proof_scope": "structural provenance only; evolutionary or causal claims still require preregistered replicated experiments"
+          },
+          "final": {
+            "tick": 600,
+            "alive": 44,
+            "births_total": 10,
+            "deaths_total": 466,
+            "mean_energy": 1.1912012100219727,
+            "resource_store_total_capacity_mean": 4.800000000000001,
+            "resource_store_allocation_effective_dimensions_mean": 4.0,
+            "resource_store_allocation_specialization_mean": 0.25,
+            "resource_conversion_total_capacity_mean": 0.16000000000000003,
+            "resource_store_occupancy_mean": [
+              0.6730643521542802,
+              0.5387316837511732,
+              0.5904836989374774,
+              0.5597095493453021
+            ],
+            "resource_store_capacity_mean": [
+              1.2000000000000008,
+              1.2000000000000008,
+              1.2000000000000008,
+              1.2000000000000008
+            ],
+            "resource_conversion_capacity_mean": [
+              0.041496569691023305,
+              0.03994559222831177,
+              0.03937605154912966,
+              0.03918178653153526
+            ],
+            "resource_stored_total": [
+              2947.794469495928,
+              2817.949393092606,
+              2762.913591780511,
+              2857.798315445516
+            ],
+            "resource_converted_total": [
+              2785.82584487616,
+              2567.4042020134825,
+              2515.6341285739263,
+              2595.6597288711573
+            ],
+            "resource_store_decay_total": [
+              92.3054413545417,
+              86.25467700500671,
+              79.38867076215536,
+              86.22072420386932
+            ],
+            "resource_body_realized_total": [
+              1448.629439335601,
+              68.72756130223523,
+              168.40417461314095,
+              574.4633405003985,
+              535.6761355883172
+            ]
+          }
+        }
+      ],
+      "paired_difference_inherited_minus_uniform": {
+        "tick": 0.0,
+        "alive": 0.0,
+        "births_total": 0.0,
+        "deaths_total": 0.0,
+        "mean_energy": 0.002020120620727539,
+        "resource_store_total_capacity_mean": 0.0,
+        "resource_store_allocation_effective_dimensions_mean": -0.03686620104132743,
+        "resource_store_allocation_specialization_mean": 0.028771222278937747,
+        "resource_conversion_total_capacity_mean": 0.0,
+        "resource_store_occupancy_mean": [
+          -0.01349544236276401,
+          0.0014075972636193868,
+          -0.013798646136751302,
+          0.006510304031877245
+        ],
+        "resource_store_capacity_mean": [
+          0.015626088603843735,
+          0.020253814570900364,
+          -0.04543557290217093,
+          0.0095556697274235
+        ],
+        "resource_conversion_capacity_mean": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "resource_stored_total": [
+          1.208356489682501,
+          0.817825189199084,
+          -2.546171211874025,
+          0.5926524991355109
+        ],
+        "resource_converted_total": [
+          0.9905737738063181,
+          0.21611872445373592,
+          -0.5386201285482457,
+          -0.24740774131350918
+        ],
+        "resource_store_decay_total": [
+          0.14892950991311693,
+          0.15079374059826023,
+          -0.22538766379611275,
+          0.02619867957689337
+        ],
+        "resource_body_realized_total": [
+          0.5150983623793763,
+          0.009959804740205414,
+          -0.016721806159694097,
+          -0.07902812411975901,
+          -0.009993588987867952
+        ]
+      }
+    },
+    {
+      "seed": 89002,
+      "shared_checkpoint_state": true,
+      "branches": [
+        {
+          "branch": "inherited-storage",
+          "output": "runs/interventions/d1j_fixed_budget_resource_storage_v1/pilot/seed_89002/inherited_storage",
+          "source_checkpoint_sha256": "54fd7733aedb2f53fcaa01bd9a909cdb803e6b2339717686cd8217f5a898ed5d",
+          "checkpoint_state_sha256": "4f8c08bbf9f3b4fdb3878303941130ec0e9a4dfda24c1ce1cbba9f57cd68afd5",
+          "interventions": [],
+          "genotype_preserved": true,
+          "resource_fields_preserved_at_intervention": true,
+          "resource_stores_preserved_at_intervention": true,
+          "conversion_allocation_preserved": true,
+          "inherited_allocation": {
+            "active_count": 55,
+            "effective_store_capacity_mean": [
+              1.2107443335992116,
+              1.190231155313662,
+              1.180976058669389,
+              1.2180484524177368
+            ],
+            "effective_store_total_mean": 4.800000000000001,
+            "effective_store_allocation_specialization_mean": 0.2787617106824482,
+            "effective_store_allocation_dimensions_mean": 3.9597597005790512,
+            "store_total_budget_closed": true,
+            "conversion_capacity_mean": [
+              0.04103183785466977,
+              0.03959768971179162,
+              0.03892637953259044,
+              0.040444092900948185
+            ],
+            "maintenance_energy_per_tick_at_branch": 0.011062538836828272,
+            "development_energy_for_active_at_branch": 0.5531269418414136
+          },
+          "effective_allocation": {
+            "active_count": 55,
+            "effective_store_capacity_mean": [
+              1.2107443335992116,
+              1.190231155313662,
+              1.180976058669389,
+              1.2180484524177368
+            ],
+            "effective_store_total_mean": 4.800000000000001,
+            "effective_store_allocation_specialization_mean": 0.2787617106824482,
+            "effective_store_allocation_dimensions_mean": 3.9597597005790512,
+            "store_total_budget_closed": true,
+            "conversion_capacity_mean": [
+              0.04103183785466977,
+              0.03959768971179162,
+              0.03892637953259044,
+              0.040444092900948185
+            ],
+            "maintenance_energy_per_tick_at_branch": 0.011062538836828272,
+            "development_energy_for_active_at_branch": 0.5531269418414136
+          },
+          "scientific_validity": {
+            "structural_evolution_provenance_valid": true,
+            "strict_unintervened_baseline": true,
+            "violations": [],
+            "backend_semantics": {
+              "requested_backend": "auto",
+              "execution_backend": "gpu-hybrid-accelerated",
+              "gpu_semantics_mode": "hybrid-accelerated",
+              "gpu_device_validated": true,
+              "gpu_acceleration_enabled": true,
+              "gpu_fallback_used": false,
+              "gpu_fallback_reason": null,
+              "gpu_latent_root_hash_batch_enabled": true,
+              "gpu_latent_root_hash_schema": "splitmix64-uint64-device-hash-cpu-ordered-quantization-v1",
+              "cpu_reference_world_authoritative": false,
+              "hybrid_acceleration_validation": "external-test-parity-suite",
+              "hybrid_acceleration_parity_proven": null
+            },
+            "strategy": {
+              "architecture": "inherited-variable-latent-router-mlp-v1",
+              "knowledge_schema": "dynamic-knowledge-latent-v1",
+              "knowledge_outcome_schema": "local-outcome-v1",
+              "knowledge_learning_enabled": true,
+              "knowledge_policy_influence": true,
+              "knowledge_policy_ablation_enabled": false,
+              "knowledge_policy_effective_enabled": true,
+              "knowledge_transfer_ablation_enabled": false,
+              "knowledge_transfer_effective_enabled": true,
+              "knowledge_transfer_trigger_schema": "signal-action-partner-v1",
+              "knowledge_transfer_probability": 0.1,
+              "knowledge_cultural_metrics_require_committed_transfer": true,
+              "capacity_ablation_enabled": false,
+              "capacity_effective_schema": "inherited-elastic-capacities-v1",
+              "resource_affinity_ablation_enabled": false,
+              "resource_sensing_ablation_enabled": false,
+              "resource_sensing_effective_schema": "inherited-demand-gated-affinity-budgeted-gradient-radius-v4",
+              "resource_conversion_allocation_ablation_enabled": false,
+              "resource_conversion_allocation_effective_schema": "transport-metabolism-messenger-tissue-resource-v9",
+              "resource_store_allocation_ablation_enabled": false,
+              "resource_store_allocation_effective_schema": "transport-metabolism-messenger-tissue-resource-v9",
+              "resource_processing_support_ablation_enabled": false,
+              "resource_processing_support_effective_enabled": false,
+              "resource_processing_support_orientation_reversed": false,
+              "functional_modules_ablation_enabled": false,
+              "functional_module_coupling_ablation_enabled": false,
+              "functional_module_ablation_mask": [
+                false,
+                false,
+                false,
+                false
+              ],
+              "functional_module_lineage_output_ablation": {},
+              "functional_module_lineage_cost_ablation": {},
+              "knowledge_policy_residual_schema": "quantized-variable-latent-mlp-residual-v1",
+              "knowledge_outcome_dense_log_enabled": true,
+              "knowledge_policy_dense_log_enabled": true,
+              "knowledge_candidate_tracking": false,
+              "knowledge_candidate_schema": null,
+              "knowledge_candidate_graph_schema": null,
+              "knowledge_candidate_diagnostic_only": true,
+              "knowledge_candidate_subjecthood_truth_claimed": false,
+              "knowledge_latent_policy_enabled": true,
+              "knowledge_latent_schema": "variable-latent-knowledge-v1",
+              "knowledge_latent_router_schema": "quantized-mlp-latent-router-v1",
+              "knowledge_latent_length_levels": [
+                4,
+                8,
+                16,
+                32
+              ],
+              "knowledge_latent_projection_width": 8,
+              "knowledge_latent_mlp_hidden_width": 8,
+              "knowledge_latent_activation": "integer-hard-tanh-v1",
+              "knowledge_latent_publish_quantized": true,
+              "knowledge_routing_cost_enabled": true,
+              "knowledge_routing_cost_dense_log_enabled": true,
+              "knowledge_routing_cost_schema": "latent-routing-compute-cost-v1",
+              "knowledge_routing_budget_mode": "all-or-none-per-entity-v1",
+              "knowledge_routing_cost_commit_boundary": "policy-proposal preflight, energy commit before intent resolution",
+              "knowledge_working_memory_enabled": true,
+              "knowledge_working_memory_dense_log_enabled": true,
+              "knowledge_working_memory_schema": "quantized-working-memory-v1",
+              "knowledge_working_memory_update_boundary": "post-outcome local state commit for next tick",
+              "knowledge_sparse_selection_enabled": true,
+              "knowledge_sparse_selection_dense_log_enabled": true,
+              "knowledge_sparse_selection_schema": "sparse-query-key-topk-router-v1",
+              "knowledge_sparse_selection_top_k": 4,
+              "knowledge_sparse_selection_authoritative_storage": false,
+              "knowledge_sparse_selection_global_category_embedding": false,
+              "knowledge_sparse_selection_softmax": false,
+              "feature_constraints": [
+                "bias",
+                "energy",
+                "integrity",
+                "fertility",
+                "scarcity",
+                "local_resource",
+                "resource_signal",
+                "danger_signal",
+                "social_signal",
+                "partner_exists",
+                "mean_partner_need",
+                "uncertainty",
+                "memory_resource",
+                "memory_social",
+                "memory_danger",
+                "memory_uncertainty"
+              ],
+              "action_preferences_hardcoded": false,
+              "strategy_gene_count": 128,
+              "knowledge_preference_gene_count": 568,
+              "genome_size": 704,
+              "initialization": "bounded stateless random generation",
+              "transmission": "parental inheritance with configured mutation",
+              "mutation_probability_per_gene": 0.01,
+              "mutation_std_conditional": 0.08,
+              "morphology_gene_semantics": {
+                "sensor_quality": 0,
+                "movement_speed": 5,
+                "danger_direct_trace_mixture": null,
+                "resource_sensing_radius": 7,
+                "reserved_neutral": []
+              },
+              "knowledge_preference_gene_semantics": {
+                "knowledge_use_strength_index": 141,
+                "latent_router_gene_start": 142,
+                "latent_router_gene_stop": 704,
+                "latent_router_schema": "quantized-mlp-latent-router-v1",
+                "latent_router_linear_shadow": true,
+                "latent_router_activation": "integer-hard-tanh-v1",
+                "latent_router_public_state": [
+                  "energy_fraction",
+                  "integrity",
+                  "fertility",
+                  "scarcity"
+                ],
+                "latent_router_output": "action_logit_residual",
+                "latent_router_parameter_origin": "inherited genome",
+                "latent_content_origin": "world-internal content lineage and local outcomes",
+                "latent_external_training": false,
+                "latent_publication": "CPU-reference quantized integers with stable aggregation",
+                "sparse_selection_capacity_schema": "inherited-discrete-topk-v1",
+                "sparse_selection_capacity_gene_index": 534,
+                "sparse_selection_capacity_levels": [
+                  0,
+                  1,
+                  2,
+                  4,
+                  8
+                ]
+              }
+            },
+            "state_origins": {
+              "memory": "observation-driven finite-memory dynamics",
+              "generation": "parent generation plus one at committed birth",
+              "candidate_subjects": "derived from bodies, lineages, and relation structure",
+              "knowledge_candidate_subjects": "disabled",
+              "knowledge": "dynamic variable-length latent contents routed by inherited quantized two-layer MLP parameters with an integer hard-tanh through the public action-logit residual boundary",
+              "mortality_trace": "local death-event deposits with public decay/diffusion; observed only through the existing danger boundary",
+              "environment_process": {
+                "api_schema": "additive-environment-field-process-v1",
+                "schema": "disabled",
+                "origin": "core-disabled",
+                "mechanism_class": "none",
+                "interpretation": "scientific-core-only",
+                "default_enabled": false,
+                "parameter_names": [],
+                "parameters_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+              },
+              "moving_hazard_schema": "disabled",
+              "moving_hazard_sources": 0,
+              "danger_evidence_schema": "disabled",
+              "danger_evidence_fixed_budget": true,
+              "subject_shift": "measured from candidate/control provenance; never assigned as a state label"
+            },
+            "evolution_evaluation": {
+              "period_ticks": 30,
+              "feedback_to_world": false,
+              "long_run_diagnostics_schema": "long-run-evolution-diagnostics-v1",
+              "long_run_diagnostics_feedback_to_world": false,
+              "strategy_sample_capacity": 4096,
+              "actual_context_sample_capacity": 4096,
+              "common_panel_strategy_capacity": 1024,
+              "common_panel_context_capacity": 32,
+              "lagged_boundary_identity": "stable-entity-id"
+            },
+            "control_arbiter": {
+              "name": "SingleProposalControlArbiter",
+              "scientific_safe": true
+            },
+            "world_components": {
+              "conflict_resolver": "GpuActionConflictResolver",
+              "conflict_resolver_scientific_safe": true,
+              "group_label_planner": "DeterministicGroupLabelPlanner",
+              "group_label_planner_scientific_safe": true,
+              "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+              "group_label_propagation_rounds": 8,
+              "group_trust_threshold": 0.12,
+              "group_min_members": 6,
+              "group_update_mode": "adaptive-topology-v1",
+              "group_update_period": 50,
+              "group_update_min_period": 100,
+              "group_update_max_period": 300,
+              "reproduction_capacity_arbitration": "stateless-random-v1"
+            },
+            "fixed_constraints": [
+              "physical action semantics and feasibility masks",
+              "sensor feature vocabulary",
+              "inheritance and mutation mechanics",
+              "candidate-subject measurement rules"
+            ],
+            "proof_scope": "structural provenance only; evolutionary or causal claims still require preregistered replicated experiments"
+          },
+          "final": {
+            "tick": 600,
+            "alive": 44,
+            "births_total": 6,
+            "deaths_total": 462,
+            "mean_energy": 1.1231136322021484,
+            "resource_store_total_capacity_mean": 4.800000000000001,
+            "resource_store_allocation_effective_dimensions_mean": 3.963186490223181,
+            "resource_store_allocation_specialization_mean": 0.27679037900541437,
+            "resource_conversion_total_capacity_mean": 0.16000000000000003,
+            "resource_store_occupancy_mean": [
+              0.790415896258546,
+              0.6130304499229277,
+              0.5776498000665493,
+              0.6248402068473168
+            ],
+            "resource_store_capacity_mean": [
+              1.21363035804608,
+              1.1945504983225979,
+              1.193967857613905,
+              1.1978512860174162
+            ],
+            "resource_conversion_capacity_mean": [
+              0.0411072531885012,
+              0.03968996912509824,
+              0.03875766873091608,
+              0.040445108955484504
+            ],
+            "resource_stored_total": [
+              2873.925540379441,
+              2825.7604854276087,
+              2826.4645900841133,
+              2776.2512811873016
+            ],
+            "resource_converted_total": [
+              2703.656722650562,
+              2566.0338546405587,
+              2554.2476077979745,
+              2518.8734542559564
+            ],
+            "resource_store_decay_total": [
+              93.33468167878578,
+              87.0630112396365,
+              86.08515239178605,
+              82.21021942841806
+            ],
+            "resource_body_realized_total": [
+              1405.9014957782922,
+              67.46762528132405,
+              168.1557597940767,
+              578.4041498923318,
+              511.80908367422376
+            ]
+          }
+        },
+        {
+          "branch": "uniform-storage-neutral",
+          "output": "runs/interventions/d1j_fixed_budget_resource_storage_v1/pilot/seed_89002/uniform_storage_neutral",
+          "source_checkpoint_sha256": "54fd7733aedb2f53fcaa01bd9a909cdb803e6b2339717686cd8217f5a898ed5d",
+          "checkpoint_state_sha256": "4f8c08bbf9f3b4fdb3878303941130ec0e9a4dfda24c1ce1cbba9f57cd68afd5",
+          "interventions": [
+            "neutralize-resource-store-allocation"
+          ],
+          "genotype_preserved": true,
+          "resource_fields_preserved_at_intervention": true,
+          "resource_stores_preserved_at_intervention": true,
+          "conversion_allocation_preserved": true,
+          "inherited_allocation": {
+            "active_count": 55,
+            "effective_store_capacity_mean": [
+              1.2107443335992116,
+              1.190231155313662,
+              1.180976058669389,
+              1.2180484524177368
+            ],
+            "effective_store_total_mean": 4.800000000000001,
+            "effective_store_allocation_specialization_mean": 0.2787617106824482,
+            "effective_store_allocation_dimensions_mean": 3.9597597005790512,
+            "store_total_budget_closed": true,
+            "conversion_capacity_mean": [
+              0.04103183785466977,
+              0.03959768971179162,
+              0.03892637953259044,
+              0.040444092900948185
+            ],
+            "maintenance_energy_per_tick_at_branch": 0.011062538836828272,
+            "development_energy_for_active_at_branch": 0.5531269418414136
+          },
+          "effective_allocation": {
+            "active_count": 55,
+            "effective_store_capacity_mean": [
+              1.2000000000000013,
+              1.2000000000000013,
+              1.2000000000000013,
+              1.2000000000000013
+            ],
+            "effective_store_total_mean": 4.800000000000001,
+            "effective_store_allocation_specialization_mean": 0.25,
+            "effective_store_allocation_dimensions_mean": 4.0,
+            "store_total_budget_closed": true,
+            "conversion_capacity_mean": [
+              0.04103183785466977,
+              0.03959768971179162,
+              0.03892637953259044,
+              0.040444092900948185
+            ],
+            "maintenance_energy_per_tick_at_branch": 0.011062538836828272,
+            "development_energy_for_active_at_branch": 0.5531269418414136
+          },
+          "scientific_validity": {
+            "structural_evolution_provenance_valid": true,
+            "strict_unintervened_baseline": false,
+            "violations": [],
+            "backend_semantics": {
+              "requested_backend": "auto",
+              "execution_backend": "gpu-hybrid-accelerated",
+              "gpu_semantics_mode": "hybrid-accelerated",
+              "gpu_device_validated": true,
+              "gpu_acceleration_enabled": true,
+              "gpu_fallback_used": false,
+              "gpu_fallback_reason": null,
+              "gpu_latent_root_hash_batch_enabled": true,
+              "gpu_latent_root_hash_schema": "splitmix64-uint64-device-hash-cpu-ordered-quantization-v1",
+              "cpu_reference_world_authoritative": false,
+              "hybrid_acceleration_validation": "external-test-parity-suite",
+              "hybrid_acceleration_parity_proven": null
+            },
+            "strategy": {
+              "architecture": "inherited-variable-latent-router-mlp-v1",
+              "knowledge_schema": "dynamic-knowledge-latent-v1",
+              "knowledge_outcome_schema": "local-outcome-v1",
+              "knowledge_learning_enabled": true,
+              "knowledge_policy_influence": true,
+              "knowledge_policy_ablation_enabled": false,
+              "knowledge_policy_effective_enabled": true,
+              "knowledge_transfer_ablation_enabled": false,
+              "knowledge_transfer_effective_enabled": true,
+              "knowledge_transfer_trigger_schema": "signal-action-partner-v1",
+              "knowledge_transfer_probability": 0.1,
+              "knowledge_cultural_metrics_require_committed_transfer": true,
+              "capacity_ablation_enabled": false,
+              "capacity_effective_schema": "inherited-elastic-capacities-v1",
+              "resource_affinity_ablation_enabled": false,
+              "resource_sensing_ablation_enabled": false,
+              "resource_sensing_effective_schema": "inherited-demand-gated-affinity-budgeted-gradient-radius-v4",
+              "resource_conversion_allocation_ablation_enabled": false,
+              "resource_conversion_allocation_effective_schema": "transport-metabolism-messenger-tissue-resource-v9",
+              "resource_store_allocation_ablation_enabled": true,
+              "resource_store_allocation_effective_schema": "configured-neutral-channel-base-ablation-v1",
+              "resource_processing_support_ablation_enabled": false,
+              "resource_processing_support_effective_enabled": false,
+              "resource_processing_support_orientation_reversed": false,
+              "functional_modules_ablation_enabled": false,
+              "functional_module_coupling_ablation_enabled": false,
+              "functional_module_ablation_mask": [
+                false,
+                false,
+                false,
+                false
+              ],
+              "functional_module_lineage_output_ablation": {},
+              "functional_module_lineage_cost_ablation": {},
+              "knowledge_policy_residual_schema": "quantized-variable-latent-mlp-residual-v1",
+              "knowledge_outcome_dense_log_enabled": true,
+              "knowledge_policy_dense_log_enabled": true,
+              "knowledge_candidate_tracking": false,
+              "knowledge_candidate_schema": null,
+              "knowledge_candidate_graph_schema": null,
+              "knowledge_candidate_diagnostic_only": true,
+              "knowledge_candidate_subjecthood_truth_claimed": false,
+              "knowledge_latent_policy_enabled": true,
+              "knowledge_latent_schema": "variable-latent-knowledge-v1",
+              "knowledge_latent_router_schema": "quantized-mlp-latent-router-v1",
+              "knowledge_latent_length_levels": [
+                4,
+                8,
+                16,
+                32
+              ],
+              "knowledge_latent_projection_width": 8,
+              "knowledge_latent_mlp_hidden_width": 8,
+              "knowledge_latent_activation": "integer-hard-tanh-v1",
+              "knowledge_latent_publish_quantized": true,
+              "knowledge_routing_cost_enabled": true,
+              "knowledge_routing_cost_dense_log_enabled": true,
+              "knowledge_routing_cost_schema": "latent-routing-compute-cost-v1",
+              "knowledge_routing_budget_mode": "all-or-none-per-entity-v1",
+              "knowledge_routing_cost_commit_boundary": "policy-proposal preflight, energy commit before intent resolution",
+              "knowledge_working_memory_enabled": true,
+              "knowledge_working_memory_dense_log_enabled": true,
+              "knowledge_working_memory_schema": "quantized-working-memory-v1",
+              "knowledge_working_memory_update_boundary": "post-outcome local state commit for next tick",
+              "knowledge_sparse_selection_enabled": true,
+              "knowledge_sparse_selection_dense_log_enabled": true,
+              "knowledge_sparse_selection_schema": "sparse-query-key-topk-router-v1",
+              "knowledge_sparse_selection_top_k": 4,
+              "knowledge_sparse_selection_authoritative_storage": false,
+              "knowledge_sparse_selection_global_category_embedding": false,
+              "knowledge_sparse_selection_softmax": false,
+              "feature_constraints": [
+                "bias",
+                "energy",
+                "integrity",
+                "fertility",
+                "scarcity",
+                "local_resource",
+                "resource_signal",
+                "danger_signal",
+                "social_signal",
+                "partner_exists",
+                "mean_partner_need",
+                "uncertainty",
+                "memory_resource",
+                "memory_social",
+                "memory_danger",
+                "memory_uncertainty"
+              ],
+              "action_preferences_hardcoded": false,
+              "strategy_gene_count": 128,
+              "knowledge_preference_gene_count": 568,
+              "genome_size": 704,
+              "initialization": "bounded stateless random generation",
+              "transmission": "parental inheritance with configured mutation",
+              "mutation_probability_per_gene": 0.01,
+              "mutation_std_conditional": 0.08,
+              "morphology_gene_semantics": {
+                "sensor_quality": 0,
+                "movement_speed": 5,
+                "danger_direct_trace_mixture": null,
+                "resource_sensing_radius": 7,
+                "reserved_neutral": []
+              },
+              "knowledge_preference_gene_semantics": {
+                "knowledge_use_strength_index": 141,
+                "latent_router_gene_start": 142,
+                "latent_router_gene_stop": 704,
+                "latent_router_schema": "quantized-mlp-latent-router-v1",
+                "latent_router_linear_shadow": true,
+                "latent_router_activation": "integer-hard-tanh-v1",
+                "latent_router_public_state": [
+                  "energy_fraction",
+                  "integrity",
+                  "fertility",
+                  "scarcity"
+                ],
+                "latent_router_output": "action_logit_residual",
+                "latent_router_parameter_origin": "inherited genome",
+                "latent_content_origin": "world-internal content lineage and local outcomes",
+                "latent_external_training": false,
+                "latent_publication": "CPU-reference quantized integers with stable aggregation",
+                "sparse_selection_capacity_schema": "inherited-discrete-topk-v1",
+                "sparse_selection_capacity_gene_index": 534,
+                "sparse_selection_capacity_levels": [
+                  0,
+                  1,
+                  2,
+                  4,
+                  8
+                ]
+              }
+            },
+            "state_origins": {
+              "memory": "observation-driven finite-memory dynamics",
+              "generation": "parent generation plus one at committed birth",
+              "candidate_subjects": "derived from bodies, lineages, and relation structure",
+              "knowledge_candidate_subjects": "disabled",
+              "knowledge": "dynamic variable-length latent contents routed by inherited quantized two-layer MLP parameters with an integer hard-tanh through the public action-logit residual boundary",
+              "mortality_trace": "local death-event deposits with public decay/diffusion; observed only through the existing danger boundary",
+              "environment_process": {
+                "api_schema": "additive-environment-field-process-v1",
+                "schema": "disabled",
+                "origin": "core-disabled",
+                "mechanism_class": "none",
+                "interpretation": "scientific-core-only",
+                "default_enabled": false,
+                "parameter_names": [],
+                "parameters_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+              },
+              "moving_hazard_schema": "disabled",
+              "moving_hazard_sources": 0,
+              "danger_evidence_schema": "disabled",
+              "danger_evidence_fixed_budget": true,
+              "subject_shift": "measured from candidate/control provenance; never assigned as a state label"
+            },
+            "evolution_evaluation": {
+              "period_ticks": 30,
+              "feedback_to_world": false,
+              "long_run_diagnostics_schema": "long-run-evolution-diagnostics-v1",
+              "long_run_diagnostics_feedback_to_world": false,
+              "strategy_sample_capacity": 4096,
+              "actual_context_sample_capacity": 4096,
+              "common_panel_strategy_capacity": 1024,
+              "common_panel_context_capacity": 32,
+              "lagged_boundary_identity": "stable-entity-id"
+            },
+            "control_arbiter": {
+              "name": "SingleProposalControlArbiter",
+              "scientific_safe": true
+            },
+            "world_components": {
+              "conflict_resolver": "GpuActionConflictResolver",
+              "conflict_resolver_scientific_safe": true,
+              "group_label_planner": "DeterministicGroupLabelPlanner",
+              "group_label_planner_scientific_safe": true,
+              "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+              "group_label_propagation_rounds": 8,
+              "group_trust_threshold": 0.12,
+              "group_min_members": 6,
+              "group_update_mode": "adaptive-topology-v1",
+              "group_update_period": 50,
+              "group_update_min_period": 100,
+              "group_update_max_period": 300,
+              "reproduction_capacity_arbitration": "stateless-random-v1"
+            },
+            "fixed_constraints": [
+              "physical action semantics and feasibility masks",
+              "sensor feature vocabulary",
+              "inheritance and mutation mechanics",
+              "candidate-subject measurement rules"
+            ],
+            "proof_scope": "structural provenance only; evolutionary or causal claims still require preregistered replicated experiments"
+          },
+          "final": {
+            "tick": 600,
+            "alive": 45,
+            "births_total": 6,
+            "deaths_total": 461,
+            "mean_energy": 1.1016523838043213,
+            "resource_store_total_capacity_mean": 4.800000000000002,
+            "resource_store_allocation_effective_dimensions_mean": 4.0,
+            "resource_store_allocation_specialization_mean": 0.25,
+            "resource_conversion_total_capacity_mean": 0.16000000000000003,
+            "resource_store_occupancy_mean": [
+              0.7690702513770062,
+              0.6115442517179029,
+              0.587604875365893,
+              0.6169896589385137
+            ],
+            "resource_store_capacity_mean": [
+              1.2000000000000008,
+              1.2000000000000008,
+              1.2000000000000008,
+              1.2000000000000008
+            ],
+            "resource_conversion_capacity_mean": [
+              0.04119488827997697,
+              0.039607108100148225,
+              0.03870400460859014,
+              0.04049399901128469
+            ],
+            "resource_stored_total": [
+              2874.425862622499,
+              2828.644710536134,
+              2828.2734506327824,
+              2777.076498111268
+            ],
+            "resource_converted_total": [
+              2705.733140928129,
+              2568.535384414877,
+              2555.594118900868,
+              2520.757928490594
+            ],
+            "resource_store_decay_total": [
+              93.24477193230094,
+              87.17261889472204,
+              86.23980221744205,
+              82.06110835652599
+            ],
+            "resource_body_realized_total": [
+              1406.9812332826286,
+              67.53043739970538,
+              168.27510319932475,
+              578.7515320599824,
+              511.8097485005314
+            ]
+          }
+        }
+      ],
+      "paired_difference_inherited_minus_uniform": {
+        "tick": 0.0,
+        "alive": -1.0,
+        "births_total": 0.0,
+        "deaths_total": 1.0,
+        "mean_energy": 0.02146124839782715,
+        "resource_store_total_capacity_mean": -8.881784197001252e-16,
+        "resource_store_allocation_effective_dimensions_mean": -0.036813509776818965,
+        "resource_store_allocation_specialization_mean": 0.026790379005414366,
+        "resource_conversion_total_capacity_mean": 0.0,
+        "resource_store_occupancy_mean": [
+          0.021345644881539783,
+          0.0014861982050247136,
+          -0.009955075299343696,
+          0.00785054790880313
+        ],
+        "resource_store_capacity_mean": [
+          0.01363035804607926,
+          -0.00544950167740299,
+          -0.00603214238609584,
+          -0.002148713982584649
+        ],
+        "resource_conversion_capacity_mean": [
+          -8.763509147577397e-05,
+          8.286102495001779e-05,
+          5.366412232594292e-05,
+          -4.889005580018674e-05
+        ],
+        "resource_stored_total": [
+          -0.5003222430582355,
+          -2.884225108525243,
+          -1.808860548669145,
+          -0.825216923966309
+        ],
+        "resource_converted_total": [
+          -2.0764182775669724,
+          -2.501529774318442,
+          -1.3465111028936008,
+          -1.8844742346377643
+        ],
+        "resource_store_decay_total": [
+          0.0899097464848495,
+          -0.10960765508554005,
+          -0.15464982565599428,
+          0.14911107189206518
+        ],
+        "resource_body_realized_total": [
+          -1.0797375043364354,
+          -0.0628121183813306,
+          -0.11934340524805975,
+          -0.3473821676506077,
+          -0.0006648263076272087
+        ]
+      }
+    },
+    {
+      "seed": 89003,
+      "shared_checkpoint_state": true,
+      "branches": [
+        {
+          "branch": "inherited-storage",
+          "output": "runs/interventions/d1j_fixed_budget_resource_storage_v1/pilot/seed_89003/inherited_storage",
+          "source_checkpoint_sha256": "284a7a7e4ef65532d7cff96c0105640589a6abb38709aca05668a0fdb2b01373",
+          "checkpoint_state_sha256": "5a0fced0bcc6109b68bb240e22924036ef10874b350ef7fe2d2a9fa91b4bb7bd",
+          "interventions": [],
+          "genotype_preserved": true,
+          "resource_fields_preserved_at_intervention": true,
+          "resource_stores_preserved_at_intervention": true,
+          "conversion_allocation_preserved": true,
+          "inherited_allocation": {
+            "active_count": 46,
+            "effective_store_capacity_mean": [
+              1.1853221834298144,
+              1.2018111081768723,
+              1.2189514133391166,
+              1.1939152950541974
+            ],
+            "effective_store_total_mean": 4.800000000000002,
+            "effective_store_allocation_specialization_mean": 0.2809337324555112,
+            "effective_store_allocation_dimensions_mean": 3.9550513931626194,
+            "store_total_budget_closed": true,
+            "conversion_capacity_mean": [
+              0.04101662340604301,
+              0.03919020901288819,
+              0.03983031258506318,
+              0.039962854996005645
+            ],
+            "maintenance_energy_per_tick_at_branch": 0.0091762727843936,
+            "development_energy_for_active_at_branch": 0.4588136392196799
+          },
+          "effective_allocation": {
+            "active_count": 46,
+            "effective_store_capacity_mean": [
+              1.1853221834298144,
+              1.2018111081768723,
+              1.2189514133391166,
+              1.1939152950541974
+            ],
+            "effective_store_total_mean": 4.800000000000002,
+            "effective_store_allocation_specialization_mean": 0.2809337324555112,
+            "effective_store_allocation_dimensions_mean": 3.9550513931626194,
+            "store_total_budget_closed": true,
+            "conversion_capacity_mean": [
+              0.04101662340604301,
+              0.03919020901288819,
+              0.03983031258506318,
+              0.039962854996005645
+            ],
+            "maintenance_energy_per_tick_at_branch": 0.0091762727843936,
+            "development_energy_for_active_at_branch": 0.4588136392196799
+          },
+          "scientific_validity": {
+            "structural_evolution_provenance_valid": true,
+            "strict_unintervened_baseline": true,
+            "violations": [],
+            "backend_semantics": {
+              "requested_backend": "auto",
+              "execution_backend": "gpu-hybrid-accelerated",
+              "gpu_semantics_mode": "hybrid-accelerated",
+              "gpu_device_validated": true,
+              "gpu_acceleration_enabled": true,
+              "gpu_fallback_used": false,
+              "gpu_fallback_reason": null,
+              "gpu_latent_root_hash_batch_enabled": true,
+              "gpu_latent_root_hash_schema": "splitmix64-uint64-device-hash-cpu-ordered-quantization-v1",
+              "cpu_reference_world_authoritative": false,
+              "hybrid_acceleration_validation": "external-test-parity-suite",
+              "hybrid_acceleration_parity_proven": null
+            },
+            "strategy": {
+              "architecture": "inherited-variable-latent-router-mlp-v1",
+              "knowledge_schema": "dynamic-knowledge-latent-v1",
+              "knowledge_outcome_schema": "local-outcome-v1",
+              "knowledge_learning_enabled": true,
+              "knowledge_policy_influence": true,
+              "knowledge_policy_ablation_enabled": false,
+              "knowledge_policy_effective_enabled": true,
+              "knowledge_transfer_ablation_enabled": false,
+              "knowledge_transfer_effective_enabled": true,
+              "knowledge_transfer_trigger_schema": "signal-action-partner-v1",
+              "knowledge_transfer_probability": 0.1,
+              "knowledge_cultural_metrics_require_committed_transfer": true,
+              "capacity_ablation_enabled": false,
+              "capacity_effective_schema": "inherited-elastic-capacities-v1",
+              "resource_affinity_ablation_enabled": false,
+              "resource_sensing_ablation_enabled": false,
+              "resource_sensing_effective_schema": "inherited-demand-gated-affinity-budgeted-gradient-radius-v4",
+              "resource_conversion_allocation_ablation_enabled": false,
+              "resource_conversion_allocation_effective_schema": "transport-metabolism-messenger-tissue-resource-v9",
+              "resource_store_allocation_ablation_enabled": false,
+              "resource_store_allocation_effective_schema": "transport-metabolism-messenger-tissue-resource-v9",
+              "resource_processing_support_ablation_enabled": false,
+              "resource_processing_support_effective_enabled": false,
+              "resource_processing_support_orientation_reversed": false,
+              "functional_modules_ablation_enabled": false,
+              "functional_module_coupling_ablation_enabled": false,
+              "functional_module_ablation_mask": [
+                false,
+                false,
+                false,
+                false
+              ],
+              "functional_module_lineage_output_ablation": {},
+              "functional_module_lineage_cost_ablation": {},
+              "knowledge_policy_residual_schema": "quantized-variable-latent-mlp-residual-v1",
+              "knowledge_outcome_dense_log_enabled": true,
+              "knowledge_policy_dense_log_enabled": true,
+              "knowledge_candidate_tracking": false,
+              "knowledge_candidate_schema": null,
+              "knowledge_candidate_graph_schema": null,
+              "knowledge_candidate_diagnostic_only": true,
+              "knowledge_candidate_subjecthood_truth_claimed": false,
+              "knowledge_latent_policy_enabled": true,
+              "knowledge_latent_schema": "variable-latent-knowledge-v1",
+              "knowledge_latent_router_schema": "quantized-mlp-latent-router-v1",
+              "knowledge_latent_length_levels": [
+                4,
+                8,
+                16,
+                32
+              ],
+              "knowledge_latent_projection_width": 8,
+              "knowledge_latent_mlp_hidden_width": 8,
+              "knowledge_latent_activation": "integer-hard-tanh-v1",
+              "knowledge_latent_publish_quantized": true,
+              "knowledge_routing_cost_enabled": true,
+              "knowledge_routing_cost_dense_log_enabled": true,
+              "knowledge_routing_cost_schema": "latent-routing-compute-cost-v1",
+              "knowledge_routing_budget_mode": "all-or-none-per-entity-v1",
+              "knowledge_routing_cost_commit_boundary": "policy-proposal preflight, energy commit before intent resolution",
+              "knowledge_working_memory_enabled": true,
+              "knowledge_working_memory_dense_log_enabled": true,
+              "knowledge_working_memory_schema": "quantized-working-memory-v1",
+              "knowledge_working_memory_update_boundary": "post-outcome local state commit for next tick",
+              "knowledge_sparse_selection_enabled": true,
+              "knowledge_sparse_selection_dense_log_enabled": true,
+              "knowledge_sparse_selection_schema": "sparse-query-key-topk-router-v1",
+              "knowledge_sparse_selection_top_k": 4,
+              "knowledge_sparse_selection_authoritative_storage": false,
+              "knowledge_sparse_selection_global_category_embedding": false,
+              "knowledge_sparse_selection_softmax": false,
+              "feature_constraints": [
+                "bias",
+                "energy",
+                "integrity",
+                "fertility",
+                "scarcity",
+                "local_resource",
+                "resource_signal",
+                "danger_signal",
+                "social_signal",
+                "partner_exists",
+                "mean_partner_need",
+                "uncertainty",
+                "memory_resource",
+                "memory_social",
+                "memory_danger",
+                "memory_uncertainty"
+              ],
+              "action_preferences_hardcoded": false,
+              "strategy_gene_count": 128,
+              "knowledge_preference_gene_count": 568,
+              "genome_size": 704,
+              "initialization": "bounded stateless random generation",
+              "transmission": "parental inheritance with configured mutation",
+              "mutation_probability_per_gene": 0.01,
+              "mutation_std_conditional": 0.08,
+              "morphology_gene_semantics": {
+                "sensor_quality": 0,
+                "movement_speed": 5,
+                "danger_direct_trace_mixture": null,
+                "resource_sensing_radius": 7,
+                "reserved_neutral": []
+              },
+              "knowledge_preference_gene_semantics": {
+                "knowledge_use_strength_index": 141,
+                "latent_router_gene_start": 142,
+                "latent_router_gene_stop": 704,
+                "latent_router_schema": "quantized-mlp-latent-router-v1",
+                "latent_router_linear_shadow": true,
+                "latent_router_activation": "integer-hard-tanh-v1",
+                "latent_router_public_state": [
+                  "energy_fraction",
+                  "integrity",
+                  "fertility",
+                  "scarcity"
+                ],
+                "latent_router_output": "action_logit_residual",
+                "latent_router_parameter_origin": "inherited genome",
+                "latent_content_origin": "world-internal content lineage and local outcomes",
+                "latent_external_training": false,
+                "latent_publication": "CPU-reference quantized integers with stable aggregation",
+                "sparse_selection_capacity_schema": "inherited-discrete-topk-v1",
+                "sparse_selection_capacity_gene_index": 534,
+                "sparse_selection_capacity_levels": [
+                  0,
+                  1,
+                  2,
+                  4,
+                  8
+                ]
+              }
+            },
+            "state_origins": {
+              "memory": "observation-driven finite-memory dynamics",
+              "generation": "parent generation plus one at committed birth",
+              "candidate_subjects": "derived from bodies, lineages, and relation structure",
+              "knowledge_candidate_subjects": "disabled",
+              "knowledge": "dynamic variable-length latent contents routed by inherited quantized two-layer MLP parameters with an integer hard-tanh through the public action-logit residual boundary",
+              "mortality_trace": "local death-event deposits with public decay/diffusion; observed only through the existing danger boundary",
+              "environment_process": {
+                "api_schema": "additive-environment-field-process-v1",
+                "schema": "disabled",
+                "origin": "core-disabled",
+                "mechanism_class": "none",
+                "interpretation": "scientific-core-only",
+                "default_enabled": false,
+                "parameter_names": [],
+                "parameters_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+              },
+              "moving_hazard_schema": "disabled",
+              "moving_hazard_sources": 0,
+              "danger_evidence_schema": "disabled",
+              "danger_evidence_fixed_budget": true,
+              "subject_shift": "measured from candidate/control provenance; never assigned as a state label"
+            },
+            "evolution_evaluation": {
+              "period_ticks": 30,
+              "feedback_to_world": false,
+              "long_run_diagnostics_schema": "long-run-evolution-diagnostics-v1",
+              "long_run_diagnostics_feedback_to_world": false,
+              "strategy_sample_capacity": 4096,
+              "actual_context_sample_capacity": 4096,
+              "common_panel_strategy_capacity": 1024,
+              "common_panel_context_capacity": 32,
+              "lagged_boundary_identity": "stable-entity-id"
+            },
+            "control_arbiter": {
+              "name": "SingleProposalControlArbiter",
+              "scientific_safe": true
+            },
+            "world_components": {
+              "conflict_resolver": "GpuActionConflictResolver",
+              "conflict_resolver_scientific_safe": true,
+              "group_label_planner": "DeterministicGroupLabelPlanner",
+              "group_label_planner_scientific_safe": true,
+              "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+              "group_label_propagation_rounds": 8,
+              "group_trust_threshold": 0.12,
+              "group_min_members": 6,
+              "group_update_mode": "adaptive-topology-v1",
+              "group_update_period": 50,
+              "group_update_min_period": 100,
+              "group_update_max_period": 300,
+              "reproduction_capacity_arbitration": "stateless-random-v1"
+            },
+            "fixed_constraints": [
+              "physical action semantics and feasibility masks",
+              "sensor feature vocabulary",
+              "inheritance and mutation mechanics",
+              "candidate-subject measurement rules"
+            ],
+            "proof_scope": "structural provenance only; evolutionary or causal claims still require preregistered replicated experiments"
+          },
+          "final": {
+            "tick": 600,
+            "alive": 39,
+            "births_total": 2,
+            "deaths_total": 463,
+            "mean_energy": 1.0537428855895996,
+            "resource_store_total_capacity_mean": 4.8000000000000025,
+            "resource_store_allocation_effective_dimensions_mean": 3.952290489003601,
+            "resource_store_allocation_specialization_mean": 0.2805063343722339,
+            "resource_conversion_total_capacity_mean": 0.16,
+            "resource_store_occupancy_mean": [
+              0.5817795251152479,
+              0.6298388651526646,
+              0.6293536422100513,
+              0.6213618660968836
+            ],
+            "resource_store_capacity_mean": [
+              1.1737584996949124,
+              1.213557757391458,
+              1.2228698174281474,
+              1.1898139254854823
+            ],
+            "resource_conversion_capacity_mean": [
+              0.04119953525946204,
+              0.03970093941176183,
+              0.03935637177731353,
+              0.03974315355146263
+            ],
+            "resource_stored_total": [
+              2701.52622726949,
+              2610.4274884841743,
+              2621.618944799926,
+              2698.601055794391
+            ],
+            "resource_converted_total": [
+              2543.0677419377566,
+              2356.91907820172,
+              2377.1553943208273,
+              2443.3875281551436
+            ],
+            "resource_store_decay_total": [
+              83.59129986774683,
+              77.41387929382795,
+              78.95087681861962,
+              81.19922786460393
+            ],
+            "resource_body_realized_total": [
+              1322.395225807633,
+              62.896966268054534,
+              157.72018074404858,
+              536.6959062817432,
+              509.0776177300791
+            ]
+          }
+        },
+        {
+          "branch": "uniform-storage-neutral",
+          "output": "runs/interventions/d1j_fixed_budget_resource_storage_v1/pilot/seed_89003/uniform_storage_neutral",
+          "source_checkpoint_sha256": "284a7a7e4ef65532d7cff96c0105640589a6abb38709aca05668a0fdb2b01373",
+          "checkpoint_state_sha256": "5a0fced0bcc6109b68bb240e22924036ef10874b350ef7fe2d2a9fa91b4bb7bd",
+          "interventions": [
+            "neutralize-resource-store-allocation"
+          ],
+          "genotype_preserved": true,
+          "resource_fields_preserved_at_intervention": true,
+          "resource_stores_preserved_at_intervention": true,
+          "conversion_allocation_preserved": true,
+          "inherited_allocation": {
+            "active_count": 46,
+            "effective_store_capacity_mean": [
+              1.1853221834298144,
+              1.2018111081768723,
+              1.2189514133391166,
+              1.1939152950541974
+            ],
+            "effective_store_total_mean": 4.800000000000002,
+            "effective_store_allocation_specialization_mean": 0.2809337324555112,
+            "effective_store_allocation_dimensions_mean": 3.9550513931626194,
+            "store_total_budget_closed": true,
+            "conversion_capacity_mean": [
+              0.04101662340604301,
+              0.03919020901288819,
+              0.03983031258506318,
+              0.039962854996005645
+            ],
+            "maintenance_energy_per_tick_at_branch": 0.0091762727843936,
+            "development_energy_for_active_at_branch": 0.4588136392196799
+          },
+          "effective_allocation": {
+            "active_count": 46,
+            "effective_store_capacity_mean": [
+              1.200000000000001,
+              1.200000000000001,
+              1.200000000000001,
+              1.200000000000001
+            ],
+            "effective_store_total_mean": 4.800000000000002,
+            "effective_store_allocation_specialization_mean": 0.25,
+            "effective_store_allocation_dimensions_mean": 4.0,
+            "store_total_budget_closed": true,
+            "conversion_capacity_mean": [
+              0.04101662340604301,
+              0.03919020901288819,
+              0.03983031258506318,
+              0.039962854996005645
+            ],
+            "maintenance_energy_per_tick_at_branch": 0.0091762727843936,
+            "development_energy_for_active_at_branch": 0.4588136392196799
+          },
+          "scientific_validity": {
+            "structural_evolution_provenance_valid": true,
+            "strict_unintervened_baseline": false,
+            "violations": [],
+            "backend_semantics": {
+              "requested_backend": "auto",
+              "execution_backend": "gpu-hybrid-accelerated",
+              "gpu_semantics_mode": "hybrid-accelerated",
+              "gpu_device_validated": true,
+              "gpu_acceleration_enabled": true,
+              "gpu_fallback_used": false,
+              "gpu_fallback_reason": null,
+              "gpu_latent_root_hash_batch_enabled": true,
+              "gpu_latent_root_hash_schema": "splitmix64-uint64-device-hash-cpu-ordered-quantization-v1",
+              "cpu_reference_world_authoritative": false,
+              "hybrid_acceleration_validation": "external-test-parity-suite",
+              "hybrid_acceleration_parity_proven": null
+            },
+            "strategy": {
+              "architecture": "inherited-variable-latent-router-mlp-v1",
+              "knowledge_schema": "dynamic-knowledge-latent-v1",
+              "knowledge_outcome_schema": "local-outcome-v1",
+              "knowledge_learning_enabled": true,
+              "knowledge_policy_influence": true,
+              "knowledge_policy_ablation_enabled": false,
+              "knowledge_policy_effective_enabled": true,
+              "knowledge_transfer_ablation_enabled": false,
+              "knowledge_transfer_effective_enabled": true,
+              "knowledge_transfer_trigger_schema": "signal-action-partner-v1",
+              "knowledge_transfer_probability": 0.1,
+              "knowledge_cultural_metrics_require_committed_transfer": true,
+              "capacity_ablation_enabled": false,
+              "capacity_effective_schema": "inherited-elastic-capacities-v1",
+              "resource_affinity_ablation_enabled": false,
+              "resource_sensing_ablation_enabled": false,
+              "resource_sensing_effective_schema": "inherited-demand-gated-affinity-budgeted-gradient-radius-v4",
+              "resource_conversion_allocation_ablation_enabled": false,
+              "resource_conversion_allocation_effective_schema": "transport-metabolism-messenger-tissue-resource-v9",
+              "resource_store_allocation_ablation_enabled": true,
+              "resource_store_allocation_effective_schema": "configured-neutral-channel-base-ablation-v1",
+              "resource_processing_support_ablation_enabled": false,
+              "resource_processing_support_effective_enabled": false,
+              "resource_processing_support_orientation_reversed": false,
+              "functional_modules_ablation_enabled": false,
+              "functional_module_coupling_ablation_enabled": false,
+              "functional_module_ablation_mask": [
+                false,
+                false,
+                false,
+                false
+              ],
+              "functional_module_lineage_output_ablation": {},
+              "functional_module_lineage_cost_ablation": {},
+              "knowledge_policy_residual_schema": "quantized-variable-latent-mlp-residual-v1",
+              "knowledge_outcome_dense_log_enabled": true,
+              "knowledge_policy_dense_log_enabled": true,
+              "knowledge_candidate_tracking": false,
+              "knowledge_candidate_schema": null,
+              "knowledge_candidate_graph_schema": null,
+              "knowledge_candidate_diagnostic_only": true,
+              "knowledge_candidate_subjecthood_truth_claimed": false,
+              "knowledge_latent_policy_enabled": true,
+              "knowledge_latent_schema": "variable-latent-knowledge-v1",
+              "knowledge_latent_router_schema": "quantized-mlp-latent-router-v1",
+              "knowledge_latent_length_levels": [
+                4,
+                8,
+                16,
+                32
+              ],
+              "knowledge_latent_projection_width": 8,
+              "knowledge_latent_mlp_hidden_width": 8,
+              "knowledge_latent_activation": "integer-hard-tanh-v1",
+              "knowledge_latent_publish_quantized": true,
+              "knowledge_routing_cost_enabled": true,
+              "knowledge_routing_cost_dense_log_enabled": true,
+              "knowledge_routing_cost_schema": "latent-routing-compute-cost-v1",
+              "knowledge_routing_budget_mode": "all-or-none-per-entity-v1",
+              "knowledge_routing_cost_commit_boundary": "policy-proposal preflight, energy commit before intent resolution",
+              "knowledge_working_memory_enabled": true,
+              "knowledge_working_memory_dense_log_enabled": true,
+              "knowledge_working_memory_schema": "quantized-working-memory-v1",
+              "knowledge_working_memory_update_boundary": "post-outcome local state commit for next tick",
+              "knowledge_sparse_selection_enabled": true,
+              "knowledge_sparse_selection_dense_log_enabled": true,
+              "knowledge_sparse_selection_schema": "sparse-query-key-topk-router-v1",
+              "knowledge_sparse_selection_top_k": 4,
+              "knowledge_sparse_selection_authoritative_storage": false,
+              "knowledge_sparse_selection_global_category_embedding": false,
+              "knowledge_sparse_selection_softmax": false,
+              "feature_constraints": [
+                "bias",
+                "energy",
+                "integrity",
+                "fertility",
+                "scarcity",
+                "local_resource",
+                "resource_signal",
+                "danger_signal",
+                "social_signal",
+                "partner_exists",
+                "mean_partner_need",
+                "uncertainty",
+                "memory_resource",
+                "memory_social",
+                "memory_danger",
+                "memory_uncertainty"
+              ],
+              "action_preferences_hardcoded": false,
+              "strategy_gene_count": 128,
+              "knowledge_preference_gene_count": 568,
+              "genome_size": 704,
+              "initialization": "bounded stateless random generation",
+              "transmission": "parental inheritance with configured mutation",
+              "mutation_probability_per_gene": 0.01,
+              "mutation_std_conditional": 0.08,
+              "morphology_gene_semantics": {
+                "sensor_quality": 0,
+                "movement_speed": 5,
+                "danger_direct_trace_mixture": null,
+                "resource_sensing_radius": 7,
+                "reserved_neutral": []
+              },
+              "knowledge_preference_gene_semantics": {
+                "knowledge_use_strength_index": 141,
+                "latent_router_gene_start": 142,
+                "latent_router_gene_stop": 704,
+                "latent_router_schema": "quantized-mlp-latent-router-v1",
+                "latent_router_linear_shadow": true,
+                "latent_router_activation": "integer-hard-tanh-v1",
+                "latent_router_public_state": [
+                  "energy_fraction",
+                  "integrity",
+                  "fertility",
+                  "scarcity"
+                ],
+                "latent_router_output": "action_logit_residual",
+                "latent_router_parameter_origin": "inherited genome",
+                "latent_content_origin": "world-internal content lineage and local outcomes",
+                "latent_external_training": false,
+                "latent_publication": "CPU-reference quantized integers with stable aggregation",
+                "sparse_selection_capacity_schema": "inherited-discrete-topk-v1",
+                "sparse_selection_capacity_gene_index": 534,
+                "sparse_selection_capacity_levels": [
+                  0,
+                  1,
+                  2,
+                  4,
+                  8
+                ]
+              }
+            },
+            "state_origins": {
+              "memory": "observation-driven finite-memory dynamics",
+              "generation": "parent generation plus one at committed birth",
+              "candidate_subjects": "derived from bodies, lineages, and relation structure",
+              "knowledge_candidate_subjects": "disabled",
+              "knowledge": "dynamic variable-length latent contents routed by inherited quantized two-layer MLP parameters with an integer hard-tanh through the public action-logit residual boundary",
+              "mortality_trace": "local death-event deposits with public decay/diffusion; observed only through the existing danger boundary",
+              "environment_process": {
+                "api_schema": "additive-environment-field-process-v1",
+                "schema": "disabled",
+                "origin": "core-disabled",
+                "mechanism_class": "none",
+                "interpretation": "scientific-core-only",
+                "default_enabled": false,
+                "parameter_names": [],
+                "parameters_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+              },
+              "moving_hazard_schema": "disabled",
+              "moving_hazard_sources": 0,
+              "danger_evidence_schema": "disabled",
+              "danger_evidence_fixed_budget": true,
+              "subject_shift": "measured from candidate/control provenance; never assigned as a state label"
+            },
+            "evolution_evaluation": {
+              "period_ticks": 30,
+              "feedback_to_world": false,
+              "long_run_diagnostics_schema": "long-run-evolution-diagnostics-v1",
+              "long_run_diagnostics_feedback_to_world": false,
+              "strategy_sample_capacity": 4096,
+              "actual_context_sample_capacity": 4096,
+              "common_panel_strategy_capacity": 1024,
+              "common_panel_context_capacity": 32,
+              "lagged_boundary_identity": "stable-entity-id"
+            },
+            "control_arbiter": {
+              "name": "SingleProposalControlArbiter",
+              "scientific_safe": true
+            },
+            "world_components": {
+              "conflict_resolver": "GpuActionConflictResolver",
+              "conflict_resolver_scientific_safe": true,
+              "group_label_planner": "DeterministicGroupLabelPlanner",
+              "group_label_planner_scientific_safe": true,
+              "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+              "group_label_propagation_rounds": 8,
+              "group_trust_threshold": 0.12,
+              "group_min_members": 6,
+              "group_update_mode": "adaptive-topology-v1",
+              "group_update_period": 50,
+              "group_update_min_period": 100,
+              "group_update_max_period": 300,
+              "reproduction_capacity_arbitration": "stateless-random-v1"
+            },
+            "fixed_constraints": [
+              "physical action semantics and feasibility masks",
+              "sensor feature vocabulary",
+              "inheritance and mutation mechanics",
+              "candidate-subject measurement rules"
+            ],
+            "proof_scope": "structural provenance only; evolutionary or causal claims still require preregistered replicated experiments"
+          },
+          "final": {
+            "tick": 600,
+            "alive": 39,
+            "births_total": 2,
+            "deaths_total": 463,
+            "mean_energy": 1.0737336874008179,
+            "resource_store_total_capacity_mean": 4.800000000000002,
+            "resource_store_allocation_effective_dimensions_mean": 4.0,
+            "resource_store_allocation_specialization_mean": 0.25,
+            "resource_conversion_total_capacity_mean": 0.16,
+            "resource_store_occupancy_mean": [
+              0.5884868072138892,
+              0.6137408236535187,
+              0.6423148267671593,
+              0.6096089612214992
+            ],
+            "resource_store_capacity_mean": [
+              1.2000000000000006,
+              1.2000000000000006,
+              1.2000000000000006,
+              1.2000000000000006
+            ],
+            "resource_conversion_capacity_mean": [
+              0.04119953525946204,
+              0.03970093941176183,
+              0.03935637177731353,
+              0.03974315355146263
+            ],
+            "resource_stored_total": [
+              2701.9717016112836,
+              2610.0188957237992,
+              2619.4876888325934,
+              2696.8430932544766
+            ],
+            "resource_converted_total": [
+              2543.075158147069,
+              2355.975143305801,
+              2376.127262076048,
+              2443.00022141475
+            ],
+            "resource_store_decay_total": [
+              83.58529458021273,
+              77.3309145883693,
+              78.73887466691325,
+              81.09870467118323
+            ],
+            "resource_body_realized_total": [
+              1322.3990822364756,
+              62.86613868551051,
+              157.6653744272516,
+              536.4649589137359,
+              509.16209070676666
+            ]
+          }
+        }
+      ],
+      "paired_difference_inherited_minus_uniform": {
+        "tick": 0.0,
+        "alive": 0.0,
+        "births_total": 0.0,
+        "deaths_total": 0.0,
+        "mean_energy": -0.01999080181121826,
+        "resource_store_total_capacity_mean": 8.881784197001252e-16,
+        "resource_store_allocation_effective_dimensions_mean": -0.047709510996399196,
+        "resource_store_allocation_specialization_mean": 0.03050633437223388,
+        "resource_conversion_total_capacity_mean": 0.0,
+        "resource_store_occupancy_mean": [
+          -0.006707282098641354,
+          0.016098041499145954,
+          -0.01296118455710804,
+          0.011752904875384385
+        ],
+        "resource_store_capacity_mean": [
+          -0.026241500305088206,
+          0.01355775739145737,
+          0.022869817428146755,
+          -0.010186074514518362
+        ],
+        "resource_conversion_capacity_mean": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "resource_stored_total": [
+          -0.44547434179366974,
+          0.4085927603750861,
+          2.131255967332436,
+          1.757962539914388
+        ],
+        "resource_converted_total": [
+          -0.007416209312395949,
+          0.9439348959190283,
+          1.0281322447794992,
+          0.38730674039379664
+        ],
+        "resource_store_decay_total": [
+          0.00600528753409435,
+          0.0829647054586502,
+          0.21200215170637193,
+          0.10052319342069893
+        ],
+        "resource_body_realized_total": [
+          -0.0038564288424822735,
+          0.030827582544020515,
+          0.05480631679697012,
+          0.23094736800726423,
+          -0.08447297668755027
+        ]
+      }
+    }
+  ],
+  "contract": {
+    "all_pairs_share_checkpoint_state": true,
+    "all_genotypes_preserved": true,
+    "all_resource_fields_preserved_at_intervention": true,
+    "all_current_resource_stores_preserved_at_intervention": true,
+    "all_conversion_allocations_preserved": true,
+    "all_total_storage_budgets_close": true,
+    "all_physiology_costs_preserved": true
+  },
+  "interpretation_boundary": "This output calibrates inherited fixed-total storage allocation under exact shared-checkpoint neutralization. It has no pass/fail gate and does not authorize ecological, adaptive, coexistence, or selection claims."
+}

@@ -27,10 +27,18 @@ from se.differentiation.physiology import (
     spatial_processing_enabled,
 )
 from se.env.niches import AFFINITY_SCALE
-from se.env.recycling import deposit_resource_residue
+from se.env.recycling import deposit_resource_residue, resource_recycling_runtime_enabled
 
 RESOURCE_CHANNELS = 4
 BODY_OUTCOMES = 5
+
+
+def _runtime_recycling_enabled(simulation: Any) -> bool:
+    gpu_runtime = getattr(simulation, "gpu_runtime", None)
+    environment = getattr(gpu_runtime, "environment", None)
+    if environment is None:
+        environment = simulation.environment
+    return resource_recycling_runtime_enabled(environment)
 
 
 @dataclass(frozen=True)
@@ -104,7 +112,7 @@ def resource_store_capacity_and_room(
     if neutralize_store_allocation:
         if not fixed_budget_resource_storage_enabled(cfg):
             raise ValueError(
-                "storage-allocation neutralization requires physiology resource-v9"
+                "storage-allocation neutralization requires physiology resource-v9/v10"
             )
         capacity = neutral_resource_store_capacity(indices.size, cfg)
     current = np.asarray(entities.resource_store[indices], dtype=np.float64)
@@ -627,7 +635,7 @@ def settle_resource_metabolism_before_step(simulation: Any, stats: Any) -> None:
         step.processing_support_absolute_deviation
     )
     simulation.total_resource_processing_energy_cost += step.processing_energy_cost
-    if external_resource_recycling_enabled(simulation.cfg) and rows.size:
+    if _runtime_recycling_enabled(simulation) and rows.size:
         cells = np.asarray(
             simulation.spatial.cell_ids(
                 simulation.entities.x[rows], simulation.entities.y[rows]
@@ -677,7 +685,7 @@ def commit_assimilated_harvest(
 
 def record_resource_recycling_after_environment_update(simulation: Any, stats: Any) -> None:
     """Record released residue, then deposit current-tick decay for next tick."""
-    if not external_resource_recycling_enabled(simulation.cfg):
+    if not _runtime_recycling_enabled(simulation):
         return
     environment = (
         simulation.gpu_runtime.environment
@@ -695,7 +703,7 @@ def record_resource_recycling_after_environment_update(simulation: Any, stats: A
 
 def flush_pending_resource_residue(simulation: Any, stats: Any) -> None:
     """Deposit current-tick store decay only after the environment update."""
-    if not external_resource_recycling_enabled(simulation.cfg):
+    if not _runtime_recycling_enabled(simulation):
         return
     cells = simulation.pending_resource_residue_cells
     amounts = simulation.pending_resource_residue_amounts
@@ -719,7 +727,7 @@ def record_resource_store_death_loss(simulation: Any, dead: np.ndarray, stats: A
     loss = amounts.sum(axis=0)
     stats.resource_store_death_loss = loss
     simulation.total_resource_store_death_loss += loss
-    if external_resource_recycling_enabled(simulation.cfg):
+    if _runtime_recycling_enabled(simulation):
         cells = np.asarray(
             simulation.spatial.cell_ids(
                 simulation.entities.x[dead], simulation.entities.y[dead]

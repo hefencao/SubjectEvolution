@@ -23,6 +23,7 @@ from ..differentiation.physiology import (
     resource_metabolism_enabled,
 )
 from se.env.resource_sensing import resource_sensing_energy
+from .reproduction import offspring_energy_endowment
 from se.evolution.progress import BENEFIT_FLOW_COUNT, BenefitFlowKind
 from se.knowledge import KnowledgeStepStats
 from se.evolution.lifecycle import BirthAllocationPlan, DeathCause, DeathEventPlan
@@ -412,6 +413,8 @@ class EntityState:
         self,
         plan: BirthAllocationPlan,
         mutation_std: float | None = None,
+        *,
+        offspring_endowment_neutralized: bool = False,
     ) -> tuple[np.ndarray, np.ndarray]:
         """Validate and commit one preallocated birth plan exactly once."""
         requests = plan.requests
@@ -512,7 +515,14 @@ class EntityState:
             self.y[slots] = np.clip(self.y[slots], 0.0, self.cfg.world.height)
         self.vx[slots] = 0.0
         self.vy[slots] = 0.0
-        self.energy[slots] = self.cfg.entities.reproduction_cost * 0.45
+        self.energy[slots] = np.asarray(
+            offspring_energy_endowment(
+                self.genotype[parents],
+                self.cfg,
+                neutralized=offspring_endowment_neutralized,
+            ),
+            dtype=np.float32,
+        )
 
         mut_ctx = RandomContext(self.cfg.run.seed, tick, phase=71, stream=Stream.MUTATION)
         mutation_stddev = (

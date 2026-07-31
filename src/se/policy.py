@@ -16,6 +16,7 @@ from se.knowledge.policy import KnowledgePolicyPlan
 from se.knowledge.latent import latent_router_gene_count, sparse_selection_gene_count
 from se.knowledge.working_memory import working_memory_gene_count
 from .random_api import RandomContext, Stream, categorical_from_logits, normal
+from .runtime.reproduction import reproduction_energy_requirement
 
 
 class Action(IntEnum):
@@ -294,7 +295,8 @@ class ParametricPolicy:
 
         mask = xp.ones_like(logits, dtype=bool)
         mask[:, Action.SHARE] = partner_exists > 0
-        mask[:, Action.REPRODUCE] = (energy[active] >= self.cfg.entities.reproduction_threshold) & (fertility[active] >= 0.5)
+        reproduction_requirement = reproduction_energy_requirement(g, self.cfg)
+        mask[:, Action.REPRODUCE] = (energy[active] >= reproduction_requirement) & (fertility[active] >= 0.5)
         mask[:, Action.SIGNAL] = energy[active] > self.cfg.entities.signal_cost
         action_ctx = RandomContext(run_seed, tick, phase=50, stream=Stream.POLICY_ACTION)
         genetic_action = None

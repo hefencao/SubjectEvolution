@@ -1,0 +1,48 @@
+{
+  "schema": "d1-resource-storage-shared-checkpoint-plan-v1",
+  "source_root": "runs/base/d1j_fixed_budget_resource_storage_v1/pilot",
+  "checkpoint_tick": 480,
+  "horizon_ticks": 120,
+  "runtime_root": "runs/interventions/d1j_fixed_budget_resource_storage_v1/pilot",
+  "sources": [
+    {
+      "seed": 89001,
+      "run_dir": "runs/base/d1j_fixed_budget_resource_storage_v1/pilot/seed_89001",
+      "checkpoint_path": "runs/base/d1j_fixed_budget_resource_storage_v1/pilot/seed_89001/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "7c8f2dd64dbaaf3e7b6949fd04d9bc7a3ef8862c4357531a7e6c3eeef76149b6",
+      "checkpoint_tick": 480,
+      "resolved_config_sha256": "eb05475ce52bef3d071177d6cbb2f222ba435623ad858380b38bf427344cca25"
+    },
+    {
+      "seed": 89002,
+      "run_dir": "runs/base/d1j_fixed_budget_resource_storage_v1/pilot/seed_89002",
+      "checkpoint_path": "runs/base/d1j_fixed_budget_resource_storage_v1/pilot/seed_89002/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "54fd7733aedb2f53fcaa01bd9a909cdb803e6b2339717686cd8217f5a898ed5d",
+      "checkpoint_tick": 480,
+      "resolved_config_sha256": "cd8d598b96f6ab93c10782dcb4138358549e3c598a2f35a71b958aadfa5ab584"
+    },
+    {
+      "seed": 89003,
+      "run_dir": "runs/base/d1j_fixed_budget_resource_storage_v1/pilot/seed_89003",
+      "checkpoint_path": "runs/base/d1j_fixed_budget_resource_storage_v1/pilot/seed_89003/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "284a7a7e4ef65532d7cff96c0105640589a6abb38709aca05668a0fdb2b01373",
+      "checkpoint_tick": 480,
+      "resolved_config_sha256": "b22d8b7d25b1af995b080f279f948beaa17cfb65904714d3a791b628e30484ea"
+    }
+  ],
+  "branches": [
+    "inherited-storage",
+    "uniform-storage-neutral"
+  ],
+  "intervention": "neutralize-resource-store-allocation",
+  "paired_randomness": true,
+  "genotype_preserved": true,
+  "resource_fields_preserved_at_intervention": true,
+  "resource_stores_preserved_at_intervention": true,
+  "conversion_allocation_preserved": true,
+  "total_store_capacity_preserved": true,
+  "physiology_costs_preserved": true,
+  "pass_fail_gate": false,
+  "ecological_claim_authorized": false,
+  "selection_claim_authorized": false
+}

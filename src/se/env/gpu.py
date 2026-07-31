@@ -48,6 +48,7 @@ class DeviceEnvironment:
     def __init__(self, cfg: SimulationConfig, backend: Backend | str = "gpu") -> None:
         self.cfg = cfg
         self.backend = resolve_backend(backend) if isinstance(backend, str) else backend
+        self.resource_recycling_ablation_enabled = False
         self.spatial_reversed = False
         self.resource_spatial_reversed = False
         self.environment_process = build_environment_process(cfg.environment)

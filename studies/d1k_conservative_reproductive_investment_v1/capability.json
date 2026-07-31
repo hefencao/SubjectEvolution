@@ -1,0 +1,19 @@
+{
+  "schema": "inherited-conservative-offspring-investment-v2",
+  "morphology_gene_index": 6,
+  "event_overhead_energy": 0.2,
+  "parent_reserve_energy": 0.45,
+  "offspring_investment_levels": [
+    0.6,
+    1.0,
+    1.4,
+    1.8
+  ],
+  "investment_transfer_conservative": true,
+  "event_overhead_explicitly_dissipative": true,
+  "neutral_intervention": "neutralize-conservative-offspring-endowment",
+  "parent_cost_preserved_in_neutral": true,
+  "external_resource_recycling_retained": true,
+  "world_feedback": false,
+  "role_labels": false
+}

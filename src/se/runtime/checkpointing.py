@@ -324,6 +324,12 @@ class SimulationCheckpointMixin:
             "resource_store_allocation_ablation_enabled": bool(
                 self.resource_store_allocation_ablation_enabled
             ),
+            "resource_recycling_ablation_enabled": bool(
+                self.resource_recycling_ablation_enabled
+            ),
+            "offspring_endowment_ablation_enabled": bool(
+                self.offspring_endowment_ablation_enabled
+            ),
             "resource_processing_support_ablation_enabled": bool(
                 self.resource_processing_support_ablation_enabled
             ),
@@ -738,6 +744,19 @@ class SimulationCheckpointMixin:
         self.resource_store_allocation_ablation_enabled = bool(
             state.get("resource_store_allocation_ablation_enabled", False)
         )
+        self.resource_recycling_ablation_enabled = bool(
+            state.get("resource_recycling_ablation_enabled", False)
+        )
+        self.offspring_endowment_ablation_enabled = bool(
+            state.get("offspring_endowment_ablation_enabled", False)
+        )
+        self.environment.resource_recycling_ablation_enabled = (
+            self.resource_recycling_ablation_enabled
+        )
+        if self.gpu_runtime is not None:
+            self.gpu_runtime.environment.resource_recycling_ablation_enabled = (
+                self.resource_recycling_ablation_enabled
+            )
         self.resource_processing_support_ablation_enabled = bool(
             state.get("resource_processing_support_ablation_enabled", False)
         )
@@ -1076,6 +1095,19 @@ class SimulationCheckpointMixin:
         branch.resource_store_allocation_ablation_enabled = (
             self.resource_store_allocation_ablation_enabled
         )
+        branch.resource_recycling_ablation_enabled = (
+            self.resource_recycling_ablation_enabled
+        )
+        branch.offspring_endowment_ablation_enabled = (
+            self.offspring_endowment_ablation_enabled
+        )
+        branch.environment.resource_recycling_ablation_enabled = (
+            self.resource_recycling_ablation_enabled
+        )
+        if branch.gpu_runtime is not None:
+            branch.gpu_runtime.environment.resource_recycling_ablation_enabled = (
+                self.resource_recycling_ablation_enabled
+            )
         branch.resource_processing_support_ablation_enabled = (
             self.resource_processing_support_ablation_enabled
         )

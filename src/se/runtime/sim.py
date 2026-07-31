@@ -104,6 +104,11 @@ from se.evolution.lifecycle import (
 )
 from ..metrics import MetricsWriter
 from .resource_sensing import add_resource_sensing_operating_cost, effective_resource_sensing_observation, record_resource_sensing_development_cost
+from .reproduction import (
+    reproduction_energy_cost,
+    reproduction_energy_requirement,
+    reproduction_reference_energy,
+)
 from se.env.local_stress import LocalStressDiagnostics
 from ..event_cohort import EventCohortDiagnostics
 from se.subjects.succession import SubjectStructureDiagnostics
@@ -452,6 +457,8 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.capacity_ablation_enabled = False
         self.resource_affinity_ablation_enabled = False
         self.resource_sensing_ablation_enabled = self.resource_conversion_allocation_ablation_enabled = self.resource_store_allocation_ablation_enabled = False
+        self.offspring_endowment_ablation_enabled = False
+        self.resource_recycling_ablation_enabled = False
         self.resource_processing_support_ablation_enabled = False
         self.functional_modules_ablation_enabled = False
         self.functional_module_coupling_ablation_enabled = False
@@ -688,7 +695,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             amounts,
             tick=self.tick,
         )
-
     def _emit_signals(
         self,
         actors: np.ndarray,
@@ -761,7 +767,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 self.tick,
             )
         return signal_plan, direct_messages, float(signal_energy.sum(dtype=np.float64))
-
     def _flush_signal_emissions(self, plan: SignalEmissionPlan | None = None) -> None:
         """Commit channel batches whose modeled delivery cadence is due now."""
         # ``self.tick`` is zero-based during a step.  Flush against the
@@ -774,7 +779,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             self.information.emit_plan(due_plan)
         else:
             self.gpu_runtime.emit_plan(due_plan)
-
     def _checkpoint(self) -> None:
         self.knowledge.flush()
         active = np.flatnonzero(self.entities.alive)
@@ -818,7 +822,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         )
         if self.cfg.run.full_checkpoint_enabled:
             self.save_full_checkpoint()
-
     def step(self) -> StepStats:
         if self.gpu_runtime is not None:
             self.host_semantic_state_tick = -1
@@ -857,13 +860,11 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             record_resource_recycling_after_environment_update(self, stats)
             self.information.propagate()
             stats.environment_seconds = time.perf_counter() - phase_started
-
             phase_started = time.perf_counter()
             active = self.spatial.build(ent.x, ent.y, ent.alive)
             stats.spatial_seconds = time.perf_counter() - phase_started
             if active.size == 0:
                 return stats
-
             phase_started = time.perf_counter()
             cells = self.spatial.entity_cells[active]
             partners = self.spatial.sample_partners(
@@ -1046,7 +1047,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                             0.0,
                         ).astype(np.float32)
             stats.observation_seconds = time.perf_counter() - phase_started
-
             phase_started = time.perf_counter()
             if self.social_control_enabled:
                 group_direction = (self.social.group_dir_x, self.social.group_dir_y)
@@ -1208,7 +1208,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             stats.spatial_seconds = prepared.spatial_seconds
             stats.observation_seconds = prepared.observation_seconds
             stats.policy_seconds = prepared.policy_seconds
-
         if effective_resource_affinity_q is None:
             raise RuntimeError("effective resource affinity was not prepared")
         effective_harvest_preference_q = effective_resource_affinity_q.copy()
@@ -1239,7 +1238,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 local_resources=local_resources,
                 local_hazard=local_hazard,
             )
-
         if cfg.knowledge.enabled and cfg.knowledge.policy_influence_enabled:
             if routing_cost_result is not None:
                 cost_induced_action_changes = (
@@ -1291,7 +1289,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 if knowledge_policy_plan.size
                 else 0.0
             )
-
         # Keep one immutable host-side diagnostic snapshot.  It is overwritten
         # each tick and is used only by validation/parity tooling to locate the
         # first backend divergence before it reaches births or deaths.
@@ -1399,8 +1396,12 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             self.autonomy_module_actions += stats.autonomy_module_actions
         step_action_counts = np.bincount(decision.action, minlength=len(Action))
         self.action_counts += step_action_counts
+        active_reproduction_requirements = np.asarray(
+            reproduction_energy_requirement(ent.genotype[active], cfg),
+            dtype=np.float32,
+        )
         reproduction_eligible_mask = (
-            (ent.energy[active] >= cfg.entities.reproduction_threshold)
+            (ent.energy[active] >= active_reproduction_requirements)
             & (ent.fertility[active] >= 0.5)
         )
         reproduction_eligible_indices = active[reproduction_eligible_mask]
@@ -1419,7 +1420,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         stats.move_social_fraction = float(
             np.mean(decision.action[grouped] == Action.MOVE_SOCIAL) if np.any(grouped) else 0.0
         )
-
         # ----- Intent and conflict phases: no world state is changed here. -----
         phase_started = time.perf_counter()
         intents = build_intents(
@@ -1462,6 +1462,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             resource_affinity_q=effective_resource_affinity_q,
             harvest_preference_q=effective_harvest_preference_q,
             raw_harvest_storage_room=raw_harvest_storage_room,
+            genotype=ent.genotype,
         )
         harvest_allocator = (
             self.gpu_runtime.resolve_harvest
@@ -1503,7 +1504,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         stats.conflict_seconds = time.perf_counter() - phase_started
         self.last_intents = intents
         self.last_resolutions = resolutions
-
         knowledge_pre_energy: np.ndarray | None = None
         knowledge_pre_integrity: np.ndarray | None = None
         knowledge_pre_information: np.ndarray | None = None
@@ -1521,13 +1521,12 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             knowledge_pre_reproduction = np.minimum(
                 np.clip(
                     knowledge_pre_energy
-                    / max(cfg.entities.reproduction_threshold, 1e-12),
+                    / np.maximum(active_reproduction_requirements, 1e-12),
                     0.0,
                     1.0,
                 ),
                 np.clip(ent.fertility[active] / 0.5, 0.0, 1.0),
             ).astype(np.float32, copy=False)
-
         # ----- World commit phase: only resolved intents may mutate state. -----
         movable_actions = np.isin(intents.action, [Action.MOVE_RESOURCE, Action.MOVE_SOCIAL, Action.FLEE])
         movable_rows = np.flatnonzero(movable_actions & resolutions.success)
@@ -1549,7 +1548,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         non_movers = active[~np.isin(active, movers)]
         ent.vx[non_movers] = 0.0
         ent.vy[non_movers] = 0.0
-
         harvest_body_delta = commit_harvest_resolution(
             self,
             intents,
@@ -1557,12 +1555,10 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             effective_resource_affinity_q,
             stats,
         )
-
         share = self._finalize_share_capacity(share, resolutions)
         stats.shared_energy = self._commit_shares(share)
         self.total_shared_energy += stats.shared_energy
         self._record_benefit_boundary(share, stats)
-
         signal_plan = SignalEmissionPlan(())
         if signal_rows.size:
             signal_actors = intents.carrier_index[signal_rows]
@@ -1635,7 +1631,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     getattr(knowledge_stats, field_name)
                     + getattr(transfer_stats, field_name),
                 )
-
         if embodied_outputs_enabled(cfg) and active.size:
             repair = apply_material_repair(
                 ent, active, effective_embodied_output_q[active], cfg
@@ -1646,7 +1641,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             self.total_functional_module_repair_material += repair.material
             self.total_functional_module_repair_energy += repair.energy
             self.total_functional_module_repair_integrity += repair.integrity
-
         accepted_parents = np.empty(0, dtype=np.int32)
         newborns = np.empty(0, dtype=np.int32)
         birth_allocation = plan_birth_allocations(
@@ -1660,6 +1654,9 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             accepted_parents, newborns = ent.commit_births(
                 birth_allocation,
                 mutation_std=0.0 if self.freeze_genotype else None,
+                offspring_endowment_neutralized=(
+                    self.offspring_endowment_ablation_enabled
+                ),
             )
             if newborns.size:
                 if self.capacity_ablation_enabled and cfg.differentiation.enabled:
@@ -1727,7 +1724,10 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 )
                 ent.primary_subject_id[newborns] = body_subjects
                 ent.lineage_subject_id[newborns] = lineage_subjects
-                ent.energy[accepted_parents] -= cfg.entities.reproduction_cost
+                ent.energy[accepted_parents] -= np.asarray(
+                    reproduction_energy_cost(ent.genotype[accepted_parents], cfg),
+                    dtype=np.float32,
+                )
                 ent.fertility[accepted_parents] -= 0.5
                 stats.births = int(newborns.size)
                 if cfg.differentiation.enabled:
@@ -1745,7 +1745,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     self.local_stress_diagnostics.observe_births(
                         newborns, ent.x, ent.y
                     )
-
         self.evolution_progress.observe_reproduction_traits(
             ent.genotype,
             ent.entity_id,
@@ -1753,7 +1752,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             accepted_parent_indices=accepted_parents,
             newborn_indices=newborns,
         )
-
         stats.reproduction_accepted = stats.births
         stats.reproduction_rejected_other = max(
             stats.reproduction_proposals
@@ -1771,7 +1769,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             stats.reproduction_rejected_resource
         )
         self.total_reproduction_rejected_other += stats.reproduction_rejected_other
-
         if (
             self.cfg.knowledge.enabled
             and self.cfg.knowledge.learning_enabled
@@ -1796,7 +1793,15 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             post_reproduction = np.minimum(
                 np.clip(
                     ent.energy[carriers]
-                    / max(cfg.entities.reproduction_threshold, 1e-12),
+                    / np.maximum(
+                        np.asarray(
+                            reproduction_energy_requirement(
+                                ent.genotype[carriers], cfg
+                            ),
+                            dtype=np.float32,
+                        ),
+                        1e-12,
+                    ),
                     0.0,
                     1.0,
                 ),
@@ -1894,7 +1899,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     getattr(knowledge_stats, field_name)
                     + getattr(outcome_stats, field_name),
                 )
-
         if (
             cfg.knowledge.working_memory_enabled
             and not self.knowledge.working_memory_ablation_enabled
@@ -1957,7 +1961,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     getattr(knowledge_stats, field_name)
                     + getattr(memory_stats, field_name),
                 )
-
         # Existence costs and environmental damage.
         current_active = np.flatnonzero(ent.alive).astype(np.int32)
         current_cells = self.spatial.cell_ids(ent.x[current_active], ent.y[current_active])
@@ -2052,7 +2055,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         ent.age[current_active] += 1
         ent.information_store[current_active] *= 0.999
         ent.fertility[current_active] = np.maximum(ent.fertility[current_active] - 0.0005, 0.0)
-
         if not cfg.knowledge.working_memory_enabled:
             self.policy.update_memory(
                 active, ent.memory, policy_local_resources, info
@@ -2101,7 +2103,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             knowledge_stats.removed_dead_holder += self.knowledge.remove_dead_holders(
                 ent.alive, ent.primary_subject_id
             )
-
         # Candidate social subjects are updated at a slower timescale.
         phase_started = time.perf_counter()
         if self.group_refresh_ablation_enabled:
@@ -2184,7 +2185,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 harvested_material=ent.harvested_energy_total,
                 information_store=ent.information_store,
                 fertility=ent.fertility,
-                reproduction_threshold=cfg.entities.reproduction_threshold,
+                reproduction_threshold=reproduction_reference_energy(cfg),
             )
             stats.graph_seconds += time.perf_counter() - candidate_started
         if self.gpu_runtime is not None:
@@ -2251,7 +2252,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 time.perf_counter() - evaluation_started
             )
         return stats
-
     def run(
         self,
         until_tick: int | None = None,
@@ -2259,11 +2259,9 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         tick_observer: Callable[["Simulation", StepStats | None], None] | None = None,
     ) -> dict[str, object]:
         """Advance to an absolute tick and finalize this run's outputs.
-
         ``until_tick`` is absolute rather than a step count so a simulation
         can be advanced to a counterfactual branch point with ``step()`` and
         then finish at the configured horizon without extending the run.
-
         ``tick_observer`` is an experiment-only, read-only observation hook. It
         is called once at the starting checkpoint with ``stats=None`` and after
         every authoritative step. The default remains ``None`` and therefore
@@ -2368,6 +2366,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             "resource_sensing_ablation_enabled": self.resource_sensing_ablation_enabled,
             "resource_conversion_allocation_ablation_enabled": self.resource_conversion_allocation_ablation_enabled,
             "resource_store_allocation_ablation_enabled": self.resource_store_allocation_ablation_enabled,
+            "resource_recycling_ablation_enabled": self.resource_recycling_ablation_enabled,
             "environment_spatial_reversed": self.environment.spatial_reversed,
             "environment_resource_spatial_reversed": bool(
                 getattr(self.environment, "resource_spatial_reversed", False)
@@ -2494,5 +2493,4 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8"
         )
         return final_row
-
 __all__ = ["Simulation"]
