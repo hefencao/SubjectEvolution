@@ -221,10 +221,11 @@ class EntityConfig:
     max_energy: float
     max_age: int
     # Legacy configs use a fixed threshold and dissipative newborn fraction.
-    # The explicit inherited schema uses morphology gene 6 to select a
-    # conservative parent-to-offspring energy transfer. ``reproduction_cost``
-    # then denotes event overhead and the parent must retain the configured
-    # reserve after paying overhead plus investment.
+    # Conservative schemas transfer explicit parent energy to offspring. The
+    # fixed schema is a non-heritable demographic substrate; the inherited
+    # schema uses morphology gene 6. ``reproduction_cost`` denotes event
+    # overhead and the parent retains the configured reserve after paying
+    # overhead plus investment.
     reproduction_schema: str = "legacy-fixed-threshold-loss-v1"
     reproduction_parent_reserve: float = 0.0
     reproduction_investment_levels: tuple[float, ...] = (0.0,)
@@ -955,11 +956,13 @@ def validate_config(cfg: SimulationConfig) -> None:
     reproduction_schema = cfg.entities.reproduction_schema
     if reproduction_schema not in {
         "legacy-fixed-threshold-loss-v1",
+        "fixed-conservative-offspring-investment-v3",
         "inherited-conservative-offspring-investment-v2",
     }:
         raise ValueError(
             "entities.reproduction_schema must be "
-            "'legacy-fixed-threshold-loss-v1' or "
+            "'legacy-fixed-threshold-loss-v1', "
+            "'fixed-conservative-offspring-investment-v3', or "
             "'inherited-conservative-offspring-investment-v2'"
         )
     reproduction_values = (
@@ -984,12 +987,32 @@ def validate_config(cfg: SimulationConfig) -> None:
         if cfg.entities.reproduction_threshold < cfg.entities.reproduction_cost:
             raise ValueError("legacy reproduction threshold must cover its fixed cost")
     else:
-        if cfg.entities.danger_evidence_schema == "inherited-direct-trace-mixture-v1":
+        if not all(value > 0.0 for value in investment_levels):
+            raise ValueError("conservative reproduction investment levels must be positive")
+        if reproduction_schema == "fixed-conservative-offspring-investment-v3":
+            if len(investment_levels) != 1:
+                raise ValueError(
+                    "fixed conservative reproduction requires exactly one investment level"
+                )
+            fixed_requirement = (
+                cfg.entities.reproduction_cost
+                + investment_levels[0]
+                + cfg.entities.reproduction_parent_reserve
+            )
+            if not math.isclose(
+                cfg.entities.reproduction_threshold,
+                fixed_requirement,
+                rel_tol=0.0,
+                abs_tol=1e-9,
+            ):
+                raise ValueError(
+                    "fixed conservative reproduction threshold must equal "
+                    "overhead + endowment + parent reserve"
+                )
+        elif cfg.entities.danger_evidence_schema == "inherited-direct-trace-mixture-v1":
             raise ValueError(
                 "inherited reproduction investment and inherited danger mixture both use morphology gene 6"
             )
-        if not all(value > 0.0 for value in investment_levels):
-            raise ValueError("inherited reproduction investment levels must be positive")
         if max(investment_levels) + cfg.entities.reproduction_cost + cfg.entities.reproduction_parent_reserve > cfg.entities.max_energy:
             raise ValueError(
                 "maximum reproduction investment, overhead, and reserve must fit max_energy"

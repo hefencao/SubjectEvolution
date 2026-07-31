@@ -8,6 +8,7 @@ import numpy as np
 from se.cfg import load_config, validate_config
 from se.evolution.lifecycle import BirthRequestPlan, plan_birth_allocations
 from se.runtime.reproduction import (
+    conservative_reproduction_investment_enabled,
     inherited_reproduction_investment_enabled,
     offspring_energy_endowment,
     reproduction_energy_cost,
@@ -115,3 +116,49 @@ def test_endowment_ablation_survives_checkpoint_and_clone(tmp_path: Path) -> Non
     assert branch.offspring_endowment_ablation_enabled
     _close(branch)
     _close(restored)
+
+
+def test_fixed_conservative_reproduction_is_nonheritable_and_energy_conserving() -> None:
+    cfg = load_config(
+        ROOT / "studies" / "d1m_fixed_conservative_turnover_v1" / "protocol" / "source_template.json"
+    )
+    cfg = replace(
+        cfg,
+        entities=replace(
+            cfg.entities,
+            reproduction_schema="fixed-conservative-offspring-investment-v3",
+            reproduction_threshold=1.8,
+            reproduction_cost=0.1,
+            reproduction_parent_reserve=0.8,
+            reproduction_investment_levels=(0.9,),
+        ),
+    )
+    validate_config(cfg)
+    assert conservative_reproduction_investment_enabled(cfg)
+    assert not inherited_reproduction_investment_enabled(cfg)
+    genotype = np.asarray([[-1.0] * 8, [1.0] * 8], dtype=np.float32)
+    np.testing.assert_allclose(reproduction_investment(genotype, cfg), [0.9, 0.9])
+    np.testing.assert_allclose(reproduction_energy_cost(genotype, cfg), [1.0, 1.0])
+    np.testing.assert_allclose(reproduction_energy_requirement(genotype, cfg), [1.8, 1.8])
+    np.testing.assert_allclose(offspring_energy_endowment(genotype, cfg), [0.9, 0.9])
+
+
+def test_fixed_conservative_threshold_must_match_registered_budget() -> None:
+    cfg = load_config(
+        ROOT / "studies" / "d1m_fixed_conservative_turnover_v1" / "protocol" / "source_template.json"
+    )
+    invalid = replace(
+        cfg,
+        entities=replace(
+            cfg.entities,
+            reproduction_schema="fixed-conservative-offspring-investment-v3",
+            reproduction_threshold=1.7,
+            reproduction_cost=0.1,
+            reproduction_parent_reserve=0.8,
+            reproduction_investment_levels=(0.9,),
+        ),
+    )
+    import pytest
+
+    with pytest.raises(ValueError, match="threshold must equal"):
+        validate_config(invalid)

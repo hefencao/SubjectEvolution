@@ -15,7 +15,7 @@ from typing import Any
 
 from se.cfg import load_config
 
-SCHEMA = "d1-turnover-substrate-config-v1"
+SCHEMA = "d1-turnover-substrate-config-v2"
 
 
 def build_config(
@@ -29,10 +29,18 @@ def build_config(
     resource_regeneration: float,
     reproduction_threshold: float,
     reproduction_cost: float,
+    offspring_endowment: float,
+    parent_reserve: float,
     target_tick: int,
     metrics_period: int,
     checkpoint_period: int,
 ) -> dict[str, Any]:
+    required_energy = float(reproduction_cost) + float(offspring_endowment) + float(parent_reserve)
+    if abs(float(reproduction_threshold) - required_energy) > 1e-9:
+        raise ValueError(
+            "reproduction_threshold must equal reproduction_cost + "
+            "offspring_endowment + parent_reserve"
+        )
     source = Path(template)
     payload = json.loads(source.read_text(encoding="utf-8"))
     payload["world"]["initial_entities"] = int(initial_entities)
@@ -40,7 +48,13 @@ def build_config(
     payload["entities"]["maintenance_cost"] = float(maintenance_cost)
     payload["entities"]["reproduction_threshold"] = float(reproduction_threshold)
     payload["entities"]["reproduction_cost"] = float(reproduction_cost)
-    payload["entities"]["reproduction_schema"] = "legacy-fixed-threshold-loss-v1"
+    payload["entities"]["reproduction_schema"] = (
+        "fixed-conservative-offspring-investment-v3"
+    )
+    payload["entities"]["reproduction_parent_reserve"] = float(parent_reserve)
+    payload["entities"]["reproduction_investment_levels"] = [
+        float(offspring_endowment)
+    ]
     payload["environment"]["harvest_channel_multipliers"] = [
         float(harvest_multiplier)
     ] * 4
@@ -75,6 +89,8 @@ def build_config(
             "resource_regeneration": resource_regeneration,
             "reproduction_threshold": reproduction_threshold,
             "reproduction_cost": reproduction_cost,
+            "offspring_endowment": offspring_endowment,
+            "parent_reserve": parent_reserve,
             "target_tick": target_tick,
             "metrics_period": metrics_period,
             "checkpoint_period": checkpoint_period,
@@ -100,8 +116,10 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--maintenance-cost", type=float, default=0.015)
     parser.add_argument("--harvest-multiplier", type=float, default=1.0)
     parser.add_argument("--resource-regeneration", type=float, default=0.018)
-    parser.add_argument("--reproduction-threshold", type=float, default=2.0)
-    parser.add_argument("--reproduction-cost", type=float, default=0.6)
+    parser.add_argument("--reproduction-threshold", type=float, default=1.4)
+    parser.add_argument("--reproduction-cost", type=float, default=0.1)
+    parser.add_argument("--offspring-endowment", type=float, default=0.9)
+    parser.add_argument("--parent-reserve", type=float, default=0.4)
     parser.add_argument("--target-tick", type=int, default=240)
     parser.add_argument("--metrics-period", type=int, default=30)
     parser.add_argument("--checkpoint-period", type=int, default=120)
@@ -110,6 +128,16 @@ def main(argv: list[str] | None = None) -> None:
         parser.error("initial-entities must be at least 16 for substrate qualification")
     if args.target_tick < 120:
         parser.error("target-tick must be at least 120")
+    if args.offspring_endowment <= 0.0:
+        parser.error("offspring-endowment must be positive")
+    if args.parent_reserve < 0.0:
+        parser.error("parent-reserve cannot be negative")
+    required_energy = args.reproduction_cost + args.offspring_endowment + args.parent_reserve
+    if abs(args.reproduction_threshold - required_energy) > 1e-9:
+        parser.error(
+            "reproduction-threshold must equal reproduction-cost + "
+            "offspring-endowment + parent-reserve for the fixed conservative substrate"
+        )
     manifest = build_config(
         args.template,
         output=args.output,
@@ -120,6 +148,8 @@ def main(argv: list[str] | None = None) -> None:
         resource_regeneration=args.resource_regeneration,
         reproduction_threshold=args.reproduction_threshold,
         reproduction_cost=args.reproduction_cost,
+        offspring_endowment=args.offspring_endowment,
+        parent_reserve=args.parent_reserve,
         target_tick=args.target_tick,
         metrics_period=args.metrics_period,
         checkpoint_period=args.checkpoint_period,

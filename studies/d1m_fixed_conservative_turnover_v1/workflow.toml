@@ -1,0 +1,117 @@
+schema = "se-study-workflow-v1"
+study_id = "d1m_fixed_conservative_turnover_v1"
+title = "D1-M fixed conservative offspring-investment turnover substrate"
+
+[parameters.backend]
+type = "choice"
+default = "auto"
+choices = ["auto", "cpu", "gpu"]
+description = "Execution backend."
+
+[parameters.seeds]
+type = "csv-int"
+default = "92101,92102,92103"
+description = "Independent qualification seeds; distinct from implementation-calibration seeds."
+
+[parameters.initial_entities]
+type = "int"
+default = 128
+minimum = 32
+description = "Founder population calibrated below the initial overshoot regime."
+
+[parameters.initial_energy]
+type = "float"
+default = 2.4
+minimum = 0.0
+description = "Founder body energy."
+
+[parameters.maintenance_cost]
+type = "float"
+default = 0.011
+minimum = 0.0
+description = "Base body maintenance cost per tick."
+
+[parameters.harvest_multiplier]
+type = "float"
+default = 1.25
+minimum = 0.0
+description = "Uniform ecological throughput multiplier across four resource channels."
+
+[parameters.resource_regeneration]
+type = "float"
+default = 0.025
+minimum = 0.0
+description = "Uniform per-channel abiotic regeneration."
+
+[parameters.reproduction_threshold]
+type = "float"
+default = 1.8
+minimum = 0.0
+description = "Explicit total eligibility requirement; must equal overhead + endowment + reserve."
+
+[parameters.reproduction_cost]
+type = "float"
+default = 0.1
+minimum = 0.0
+description = "Non-transfer reproduction event overhead."
+
+[parameters.offspring_endowment]
+type = "float"
+default = 0.9
+minimum = 0.000001
+description = "Fixed conservative parent-to-offspring energy transfer."
+
+[parameters.parent_reserve]
+type = "float"
+default = 0.8
+minimum = 0.0
+description = "Energy retained by a parent after overhead and transfer."
+
+[parameters.target_tick]
+type = "int"
+default = 360
+minimum = 360
+description = "Three-stage qualification horizon."
+
+[parameters.generated_config]
+type = "path"
+default = "state/studies/d1m_fixed_conservative_turnover_v1/source_config.json"
+description = "Generated local substrate config."
+
+[parameters.source_root]
+type = "path"
+default = "runs/base/d1m_fixed_conservative_turnover_v1/qualification"
+description = "Health-gated source output root."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1m_fixed_conservative_turnover_v1/qualification"
+description = "Health gate report root."
+
+[parameters.output]
+type = "result-path"
+default = "d1m_fixed_conservative_turnover_v1_results.zip"
+description = "External result bundle."
+
+[parameters.include_checkpoints]
+type = "bool"
+default = false
+description = "Include checkpoints for exact replay."
+
+[steps.prepare-config]
+description = "Generate the fixed conservative, non-heritable turnover substrate."
+command = ["se-turnover-substrate-config", "--template", "{study_dir}/protocol/source_template.json", "--output", "{generated_config}", "--initial-entities", "{initial_entities}", "--initial-energy", "{initial_energy}", "--maintenance-cost", "{maintenance_cost}", "--harvest-multiplier", "{harvest_multiplier}", "--resource-regeneration", "{resource_regeneration}", "--reproduction-threshold", "{reproduction_threshold}", "--reproduction-cost", "{reproduction_cost}", "--offspring-endowment", "{offspring_endowment}", "--parent-reserve", "{parent_reserve}", "--target-tick", "{target_tick}"]
+
+[steps.source-pilot]
+description = "Run the independent three-seed panel with staged health checks."
+command = ["se-multi", "--config", "{generated_config}", "--seeds", "{seeds}", "--output", "{source_root}", "--backend", "{backend}", "--until-tick", "{target_tick}", "--checkpoint-ticks", "120,240,360", "--source-health-contract", "{study_dir}/protocol/source_health.json", "--skip-post-run-audits"]
+requires_json = [{ path = "{generated_config}.manifest.json", field = "schema", equals = "d1-turnover-substrate-config-v2" }]
+
+[steps.source-health]
+description = "Re-evaluate the complete source panel as an execution precondition."
+command = ["se-source-health-gate", "--source-root", "{source_root}", "--contract", "{study_dir}/protocol/source_health.json", "--output", "{analysis_root}/source_health_gate.json"]
+
+[steps.pack-results]
+description = "Package config, sidecar, staged health evidence and runtime metadata externally."
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "analyses/d1m_fixed_conservative_turnover_v1", "--runtime-root", "runs/base/d1m_fixed_conservative_turnover_v1", "--required-file", "{generated_config}", "--required-file", "{generated_config}.manifest.json", "--output", "{output}"]
+boolean_flags = { include_checkpoints = "--include-checkpoints" }

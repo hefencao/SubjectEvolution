@@ -1,0 +1,39 @@
+{
+  "schema": "source-health-contract-v1",
+  "purpose": "Qualify stable multi-generation turnover before inherited capability attachment.",
+  "required_ready_seed_count": 3,
+  "stop_panel_after_failed_seed_count": 2,
+  "paired_plan_authorized_only_when_ready": true,
+  "checkpoints": [
+    {
+      "tick": 120,
+      "minimum_alive_count": 96,
+      "minimum_alive_fraction_to_initial": 0.75,
+      "minimum_cumulative_births_per_initial": 0.2,
+      "minimum_living_descendants_per_initial": 0.1,
+      "minimum_mean_generation": 0.1,
+      "maximum_founder_alive_fraction": 0.9,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 1.0
+    },
+    {
+      "tick": 240,
+      "minimum_alive_count": 96,
+      "minimum_alive_fraction_to_initial": 0.75,
+      "minimum_cumulative_births_per_initial": 0.5,
+      "minimum_living_descendants_per_initial": 0.25,
+      "minimum_mean_generation": 0.3,
+      "maximum_founder_alive_fraction": 0.7,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.3
+    },
+    {
+      "tick": 360,
+      "minimum_alive_count": 96,
+      "minimum_alive_fraction_to_initial": 0.75,
+      "minimum_cumulative_births_per_initial": 0.75,
+      "minimum_living_descendants_per_initial": 0.35,
+      "minimum_mean_generation": 0.45,
+      "maximum_founder_alive_fraction": 0.6,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.3
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "d1l-turnover-substrate-qualification-decision-v1",
+  "decision": "failed-source-health-qualification",
+  "effect_interpretation_authorized": false,
+  "new_capability_authorized": false,
+  "completed_seed_count": 2,
+  "requested_seed_count": 3,
+  "panel_stop_reason": "two consecutive source-health failures",
+  "root_cause": "legacy reproduction debits the parent by 0.6 energy but transfers only 0.27 energy to the newborn; descendant survival and checkpoint stability remain insufficient",
+  "supplied_bundle_limit": "v0.91 compact packaging omitted the aggregate health report, runtime events and generated config sidecar; only supplied final summaries are frozen here"
+}

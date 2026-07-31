@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.92.0
+
+- Corrects the v0.91 turnover-config sidecar to the canonical
+  `source_config.json.manifest.json` path used by workflow preconditions.
+- Failed result bundles now include source-health reports/events, panel index,
+  executed source config and manifest sidecar.
+- Adds fixed conservative, non-heritable offspring investment schema v3.
+- Adds D1-M three-stage turnover qualification; no new gene or paired branch.
+
 ## v0.91.0
 
 - Terminates D1-K as `source-collapse`; alive 12--19 and founder-dominated sources do not authorize paired-effect or evolutionary interpretation.

@@ -184,3 +184,14 @@ returns require a gene combination or multiple generations, the protocol must
 include an explicit maturation window before measurement. Rapid population
 loss is allowed only in a study declared in advance as a fast screen, and such a
 study cannot authorize evolutionary claims.
+
+## 13. Substrate reproduction and failure-bundle completeness
+
+A demographic substrate must not use an implicit parent-to-offspring loss as a
+stand-in for capability cost. Event overhead, transferred endowment and retained
+parent reserve are separate registered quantities. The qualification form is
+fixed and non-heritable; inherited investment is a later capability.
+
+A failed execution gate is a primary result. Its compact bundle must contain the
+executed config and sidecar, panel index, aggregate gate report, per-run staged
+events and summaries. Missing evidence may be declared, but not reconstructed.

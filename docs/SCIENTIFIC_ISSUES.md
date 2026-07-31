@@ -177,3 +177,16 @@ founder. The later paired branches are bottleneck dominated. Retain them only
 for runtime and conservation-contract evidence. Do not increase analysis depth,
 seed count, or horizon on the same source construction. D1-L must first qualify
 a healthy generational substrate.
+
+
+## D1-L legacy newborn-loss boundary
+
+D1-L stopped after two failed qualification seeds. Final population counts were
+not yet catastrophic, but descendant survival remained too low and the third
+seed was correctly skipped. The legacy rule dissipates 55% of the parent's fixed
+reproduction debit before the newborn receives energy, confounding demographic
+substrate health with an implicit offspring-quality penalty.
+
+D1-M replaces this with one fixed conservative transfer shared by every entity.
+It adds no inherited trait. The next evidence is the complete three-seed staged
+health panel, not an effect comparison.

@@ -931,3 +931,17 @@ current stored amounts, conversion allocation, aggregate store volume,
 physiology costs, resource fields, random streams, and the neutralization state
 of descendants. Existing stores above a neutralized channel capacity are not
 discarded; they simply provide no additional room until use reduces occupancy.
+
+
+## Fixed conservative turnover substrate
+
+`fixed-conservative-offspring-investment-v3` is a non-heritable reproduction
+mode used only to qualify demographic carrying capacity. Event overhead,
+newborn endowment, and retained parent reserve are explicit. The parent debit is
+overhead plus endowment; the newborn receives the full endowment; eligibility is
+the debit plus reserve. The configured threshold must equal those three terms.
+
+This schema deliberately does not activate morphology gene 6. It separates a
+healthy reproduction substrate from the later inherited-investment capability.
+Source qualification is evaluated during execution at registered checkpoints,
+and failed bundles preserve staged gate events and the exact generated config.

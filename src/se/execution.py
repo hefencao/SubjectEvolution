@@ -380,7 +380,13 @@ class DeterministicActionConflictResolver:
                     )
                 requirements = np.full(
                     parents.size,
-                    float(self.cfg.entities.reproduction_threshold),
+                    (
+                        float(self.cfg.entities.reproduction_cost)
+                        + float(self.cfg.entities.reproduction_investment_levels[0])
+                        + float(self.cfg.entities.reproduction_parent_reserve)
+                        if conservative_reproduction_investment_enabled(self.cfg)
+                        else float(self.cfg.entities.reproduction_threshold)
+                    ),
                     dtype=np.float32,
                 )
             else:
@@ -411,7 +417,12 @@ class DeterministicActionConflictResolver:
             if snapshot.genotype is None:
                 accepted_cost = np.full(
                     accepted_parents.size,
-                    float(self.cfg.entities.reproduction_cost),
+                    (
+                        float(self.cfg.entities.reproduction_cost)
+                        + float(self.cfg.entities.reproduction_investment_levels[0])
+                        if conservative_reproduction_investment_enabled(self.cfg)
+                        else float(self.cfg.entities.reproduction_cost)
+                    ),
                     dtype=np.float32,
                 )
             else:

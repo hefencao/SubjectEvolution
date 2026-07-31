@@ -113,6 +113,7 @@ from se.env.local_stress import LocalStressDiagnostics
 from se.env.resource_sensing import resource_sensing_diagnostics
 from se.runtime.resource_metabolism import storage_room_fraction
 from se.runtime.reproduction import (
+    conservative_reproduction_investment_enabled,
     inherited_reproduction_investment_enabled,
     reproduction_energy_requirement,
     reproduction_investment,
@@ -1670,6 +1671,9 @@ class SimulationReportingMixin:
             ),
             "reproduction_schema": self.cfg.entities.reproduction_schema,
             "reproduction_investment_enabled": bool(
+                conservative_reproduction_investment_enabled(self.cfg)
+            ),
+            "reproduction_investment_inherited": bool(
                 inherited_reproduction_investment_enabled(self.cfg)
             ),
             "offspring_endowment_ablation_enabled": bool(
