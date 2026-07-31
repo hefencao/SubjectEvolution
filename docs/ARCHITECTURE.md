@@ -959,3 +959,37 @@ to evaluate v2 events against a different contract.
 
 Version-1 contracts remain supported with their original stop-on-any-failure
 semantics for exact historical replay.
+
+
+## v0.94 capability-affordability and maturation boundary
+
+`capability-affordability-budget-v1` consumes only a completed v2 source-health
+panel. It requires every formal seed to complete, pass the required checkpoint,
+use the same canonical health contract, and share one effective source config.
+The analyzer estimates entity exposure by trapezoidal integration over frozen
+health checkpoints and reports gross body-energy inflow, base-maintenance
+headroom, and final reserve margins per seed. Gross headroom is explicitly a
+reference before other existing costs, not net spendable energy.
+
+The derived budget separates mature recurring cost, low-cost immature recurring
+state, extra newborn development cost, and event-debit deviation. The budget
+object authorizes only capability design and a new source pilot. It structurally
+sets paired and evolutionary authorization to false. Its canonical SHA-256 is
+verified before any config can be generated.
+
+`d1-capability-source-config-v1` starts from the exact frozen qualified D1-N
+config. Effective defaults are materialized for fingerprint comparison, so a raw
+JSON omission cannot masquerade as a substrate difference. The D1-O builder
+allows exactly two changed paths: `entities.reproduction_schema` and
+`entities.reproduction_investment_levels`. Any environment, maintenance,
+resource, reserve, run-independent physical, or unrelated capability drift is a
+hard error. The generated sidecar is always
+`source_config.json.manifest.json`.
+
+D1-O uses the existing morphology gene 6 and introduces no new genome coordinate.
+The four conservative endowment levels average to the fixed D1-N endowment,
+keeping the random founder population's mean event debit unchanged. The trait is
+independently functional, so its direct effect window begins only after one
+realized generation. v0.94 intentionally declares no paired command. A later
+version may add one only after consuming a newly generated passing source-health
+report.

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "se-mvp"
-version = "0.93.0"
+version = "0.94.0"
 description = "Reference implementation for nested-subject existence evolution simulation"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -73,6 +73,8 @@ se-study-verify = "se.analysis.study_bundle:verify_main"
 se-study = "se.cmd.study:main"
 se-source-health-gate = "se.analysis.source_health:main"
 se-turnover-substrate-config = "se.experiments.d1_turnover_substrate:main"
+se-capability-budget = "se.analysis.capability_budget:main"
+se-capability-source-config = "se.experiments.d1_capability_attachment:main"
 se-d4-niche-reversal = "se.experiments.d4_niche_reversal:main"
 se-d4-niche-assess = "se.analysis.d4_niche_reversal_effects:main"
 

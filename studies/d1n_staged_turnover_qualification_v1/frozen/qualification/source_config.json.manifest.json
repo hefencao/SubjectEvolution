@@ -1,0 +1,25 @@
+{
+  "schema": "d1-turnover-substrate-config-v2",
+  "template": "/home/unkloser/projects/SubjectEvolution/studies/d1n_staged_turnover_qualification_v1/protocol/source_template.json",
+  "output": "state/studies/d1n_staged_turnover_qualification_v1/source_config.json",
+  "config_sha256": "8d22e5c5dab1298ace2af582c3710fc89098fc65a0dc914325de9634a6df4cff",
+  "purpose": "demographic-substrate-qualification-only",
+  "new_gene_added": false,
+  "selection_claim_authorized": false,
+  "capability_effect_interpretation_authorized": false,
+  "parameters": {
+    "initial_entities": 128,
+    "initial_energy": 2.4,
+    "maintenance_cost": 0.01,
+    "harvest_multiplier": 1.3,
+    "resource_regeneration": 0.027,
+    "reproduction_threshold": 1.8,
+    "reproduction_cost": 0.1,
+    "offspring_endowment": 0.9,
+    "parent_reserve": 0.8,
+    "target_tick": 480,
+    "metrics_period": 30,
+    "checkpoint_period": 120
+  },
+  "manifest_path": "state/studies/d1n_staged_turnover_qualification_v1/source_config.json.manifest.json"
+}

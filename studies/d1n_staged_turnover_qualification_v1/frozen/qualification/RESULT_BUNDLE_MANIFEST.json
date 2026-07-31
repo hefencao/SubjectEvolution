@@ -1,0 +1,141 @@
+{
+  "schema": "se-required-result-bundle-v1",
+  "study_root": "studies/d1n_staged_turnover_qualification_v1",
+  "include_checkpoints": false,
+  "capability": "result-review-and-next-step-planning",
+  "files": [
+    {
+      "path": "analyses/d1n_staged_turnover_qualification_v1/qualification/source_health_gate.json",
+      "size": 14743,
+      "sha256": "d86b91e185811255d5274d15cb36ff1c950d93e4fa69a6c3444e3e642177970b"
+    },
+    {
+      "path": "analyses/d1n_staged_turnover_qualification_v1/qualification/source_health_gate.md",
+      "size": 782,
+      "sha256": "d11323ef2e521aed1bce9541ead52678b3efa1b371b47ac1c449e10a89bde3e6"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/long_run_analysis.json",
+      "size": 286221,
+      "sha256": "58936a0df1c2825d80b5f7e3991642b8dfefdf7ebba5831a7071e8e7934c1adc"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/long_run_analysis.md",
+      "size": 36206,
+      "sha256": "86bdaa9e115fde8210971e8239e6286aba0d372048dd76952d576ce08298ad46"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/multi_seed_index.json",
+      "size": 1643,
+      "sha256": "ba99ad3e02bb19aa1f098fc8bb1bb1af9c488bbc5b6c57e8c50e502e1e8b94e6"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/seed_93101/resolved_config.json",
+      "size": 15679,
+      "sha256": "92b7039597043366ce9a6c61a3467bfc2b03d17b619eae8d0c664562a0739ec7"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/seed_93101/run_manifest.json",
+      "size": 14273,
+      "sha256": "d20c4281b0da4d54906322991b388801fc8fdc4a44ca52ee6ecb5f13f9941abd"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/seed_93101/source_health_runtime_events.json",
+      "size": 10639,
+      "sha256": "c4f0db169b988803bfc900be271cb8d37e434cbfa464e4767c5e68c86eedacd0"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/seed_93101/summary.json",
+      "size": 35152,
+      "sha256": "d805cf05bb1278381879f46cb355b19d7b4643773492f308fd06e2932b16fc8f"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/seed_93102/resolved_config.json",
+      "size": 15679,
+      "sha256": "826fdd92f2d29863a05db920b3223cbd3a7ce2abc800d52cd3e6038ab4d72313"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/seed_93102/run_manifest.json",
+      "size": 14273,
+      "sha256": "9991e89fda00c6de097817eed486a8d336337c7229055655bef4bb2a673ed2af"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/seed_93102/source_health_runtime_events.json",
+      "size": 10658,
+      "sha256": "c2ac0e5f1474c8fc974b9dd4bedf48ad26fa84d2b5674f606ce81a2c4370fe7b"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/seed_93102/summary.json",
+      "size": 35123,
+      "sha256": "2543bf87096eddf0f6a997ffdd1202f1dc70ff8ab9a43553309881b7accc720e"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/seed_93103/resolved_config.json",
+      "size": 15679,
+      "sha256": "dd120b432bd522373d86a591c0c4bdd5e7f503a6ef908394e67f279d0d1526c1"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/seed_93103/run_manifest.json",
+      "size": 14273,
+      "sha256": "8afd7c8cc053c707c953dbc0043353a53e90505c99019aa9854089218fa5f024"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/seed_93103/source_health_runtime_events.json",
+      "size": 10660,
+      "sha256": "ab44caef63517b3528861a3d1844a827ba2488fb30b4efe4867911c23553421e"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/seed_93103/summary.json",
+      "size": 35077,
+      "sha256": "e1ce8e0828c379d02948f3497c3adf4df51a20ffbbf9737ffba2582f4f5108c2"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/source_health_gate.json",
+      "size": 14743,
+      "sha256": "d86b91e185811255d5274d15cb36ff1c950d93e4fa69a6c3444e3e642177970b"
+    },
+    {
+      "path": "runs/base/d1n_staged_turnover_qualification_v1/qualification/source_health_gate.md",
+      "size": 782,
+      "sha256": "d11323ef2e521aed1bce9541ead52678b3efa1b371b47ac1c449e10a89bde3e6"
+    },
+    {
+      "path": "state/studies/d1n_staged_turnover_qualification_v1/source_config.json",
+      "size": 14523,
+      "sha256": "8d22e5c5dab1298ace2af582c3710fc89098fc65a0dc914325de9634a6df4cff"
+    },
+    {
+      "path": "state/studies/d1n_staged_turnover_qualification_v1/source_config.json.manifest.json",
+      "size": 1019,
+      "sha256": "3d76f9addc4d51b6ad66f771050c56e4e19155bddeb41935f957fcb03e914fd3"
+    },
+    {
+      "path": "studies/d1n_staged_turnover_qualification_v1/DESIGN.md",
+      "size": 1925,
+      "sha256": "dca404c8ad477b9fba832285a37a96dda206493ee79331eae43981ba92c78189"
+    },
+    {
+      "path": "studies/d1n_staged_turnover_qualification_v1/README.md",
+      "size": 631,
+      "sha256": "ba76cd9af74b4cae72d62a4205b9fde3f56f4b951349828133204b6da7356ee2"
+    },
+    {
+      "path": "studies/d1n_staged_turnover_qualification_v1/protocol/source_health.json",
+      "size": 2988,
+      "sha256": "1fc8bfc8831571384f832f938847ec29aac3b7c9bf154165d819b7f353c0c372"
+    },
+    {
+      "path": "studies/d1n_staged_turnover_qualification_v1/protocol/source_template.json",
+      "size": 14314,
+      "sha256": "4c6bd879e3057f8a1dcd9c5d2ef7d8a3f780580b61de4a2bc70567cef33fe077"
+    },
+    {
+      "path": "studies/d1n_staged_turnover_qualification_v1/workflow.toml",
+      "size": 4778,
+      "sha256": "6576c4b7ef50cfa1a04195d5564f037832e15c7a3cce7bdf527698e7929e1e81"
+    }
+  ],
+  "omitted": [
+    "checkpoint bytes (*.sechk); hashes remain in paired plans/results"
+  ]
+}

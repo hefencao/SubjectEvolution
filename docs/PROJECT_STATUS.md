@@ -1,72 +1,70 @@
 # SE project status
 
-Version: **0.93.0**
+Version: **0.94.0**
 
 ## Current development direction
 
-Audit expansion and new-gene work remain paused. D1-M showed that the fixed
-conservative reproduction substrate is promising but not formally qualified:
-two seeds passed tick 360, while one source was prematurely stopped at tick 240
-by an execution-contract defect. v0.93 advances D1-N, which separates advisory
-trajectory diagnostics, catastrophic runtime floors, and required final source
-qualification.
+The demographic-substrate task has passed its formal gate. D1-N is frozen as a
+qualified healthy-turnover substrate. Audit expansion remains paused: the next
+scientific task is one budgeted capability attachment followed by a fresh source-
+health qualification, not portfolio screening or long-horizon interpretation.
 
-## D1-M frozen result
+## D1-N formal result
 
-Seeds 92102 and 92103 completed tick 360 and passed every v1 health condition.
-Seed 92101 was stopped when its tick-120 to tick-240 population decline was
-30.43%, narrowly above a 30% desired trajectory bound. At the stop it still had
-128 living entities from 128 founders, 98 cumulative births, 56 living
-descendants, and mean generation 0.4375. D1-M is therefore neither promoted nor
-classified as a failed substrate. The original result and decision are frozen.
+All three preregistered seeds completed tick 480 with the same canonical
+`source-health-contract-v2` SHA-256
+`963414588390b50bb52ee5b776387c133fac74aafce142c23d995d2773f3e23c`.
+No seed warned, hard-stopped, exited early, or omitted a required checkpoint.
 
-## Source-health contract v2
+| seed | alive | births/initial | living descendants/initial | mean generation | max generation | founder fraction | final decline |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 93101 | 129 | 1.133 | 0.680 | 0.922 | 4 | 0.326 | 3.73% |
+| 93102 | 121 | 1.063 | 0.602 | 0.868 | 4 | 0.364 | 0.82% |
+| 93103 | 177 | 1.438 | 0.969 | 1.062 | 4 | 0.299 | 0.00% |
 
-`source-health-contract-v2` separates three meanings that v1 conflated:
+The weakest seed remains above founder scale in descendant replacement and has
+only a small final decline. D1-N therefore demonstrates healthy turnover rather
+than mere non-extinction. It authorizes capability budgeting and an attached-
+capability source pilot. It does not authorize selection, adaptation, niche, or
+subjectivity conclusions.
 
-1. advisory checkpoints record whether maturation is on schedule;
-2. broad catastrophic floors alone may terminate a run early;
-3. required final checkpoints alone authorize the next stage.
+## D1-O affordability boundary
 
-A marginal advisory miss remains visible but does not destroy a recoverable
-source. A catastrophic floor still stops the run and may stop the remaining
-panel. Final qualification thresholds are fixed before formal seeds execute.
+The frozen D1-N panel yields a conservative budget using checkpoint-trapezoidal
+entity exposure. The weakest formal source provides:
 
-## D1-N stable-turnover substrate
+- minimum reported gross body-energy inflow: about 0.014032 energy/entity-tick;
+- minimum gross headroom above 0.010 base maintenance: about 0.004032;
+- minimum final mean-energy margin above the 0.8 parent reserve: about 0.06819.
 
-D1-N adds no inherited trait, reward, role, or population protection. It retains
-the fixed conservative reproduction settlement and applies one uniform physical
-substrate calibration to every entity:
+Only 10% of the weakest gross headroom is admitted as a new mature recurring-cost
+reference, and combination-immature states would be limited to one quarter of
+that amount. Gross headroom is not treated as guaranteed net surplus.
 
-- maintenance cost: 0.010 energy/tick;
-- four-channel harvest multiplier: 1.30;
-- four-channel abiotic regeneration: 0.027;
-- 128 founders, fixed 0.9 offspring transfer, 0.1 event overhead, 0.8 parent reserve.
+## D1-O capability
 
-The formal panel uses disjoint seeds 93101--93103 and a required tick-480
-checkpoint. Internal calibration seeds proved only that the default is not known
-to be invalid; they are not project evidence.
+D1-O activates no new gene. Existing morphology gene 6 selects conservative
+newborn endowments 0.75, 0.85, 0.95, or 1.05. Their mean remains exactly 0.9.
+There is no new structural, idle-use, or development energy charge; the selected
+transfer is paid by the parent and received by the newborn. The capability is
+single-gene and independently functional, so its minimum effect window begins
+after one realized generation rather than on the random founder state.
 
-## Development-order rule
-
-1. Run the complete D1-N formal panel.
-2. Require all three seeds to pass the required tick-480 qualification.
-3. Derive a per-capita energy and reserve budget from those formal trajectories.
-4. Declare structural, use, development, and combination-maturation costs before
-   attaching another inherited capability.
-5. Re-run source health after capability attachment.
-6. Only then authorize paired or evolutionary measurement.
+The environment, maintenance, four-channel harvest multiplier, regeneration,
+founder count, initial energy, event overhead, and parent reserve are unchanged
+from the qualified D1-N config. Configuration generation rejects any other field
+change and writes only `source_config.json.manifest.json`.
 
 ## Current task
 
-Run only the D1-N formal qualification workflow and package all staged warnings,
-hard-stop evidence, final health results, source config, and manifest. Do not add
-a new gene or paired branch unless all three formal seeds pass.
+Run the D1-O source pilot on independent seeds 94101--94103, then evaluate the
+unchanged v2 health gate. v0.94 declares no paired command. Only after all three
+sources pass required-final qualification without catastrophic termination may
+a later version add a shared-checkpoint direct-mechanism branch.
 
 ## Still incomplete
 
-- formal D1-N qualification on seeds 93101--93103;
-- a capability-affordability budget derived from qualified formal throughput;
-- a combination-maturation protocol;
-- independent evolutionary evidence for any D1 inherited allocation;
-- coexistence, reversal, and removal tests required for a niche claim.
+- D1-O attached-capability source qualification;
+- authorized shared-checkpoint endowment neutralization, if source health passes;
+- an independent post-maturation evolutionary panel;
+- coexistence, reversal, and removal evidence required for niche claims.

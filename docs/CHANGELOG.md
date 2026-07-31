@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.94.0
+
+- Freezes the supplied D1-N formal qualification: all three seeds complete tick 480, pass the same canonical v2 contract, and show multi-generation founder replacement without warning or hard-stop.
+- Adds `capability-affordability-budget-v1`, deriving explicit recurring, immature, development, event-debit, and maturation limits from the weakest qualified source while refusing paired or evolutionary authorization.
+- Freezes the exact qualified D1-N source config and compact evidence lock inside the study rather than shipping runtime directories.
+- Adds D1-O, activating one existing morphology-gene-6 interface with bounded conservative offspring endowments whose random-population mean remains the qualified fixed 0.9.
+- Adds strict config-diff enforcement: only reproduction schema and endowment levels may change; environment, maintenance, resource throughput, event overhead, and parent reserve remain unchanged.
+- Adds D1-O workflow steps for budget verification, config preparation, independent source health, and external result packaging; paired commands are intentionally absent until source qualification.
+- Adds no new gene, reward, role, population protection, post-hoc threshold change, or long-horizon evolutionary claim.
+
 ## 0.93.0
 
 - Adds `source-health-contract-v2`, separating advisory trajectory checks, catastrophic runtime floors, and required final qualification.

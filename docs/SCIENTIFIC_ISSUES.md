@@ -73,6 +73,7 @@ Implemented code is not automatically empirical evidence.
 | D3-28 | replication protocol corrected | The former replication config simultaneously changed seed, world scale, initial population, horizon and reporting/checkpoint cadence, so it could not isolate independent-seed replication. | Use the v2 source-plan protocol fingerprint and the matched 192×192/tick-480 replication config. Treat the retained 256×256/720-tick config only as unregistered scale robustness requiring separate preregistration. |
 | D3-29 | active interpretation boundary | Repeated neutralization effects establish that the existing support surface is acutely suppressive for realized conversion, but the frozen primary estimand does not identify whether the suppression is caused by demand-weighted occupancy below neutral support, asymmetric limited versus accelerated flow, or energy-constrained downstream settlement. | Do not choose a mechanism explanation from the sign alone. A follow-up must preregister a distinct direct exposure/decomposition contract and preserve cost, checkpoints, thresholds, and all unrelated world state. |
 | D1-04 | active capability calibration | Inherited resource-gradient sensing scale now reaches the physical observation path and carries explicit maintenance, use, and development costs, but no multi-seed ecological evidence exists yet. | Run the three-seed tick-480 source pilot and cost-preserving radius-one shared-checkpoint neutralization. Treat outputs as substrate calibration only; do not infer adaptation, niches, coexistence, or selection. |
+| D1-05 | active attached-capability source gate | D1-N now qualifies healthy turnover, but the bounded inherited offspring-investment capability has not yet shown that it preserves that turnover on independent seeds. | Run D1-O seeds 94101--94103 through the unchanged v2 required-final gate. Only a complete pass authorizes the cost-preserving shared-checkpoint neutralization; neither stage authorizes selection or niche claims. |
 | DEV-02 | resolved bytecode gap | Timestamp-based `.pyc` validation could execute an old same-length version constant when source mtime was preserved within the same second, even though `se.__file__` pointed to the current checkout. | Remove project bytecode before editable install and before verification; compare static AST, imported version, metadata and source root; retain an exact collision regression test. |
 
 
@@ -211,3 +212,19 @@ seeds: maintenance 0.010, harvest multiplier 1.30 and regeneration 0.027. This i
 not a reward or genotype-specific subsidy. The formal tick-480 seeds are disjoint
 from all calibration seeds, and no capability or evolutionary stage is authorized
 until all three pass.
+
+
+## D1-N qualification and D1-O evidence boundary
+
+The formal D1-N result is internally consistent across seeds and exceeds every
+pre-registered required-final condition. This resolves the immediate question of
+whether the shared physical substrate can maintain multi-generation turnover. It
+does not show that an attached inherited capability is affordable under realized
+expression, nor that any trait is selected.
+
+D1-O therefore uses the weakest D1-N throughput and reserve margins to constrain
+one existing single-gene interface. Its initial mean event debit is unchanged,
+and it consumes no new recurring or development budget. The unresolved issue is
+empirical: whether the distribution of endowments preserves healthy turnover on
+new independent seeds. A failed or marginal source stops the line before paired
+or evolutionary analysis.

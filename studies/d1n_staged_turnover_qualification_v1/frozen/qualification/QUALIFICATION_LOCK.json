@@ -1,0 +1,88 @@
+{
+  "schema": "d1n-formal-qualification-lock-v1",
+  "decision": "qualified-healthy-turnover-substrate",
+  "source_health_contract_sha256": "963414588390b50bb52ee5b776387c133fac74aafce142c23d995d2773f3e23c",
+  "formal_seed_count": 3,
+  "ready_seed_count": 3,
+  "warning_seed_count": 0,
+  "hard_stopped_seed_count": 0,
+  "paired_plan_authorized": true,
+  "capability_attachment_authorized": true,
+  "evolutionary_interpretation_authorized": false,
+  "formal_seeds": [
+    {
+      "seed": 93101,
+      "completed_tick": 480,
+      "terminated_early": false,
+      "ready": true,
+      "runtime_contract_sha256": "963414588390b50bb52ee5b776387c133fac74aafce142c23d995d2773f3e23c",
+      "alive": 129,
+      "alive_fraction_to_initial": 1.0078125,
+      "cumulative_births_per_initial": 1.1328125,
+      "living_descendants_per_initial": 0.6796875,
+      "mean_generation": 0.9224806201550387,
+      "max_generation": 4,
+      "founder_alive_fraction": 0.32558139534883723,
+      "alive_decline_fraction_from_previous_checkpoint": 0.03731343283582089
+    },
+    {
+      "seed": 93102,
+      "completed_tick": 480,
+      "terminated_early": false,
+      "ready": true,
+      "runtime_contract_sha256": "963414588390b50bb52ee5b776387c133fac74aafce142c23d995d2773f3e23c",
+      "alive": 121,
+      "alive_fraction_to_initial": 0.9453125,
+      "cumulative_births_per_initial": 1.0625,
+      "living_descendants_per_initial": 0.6015625,
+      "mean_generation": 0.8677685950413223,
+      "max_generation": 4,
+      "founder_alive_fraction": 0.36363636363636365,
+      "alive_decline_fraction_from_previous_checkpoint": 0.00819672131147541
+    },
+    {
+      "seed": 93103,
+      "completed_tick": 480,
+      "terminated_early": false,
+      "ready": true,
+      "runtime_contract_sha256": "963414588390b50bb52ee5b776387c133fac74aafce142c23d995d2773f3e23c",
+      "alive": 177,
+      "alive_fraction_to_initial": 1.3828125,
+      "cumulative_births_per_initial": 1.4375,
+      "living_descendants_per_initial": 0.96875,
+      "mean_generation": 1.0621468926553672,
+      "max_generation": 4,
+      "founder_alive_fraction": 0.2994350282485876,
+      "alive_decline_fraction_from_previous_checkpoint": 0.0
+    }
+  ],
+  "source_result_bundle_sha256": "e248247b954c4123a1e37f82d1d2a12c18368953a64e9694eec2d50bb33bf9ab",
+  "files": [
+    {
+      "path": "RESULT_BUNDLE_MANIFEST.json",
+      "size": 5958,
+      "sha256": "6219987563d85c273cf2a7984a18f7b600c247d049b179d71d29914b66adf792"
+    },
+    {
+      "path": "source_config.json",
+      "size": 14523,
+      "sha256": "8d22e5c5dab1298ace2af582c3710fc89098fc65a0dc914325de9634a6df4cff"
+    },
+    {
+      "path": "source_config.json.manifest.json",
+      "size": 1019,
+      "sha256": "3d76f9addc4d51b6ad66f771050c56e4e19155bddeb41935f957fcb03e914fd3"
+    },
+    {
+      "path": "source_health_gate.json",
+      "size": 14743,
+      "sha256": "d86b91e185811255d5274d15cb36ff1c950d93e4fa69a6c3444e3e642177970b"
+    },
+    {
+      "path": "source_health_gate.md",
+      "size": 782,
+      "sha256": "d11323ef2e521aed1bce9541ead52678b3efa1b371b47ac1c449e10a89bde3e6"
+    }
+  ],
+  "interpretation_boundary": "D1-N qualifies the shared turnover substrate for budgeted capability attachment and a new source-health pilot only; it does not establish adaptation, selection, niche formation, or subjectivity change."
+}

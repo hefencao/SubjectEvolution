@@ -198,3 +198,13 @@ fixed and non-heritable; inherited investment is a later capability.
 A failed execution gate is a primary result. Its compact bundle must contain the
 executed config and sidecar, panel index, aggregate gate report, per-run staged
 events and summaries. Missing evidence may be declared, but not reconstructed.
+
+
+## v0.94 check
+
+- The supplied D1-N bundle is complete and hash-consistent; all three formal seeds complete tick 480 under one canonical v2 contract with no warning or hard-stop.
+- The population evidence demonstrates healthy turnover rather than mere survival: descendants are the majority, mean generation approaches or exceeds one, maximum generation is four, and final declines are bounded.
+- The scientific task changes from substrate qualification to one budgeted capability source pilot; candidate-ledger audit remains paused.
+- The new durable rule that random founders cannot pay a population-wide mature or combination cost is recorded in the charter, architecture, status, study, tests, and iteration note.
+- D1-O changes no shared physical substrate field and adds no new gene, reward, role, replacement seed, protection rule, or post-hoc threshold.
+- Current evidence authorizes capability design and source health only; paired commands remain undeclared until a later version consumes passing source evidence, and evolutionary interpretation remains unauthorized.

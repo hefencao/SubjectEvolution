@@ -1,0 +1,82 @@
+schema = "se-study-workflow-v1"
+study_id = "d1o_budgeted_offspring_investment_v1"
+title = "D1-O budgeted inherited offspring investment"
+
+[parameters.backend]
+type = "choice"
+default = "auto"
+choices = ["auto", "cpu", "gpu"]
+description = "Execution backend."
+
+[parameters.seeds]
+type = "csv-int"
+default = "94101,94102,94103"
+description = "Independent attached-capability source seeds, disjoint from D1-N and all budget calibration."
+
+[parameters.budget]
+type = "path"
+default = "studies/d1o_budgeted_offspring_investment_v1/frozen/budget/capability_budget.json"
+description = "Frozen affordability and maturation budget derived from the formal D1-N panel."
+
+[parameters.capability]
+type = "path"
+default = "studies/d1o_budgeted_offspring_investment_v1/protocol/capability.json"
+description = "Single bounded capability attachment specification."
+
+[parameters.template]
+type = "path"
+default = "studies/d1n_staged_turnover_qualification_v1/frozen/qualification/source_config.json"
+description = "Exact qualified D1-N substrate config."
+
+[parameters.generated_config]
+type = "path"
+default = "state/studies/d1o_budgeted_offspring_investment_v1/source_config.json"
+description = "Generated attached-capability source config."
+
+[parameters.source_root]
+type = "path"
+default = "runs/base/d1o_budgeted_offspring_investment_v1/source"
+description = "Attached-capability source runtime root."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1o_budgeted_offspring_investment_v1/source"
+description = "Attached-capability source-health analysis root."
+
+[parameters.checkpoint_tick]
+type = "int"
+default = 480
+minimum = 480
+description = "Qualified source checkpoint after at least one realized generation."
+
+[parameters.output]
+type = "result-path"
+default = "d1o_budgeted_offspring_investment_v1_results.zip"
+description = "External result bundle."
+
+[parameters.include_checkpoints]
+type = "bool"
+default = false
+description = "Include checkpoints only when exact replay is required."
+
+[steps.budget-check]
+description = "Verify the frozen D1-N-derived affordability and maturation budget."
+command = ["se-capability-budget", "verify", "--budget", "{budget}"]
+
+[steps.prepare-config]
+description = "Attach one bounded inherited capability while preserving the qualified D1-N physical substrate."
+command = ["se-capability-source-config", "--template", "{template}", "--budget", "{budget}", "--capability", "{capability}", "--output", "{generated_config}"]
+
+[steps.source-pilot]
+description = "Run the attached capability on three independent seeds with the unchanged staged health gate."
+command = ["se-multi", "--config", "{generated_config}", "--seeds", "{seeds}", "--output", "{source_root}", "--backend", "{backend}", "--until-tick", "{checkpoint_tick}", "--checkpoint-ticks", "120,240,360,480", "--source-health-contract", "{study_dir}/protocol/source_health.json", "--skip-post-run-audits"]
+requires_json = [{ path = "{generated_config}.manifest.json", field = "schema", equals = "d1-capability-source-config-v1" }]
+
+[steps.source-health]
+description = "Require the attached-capability sources to re-pass required-final healthy turnover."
+command = ["se-source-health-gate", "--source-root", "{source_root}", "--contract", "{study_dir}/protocol/source_health.json", "--output", "{analysis_root}/source_health_gate.json"]
+
+[steps.pack-results]
+description = "Package the budget, generated config, source runtime, and health evidence externally."
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "analyses/d1o_budgeted_offspring_investment_v1", "--runtime-root", "runs/base/d1o_budgeted_offspring_investment_v1", "--required-file", "{generated_config}", "--required-file", "{generated_config}.manifest.json", "--output", "{output}"]
+boolean_flags = { include_checkpoints = "--include-checkpoints" }

@@ -1,0 +1,195 @@
+{
+  "schema": "capability-affordability-budget-v1",
+  "source_health_report": "analyses/d1n_staged_turnover_qualification_v1/qualification/source_health_gate.json",
+  "source_health_report_sha256": "d86b91e185811255d5274d15cb36ff1c950d93e4fa69a6c3444e3e642177970b",
+  "source_root": "runs/base/d1n_staged_turnover_qualification_v1/qualification",
+  "source_health_contract_sha256": "963414588390b50bb52ee5b776387c133fac74aafce142c23d995d2773f3e23c",
+  "qualified_seed_count": 3,
+  "required_seed_count": 3,
+  "source_qualification_ready": true,
+  "physical_substrate_fingerprint_sha256": "5205244d360e28b9e0a8ff5ff37ea5ab99499ea829e69376f89a5d2baebcbeb7",
+  "source_protocol_fingerprint_sha256": "e97dfcde4a6fb520d61919a14f90f29ebca686fa060a0ab8773ed9374e8ac722",
+  "formal_seeds": [
+    {
+      "seed": 93101,
+      "completed_tick": 480,
+      "contract_sha256": "963414588390b50bb52ee5b776387c133fac74aafce142c23d995d2773f3e23c",
+      "physical_substrate_fingerprint_sha256": "5205244d360e28b9e0a8ff5ff37ea5ab99499ea829e69376f89a5d2baebcbeb7",
+      "source_protocol_fingerprint_sha256": "e97dfcde4a6fb520d61919a14f90f29ebca686fa060a0ab8773ed9374e8ac722",
+      "entity_exposure_schema": "checkpoint-trapezoidal-entity-exposure-v1",
+      "entity_exposure_estimate": 75420.0,
+      "exposure_points": [
+        {
+          "tick": 0,
+          "alive": 128
+        },
+        {
+          "tick": 120,
+          "alive": 198
+        },
+        {
+          "tick": 240,
+          "alive": 168
+        },
+        {
+          "tick": 360,
+          "alive": 134
+        },
+        {
+          "tick": 480,
+          "alive": 129
+        }
+      ],
+      "reported_body_energy_inflow_total": 1090.8442613468826,
+      "gross_body_energy_inflow_per_entity_tick": 0.01446359402475315,
+      "base_maintenance_energy_per_entity_tick": 0.01,
+      "gross_headroom_above_base_maintenance_per_entity_tick": 0.0044635940247531505,
+      "final_mean_body_energy": 0.9506254196166992,
+      "parent_reserve_energy": 0.8,
+      "final_mean_energy_margin_above_parent_reserve": 0.15062541961669917,
+      "alive": 129,
+      "cumulative_births_per_initial": 1.1328125,
+      "living_descendants_per_initial": 0.6796875,
+      "mean_generation": 0.9224806201550387,
+      "max_generation": 4,
+      "founder_alive_fraction": 0.32558139534883723,
+      "final_checkpoint_alive_decline_fraction": 0.03731343283582089
+    },
+    {
+      "seed": 93102,
+      "completed_tick": 480,
+      "contract_sha256": "963414588390b50bb52ee5b776387c133fac74aafce142c23d995d2773f3e23c",
+      "physical_substrate_fingerprint_sha256": "5205244d360e28b9e0a8ff5ff37ea5ab99499ea829e69376f89a5d2baebcbeb7",
+      "source_protocol_fingerprint_sha256": "e97dfcde4a6fb520d61919a14f90f29ebca686fa060a0ab8773ed9374e8ac722",
+      "entity_exposure_schema": "checkpoint-trapezoidal-entity-exposure-v1",
+      "entity_exposure_estimate": 71340.0,
+      "exposure_points": [
+        {
+          "tick": 0,
+          "alive": 128
+        },
+        {
+          "tick": 120,
+          "alive": 196
+        },
+        {
+          "tick": 240,
+          "alive": 152
+        },
+        {
+          "tick": 360,
+          "alive": 122
+        },
+        {
+          "tick": 480,
+          "alive": 121
+        }
+      ],
+      "reported_body_energy_inflow_total": 1001.0213020157794,
+      "gross_body_energy_inflow_per_entity_tick": 0.014031697533162033,
+      "base_maintenance_energy_per_entity_tick": 0.01,
+      "gross_headroom_above_base_maintenance_per_entity_tick": 0.004031697533162033,
+      "final_mean_body_energy": 0.8681913614273071,
+      "parent_reserve_energy": 0.8,
+      "final_mean_energy_margin_above_parent_reserve": 0.06819136142730708,
+      "alive": 121,
+      "cumulative_births_per_initial": 1.0625,
+      "living_descendants_per_initial": 0.6015625,
+      "mean_generation": 0.8677685950413223,
+      "max_generation": 4,
+      "founder_alive_fraction": 0.36363636363636365,
+      "final_checkpoint_alive_decline_fraction": 0.00819672131147541
+    },
+    {
+      "seed": 93103,
+      "completed_tick": 480,
+      "contract_sha256": "963414588390b50bb52ee5b776387c133fac74aafce142c23d995d2773f3e23c",
+      "physical_substrate_fingerprint_sha256": "5205244d360e28b9e0a8ff5ff37ea5ab99499ea829e69376f89a5d2baebcbeb7",
+      "source_protocol_fingerprint_sha256": "e97dfcde4a6fb520d61919a14f90f29ebca686fa060a0ab8773ed9374e8ac722",
+      "entity_exposure_schema": "checkpoint-trapezoidal-entity-exposure-v1",
+      "entity_exposure_estimate": 80700.0,
+      "exposure_points": [
+        {
+          "tick": 0,
+          "alive": 128
+        },
+        {
+          "tick": 120,
+          "alive": 198
+        },
+        {
+          "tick": 240,
+          "alive": 163
+        },
+        {
+          "tick": 360,
+          "alive": 159
+        },
+        {
+          "tick": 480,
+          "alive": 177
+        }
+      ],
+      "reported_body_energy_inflow_total": 1214.4486291937199,
+      "gross_body_energy_inflow_per_entity_tick": 0.015048929729785871,
+      "base_maintenance_energy_per_entity_tick": 0.01,
+      "gross_headroom_above_base_maintenance_per_entity_tick": 0.005048929729785871,
+      "final_mean_body_energy": 0.9853361248970032,
+      "parent_reserve_energy": 0.8,
+      "final_mean_energy_margin_above_parent_reserve": 0.18533612489700313,
+      "alive": 177,
+      "cumulative_births_per_initial": 1.4375,
+      "living_descendants_per_initial": 0.96875,
+      "mean_generation": 1.0621468926553672,
+      "max_generation": 4,
+      "founder_alive_fraction": 0.2994350282485876,
+      "final_checkpoint_alive_decline_fraction": 0.0
+    }
+  ],
+  "derivation_policy": {
+    "schema": "capability-affordability-derivation-policy-v1",
+    "entity_exposure_schema": "checkpoint-trapezoidal-entity-exposure-v1",
+    "recurring_headroom_fraction": 0.1,
+    "immature_recurring_fraction": 0.25,
+    "development_reserve_fraction": 0.25,
+    "development_endowment_fraction": 0.05,
+    "event_endowment_deviation_fraction": 0.16666666666666666,
+    "gross_headroom_is_not_net_spendable_energy": true
+  },
+  "observed_reference": {
+    "base_maintenance_energy_per_entity_tick": 0.01,
+    "fixed_offspring_endowment_energy": 0.9,
+    "fixed_parent_reserve_energy": 0.8,
+    "final_tick": 480,
+    "minimum_gross_body_energy_inflow_per_entity_tick": 0.014031697533162033,
+    "minimum_gross_headroom_above_base_maintenance_per_entity_tick": 0.004031697533162033,
+    "minimum_final_mean_energy_margin_above_parent_reserve": 0.06819136142730708
+  },
+  "attachment_budget": {
+    "maximum_new_recurring_cost_per_entity_tick": 0.0004031697533162033,
+    "maximum_immature_recurring_cost_per_entity_tick": 0.00010079243832905082,
+    "maximum_extra_development_cost_per_newborn": 0.01704784035682677,
+    "maximum_event_debit_deviation_from_fixed_endowment": 0.15,
+    "maximum_initial_population_mean_event_debit_shift": 0.0,
+    "structural_and_use_recurring_costs_share_one_ceiling": true,
+    "all_costs_must_be_charged_in_world_semantics": true
+  },
+  "maturation_contract": {
+    "single_gene_independent_capability_minimum_generations_before_effect_window": 1,
+    "combination_capability_minimum_generations_before_effect_window": 2,
+    "combination_capability_requires_low_cost_immature_state": true,
+    "combination_immature_state_recurring_cost_ceiling": 0.00010079243832905082,
+    "initial_random_population_must_not_pay_mature_combination_cost": true,
+    "effect_window_must_begin_after_declared_maturation": true
+  },
+  "authorization": {
+    "capability_design_authorized": true,
+    "capability_source_pilot_authorized": true,
+    "paired_branch_authorized": false,
+    "evolutionary_panel_authorized": false,
+    "selection_or_niche_claim_authorized": false,
+    "next_gate": "attached-capability-source-health"
+  },
+  "interpretation_boundary": "The qualified D1-N substrate supports bounded capability design and a new source-health pilot only. Gross headroom is a conservative reference before other existing costs, not a guaranteed spendable surplus.",
+  "budget_sha256": "72833a45a21e860c6c9b7de643524997ca7ada80ba0875a32b1bbe3c10fc717e"
+}

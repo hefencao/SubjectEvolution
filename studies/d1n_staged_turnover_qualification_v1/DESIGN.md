@@ -40,3 +40,11 @@ Three independent formal seeds must complete and pass the required tick-480
 checkpoint. Warnings remain visible. A hard stop or final failure blocks
 capability attachment, formal affordability budgeting, paired branches, and
 evolutionary claims.
+
+## Formal result
+
+All three preregistered seeds completed tick 480 without warning, hard-stop, or
+missing checkpoint. Final alive counts were 129, 121, and 177; living-descendant
+ratios per founder were 0.680, 0.602, and 0.969; mean generations were 0.922,
+0.868, and 1.062; maximum generation was four in every seed. D1-N is promoted
+as a healthy turnover substrate, not as evidence of selection or adaptation.

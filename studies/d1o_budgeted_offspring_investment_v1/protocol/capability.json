@@ -1,0 +1,49 @@
+{
+  "schema": "d1-capability-attachment-v1",
+  "capability_id": "bounded-inherited-offspring-investment-v1",
+  "runtime_schema": "inherited-conservative-offspring-investment-v2",
+  "direct_physical_interface": "Conservative parent-body energy transfer to newborn body energy at reproduction settlement.",
+  "inherited_source": "Existing morphology gene 6; no additional genome coordinate or module slot is introduced.",
+  "morphology_gene_index": 6,
+  "offspring_investment_levels": [
+    0.75,
+    0.85,
+    0.95,
+    1.05
+  ],
+  "single_gene_independent_effect": true,
+  "combination": {
+    "required": false,
+    "dependencies": [],
+    "immature_state": "not-applicable-single-gene"
+  },
+  "costs": {
+    "structural_energy_per_tick": 0.0,
+    "idle_use_energy_per_tick": 0.0,
+    "extra_development_energy_per_newborn": 0.0,
+    "event_overhead_energy": 0.1,
+    "parent_reserve_energy": 0.8,
+    "parent_transfer_is_conservative": true,
+    "maximum_incremental_parent_debit_vs_fixed_baseline": 0.15,
+    "initial_population_mean_event_debit_shift": 0.0
+  },
+  "maturation": {
+    "minimum_generations_before_effect_window": 1,
+    "effect_window_basis": "The gene acts at reproduction; consequences are evaluated only after newborn survival and at least one generation of realized replacement."
+  },
+  "neutral_intervention": "neutralize-conservative-offspring-endowment",
+  "neutral_branch_preserves": [
+    "genotype",
+    "selected parent investment",
+    "parent energy debit",
+    "eligibility requirement",
+    "fertility debit",
+    "world state",
+    "checkpoint",
+    "random stream",
+    "all unrelated capabilities"
+  ],
+  "world_feedback": false,
+  "role_labels": false,
+  "selection_claim_authorized": false
+}

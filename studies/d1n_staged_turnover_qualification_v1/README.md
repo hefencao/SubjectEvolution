@@ -10,3 +10,10 @@ Internal calibration seeds are not part of the formal evidence; the workflow
 defaults to disjoint seeds 93101--93103.
 
 Use `se-study show studies/d1n_staged_turnover_qualification_v1` before running.
+
+## Frozen formal result
+
+Seeds 93101--93103 all completed tick 480 and passed required-final qualification
+under one canonical v2 contract. Compact config, report, bundle manifest, and
+qualification lock are retained under `frozen/qualification/`. This authorizes
+budgeted capability attachment and a new source pilot only.
