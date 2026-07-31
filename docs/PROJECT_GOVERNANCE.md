@@ -13,6 +13,18 @@ Once a healthy substrate already contains multiple inherited mechanisms and matc
 - The scientific task changes from isolated attachment/audit cycling to one integrated retention panel.
 - No threshold, reward, genotype-specific subsidy, or ecological role is added.
 
+## 0.1 Environment-timescale qualification boundary
+
+A demographic-equilibrium gate must span at least one complete longest configured environmental forcing period. A fixed small number of recent reporting windows may be retained as a phase diagnostic, but it cannot override the cycle-aware gate. Exploratory seeds may choose a shared physical candidate; only a disjoint formal seed can qualify it.
+
+## v0.96 check
+
+- D1-P is complete and healthy but actively expanding; its gene-retention labels cannot support gene-specific adjustment.
+- The v1 absolute threshold is corrected with a relative equal-seed scan rather than 704 individual audits.
+- Only uniform external regeneration changes; no genotype, role, reward, channel identity, cost, reproduction rule, or environment geometry changes.
+- The formal 96032 pilot, run after the cycle-aware gate was frozen, passes a 450-tick assessment covering the 431-tick longest forcing cycle.
+- The frozen pilot authorizes only independent integrated-panel execution. Paired, selection and gene-specific authorization remain false.
+
 ## 1. Data versus expectation
 
 Determine whether an unexpected result comes from invalid support, failed manipulation, stale reporting, numerical inconsistency, or a genuine small/negative effect. Adjust the current task only from the identified cause; do not compensate by lowering thresholds, replacing failed seeds, extending horizons post hoc, or adding a reward.

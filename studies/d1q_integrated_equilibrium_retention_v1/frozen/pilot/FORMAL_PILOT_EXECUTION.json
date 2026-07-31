@@ -1,0 +1,52 @@
+{
+  "schema": "d1q-formal-pilot-execution-v1",
+  "seed": 96032,
+  "scientific_source_config_sha256": "06fab839934b0428bd0dac191d5a6ec37557c91c2c70475abeb550f248b52de0",
+  "segments": [
+    {
+      "start_tick": 0,
+      "final_tick": 600,
+      "checkpoint_written": true
+    },
+    {
+      "start_tick": 600,
+      "final_tick": 840,
+      "resumed_from_checkpoint": true
+    }
+  ],
+  "checkpoint_state_sha256": "02d334c863205a8dfa458e8f6f5485932fcfc3d681d72f470b8e6606076a2ded",
+  "checkpoint_included": false,
+  "checkpoint_omission_reason": "Frozen qualification evidence is compact by default; full replay state remains an explicit result-package option.",
+  "continuous_progress_ticks": [
+    30,
+    60,
+    90,
+    120,
+    150,
+    180,
+    210,
+    240,
+    270,
+    300,
+    330,
+    360,
+    390,
+    420,
+    450,
+    480,
+    510,
+    540,
+    570,
+    600,
+    630,
+    660,
+    690,
+    720,
+    750,
+    780,
+    810,
+    840
+  ],
+  "checkpoint_resume_semantics": "trusted-project-generated-full-world-checkpoint",
+  "scientific_state_changed_at_resume": false
+}

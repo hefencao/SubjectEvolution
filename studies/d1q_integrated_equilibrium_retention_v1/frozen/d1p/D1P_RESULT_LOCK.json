@@ -1,0 +1,35 @@
+{
+  "schema": "d1p-integrated-panel-result-lock-v1",
+  "source_bundle": "d1p_integrated_ecological_subject_v1_results.zip",
+  "source_bundle_sha256": "3666580423eb3fa8b69dcfdae4e9504a9c278399bdd6296fb6a6aab933c8169c",
+  "formal_seeds": [
+    95101,
+    95102,
+    95103
+  ],
+  "final_tick": 1200,
+  "source_health_contract_sha256": "c5daff3c5f47ea732fa863bffa02bc11bea3b2babc6b22d895955cdb69cd7fe2",
+  "ready": true,
+  "files": {
+    "RESULT_BUNDLE_MANIFEST.json": {
+      "size": 6880,
+      "sha256": "c7676148e1c449d0ffcc6881c2313976aed881156cf855db1d21916a5795d1f2"
+    },
+    "gene_persistence.json": {
+      "size": 1260418,
+      "sha256": "24ef298aca529e8e77d1fa510c5d7c3008c76d8123006855d2a2731685f0b27e"
+    },
+    "long_run_analysis.json": {
+      "size": 455484,
+      "sha256": "06e5aadb919836e3c6071a6d43a20e0b3bf74a2a2950ece52830d5dcca2d8237"
+    },
+    "panel_health.json": {
+      "size": 15529,
+      "sha256": "aa8e501ad6374cbcc8b26a093e75d7b03d66a21a22f05cdcf24b49f1f5e16b0f"
+    },
+    "source_config.json": {
+      "size": 14564,
+      "sha256": "7d4317eb9424d46afef417e9580ae3acbd3ca8ddb0e847860e980aae385afb13"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "offline-replay-provenance-v1",
+  "checkpoint_lineage": [
+    {
+      "checkpoint": "studies/d1q_integrated_equilibrium_retention_v1/frozen/pilot/source/seed_96032/checkpoint_00000600.sechk",
+      "checkpoint_schema": "se-full-checkpoint-v1",
+      "checkpoint_project_version": "0.96.0",
+      "checkpoint_tick": 600,
+      "checkpoint_state_sha256": "02d334c863205a8dfa458e8f6f5485932fcfc3d681d72f470b8e6606076a2ded",
+      "offline_replay": true
+    }
+  ],
+  "event_log_scope": "post-checkpoint",
+  "cumulative_world_counters_restored": true
+}

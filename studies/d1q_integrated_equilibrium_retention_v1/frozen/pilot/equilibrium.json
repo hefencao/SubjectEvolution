@@ -1,0 +1,126 @@
+{
+  "schema": "integrated-equilibrium-qualification-v2",
+  "source_root": "studies/d1q_integrated_equilibrium_retention_v1/frozen/pilot/source",
+  "required_seed_count": 1,
+  "seed_count": 1,
+  "exact_seed_count": true,
+  "ready_seed_count": 1,
+  "ready": true,
+  "independent_unit": "seed",
+  "windows_are_independent_replicates": false,
+  "seeds": [
+    {
+      "seed": 96032,
+      "ready": true,
+      "checks": {
+        "completed_turnover": true,
+        "descendant_replacement": true,
+        "final_population_scale_bounded": true,
+        "cycle_aware_population_regime": true,
+        "effective_lineages": true,
+        "largest_lineage_bounded": true,
+        "canonical_diversity_retained": true,
+        "policy_diversity_retained": true
+      },
+      "final": {
+        "tick": 840,
+        "alive": 143,
+        "alive_fraction_to_initial": 1.1171875,
+        "cumulative_births_per_initial": 1.5703125,
+        "descendant_alive_fraction": 0.7972027972027972,
+        "mean_generation": 1.3356643356643356,
+        "max_generation": 4,
+        "effective_lineages": 19.68142444658325,
+        "largest_lineage_fraction": 0.1048951048951049,
+        "canonical_diversity_ratio_to_initial": 0.9456819510939453,
+        "policy_diversity_ratio_to_initial": 0.8985530838177643
+      },
+      "cycle_aware_regime": {
+        "schema": "cycle-aware-bounded-demographic-regime-v1",
+        "ready": true,
+        "checks": {
+          "environmental_periods_declared": true,
+          "cycle_coverage": true,
+          "minimum_population_bounded": true,
+          "maximum_population_bounded": true,
+          "cycle_alive_cv_bounded": true,
+          "cycle_trend_bounded": true,
+          "cycle_envelope_bounded": true
+        },
+        "environmental_periods": [
+          {
+            "path": "resource_cycle_periods[0]",
+            "ticks": 173
+          },
+          {
+            "path": "season_period",
+            "ticks": 240
+          },
+          {
+            "path": "resource_cycle_periods[1]",
+            "ticks": 257
+          },
+          {
+            "path": "oxygen_period",
+            "ticks": 311
+          },
+          {
+            "path": "resource_cycle_periods[2]",
+            "ticks": 349
+          },
+          {
+            "path": "wear_period",
+            "ticks": 419
+          },
+          {
+            "path": "resource_cycle_periods[3]",
+            "ticks": 431
+          }
+        ],
+        "longest_environmental_period_path": "resource_cycle_periods[3]",
+        "longest_environmental_period_ticks": 431,
+        "progress_sampling_interval_ticks": 30,
+        "required_sample_count": 16,
+        "available_sample_count": 28,
+        "assessed_sample_count": 16,
+        "assessment_start_tick": 390,
+        "assessment_final_tick": 840,
+        "assessment_span_ticks": 450,
+        "alive_mean": 118.0,
+        "alive_minimum": 109,
+        "alive_maximum": 143,
+        "alive_minimum_fraction_to_initial": 0.8515625,
+        "alive_maximum_fraction_to_initial": 1.1171875,
+        "alive_cv": 0.08553656456858623,
+        "alive_slope_fraction_per_sample": 0.014830508474576292,
+        "alive_envelope_fraction_of_mean": 0.288135593220339,
+        "thresholds": {
+          "maximum_alive_cv": 0.15,
+          "maximum_abs_slope_fraction_per_sample": 0.02,
+          "maximum_alive_envelope_fraction_of_mean": 0.5,
+          "minimum_alive_fraction_to_initial": 0.5,
+          "maximum_alive_fraction_to_initial": 2.0
+        },
+        "interpretation": "Qualification spans at least one complete configured environmental forcing cycle. Shorter-window rebounds or declines are retained as advisory phase diagnostics and do not override this cycle-aware decision."
+      },
+      "short_window_advisory": {
+        "settled_window_count_required": 3,
+        "settled_window_count_available": 3,
+        "settled_window_start_tick": 780,
+        "settled_alive_cv": 0.04206516023003729,
+        "settled_maximum_abs_net_growth_fraction": 0.058394160583941604,
+        "settled_alive_slope_fraction_per_window": 0.05134474327628371,
+        "settled_span_change_fraction": 0.10268948655256722,
+        "active_rebound": true,
+        "active_decline": false
+      }
+    }
+  ],
+  "authorization": {
+    "integrated_retention_interpretation_authorized": true,
+    "gene_specific_adjustment_authorized": false,
+    "selection_claim_authorized": false,
+    "paired_experiment_authorized": false
+  },
+  "interpretation": "Cycle-aware equilibrium qualification establishes a bounded, multi-lineage substrate for integrated retention screening only. It does not estimate fitness or selection, and it does not authorize one experiment per gene."
+}

@@ -1,0 +1,108 @@
+schema = "se-study-workflow-v1"
+study_id = "d1q_integrated_equilibrium_retention_v1"
+title = "D1-Q integrated equilibrium and whole-genome retention"
+
+[parameters.backend]
+type = "choice"
+default = "auto"
+choices = ["auto", "cpu", "gpu"]
+description = "Execution backend."
+
+[parameters.pilot_seed]
+type = "int"
+default = 96032
+description = "Frozen formal pilot seed used for exact reproducibility; it is not a new independent replicate."
+
+[parameters.panel_seeds]
+type = "csv-int"
+default = "96101,96102,96103"
+description = "Independent equilibrium-panel seeds."
+
+[parameters.template]
+type = "path"
+default = "studies/d1q_integrated_equilibrium_retention_v1/frozen/d1p/source_config.json"
+description = "Exact D1-P integrated source config."
+
+[parameters.generated_config]
+type = "path"
+default = "state/studies/d1q_integrated_equilibrium_retention_v1/equilibrium_config.json"
+description = "Generated role-neutral equilibrium source config."
+
+[parameters.pilot_root]
+type = "path"
+default = "runs/base/d1q_integrated_equilibrium_retention_v1/pilot"
+description = "Independent pilot runtime root."
+
+[parameters.panel_root]
+type = "path"
+default = "runs/base/d1q_integrated_equilibrium_retention_v1/panel"
+description = "Independent formal panel runtime root."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1q_integrated_equilibrium_retention_v1"
+description = "Study analysis root."
+
+[parameters.output]
+type = "result-path"
+default = "d1q_integrated_equilibrium_retention_v1_results.zip"
+description = "External result bundle."
+
+[parameters.include_checkpoints]
+type = "bool"
+default = false
+description = "Include checkpoints only when explicit replay is required."
+
+[steps.evidence-audit]
+description = "Reclassify D1-P relative contraction and expose expansion/lineage confounds without per-gene experiments."
+command = ["se-integrated-retention-audit", "--gene-persistence", "{study_dir}/frozen/d1p/gene_persistence.json", "--long-run-analysis", "{study_dir}/frozen/d1p/long_run_analysis.json", "--health-report", "{study_dir}/frozen/d1p/panel_health.json", "--config", "{template}", "--output", "{analysis_root}/d1p_retention_audit_v2.json"]
+
+[steps.prepare-config]
+description = "Lower only the shared four-channel external renewal vector; preserve all 704 inherited coordinates and environment geometry."
+command = ["se-equilibrium-source-config", "--template", "{template}", "--output", "{generated_config}"]
+
+[steps.source-pilot]
+description = "Reproduce the frozen bounded equilibrium pilot exactly; the delivered qualification lock already authorizes the independent panel."
+command = ["se-multi", "--config", "{generated_config}", "--seeds", "{pilot_seed}", "--output", "{pilot_root}", "--backend", "{backend}", "--until-tick", "840", "--no-checkpoints", "--source-health-contract", "{study_dir}/protocol/pilot_health.json", "--thin-checkpoints-only", "--skip-post-run-audits"]
+requires_json = [{ path = "{generated_config}.manifest.json", field = "schema", equals = "integrated-equilibrium-resource-flux-v1" }]
+
+[steps.pilot-health]
+description = "Apply minimum turnover and catastrophic-collapse qualification to the pilot."
+command = ["se-source-health-gate", "--source-root", "{pilot_root}", "--contract", "{study_dir}/protocol/pilot_health.json", "--output", "{analysis_root}/pilot_health.json"]
+
+[steps.pilot-equilibrium]
+description = "Require bounded population scale over at least one complete configured environmental cycle, lineage breadth and retained heritable diversity."
+command = ["se-equilibrium-audit", "--source-root", "{pilot_root}", "--required-seed-count", "1", "--output", "{analysis_root}/pilot_equilibrium.json"]
+requires_json = [{ path = "{analysis_root}/pilot_health.json", field = "ready", equals = true }]
+
+[steps.integrated-panel]
+description = "Run the unchanged complete subject-environment system on three new equilibrium-panel seeds."
+command = ["se-multi", "--config", "{generated_config}", "--seeds", "{panel_seeds}", "--output", "{panel_root}", "--backend", "{backend}", "--until-tick", "1200", "--checkpoint-ticks", "240,600,1200", "--disable-periodic-checkpoints", "--source-health-contract", "{study_dir}/protocol/panel_health.json", "--thin-checkpoints-only", "--skip-post-run-audits"]
+requires_json = [
+  { path = "{study_dir}/frozen/pilot/PILOT_QUALIFICATION_LOCK.json", field = "authorization.integrated_panel_authorized", equals = true },
+  { path = "{generated_config}.manifest.json", field = "output_file_sha256", equals = "06fab839934b0428bd0dac191d5a6ec37557c91c2c70475abeb550f248b52de0" },
+]
+
+[steps.panel-health]
+description = "Confirm minimum turnover health in every formal equilibrium seed."
+command = ["se-source-health-gate", "--source-root", "{panel_root}", "--contract", "{study_dir}/protocol/panel_health.json", "--output", "{analysis_root}/panel_health.json"]
+
+[steps.panel-equilibrium]
+description = "Require all independent panel seeds to reach the preregistered settled demographic regime."
+command = ["se-equilibrium-audit", "--source-root", "{panel_root}", "--required-seed-count", "3", "--output", "{analysis_root}/panel_equilibrium.json"]
+requires_json = [{ path = "{analysis_root}/panel_health.json", field = "ready", equals = true }]
+
+[steps.gene-persistence]
+description = "Measure raw per-coordinate checkpoint statistics for the whole inherited genome."
+command = ["se-gene-persistence", "--source-root", "{panel_root}", "--config", "{generated_config}", "--health-report", "{analysis_root}/panel_health.json", "--output", "{analysis_root}/gene_persistence_v1.json"]
+requires_json = [{ path = "{analysis_root}/panel_equilibrium.json", field = "ready", equals = true }]
+
+[steps.integrated-retention]
+description = "Classify cross-seed relative retention only after equilibrium qualification; never generate one experiment per coordinate."
+command = ["se-integrated-retention-audit", "--gene-persistence", "{analysis_root}/gene_persistence_v1.json", "--long-run-analysis", "{panel_root}/long_run_analysis.json", "--health-report", "{analysis_root}/panel_health.json", "--equilibrium-report", "{analysis_root}/panel_equilibrium.json", "--config", "{generated_config}", "--output", "{analysis_root}/integrated_retention.json"]
+requires_json = [{ path = "{analysis_root}/panel_equilibrium.json", field = "ready", equals = true }]
+
+[steps.pack-results]
+description = "Package the study definition, actual config, health/equilibrium evidence and whole-genome retention reports externally."
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "{analysis_root}", "--runtime-root", "runs/base/d1q_integrated_equilibrium_retention_v1", "--required-file", "{generated_config}", "--required-file", "{generated_config}.manifest.json", "--output", "{output}"]
+boolean_flags = { include_checkpoints = "--include-checkpoints" }

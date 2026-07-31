@@ -1,0 +1,371 @@
+{
+  "schema": "source-health-runtime-events-v2",
+  "contract_schema": "source-health-contract-v2",
+  "contract_sha256": "55808d2a55ad768b4ce87afe680db06b480aef6b9ad950ecc1cb5455d6590110",
+  "events": [
+    {
+      "tick": 120,
+      "requirements": {
+        "tick": 120,
+        "minimum_alive_count": 80,
+        "minimum_alive_fraction_to_initial": 0.625,
+        "minimum_cumulative_births_per_initial": 0.15,
+        "minimum_living_descendants_per_initial": 0.05,
+        "minimum_mean_generation": 0.05,
+        "maximum_founder_alive_fraction": 0.95,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 1.0,
+        "required_for_final": false,
+        "hard_stop": {
+          "minimum_alive_count": 48,
+          "minimum_alive_fraction_to_initial": 0.375
+        }
+      },
+      "metrics": {
+        "tick": 120,
+        "alive": 190,
+        "alive_fraction_to_initial": 1.484375,
+        "births_total": 76,
+        "cumulative_births_per_initial": 0.59375,
+        "living_descendants_per_initial": 0.53125,
+        "mean_generation": 0.35789473684210527,
+        "max_generation": 1,
+        "founder_alive_fraction": 0.6421052631578947,
+        "descendant_alive_fraction": 0.35789473684210527
+      },
+      "previous_metrics": null,
+      "alive_decline_fraction_from_previous_checkpoint": 0.0,
+      "checks": {
+        "alive_count_met": true,
+        "alive_fraction_met": true,
+        "birth_turnover_met": true,
+        "living_descendants_met": true,
+        "mean_generation_met": true,
+        "founder_fraction_met": true,
+        "checkpoint_decline_met": true
+      },
+      "ready": true,
+      "failed_checks": [],
+      "required_for_final": false,
+      "hard_stop": {
+        "enabled": true,
+        "requirements": {
+          "minimum_alive_count": 48,
+          "minimum_alive_fraction_to_initial": 0.375
+        },
+        "checks": {
+          "alive_count_hard_floor_met": true,
+          "alive_fraction_hard_floor_met": true
+        },
+        "failed_checks": [],
+        "triggered": false
+      },
+      "runtime_action": "continue"
+    },
+    {
+      "tick": 360,
+      "requirements": {
+        "tick": 360,
+        "minimum_alive_count": 72,
+        "minimum_alive_fraction_to_initial": 0.5625,
+        "minimum_cumulative_births_per_initial": 0.65,
+        "minimum_living_descendants_per_initial": 0.25,
+        "minimum_mean_generation": 0.45,
+        "maximum_founder_alive_fraction": 0.7,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.5,
+        "required_for_final": false,
+        "hard_stop": {
+          "minimum_alive_count": 48,
+          "minimum_alive_fraction_to_initial": 0.375,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.65
+        }
+      },
+      "metrics": {
+        "tick": 360,
+        "alive": 123,
+        "alive_fraction_to_initial": 0.9609375,
+        "births_total": 106,
+        "cumulative_births_per_initial": 0.828125,
+        "living_descendants_per_initial": 0.4453125,
+        "mean_generation": 0.5284552845528455,
+        "max_generation": 3,
+        "founder_alive_fraction": 0.5365853658536586,
+        "descendant_alive_fraction": 0.4634146341463415
+      },
+      "previous_metrics": {
+        "tick": 120,
+        "alive": 190,
+        "alive_fraction_to_initial": 1.484375,
+        "births_total": 76,
+        "cumulative_births_per_initial": 0.59375,
+        "living_descendants_per_initial": 0.53125,
+        "mean_generation": 0.35789473684210527,
+        "max_generation": 1,
+        "founder_alive_fraction": 0.6421052631578947,
+        "descendant_alive_fraction": 0.35789473684210527
+      },
+      "alive_decline_fraction_from_previous_checkpoint": 0.3526315789473684,
+      "checks": {
+        "alive_count_met": true,
+        "alive_fraction_met": true,
+        "birth_turnover_met": true,
+        "living_descendants_met": true,
+        "mean_generation_met": true,
+        "founder_fraction_met": true,
+        "checkpoint_decline_met": true
+      },
+      "ready": true,
+      "failed_checks": [],
+      "required_for_final": false,
+      "hard_stop": {
+        "enabled": true,
+        "requirements": {
+          "minimum_alive_count": 48,
+          "minimum_alive_fraction_to_initial": 0.375,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.65
+        },
+        "checks": {
+          "alive_count_hard_floor_met": true,
+          "alive_fraction_hard_floor_met": true,
+          "checkpoint_decline_hard_floor_met": true
+        },
+        "failed_checks": [],
+        "triggered": false
+      },
+      "runtime_action": "continue"
+    },
+    {
+      "tick": 600,
+      "requirements": {
+        "tick": 600,
+        "minimum_alive_count": 64,
+        "minimum_alive_fraction_to_initial": 0.5,
+        "minimum_cumulative_births_per_initial": 1.0,
+        "minimum_living_descendants_per_initial": 0.5,
+        "minimum_mean_generation": 0.85,
+        "maximum_founder_alive_fraction": 0.4,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+        "required_for_final": false,
+        "hard_stop": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.5,
+          "minimum_living_descendants_per_initial": 0.15,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        }
+      },
+      "metrics": {
+        "tick": 600,
+        "alive": 111,
+        "alive_fraction_to_initial": 0.8671875,
+        "births_total": 139,
+        "cumulative_births_per_initial": 1.0859375,
+        "living_descendants_per_initial": 0.5625,
+        "mean_generation": 0.9009009009009009,
+        "max_generation": 3,
+        "founder_alive_fraction": 0.35135135135135137,
+        "descendant_alive_fraction": 0.6486486486486487
+      },
+      "previous_metrics": {
+        "tick": 360,
+        "alive": 123,
+        "alive_fraction_to_initial": 0.9609375,
+        "births_total": 106,
+        "cumulative_births_per_initial": 0.828125,
+        "living_descendants_per_initial": 0.4453125,
+        "mean_generation": 0.5284552845528455,
+        "max_generation": 3,
+        "founder_alive_fraction": 0.5365853658536586,
+        "descendant_alive_fraction": 0.4634146341463415
+      },
+      "alive_decline_fraction_from_previous_checkpoint": 0.0975609756097561,
+      "checks": {
+        "alive_count_met": true,
+        "alive_fraction_met": true,
+        "birth_turnover_met": true,
+        "living_descendants_met": true,
+        "mean_generation_met": true,
+        "founder_fraction_met": true,
+        "checkpoint_decline_met": true
+      },
+      "ready": true,
+      "failed_checks": [],
+      "required_for_final": false,
+      "hard_stop": {
+        "enabled": true,
+        "requirements": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.5,
+          "minimum_living_descendants_per_initial": 0.15,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        },
+        "checks": {
+          "alive_count_hard_floor_met": true,
+          "alive_fraction_hard_floor_met": true,
+          "birth_turnover_hard_floor_met": true,
+          "living_descendants_hard_floor_met": true,
+          "checkpoint_decline_hard_floor_met": true
+        },
+        "failed_checks": [],
+        "triggered": false
+      },
+      "runtime_action": "continue"
+    },
+    {
+      "tick": 720,
+      "requirements": {
+        "tick": 720,
+        "minimum_alive_count": 64,
+        "minimum_alive_fraction_to_initial": 0.5,
+        "minimum_cumulative_births_per_initial": 1.1,
+        "minimum_living_descendants_per_initial": 0.5,
+        "minimum_mean_generation": 1.0,
+        "maximum_founder_alive_fraction": 0.35,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+        "required_for_final": false,
+        "hard_stop": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.6,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        }
+      },
+      "metrics": {
+        "tick": 720,
+        "alive": 117,
+        "alive_fraction_to_initial": 0.9140625,
+        "births_total": 161,
+        "cumulative_births_per_initial": 1.2578125,
+        "living_descendants_per_initial": 0.6796875,
+        "mean_generation": 1.1452991452991452,
+        "max_generation": 3,
+        "founder_alive_fraction": 0.2564102564102564,
+        "descendant_alive_fraction": 0.7435897435897436
+      },
+      "previous_metrics": {
+        "tick": 600,
+        "alive": 111,
+        "alive_fraction_to_initial": 0.8671875,
+        "births_total": 139,
+        "cumulative_births_per_initial": 1.0859375,
+        "living_descendants_per_initial": 0.5625,
+        "mean_generation": 0.9009009009009009,
+        "max_generation": 3,
+        "founder_alive_fraction": 0.35135135135135137,
+        "descendant_alive_fraction": 0.6486486486486487
+      },
+      "alive_decline_fraction_from_previous_checkpoint": 0.0,
+      "checks": {
+        "alive_count_met": true,
+        "alive_fraction_met": true,
+        "birth_turnover_met": true,
+        "living_descendants_met": true,
+        "mean_generation_met": true,
+        "founder_fraction_met": true,
+        "checkpoint_decline_met": true
+      },
+      "ready": true,
+      "failed_checks": [],
+      "required_for_final": false,
+      "hard_stop": {
+        "enabled": true,
+        "requirements": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.6,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        },
+        "checks": {
+          "alive_count_hard_floor_met": true,
+          "alive_fraction_hard_floor_met": true,
+          "birth_turnover_hard_floor_met": true,
+          "living_descendants_hard_floor_met": true,
+          "checkpoint_decline_hard_floor_met": true
+        },
+        "failed_checks": [],
+        "triggered": false
+      },
+      "runtime_action": "continue"
+    },
+    {
+      "tick": 840,
+      "requirements": {
+        "tick": 840,
+        "minimum_alive_count": 64,
+        "minimum_alive_fraction_to_initial": 0.5,
+        "minimum_cumulative_births_per_initial": 1.2,
+        "minimum_living_descendants_per_initial": 0.5,
+        "minimum_mean_generation": 1.2,
+        "maximum_founder_alive_fraction": 0.3,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+        "required_for_final": true,
+        "hard_stop": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.7,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        }
+      },
+      "metrics": {
+        "tick": 840,
+        "alive": 143,
+        "alive_fraction_to_initial": 1.1171875,
+        "births_total": 201,
+        "cumulative_births_per_initial": 1.5703125,
+        "living_descendants_per_initial": 0.890625,
+        "mean_generation": 1.3356643356643356,
+        "max_generation": 4,
+        "founder_alive_fraction": 0.20279720279720279,
+        "descendant_alive_fraction": 0.7972027972027972
+      },
+      "previous_metrics": {
+        "tick": 720,
+        "alive": 117,
+        "alive_fraction_to_initial": 0.9140625,
+        "births_total": 161,
+        "cumulative_births_per_initial": 1.2578125,
+        "living_descendants_per_initial": 0.6796875,
+        "mean_generation": 1.1452991452991452,
+        "max_generation": 3,
+        "founder_alive_fraction": 0.2564102564102564,
+        "descendant_alive_fraction": 0.7435897435897436
+      },
+      "alive_decline_fraction_from_previous_checkpoint": 0.0,
+      "checks": {
+        "alive_count_met": true,
+        "alive_fraction_met": true,
+        "birth_turnover_met": true,
+        "living_descendants_met": true,
+        "mean_generation_met": true,
+        "founder_fraction_met": true,
+        "checkpoint_decline_met": true
+      },
+      "ready": true,
+      "failed_checks": [],
+      "required_for_final": true,
+      "hard_stop": {
+        "enabled": true,
+        "requirements": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.7,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        },
+        "checks": {
+          "alive_count_hard_floor_met": true,
+          "alive_fraction_hard_floor_met": true,
+          "birth_turnover_hard_floor_met": true,
+          "living_descendants_hard_floor_met": true,
+          "checkpoint_decline_hard_floor_met": true
+        },
+        "failed_checks": [],
+        "triggered": false
+      },
+      "runtime_action": "continue"
+    }
+  ]
+}

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "se-mvp"
-version = "0.95.0"
+version = "0.96.0"
 description = "Reference implementation for nested-subject existence evolution simulation"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -77,6 +77,9 @@ se-capability-budget = "se.analysis.capability_budget:main"
 se-capability-source-config = "se.experiments.d1_capability_attachment:main"
 se-integrated-baseline = "se.analysis.integrated_baseline:main"
 se-gene-persistence = "se.analysis.gene_persistence:main"
+se-integrated-retention-audit = "se.analysis.integrated_retention_audit:main"
+se-equilibrium-source-config = "se.experiments.d1_equilibrium_flux:main"
+se-equilibrium-audit = "se.analysis.equilibrium_audit:main"
 se-d4-niche-reversal = "se.experiments.d4_niche_reversal:main"
 se-d4-niche-assess = "se.analysis.d4_niche_reversal_effects:main"
 

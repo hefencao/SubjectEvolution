@@ -1,0 +1,3175 @@
+{
+  "schema": "multi-seed-long-run-analysis-v18",
+  "analyzer_version": "0.96.0",
+  "input_runtime_versions": [
+    "0.96.0"
+  ],
+  "run_count": 1,
+  "runs": [
+    {
+      "path": "studies/d1q_integrated_equilibrium_retention_v1/frozen/pilot/source/seed_96032/evolution_progress.jsonl",
+      "run_name": "seed_96032",
+      "record_count": 28,
+      "first_tick": 30,
+      "final_tick": 840,
+      "alive_final": 143,
+      "alive_peak": 190,
+      "alive_peak_tick": 120,
+      "alive_trough": 109,
+      "alive_trough_tick": 510,
+      "effective_lineages_final": 19.68142444658325,
+      "largest_lineage_fraction_final": 0.1048951048951049,
+      "strategy_effective_dimensions_final": 17.856225509721995,
+      "window_action_entropy_final": 1.836284786310358,
+      "benefit_boundary_cohesion_final": 0.22447566789309653,
+      "resource_affinity_effective_dimensions_final": 2.6539281705220166,
+      "subject_structure_final": {
+        "subject_structure_schema": "stable-membership-subject-succession-v1",
+        "subject_structure_refresh_count": 9,
+        "subject_structure_active_groups": 2,
+        "subject_structure_effective_groups": 1.8704663212435233,
+        "subject_structure_weighted_jaccard": 0.5614035087719298,
+        "subject_structure_weighted_inheritance": 0.6842105263157895,
+        "subject_structure_split_count_total": 0,
+        "subject_structure_merge_count_total": 0,
+        "subject_structure_formation_count_total": 5,
+        "subject_structure_dissolution_count_total": 3,
+        "subject_structure_reactivation_count_total": 0
+      },
+      "environment_atlas_final": {
+        "environment_atlas_schema": "multiscale-subject-environment-atlas-v2",
+        "environment_atlas_scale_count": 3,
+        "environment_atlas_2x2_signature_effective_dimensions": 1.057427600066625,
+        "environment_atlas_2x2_signature_mean_distance": 0.21570558802756126,
+        "environment_atlas_2x2_temporal_turnover": 0.04162616092140651,
+        "environment_atlas_2x2_resource_spatial_cv_mean": 0.03835653529127162,
+        "environment_atlas_2x2_resource_effective_dimensions": 1.6308673012247654,
+        "environment_atlas_2x2_resource_mean_abs_correlation": 0.5610840087570194,
+        "environment_atlas_2x2_resource_max_abs_correlation": 0.9506608187216609,
+        "environment_atlas_2x2_entity_region_effective_count": 3.9378008858078184,
+        "environment_atlas_2x2_lineage_association": 0.7262613247176987,
+        "environment_atlas_2x2_lineage_covered_fraction": 0.9020979020979021,
+        "environment_atlas_2x2_social_association": 0.04383116883116884,
+        "environment_atlas_2x2_social_covered_fraction": 1.0,
+        "environment_atlas_2x2_lineage_span": 0.3776223776223776,
+        "environment_atlas_2x2_social_span": 0.5,
+        "environment_atlas_4x4_signature_effective_dimensions": 1.5276021508774587,
+        "environment_atlas_4x4_signature_mean_distance": 0.27705393306273307,
+        "environment_atlas_4x4_temporal_turnover": 0.05565458564890561,
+        "environment_atlas_4x4_resource_spatial_cv_mean": 0.10912159319443353,
+        "environment_atlas_4x4_resource_effective_dimensions": 2.468917487409553,
+        "environment_atlas_4x4_resource_mean_abs_correlation": 0.3343392673533548,
+        "environment_atlas_4x4_resource_max_abs_correlation": 0.549799915109847,
+        "environment_atlas_4x4_entity_region_effective_count": 13.184397163120567,
+        "environment_atlas_4x4_lineage_association": 0.8050098626356831,
+        "environment_atlas_4x4_lineage_covered_fraction": 0.9020979020979021,
+        "environment_atlas_4x4_social_association": 0.3629305037947299,
+        "environment_atlas_4x4_social_covered_fraction": 1.0,
+        "environment_atlas_4x4_lineage_span": 0.11713286713286714,
+        "environment_atlas_4x4_social_span": 0.125,
+        "environment_atlas_8x8_signature_effective_dimensions": 2.1122392120500932,
+        "environment_atlas_8x8_signature_mean_distance": 0.33192342957860477,
+        "environment_atlas_8x8_temporal_turnover": 0.062125765027206015,
+        "environment_atlas_8x8_resource_spatial_cv_mean": 0.17163738183791769,
+        "environment_atlas_8x8_resource_effective_dimensions": 2.5423937577362765,
+        "environment_atlas_8x8_resource_mean_abs_correlation": 0.38002620967782885,
+        "environment_atlas_8x8_resource_max_abs_correlation": 0.5940271313714711,
+        "environment_atlas_8x8_entity_region_effective_count": 39.09942638623326,
+        "environment_atlas_8x8_lineage_association": 0.7814850972795729,
+        "environment_atlas_8x8_lineage_covered_fraction": 0.9020979020979021,
+        "environment_atlas_8x8_social_association": 0.24617959408598442,
+        "environment_atlas_8x8_social_covered_fraction": 1.0,
+        "environment_atlas_8x8_lineage_span": 0.047312062937062936,
+        "environment_atlas_8x8_social_span": 0.05674342105263158
+      },
+      "resource_environment_final": {
+        "environment_resource_channel_mean": [
+          3.4182032899298065,
+          3.3679306110989273,
+          3.3563489006774034,
+          3.3603587191319093
+        ],
+        "environment_resource_channel_std": [
+          0.8182760655923597,
+          0.9544211485116134,
+          0.9958374782327284,
+          0.5041643588939405
+        ],
+        "environment_resource_channel_min": [
+          0.0,
+          0.017210816964507103,
+          0.18180495500564575,
+          0.8922628164291382
+        ],
+        "environment_resource_channel_max": [
+          4.529117584228516,
+          5.181037425994873,
+          5.318556785583496,
+          4.300716400146484
+        ],
+        "environment_resource_effective_dimensions": 2.259277444277658,
+        "environment_resource_channel_mean_abs_correlation": 0.479505516138734,
+        "environment_resource_channel_max_abs_correlation": 0.6247357342760275,
+        "environment_resource_channel_correlation": [
+          [
+            1.0,
+            0.6247357342760275,
+            0.4092312002194955,
+            0.6077854744152771
+          ],
+          [
+            0.6247357342760275,
+            1.0,
+            0.3162819427412968,
+            0.5078432706500885
+          ],
+          [
+            0.4092312002194955,
+            0.3162819427412968,
+            1.0,
+            0.4111554745302186
+          ],
+          [
+            0.6077854744152771,
+            0.5078432706500885,
+            0.4111554745302186,
+            1.0
+          ]
+        ]
+      },
+      "capacity_final": {
+        "differentiation_schema": "inherited-elastic-capacities-v1",
+        "capacity_active_entities": 143,
+        "capacity_effective_dimensions": 3.4549770487931593,
+        "capacity_working_memory_dimensions_mean": 2.013986013986014,
+        "capacity_working_memory_dimensions_std": 0.6143506889677594,
+        "capacity_working_memory_dimensions_min": 1,
+        "capacity_working_memory_dimensions_max": 3,
+        "capacity_working_memory_dimensions_unique": 3,
+        "capacity_knowledge_capacity_bytes_mean": 240.78321678321677,
+        "capacity_knowledge_capacity_bytes_std": 69.76365092977078,
+        "capacity_knowledge_capacity_bytes_min": 96,
+        "capacity_knowledge_capacity_bytes_max": 352,
+        "capacity_knowledge_capacity_bytes_unique": 9,
+        "capacity_relation_slots_mean": 3.993006993006993,
+        "capacity_relation_slots_std": 1.1250268279412101,
+        "capacity_relation_slots_min": 2,
+        "capacity_relation_slots_max": 6,
+        "capacity_relation_slots_unique": 5,
+        "capacity_knowledge_attention_slots_mean": 0.48951048951048953,
+        "capacity_knowledge_attention_slots_std": 0.49988995806046205,
+        "capacity_knowledge_attention_slots_min": 0,
+        "capacity_knowledge_attention_slots_max": 1,
+        "capacity_knowledge_attention_slots_unique": 2,
+        "capacity_working_memory_used_dimensions_mean": 1.986013986013986,
+        "capacity_working_memory_utilization_mean": 0.986013986013986,
+        "capacity_working_memory_saturated_fraction": 0.986013986013986,
+        "capacity_knowledge_bytes_used_mean": 221.03496503496504,
+        "capacity_knowledge_utilization_mean": 0.9138479575979576,
+        "capacity_knowledge_saturated_fraction": 0.32867132867132864,
+        "capacity_relation_edges_used_mean": 1.972027972027972,
+        "capacity_relation_utilization_mean": 0.513986013986014,
+        "capacity_relation_saturated_fraction": 0.23776223776223776,
+        "capacity_attention_zero_fraction": 0.5104895104895105
+      },
+      "functional_module_final": {
+        "functional_module_schema": "expression-gated-regulatory-resource-metabolism-v6",
+        "functional_module_contribution_diagnostic_schema": "functional-module-contribution-audit-v5",
+        "functional_module_active_entities": 141,
+        "functional_module_expressed_mean": 2.021276595744681,
+        "functional_module_expressed_fraction": 0.5053191489361702,
+        "functional_module_gate_mean": 0.0961823159075798,
+        "functional_module_gate_std": 0.12858771011003953,
+        "functional_module_gate_effective_dimensions": 3.5843086746014228,
+        "functional_harvest_preference_effective_dimensions": 2.6535723627712056,
+        "functional_harvest_preference_mean": [
+          0.26858152565381205,
+          0.23879507078346632,
+          0.24547647246232268,
+          0.24714693110039893
+        ],
+        "functional_harvest_preference_std": [
+          0.04244466408780603,
+          0.041972054785777445,
+          0.0487189822683158,
+          0.03727086588798342
+        ],
+        "functional_module_residual_effective_dimensions": 2.696663103763872,
+        "functional_module_residual_abs_mean": 0.0003772492104388298,
+        "functional_module_residual_abs_max": 0.002685546875,
+        "functional_module_changed_entity_fraction": 0.950354609929078,
+        "functional_module_input_weight_effective_dimensions": 14.877774012045736,
+        "functional_module_output_router_effective_dimensions": 2.886102322302816,
+        "functional_module_compositional_capable": true,
+        "functional_module_embodied_capable": false,
+        "functional_module_physiological_capable": true,
+        "functional_module_regulatory_capable": true,
+        "functional_module_embodied_output_schema": "harvest-regulatory-drive-v2",
+        "functional_module_embodied_output_ablation_enabled": false,
+        "functional_module_embodied_router_effective_dimensions": 0.0,
+        "functional_module_physiology_output_ablation_enabled": false,
+        "functional_module_physiology_router_effective_dimensions": 8.74975665886098,
+        "functional_module_hierarchy_depth_by_module": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "functional_module_coupling_link_count": 6,
+        "functional_module_coupling_ablation_enabled": false,
+        "functional_module_coupling_weight_abs_mean": 0.18627095805972527,
+        "functional_module_coupling_weight_effective_dimensions": 3.84624567462754,
+        "functional_module_modulation_abs_mean": 0.014299974373891845,
+        "functional_module_modulation_abs_mean_by_module": [
+          0.0,
+          0.0027097877881205675,
+          0.02303233045212766,
+          0.031457779255319146
+        ],
+        "functional_module_mediated_signal_abs_mean": 0.0006536389073581561,
+        "functional_module_mediated_signal_abs_mean_by_module": [
+          0.0,
+          9.869514627659574e-05,
+          0.000444993905141844,
+          0.0020708665780141845
+        ],
+        "functional_module_coupling_changed_entity_fraction": 0.5815602836879432,
+        "functional_module_coupling_amplification_fraction_by_module": [
+          0.0,
+          0.04938271604938271,
+          0.3125,
+          0.17647058823529413
+        ],
+        "functional_module_coupling_suppression_fraction_by_module": [
+          0.0,
+          0.07407407407407407,
+          0.25,
+          0.4
+        ],
+        "functional_module_dominant_input_counts": [
+          21,
+          22,
+          0,
+          0,
+          0,
+          14,
+          3,
+          11,
+          16,
+          25,
+          25,
+          13,
+          7,
+          6,
+          35,
+          7,
+          14,
+          14,
+          13,
+          19,
+          4,
+          0,
+          7,
+          9
+        ],
+        "functional_module_dominant_output_counts": [
+          58,
+          48,
+          65,
+          114
+        ],
+        "functional_module_ablation_mask": [
+          false,
+          false,
+          false,
+          false
+        ],
+        "functional_module_gate_mean_by_module": [
+          0.06055033798758865,
+          0.11537116300975177,
+          0.09013810394503546,
+          0.11866965868794327
+        ],
+        "functional_module_expressed_fraction_by_module": [
+          0.3900709219858156,
+          0.574468085106383,
+          0.45390070921985815,
+          0.6028368794326241
+        ],
+        "functional_module_activation_abs_mean_by_module": [
+          0.40269004875886527,
+          0.5904895971852837,
+          0.556630236037234,
+          0.44688642785904253
+        ],
+        "functional_module_signal_abs_mean_by_module": [
+          0.02009744847074468,
+          0.07886261635638298,
+          0.046752063940602835,
+          0.06742436835106383
+        ],
+        "functional_module_isolated_residual_abs_mean_by_module": [
+          5.0429756759751775e-05,
+          0.00015431938441932624,
+          0.00010843479886968086,
+          0.00012704835715868795
+        ],
+        "functional_module_nonzero_entity_fraction_by_module": [
+          0.3049645390070922,
+          0.524822695035461,
+          0.41843971631205673,
+          0.5319148936170213
+        ],
+        "functional_module_silent_expressed_fraction_by_module": [
+          0.21818181818181817,
+          0.08641975308641975,
+          0.078125,
+          0.11764705882352941
+        ],
+        "functional_module_contribution_share": [
+          0.11455260570304818,
+          0.3505408062930187,
+          0.24631268436578171,
+          0.2885939036381514
+        ],
+        "functional_module_contribution_effective_count": 3.571970285643241,
+        "functional_module_contribution_dominance": 0.3505408062930187,
+        "functional_module_cancellation_fraction": 0.1443044230294045
+      },
+      "danger_direct_weight_mean_final": 1.0,
+      "danger_direct_weight_std_final": 0.0,
+      "danger_trace_weight_mean_final": 1.0,
+      "danger_trace_weight_std_final": 0.0,
+      "danger_evidence_effective_dimensions_final": 0.0,
+      "environment_mortality_trace_mean_final": 0.0008986166303293075,
+      "environment_mortality_trace_max_final": 0.08127318322658539,
+      "group_update_count_final": 9,
+      "group_update_skipped_final": 831,
+      "group_last_update_tick_final": 800,
+      "lineage_group_nmi_final": 0.6381027442773964,
+      "lineage_group_pair_enrichment_final": 1.9655172413793103,
+      "same_lineage_given_same_group_final": 0.367816091954023,
+      "knowledge_effective_root_contents_final": 517.6890756302521,
+      "knowledge_largest_root_holder_fraction_final": 0.005405405405405406,
+      "knowledge_root_genetic_lineage_pair_enrichment_final": 11.9266873545384,
+      "knowledge_transfer_proposals_final": 137,
+      "knowledge_transfer_attempts_final": 80,
+      "knowledge_transfer_committed_final": 69,
+      "knowledge_transfer_committed_bytes_final": 3856,
+      "knowledge_transfer_commit_rate_after_attention_final": 0.8625,
+      "knowledge_transfer_commit_rate_per_proposal_final": 0.5036496350364964,
+      "knowledge_transfer_same_lineage_committed_final": 31,
+      "knowledge_transfer_cross_lineage_committed_final": 38,
+      "knowledge_transfer_same_group_committed_final": 4,
+      "knowledge_transfer_cross_group_committed_final": 0,
+      "knowledge_active_transferred_root_count_final": 23,
+      "knowledge_effective_transferred_roots_final": 22.15384615384615,
+      "knowledge_largest_transferred_root_holder_fraction_final": 0.08333333333333333,
+      "knowledge_cultural_spread_interpretable": true,
+      "knowledge_transfer_phase_summary": {
+        "rise": {
+          "windows": 12,
+          "attempts": 36,
+          "committed": 30,
+          "commit_rate": 0.8333333333333334
+        },
+        "decline": {
+          "windows": 14,
+          "attempts": 39,
+          "committed": 34,
+          "commit_rate": 0.8717948717948718
+        },
+        "peak": {
+          "windows": 7,
+          "attempts": 35,
+          "committed": 30,
+          "commit_rate": 0.8571428571428571
+        },
+        "trough": {
+          "windows": 7,
+          "attempts": 16,
+          "committed": 14,
+          "commit_rate": 0.875
+        }
+      },
+      "correlations_cultural_transfer": {
+        "committed_transfer_vs_effective_transferred_roots": -0.2869149354447807,
+        "cross_lineage_transfer_vs_lineage_group_cohesion": -0.18951261456704813
+      },
+      "spatial_local_analysis": {
+        "available": true,
+        "schema": "spatial-local-panel-analysis-v2",
+        "window_count": 28,
+        "region_count": 16,
+        "raw_panel_correlations": {
+          "local_mortality_vs_local_cohesion": 0.1447198205750255,
+          "local_scarcity_vs_local_cohesion": -0.363341106226885,
+          "local_hazard_vs_local_cohesion": -0.27700710780189053,
+          "local_crowding_vs_local_cohesion": -0.36145750823940503,
+          "local_population_change_vs_local_cohesion": -0.18026372347344047
+        },
+        "within_region_correlations": {
+          "local_mortality_vs_cohesion_within_region": 0.11571964138950046,
+          "local_scarcity_vs_cohesion_within_region": -0.17913029106892317,
+          "local_hazard_vs_cohesion_within_region": -0.4016093473827739,
+          "local_crowding_vs_cohesion_within_region": -0.30440877498875857,
+          "local_population_change_vs_cohesion_within_region": -0.06687193190029889
+        },
+        "within_window_correlations": {
+          "local_mortality_vs_cohesion_within_window": 0.1511454445047835,
+          "local_scarcity_vs_cohesion_within_window": -0.22467790097055565,
+          "local_hazard_vs_cohesion_within_window": -0.08524386134094067,
+          "local_crowding_vs_cohesion_within_window": -0.10179497986522913,
+          "local_population_change_vs_cohesion_within_window": -0.23190805624481942
+        },
+        "first_difference_correlations": {
+          "delta_local_mortality_vs_delta_local_cohesion": 0.049679172110353234,
+          "delta_local_scarcity_vs_delta_local_cohesion": -0.16653730272848732,
+          "delta_local_hazard_vs_delta_local_cohesion": -0.44452669557851937,
+          "delta_local_crowding_vs_delta_local_cohesion": -0.09782801784007766,
+          "delta_local_population_change_vs_delta_local_cohesion": -0.15061281947574462
+        },
+        "next_window_correlations": {
+          "local_mortality_vs_next_window_local_cohesion": 0.15684670328205305,
+          "local_scarcity_vs_next_window_local_cohesion": -0.31690729925809413,
+          "local_hazard_vs_next_window_local_cohesion": 0.10224740142116634,
+          "local_crowding_vs_next_window_local_cohesion": -0.3469011994895014,
+          "local_population_change_vs_next_window_local_cohesion": -0.14891695404256772
+        },
+        "mean_population_cv": 0.3594547061593163,
+        "mean_mortality_pressure_cv": 1.686880527225534,
+        "mean_resource_scarcity_cv": 0.07225902896050738,
+        "mean_cohesion_cv": 0.4538724240117287,
+        "max_local_to_global_mortality_ratio": 13.720930232558139,
+        "fraction_region_windows_above_2x_global_mortality": 0.14732142857142858,
+        "causal_caution": "Spatial panel correlations are observational. Region fixed-effect, window fixed-effect, first-difference and lagged checks reduce some confounding but do not identify an in-world causal mechanism.",
+        "local_cultural_transfer_analysis": {
+          "available": true,
+          "schema": "spatial-local-cultural-panel-analysis-v1",
+          "correlations": {
+            "local_scarcity_vs_local_outgoing_transfer_rate_raw": -0.02769408431978464,
+            "local_scarcity_vs_local_outgoing_transfer_rate_within_region": -0.013873321033298181,
+            "local_scarcity_vs_local_outgoing_transfer_rate_within_window": 0.012049522593435816,
+            "local_scarcity_vs_local_outgoing_transfer_rate_first_difference": 0.05311837546437117,
+            "local_scarcity_vs_local_outgoing_transfer_rate_next_window": -0.03590745592390482,
+            "local_scarcity_vs_local_incoming_transfer_rate_raw": -0.05329401008510129,
+            "local_scarcity_vs_local_incoming_transfer_rate_within_region": -0.02508925861039673,
+            "local_scarcity_vs_local_incoming_transfer_rate_within_window": -0.027271993877708737,
+            "local_scarcity_vs_local_incoming_transfer_rate_first_difference": 0.04479840710060124,
+            "local_scarcity_vs_local_incoming_transfer_rate_next_window": -0.053151448485460204,
+            "local_scarcity_vs_local_new_transferred_roots_raw": -0.041317567010659584,
+            "local_scarcity_vs_local_new_transferred_roots_within_region": -0.01955250886329605,
+            "local_scarcity_vs_local_new_transferred_roots_within_window": -0.045387614213790256,
+            "local_scarcity_vs_local_new_transferred_roots_first_difference": 0.02870410133492531,
+            "local_scarcity_vs_local_new_transferred_roots_next_window": -0.04146066326333298,
+            "local_scarcity_vs_local_net_transferred_root_establishment_raw": -0.05447153715908159,
+            "local_scarcity_vs_local_net_transferred_root_establishment_within_region": -0.06384484298783326,
+            "local_scarcity_vs_local_net_transferred_root_establishment_within_window": -0.01633880351606705,
+            "local_scarcity_vs_local_net_transferred_root_establishment_first_difference": 0.003921058582373991,
+            "local_scarcity_vs_local_net_transferred_root_establishment_next_window": -0.031092472972427655,
+            "local_cohesion_vs_local_same_region_transfer_retention_raw": 0.11538990661364114,
+            "local_cohesion_vs_local_same_region_transfer_retention_within_region": 0.024547181478570747,
+            "local_cohesion_vs_local_same_region_transfer_retention_within_window": 0.11903001750706922,
+            "local_cohesion_vs_local_same_region_transfer_retention_first_difference": 0.12515397573373663,
+            "local_cohesion_vs_local_same_region_transfer_retention_next_window": 0.13446100196104205,
+            "local_crowding_vs_local_outgoing_transfer_rate_raw": 0.1064456101528857,
+            "local_crowding_vs_local_outgoing_transfer_rate_within_region": 0.12256133509029679,
+            "local_crowding_vs_local_outgoing_transfer_rate_within_window": 0.0911938547810527,
+            "local_crowding_vs_local_outgoing_transfer_rate_first_difference": 0.12649095375494074,
+            "local_crowding_vs_local_outgoing_transfer_rate_next_window": 0.06988725078926632,
+            "local_mortality_vs_local_incoming_transfer_rate_raw": 0.020413801185420726,
+            "local_mortality_vs_local_incoming_transfer_rate_within_region": 0.026905578206683083,
+            "local_mortality_vs_local_incoming_transfer_rate_within_window": 0.02149608133465642,
+            "local_mortality_vs_local_incoming_transfer_rate_first_difference": 0.002698708869236261,
+            "local_mortality_vs_local_incoming_transfer_rate_next_window": -0.010030215615036047
+          },
+          "high_scarcity_event_study": {
+            "event_count": 7,
+            "quantile": 0.8,
+            "min_gap_windows": 2,
+            "outcomes": {
+              "cohesion": {
+                "mean_by_offset": {
+                  "-1": 0.6333333333333333,
+                  "0": 0.7978240774547297,
+                  "1": 0.7374906181123929,
+                  "2": 0.6971968658357774
+                },
+                "post1_minus_pre1": 0.10415728477905961,
+                "post2_minus_pre1": 0.06386353250244414
+              },
+              "outgoing_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": 0.0003979307600477517,
+                  "0": 0.0011105647078108352,
+                  "1": 0.00030656039239730225,
+                  "2": 0.0020877461190572737
+                },
+                "post1_minus_pre1": -9.137036765044943e-05,
+                "post2_minus_pre1": 0.001689815359009522
+              },
+              "incoming_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": 0.0003979307600477517,
+                  "0": 0.0011105647078108352,
+                  "1": 0.00030656039239730225,
+                  "2": 0.0020877461190572737
+                },
+                "post1_minus_pre1": -9.137036765044943e-05,
+                "post2_minus_pre1": 0.001689815359009522
+              },
+              "new_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": 0.14285714285714285,
+                  "0": 0.2857142857142857,
+                  "1": 0.14285714285714285,
+                  "2": 0.5714285714285714
+                },
+                "post1_minus_pre1": 0.0,
+                "post2_minus_pre1": 0.42857142857142855
+              },
+              "net_transferred_root_establishment": {
+                "mean_by_offset": {
+                  "-1": 0.14285714285714285,
+                  "0": 0.0,
+                  "1": 0.14285714285714285,
+                  "2": 0.5714285714285714
+                },
+                "post1_minus_pre1": 0.0,
+                "post2_minus_pre1": 0.42857142857142855
+              },
+              "active_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": 0.8571428571428571,
+                  "0": 0.8571428571428571,
+                  "1": 1.0,
+                  "2": 1.5714285714285714
+                },
+                "post1_minus_pre1": 0.1428571428571429,
+                "post2_minus_pre1": 0.7142857142857143
+              },
+              "same_region_transfer_retention": {
+                "mean_by_offset": {
+                  "-1": 0.14285714285714285,
+                  "0": 0.2857142857142857,
+                  "1": 0.14285714285714285,
+                  "2": 0.42857142857142855
+                },
+                "post1_minus_pre1": 0.0,
+                "post2_minus_pre1": 0.2857142857142857
+              }
+            },
+            "causal_caution": "Events are selected from observed local exposure peaks. Pre/post changes remain descriptive because no environmental intervention was applied."
+          },
+          "high_crowding_event_study": {
+            "event_count": 7,
+            "quantile": 0.8,
+            "min_gap_windows": 2,
+            "outcomes": {
+              "cohesion": {
+                "mean_by_offset": {
+                  "-1": 0.5414542685274015,
+                  "0": 0.5,
+                  "1": 0.44137470511546584,
+                  "2": 0.646537251089396
+                },
+                "post1_minus_pre1": -0.10007956341193569,
+                "post2_minus_pre1": 0.10508298256199444
+              },
+              "outgoing_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": 0.0003979307600477517,
+                  "0": 0.0,
+                  "1": 0.0008592930279677268,
+                  "2": 0.0012850339736106095
+                },
+                "post1_minus_pre1": 0.0004613622679199751,
+                "post2_minus_pre1": 0.0008871032135628579
+              },
+              "incoming_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": 0.0003979307600477517,
+                  "0": 0.0,
+                  "1": 0.0012844630959949377,
+                  "2": 0.0012850339736106095
+                },
+                "post1_minus_pre1": 0.0008865323359471861,
+                "post2_minus_pre1": 0.0008871032135628579
+              },
+              "new_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": 0.14285714285714285,
+                  "0": 0.0,
+                  "1": 0.5714285714285714,
+                  "2": 0.2857142857142857
+                },
+                "post1_minus_pre1": 0.42857142857142855,
+                "post2_minus_pre1": 0.14285714285714285
+              },
+              "net_transferred_root_establishment": {
+                "mean_by_offset": {
+                  "-1": -0.14285714285714285,
+                  "0": -0.2857142857142857,
+                  "1": 0.42857142857142855,
+                  "2": 0.14285714285714285
+                },
+                "post1_minus_pre1": 0.5714285714285714,
+                "post2_minus_pre1": 0.2857142857142857
+              },
+              "active_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": 0.8571428571428571,
+                  "0": 0.5714285714285714,
+                  "1": 1.0,
+                  "2": 1.1428571428571428
+                },
+                "post1_minus_pre1": 0.1428571428571429,
+                "post2_minus_pre1": 0.2857142857142857
+              },
+              "same_region_transfer_retention": {
+                "mean_by_offset": {
+                  "-1": 0.14285714285714285,
+                  "0": 0.0,
+                  "1": 0.2857142857142857,
+                  "2": 0.2857142857142857
+                },
+                "post1_minus_pre1": 0.14285714285714285,
+                "post2_minus_pre1": 0.14285714285714285
+              }
+            },
+            "causal_caution": "Events are selected from observed local exposure peaks. Pre/post changes remain descriptive because no environmental intervention was applied."
+          },
+          "high_mortality_event_study": {
+            "event_count": 8,
+            "quantile": 0.8,
+            "min_gap_windows": 2,
+            "outcomes": {
+              "cohesion": {
+                "mean_by_offset": {
+                  "-1": 0.7238095238095238,
+                  "0": 0.7189294011062218,
+                  "1": 0.44205581554260903,
+                  "2": 0.7445821243263125
+                },
+                "post1_minus_pre1": -0.28175370826691476,
+                "post2_minus_pre1": 0.020772600516788753
+              },
+              "outgoing_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": 0.0,
+                  "0": 0.00037650602409638556,
+                  "1": 0.00037537537537537537,
+                  "2": 0.0005952380952380953
+                },
+                "post1_minus_pre1": 0.00037537537537537537,
+                "post2_minus_pre1": 0.0005952380952380953
+              },
+              "incoming_transfer_per_entity_tick": {
+                "mean_by_offset": {
+                  "-1": 0.0003720238095238095,
+                  "0": 0.00037650602409638556,
+                  "1": 0.00037537537537537537,
+                  "2": 0.0009683724235963042
+                },
+                "post1_minus_pre1": 3.351565851565869e-06,
+                "post2_minus_pre1": 0.0005963486140724947
+              },
+              "new_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": 0.125,
+                  "0": 0.25,
+                  "1": 0.25,
+                  "2": 0.25
+                },
+                "post1_minus_pre1": 0.125,
+                "post2_minus_pre1": 0.125
+              },
+              "net_transferred_root_establishment": {
+                "mean_by_offset": {
+                  "-1": 0.125,
+                  "0": -0.125,
+                  "1": 0.25,
+                  "2": 0.25
+                },
+                "post1_minus_pre1": 0.125,
+                "post2_minus_pre1": 0.125
+              },
+              "active_transferred_roots": {
+                "mean_by_offset": {
+                  "-1": 1.25,
+                  "0": 1.125,
+                  "1": 1.375,
+                  "2": 1.625
+                },
+                "post1_minus_pre1": 0.125,
+                "post2_minus_pre1": 0.375
+              },
+              "same_region_transfer_retention": {
+                "mean_by_offset": {
+                  "-1": 0.0,
+                  "0": 0.125,
+                  "1": 0.125,
+                  "2": 0.125
+                },
+                "post1_minus_pre1": 0.125,
+                "post2_minus_pre1": 0.125
+              }
+            },
+            "causal_caution": "Events are selected from observed local exposure peaks. Pre/post changes remain descriptive because no environmental intervention was applied."
+          },
+          "total_cross_region_committed": 16,
+          "total_same_region_committed": 53,
+          "final_active_transferred_root_count": 23,
+          "final_multi_region_transferred_root_count": 1,
+          "causal_caution": "Local transfer and root event studies are observational. They identify where to place paired checkpoint interventions, not causal effects."
+        }
+      },
+      "resource_demand_analysis": {
+        "available": true,
+        "window_count": 28,
+        "request_observation_schema": "explicit-requested-harvest-window-v1",
+        "request_channel_metrics_available": true,
+        "explicit_request_window_count": 28,
+        "inferred_request_window_count": 0,
+        "unavailable_request_window_count": 0,
+        "harvest_channel_totals": [
+          3397.4496164740995,
+          3583.5624323263764,
+          3537.290866425261,
+          3609.4940639119595
+        ],
+        "harvest_channel_shares": [
+          0.24047978757700594,
+          0.2536533075622596,
+          0.2503780930352216,
+          0.2554888118255128
+        ],
+        "harvest_balance_effective_count": 3.9978531351108195,
+        "harvest_temporal_effective_dimensions": 1.4415048847017828,
+        "harvest_channel_correlation": [
+          [
+            0.9999999999999999,
+            0.7522246466383267,
+            0.6286971808649494,
+            0.7879610316258824
+          ],
+          [
+            0.7522246466383266,
+            0.9999999999999998,
+            0.7200927336029461,
+            0.8535891367429141
+          ],
+          [
+            0.6286971808649494,
+            0.720092733602946,
+            0.9999999999999999,
+            0.8488952370115077
+          ],
+          [
+            0.7879610316258824,
+            0.8535891367429141,
+            0.8488952370115077,
+            1.0
+          ]
+        ],
+        "harvest_channel_mean_abs_correlation": 0.7652433277477545,
+        "harvest_channel_max_abs_correlation": 0.8535891367429141,
+        "harvest_share_temporal_effective_dimensions": 2.717209951079308,
+        "harvest_share_channel_correlation": [
+          [
+            1.0,
+            -0.18188005333826593,
+            -0.6069078814934219,
+            -0.3389359351596605
+          ],
+          [
+            -0.18188005333826593,
+            1.0,
+            -0.5132372741285106,
+            -0.3916817247255675
+          ],
+          [
+            -0.606907881493422,
+            -0.5132372741285106,
+            1.0,
+            0.10523458647728863
+          ],
+          [
+            -0.3389359351596605,
+            -0.39168172472556756,
+            0.10523458647728863,
+            0.9999999999999998
+          ]
+        ],
+        "harvest_share_channel_mean_abs_correlation": 0.3563129092204525,
+        "harvest_share_channel_max_abs_correlation": 0.606907881493422,
+        "requested_harvest_channel_totals": [
+          4060.4884916264564,
+          3849.0069762282073,
+          3782.9336512368172,
+          3629.415916858241
+        ],
+        "requested_harvest_channel_shares": [
+          0.26501302435178736,
+          0.251210410182146,
+          0.24689804931200524,
+          0.23687851615406136
+        ],
+        "requested_harvest_balance_effective_count": 3.9934722474314888,
+        "requested_harvest_temporal_effective_dimensions": 1.6011316745314381,
+        "requested_harvest_channel_correlation": [
+          [
+            1.0,
+            0.6475093214403235,
+            0.6098537438016769,
+            0.6437735477340053
+          ],
+          [
+            0.6475093214403235,
+            1.0,
+            0.6966558137024418,
+            0.7910104256504984
+          ],
+          [
+            0.6098537438016769,
+            0.6966558137024418,
+            1.0,
+            0.8245028256272624
+          ],
+          [
+            0.6437735477340054,
+            0.7910104256504985,
+            0.8245028256272624,
+            1.0
+          ]
+        ],
+        "requested_harvest_channel_mean_abs_correlation": 0.7022176129927015,
+        "requested_harvest_channel_max_abs_correlation": 0.8245028256272624,
+        "requested_harvest_share_temporal_effective_dimensions": 2.83352558557337,
+        "requested_harvest_share_channel_correlation": [
+          [
+            1.0,
+            -0.3431719392737908,
+            -0.4956278676032323,
+            -0.43682449012216834
+          ],
+          [
+            -0.3431719392737908,
+            1.0,
+            -0.44753952517776135,
+            -0.2567574328837245
+          ],
+          [
+            -0.49562786760323235,
+            -0.44753952517776135,
+            1.0,
+            0.05377949050162901
+          ],
+          [
+            -0.43682449012216834,
+            -0.2567574328837245,
+            0.05377949050162901,
+            1.0
+          ]
+        ],
+        "requested_harvest_share_channel_mean_abs_correlation": 0.33895012426038446,
+        "requested_harvest_share_channel_max_abs_correlation": 0.49562786760323235,
+        "harvest_volume_vs_requested_volume": 0.9390927255471792,
+        "harvest_balance_vs_resource_environment_dimensions": -0.12145667269565312,
+        "harvest_extraction_efficiency_mean": 0.922590565256997,
+        "harvest_extraction_efficiency_final": 0.8829685932039196,
+        "interpretation": "Raw channel volumes co-move with population and HARVEST action count. Share-composition metrics remove that common scale before measuring demand differentiation. Realized extraction remains availability-limited; explicit requested-channel metrics are authoritative. Older selective runs without requested-channel fields cannot reconstruct channel composition."
+      },
+      "demographic_selection_validity": {
+        "label": "seed_96032",
+        "run_dir": "studies/d1q_integrated_equilibrium_retention_v1/frozen/pilot/source/seed_96032",
+        "summary_tick": 840,
+        "reporting_state_tick": 840,
+        "initial_population": 128,
+        "window_count": 28,
+        "minimum_alive_fraction_to_initial": 0.8515625,
+        "first_tick_below_population_floor": null,
+        "first_tick_with_turnover_support": 660,
+        "population_collapse_before_turnover": false,
+        "demographic_supported_window_count": 0,
+        "evolutionary_supported_window_count": 0,
+        "final_population": {
+          "tick": 840,
+          "window_ticks": 30,
+          "alive": 143,
+          "alive_fraction_to_initial": 1.1171875,
+          "effective_lineages": 19.68142444658325,
+          "lineage_count": 37,
+          "largest_lineage_fraction": 0.1048951048951049,
+          "effective_lineages_shannon": 25.41206318667884,
+          "top_5_lineage_fraction": 0.3986013986013986,
+          "top_10_lineage_fraction": 0.6293706293706295,
+          "canonical_diversity_ratio_to_initial": 0.9456819510939453,
+          "policy_diversity_ratio_to_initial": 0.8985530838177643,
+          "strategy_effective_dimensions": 17.856225509721995,
+          "heritable_variation_metrics_available": true,
+          "successful_parent_samples_window": 11,
+          "unique_successful_parents_window": 11,
+          "effective_successful_parents_window": 11.0,
+          "largest_parent_contribution_fraction_window": 0.09090909090909091,
+          "contributor_metrics_available": true,
+          "births_window": 11,
+          "deaths_window": 5,
+          "net_growth_window": 6,
+          "mean_generation": 1.3356643356643356,
+          "max_generation": 4,
+          "generation_zero_alive": 29,
+          "descendant_alive": 114,
+          "descendant_alive_fraction": 0.7972027972027972,
+          "descendant_metric_available": true,
+          "descendant_fraction_met": true,
+          "cumulative_births_per_initial": 1.5703125,
+          "demographic_checks": {
+            "alive_fraction_met": true,
+            "effective_lineages_met": false,
+            "largest_lineage_fraction_met": true,
+            "successful_parent_samples_met": false
+          },
+          "turnover_checks": {
+            "mean_generation_met": true,
+            "max_generation_met": true,
+            "cumulative_births_per_initial_met": true
+          },
+          "contributor_checks": {
+            "unique_successful_parents_met": false,
+            "effective_successful_parents_met": false,
+            "largest_parent_contribution_met": false
+          },
+          "demographic_selection_window_supported": false,
+          "evolutionary_selection_window_supported": false
+        },
+        "death_causes": {
+          "available": true,
+          "death_event_count": 186,
+          "signature_counts": [
+            0,
+            186,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "energy_depleted_count": 186,
+          "integrity_depleted_count": 0,
+          "max_age_count": 0,
+          "energy_depleted_fraction": 1.0,
+          "integrity_depleted_fraction": 0.0,
+          "max_age_fraction": 0.0,
+          "overlap_note": "Cause-presence fractions can sum above one because a death event may simultaneously satisfy energy, integrity, and age conditions."
+        },
+        "post_bottleneck_regime": {
+          "schema": "post-bottleneck-demographic-regime-v2",
+          "trough_tick": 510,
+          "trough_alive": 109,
+          "final_alive": 143,
+          "post_trough_rebound_fraction": 0.3119266055045872,
+          "settled_window_count_required": 3,
+          "settled_window_count_available": 3,
+          "settled_window_start_tick": 780,
+          "settled_alive_cv": 0.04206516023003729,
+          "settled_maximum_abs_net_growth_fraction": 0.058394160583941604,
+          "settled_alive_slope_fraction_per_window": 0.05134474327628371,
+          "settled_span_change_fraction": 0.10268948655256722,
+          "active_rebound": true,
+          "active_decline": false,
+          "settled_population_supported": false,
+          "settled_lineage_supported": false,
+          "founder_lineage_interpretation": "Founder-lineage concentration is reported separately from current heritable variation. It is not a substitute for genotype or policy diversity measurements.",
+          "turnover_supported": true,
+          "descendant_metric_available": true,
+          "descendant_supported": true,
+          "contributor_metrics_available": true,
+          "reproductive_contributor_supported": false,
+          "current_heritable_variation": {
+            "available": true,
+            "canonical_diversity_ratio_to_initial": 0.9456819510939453,
+            "policy_diversity_ratio_to_initial": 0.8985530838177643,
+            "strategy_effective_dimensions": 17.856225509721995,
+            "interpretation": "These measurements describe current heritable variation and are reported separately from founder-lineage concentration."
+          },
+          "source_ready_for_future_independent_runs": false,
+          "candidate_future_burn_in_tick": null,
+          "classification": "selection-source-insufficient-observation",
+          "interpretation_boundary": "A source-ready classification only proposes a fixed burn-in rule for new independent runs. The pilot windows used to derive it cannot be reused as confirmatory selection evidence."
+        },
+        "windows": [
+          {
+            "tick": 30,
+            "window_ticks": 30,
+            "alive": 130,
+            "alive_fraction_to_initial": 1.015625,
+            "effective_lineages": 126.11940298507457,
+            "lineage_count": 128,
+            "largest_lineage_fraction": 0.015384615384615385,
+            "effective_lineages_shannon": 127.25676853996934,
+            "top_5_lineage_fraction": 0.05384615384615385,
+            "top_10_lineage_fraction": 0.09230769230769231,
+            "canonical_diversity_ratio_to_initial": 0.9995646475325887,
+            "policy_diversity_ratio_to_initial": 1.0003112535138101,
+            "strategy_effective_dimensions": 59.07624760256839,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 2,
+            "unique_successful_parents_window": 2,
+            "effective_successful_parents_window": 2.0,
+            "largest_parent_contribution_fraction_window": 0.5,
+            "contributor_metrics_available": true,
+            "births_window": 2,
+            "deaths_window": 0,
+            "net_growth_window": 2,
+            "mean_generation": 0.015384615384615385,
+            "max_generation": 1,
+            "generation_zero_alive": 128,
+            "descendant_alive": 2,
+            "descendant_alive_fraction": 0.015384615384615385,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.015625,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": true,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": false,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 60,
+            "window_ticks": 30,
+            "alive": 173,
+            "alive_fraction_to_initial": 1.3515625,
+            "effective_lineages": 113.79847908745246,
+            "lineage_count": 128,
+            "largest_lineage_fraction": 0.011560693641618497,
+            "effective_lineages_shannon": 120.62599343581313,
+            "top_5_lineage_fraction": 0.057803468208092484,
+            "top_10_lineage_fraction": 0.11560693641618495,
+            "canonical_diversity_ratio_to_initial": 1.000111482111457,
+            "policy_diversity_ratio_to_initial": 1.0001170316821093,
+            "strategy_effective_dimensions": 55.72257233836387,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 43,
+            "unique_successful_parents_window": 43,
+            "effective_successful_parents_window": 43.0,
+            "largest_parent_contribution_fraction_window": 0.023255813953488372,
+            "contributor_metrics_available": true,
+            "births_window": 43,
+            "deaths_window": 0,
+            "net_growth_window": 43,
+            "mean_generation": 0.26011560693641617,
+            "max_generation": 1,
+            "generation_zero_alive": 128,
+            "descendant_alive": 45,
+            "descendant_alive_fraction": 0.26011560693641617,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.3515625,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": true,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": false,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": true
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 90,
+            "window_ticks": 30,
+            "alive": 188,
+            "alive_fraction_to_initial": 1.46875,
+            "effective_lineages": 114.75324675324677,
+            "lineage_count": 128,
+            "largest_lineage_fraction": 0.010638297872340425,
+            "effective_lineages_shannon": 120.78445485679286,
+            "top_5_lineage_fraction": 0.05319148936170213,
+            "top_10_lineage_fraction": 0.10638297872340426,
+            "canonical_diversity_ratio_to_initial": 1.0016145607753681,
+            "policy_diversity_ratio_to_initial": 0.9969145070138737,
+            "strategy_effective_dimensions": 56.07330637769998,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 17,
+            "unique_successful_parents_window": 17,
+            "effective_successful_parents_window": 17.0,
+            "largest_parent_contribution_fraction_window": 0.058823529411764705,
+            "contributor_metrics_available": true,
+            "births_window": 17,
+            "deaths_window": 2,
+            "net_growth_window": 15,
+            "mean_generation": 0.3191489361702128,
+            "max_generation": 1,
+            "generation_zero_alive": 128,
+            "descendant_alive": 60,
+            "descendant_alive_fraction": 0.3191489361702128,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.484375,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": true,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": false,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 120,
+            "window_ticks": 30,
+            "alive": 190,
+            "alive_fraction_to_initial": 1.484375,
+            "effective_lineages": 111.41975308641973,
+            "lineage_count": 126,
+            "largest_lineage_fraction": 0.015789473684210527,
+            "effective_lineages_shannon": 118.13168162674232,
+            "top_5_lineage_fraction": 0.06842105263157895,
+            "top_10_lineage_fraction": 0.12105263157894738,
+            "canonical_diversity_ratio_to_initial": 1.0021975674561203,
+            "policy_diversity_ratio_to_initial": 0.9928233885190147,
+            "strategy_effective_dimensions": 55.55733072229932,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 14,
+            "unique_successful_parents_window": 14,
+            "effective_successful_parents_window": 14.0,
+            "largest_parent_contribution_fraction_window": 0.07142857142857142,
+            "contributor_metrics_available": true,
+            "births_window": 14,
+            "deaths_window": 12,
+            "net_growth_window": 2,
+            "mean_generation": 0.35789473684210527,
+            "max_generation": 1,
+            "generation_zero_alive": 122,
+            "descendant_alive": 68,
+            "descendant_alive_fraction": 0.35789473684210527,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.59375,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": true,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": false,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 150,
+            "window_ticks": 30,
+            "alive": 179,
+            "alive_fraction_to_initial": 1.3984375,
+            "effective_lineages": 104.36807817589577,
+            "lineage_count": 119,
+            "largest_lineage_fraction": 0.01675977653631285,
+            "effective_lineages_shannon": 111.16476118458485,
+            "top_5_lineage_fraction": 0.0782122905027933,
+            "top_10_lineage_fraction": 0.1340782122905028,
+            "canonical_diversity_ratio_to_initial": 0.9998582341476926,
+            "policy_diversity_ratio_to_initial": 0.9872383434267096,
+            "strategy_effective_dimensions": 53.776459005804824,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 4,
+            "unique_successful_parents_window": 4,
+            "effective_successful_parents_window": 4.0,
+            "largest_parent_contribution_fraction_window": 0.25,
+            "contributor_metrics_available": true,
+            "births_window": 4,
+            "deaths_window": 15,
+            "net_growth_window": -11,
+            "mean_generation": 0.36312849162011174,
+            "max_generation": 1,
+            "generation_zero_alive": 114,
+            "descendant_alive": 65,
+            "descendant_alive_fraction": 0.36312849162011174,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.625,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": true,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": false,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 180,
+            "window_ticks": 30,
+            "alive": 165,
+            "alive_fraction_to_initial": 1.2890625,
+            "effective_lineages": 94.86062717770035,
+            "lineage_count": 108,
+            "largest_lineage_fraction": 0.01818181818181818,
+            "effective_lineages_shannon": 100.92311426321038,
+            "top_5_lineage_fraction": 0.08484848484848484,
+            "top_10_lineage_fraction": 0.14545454545454545,
+            "canonical_diversity_ratio_to_initial": 0.9984753732249554,
+            "policy_diversity_ratio_to_initial": 0.982787692784367,
+            "strategy_effective_dimensions": 51.114784373500854,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 5,
+            "unique_successful_parents_window": 5,
+            "effective_successful_parents_window": 5.0,
+            "largest_parent_contribution_fraction_window": 0.2,
+            "contributor_metrics_available": true,
+            "births_window": 5,
+            "deaths_window": 19,
+            "net_growth_window": -14,
+            "mean_generation": 0.37575757575757573,
+            "max_generation": 1,
+            "generation_zero_alive": 103,
+            "descendant_alive": 62,
+            "descendant_alive_fraction": 0.37575757575757573,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.6640625,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": false,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 210,
+            "window_ticks": 30,
+            "alive": 156,
+            "alive_fraction_to_initial": 1.21875,
+            "effective_lineages": 85.6901408450704,
+            "lineage_count": 101,
+            "largest_lineage_fraction": 0.02564102564102564,
+            "effective_lineages_shannon": 92.95234560824993,
+            "top_5_lineage_fraction": 0.10256410256410256,
+            "top_10_lineage_fraction": 0.17948717948717952,
+            "canonical_diversity_ratio_to_initial": 0.9985466004190616,
+            "policy_diversity_ratio_to_initial": 0.9816189919525342,
+            "strategy_effective_dimensions": 48.39343549564498,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 5,
+            "unique_successful_parents_window": 5,
+            "effective_successful_parents_window": 5.0,
+            "largest_parent_contribution_fraction_window": 0.2,
+            "contributor_metrics_available": true,
+            "births_window": 5,
+            "deaths_window": 14,
+            "net_growth_window": -9,
+            "mean_generation": 0.4166666666666667,
+            "max_generation": 2,
+            "generation_zero_alive": 94,
+            "descendant_alive": 62,
+            "descendant_alive_fraction": 0.3974358974358974,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.703125,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": false,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 240,
+            "window_ticks": 30,
+            "alive": 151,
+            "alive_fraction_to_initial": 1.1796875,
+            "effective_lineages": 82.31407942238266,
+            "lineage_count": 97,
+            "largest_lineage_fraction": 0.026490066225165563,
+            "effective_lineages_shannon": 89.25941141529533,
+            "top_5_lineage_fraction": 0.10596026490066227,
+            "top_10_lineage_fraction": 0.18543046357615897,
+            "canonical_diversity_ratio_to_initial": 0.9979480775793645,
+            "policy_diversity_ratio_to_initial": 0.9799073337950954,
+            "strategy_effective_dimensions": 47.24530714832823,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 3,
+            "unique_successful_parents_window": 3,
+            "effective_successful_parents_window": 3.0,
+            "largest_parent_contribution_fraction_window": 0.3333333333333333,
+            "contributor_metrics_available": true,
+            "births_window": 3,
+            "deaths_window": 8,
+            "net_growth_window": -5,
+            "mean_generation": 0.423841059602649,
+            "max_generation": 2,
+            "generation_zero_alive": 90,
+            "descendant_alive": 61,
+            "descendant_alive_fraction": 0.40397350993377484,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.7265625,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": false,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 270,
+            "window_ticks": 30,
+            "alive": 149,
+            "alive_fraction_to_initial": 1.1640625,
+            "effective_lineages": 78.44876325088336,
+            "lineage_count": 94,
+            "largest_lineage_fraction": 0.026845637583892617,
+            "effective_lineages_shannon": 85.73981721573453,
+            "top_5_lineage_fraction": 0.10738255033557047,
+            "top_10_lineage_fraction": 0.20805369127516776,
+            "canonical_diversity_ratio_to_initial": 0.9952659649069799,
+            "policy_diversity_ratio_to_initial": 0.9725713340040222,
+            "strategy_effective_dimensions": 46.29562138145717,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 6,
+            "unique_successful_parents_window": 6,
+            "effective_successful_parents_window": 6.0,
+            "largest_parent_contribution_fraction_window": 0.16666666666666666,
+            "contributor_metrics_available": true,
+            "births_window": 6,
+            "deaths_window": 8,
+            "net_growth_window": -2,
+            "mean_generation": 0.4563758389261745,
+            "max_generation": 2,
+            "generation_zero_alive": 86,
+            "descendant_alive": 63,
+            "descendant_alive_fraction": 0.4228187919463087,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.7734375,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": false,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 300,
+            "window_ticks": 30,
+            "alive": 137,
+            "alive_fraction_to_initial": 1.0703125,
+            "effective_lineages": 72.46718146718148,
+            "lineage_count": 87,
+            "largest_lineage_fraction": 0.029197080291970802,
+            "effective_lineages_shannon": 79.30970508902034,
+            "top_5_lineage_fraction": 0.11678832116788321,
+            "top_10_lineage_fraction": 0.21897810218978103,
+            "canonical_diversity_ratio_to_initial": 0.9947854115337003,
+            "policy_diversity_ratio_to_initial": 0.9733826776401665,
+            "strategy_effective_dimensions": 44.05529735014853,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 2,
+            "unique_successful_parents_window": 2,
+            "effective_successful_parents_window": 2.0,
+            "largest_parent_contribution_fraction_window": 0.5,
+            "contributor_metrics_available": true,
+            "births_window": 2,
+            "deaths_window": 14,
+            "net_growth_window": -12,
+            "mean_generation": 0.45985401459854014,
+            "max_generation": 2,
+            "generation_zero_alive": 79,
+            "descendant_alive": 58,
+            "descendant_alive_fraction": 0.4233576642335766,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.7890625,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": false,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 330,
+            "window_ticks": 30,
+            "alive": 123,
+            "alive_fraction_to_initial": 0.9609375,
+            "effective_lineages": 63.30125523012551,
+            "lineage_count": 78,
+            "largest_lineage_fraction": 0.032520325203252036,
+            "effective_lineages_shannon": 70.29381185903391,
+            "top_5_lineage_fraction": 0.13821138211382114,
+            "top_10_lineage_fraction": 0.25203252032520324,
+            "canonical_diversity_ratio_to_initial": 0.992080293091777,
+            "policy_diversity_ratio_to_initial": 0.9696459450466681,
+            "strategy_effective_dimensions": 40.47777420945018,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 1,
+            "unique_successful_parents_window": 1,
+            "effective_successful_parents_window": 1.0,
+            "largest_parent_contribution_fraction_window": 1.0,
+            "contributor_metrics_available": true,
+            "births_window": 1,
+            "deaths_window": 15,
+            "net_growth_window": -14,
+            "mean_generation": 0.4796747967479675,
+            "max_generation": 2,
+            "generation_zero_alive": 69,
+            "descendant_alive": 54,
+            "descendant_alive_fraction": 0.43902439024390244,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.796875,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": false,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 360,
+            "window_ticks": 30,
+            "alive": 123,
+            "alive_fraction_to_initial": 0.9609375,
+            "effective_lineages": 57.96551724137932,
+            "lineage_count": 76,
+            "largest_lineage_fraction": 0.04065040650406504,
+            "effective_lineages_shannon": 66.73502719609509,
+            "top_5_lineage_fraction": 0.16260162601626016,
+            "top_10_lineage_fraction": 0.28455284552845533,
+            "canonical_diversity_ratio_to_initial": 0.990683306885325,
+            "policy_diversity_ratio_to_initial": 0.9679911443984348,
+            "strategy_effective_dimensions": 38.239156696613755,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 4,
+            "unique_successful_parents_window": 4,
+            "effective_successful_parents_window": 4.0,
+            "largest_parent_contribution_fraction_window": 0.25,
+            "contributor_metrics_available": true,
+            "births_window": 4,
+            "deaths_window": 4,
+            "net_growth_window": 0,
+            "mean_generation": 0.5284552845528455,
+            "max_generation": 3,
+            "generation_zero_alive": 66,
+            "descendant_alive": 57,
+            "descendant_alive_fraction": 0.4634146341463415,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.828125,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 390,
+            "window_ticks": 30,
+            "alive": 116,
+            "alive_fraction_to_initial": 0.90625,
+            "effective_lineages": 48.753623188405804,
+            "lineage_count": 67,
+            "largest_lineage_fraction": 0.04310344827586207,
+            "effective_lineages_shannon": 57.36289363387405,
+            "top_5_lineage_fraction": 0.19827586206896552,
+            "top_10_lineage_fraction": 0.3362068965517241,
+            "canonical_diversity_ratio_to_initial": 0.9854353888904208,
+            "policy_diversity_ratio_to_initial": 0.9590419066825782,
+            "strategy_effective_dimensions": 34.34247159864316,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 6,
+            "unique_successful_parents_window": 6,
+            "effective_successful_parents_window": 6.0,
+            "largest_parent_contribution_fraction_window": 0.16666666666666666,
+            "contributor_metrics_available": true,
+            "births_window": 6,
+            "deaths_window": 13,
+            "net_growth_window": -7,
+            "mean_generation": 0.6120689655172413,
+            "max_generation": 3,
+            "generation_zero_alive": 57,
+            "descendant_alive": 59,
+            "descendant_alive_fraction": 0.5086206896551724,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.875,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 420,
+            "window_ticks": 30,
+            "alive": 113,
+            "alive_fraction_to_initial": 0.8828125,
+            "effective_lineages": 45.44128113879003,
+            "lineage_count": 64,
+            "largest_lineage_fraction": 0.04424778761061947,
+            "effective_lineages_shannon": 54.05466066273673,
+            "top_5_lineage_fraction": 0.21238938053097345,
+            "top_10_lineage_fraction": 0.35398230088495575,
+            "canonical_diversity_ratio_to_initial": 0.9861024331660614,
+            "policy_diversity_ratio_to_initial": 0.9562407079875899,
+            "strategy_effective_dimensions": 32.99902430775503,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 3,
+            "unique_successful_parents_window": 3,
+            "effective_successful_parents_window": 3.0,
+            "largest_parent_contribution_fraction_window": 0.3333333333333333,
+            "contributor_metrics_available": true,
+            "births_window": 3,
+            "deaths_window": 6,
+            "net_growth_window": -3,
+            "mean_generation": 0.6371681415929203,
+            "max_generation": 3,
+            "generation_zero_alive": 54,
+            "descendant_alive": 59,
+            "descendant_alive_fraction": 0.5221238938053098,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.8984375,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 450,
+            "window_ticks": 30,
+            "alive": 110,
+            "alive_fraction_to_initial": 0.859375,
+            "effective_lineages": 39.80263157894737,
+            "lineage_count": 59,
+            "largest_lineage_fraction": 0.05454545454545454,
+            "effective_lineages_shannon": 48.42248363940335,
+            "top_5_lineage_fraction": 0.2363636363636364,
+            "top_10_lineage_fraction": 0.4,
+            "canonical_diversity_ratio_to_initial": 0.9812121575937295,
+            "policy_diversity_ratio_to_initial": 0.9431746702257763,
+            "strategy_effective_dimensions": 30.4611819434454,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 5,
+            "unique_successful_parents_window": 5,
+            "effective_successful_parents_window": 5.0,
+            "largest_parent_contribution_fraction_window": 0.2,
+            "contributor_metrics_available": true,
+            "births_window": 5,
+            "deaths_window": 8,
+            "net_growth_window": -3,
+            "mean_generation": 0.7,
+            "max_generation": 3,
+            "generation_zero_alive": 50,
+            "descendant_alive": 60,
+            "descendant_alive_fraction": 0.5454545454545454,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.9375,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 480,
+            "window_ticks": 30,
+            "alive": 110,
+            "alive_fraction_to_initial": 0.859375,
+            "effective_lineages": 37.8125,
+            "lineage_count": 57,
+            "largest_lineage_fraction": 0.05454545454545454,
+            "effective_lineages_shannon": 46.29063288896745,
+            "top_5_lineage_fraction": 0.24545454545454548,
+            "top_10_lineage_fraction": 0.4181818181818182,
+            "canonical_diversity_ratio_to_initial": 0.979830857522637,
+            "policy_diversity_ratio_to_initial": 0.9380732108518697,
+            "strategy_effective_dimensions": 29.144071338873594,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 3,
+            "unique_successful_parents_window": 3,
+            "effective_successful_parents_window": 3.0,
+            "largest_parent_contribution_fraction_window": 0.3333333333333333,
+            "contributor_metrics_available": true,
+            "births_window": 3,
+            "deaths_window": 3,
+            "net_growth_window": 0,
+            "mean_generation": 0.7272727272727273,
+            "max_generation": 3,
+            "generation_zero_alive": 49,
+            "descendant_alive": 61,
+            "descendant_alive_fraction": 0.5545454545454546,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.9609375,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 510,
+            "window_ticks": 30,
+            "alive": 109,
+            "alive_fraction_to_initial": 0.8515625,
+            "effective_lineages": 35.67867867867868,
+            "lineage_count": 55,
+            "largest_lineage_fraction": 0.05504587155963303,
+            "effective_lineages_shannon": 44.042144863384294,
+            "top_5_lineage_fraction": 0.25688073394495414,
+            "top_10_lineage_fraction": 0.44036697247706424,
+            "canonical_diversity_ratio_to_initial": 0.9783025268567206,
+            "policy_diversity_ratio_to_initial": 0.9338047547668172,
+            "strategy_effective_dimensions": 27.869686880019724,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 2,
+            "unique_successful_parents_window": 2,
+            "effective_successful_parents_window": 2.0,
+            "largest_parent_contribution_fraction_window": 0.5,
+            "contributor_metrics_available": true,
+            "births_window": 2,
+            "deaths_window": 3,
+            "net_growth_window": -1,
+            "mean_generation": 0.7522935779816514,
+            "max_generation": 3,
+            "generation_zero_alive": 46,
+            "descendant_alive": 63,
+            "descendant_alive_fraction": 0.5779816513761468,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 0.9765625,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": false
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 540,
+            "window_ticks": 30,
+            "alive": 110,
+            "alive_fraction_to_initial": 0.859375,
+            "effective_lineages": 33.24175824175824,
+            "lineage_count": 52,
+            "largest_lineage_fraction": 0.06363636363636363,
+            "effective_lineages_shannon": 41.14590280425903,
+            "top_5_lineage_fraction": 0.2727272727272727,
+            "top_10_lineage_fraction": 0.45454545454545453,
+            "canonical_diversity_ratio_to_initial": 0.9750091476303995,
+            "policy_diversity_ratio_to_initial": 0.9278001123546831,
+            "strategy_effective_dimensions": 26.67906408467291,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 5,
+            "unique_successful_parents_window": 5,
+            "effective_successful_parents_window": 5.0,
+            "largest_parent_contribution_fraction_window": 0.2,
+            "contributor_metrics_available": true,
+            "births_window": 5,
+            "deaths_window": 4,
+            "net_growth_window": 1,
+            "mean_generation": 0.8,
+            "max_generation": 3,
+            "generation_zero_alive": 44,
+            "descendant_alive": 66,
+            "descendant_alive_fraction": 0.6,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 1.015625,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": true
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 570,
+            "window_ticks": 30,
+            "alive": 109,
+            "alive_fraction_to_initial": 0.8515625,
+            "effective_lineages": 30.078481012658226,
+            "lineage_count": 49,
+            "largest_lineage_fraction": 0.06422018348623854,
+            "effective_lineages_shannon": 37.76030360612369,
+            "top_5_lineage_fraction": 0.29357798165137616,
+            "top_10_lineage_fraction": 0.48623853211009177,
+            "canonical_diversity_ratio_to_initial": 0.9661998918458456,
+            "policy_diversity_ratio_to_initial": 0.9200788913222897,
+            "strategy_effective_dimensions": 24.788689862486798,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 5,
+            "unique_successful_parents_window": 5,
+            "effective_successful_parents_window": 5.0,
+            "largest_parent_contribution_fraction_window": 0.2,
+            "contributor_metrics_available": true,
+            "births_window": 5,
+            "deaths_window": 6,
+            "net_growth_window": -1,
+            "mean_generation": 0.8532110091743119,
+            "max_generation": 3,
+            "generation_zero_alive": 40,
+            "descendant_alive": 69,
+            "descendant_alive_fraction": 0.6330275229357798,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 1.0546875,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": true
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 600,
+            "window_ticks": 30,
+            "alive": 111,
+            "alive_fraction_to_initial": 0.8671875,
+            "effective_lineages": 29.405727923627687,
+            "lineage_count": 47,
+            "largest_lineage_fraction": 0.06306306306306306,
+            "effective_lineages_shannon": 36.38767793175091,
+            "top_5_lineage_fraction": 0.29729729729729726,
+            "top_10_lineage_fraction": 0.4864864864864865,
+            "canonical_diversity_ratio_to_initial": 0.963780631637382,
+            "policy_diversity_ratio_to_initial": 0.9166484972183676,
+            "strategy_effective_dimensions": 24.234992892173324,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 4,
+            "unique_successful_parents_window": 4,
+            "effective_successful_parents_window": 4.0,
+            "largest_parent_contribution_fraction_window": 0.25,
+            "contributor_metrics_available": true,
+            "births_window": 4,
+            "deaths_window": 2,
+            "net_growth_window": 2,
+            "mean_generation": 0.9009009009009009,
+            "max_generation": 3,
+            "generation_zero_alive": 39,
+            "descendant_alive": 72,
+            "descendant_alive_fraction": 0.6486486486486487,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 1.0859375,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": true
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 630,
+            "window_ticks": 30,
+            "alive": 115,
+            "alive_fraction_to_initial": 0.8984375,
+            "effective_lineages": 28.07855626326964,
+            "lineage_count": 46,
+            "largest_lineage_fraction": 0.06956521739130435,
+            "effective_lineages_shannon": 34.85110376928078,
+            "top_5_lineage_fraction": 0.2956521739130435,
+            "top_10_lineage_fraction": 0.5043478260869565,
+            "canonical_diversity_ratio_to_initial": 0.961669916370621,
+            "policy_diversity_ratio_to_initial": 0.9166055280402123,
+            "strategy_effective_dimensions": 23.35155039464109,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 7,
+            "unique_successful_parents_window": 7,
+            "effective_successful_parents_window": 7.0,
+            "largest_parent_contribution_fraction_window": 0.14285714285714285,
+            "contributor_metrics_available": true,
+            "births_window": 7,
+            "deaths_window": 3,
+            "net_growth_window": 4,
+            "mean_generation": 0.9652173913043478,
+            "max_generation": 3,
+            "generation_zero_alive": 36,
+            "descendant_alive": 79,
+            "descendant_alive_fraction": 0.6869565217391305,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 1.140625,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": false,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": true
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 660,
+            "window_ticks": 30,
+            "alive": 114,
+            "alive_fraction_to_initial": 0.890625,
+            "effective_lineages": 26.201612903225804,
+            "lineage_count": 43,
+            "largest_lineage_fraction": 0.07017543859649122,
+            "effective_lineages_shannon": 32.545192781803756,
+            "top_5_lineage_fraction": 0.3157894736842105,
+            "top_10_lineage_fraction": 0.5350877192982456,
+            "canonical_diversity_ratio_to_initial": 0.9585438474349895,
+            "policy_diversity_ratio_to_initial": 0.9133893027398738,
+            "strategy_effective_dimensions": 22.12826662812094,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 4,
+            "unique_successful_parents_window": 4,
+            "effective_successful_parents_window": 4.0,
+            "largest_parent_contribution_fraction_window": 0.25,
+            "contributor_metrics_available": true,
+            "births_window": 4,
+            "deaths_window": 5,
+            "net_growth_window": -1,
+            "mean_generation": 1.0263157894736843,
+            "max_generation": 3,
+            "generation_zero_alive": 35,
+            "descendant_alive": 79,
+            "descendant_alive_fraction": 0.6929824561403509,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 1.171875,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": true,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": true
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 690,
+            "window_ticks": 30,
+            "alive": 119,
+            "alive_fraction_to_initial": 0.9296875,
+            "effective_lineages": 24.373493975903614,
+            "lineage_count": 41,
+            "largest_lineage_fraction": 0.07563025210084033,
+            "effective_lineages_shannon": 30.536518695020728,
+            "top_5_lineage_fraction": 0.33613445378151263,
+            "top_10_lineage_fraction": 0.5630252100840336,
+            "canonical_diversity_ratio_to_initial": 0.9575585293067314,
+            "policy_diversity_ratio_to_initial": 0.9137909572770868,
+            "strategy_effective_dimensions": 21.040304222516554,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 7,
+            "unique_successful_parents_window": 7,
+            "effective_successful_parents_window": 7.0,
+            "largest_parent_contribution_fraction_window": 0.14285714285714285,
+            "contributor_metrics_available": true,
+            "births_window": 7,
+            "deaths_window": 2,
+            "net_growth_window": 5,
+            "mean_generation": 1.1092436974789917,
+            "max_generation": 3,
+            "generation_zero_alive": 33,
+            "descendant_alive": 86,
+            "descendant_alive_fraction": 0.7226890756302521,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 1.2265625,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": true,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": true
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 720,
+            "window_ticks": 30,
+            "alive": 117,
+            "alive_fraction_to_initial": 0.9140625,
+            "effective_lineages": 23.48027444253859,
+            "lineage_count": 38,
+            "largest_lineage_fraction": 0.07692307692307693,
+            "effective_lineages_shannon": 28.69127494948231,
+            "top_5_lineage_fraction": 0.33333333333333337,
+            "top_10_lineage_fraction": 0.5811965811965812,
+            "canonical_diversity_ratio_to_initial": 0.9539616354944848,
+            "policy_diversity_ratio_to_initial": 0.9044750833958318,
+            "strategy_effective_dimensions": 20.374749398971264,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 4,
+            "unique_successful_parents_window": 4,
+            "effective_successful_parents_window": 4.0,
+            "largest_parent_contribution_fraction_window": 0.25,
+            "contributor_metrics_available": true,
+            "births_window": 4,
+            "deaths_window": 6,
+            "net_growth_window": -2,
+            "mean_generation": 1.1452991452991452,
+            "max_generation": 3,
+            "generation_zero_alive": 30,
+            "descendant_alive": 87,
+            "descendant_alive_fraction": 0.7435897435897436,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": false,
+            "cumulative_births_per_initial": 1.2578125,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": true,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": true
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 750,
+            "window_ticks": 30,
+            "alive": 126,
+            "alive_fraction_to_initial": 0.984375,
+            "effective_lineages": 22.81034482758621,
+            "lineage_count": 38,
+            "largest_lineage_fraction": 0.0873015873015873,
+            "effective_lineages_shannon": 28.281397011575184,
+            "top_5_lineage_fraction": 0.3492063492063492,
+            "top_10_lineage_fraction": 0.5793650793650792,
+            "canonical_diversity_ratio_to_initial": 0.9492367120226747,
+            "policy_diversity_ratio_to_initial": 0.9007685535097738,
+            "strategy_effective_dimensions": 20.218559986752123,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 12,
+            "unique_successful_parents_window": 12,
+            "effective_successful_parents_window": 12.0,
+            "largest_parent_contribution_fraction_window": 0.08333333333333333,
+            "contributor_metrics_available": true,
+            "births_window": 12,
+            "deaths_window": 3,
+            "net_growth_window": 9,
+            "mean_generation": 1.1825396825396826,
+            "max_generation": 3,
+            "generation_zero_alive": 30,
+            "descendant_alive": 96,
+            "descendant_alive_fraction": 0.7619047619047619,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": true,
+            "cumulative_births_per_initial": 1.3515625,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": true,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": true
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 780,
+            "window_ticks": 30,
+            "alive": 129,
+            "alive_fraction_to_initial": 1.0078125,
+            "effective_lineages": 21.867279894875164,
+            "lineage_count": 38,
+            "largest_lineage_fraction": 0.09302325581395349,
+            "effective_lineages_shannon": 27.632936206063608,
+            "top_5_lineage_fraction": 0.3643410852713178,
+            "top_10_lineage_fraction": 0.5968992248062015,
+            "canonical_diversity_ratio_to_initial": 0.949086757483414,
+            "policy_diversity_ratio_to_initial": 0.9026603352234407,
+            "strategy_effective_dimensions": 19.503398425497434,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 8,
+            "unique_successful_parents_window": 8,
+            "effective_successful_parents_window": 8.0,
+            "largest_parent_contribution_fraction_window": 0.125,
+            "contributor_metrics_available": true,
+            "births_window": 8,
+            "deaths_window": 5,
+            "net_growth_window": 3,
+            "mean_generation": 1.255813953488372,
+            "max_generation": 3,
+            "generation_zero_alive": 29,
+            "descendant_alive": 100,
+            "descendant_alive_fraction": 0.7751937984496124,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": true,
+            "cumulative_births_per_initial": 1.4140625,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": true,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": true
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 810,
+            "window_ticks": 30,
+            "alive": 137,
+            "alive_fraction_to_initial": 1.0703125,
+            "effective_lineages": 21.849825378346917,
+            "lineage_count": 38,
+            "largest_lineage_fraction": 0.0948905109489051,
+            "effective_lineages_shannon": 27.621712964334176,
+            "top_5_lineage_fraction": 0.36496350364963503,
+            "top_10_lineage_fraction": 0.5912408759124087,
+            "canonical_diversity_ratio_to_initial": 0.9516512753692056,
+            "policy_diversity_ratio_to_initial": 0.9062787029844622,
+            "strategy_effective_dimensions": 19.542746724471524,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 9,
+            "unique_successful_parents_window": 9,
+            "effective_successful_parents_window": 9.0,
+            "largest_parent_contribution_fraction_window": 0.1111111111111111,
+            "contributor_metrics_available": true,
+            "births_window": 9,
+            "deaths_window": 1,
+            "net_growth_window": 8,
+            "mean_generation": 1.2773722627737227,
+            "max_generation": 3,
+            "generation_zero_alive": 29,
+            "descendant_alive": 108,
+            "descendant_alive_fraction": 0.7883211678832117,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": true,
+            "cumulative_births_per_initial": 1.484375,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": true,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": true
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          },
+          {
+            "tick": 840,
+            "window_ticks": 30,
+            "alive": 143,
+            "alive_fraction_to_initial": 1.1171875,
+            "effective_lineages": 19.68142444658325,
+            "lineage_count": 37,
+            "largest_lineage_fraction": 0.1048951048951049,
+            "effective_lineages_shannon": 25.41206318667884,
+            "top_5_lineage_fraction": 0.3986013986013986,
+            "top_10_lineage_fraction": 0.6293706293706295,
+            "canonical_diversity_ratio_to_initial": 0.9456819510939453,
+            "policy_diversity_ratio_to_initial": 0.8985530838177643,
+            "strategy_effective_dimensions": 17.856225509721995,
+            "heritable_variation_metrics_available": true,
+            "successful_parent_samples_window": 11,
+            "unique_successful_parents_window": 11,
+            "effective_successful_parents_window": 11.0,
+            "largest_parent_contribution_fraction_window": 0.09090909090909091,
+            "contributor_metrics_available": true,
+            "births_window": 11,
+            "deaths_window": 5,
+            "net_growth_window": 6,
+            "mean_generation": 1.3356643356643356,
+            "max_generation": 4,
+            "generation_zero_alive": 29,
+            "descendant_alive": 114,
+            "descendant_alive_fraction": 0.7972027972027972,
+            "descendant_metric_available": true,
+            "descendant_fraction_met": true,
+            "cumulative_births_per_initial": 1.5703125,
+            "demographic_checks": {
+              "alive_fraction_met": true,
+              "effective_lineages_met": false,
+              "largest_lineage_fraction_met": true,
+              "successful_parent_samples_met": false
+            },
+            "turnover_checks": {
+              "mean_generation_met": true,
+              "max_generation_met": true,
+              "cumulative_births_per_initial_met": true
+            },
+            "contributor_checks": {
+              "unique_successful_parents_met": false,
+              "effective_successful_parents_met": false,
+              "largest_parent_contribution_met": false
+            },
+            "demographic_selection_window_supported": false,
+            "evolutionary_selection_window_supported": false
+          }
+        ],
+        "selection_inference_supported_within_run": false,
+        "recommendation": "selection-inference-insufficient-retain-run",
+        "interpretation_boundary": "This is a within-run adequacy audit. Windows are repeated observations, not independent replicates. Failed windows remain in the record. A future burn-in candidate is a design output, not evidence from the current run."
+      },
+      "config_context": {
+        "initial_entities": 128,
+        "knowledge_transfer_probability": 0.1,
+        "knowledge_transfer_period": 1,
+        "environment_schema": "persistent-multiscale-four-resource-renewal-v3",
+        "resource_cycle_periods": [
+          173,
+          257,
+          349,
+          431
+        ],
+        "resource_cycle_amplitudes": [
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ],
+        "resource_primary_wave_vectors": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            1.0,
+            1.0
+          ],
+          [
+            2.0,
+            1.0
+          ],
+          [
+            4.0,
+            -1.0
+          ]
+        ],
+        "resource_secondary_wave_vectors": [
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            -1.0
+          ],
+          [
+            3.0,
+            2.0
+          ],
+          [
+            5.0,
+            2.0
+          ]
+        ],
+        "resource_primary_wave_amplitudes": [
+          0.26,
+          0.24,
+          0.22,
+          0.2
+        ],
+        "resource_secondary_wave_amplitudes": [
+          0.1,
+          0.11,
+          0.12,
+          0.13
+        ],
+        "resource_diffusion_rates": [
+          0.002,
+          0.004,
+          0.008,
+          0.016
+        ],
+        "resource_effect_matrix": [
+          [
+            0.52,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.03,
+            0.018,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.03,
+            0.24,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.018,
+            0.0,
+            0.24
+          ]
+        ],
+        "environment_process_schema": "disabled",
+        "environment_process_origin": "core-disabled",
+        "environment_process_mechanism_class": "none",
+        "environment_process_interpretation": "scientific-core-only",
+        "environment_process_parameter_names": [],
+        "moving_hazard_schema": "disabled",
+        "moving_hazard_source_count": 0,
+        "mortality_trace_schema": "local-decaying-mortality-trace-v1",
+        "resource_affinity_schema": "normalized-four-resource-affinity-v1",
+        "harvest_allocation_schema": "affinity-sampled-exclusive-harvest-v1",
+        "harvest_rate": 0.3,
+        "harvest_channel_multipliers": [
+          1.3,
+          1.3,
+          1.3,
+          1.3
+        ],
+        "harvest_request_budget": 1.56,
+        "danger_evidence_schema": "disabled",
+        "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+        "group_label_propagation_rounds": 8,
+        "group_trust_threshold": 0.12,
+        "group_min_members": 6,
+        "group_update_mode": "adaptive-topology-v1",
+        "group_update_period": 50,
+        "group_update_min_period": 100,
+        "group_update_max_period": 300,
+        "spatial_stress_diagnostics_schema": "spatial-local-stress-culture-diagnostics-v2",
+        "spatial_region_partition": {
+          "schema": "normalized-fixed-count-grid-v1",
+          "mapping": "row-major-y-then-x",
+          "boundary_convention": "half-open except clipped outer boundary",
+          "regions_x": 4,
+          "regions_y": 4,
+          "region_count": 16,
+          "world_width": 128.0,
+          "world_height": 128.0,
+          "world_grid_x": 32,
+          "world_grid_y": 32,
+          "normalized_region_width": 0.25,
+          "normalized_region_height": 0.25,
+          "physical_region_width": 32.0,
+          "physical_region_height": 32.0,
+          "world_cells_per_region_x": 8.0,
+          "world_cells_per_region_y": 8.0,
+          "world_grid_aligned": true,
+          "feedback_to_world": false,
+          "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+          "partition_sha256": "80ca3a910af4d035ebdcc1b9fb961d80675113ed6ff16e84a7c3b5f30a34c3f9"
+        },
+        "differentiation_enabled": true,
+        "differentiation_schema": "inherited-elastic-capacities-v1",
+        "differentiation_capacity_bounds": {
+          "working_memory_dimensions": [
+            0,
+            4
+          ],
+          "knowledge_bytes": [
+            0,
+            512
+          ],
+          "relation_slots": [
+            0,
+            8
+          ],
+          "knowledge_attention_slots": [
+            0,
+            1
+          ]
+        },
+        "differentiation_mutation_probability": 0.03,
+        "differentiation_mutation_std": 0.16,
+        "functional_modules_enabled": true,
+        "functional_modules_schema": "expression-gated-regulatory-resource-metabolism-v6",
+        "functional_modules_module_count": 4,
+        "functional_modules_coupling_schema": "lower-slot-signal-modulation-v1",
+        "functional_modules_expression_threshold": 0.0,
+        "functional_modules_max_residual_fraction": 0.5,
+        "requested_backend": "cpu",
+        "execution_backend": "cpu",
+        "gpu_semantics_mode": "hybrid-accelerated",
+        "gpu_device_validated": false,
+        "gpu_acceleration_enabled": false,
+        "runtime_version": "0.96.0"
+      },
+      "trends_per_1000_ticks": {
+        "alive": -65.31654807516877,
+        "effective_lineages": -134.86170601672214,
+        "largest_lineage_fraction": 0.11213619048187917,
+        "strategy_effective_dimensions": -55.0427938786698,
+        "window_action_entropy": -0.12694398370628454,
+        "benefit_boundary_cohesion": 0.12423153449100266,
+        "resource_affinity_effective_dimensions": -0.4114546447133809,
+        "capacity_effective_dimensions": -0.6881351532036303,
+        "capacity_working_memory_dimensions_mean": -0.04310139507777334,
+        "capacity_knowledge_capacity_bytes_mean": -24.79052787495995,
+        "capacity_relation_slots_mean": -0.20425739892815226,
+        "capacity_knowledge_attention_slots_mean": -0.15233391579851127,
+        "functional_module_expressed_mean": -0.05721530429175828,
+        "functional_harvest_preference_effective_dimensions": -0.41571725567268075,
+        "functional_module_residual_abs_mean": -1.9654156520680496e-05,
+        "functional_module_changed_entity_fraction": 0.05668063603052761,
+        "functional_module_contribution_effective_count": -0.2959980727179322,
+        "functional_module_contribution_dominance": 0.014776009127452291,
+        "functional_module_cancellation_fraction": -0.09103868053932067
+      },
+      "capacity_correlations_observational": {
+        "capacity_dimensions_vs_alive": 0.5892199334032467,
+        "capacity_dimensions_vs_resource_environment_dimensions": 0.5264350238431834,
+        "capacity_dimensions_vs_resource_affinity_dimensions": 0.9450472355480979,
+        "capacity_dimensions_vs_boundary_cohesion": 0.0512113216822326,
+        "capacity_dimensions_vs_effective_transferred_roots": -0.6844315942893523,
+        "working_memory_capacity_vs_action_entropy": 0.5293403263668917,
+        "knowledge_capacity_vs_effective_root_contents": 0.7814432603290042,
+        "relation_capacity_vs_boundary_cohesion": 0.12460369380057076,
+        "attention_capacity_vs_committed_transfer": 0.3376108053136579
+      },
+      "correlations_observational": {
+        "mortality_vs_same_window_cohesion": 0.47649731931591727,
+        "mortality_vs_next_window_cohesion": 0.4256089898206029,
+        "effective_lineages_vs_cohesion": -0.26283320564482304,
+        "largest_lineage_fraction_vs_cohesion": 0.0045594813376840255,
+        "strategy_dimensions_vs_action_entropy": 0.9320035400610636,
+        "lineage_group_nmi_vs_cohesion": -0.03545307963069265,
+        "lineage_group_pair_enrichment_vs_cohesion": 0.2842489558501912,
+        "knowledge_effective_roots_vs_effective_lineages": 0.7763138410473859
+      },
+      "correlations_first_difference": {
+        "delta_mortality_vs_delta_cohesion": 0.16271527724532206,
+        "mortality_vs_next_delta_cohesion": -0.05910659361324239,
+        "delta_effective_lineages_vs_delta_cohesion": -0.0020978136143095846,
+        "delta_largest_lineage_fraction_vs_delta_cohesion": 0.05912294819234046,
+        "delta_strategy_dimensions_vs_delta_action_entropy": -0.04335764259776305,
+        "delta_lineage_group_pair_enrichment_vs_delta_cohesion": 0.43141181732744616
+      },
+      "correlations_partial": {
+        "mortality_vs_cohesion_controlling_tick_alive": 0.5355194342654678,
+        "effective_lineages_vs_cohesion_controlling_tick_alive": -0.5003750878418857,
+        "largest_lineage_fraction_vs_cohesion_controlling_tick_alive": -0.5019413227501718,
+        "lineage_group_pair_enrichment_vs_cohesion_controlling_tick_alive": 0.3176506698022375
+      },
+      "mortality_to_cohesion_cross_lag": {
+        "-3": -0.1421921637319143,
+        "-2": 0.025812077508276687,
+        "-1": 0.29256252558957985,
+        "0": 0.47649731931591727,
+        "1": 0.4256089898206029,
+        "2": 0.13911489116672826,
+        "3": 0.3801892240833746
+      },
+      "mortality_to_cohesion_best_lag": {
+        "lag_windows": 0,
+        "correlation": 0.47649731931591727
+      },
+      "analysis_warnings": [],
+      "causal_caution": "All correlations are descriptive. Raw correlations can be dominated by shared time trends; first differences and partial correlations reduce, but do not eliminate, confounding."
+    }
+  ],
+  "endpoint_aggregate": {
+    "alive_final": {
+      "mean": 143.0,
+      "min": 143.0,
+      "max": 143.0,
+      "std": 0.0
+    },
+    "effective_lineages_final": {
+      "mean": 19.68142444658325,
+      "min": 19.68142444658325,
+      "max": 19.68142444658325,
+      "std": 0.0
+    },
+    "largest_lineage_fraction_final": {
+      "mean": 0.1048951048951049,
+      "min": 0.1048951048951049,
+      "max": 0.1048951048951049,
+      "std": 0.0
+    },
+    "strategy_effective_dimensions_final": {
+      "mean": 17.856225509721995,
+      "min": 17.856225509721995,
+      "max": 17.856225509721995,
+      "std": 0.0
+    },
+    "window_action_entropy_final": {
+      "mean": 1.836284786310358,
+      "min": 1.836284786310358,
+      "max": 1.836284786310358,
+      "std": 0.0
+    },
+    "benefit_boundary_cohesion_final": {
+      "mean": 0.22447566789309653,
+      "min": 0.22447566789309653,
+      "max": 0.22447566789309653,
+      "std": 0.0
+    },
+    "knowledge_transfer_committed_final": {
+      "mean": 69.0,
+      "min": 69.0,
+      "max": 69.0,
+      "std": 0.0
+    },
+    "knowledge_effective_transferred_roots_final": {
+      "mean": 22.15384615384615,
+      "min": 22.15384615384615,
+      "max": 22.15384615384615,
+      "std": 0.0
+    },
+    "capacity_effective_dimensions_final": {
+      "mean": 3.4549770487931593,
+      "min": 3.4549770487931593,
+      "max": 3.4549770487931593,
+      "std": 0.0
+    },
+    "functional_harvest_preference_effective_dimensions_final": {
+      "mean": 2.6535723627712056,
+      "min": 2.6535723627712056,
+      "max": 2.6535723627712056,
+      "std": 0.0
+    },
+    "functional_module_residual_abs_mean_final": {
+      "mean": 0.0003772492104388298,
+      "min": 0.0003772492104388298,
+      "max": 0.0003772492104388298,
+      "std": 0.0
+    }
+  },
+  "demographic_selection_aggregate": {
+    "available_run_count": 1,
+    "bottleneck_dominated_run_count": 0,
+    "source_ready_run_count": 0,
+    "active_rebound_run_count": 1,
+    "settled_population_run_count": 0,
+    "within_run_selection_supported_count": 0,
+    "regime_classification_counts": {
+      "selection-source-insufficient-observation": 1
+    },
+    "independent_unit": "run-seed",
+    "windows_are_independent_replicates": false
+  },
+  "cross_seed_sign_consistency": {
+    "correlations_observational.effective_lineages_vs_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.26283320564482304,
+      "min": -0.26283320564482304,
+      "max": -0.26283320564482304
+    },
+    "correlations_observational.knowledge_effective_roots_vs_effective_lineages": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.7763138410473859,
+      "min": 0.7763138410473859,
+      "max": 0.7763138410473859
+    },
+    "correlations_observational.largest_lineage_fraction_vs_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.0045594813376840255,
+      "min": 0.0045594813376840255,
+      "max": 0.0045594813376840255
+    },
+    "correlations_observational.lineage_group_nmi_vs_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.03545307963069265,
+      "min": -0.03545307963069265,
+      "max": -0.03545307963069265
+    },
+    "correlations_observational.lineage_group_pair_enrichment_vs_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.2842489558501912,
+      "min": 0.2842489558501912,
+      "max": 0.2842489558501912
+    },
+    "correlations_observational.mortality_vs_next_window_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.4256089898206029,
+      "min": 0.4256089898206029,
+      "max": 0.4256089898206029
+    },
+    "correlations_observational.mortality_vs_same_window_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.47649731931591727,
+      "min": 0.47649731931591727,
+      "max": 0.47649731931591727
+    },
+    "correlations_observational.strategy_dimensions_vs_action_entropy": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.9320035400610636,
+      "min": 0.9320035400610636,
+      "max": 0.9320035400610636
+    },
+    "correlations_first_difference.delta_effective_lineages_vs_delta_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.0020978136143095846,
+      "min": -0.0020978136143095846,
+      "max": -0.0020978136143095846
+    },
+    "correlations_first_difference.delta_largest_lineage_fraction_vs_delta_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.05912294819234046,
+      "min": 0.05912294819234046,
+      "max": 0.05912294819234046
+    },
+    "correlations_first_difference.delta_lineage_group_pair_enrichment_vs_delta_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.43141181732744616,
+      "min": 0.43141181732744616,
+      "max": 0.43141181732744616
+    },
+    "correlations_first_difference.delta_mortality_vs_delta_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.16271527724532206,
+      "min": 0.16271527724532206,
+      "max": 0.16271527724532206
+    },
+    "correlations_first_difference.delta_strategy_dimensions_vs_delta_action_entropy": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.04335764259776305,
+      "min": -0.04335764259776305,
+      "max": -0.04335764259776305
+    },
+    "correlations_first_difference.mortality_vs_next_delta_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.05910659361324239,
+      "min": -0.05910659361324239,
+      "max": -0.05910659361324239
+    },
+    "correlations_partial.effective_lineages_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.5003750878418857,
+      "min": -0.5003750878418857,
+      "max": -0.5003750878418857
+    },
+    "correlations_partial.largest_lineage_fraction_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.5019413227501718,
+      "min": -0.5019413227501718,
+      "max": -0.5019413227501718
+    },
+    "correlations_partial.lineage_group_pair_enrichment_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.3176506698022375,
+      "min": 0.3176506698022375,
+      "max": 0.3176506698022375
+    },
+    "correlations_partial.mortality_vs_cohesion_controlling_tick_alive": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.5355194342654678,
+      "min": 0.5355194342654678,
+      "max": 0.5355194342654678
+    }
+  },
+  "cross_seed_local_sign_consistency": {
+    "local_culture.local_cohesion_vs_local_same_region_transfer_retention_next_window": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.13446100196104205,
+      "min": 0.13446100196104205,
+      "max": 0.13446100196104205
+    },
+    "local_culture.local_cohesion_vs_local_same_region_transfer_retention_within_region": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.024547181478570747,
+      "min": 0.024547181478570747,
+      "max": 0.024547181478570747
+    },
+    "local_culture.local_crowding_vs_local_outgoing_transfer_rate_next_window": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.06988725078926632,
+      "min": 0.06988725078926632,
+      "max": 0.06988725078926632
+    },
+    "local_culture.local_crowding_vs_local_outgoing_transfer_rate_within_region": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.12256133509029679,
+      "min": 0.12256133509029679,
+      "max": 0.12256133509029679
+    },
+    "local_culture.local_mortality_vs_local_incoming_transfer_rate_next_window": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.010030215615036047,
+      "min": -0.010030215615036047,
+      "max": -0.010030215615036047
+    },
+    "local_culture.local_mortality_vs_local_incoming_transfer_rate_within_region": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.026905578206683083,
+      "min": 0.026905578206683083,
+      "max": 0.026905578206683083
+    },
+    "local_culture.local_scarcity_vs_local_incoming_transfer_rate_next_window": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.053151448485460204,
+      "min": -0.053151448485460204,
+      "max": -0.053151448485460204
+    },
+    "local_culture.local_scarcity_vs_local_incoming_transfer_rate_within_region": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.02508925861039673,
+      "min": -0.02508925861039673,
+      "max": -0.02508925861039673
+    },
+    "local_culture.local_scarcity_vs_local_net_transferred_root_establishment_next_window": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.031092472972427655,
+      "min": -0.031092472972427655,
+      "max": -0.031092472972427655
+    },
+    "local_culture.local_scarcity_vs_local_net_transferred_root_establishment_within_region": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.06384484298783326,
+      "min": -0.06384484298783326,
+      "max": -0.06384484298783326
+    },
+    "local_culture.local_scarcity_vs_local_new_transferred_roots_next_window": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.04146066326333298,
+      "min": -0.04146066326333298,
+      "max": -0.04146066326333298
+    },
+    "local_culture.local_scarcity_vs_local_new_transferred_roots_within_region": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.01955250886329605,
+      "min": -0.01955250886329605,
+      "max": -0.01955250886329605
+    },
+    "local_culture.local_scarcity_vs_local_outgoing_transfer_rate_next_window": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.03590745592390482,
+      "min": -0.03590745592390482,
+      "max": -0.03590745592390482
+    },
+    "local_culture.local_scarcity_vs_local_outgoing_transfer_rate_within_region": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.013873321033298181,
+      "min": -0.013873321033298181,
+      "max": -0.013873321033298181
+    },
+    "next_window_correlations.local_crowding_vs_next_window_local_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.3469011994895014,
+      "min": -0.3469011994895014,
+      "max": -0.3469011994895014
+    },
+    "next_window_correlations.local_hazard_vs_next_window_local_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.10224740142116634,
+      "min": 0.10224740142116634,
+      "max": 0.10224740142116634
+    },
+    "next_window_correlations.local_mortality_vs_next_window_local_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.15684670328205305,
+      "min": 0.15684670328205305,
+      "max": 0.15684670328205305
+    },
+    "next_window_correlations.local_population_change_vs_next_window_local_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.14891695404256772,
+      "min": -0.14891695404256772,
+      "max": -0.14891695404256772
+    },
+    "next_window_correlations.local_scarcity_vs_next_window_local_cohesion": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.31690729925809413,
+      "min": -0.31690729925809413,
+      "max": -0.31690729925809413
+    },
+    "within_region_correlations.local_crowding_vs_cohesion_within_region": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.30440877498875857,
+      "min": -0.30440877498875857,
+      "max": -0.30440877498875857
+    },
+    "within_region_correlations.local_hazard_vs_cohesion_within_region": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.4016093473827739,
+      "min": -0.4016093473827739,
+      "max": -0.4016093473827739
+    },
+    "within_region_correlations.local_mortality_vs_cohesion_within_region": {
+      "available_runs": 1,
+      "positive_runs": 1,
+      "negative_runs": 0,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": 0.11571964138950046,
+      "min": 0.11571964138950046,
+      "max": 0.11571964138950046
+    },
+    "within_region_correlations.local_population_change_vs_cohesion_within_region": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.06687193190029889,
+      "min": -0.06687193190029889,
+      "max": -0.06687193190029889
+    },
+    "within_region_correlations.local_scarcity_vs_cohesion_within_region": {
+      "available_runs": 1,
+      "positive_runs": 0,
+      "negative_runs": 1,
+      "zero_runs": 0,
+      "same_nonzero_sign": true,
+      "mean": -0.17913029106892317,
+      "min": -0.17913029106892317,
+      "max": -0.17913029106892317
+    }
+  },
+  "repeated_directional_patterns": [],
+  "repeated_local_directional_patterns": [],
+  "interpretation_boundary": "Repeated signs across seeds support robustness, not necessity. Raw within-run correlations may reflect shared temporal drift. Controlled checkpoint interventions are required for phase-specific causal claims."
+}

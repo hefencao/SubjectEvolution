@@ -1,0 +1,166 @@
+{
+  "schema": "se-required-result-bundle-v1",
+  "study_root": "studies/d1p_integrated_ecological_subject_v1",
+  "include_checkpoints": false,
+  "capability": "result-review-and-next-step-planning",
+  "files": [
+    {
+      "path": "analyses/d1p_integrated_ecological_subject_v1/panel/gene_persistence.json",
+      "size": 1260418,
+      "sha256": "24ef298aca529e8e77d1fa510c5d7c3008c76d8123006855d2a2731685f0b27e"
+    },
+    {
+      "path": "analyses/d1p_integrated_ecological_subject_v1/panel/gene_persistence.md",
+      "size": 938,
+      "sha256": "caa448818957484176bdaa032f06206c510da8f299e1e0d02cd3a446f9044bee"
+    },
+    {
+      "path": "analyses/d1p_integrated_ecological_subject_v1/panel/panel_health.json",
+      "size": 15529,
+      "sha256": "aa8e501ad6374cbcc8b26a093e75d7b03d66a21a22f05cdcf24b49f1f5e16b0f"
+    },
+    {
+      "path": "analyses/d1p_integrated_ecological_subject_v1/panel/panel_health.md",
+      "size": 786,
+      "sha256": "075535424ff923c1f4bfbf5755684ae9f447cabc82f2e12385913deaad4922e5"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/long_run_analysis.json",
+      "size": 455484,
+      "sha256": "06e5aadb919836e3c6071a6d43a20e0b3bf74a2a2950ece52830d5dcca2d8237"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/long_run_analysis.md",
+      "size": 37759,
+      "sha256": "129b7f9a352d9fffe3e8415c6b3fa55c672e9e731b214ebd2b1051ef8a96aee8"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/multi_seed_index.json",
+      "size": 1605,
+      "sha256": "58caef8ff8dc38136d9cc5e721ed5555a13487e2a152946e3df56207210fa6d2"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/seed_95101/resolved_config.json",
+      "size": 15733,
+      "sha256": "80e01ab48f45159b436961deb67522c0ac9ce251af74fd8f9feeef7a63fdf2da"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/seed_95101/run_manifest.json",
+      "size": 14273,
+      "sha256": "3dd5a799af4eaa4864dc13cf41747a39640bcc99a08d8c6edd4aaf1f581de75d"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/seed_95101/source_health_runtime_events.json",
+      "size": 13497,
+      "sha256": "f407d576c0d4475c15f2affa40808c1358629eae5bc1795e8e620c835cca70f2"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/seed_95101/summary.json",
+      "size": 35460,
+      "sha256": "e7606b887762988ca196c46306ceeb148d0972b992724146ebabb75e9619d3d4"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/seed_95102/resolved_config.json",
+      "size": 15733,
+      "sha256": "ea43c3408f6cc3a2f187f21ee5c7ac015a5c08335a1e900ec5dc102499be6303"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/seed_95102/run_manifest.json",
+      "size": 14273,
+      "sha256": "0d1f803743328e56c9f37e5261b5d5f72a4d4fb8822a84af5b901e8a0a3dd81d"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/seed_95102/source_health_runtime_events.json",
+      "size": 13509,
+      "sha256": "4f709c62a02c4033ba9998377a6d40a83ebedba587e8299b3a99fce316a91f2d"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/seed_95102/summary.json",
+      "size": 35338,
+      "sha256": "cd36fdcb58dda9207efb30d9c288c6a75dabb8e4441aaa332a023ad8fa25fb92"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/seed_95103/resolved_config.json",
+      "size": 15733,
+      "sha256": "0589fac77fdfe09ed2e6ff632c922ec610cb2c4dd78b7310506c948ff147cece"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/seed_95103/run_manifest.json",
+      "size": 14273,
+      "sha256": "a4199181350442c88e02a53687fc092d6cbf047cf35b1f7939e982b6b9ce3e9c"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/seed_95103/source_health_runtime_events.json",
+      "size": 13494,
+      "sha256": "671c78df8d228229fd619cd1e6b1a228436ca440e6caef05938f698fce5d7cb6"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/seed_95103/summary.json",
+      "size": 35434,
+      "sha256": "cfccacec8b9716f50da44a8a23c0eaf1ecd1d4fa97477213a155ab6456f00283"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/source_health_gate.json",
+      "size": 15529,
+      "sha256": "aa8e501ad6374cbcc8b26a093e75d7b03d66a21a22f05cdcf24b49f1f5e16b0f"
+    },
+    {
+      "path": "runs/base/d1p_integrated_ecological_subject_v1/panel/source_health_gate.md",
+      "size": 786,
+      "sha256": "075535424ff923c1f4bfbf5755684ae9f447cabc82f2e12385913deaad4922e5"
+    },
+    {
+      "path": "state/studies/d1p_integrated_ecological_subject_v1/integrated_config.json",
+      "size": 14564,
+      "sha256": "7d4317eb9424d46afef417e9580ae3acbd3ca8ddb0e847860e980aae385afb13"
+    },
+    {
+      "path": "state/studies/d1p_integrated_ecological_subject_v1/integrated_config.json.manifest.json",
+      "size": 2619,
+      "sha256": "78b8883a0fd527c5733a5ec2e86987dbb5ea507eaff52ab6f14dd9de54d4b40f"
+    },
+    {
+      "path": "studies/d1p_integrated_ecological_subject_v1/DESIGN.md",
+      "size": 1669,
+      "sha256": "32ce6eb6941dfcf0f45086f1dfa91b664e244c0ee9777e591a3e5dbd9332507a"
+    },
+    {
+      "path": "studies/d1p_integrated_ecological_subject_v1/README.md",
+      "size": 760,
+      "sha256": "e89d43ed9da859c2385f3550492c045dec84463869f6b146ab15fe682ba6b918"
+    },
+    {
+      "path": "studies/d1p_integrated_ecological_subject_v1/frozen/source/D1O_QUALIFICATION_LOCK.json",
+      "size": 1272,
+      "sha256": "287f043bed6814f2c61716b1ea904e39ec700bb5ca721e2812b8dd5bfb59040c"
+    },
+    {
+      "path": "studies/d1p_integrated_ecological_subject_v1/frozen/source/source_config.json",
+      "size": 14564,
+      "sha256": "7d4317eb9424d46afef417e9580ae3acbd3ca8ddb0e847860e980aae385afb13"
+    },
+    {
+      "path": "studies/d1p_integrated_ecological_subject_v1/frozen/source/source_config.json.manifest.json",
+      "size": 1590,
+      "sha256": "6fbbef2480a9c6704181617e487a6c9d07efb35f895c017ed91fcb5a060acf94"
+    },
+    {
+      "path": "studies/d1p_integrated_ecological_subject_v1/frozen/source/source_health_gate.json",
+      "size": 14658,
+      "sha256": "ee18c2842e6d7a8d5b4b30e09cc2b68502f8f1cea4f0b5a56622bbefa4be31e3"
+    },
+    {
+      "path": "studies/d1p_integrated_ecological_subject_v1/protocol/panel_health.json",
+      "size": 3769,
+      "sha256": "475fae633b10413248aa8cb13b9c6e40b53cd8d3982cf20a776d8399cf3a91e3"
+    },
+    {
+      "path": "studies/d1p_integrated_ecological_subject_v1/workflow.toml",
+      "size": 3806,
+      "sha256": "60c91bcb2276519088f3ae00832068b30c2a84831667f4b5bcd46ae413fc2383"
+    }
+  ],
+  "omitted": [
+    "checkpoint bytes (*.sechk); hashes remain in paired plans/results"
+  ]
+}

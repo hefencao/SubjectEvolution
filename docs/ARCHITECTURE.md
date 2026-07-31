@@ -1013,3 +1013,15 @@ independently functional, so its direct effect window begins only after one
 realized generation. v0.94 intentionally declares no paired command. A later
 version may add one only after consuming a newly generated passing source-health
 report.
+
+## v0.96 integrated retention and cycle-aware equilibrium
+
+`integrated-genetic-retention-audit-v2` consumes the frozen raw coordinate report, long-run demographic analysis, health report, and exact source config. It classifies each continuous inherited coordinate relative to its own initial across-seed active-carrier and standard-deviation state, then aggregates by equal-seed majority. The result separates retained, concentrated, moderate-thinning, strong-thinning, and lost states. Expansion, founder-lineage concentration, and failed health/equilibrium remain explicit confounds. The analyzer never creates an experiment specification and structurally sets gene-specific, paired, and selection authorization to false.
+
+`integrated-equilibrium-resource-flux-v1` copies the D1-P source and permits exactly one changed path: `environment.resource_regeneration`. All four channels receive the same value. A canonical tree comparison rejects any change to genes, expression, resource geometry/effects, maintenance, reproduction, capacity, cost, or intervention state. The sidecar path remains `source_config.json.manifest.json`.
+
+`integrated-equilibrium-qualification-v2` reads each seed's resolved environment and progress cadence. It discovers positive explicit environmental period fields, selects the longest period, and requires `ceil(period / sample_interval) + 1` final observations so the first-to-last interval spans at least one complete cycle. It checks full-cycle population bounds, CV, normalized linear trend, and peak-to-trough envelope, then combines those with final turnover, descendant replacement, founder-lineage breadth, and heritable-diversity checks from the existing read-only audit. The generic three-window regime remains under `short_window_advisory`; it is never used as the qualification decision.
+
+`se-multi --thin-checkpoints-only` retains compact checkpoint statistics needed by whole-genome scans without serializing the complete world. `--disable-periodic-checkpoints` suppresses cadence-based full checkpoints while preserving explicitly requested thin checkpoint ticks. Full `.sechk` state remains opt-in for replay and result packaging. These storage flags change persistence policy only and do not alter simulation state or scientific protocol identity beyond the declared run configuration.
+
+The frozen D1-Q pilot lock binds the exact generated config, resolved runtime config, progress, staged health events, summary, termination, health report, cycle-aware equilibrium report, and SHA-256 for every included file. Its authorization object permits only the new independent integrated panel.

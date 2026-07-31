@@ -57,6 +57,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Delete and restart an incomplete seed directory.",
     )
     parser.add_argument(
+        "--no-checkpoints",
+        action="store_true",
+        help="Suppress all periodic and exact checkpoints for a bounded qualification run.",
+    )
+    parser.add_argument(
+        "--disable-periodic-checkpoints",
+        action="store_true",
+        help="Suppress periodic checkpoints while retaining explicitly requested checkpoint ticks.",
+    )
+    parser.add_argument(
+        "--thin-checkpoints-only",
+        action="store_true",
+        help=(
+            "Write compact .npz population checkpoints for screening, but suppress "
+            "periodic full-world .sechk replay bundles. Use only when replay is not "
+            "part of the study evidence."
+        ),
+    )
+    parser.add_argument(
         "--source-health-contract",
         help="Execution precondition contract with staged early-stop thresholds.",
     )
@@ -108,6 +127,10 @@ def main() -> None:
     target_tick = base.run.ticks if args.until_tick is None else int(args.until_tick)
     if target_tick < 0:
         raise ValueError("until-tick must be non-negative")
+    if args.no_checkpoints and args.checkpoint_ticks:
+        raise ValueError("--no-checkpoints cannot be combined with --checkpoint-ticks")
+    if args.no_checkpoints and args.disable_periodic_checkpoints:
+        raise ValueError("--no-checkpoints already disables periodic checkpoints")
     if checkpoint_ticks and checkpoint_ticks[-1] > target_tick:
         raise ValueError(
             f"checkpoint-ticks includes {checkpoint_ticks[-1]} beyond final tick {target_tick}"
@@ -144,7 +167,10 @@ def main() -> None:
         "metrics_period": int(base.run.metrics_period),
         "evolution_evaluation_period": int(base.run.evolution_evaluation_period),
         "periodic_checkpoint_period": int(base.run.checkpoint_period),
-        "checkpoint_ticks": list(checkpoint_ticks or base.run.checkpoint_ticks),
+        "checkpoint_ticks": ([] if args.no_checkpoints else list(checkpoint_ticks or base.run.checkpoint_ticks)),
+        "periodic_checkpoints_enabled": not (args.no_checkpoints or args.disable_periodic_checkpoints),
+        "full_world_checkpoints_enabled": bool(base.run.full_checkpoint_enabled and not args.thin_checkpoints_only),
+        "thin_checkpoints_only": bool(args.thin_checkpoints_only),
         "seed_output_directories": [f"seed_{seed}" for seed in seeds],
         "failed_or_partial_seed_replaced_by_outcome": False,
         "overwrite_partial_requires_explicit_flag": True,
@@ -197,9 +223,18 @@ def main() -> None:
                 base.run,
                 seed=seed,
                 ticks=target_tick,
-                checkpoint_ticks=checkpoint_ticks or base.run.checkpoint_ticks,
+                checkpoint_period=(
+                    target_tick + 1
+                    if (args.no_checkpoints or args.disable_periodic_checkpoints)
+                    else base.run.checkpoint_period
+                ),
+                checkpoint_ticks=(
+                    () if args.no_checkpoints else (checkpoint_ticks or base.run.checkpoint_ticks)
+                ),
                 full_checkpoint_enabled=(
-                    True if checkpoint_ticks else base.run.full_checkpoint_enabled
+                    False
+                    if (args.no_checkpoints or args.thin_checkpoints_only)
+                    else (True if checkpoint_ticks else base.run.full_checkpoint_enabled)
                 ),
             ),
         )

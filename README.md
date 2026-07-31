@@ -1,33 +1,34 @@
-# SE v0.95
+# SE v0.96
 
 Reference implementation for nested-subject existence and ecological evolution
 simulation.
 
 ## Current direction
 
-D1-N qualified a healthy multi-generation turnover substrate. D1-O then showed
-that the inherited conservative offspring-investment interface preserves that
-substrate on all three independent seeds 94101--94103.
-
-v0.95 corrects the iteration strategy. The qualified source is not a one-gene
-organism: it already contains 704 inherited coordinates spanning morphology,
+The current source is already a plural subject-environment system, not a
+single-gene prototype. It contains 704 inherited coordinates spanning morphology,
 action policy, knowledge routing, memory, sparse selection, capacities,
-functional modules and physiology. Its environment already contains four
-asynchronous resource fields with distinct body effects, plus oxygen, terrain,
-wear and mortality-trace structure.
+functional modules and physiology. Its environment contains four asynchronous
+resource fields with distinct body effects, plus oxygen, terrain, wear and
+mortality-trace structure.
 
-D1-P therefore stops adding and auditing one isolated gene at a time. It freezes
-the whole qualified subject-environment system as one integrated baseline, runs
-a bounded independent multi-generation panel, and screens which inherited
-coordinates or blocks remain present, concentrate, thin or disappear. Only
-repeated cross-seed problems with matching expression/use or physical evidence
-may motivate later adjustment.
+D1-P ran this complete system to tick 1200 on three seeds. All samples turned over
+successfully, but population was still expanding and founder-lineage breadth was
+uneven. A relative audit now identifies 520 retained, 112 concentrated, 66
+moderate-thinning and 6 strong-thinning coordinates, but those flags do not yet
+authorize gene-specific adjustment.
+
+D1-Q changes only the four-channel external regeneration vector, uniformly from
+0.027 to 0.00675. A frozen independent pilot passes source health and a
+cycle-aware bounded-regime gate over 450 ticks, longer than the maximum 431-tick
+environmental forcing period. This authorizes the three-seed integrated panel,
+not a return to one-gene/one-environment iteration.
 
 ## Workspace layout
 
 - [`studies/`](studies/README.md): study design, protocols, workflows and frozen evidence.
-- [`runs/`](runs/README.md): runtime trajectories and checkpoints.
-- [`analyses/`](analyses/README.md): derived reports, including compact persistence scans.
+- [`runs/`](runs/README.md): runtime trajectories and explicit replay checkpoints.
+- [`analyses/`](analyses/README.md): derived reports, including integrated retention scans.
 - [`state/`](state/README.md): ignored generated configs and local overlays.
 - [`protocols/`](protocols/README.md): project-wide registries and release decisions.
 - [`configs/`](configs/README.md): reusable presets.
@@ -43,16 +44,17 @@ se-study config
 The pointer lives in ignored `.se-workspace.toml` and does not affect protocol
 identity or release artifacts.
 
-## D1-P workflow
+## D1-Q workflow
 
 ```text
-se-study show studies/d1p_integrated_ecological_subject_v1
-se-study run studies/d1p_integrated_ecological_subject_v1 baseline-check --dry-run
-se-study run studies/d1p_integrated_ecological_subject_v1 prepare-config --dry-run
-se-study run studies/d1p_integrated_ecological_subject_v1 integrated-panel --dry-run
+se-study show studies/d1q_integrated_equilibrium_retention_v1
+se-study run studies/d1q_integrated_equilibrium_retention_v1 evidence-audit --dry-run
+se-study run studies/d1q_integrated_equilibrium_retention_v1 prepare-config --dry-run
+se-study run studies/d1q_integrated_equilibrium_retention_v1 integrated-panel --dry-run
 ```
 
-No paired or per-gene effect command is declared in D1-P.
+The frozen pilot lock authorizes only `integrated-panel`. No paired or per-gene
+effect command is declared.
 
 ## Validation and packaging
 
@@ -65,7 +67,7 @@ make conda-check
 make parity-gpu
 ```
 
-`make package` builds a disposable archive copy and keeps only the current v0.95
+`make package` builds a disposable archive copy and keeps only the current v0.96
 iteration note. Local history under `docs/迭代/` remains untouched.
 
 ## Current documents
@@ -76,4 +78,4 @@ iteration note. Local history under `docs/迭代/` remains untouched.
 - [Governance principles](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.95 D1-P iteration](docs/迭代/v0.95_D1-P_多元生态主体与基因存续扫描.md)
+- [v0.96 D1-Q iteration](docs/迭代/v0.96_D1-Q_周期感知稳态与整合遗传收缩审计.md)

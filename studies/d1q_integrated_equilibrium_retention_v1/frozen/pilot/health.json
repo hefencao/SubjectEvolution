@@ -1,0 +1,219 @@
+{
+  "schema": "source-health-gate-report-v2",
+  "source_root": "studies/d1q_integrated_equilibrium_retention_v1/frozen/pilot/source",
+  "contract": {
+    "schema": "source-health-contract-v2",
+    "sha256": "55808d2a55ad768b4ce87afe680db06b480aef6b9ad950ecc1cb5455d6590110",
+    "purpose": "Reject catastrophic collapse while qualifying one independent shared-flux pilot for demographic equilibrium. This is not gene-specific or selection evidence.",
+    "required_ready_seed_count": 1,
+    "paired_plan_authorized_only_when_ready": false,
+    "final_checkpoint": {
+      "tick": 840,
+      "minimum_alive_count": 64,
+      "minimum_alive_fraction_to_initial": 0.5,
+      "minimum_cumulative_births_per_initial": 1.2,
+      "minimum_living_descendants_per_initial": 0.5,
+      "minimum_mean_generation": 1.2,
+      "maximum_founder_alive_fraction": 0.3,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+      "required_for_final": true,
+      "hard_stop": {
+        "minimum_alive_count": 40,
+        "minimum_alive_fraction_to_initial": 0.3125,
+        "minimum_cumulative_births_per_initial": 0.7,
+        "minimum_living_descendants_per_initial": 0.2,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+      }
+    },
+    "checkpoints": [
+      {
+        "tick": 120,
+        "minimum_alive_count": 80,
+        "minimum_alive_fraction_to_initial": 0.625,
+        "minimum_cumulative_births_per_initial": 0.15,
+        "minimum_living_descendants_per_initial": 0.05,
+        "minimum_mean_generation": 0.05,
+        "maximum_founder_alive_fraction": 0.95,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 1.0,
+        "required_for_final": false,
+        "hard_stop": {
+          "minimum_alive_count": 48,
+          "minimum_alive_fraction_to_initial": 0.375
+        }
+      },
+      {
+        "tick": 360,
+        "minimum_alive_count": 72,
+        "minimum_alive_fraction_to_initial": 0.5625,
+        "minimum_cumulative_births_per_initial": 0.65,
+        "minimum_living_descendants_per_initial": 0.25,
+        "minimum_mean_generation": 0.45,
+        "maximum_founder_alive_fraction": 0.7,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.5,
+        "required_for_final": false,
+        "hard_stop": {
+          "minimum_alive_count": 48,
+          "minimum_alive_fraction_to_initial": 0.375,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.65
+        }
+      },
+      {
+        "tick": 600,
+        "minimum_alive_count": 64,
+        "minimum_alive_fraction_to_initial": 0.5,
+        "minimum_cumulative_births_per_initial": 1.0,
+        "minimum_living_descendants_per_initial": 0.5,
+        "minimum_mean_generation": 0.85,
+        "maximum_founder_alive_fraction": 0.4,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+        "required_for_final": false,
+        "hard_stop": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.5,
+          "minimum_living_descendants_per_initial": 0.15,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        }
+      },
+      {
+        "tick": 720,
+        "minimum_alive_count": 64,
+        "minimum_alive_fraction_to_initial": 0.5,
+        "minimum_cumulative_births_per_initial": 1.1,
+        "minimum_living_descendants_per_initial": 0.5,
+        "minimum_mean_generation": 1.0,
+        "maximum_founder_alive_fraction": 0.35,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+        "required_for_final": false,
+        "hard_stop": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.6,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        }
+      },
+      {
+        "tick": 840,
+        "minimum_alive_count": 64,
+        "minimum_alive_fraction_to_initial": 0.5,
+        "minimum_cumulative_births_per_initial": 1.2,
+        "minimum_living_descendants_per_initial": 0.5,
+        "minimum_mean_generation": 1.2,
+        "maximum_founder_alive_fraction": 0.3,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+        "required_for_final": true,
+        "hard_stop": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.7,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        }
+      }
+    ]
+  },
+  "seed_count": 1,
+  "ready_seed_count": 1,
+  "warning_seed_count": 0,
+  "hard_stopped_seed_count": 0,
+  "ready": true,
+  "paired_plan_authorized": true,
+  "seeds": [
+    {
+      "tick": 840,
+      "requirements": {
+        "tick": 840,
+        "minimum_alive_count": 64,
+        "minimum_alive_fraction_to_initial": 0.5,
+        "minimum_cumulative_births_per_initial": 1.2,
+        "minimum_living_descendants_per_initial": 0.5,
+        "minimum_mean_generation": 1.2,
+        "maximum_founder_alive_fraction": 0.3,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+        "required_for_final": true,
+        "hard_stop": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.7,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        }
+      },
+      "metrics": {
+        "tick": 840,
+        "alive": 143,
+        "alive_fraction_to_initial": 1.1171875,
+        "births_total": 201,
+        "cumulative_births_per_initial": 1.5703125,
+        "living_descendants_per_initial": 0.890625,
+        "mean_generation": 1.3356643356643356,
+        "max_generation": 4,
+        "founder_alive_fraction": 0.20279720279720279,
+        "descendant_alive_fraction": 0.7972027972027972
+      },
+      "previous_metrics": {
+        "tick": 720,
+        "alive": 117,
+        "alive_fraction_to_initial": 0.9140625,
+        "births_total": 161,
+        "cumulative_births_per_initial": 1.2578125,
+        "living_descendants_per_initial": 0.6796875,
+        "mean_generation": 1.1452991452991452,
+        "max_generation": 3,
+        "founder_alive_fraction": 0.2564102564102564,
+        "descendant_alive_fraction": 0.7435897435897436
+      },
+      "alive_decline_fraction_from_previous_checkpoint": 0.0,
+      "checks": {
+        "alive_count_met": true,
+        "alive_fraction_met": true,
+        "birth_turnover_met": true,
+        "living_descendants_met": true,
+        "mean_generation_met": true,
+        "founder_fraction_met": true,
+        "checkpoint_decline_met": true
+      },
+      "ready": true,
+      "failed_checks": [],
+      "required_for_final": true,
+      "hard_stop": {
+        "enabled": true,
+        "requirements": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.7,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        },
+        "checks": {
+          "alive_count_hard_floor_met": true,
+          "alive_fraction_hard_floor_met": true,
+          "birth_turnover_hard_floor_met": true,
+          "living_descendants_hard_floor_met": true,
+          "checkpoint_decline_hard_floor_met": true
+        },
+        "failed_checks": [],
+        "triggered": false
+      },
+      "runtime_action": "continue",
+      "warning_checks": [],
+      "hard_stop_checks": [],
+      "required_checkpoint_count": 1,
+      "observed_required_checkpoint_count": 1,
+      "runtime_event_count": 5,
+      "runtime_contract_sha256": "55808d2a55ad768b4ce87afe680db06b480aef6b9ad950ecc1cb5455d6590110",
+      "seed": 96032,
+      "run_dir": "studies/d1q_integrated_equilibrium_retention_v1/frozen/pilot/source/seed_96032",
+      "termination": {
+        "schema": "run-termination-v1",
+        "requested_tick": 840,
+        "completed_tick": 840,
+        "terminated_early": false,
+        "reason": null,
+        "scientific_effect_interpretation_authorized": null
+      }
+    }
+  ],
+  "interpretation": "source-qualified-for-next-stage"
+}

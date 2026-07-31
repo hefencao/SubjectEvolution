@@ -1,5 +1,13 @@
 # Scientific issues
 
+## D1-Q cycle-aware equilibrium boundary
+
+D1-P provides valid execution and turnover evidence but not a settled sample: every formal seed ends at its population maximum and founder-lineage breadth differs materially. Relative retention exposes six strong and 66 moderate contraction signals, yet expansion and lineage concentration confound whether those signals reflect stable ecological filtering, transient founder sampling, or continuous-weight concentration. No coordinate is currently authorized for adjustment.
+
+D1-Q changes only uniform external resource renewal. The first formal pilot qualifies over a 450-tick window covering the longest 431-tick environmental period. The unresolved question is whether all three new independent seeds also remain bounded and lineage-broad through tick 1200. Only then can integrated retention categories be interpreted as repeated screening signals. Even a repeated strong-thinning label remains non-causal until expression, use, cost, and physical-opportunity evidence identify a concrete system-level mismatch.
+
+A three-window trend is now explicitly insufficient for environments whose configured forcing periods are longer than those windows. It remains useful for detecting the current phase but cannot define equilibrium by itself.
+
 ## D1-P integrated retention boundary
 
 D1-O removes the immediate concern that inherited offspring investment destroys the healthy turnover substrate. The remaining problem is no longer whether to attach one more isolated gene. The qualified config already has a large plural genome and matched resource, abiotic, information, social and physiological interfaces.

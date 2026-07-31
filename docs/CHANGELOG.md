@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.96.0
+
+- Freezes and verifies the D1-P formal result: all three seeds complete tick 1200 with healthy turnover but active endpoint expansion and uneven founder-lineage breadth.
+- Replaces the insensitive absolute all-retained interpretation with `integrated-genetic-retention-audit-v2`, reporting 520 retained, 112 concentrated, 66 moderate-thinning, 6 strong-thinning and 0 lost coordinates while blocking gene-specific action under demographic confounding.
+- Adds a role-neutral shared-flux source that changes only four-channel external resource regeneration from 0.027 to 0.00675 and preserves all 704 inherited coordinates, environment geometry, resource effects, costs and reproduction.
+- Adds cycle-aware equilibrium qualification whose observation span must cover the longest configured environmental forcing period; short three-window trends remain advisory.
+- Freezes formal pilot seed 96032, executed after the cycle-aware gate was fixed, as health- and cycle-qualified through tick 840 and authorizes only three new independent integrated-panel seeds.
+- Adds thin-checkpoint and periodic-checkpoint storage controls so retention panels need not serialize the complete world at every analysis checkpoint; explicit replay checkpoints remain opt-in.
+- Adds the D1-Q declarative workflow, frozen evidence locks and external result packaging. No paired or per-gene command is declared.
+- Updates project version to 0.96.0.
+
 ## 0.95.0
 
 - Records D1-O seeds 94101--94103 as complete healthy-turnover passes under the unchanged v2 contract.

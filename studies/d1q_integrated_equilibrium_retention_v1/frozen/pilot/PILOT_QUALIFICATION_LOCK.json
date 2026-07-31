@@ -1,0 +1,178 @@
+{
+  "schema": "d1q-equilibrium-pilot-qualification-lock-v2",
+  "study_id": "d1q_integrated_equilibrium_retention_v1",
+  "seed": 96032,
+  "formal_gate_preregistered_before_seed_execution": true,
+  "final_tick": 840,
+  "shared_resource_regeneration": [
+    0.00675,
+    0.00675,
+    0.00675,
+    0.00675
+  ],
+  "health_ready": true,
+  "equilibrium_ready": true,
+  "health_contract_sha256": "55808d2a55ad768b4ce87afe680db06b480aef6b9ad950ecc1cb5455d6590110",
+  "equilibrium_schema": "integrated-equilibrium-qualification-v2",
+  "final_metrics": {
+    "alive": 143,
+    "cumulative_births_per_initial": 1.5703125,
+    "living_descendants_per_initial": 0.890625,
+    "mean_generation": 1.3356643356643356,
+    "max_generation": 4,
+    "founder_alive_fraction": 0.20279720279720279,
+    "effective_lineages": 19.68142444658325,
+    "largest_lineage_fraction": 0.1048951048951049
+  },
+  "cycle_aware_regime": {
+    "schema": "cycle-aware-bounded-demographic-regime-v1",
+    "ready": true,
+    "checks": {
+      "environmental_periods_declared": true,
+      "cycle_coverage": true,
+      "minimum_population_bounded": true,
+      "maximum_population_bounded": true,
+      "cycle_alive_cv_bounded": true,
+      "cycle_trend_bounded": true,
+      "cycle_envelope_bounded": true
+    },
+    "environmental_periods": [
+      {
+        "path": "resource_cycle_periods[0]",
+        "ticks": 173
+      },
+      {
+        "path": "season_period",
+        "ticks": 240
+      },
+      {
+        "path": "resource_cycle_periods[1]",
+        "ticks": 257
+      },
+      {
+        "path": "oxygen_period",
+        "ticks": 311
+      },
+      {
+        "path": "resource_cycle_periods[2]",
+        "ticks": 349
+      },
+      {
+        "path": "wear_period",
+        "ticks": 419
+      },
+      {
+        "path": "resource_cycle_periods[3]",
+        "ticks": 431
+      }
+    ],
+    "longest_environmental_period_path": "resource_cycle_periods[3]",
+    "longest_environmental_period_ticks": 431,
+    "progress_sampling_interval_ticks": 30,
+    "required_sample_count": 16,
+    "available_sample_count": 28,
+    "assessed_sample_count": 16,
+    "assessment_start_tick": 390,
+    "assessment_final_tick": 840,
+    "assessment_span_ticks": 450,
+    "alive_mean": 118.0,
+    "alive_minimum": 109,
+    "alive_maximum": 143,
+    "alive_minimum_fraction_to_initial": 0.8515625,
+    "alive_maximum_fraction_to_initial": 1.1171875,
+    "alive_cv": 0.08553656456858623,
+    "alive_slope_fraction_per_sample": 0.014830508474576292,
+    "alive_envelope_fraction_of_mean": 0.288135593220339,
+    "thresholds": {
+      "maximum_alive_cv": 0.15,
+      "maximum_abs_slope_fraction_per_sample": 0.02,
+      "maximum_alive_envelope_fraction_of_mean": 0.5,
+      "minimum_alive_fraction_to_initial": 0.5,
+      "maximum_alive_fraction_to_initial": 2.0
+    },
+    "interpretation": "Qualification spans at least one complete configured environmental forcing cycle. Shorter-window rebounds or declines are retained as advisory phase diagnostics and do not override this cycle-aware decision."
+  },
+  "authorization": {
+    "integrated_panel_authorized": true,
+    "gene_specific_adjustment_authorized": false,
+    "selection_claim_authorized": false,
+    "paired_experiment_authorized": false
+  },
+  "files": [
+    {
+      "path": "FORMAL_PILOT_EXECUTION.json",
+      "size": 1080,
+      "sha256": "963c68fa22666489fa40977a31de080768d810aa396f12bf8253d639adad3f77"
+    },
+    {
+      "path": "equilibrium.json",
+      "size": 4714,
+      "sha256": "69b2a655c092473704b196f6e246a12927dc018eb056ab9301521fc6e44200e3"
+    },
+    {
+      "path": "health.json",
+      "size": 8421,
+      "sha256": "d9810adcf3cb785dce04d6c08fa78750116905260d1f707523a04334de9d0d56"
+    },
+    {
+      "path": "source/long_run_analysis.json",
+      "size": 134070,
+      "sha256": "545b3e9097aed9e0b289a1ac03b812ac4d4ea9388da9361abd3d448adf4d8f9f"
+    },
+    {
+      "path": "source/seed_96032/evolution_progress.jsonl",
+      "size": 972278,
+      "sha256": "eb6017862b649a2159196869c4f91189633f91254a804a1b9280ca56d7b0d651"
+    },
+    {
+      "path": "source/seed_96032/replay_provenance.json",
+      "size": 562,
+      "sha256": "01510a44cefe0f44ed43b44b24cd90a491062fd5871a5f7674c2bb2fd78f7a1d"
+    },
+    {
+      "path": "source/seed_96032/resolved_config.json",
+      "size": 15696,
+      "sha256": "d90586cfc5db91b2bb2b397152a4fa57475bf783aa2d3d484cc9f7a89f456bd1"
+    },
+    {
+      "path": "source/seed_96032/run_manifest.json",
+      "size": 14525,
+      "sha256": "2df90e843b12ab13b299c95b4afd7a4b9ab001aa929319596f94d269dc0a417f"
+    },
+    {
+      "path": "source/seed_96032/run_plan.json",
+      "size": 1589,
+      "sha256": "4f94da3c353c69e88f8e0762875c4913a5642eae5b23af165f106a19b9c1fd28"
+    },
+    {
+      "path": "source/seed_96032/run_termination.json",
+      "size": 189,
+      "sha256": "8cfe1f3c010e7d0104112b84f7d82f7a9ef95c9be676a8ab5ac1d455c1b4a248"
+    },
+    {
+      "path": "source/seed_96032/scientific_validity.json",
+      "size": 9193,
+      "sha256": "71e68c8f0dfd63bb710bb3a5eda75f23e4135613037eebc1059a6a6f279ccb90"
+    },
+    {
+      "path": "source/seed_96032/source_health_runtime_events.json",
+      "size": 13192,
+      "sha256": "934861b7e5f80feae71118c7226ed6c1e787e0c2115101c6fbf139b9b4b3db63"
+    },
+    {
+      "path": "source/seed_96032/summary.json",
+      "size": 35076,
+      "sha256": "0ef40ed5551235f4d34c44386a6ce8b282b206ea09ab310d243ffe98245df75d"
+    },
+    {
+      "path": "source_config.json",
+      "size": 14572,
+      "sha256": "06fab839934b0428bd0dac191d5a6ec37557c91c2c70475abeb550f248b52de0"
+    },
+    {
+      "path": "source_config.json.manifest.json",
+      "size": 2104,
+      "sha256": "9ca43b71339d8fd8563084766f18481224ca9f9db7e10f1d4e7951c0cd53ee98"
+    }
+  ]
+}

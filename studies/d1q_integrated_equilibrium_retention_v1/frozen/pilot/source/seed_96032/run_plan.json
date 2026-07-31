@@ -1,0 +1,50 @@
+{
+  "schema": "simulation-run-plan-v1",
+  "version": "0.96.0",
+  "start_tick": 600,
+  "target_tick": 840,
+  "requested_backend": "cpu",
+  "execution_backend": "cpu",
+  "gpu_semantics_mode": "hybrid-accelerated",
+  "gpu_acceleration_enabled": false,
+  "gpu_fallback_used": false,
+  "gpu_fallback_reason": null,
+  "gpu_memory_pool": {
+    "policy": "bounded-cache-v1",
+    "cache_limit_bytes": 536870912,
+    "trim_period": 1,
+    "live_allocations_unmodified": true
+  },
+  "experiment_mode": "scientific",
+  "resolved_config_sha256": "51d35ee7eae067d04226bbfd2baa99af13dee69be918c8e69b3c844db751967e",
+  "reporting": {
+    "metrics_period": 30,
+    "summary_schema": "authoritative-reporting-snapshot-v1",
+    "device_state_materialized_at_every_report": true
+  },
+  "checkpoints": {
+    "period": 601,
+    "exact_ticks": [],
+    "full_checkpoint_enabled": true,
+    "thin_pattern": "checkpoint_{tick:08d}.npz",
+    "full_pattern": "checkpoint_{tick:08d}.sechk"
+  },
+  "planned_outputs": [
+    "run_plan.json",
+    "metrics.csv",
+    "summary.json",
+    "scientific_validity.json",
+    "run_metadata.json"
+  ],
+  "checkpoint_lineage": [
+    {
+      "checkpoint": "studies/d1q_integrated_equilibrium_retention_v1/frozen/pilot/source/seed_96032/checkpoint_00000600.sechk",
+      "checkpoint_schema": "se-full-checkpoint-v1",
+      "checkpoint_project_version": "0.96.0",
+      "checkpoint_tick": 600,
+      "checkpoint_state_sha256": "02d334c863205a8dfa458e8f6f5485932fcfc3d681d72f470b8e6606076a2ded",
+      "offline_replay": true
+    }
+  ],
+  "outcome_conditioned_schedule_changes": false
+}

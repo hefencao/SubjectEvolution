@@ -1,0 +1,93 @@
+{
+  "schema": "source-health-contract-v2",
+  "purpose": "Reject catastrophic collapse while qualifying one independent shared-flux pilot for demographic equilibrium. This is not gene-specific or selection evidence.",
+  "required_ready_seed_count": 1,
+  "stop_panel_after_failed_seed_count": 1,
+  "paired_plan_authorized_only_when_ready": false,
+  "checkpoints": [
+    {
+      "tick": 120,
+      "minimum_alive_count": 80,
+      "minimum_alive_fraction_to_initial": 0.625,
+      "minimum_cumulative_births_per_initial": 0.15,
+      "minimum_living_descendants_per_initial": 0.05,
+      "minimum_mean_generation": 0.05,
+      "maximum_founder_alive_fraction": 0.95,
+      "required_for_final": false,
+      "hard_stop": {
+        "minimum_alive_count": 48,
+        "minimum_alive_fraction_to_initial": 0.375
+      }
+    },
+    {
+      "tick": 360,
+      "minimum_alive_count": 72,
+      "minimum_alive_fraction_to_initial": 0.5625,
+      "minimum_cumulative_births_per_initial": 0.65,
+      "minimum_living_descendants_per_initial": 0.25,
+      "minimum_mean_generation": 0.45,
+      "maximum_founder_alive_fraction": 0.7,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.5,
+      "required_for_final": false,
+      "hard_stop": {
+        "minimum_alive_count": 48,
+        "minimum_alive_fraction_to_initial": 0.375,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.65
+      }
+    },
+    {
+      "tick": 600,
+      "minimum_alive_count": 64,
+      "minimum_alive_fraction_to_initial": 0.5,
+      "minimum_cumulative_births_per_initial": 1.0,
+      "minimum_living_descendants_per_initial": 0.5,
+      "minimum_mean_generation": 0.85,
+      "maximum_founder_alive_fraction": 0.4,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+      "required_for_final": false,
+      "hard_stop": {
+        "minimum_alive_count": 40,
+        "minimum_alive_fraction_to_initial": 0.3125,
+        "minimum_cumulative_births_per_initial": 0.5,
+        "minimum_living_descendants_per_initial": 0.15,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+      }
+    },
+    {
+      "tick": 720,
+      "minimum_alive_count": 64,
+      "minimum_alive_fraction_to_initial": 0.5,
+      "minimum_cumulative_births_per_initial": 1.1,
+      "minimum_living_descendants_per_initial": 0.5,
+      "minimum_mean_generation": 1.0,
+      "maximum_founder_alive_fraction": 0.35,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+      "required_for_final": false,
+      "hard_stop": {
+        "minimum_alive_count": 40,
+        "minimum_alive_fraction_to_initial": 0.3125,
+        "minimum_cumulative_births_per_initial": 0.6,
+        "minimum_living_descendants_per_initial": 0.2,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+      }
+    },
+    {
+      "tick": 840,
+      "minimum_alive_count": 64,
+      "minimum_alive_fraction_to_initial": 0.5,
+      "minimum_cumulative_births_per_initial": 1.2,
+      "minimum_living_descendants_per_initial": 0.5,
+      "minimum_mean_generation": 1.2,
+      "maximum_founder_alive_fraction": 0.3,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+      "required_for_final": true,
+      "hard_stop": {
+        "minimum_alive_count": 40,
+        "minimum_alive_fraction_to_initial": 0.3125,
+        "minimum_cumulative_births_per_initial": 0.7,
+        "minimum_living_descendants_per_initial": 0.2,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+      }
+    }
+  ]
+}

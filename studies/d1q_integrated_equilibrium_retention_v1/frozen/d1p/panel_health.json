@@ -1,0 +1,409 @@
+{
+  "schema": "source-health-gate-report-v2",
+  "source_root": "runs/base/d1p_integrated_ecological_subject_v1/panel",
+  "contract": {
+    "schema": "source-health-contract-v2",
+    "sha256": "c5daff3c5f47ea732fa863bffa02bc11bea3b2babc6b22d895955cdb69cd7fe2",
+    "purpose": "Keep the integrated plural-genome retention panel outside small-population, founder-dominated, or insufficient-generation regimes. This is sample eligibility for persistence screening, not a per-gene effect audit.",
+    "required_ready_seed_count": 3,
+    "paired_plan_authorized_only_when_ready": true,
+    "final_checkpoint": {
+      "tick": 1200,
+      "minimum_alive_count": 64,
+      "minimum_alive_fraction_to_initial": 0.5,
+      "minimum_cumulative_births_per_initial": 1.5,
+      "minimum_living_descendants_per_initial": 0.4,
+      "minimum_mean_generation": 1.2,
+      "maximum_founder_alive_fraction": 0.25,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+      "required_for_final": true,
+      "hard_stop": {
+        "minimum_alive_count": 40,
+        "minimum_alive_fraction_to_initial": 0.3125,
+        "minimum_cumulative_births_per_initial": 0.75,
+        "minimum_living_descendants_per_initial": 0.2,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+      }
+    },
+    "checkpoints": [
+      {
+        "tick": 240,
+        "minimum_alive_count": 96,
+        "minimum_alive_fraction_to_initial": 0.75,
+        "minimum_cumulative_births_per_initial": 0.5,
+        "minimum_living_descendants_per_initial": 0.25,
+        "minimum_mean_generation": 0.3,
+        "maximum_founder_alive_fraction": 0.7,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 1.0,
+        "required_for_final": false,
+        "hard_stop": {
+          "minimum_alive_count": 56,
+          "minimum_alive_fraction_to_initial": 0.4375
+        }
+      },
+      {
+        "tick": 480,
+        "minimum_alive_count": 96,
+        "minimum_alive_fraction_to_initial": 0.75,
+        "minimum_cumulative_births_per_initial": 0.85,
+        "minimum_living_descendants_per_initial": 0.4,
+        "minimum_mean_generation": 0.65,
+        "maximum_founder_alive_fraction": 0.5,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.3,
+        "required_for_final": false,
+        "hard_stop": {
+          "minimum_alive_count": 64,
+          "minimum_alive_fraction_to_initial": 0.5,
+          "minimum_cumulative_births_per_initial": 0.4,
+          "minimum_living_descendants_per_initial": 0.15,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.5
+        }
+      },
+      {
+        "tick": 720,
+        "minimum_alive_count": 80,
+        "minimum_alive_fraction_to_initial": 0.625,
+        "minimum_cumulative_births_per_initial": 1.0,
+        "minimum_living_descendants_per_initial": 0.35,
+        "minimum_mean_generation": 0.8,
+        "maximum_founder_alive_fraction": 0.4,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+        "required_for_final": false,
+        "hard_stop": {
+          "minimum_alive_count": 56,
+          "minimum_alive_fraction_to_initial": 0.4375,
+          "minimum_cumulative_births_per_initial": 0.5,
+          "minimum_living_descendants_per_initial": 0.15,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.5
+        }
+      },
+      {
+        "tick": 960,
+        "minimum_alive_count": 72,
+        "minimum_alive_fraction_to_initial": 0.5625,
+        "minimum_cumulative_births_per_initial": 1.2,
+        "minimum_living_descendants_per_initial": 0.4,
+        "minimum_mean_generation": 1.0,
+        "maximum_founder_alive_fraction": 0.3,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+        "required_for_final": false,
+        "hard_stop": {
+          "minimum_alive_count": 48,
+          "minimum_alive_fraction_to_initial": 0.375,
+          "minimum_cumulative_births_per_initial": 0.6,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.5
+        }
+      },
+      {
+        "tick": 1200,
+        "minimum_alive_count": 64,
+        "minimum_alive_fraction_to_initial": 0.5,
+        "minimum_cumulative_births_per_initial": 1.5,
+        "minimum_living_descendants_per_initial": 0.4,
+        "minimum_mean_generation": 1.2,
+        "maximum_founder_alive_fraction": 0.25,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+        "required_for_final": true,
+        "hard_stop": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.75,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        }
+      }
+    ]
+  },
+  "seed_count": 3,
+  "ready_seed_count": 3,
+  "warning_seed_count": 0,
+  "hard_stopped_seed_count": 0,
+  "ready": true,
+  "paired_plan_authorized": true,
+  "seeds": [
+    {
+      "tick": 1200,
+      "requirements": {
+        "tick": 1200,
+        "minimum_alive_count": 64,
+        "minimum_alive_fraction_to_initial": 0.5,
+        "minimum_cumulative_births_per_initial": 1.5,
+        "minimum_living_descendants_per_initial": 0.4,
+        "minimum_mean_generation": 1.2,
+        "maximum_founder_alive_fraction": 0.25,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+        "required_for_final": true,
+        "hard_stop": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.75,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        }
+      },
+      "metrics": {
+        "tick": 1200,
+        "alive": 876,
+        "alive_fraction_to_initial": 6.84375,
+        "births_total": 986,
+        "cumulative_births_per_initial": 7.703125,
+        "living_descendants_per_initial": 6.625,
+        "mean_generation": 3.3424657534246576,
+        "max_generation": 8,
+        "founder_alive_fraction": 0.0319634703196347,
+        "descendant_alive_fraction": 0.9680365296803652
+      },
+      "previous_metrics": {
+        "tick": 960,
+        "alive": 417,
+        "alive_fraction_to_initial": 3.2578125,
+        "births_total": 493,
+        "cumulative_births_per_initial": 3.8515625,
+        "living_descendants_per_initial": 3.015625,
+        "mean_generation": 2.592326139088729,
+        "max_generation": 7,
+        "founder_alive_fraction": 0.07434052757793765,
+        "descendant_alive_fraction": 0.9256594724220624
+      },
+      "alive_decline_fraction_from_previous_checkpoint": 0.0,
+      "checks": {
+        "alive_count_met": true,
+        "alive_fraction_met": true,
+        "birth_turnover_met": true,
+        "living_descendants_met": true,
+        "mean_generation_met": true,
+        "founder_fraction_met": true,
+        "checkpoint_decline_met": true
+      },
+      "ready": true,
+      "failed_checks": [],
+      "required_for_final": true,
+      "hard_stop": {
+        "enabled": true,
+        "requirements": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.75,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        },
+        "checks": {
+          "alive_count_hard_floor_met": true,
+          "alive_fraction_hard_floor_met": true,
+          "birth_turnover_hard_floor_met": true,
+          "living_descendants_hard_floor_met": true,
+          "checkpoint_decline_hard_floor_met": true
+        },
+        "failed_checks": [],
+        "triggered": false
+      },
+      "runtime_action": "continue",
+      "warning_checks": [],
+      "hard_stop_checks": [],
+      "required_checkpoint_count": 1,
+      "observed_required_checkpoint_count": 1,
+      "runtime_event_count": 5,
+      "runtime_contract_sha256": "c5daff3c5f47ea732fa863bffa02bc11bea3b2babc6b22d895955cdb69cd7fe2",
+      "seed": 95101,
+      "run_dir": "runs/base/d1p_integrated_ecological_subject_v1/panel/seed_95101",
+      "termination": {
+        "schema": "run-termination-v1",
+        "requested_tick": 1200,
+        "completed_tick": 1200,
+        "terminated_early": false,
+        "reason": null,
+        "scientific_effect_interpretation_authorized": null
+      }
+    },
+    {
+      "tick": 1200,
+      "requirements": {
+        "tick": 1200,
+        "minimum_alive_count": 64,
+        "minimum_alive_fraction_to_initial": 0.5,
+        "minimum_cumulative_births_per_initial": 1.5,
+        "minimum_living_descendants_per_initial": 0.4,
+        "minimum_mean_generation": 1.2,
+        "maximum_founder_alive_fraction": 0.25,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+        "required_for_final": true,
+        "hard_stop": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.75,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        }
+      },
+      "metrics": {
+        "tick": 1200,
+        "alive": 715,
+        "alive_fraction_to_initial": 5.5859375,
+        "births_total": 817,
+        "cumulative_births_per_initial": 6.3828125,
+        "living_descendants_per_initial": 5.359375,
+        "mean_generation": 2.8517482517482518,
+        "max_generation": 7,
+        "founder_alive_fraction": 0.04055944055944056,
+        "descendant_alive_fraction": 0.9594405594405594
+      },
+      "previous_metrics": {
+        "tick": 960,
+        "alive": 385,
+        "alive_fraction_to_initial": 3.0078125,
+        "births_total": 444,
+        "cumulative_births_per_initial": 3.46875,
+        "living_descendants_per_initial": 2.7734375,
+        "mean_generation": 2.2181818181818183,
+        "max_generation": 6,
+        "founder_alive_fraction": 0.07792207792207792,
+        "descendant_alive_fraction": 0.922077922077922
+      },
+      "alive_decline_fraction_from_previous_checkpoint": 0.0,
+      "checks": {
+        "alive_count_met": true,
+        "alive_fraction_met": true,
+        "birth_turnover_met": true,
+        "living_descendants_met": true,
+        "mean_generation_met": true,
+        "founder_fraction_met": true,
+        "checkpoint_decline_met": true
+      },
+      "ready": true,
+      "failed_checks": [],
+      "required_for_final": true,
+      "hard_stop": {
+        "enabled": true,
+        "requirements": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.75,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        },
+        "checks": {
+          "alive_count_hard_floor_met": true,
+          "alive_fraction_hard_floor_met": true,
+          "birth_turnover_hard_floor_met": true,
+          "living_descendants_hard_floor_met": true,
+          "checkpoint_decline_hard_floor_met": true
+        },
+        "failed_checks": [],
+        "triggered": false
+      },
+      "runtime_action": "continue",
+      "warning_checks": [],
+      "hard_stop_checks": [],
+      "required_checkpoint_count": 1,
+      "observed_required_checkpoint_count": 1,
+      "runtime_event_count": 5,
+      "runtime_contract_sha256": "c5daff3c5f47ea732fa863bffa02bc11bea3b2babc6b22d895955cdb69cd7fe2",
+      "seed": 95102,
+      "run_dir": "runs/base/d1p_integrated_ecological_subject_v1/panel/seed_95102",
+      "termination": {
+        "schema": "run-termination-v1",
+        "requested_tick": 1200,
+        "completed_tick": 1200,
+        "terminated_early": false,
+        "reason": null,
+        "scientific_effect_interpretation_authorized": null
+      }
+    },
+    {
+      "tick": 1200,
+      "requirements": {
+        "tick": 1200,
+        "minimum_alive_count": 64,
+        "minimum_alive_fraction_to_initial": 0.5,
+        "minimum_cumulative_births_per_initial": 1.5,
+        "minimum_living_descendants_per_initial": 0.4,
+        "minimum_mean_generation": 1.2,
+        "maximum_founder_alive_fraction": 0.25,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+        "required_for_final": true,
+        "hard_stop": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.75,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        }
+      },
+      "metrics": {
+        "tick": 1200,
+        "alive": 1025,
+        "alive_fraction_to_initial": 8.0078125,
+        "births_total": 1126,
+        "cumulative_births_per_initial": 8.796875,
+        "living_descendants_per_initial": 7.734375,
+        "mean_generation": 2.9873170731707317,
+        "max_generation": 9,
+        "founder_alive_fraction": 0.03414634146341464,
+        "descendant_alive_fraction": 0.9658536585365853
+      },
+      "previous_metrics": {
+        "tick": 960,
+        "alive": 531,
+        "alive_fraction_to_initial": 4.1484375,
+        "births_total": 588,
+        "cumulative_births_per_initial": 4.59375,
+        "living_descendants_per_initial": 3.8359375,
+        "mean_generation": 2.310734463276836,
+        "max_generation": 6,
+        "founder_alive_fraction": 0.07532956685499058,
+        "descendant_alive_fraction": 0.9246704331450094
+      },
+      "alive_decline_fraction_from_previous_checkpoint": 0.0,
+      "checks": {
+        "alive_count_met": true,
+        "alive_fraction_met": true,
+        "birth_turnover_met": true,
+        "living_descendants_met": true,
+        "mean_generation_met": true,
+        "founder_fraction_met": true,
+        "checkpoint_decline_met": true
+      },
+      "ready": true,
+      "failed_checks": [],
+      "required_for_final": true,
+      "hard_stop": {
+        "enabled": true,
+        "requirements": {
+          "minimum_alive_count": 40,
+          "minimum_alive_fraction_to_initial": 0.3125,
+          "minimum_cumulative_births_per_initial": 0.75,
+          "minimum_living_descendants_per_initial": 0.2,
+          "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+        },
+        "checks": {
+          "alive_count_hard_floor_met": true,
+          "alive_fraction_hard_floor_met": true,
+          "birth_turnover_hard_floor_met": true,
+          "living_descendants_hard_floor_met": true,
+          "checkpoint_decline_hard_floor_met": true
+        },
+        "failed_checks": [],
+        "triggered": false
+      },
+      "runtime_action": "continue",
+      "warning_checks": [],
+      "hard_stop_checks": [],
+      "required_checkpoint_count": 1,
+      "observed_required_checkpoint_count": 1,
+      "runtime_event_count": 5,
+      "runtime_contract_sha256": "c5daff3c5f47ea732fa863bffa02bc11bea3b2babc6b22d895955cdb69cd7fe2",
+      "seed": 95103,
+      "run_dir": "runs/base/d1p_integrated_ecological_subject_v1/panel/seed_95103",
+      "termination": {
+        "schema": "run-termination-v1",
+        "requested_tick": 1200,
+        "completed_tick": 1200,
+        "terminated_early": false,
+        "reason": null,
+        "scientific_effect_interpretation_authorized": null
+      }
+    }
+  ],
+  "interpretation": "source-qualified-for-next-stage"
+}
