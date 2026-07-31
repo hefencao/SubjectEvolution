@@ -6,4 +6,8 @@ ROOT=Path(__file__).resolve().parents[1]
 def test_version_sources_and_version_docs_agree() -> None:
     report=check(ROOT)
     assert report['passed']
-    assert report['version']=='0.83.0'
+    assert report['version']=='0.84.0'
+    assert report['expected_version_docs']=='docs/v0.84'
+    assert report['current_version_docs_present'] is True
+    assert report['stale_version_docs']==[]
+    assert report['version_specific_docs']==['docs/v0.84']

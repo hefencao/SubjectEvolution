@@ -1,3 +1,26 @@
+## D1-E persistent multiscale resource boundary
+
+```text
+four fixed resource channels
+        ↓ independent toroidal wave modes, periods, phases, diffusion
+persistent moving renewal targets
+        ↓
+coarse-to-fine resource geography on one world grid
+        ↓
+existing inherited sensing radius and affinity-weighted observation port
+```
+
+The `persistent-multiscale-four-resource-renewal-v3` schema is an abiotic world
+contract. It does not inspect entities, lineages, groups, policies, or prior
+results. Four distinct primary spatial-frequency magnitudes are required by
+configuration validation; secondary modes must be non-zero. The run manifest
+records configured cycle magnitudes and approximate wavelengths in grid cells,
+so a claimed multiscale substrate can be checked directly.
+
+The schema reuses the v2 moving-target source/sink renewal and channel-specific
+diffusion, so spatial scale separation remains active after initialization. No
+new resource, action, reward, role, or population protection is introduced.
+
 ## D1-D inherited resource-sensing boundary
 
 ```text

@@ -1,7 +1,7 @@
 {
   "schema": "se-capability-development-v1",
   "capability_id": "d1d-inherited-resource-sensing-v1",
-  "status": "implemented-awaiting-calibration",
+  "status": "calibration-complete",
   "charter_priority": [
     "effective-environmental-diversity",
     "entity-trait-function-capacity-differentiation"
@@ -25,5 +25,13 @@
   "pass_fail_gate": false,
   "ecological_claim_allowed": false,
   "selection_claim_allowed": false,
-  "audit_work_paused": true
+  "audit_work_paused": true,
+  "calibration_result": {
+    "completed_seed_count": 3,
+    "all_contract_checks_passed": true,
+    "paired_alive_difference_inherited_minus_radius_one_median": -14.0,
+    "paired_mean_energy_difference_inherited_minus_radius_one_median": -0.05516970157623291,
+    "interpretation": "broader inherited sensing was consistently costly on the archived non-persistent v1 environment; no ecological or selection claim authorized",
+    "next_substrate": "persistent-multiscale-four-resource-renewal-v3"
+  }
 }

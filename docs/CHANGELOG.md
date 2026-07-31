@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.84.0
+
+- Freezes the supplied D1-D three-seed calibration as a successful mechanism contract with consistently negative short-window inherited-radius outcomes, while retaining the no-gate interpretation boundary.
+- Identifies the active substrate mismatch: D1-D used the archived non-persistent orthogonal v1 environment, so broad sensing was tested after spatial structure could relax rather than under continuously maintained scale diversity.
+- Adds `persistent-multiscale-four-resource-renewal-v3`, requiring four distinct primary spatial scales and non-zero secondary modes while retaining the existing four resource channels and moving-target renewal kernel.
+- Records configured spatial wavelengths and scale separation in run manifests, with matching CPU and device semantics.
+- Adds the D1-E ecosystem-construction study and its ordered source, paired, and result-packaging commands; no reward, role, gate, or ecological claim is introduced.
+- Adds deterministic compact result packaging with optional checkpoint inclusion and backfills a packaging command for D1-D.
+- Retains only the current iteration documentation directory (`docs/v0.84`) in complete project packages, removes older `docs/v0.*` directories, and moves the remaining test fixture to `tests/fixtures/`.
+- Updates project version to 0.84.0.
+
 ## 0.83.0
 
 - Pauses new portfolio/candidate audit work and returns the implementation mainline to the charter priorities of effective environment use and inherited carrier capability.

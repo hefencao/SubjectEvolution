@@ -126,3 +126,28 @@ be supplied rather than reconstructed.
   necessary for exact replay or unfrozen secondary analyses.
 - No reward, cost, threshold, checkpoint tick, response horizon, seed result, or
   world mechanism is changed.
+
+## 11. Durable documentation and result handoff
+
+Complete project packages retain exactly one iteration-specific documentation
+directory: the directory matching the current package major/minor version. Older
+`docs/v0.*` directories are removed. Durable cross-version conclusions belong in
+`PROJECT_STATUS`, `ARCHITECTURE`, `SCIENTIFIC_ISSUES`,
+`PROJECT_GOVERNANCE`, or `CHANGELOG`.
+
+Every active study must provide one ordered Bash command that creates a
+manifested bundle of the files required for the next iteration. Compact bundles
+must state whether checkpoint bytes are included and must not imply exact replay
+capability when they are omitted.
+
+## Current ecosystem-construction check
+
+- D1-D manipulation support is valid; the unexpected negative paired outcome is
+  not caused by checkpoint, genotype, cost, or resource-field mismatch.
+- The source protocol used the archived non-persistent v1 orthogonal environment,
+  so the current task changes from tuning sensing radii to maintaining distinct
+  resource scales in the world substrate.
+- No reward, role, threshold, replacement seed, or post-hoc horizon is added.
+- The current-version-only documentation rule and per-study result-packaging rule are now
+  repository principles with tests and executable support rather than chat-only
+  instructions.

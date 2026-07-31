@@ -22,6 +22,7 @@ from ..cfg import EnvironmentConfig, SimulationConfig, load_config
 
 ORTHOGONAL_ENVIRONMENT_SCHEMA = "orthogonal-four-resource-niche-v1"
 PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA = "orthogonal-four-resource-renewal-v2"
+MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA = "persistent-multiscale-four-resource-renewal-v3"
 SPATIAL_PROCESSING_SUPPORT_SCHEMA = "phase-shifted-channel-processing-support-v1"
 RESOURCE_DIVERSITY_AUDIT_SCHEMA = "resource-environment-diversity-audit-v1"
 RESOURCE_CHANNELS = 4
@@ -32,6 +33,7 @@ def orthogonal_environment_enabled(config: EnvironmentConfig | SimulationConfig)
     return environment.schema in {
         ORTHOGONAL_ENVIRONMENT_SCHEMA,
         PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
+        MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA,
     }
 
 
@@ -87,7 +89,10 @@ def persistent_orthogonal_renewal_enabled(
     config: EnvironmentConfig | SimulationConfig,
 ) -> bool:
     environment = config.environment if isinstance(config, SimulationConfig) else config
-    return environment.schema == PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA
+    return environment.schema in {
+        PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
+        MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA,
+    }
 
 
 def orthogonal_renewal_target_fraction(
@@ -269,6 +274,55 @@ def _effective_dimensions(rows: np.ndarray) -> float:
     denominator = float(np.dot(spectrum, spectrum))
     return float(spectrum.sum() ** 2 / denominator) if denominator > 0.0 else 0.0
 
+
+
+def configured_resource_scale_metrics(
+    environment: EnvironmentConfig,
+    *,
+    grid_x: int,
+    grid_y: int,
+) -> dict[str, Any]:
+    """Describe configured channel wavelengths without interpreting fitness.
+
+    Wave vectors are measured in cycles across the normalized toroidal world.
+    The reported cell wavelengths expose whether a concrete configuration
+    actually presents distinct spatial scales to inherited sensing radii.
+    """
+
+    def rows(vectors: tuple[tuple[float, float], ...]) -> list[dict[str, float]]:
+        result: list[dict[str, float]] = []
+        for x_cycles, y_cycles in vectors:
+            x = float(x_cycles)
+            y = float(y_cycles)
+            magnitude = float(np.hypot(x, y))
+            wavelength = 0.0 if magnitude <= 0.0 else float(min(grid_x, grid_y) / magnitude)
+            result.append(
+                {
+                    "x_cycles": x,
+                    "y_cycles": y,
+                    "cycles_magnitude": magnitude,
+                    "approx_wavelength_cells": wavelength,
+                }
+            )
+        return result
+
+    primary = rows(environment.resource_primary_wave_vectors)
+    secondary = rows(environment.resource_secondary_wave_vectors)
+    wavelengths = sorted(
+        row["approx_wavelength_cells"] for row in primary if row["approx_wavelength_cells"] > 0.0
+    )
+    separation = (
+        float(wavelengths[-1] / wavelengths[0])
+        if len(wavelengths) >= 2 and wavelengths[0] > 0.0
+        else 1.0
+    )
+    return {
+        "schema": "configured-resource-spatial-scales-v1",
+        "primary": primary,
+        "secondary": secondary,
+        "primary_wavelength_separation_ratio": separation,
+        "channel_scale_count": len({round(row["cycles_magnitude"], 12) for row in primary}),
+    }
 
 def resource_field_diversity_metrics(
     resources: Any,
@@ -479,6 +533,8 @@ __all__ = [
     "RESOURCE_DIVERSITY_AUDIT_SCHEMA",
     "build_resource_diversity_audit",
     "diffuse_resource_fields",
+    "MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA",
+    "configured_resource_scale_metrics",
     "orthogonal_base_pattern",
     "orthogonal_environment_enabled",
     "orthogonal_processing_support_multiplier",

@@ -1138,12 +1138,14 @@ def validate_config(cfg: SimulationConfig) -> None:
         "spatially-asynchronous-multiniche-v1",
         "orthogonal-four-resource-niche-v1",
         "orthogonal-four-resource-renewal-v2",
+        "persistent-multiscale-four-resource-renewal-v3",
     }:
         raise ValueError(
             "environment.schema must be 'legacy-four-channel-v1', "
             "'spatially-asynchronous-multiniche-v1', or "
             "'orthogonal-four-resource-niche-v1', or "
-            "'orthogonal-four-resource-renewal-v2'"
+            "'orthogonal-four-resource-renewal-v2', or "
+            "'persistent-multiscale-four-resource-renewal-v3'"
         )
     for name, values in (
         ("resource_temporal_phase_offsets", cfg.environment.resource_temporal_phase_offsets),
@@ -1183,6 +1185,7 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.environment.schema in {
         "orthogonal-four-resource-niche-v1",
         "orthogonal-four-resource-renewal-v2",
+        "persistent-multiscale-four-resource-renewal-v3",
     }:
         if any(int(value) <= 0 for value in cfg.environment.resource_cycle_periods):
             raise ValueError("orthogonal resource cycle periods must be positive")
@@ -1223,6 +1226,23 @@ def validate_config(cfg: SimulationConfig) -> None:
             raise ValueError(
                 "orthogonal resource primary wave vectors must be four distinct non-zero modes"
             )
+        if cfg.environment.schema == "persistent-multiscale-four-resource-renewal-v3":
+            primary_scale_keys = {
+                round(float(x) * float(x) + float(y) * float(y), 12)
+                for x, y in primary_vectors
+            }
+            if len(primary_scale_keys) != 4:
+                raise ValueError(
+                    "multiscale resource renewal requires four distinct primary spatial scales"
+                )
+            secondary_vectors = tuple(
+                (float(vector[0]), float(vector[1]))
+                for vector in cfg.environment.resource_secondary_wave_vectors
+            )
+            if any(abs(x) + abs(y) <= 1e-12 for x, y in secondary_vectors):
+                raise ValueError(
+                    "multiscale resource secondary wave vectors must be non-zero"
+                )
     if cfg.environment.resource_processing_schema not in {
         "disabled",
         "phase-shifted-channel-processing-support-v1",
@@ -1244,7 +1264,10 @@ def validate_config(cfg: SimulationConfig) -> None:
                 "disabled resource processing support requires zero amplitude"
             )
     elif (
-        cfg.environment.schema != "orthogonal-four-resource-renewal-v2"
+        cfg.environment.schema not in {
+            "orthogonal-four-resource-renewal-v2",
+            "persistent-multiscale-four-resource-renewal-v3",
+        }
         or processing_amplitude <= 0.0
     ):
         raise ValueError(
@@ -1454,6 +1477,7 @@ def validate_config(cfg: SimulationConfig) -> None:
             "spatially-asynchronous-multiniche-v1",
             "orthogonal-four-resource-niche-v1",
             "orthogonal-four-resource-renewal-v2",
+            "persistent-multiscale-four-resource-renewal-v3",
         }
     ):
         raise ValueError("resource affinity requires a heterogeneous environment schema")

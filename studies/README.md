@@ -19,3 +19,12 @@ Active capability-development directories may use `capability.json` before any
 result is scientifically frozen. They still keep design, protocol, and ordered
 commands together, but are not accepted by `se-study-result-export` and must not
 pretend that calibration output is a terminal study decision.
+
+## Required result bundles
+
+Every active runbook must contain one numbered `90_pack_results.sh` command. It
+uses `scripts/package_required_results.py` to create a deterministic manifested
+archive containing the study definition, derived analyses, and selected run
+metadata. Set `INCLUDE_CHECKPOINTS=1` only when the recipient needs exact
+checkpoint replay; compact review bundles omit checkpoint bytes while preserving
+the hashes already recorded in plans and results.

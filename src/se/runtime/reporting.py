@@ -45,6 +45,8 @@ from se.env.physiology import field_metrics as physiology_field_metrics
 from se.env.diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
     PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
+    MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA,
+    configured_resource_scale_metrics,
     orthogonal_environment_enabled,
     persistent_orthogonal_renewal_enabled,
     resource_field_diversity_metrics,
@@ -267,6 +269,7 @@ class SimulationReportingMixin:
                     "spatially-asynchronous-multiniche-v1",
                     ORTHOGONAL_ENVIRONMENT_SCHEMA,
                     PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
+                    MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA,
                 }
             ),
             "environment_process": dict(
@@ -602,13 +605,20 @@ class SimulationReportingMixin:
                 "diffusion_rates": list(
                     self.cfg.environment.resource_diffusion_rates
                 ),
+                "configured_spatial_scales": configured_resource_scale_metrics(
+                    self.cfg.environment,
+                    grid_x=self.cfg.world.grid_x,
+                    grid_y=self.cfg.world.grid_y,
+                ),
                 "entity_state_feedback": False,
                 "lineage_feedback": False,
                 "group_feedback": False,
             }
             if persistent_orthogonal_renewal_enabled(self.cfg):
                 manifest["environment_resource_dynamics"]["renewal_contract"] = (
-                    "moving-target-source-sink-v2"
+                    "moving-target-source-sink-v3-multiscale"
+                    if self.cfg.environment.schema == MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA
+                    else "moving-target-source-sink-v2"
                 )
             manifest["environment_resource_diversity_initial"] = (
                 resource_field_diversity_metrics(

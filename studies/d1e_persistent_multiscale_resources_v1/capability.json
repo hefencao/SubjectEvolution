@@ -1,0 +1,60 @@
+{
+  "schema": "se-ecosystem-substrate-v1",
+  "capability_id": "d1e-persistent-multiscale-resources-v1",
+  "status": "implemented-awaiting-calibration",
+  "charter_priority": [
+    "effective-environmental-diversity",
+    "entity-trait-function-capacity-differentiation"
+  ],
+  "environment_schema": "persistent-multiscale-four-resource-renewal-v3",
+  "resource_channels": 4,
+  "primary_spatial_modes": [
+    [
+      1.0,
+      0.0
+    ],
+    [
+      1.0,
+      1.0
+    ],
+    [
+      2.0,
+      1.0
+    ],
+    [
+      4.0,
+      -1.0
+    ]
+  ],
+  "secondary_spatial_modes": [
+    [
+      1.0,
+      2.0
+    ],
+    [
+      2.0,
+      -1.0
+    ],
+    [
+      3.0,
+      2.0
+    ],
+    [
+      5.0,
+      2.0
+    ]
+  ],
+  "resource_sensing_radius_levels": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "entity_state_feedback": false,
+  "lineage_feedback": false,
+  "group_feedback": false,
+  "pass_fail_gate": false,
+  "ecological_claim_allowed": false,
+  "selection_claim_allowed": false,
+  "audit_work_paused": true
+}

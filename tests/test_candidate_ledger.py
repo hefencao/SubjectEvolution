@@ -459,7 +459,7 @@ def test_recording_duplicate_hydrates_partial_workspace(tmp_path: Path) -> None:
     path.write_text(json.dumps(partial), encoding="utf-8")
 
     assessment = json.loads(
-        Path("docs/v0.78/D3S_SUPPLIED_ASSESSMENT.json").read_text(encoding="utf-8")
+        Path("tests/fixtures/d3s_supplied_assessment.json").read_text(encoding="utf-8")
     )
     record_assessment(path, assessment, include_builtin_baseline=True)
     hydrated = load_ledger(path)

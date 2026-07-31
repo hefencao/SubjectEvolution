@@ -1,0 +1,45 @@
+{
+  "schema": "d1-resource-sensing-shared-checkpoint-plan-v1",
+  "source_root": "runs/base/d1d_inherited_resource_sensing_v1/pilot",
+  "checkpoint_tick": 480,
+  "horizon_ticks": 120,
+  "runtime_root": "runs/interventions/d1d_inherited_resource_sensing_v1/pilot",
+  "sources": [
+    {
+      "seed": 83001,
+      "run_dir": "runs/base/d1d_inherited_resource_sensing_v1/pilot/seed_83001",
+      "checkpoint_path": "runs/base/d1d_inherited_resource_sensing_v1/pilot/seed_83001/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "aa83014fbf274d41e8fc7d011116a065dd20c13152e93ca766ba8465ea0cd13d",
+      "checkpoint_tick": 480,
+      "resolved_config_sha256": "085abbe46e7ae7b137cc77a7370091fe701a6a96e0717e4d17b1159b2497a6e3"
+    },
+    {
+      "seed": 83002,
+      "run_dir": "runs/base/d1d_inherited_resource_sensing_v1/pilot/seed_83002",
+      "checkpoint_path": "runs/base/d1d_inherited_resource_sensing_v1/pilot/seed_83002/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "4944f50303cd81f99094d6bae51dde6d945cf8a7daaebb99f86b6dc26dc7cb52",
+      "checkpoint_tick": 480,
+      "resolved_config_sha256": "4ce0f21a43766c2fb1b1efaba02221594caf8ee4ac28317ff4e83823bc8fbacd"
+    },
+    {
+      "seed": 83003,
+      "run_dir": "runs/base/d1d_inherited_resource_sensing_v1/pilot/seed_83003",
+      "checkpoint_path": "runs/base/d1d_inherited_resource_sensing_v1/pilot/seed_83003/checkpoint_00000480.sechk",
+      "checkpoint_sha256": "f28030624232e0e00db3d71c6ebd66b317e995d1951b53dc6ad65a6eaf8762ed",
+      "checkpoint_tick": 480,
+      "resolved_config_sha256": "bd53d5d9bfeda1763e88b9ea73da61e9c19e61950d834f08fbbd9c2e7da46d83"
+    }
+  ],
+  "branches": [
+    "inherited-radius",
+    "radius-one-neutral"
+  ],
+  "intervention": "neutralize-resource-sensing-radius",
+  "paired_randomness": true,
+  "genotype_preserved": true,
+  "resource_fields_preserved_at_intervention": true,
+  "structure_use_development_costs_preserved": true,
+  "pass_fail_gate": false,
+  "ecological_claim_authorized": false,
+  "selection_claim_authorized": false
+}

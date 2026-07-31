@@ -11,6 +11,7 @@ from .recycling import initialize_resource_residue, update_resource_recycling
 from .diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
     PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
+    MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA,
     diffuse_resource_fields,
     normalized_grid as diversity_normalized_grid,
     orthogonal_base_pattern,
@@ -50,6 +51,7 @@ class Environment:
         elif cfg.environment.schema in {
             ORTHOGONAL_ENVIRONMENT_SCHEMA,
             PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
+            MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA,
         }:
             xnorm, ynorm = self._normalized_grid(xx, yy)
             base_pattern = orthogonal_base_pattern(
@@ -88,6 +90,9 @@ class Environment:
                 self.RESOURCE_CHANNELS, dtype=np.float64
             )
             self.total_resource_harvest_roundoff = np.zeros(
+                self.RESOURCE_CHANNELS, dtype=np.float64
+            )
+            self.last_resource_residue_released = np.zeros(
                 self.RESOURCE_CHANNELS, dtype=np.float64
             )
         self.hazard = self._hazard_pattern(0)
@@ -454,6 +459,7 @@ class Environment:
         if self.cfg.environment.schema in {
             ORTHOGONAL_ENVIRONMENT_SCHEMA,
             PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
+            MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA,
         }:
             resources = diffuse_resource_fields(
                 resources, self.cfg.environment.resource_diffusion_rates, xp=np

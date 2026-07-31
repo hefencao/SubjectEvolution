@@ -1,105 +1,70 @@
 # SE project status
 
-Version: **0.83.0**
+Version: **0.84.0**
 
 ## Current development direction
 
 Audit expansion is paused. Following `PROJECT_CHARTER`, the active mainline is
-ecosystem substrate construction and inherited carrier capability. D1-D adds an
-opt-in, role-free inherited resource-sensing scale to the existing four-resource
-utility gradient. Morphology coordinate 7 selects radius 1, 2, 4, or 8; broader
-scales lose fine locality and pay explicit maintenance, use, and development
-energy costs.
+effective environmental diversity plus inherited carrier capability. D1-D's
+resource-sensing mechanism is implemented and calibrated; D1-E now supplies a
+persistent multiscale resource landscape so inherited radii encounter distinct
+coarse and fine spatial structure rather than a field that relaxes toward a
+uniform carrying-capacity surface.
 
-The cost-preserving intervention `neutralize-resource-sensing-radius` fixes only
-the effective gradient radius at one while retaining genotype, inherited
-capacity, all three costs, resource fields, actions, and keyed randomness. The
-first three-seed shared-checkpoint run is substrate calibration with no gate and
-no ecological or selection claim. Ordered commands live under
-`studies/d1d_inherited_resource_sensing_v1/commands/`.
+## D1-D calibration result
 
-## Current result
+The supplied three-seed shared-checkpoint result passes every registered
+mechanism contract: checkpoints match, genotype and resource fields are
+preserved, neutral branches use effective radius one, and all branches retain
+registered costs. The inherited-radius branch ends with 15, 9, and 14 fewer
+living entities than the cost-preserving radius-one branch; median paired alive
+difference is -14 and median paired mean-energy difference is about -0.0552.
 
-D3-T has completed its preregistered screen, disjoint-seed replication, and
-exact-protocol confirmation under the same acute fixed-checkpoint protocol.
+The source protocol used `orthogonal-four-resource-niche-v1`, whose orthogonal
+geometry is not continuously maintained by moving-target renewal. The result is
+therefore a successful mechanism calibration plus a substrate mismatch. It does
+not authorize an adaptation, niche, coexistence, or selection claim.
 
-Confirmation result:
+## Active D1-E substrate
 
-- 8/8 seeds are eligible;
-- 8/8 manipulation contracts pass;
-- 8/8 effects retain the screen and replication direction;
-- equal-seed median relative effect: about **+2.827%**;
-- unchanged practical threshold: **2%**;
-- terminal decision: `confirmed-acute`.
+`persistent-multiscale-four-resource-renewal-v3` preserves the existing four
+resource channels and conservative interaction kernel. Each channel receives a
+distinct primary toroidal spatial frequency, independent secondary mode, cycle
+period, phase, and diffusion rate. The moving renewal target maintains these
+scale differences without entity, lineage, group, or result feedback.
 
-Across the three disjoint panels, neutralizing spatial-processing support raises
-cumulative realized resource conversion by median relative effects of about
-3.026%, 2.546%, and 2.827%. Active support is therefore repeatedly acute-
-suppressive for this registered estimand. This is not a reward, adaptive-benefit
-claim, stable-niche result, population source rule, or long-horizon selection
-result.
+The active three-seed source and paired calibration commands live under
+`studies/d1e_persistent_multiscale_resources_v1/commands/`. This remains a
+substrate calibration with no pass/fail gate.
 
-## D3-T stage state
+## D3-T frozen result
 
-- study: `d3t-spatial-processing-conversion-v1`;
-- candidate: `spatial-processing-conversion-acute-effect-v1`;
-- family: `spatial-processing-support` revision 1;
-- frozen stages: screen, replication, and confirmation;
-- candidate state: terminal `confirmed-acute`;
-- response window: 120 ticks from tick-480 checkpoints;
-- practical threshold: 2%;
-- independent unit: seed;
-- selection claim allowed: false.
+D3-T remains terminal `confirmed-acute`: screen, disjoint-seed replication, and
+exact-protocol confirmation all retain the registered direction and exceed the
+unchanged 2% acute practical threshold. The result remains bounded to the
+registered fixed-checkpoint estimand and does not establish long-horizon
+selection, stable niches, or adaptive benefit.
 
-The canonical design, protocols, ordered historical commands, and immutable
-evidence are under `studies/d3t_spatial_processing_conversion_v1/`.
+## Result packaging boundary
 
-## Compact-result boundary
-
-A verified compact result bundle is sufficient to import the scientific
-decision and continue project development when it contains the study identity,
-protocols, frozen stage evidence, chain lock, and file manifest. Raw runtime and
-checkpoints are not required for decision import, but remain required for exact
-checkpoint replay or new analyses that were not frozen.
-
-`se-study-result-import` validates the complete bundle in a temporary workspace,
-prohibits rewriting existing stages, regenerates `RUN_CHAIN.md`, and commits the
-new frozen chain atomically. `se-study-result-export` creates the canonical
-self-describing deterministic archive. Legacy frozen-only archives remain
-importable when the target project already contains matching study protocols.
-
-## Workspace boundary
-
-- study definitions and frozen chains: `studies/`;
-- source trajectories and checkpoints: `runs/base/`;
-- intervention branch runtime: `runs/interventions/`;
-- derived assessments and audits: `analyses/`;
-- mutable decision overlays: `state/decisions/`;
-- immutable release decisions: `protocols/decisions/` and installed package resources.
-
-## Mechanism-family state
-
-- `knowledge-policy` revision 1: closed by D3-Q;
-- `functional-modules` revision 1: closed by D3-S;
-- `resource-affinity` revision 1: D3-O terminal, with no replacement specification;
-- `spatial-processing-support` revision 1: open family with D3-T terminal as confirmed acute.
-
-Earlier screen and replication promotions no longer keep a candidate open after
-a later terminal decision. The effective portfolio state is now
-`scientific-revision-required`.
+Every active study provides one numbered Bash script that packages the files
+needed for the next iteration. The deterministic compact bundle includes study
+definitions, protocols, analyses, run metadata, and a file manifest. Checkpoint
+bytes are omitted by default but can be included explicitly when exact replay is
+required. Project `docs/` retains the current iteration directory `docs/v0.84/` plus
+durable canonical documents; older `docs/v0.*` directories are not shipped.
 
 ## Current task
 
-Keep D3-T frozen and pause portfolio/candidate audit work. Execute the D1-D
-three-seed source pilot and its cost-preserving shared-checkpoint radius-one
-neutralization. Inspect whether inherited radii remain expressed, costs are
-material but not immediately destructive, and the direct observation interface
-is active. Do not promote the calibration into an ecological or selection claim.
+Run the D1-E three-seed source pilot and cost-preserving radius-one paired
+calibration. Inspect whether distinct spatial scales remain present at tick 480,
+whether inherited radii remain expressed, and whether paired effects are
+non-degenerate. Do not add a threshold or ecological interpretation post hoc.
 
 ## Still incomplete
 
-- causal decomposition of why occupied/requested flow encounters net suppressive support;
-- any long-horizon selection interpretation;
-- a stable common post-bottleneck source rule;
-- causal decomposition of founder-lineage contraction;
+- repeated evidence that distinct inherited sensing scales support conditional
+  outcomes under persistent multiscale resource geography;
+- coexistence, environment reversal, and removal tests required for a niche claim;
+- long-horizon selection interpretation;
 - device-resident action settlement, lifecycle, and graph updates.

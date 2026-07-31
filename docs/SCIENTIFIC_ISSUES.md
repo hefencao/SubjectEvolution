@@ -79,3 +79,18 @@ Implemented code is not automatically empirical evidence.
 ## GPU allocator stability is not a biological intervention
 
 Long-run failure caused by unused allocator-cache retention must be corrected before interpreting incomplete horizons. Releasing unused blocks does not alter population state or scientific mechanisms. Conversely, silently capping entities, dropping knowledge copies or moving to CPU under pressure would change either the world or execution contract and is not part of v0.70.
+
+## Inherited sensing requires persistent spatial scale structure
+
+The first D1-D calibration proves that inherited sensing radius reaches the
+observation boundary and that radius-one neutralization preserves genotype,
+resource fields, random keys, and registered costs. All three inherited-radius
+branches nevertheless end with fewer living entities and lower mean energy than
+the cost-preserving neutral branches.
+
+The source configuration used `orthogonal-four-resource-niche-v1`. That schema
+uses orthogonal geometry at initialization but does not continuously renew
+channel-specific moving spatial targets. The result therefore cannot distinguish
+"broad sensing is intrinsically harmful" from "the world no longer contains
+useful broad-scale structure." D1-E addresses the latter substrate gap first by
+maintaining distinct channel wavelengths through abiotic moving-target renewal.

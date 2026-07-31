@@ -38,7 +38,7 @@ RENEWAL_SCHEMA = "moving-target-source-sink-v2"
 
 def _require(cfg: SimulationConfig) -> None:
     validate_config(cfg)
-    if not persistent_orthogonal_renewal_enabled(cfg):
+    if cfg.environment.schema != PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA:
         raise ValueError(
             "D3-D requires environment schema orthogonal-four-resource-renewal-v2"
         )

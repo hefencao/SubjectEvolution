@@ -64,7 +64,7 @@ def build_plan(cfg: SimulationConfig, seeds: Iterable[int], horizon: int) -> dic
         "horizon_ticks": int(horizon),
         "shared_checkpoint_tick": 0,
         "branches": list(BRANCHES),
-        "environment_schema": PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
+        "environment_schema": cfg.environment.schema,
         "processing_support_schema": SPATIAL_PROCESSING_SUPPORT_SCHEMA,
         "processing_support_amplitude": float(
             cfg.environment.resource_processing_support_amplitude
