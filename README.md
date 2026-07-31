@@ -1,37 +1,38 @@
-# SE v0.94
+# SE v0.95
 
 Reference implementation for nested-subject existence and ecological evolution
 simulation.
 
 ## Current direction
 
-D1-N is now formally qualified: seeds 93101--93103 all completed tick 480 under
-one canonical `source-health-contract-v2`, passed every required-final condition,
-and triggered no warning or catastrophic hard-stop. This establishes a healthy
-multi-generation turnover substrate, but not an evolutionary result.
+D1-N qualified a healthy multi-generation turnover substrate. D1-O then showed
+that the inherited conservative offspring-investment interface preserves that
+substrate on all three independent seeds 94101--94103.
 
-v0.94 adds D1-O, the capability-affordability and maturation boundary. The
-qualified D1-N configuration is frozen as compact evidence. A conservative
-per-capita cost budget is derived from the weakest formal source, and exactly one
-existing inherited interface is attached: morphology gene 6 selects a bounded,
-conservative parent-to-newborn endowment. The four levels average to the fixed
-0.9 substrate endowment, so the random initial population receives no mean event-
-debit increase. Paired commands are intentionally absent until the attached-
-capability source re-passes the unchanged health gate.
+v0.95 corrects the iteration strategy. The qualified source is not a one-gene
+organism: it already contains 704 inherited coordinates spanning morphology,
+action policy, knowledge routing, memory, sparse selection, capacities,
+functional modules and physiology. Its environment already contains four
+asynchronous resource fields with distinct body effects, plus oxygen, terrain,
+wear and mortality-trace structure.
+
+D1-P therefore stops adding and auditing one isolated gene at a time. It freezes
+the whole qualified subject-environment system as one integrated baseline, runs
+a bounded independent multi-generation panel, and screens which inherited
+coordinates or blocks remain present, concentrate, thin or disappear. Only
+repeated cross-seed problems with matching expression/use or physical evidence
+may motivate later adjustment.
 
 ## Workspace layout
 
-- [`studies/`](studies/README.md): study design, protocols, declarative workflows, and frozen evidence.
-- [`runs/`](runs/README.md): source trajectories, intervention branches, and checkpoints.
-- [`analyses/`](analyses/README.md): derived results and compact reports.
-- [`state/`](state/README.md): mutable local decision overlays and generated configs.
-- [`protocols/`](protocols/README.md): project-wide registries and immutable release decisions.
-- [`configs/`](configs/README.md): reusable project-level configuration presets.
+- [`studies/`](studies/README.md): study design, protocols, workflows and frozen evidence.
+- [`runs/`](runs/README.md): runtime trajectories and checkpoints.
+- [`analyses/`](analyses/README.md): derived reports, including compact persistence scans.
+- [`state/`](state/README.md): ignored generated configs and local overlays.
+- [`protocols/`](protocols/README.md): project-wide registries and release decisions.
+- [`configs/`](configs/README.md): reusable presets.
 
 ## Configure external result storage
-
-Compact result archives must not be written into the project tree. Configure one
-project-local pointer after editable installation:
 
 ```text
 mkdir -p ../SubjectEvolution-results
@@ -39,26 +40,24 @@ se-study config --set-result-dir ../SubjectEvolution-results
 se-study config
 ```
 
-The setting is stored in ignored `.se-workspace.toml`; it does not enter release
-artifacts or scientific protocol identity.
+The pointer lives in ignored `.se-workspace.toml` and does not affect protocol
+identity or release artifacts.
 
-## D1-O workflow
+## D1-P workflow
 
 ```text
-se-study show studies/d1o_budgeted_offspring_investment_v1
-se-study run studies/d1o_budgeted_offspring_investment_v1 budget-check --dry-run
-se-study run studies/d1o_budgeted_offspring_investment_v1 prepare-config --dry-run
+se-study show studies/d1p_integrated_ecological_subject_v1
+se-study run studies/d1p_integrated_ecological_subject_v1 baseline-check --dry-run
+se-study run studies/d1p_integrated_ecological_subject_v1 prepare-config --dry-run
+se-study run studies/d1p_integrated_ecological_subject_v1 integrated-panel --dry-run
 ```
 
-Every workflow parameter is declared and can be overridden explicitly. The
-resolved argv is printed before execution, undeclared parameters are rejected,
-and no shell is used.
+No paired or per-gene effect command is declared in D1-P.
 
 ## Validation and packaging
 
-Use `make conda-sync` only after changing version metadata, entry points,
-dependencies, package structure, or the editable checkout location. Normal
-validation remains:
+Run `make conda-sync` only after changing package metadata, entry points,
+dependencies, package structure or editable checkout location. Normal validation:
 
 ```text
 make test
@@ -66,9 +65,8 @@ make conda-check
 make parity-gpu
 ```
 
-`make package` builds a disposable archive copy, removes old iteration notes only
-from that copy, and keeps the current v0.94 note. Local history under `docs/迭代/`
-is never inspected or deleted by version consistency or `conda-sync`.
+`make package` builds a disposable archive copy and keeps only the current v0.95
+iteration note. Local history under `docs/迭代/` remains untouched.
 
 ## Current documents
 
@@ -78,4 +76,4 @@ is never inspected or deleted by version consistency or `conda-sync`.
 - [Governance principles](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.94 D1-O iteration](docs/迭代/v0.94_D1-O_能力接入预算与有界后代投入.md)
+- [v0.95 D1-P iteration](docs/迭代/v0.95_D1-P_多元生态主体与基因存续扫描.md)

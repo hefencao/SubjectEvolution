@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.95.0
+
+- Records D1-O seeds 94101--94103 as complete healthy-turnover passes under the unchanged v2 contract.
+- Corrects the iteration unit from one isolated gene plus repeated audit to one integrated plural subject-environment panel.
+- Freezes the qualified D1-O source and verifies that it already contains 704 inherited coordinates across morphology, policy, knowledge routing, memory, capacities, functional modules and physiology.
+- Adds `se-integrated-baseline`, which rejects missing genome/environment axes and copies the qualified config byte-for-byte rather than attaching another capability.
+- Adds `se-gene-persistence`, a checkpoint-based equal-seed screen for retained, concentrated, thinned and lost inherited coordinates; it explicitly authorizes no causal or selection claim.
+- Adds the D1-P declarative workflow with bounded panel health, persistence scanning and external result packaging; no paired or candidate-ledger step is declared.
+- Updates project version to 0.95.0.
+
 ## 0.94.0
 
 - Freezes the supplied D1-N formal qualification: all three seeds complete tick 480, pass the same canonical v2 contract, and show multi-generation founder replacement without warning or hard-stop.

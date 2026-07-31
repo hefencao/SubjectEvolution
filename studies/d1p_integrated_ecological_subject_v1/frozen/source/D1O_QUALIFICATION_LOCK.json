@@ -1,0 +1,46 @@
+{
+  "schema": "d1o-qualified-integrated-substrate-lock-v1",
+  "qualified": true,
+  "seeds": [
+    94101,
+    94102,
+    94103
+  ],
+  "files": [
+    {
+      "path": "seeds/seed_94101_summary.json",
+      "size": 35191,
+      "sha256": "59fe0ab1c43eb3c591eba31e019f319b147bf57365e9ac0f804376fd53773965"
+    },
+    {
+      "path": "seeds/seed_94102_summary.json",
+      "size": 35143,
+      "sha256": "a625bb6e9b8bf5e7f3f007d46d6b6c8e5114c3b669f942488fd40e7a14b1ae5d"
+    },
+    {
+      "path": "seeds/seed_94103_summary.json",
+      "size": 35156,
+      "sha256": "e78cfc9c85772395c8645d08509ad5febe94f725e30f805ff0f18217acda120c"
+    },
+    {
+      "path": "source_config.json",
+      "size": 14564,
+      "sha256": "7d4317eb9424d46afef417e9580ae3acbd3ca8ddb0e847860e980aae385afb13"
+    },
+    {
+      "path": "source_config.json.manifest.json",
+      "size": 1590,
+      "sha256": "6fbbef2480a9c6704181617e487a6c9d07efb35f895c017ed91fcb5a060acf94"
+    },
+    {
+      "path": "source_health_gate.json",
+      "size": 14658,
+      "sha256": "ee18c2842e6d7a8d5b4b30e09cc2b68502f8f1cea4f0b5a56622bbefa4be31e3"
+    },
+    {
+      "path": "source_health_gate.md",
+      "size": 782,
+      "sha256": "bf30b4f88e45bdf592de57247e458bbb8a51b6c6bdd57b2c125b6fb3a7e4dfed"
+    }
+  ]
+}

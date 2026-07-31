@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import os
 from pathlib import Path
 import subprocess
@@ -41,24 +42,30 @@ def main() -> None:
             str(docs / "CONDA_EDITABLE_VALIDATION_REPORT.json"),
         ],
     ]
-    processes = [
-        subprocess.Popen(
+    def execute(command: list[str]) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
             command,
             cwd=project,
             env=os.environ.copy(),
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            check=False,
         )
-        for command in commands
-    ]
+
+    # Drain both subprocess outputs concurrently. Waiting on one Popen pipe while
+    # the other child fills its pipe can deadlock a long conda-check run.
+    with ThreadPoolExecutor(max_workers=len(commands)) as executor:
+        futures = [executor.submit(execute, command) for command in commands]
+        results = [future.result() for future in futures]
+
     failed = False
     labels = ("full tests", "editable verification")
-    for label, command, process in zip(labels, commands, processes, strict=True):
-        stdout, _ = process.communicate()
+    for label, command, result in zip(labels, commands, results, strict=True):
+        stdout = result.stdout or ""
         print(f"\n===== {label} =====")
         print(stdout, end="" if stdout.endswith("\n") else "\n")
-        if process.returncode != 0:
+        if result.returncode != 0:
             failed = True
             print(f"FAILED: {' '.join(command)}", file=sys.stderr)
     raise SystemExit(1 if failed else 0)

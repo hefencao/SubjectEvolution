@@ -1,3 +1,23 @@
+# SE architecture
+
+## D1-P integrated baseline and persistence boundary
+
+```text
+qualified D1-O source (704 inherited coordinates)
+        +
+four asynchronous resources + oxygen + terrain + wear + mortality trace
+        ↓ byte-identical integrated config
+three independent bounded multi-generation runs
+        ↓ trusted thin checkpoints
+cross-seed coordinate/block persistence scan
+        ↓
+only repeated thinning/loss + expression/use/physical mismatch may trigger adjustment
+```
+
+`se-integrated-baseline` changes no world or genome field. It verifies required inherited blocks and independent environmental axes, then copies the qualified source byte-for-byte with a manifest. `se-gene-persistence` reads trusted simulator checkpoints with `allow_pickle=False`, compares the first and final registered checkpoints per seed, and aggregates statuses by equal-seed quorum. The JSON retains every coordinate; Markdown lists flagged coordinates compactly.
+
+Persistence status is structural evidence only. It cannot establish benefit, harm, selection, adaptation, niche occupation or causal effect. Per-gene shared-checkpoint branches are not generated automatically.
+
 ## D1-E persistent multiscale resource boundary
 
 ```text

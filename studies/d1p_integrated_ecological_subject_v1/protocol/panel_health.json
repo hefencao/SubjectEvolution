@@ -1,0 +1,96 @@
+{
+  "schema": "source-health-contract-v2",
+  "purpose": "Keep the integrated plural-genome retention panel outside small-population, founder-dominated, or insufficient-generation regimes. This is sample eligibility for persistence screening, not a per-gene effect audit.",
+  "required_ready_seed_count": 3,
+  "stop_panel_after_failed_seed_count": 1,
+  "paired_plan_authorized_only_when_ready": true,
+  "checkpoints": [
+    {
+      "tick": 240,
+      "minimum_alive_count": 96,
+      "minimum_alive_fraction_to_initial": 0.75,
+      "minimum_cumulative_births_per_initial": 0.5,
+      "minimum_living_descendants_per_initial": 0.25,
+      "minimum_mean_generation": 0.3,
+      "maximum_founder_alive_fraction": 0.7,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 1.0,
+      "required_for_final": false,
+      "hard_stop": {
+        "minimum_alive_count": 56,
+        "minimum_alive_fraction_to_initial": 0.4375
+      }
+    },
+    {
+      "tick": 480,
+      "minimum_alive_count": 96,
+      "minimum_alive_fraction_to_initial": 0.75,
+      "minimum_cumulative_births_per_initial": 0.85,
+      "minimum_living_descendants_per_initial": 0.4,
+      "minimum_mean_generation": 0.65,
+      "maximum_founder_alive_fraction": 0.5,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.3,
+      "required_for_final": false,
+      "hard_stop": {
+        "minimum_alive_count": 64,
+        "minimum_alive_fraction_to_initial": 0.5,
+        "minimum_cumulative_births_per_initial": 0.4,
+        "minimum_living_descendants_per_initial": 0.15,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.5
+      }
+    },
+    {
+      "tick": 720,
+      "minimum_alive_count": 80,
+      "minimum_alive_fraction_to_initial": 0.625,
+      "minimum_cumulative_births_per_initial": 1.0,
+      "minimum_living_descendants_per_initial": 0.35,
+      "minimum_mean_generation": 0.8,
+      "maximum_founder_alive_fraction": 0.4,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+      "required_for_final": false,
+      "hard_stop": {
+        "minimum_alive_count": 56,
+        "minimum_alive_fraction_to_initial": 0.4375,
+        "minimum_cumulative_births_per_initial": 0.5,
+        "minimum_living_descendants_per_initial": 0.15,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.5
+      }
+    },
+    {
+      "tick": 960,
+      "minimum_alive_count": 72,
+      "minimum_alive_fraction_to_initial": 0.5625,
+      "minimum_cumulative_births_per_initial": 1.2,
+      "minimum_living_descendants_per_initial": 0.4,
+      "minimum_mean_generation": 1.0,
+      "maximum_founder_alive_fraction": 0.3,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+      "required_for_final": false,
+      "hard_stop": {
+        "minimum_alive_count": 48,
+        "minimum_alive_fraction_to_initial": 0.375,
+        "minimum_cumulative_births_per_initial": 0.6,
+        "minimum_living_descendants_per_initial": 0.2,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.5
+      }
+    },
+    {
+      "tick": 1200,
+      "minimum_alive_count": 64,
+      "minimum_alive_fraction_to_initial": 0.5,
+      "minimum_cumulative_births_per_initial": 1.5,
+      "minimum_living_descendants_per_initial": 0.4,
+      "minimum_mean_generation": 1.2,
+      "maximum_founder_alive_fraction": 0.25,
+      "maximum_alive_decline_fraction_from_previous_checkpoint": 0.4,
+      "required_for_final": true,
+      "hard_stop": {
+        "minimum_alive_count": 40,
+        "minimum_alive_fraction_to_initial": 0.3125,
+        "minimum_cumulative_births_per_initial": 0.75,
+        "minimum_living_descendants_per_initial": 0.2,
+        "maximum_alive_decline_fraction_from_previous_checkpoint": 0.6
+      }
+    }
+  ]
+}

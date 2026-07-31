@@ -2,6 +2,17 @@
 
 Run this check once per iteration before selecting the next experiment or implementation task.
 
+## 0. Integration-first iteration boundary
+
+Once a healthy substrate already contains multiple inherited mechanisms and matched environmental axes, the default iteration unit is the integrated system, not one gene. Run a bounded multi-generation panel, identify cross-seed thinning, disappearance, non-expression, or shared physical mismatch, and adjust only those problems. Do not automatically create one environment and one paired audit for every gene. Health gates protect sample validity; they are not a replacement candidate portfolio.
+
+## v0.95 check
+
+- D1-O passed all three independent source-health runs.
+- The current config already contains 704 inherited coordinates and multiple environmental axes.
+- The scientific task changes from isolated attachment/audit cycling to one integrated retention panel.
+- No threshold, reward, genotype-specific subsidy, or ecological role is added.
+
 ## 1. Data versus expectation
 
 Determine whether an unexpected result comes from invalid support, failed manipulation, stale reporting, numerical inconsistency, or a genuine small/negative effect. Adjust the current task only from the identified cause; do not compensate by lowering thresholds, replacing failed seeds, extending horizons post hoc, or adding a reward.

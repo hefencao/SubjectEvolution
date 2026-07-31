@@ -1,0 +1,31 @@
+{
+  "schema": "d1-capability-source-config-v1",
+  "template": "studies/d1n_staged_turnover_qualification_v1/frozen/qualification/source_config.json",
+  "output": "state/studies/d1o_budgeted_offspring_investment_v1/source_config.json",
+  "config_sha256": "7d4317eb9424d46afef417e9580ae3acbd3ca8ddb0e847860e980aae385afb13",
+  "manifest_path": "state/studies/d1o_budgeted_offspring_investment_v1/source_config.json.manifest.json",
+  "budget": "studies/d1o_budgeted_offspring_investment_v1/frozen/budget/capability_budget.json",
+  "budget_sha256": "72833a45a21e860c6c9b7de643524997ca7ada80ba0875a32b1bbe3c10fc717e",
+  "capability": "studies/d1o_budgeted_offspring_investment_v1/protocol/capability.json",
+  "capability_sha256": "2c71fd83e80753d31a4743f4aa150249503559d418d99677eb2a5b11b7224c72",
+  "capability_id": "bounded-inherited-offspring-investment-v1",
+  "purpose": "budgeted-capability-source-health-only",
+  "new_gene_added": false,
+  "existing_gene_activated": true,
+  "physical_substrate_unchanged": true,
+  "changed_paths": [
+    "entities.reproduction_investment_levels",
+    "entities.reproduction_schema"
+  ],
+  "cost_and_maturation_validation": {
+    "recurring_cost_per_entity_tick": 0.0,
+    "extra_development_energy_per_newborn": 0.0,
+    "baseline_offspring_endowment": 0.9,
+    "mean_offspring_endowment": 0.9,
+    "maximum_event_debit_deviation": 0.15000000000000002,
+    "minimum_generations_before_effect_window": 1
+  },
+  "paired_effect_interpretation_authorized": false,
+  "evolutionary_interpretation_authorized": false,
+  "next_gate": "source-health-contract-v2"
+}

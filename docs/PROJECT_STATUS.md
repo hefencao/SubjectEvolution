@@ -1,70 +1,72 @@
 # SE project status
 
-Version: **0.94.0**
+Version: **0.95.0**
 
 ## Current development direction
 
-The demographic-substrate task has passed its formal gate. D1-N is frozen as a
-qualified healthy-turnover substrate. Audit expansion remains paused: the next
-scientific task is one budgeted capability attachment followed by a fresh source-
-health qualification, not portfolio screening or long-horizon interpretation.
+The healthy-turnover task is complete for the current integrated source. D1-N
+qualified the shared physical substrate. D1-O independently re-qualified that
+substrate after enabling inherited conservative offspring investment.
 
-## D1-N formal result
+The previous plan to attach one capability and then create another dedicated
+audit was too narrow. The current source already contains 704 inherited
+coordinates and multiple matched environmental axes. The active task is now one
+integrated multi-generation retention panel, followed by targeted adjustment
+only for repeated cross-seed thinning, disappearance, non-expression or shared
+physical mismatch.
 
-All three preregistered seeds completed tick 480 with the same canonical
-`source-health-contract-v2` SHA-256
-`963414588390b50bb52ee5b776387c133fac74aafce142c23d995d2773f3e23c`.
-No seed warned, hard-stopped, exited early, or omitted a required checkpoint.
+## D1-O formal result
+
+All three independent seeds completed tick 480 under the unchanged canonical
+`source-health-contract-v2`. No seed warned, hard-stopped or exited early.
 
 | seed | alive | births/initial | living descendants/initial | mean generation | max generation | founder fraction | final decline |
 |---:|---:|---:|---:|---:|---:|---:|---:|
-| 93101 | 129 | 1.133 | 0.680 | 0.922 | 4 | 0.326 | 3.73% |
-| 93102 | 121 | 1.063 | 0.602 | 0.868 | 4 | 0.364 | 0.82% |
-| 93103 | 177 | 1.438 | 0.969 | 1.062 | 4 | 0.299 | 0.00% |
+| 94101 | 184 | 1.430 | 0.984 | 0.984 | 3 | 0.315 | 0.00% |
+| 94102 | 136 | 1.016 | 0.664 | 0.801 | 3 | 0.375 | 0.00% |
+| 94103 | 159 | 1.313 | 0.852 | 0.981 | 4 | 0.315 | 0.00% |
 
-The weakest seed remains above founder scale in descendant replacement and has
-only a small final decline. D1-N therefore demonstrates healthy turnover rather
-than mere non-extinction. It authorizes capability budgeting and an attached-
-capability source pilot. It does not authorize selection, adaptation, niche, or
-subjectivity conclusions.
+D1-O therefore preserves healthy turnover. It does not establish that offspring
+investment is beneficial, selected or ecologically important; no dedicated
+paired audit is scheduled.
 
-## D1-O affordability boundary
+## Integrated baseline
 
-The frozen D1-N panel yields a conservative budget using checkpoint-trapezoidal
-entity exposure. The weakest formal source provides:
+The D1-P baseline contains:
 
-- minimum reported gross body-energy inflow: about 0.014032 energy/entity-tick;
-- minimum gross headroom above 0.010 base maintenance: about 0.004032;
-- minimum final mean-energy margin above the 0.8 parent reserve: about 0.06819.
+- 704 inherited coordinates;
+- 8 active morphology coordinates;
+- 128 direct action-policy weights;
+- inherited knowledge preferences, a 304-coordinate latent router, working
+  memory routing and inherited sparse selection;
+- 4 elastic capacity genes;
+- 142 compositional functional-module coordinates;
+- 23 inherited physiology/resource-metabolism coordinates;
+- four resource channels with distinct cycles, spatial waves, diffusion and body
+  consequences;
+- oxygen, terrain, wear and mortality-trace fields.
 
-Only 10% of the weakest gross headroom is admitted as a new mature recurring-cost
-reference, and combination-immature states would be limited to one quarter of
-that amount. Gross headroom is not treated as guaranteed net surplus.
-
-## D1-O capability
-
-D1-O activates no new gene. Existing morphology gene 6 selects conservative
-newborn endowments 0.75, 0.85, 0.95, or 1.05. Their mean remains exactly 0.9.
-There is no new structural, idle-use, or development energy charge; the selected
-transfer is paid by the parent and received by the newborn. The capability is
-single-gene and independently functional, so its minimum effect window begins
-after one realized generation rather than on the random founder state.
-
-The environment, maintenance, four-channel harvest multiplier, regeneration,
-founder count, initial energy, event overhead, and parent reserve are unchanged
-from the qualified D1-N config. Configuration generation rejects any other field
-change and writes only `source_config.json.manifest.json`.
+D1-P copies the qualified source byte-for-byte. It adds analysis infrastructure,
+not another biological mechanism.
 
 ## Current task
 
-Run the D1-O source pilot on independent seeds 94101--94103, then evaluate the
-unchanged v2 health gate. v0.94 declares no paired command. Only after all three
-sources pass required-final qualification without catastrophic termination may
-a later version add a shared-checkpoint direct-mechanism branch.
+Run independent seeds 95101--95103 to tick 1200 with bounded health floors. If
+all samples remain eligible, run the compact cross-seed gene-persistence scan.
+The scan identifies retained, concentrated, thinned and lost coordinates or
+blocks. It is not a 704-way causal audit.
 
-## Still incomplete
+## Evidence boundary
 
-- D1-O attached-capability source qualification;
-- authorized shared-checkpoint endowment neutralization, if source health passes;
-- an independent post-maturation evolutionary panel;
-- coexistence, reversal, and removal evidence required for niche claims.
+Current evidence supports:
+
+- healthy multi-generation turnover through tick 480;
+- execution of the integrated inherited subject and multi-axis environment;
+- a bounded retention panel.
+
+It does not yet support:
+
+- adaptation, fitness, selection direction or ecological-niche claims;
+- causal benefit or harm for any flagged coordinate;
+- automatic paired experiments for every gene;
+- adding further genes before the integrated panel identifies a concrete gap.

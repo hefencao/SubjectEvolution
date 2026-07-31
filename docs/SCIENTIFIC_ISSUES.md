@@ -1,4 +1,10 @@
-# Scientific issues and open gates
+# Scientific issues
+
+## D1-P integrated retention boundary
+
+D1-O removes the immediate concern that inherited offspring investment destroys the healthy turnover substrate. The remaining problem is no longer whether to attach one more isolated gene. The qualified config already has a large plural genome and matched resource, abiotic, information, social and physiological interfaces.
+
+The next unresolved question is which inherited coordinates and blocks remain represented after a bounded multi-generation panel. Continuous weights do not literally disappear in the same way as discrete alleles, so D1-P distinguishes low active-carrier fraction, diversity collapse, cross-seed concentration and loss. These labels are screening diagnostics, not fitness or selection claims. A later adjustment requires matching evidence that the associated phenotype is unexpressed, unused, over-costed or lacks a physical opportunity.
 
 Implemented code is not automatically empirical evidence.
 

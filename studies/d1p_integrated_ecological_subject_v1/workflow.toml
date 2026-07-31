@@ -1,0 +1,77 @@
+schema = "se-study-workflow-v1"
+study_id = "d1p_integrated_ecological_subject_v1"
+title = "D1-P integrated ecological subject and gene persistence panel"
+
+[parameters.backend]
+type = "choice"
+default = "auto"
+choices = ["auto", "cpu", "gpu"]
+description = "Execution backend."
+
+[parameters.seeds]
+type = "csv-int"
+default = "95101,95102,95103"
+description = "Independent integrated-panel seeds, disjoint from D1-N and D1-O."
+
+[parameters.template]
+type = "path"
+default = "studies/d1p_integrated_ecological_subject_v1/frozen/source/source_config.json"
+description = "Exact D1-O-qualified plural baseline."
+
+[parameters.generated_config]
+type = "path"
+default = "state/studies/d1p_integrated_ecological_subject_v1/integrated_config.json"
+description = "Byte-identical verified integrated config."
+
+[parameters.source_root]
+type = "path"
+default = "runs/base/d1p_integrated_ecological_subject_v1/panel"
+description = "Integrated retention-panel runtime root."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1p_integrated_ecological_subject_v1/panel"
+description = "Panel health and gene-persistence reports."
+
+[parameters.panel_tick]
+type = "int"
+default = 1200
+minimum = 1200
+description = "Bounded multi-generation retention horizon."
+
+[parameters.output]
+type = "result-path"
+default = "d1p_integrated_ecological_subject_v1_results.zip"
+description = "External result bundle."
+
+[parameters.include_checkpoints]
+type = "bool"
+default = false
+description = "Include checkpoints only for explicit replay; persistence reports are packed by default."
+
+[steps.baseline-check]
+description = "Verify that the qualified source is already a plural genome in a plural environment."
+command = ["se-integrated-baseline", "--template", "{template}", "--verify-only"]
+
+[steps.prepare-config]
+description = "Copy the qualified integrated baseline without attaching another isolated gene."
+command = ["se-integrated-baseline", "--template", "{template}", "--output", "{generated_config}"]
+
+[steps.integrated-panel]
+description = "Run the whole plural subject-environment system on independent seeds."
+command = ["se-multi", "--config", "{generated_config}", "--seeds", "{seeds}", "--output", "{source_root}", "--backend", "{backend}", "--until-tick", "{panel_tick}", "--checkpoint-ticks", "240,480,720,960,1200", "--source-health-contract", "{study_dir}/protocol/panel_health.json", "--skip-post-run-audits"]
+requires_json = [{ path = "{generated_config}.manifest.json", field = "schema", equals = "integrated-ecological-subject-baseline-v1" }]
+
+[steps.panel-health]
+description = "Confirm that the sample remains eligible for retention interpretation."
+command = ["se-source-health-gate", "--source-root", "{source_root}", "--contract", "{study_dir}/protocol/panel_health.json", "--output", "{analysis_root}/panel_health.json"]
+
+[steps.gene-persistence]
+description = "Screen cross-seed inherited-coordinate retention without a per-gene causal audit."
+command = ["se-gene-persistence", "--source-root", "{source_root}", "--config", "{generated_config}", "--health-report", "{analysis_root}/panel_health.json", "--output", "{analysis_root}/gene_persistence.json"]
+requires_json = [{ path = "{analysis_root}/panel_health.json", field = "ready", equals = true }]
+
+[steps.pack-results]
+description = "Package the integrated definition, health evidence and compact persistence report externally."
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "analyses/d1p_integrated_ecological_subject_v1", "--runtime-root", "runs/base/d1p_integrated_ecological_subject_v1", "--required-file", "{generated_config}", "--required-file", "{generated_config}.manifest.json", "--output", "{output}"]
+boolean_flags = { include_checkpoints = "--include-checkpoints" }
