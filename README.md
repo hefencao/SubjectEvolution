@@ -1,4 +1,4 @@
-# SE v0.87
+# SE v0.88
 
 Reference implementation for nested-subject existence and ecological evolution
 simulation.
@@ -10,13 +10,14 @@ Audit expansion remains paused. The active mainline follows
 diversity and costed inherited carrier capabilities before ecological or social
 claims.
 
-D1-G is frozen under
-[`studies/d1g_affinity_budgeted_resource_sensing_v1/`](studies/d1g_affinity_budgeted_resource_sensing_v1/README.md).
-Its fixed multi-channel radius budget reaches the physical observation path, but
-three-seed living-count effects remain negative and its source protocol has no
-conservative per-channel internal demand. v0.87 adds D1-H, which keeps the same
-inherited reach capacity and costs while gating channel allocation and gradient
-weights by current open four-resource store room.
+D1-H is frozen under
+[`studies/d1h_demand_gated_resource_sensing_v1/`](studies/d1h_demand_gated_resource_sensing_v1/README.md).
+Demand gating reaches the observation path, but all three shared-checkpoint
+pairs are demographically identical because almost every internal resource store
+remains open at once. v0.88 adds D1-I: the existing four resource-conversion
+genes now allocate one fixed total conversion capacity across channels, creating
+an internal opportunity cost without changing rewards, actions, or environment
+amplitudes.
 
 ## Workspace layout
 
@@ -49,8 +50,8 @@ Study operations are declared in `workflow.toml`, not executable shell files.
 After editable installation:
 
 ```text
-se-study show studies/d1h_demand_gated_resource_sensing_v1
-se-study run studies/d1h_demand_gated_resource_sensing_v1 source-pilot --dry-run
+se-study show studies/d1i_fixed_budget_resource_conversion_v1
+se-study run studies/d1i_fixed_budget_resource_conversion_v1 source-pilot --dry-run
 ```
 
 Every parameter is declared and can be overridden explicitly. The resolved argv
@@ -76,4 +77,4 @@ runtime results are never included.
 - [Governance principles](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.87 D1-H iteration](docs/迭代/v0.87_D1-H_需求门控的四资源感知预算与保守储存.md)
+- [v0.88 D1-I iteration](docs/迭代/v0.88_D1-I_固定总量的可遗传四资源转化分配.md)

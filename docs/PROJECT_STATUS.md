@@ -1,66 +1,65 @@
 # SE project status
 
-Version: **0.87.0**
+Version: **0.88.0**
 
 ## Current development direction
 
 Audit expansion remains paused. The active mainline follows `PROJECT_CHARTER`:
 effective environmental diversity, inherited carrier capability, conservative
-resource demand, and later ecology built from their interaction.
+multi-resource demand, and ecology built from their interaction.
 
-## D1-G frozen calibration
+## D1-H frozen calibration
 
-The supplied D1-G result satisfies the shared-checkpoint, paired-randomness,
-genotype, resource-field, cost-preservation, radius-one, and fixed extra-radius
-budget contracts. Paired living-count differences are -3, -40, and -15; mean-
-energy differences are -0.089208, +0.090915, and +0.007554.
+The supplied D1-H result satisfies exact shared-checkpoint, paired-randomness,
+genotype, resource-field, radius-budget, observation-weight, and sensing-cost
+contracts. Demand gating changes expressed channel radii, but all three pairs
+have zero living-count, birth, and death differences. Mean-energy differences
+are -0.016338, +0.001318, and -0.002991.
 
-D1-G proves that multi-channel Hamilton allocation reaches the world-facing
-resource gradient while preserving inherited capacity and costs. It does not
-provide repeated positive consequences. Its source protocol has no conservative
-per-channel internal stores, so static affinity cannot express current resource
-demand.
+About 3.6 of four stores remain open per entity. Current room therefore behaves
+mostly as an all-channel shortage signal rather than an independent internal
+demand axis. D1-H is frozen as a valid but nearly consequence-neutral substrate
+calibration; it authorizes no ecological or selection claim.
 
-## Active D1-H capability
+## Active D1-I capability
 
-`inherited-demand-gated-affinity-budgeted-gradient-radius-v4` combines the same
-inherited reach capacity with the existing conservative four-channel store.
-Affinity remains the inherited channel bias; quantized open store room gates its
-current expression. Both extra-radius allocation and aggregate gradient weights
-use the same fixed-budget demand weights.
+`transport-metabolism-messenger-tissue-resource-v8` gives the existing four
+resource-conversion genes a fixed-total allocation semantics. Their positive
+inherited weights divide exactly the configured total conversion capacity among
+four channels. Increasing one channel necessarily reduces another.
 
-For every entity, the extra-radius sum remains `capacity - 1`, the observation
-weight sum remains the inherited affinity total, and all sensing costs remain
-based on inherited total capacity. Radius-one neutralization preserves genotype,
-stores, affinity, costs, resource fields, and paired random keys.
+Storage capacity genes, resource stores, the resource-effect matrix, sensing,
+harvest, actions, and the persistent multiscale environment remain unchanged.
+Physiology maintenance and development costs depend on the fixed total rather
+than allocation direction.
+
+`neutralize-resource-conversion-allocation` restores the configured neutral
+channel-base allocation while preserving genotype, stores, total conversion
+capacity, physiology costs, resource fields, random keys, and future offspring
+neutralization.
 
 ## Study execution and result storage
 
-Active operations are declared in `studies/<study>/workflow.toml`. `se-study
-show` displays exact commands and parameter definitions; `se-study run` accepts
-only declared overrides and executes an argv vector without a shell.
-
-Compact result paths use the `result-path` parameter type. Relative filenames
-require a project-local `.se-workspace.toml` configured with `se-study config
---set-result-dir <external-directory>`. The destination is rejected if it is
-inside the project tree.
+Operations remain declared in `studies/<study>/workflow.toml`. `se-study show`
+displays exact argv and parameter definitions; `se-study run` accepts only
+declared overrides. Compact results require the project-external directory in
+`.se-workspace.toml`.
 
 Iteration notes live under `docs/迭代/`. Local history is not part of version or
-Conda editable-install validation. Release packaging prunes old iteration notes
-only in a disposable artifact tree.
+Conda validation. Release packaging retains only the current iteration note in
+a disposable artifact tree.
 
 ## Current task
 
-Run the D1-H source and cost-preserving paired calibration. Confirm conservative
-store demand, fixed observation-weight budget, exact extra-radius closure,
-unchanged genotype-derived costs, and non-degenerate paired consequences. Do
-not add a threshold or post-hoc ecological interpretation.
+Run the D1-I three-seed source and 120-tick shared-checkpoint calibration.
+Confirm exact total conversion-budget closure, non-neutral inherited allocation,
+unchanged costs, and differentiated store/body flows. Do not add a threshold or
+post-hoc ecological interpretation.
 
 ## Still incomplete
 
-- sufficiently independent persistent environmental axes;
-- repeated evidence that demand-gated inherited sensing supports conditional
-  outcomes;
+- sufficiently independent environmental and internal demand axes;
+- repeated conditional outcomes from inherited conversion allocation;
 - coexistence, reversal, and removal tests required for a niche claim;
 - long-horizon selection interpretation;
 - device-resident action settlement, lifecycle, and graph updates.

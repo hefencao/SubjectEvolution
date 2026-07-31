@@ -118,3 +118,17 @@ than changing costs or rewards. Its fixed observation-weight and extra-radius
 budgets must close exactly under current storage-room gating. The first panel is
 still capability calibration only; ecological interpretation requires later
 independent conditional, reversal, coexistence, and removal evidence.
+
+## D1-H synchronized-demand limitation
+
+The supplied D1-H panel closes every registered sensing and checkpoint contract,
+but all three demographic differences are zero and energy effects are near
+zero. About 3.6 of four stores remain open per entity, so storage room acts
+mostly as a common shortage coordinate rather than independent channel demand.
+This is not evidence against sensing reach; it identifies a missing internal
+opportunity cost.
+
+D1-I addresses that boundary by fixing total resource-conversion capacity and
+making its inherited channel allocation zero-sum. The first panel remains a
+capability calibration. Niche or adaptive claims still require repeated
+conditional outcomes, environment reversal, coexistence, and removal evidence.

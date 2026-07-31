@@ -1,0 +1,12 @@
+{
+  "schema": "inherited-fixed-total-four-resource-conversion-allocation-v1",
+  "physiology_schema": "transport-metabolism-messenger-tissue-resource-v8",
+  "inherited_conversion_gene_count": 4,
+  "total_conversion_capacity_basis": "sum(configured resource_conversion_per_tick)",
+  "allocation_rule": "positive inherited weights normalized to one fixed total",
+  "storage_capacity_semantics_preserved": true,
+  "physiology_maintenance_development_cost_basis": "fixed total capacity",
+  "neutral_intervention": "neutralize-resource-conversion-allocation",
+  "world_feedback": false,
+  "role_labels": false
+}

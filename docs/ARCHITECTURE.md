@@ -894,3 +894,20 @@ original affinity total. The same weights drive channel-radius allocation and
 resource-gradient aggregation. The inherited capacity, cost schedule, action
 vocabulary, resource fields, and random keys are unchanged; radius-one
 neutralization alters only effective sensing reach.
+
+## D1-I fixed-total resource-conversion allocation
+
+`transport-metabolism-messenger-tissue-resource-v8` retains the existing four
+store-capacity genes and four conversion genes. The conversion genes are
+positive allocation weights over one configured total conversion capacity. The
+resulting per-entity channel capacities always sum to the same total, so a gain
+in one channel necessarily removes capacity from others.
+
+The fixed total also defines the physiology cost boundary. Maintenance and
+development energy do not vary with allocation direction. The intervention
+`neutralize-resource-conversion-allocation` replaces only the expressed channel
+vector with the configured neutral base vector. Genotype, stores, resource
+fields, total conversion capacity, physiology costs, random streams, and future
+offspring neutralization remain unchanged. Store conversion remains CPU-
+authoritative before observation and is synchronized to the GPU entity mirror
+through the existing resource-metabolism boundary.

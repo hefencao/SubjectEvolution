@@ -144,6 +144,12 @@ INTERVENTIONS = (
         aliases=("resource-sensing-radius-one", "sensing-radius-neutral"),
     ),
     InterventionSpec(
+        "neutralize-resource-conversion-allocation",
+        InterventionKind.MODIFY_RULES,
+        "inherited-fixed-total-four-resource-conversion-allocation",
+        aliases=("resource-conversion-uniform", "conversion-allocation-neutral"),
+    ),
+    InterventionSpec(
         "neutralize-spatial-processing-support",
         InterventionKind.MODIFY_RULES,
         "phase-shifted-four-channel-processing-support",

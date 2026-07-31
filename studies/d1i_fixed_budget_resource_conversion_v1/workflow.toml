@@ -1,0 +1,68 @@
+schema = "se-study-workflow-v1"
+study_id = "d1i_fixed_budget_resource_conversion_v1"
+title = "D1-I inherited fixed-budget resource conversion"
+
+[parameters.backend]
+type = "choice"
+default = "auto"
+choices = ["auto", "cpu", "gpu"]
+description = "Execution backend."
+
+[parameters.seeds]
+type = "csv-int"
+default = "88001,88002,88003"
+description = "Comma-separated independent source seeds."
+
+[parameters.checkpoint_tick]
+type = "int"
+default = 480
+minimum = 1
+description = "Shared source checkpoint tick."
+
+[parameters.horizon]
+type = "int"
+default = 120
+minimum = 1
+description = "Paired branch horizon in ticks."
+
+[parameters.source_root]
+type = "path"
+default = "runs/base/d1i_fixed_budget_resource_conversion_v1/pilot"
+description = "Source trajectory output root."
+
+[parameters.runtime_root]
+type = "path"
+default = "runs/interventions/d1i_fixed_budget_resource_conversion_v1/pilot"
+description = "Paired branch runtime root."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1i_fixed_budget_resource_conversion_v1/pilot"
+description = "Paired plan and result output root."
+
+[parameters.output]
+type = "result-path"
+default = "d1i_fixed_budget_resource_conversion_v1_results.zip"
+description = "Result bundle filename or absolute external path."
+
+[parameters.include_checkpoints]
+type = "bool"
+default = false
+description = "Include checkpoint bytes for exact replay."
+
+[steps.source-pilot]
+description = "Run source trajectories with fixed-total inherited conversion allocation."
+command = ["se-multi", "--config", "{study_dir}/protocol/source_pilot.json", "--seeds", "{seeds}", "--output", "{source_root}", "--backend", "{backend}", "--until-tick", "{checkpoint_tick}", "--checkpoint-ticks", "{checkpoint_tick}", "--skip-post-run-audits"]
+
+[steps.paired-plan]
+description = "Create the total-capacity and cost-preserving neutral-allocation plan."
+command = ["se-d1-resource-conversion-plan", "--source-root", "{source_root}", "--checkpoint-tick", "{checkpoint_tick}", "--horizon", "{horizon}", "--runtime-root", "{runtime_root}", "--output", "{analysis_root}/paired_plan.json"]
+
+[steps.paired-run]
+description = "Execute inherited and neutral conversion-allocation branches."
+command = ["se-d1-resource-conversion", "--plan", "{analysis_root}/paired_plan.json", "--output", "{analysis_root}/paired_results.json", "--backend", "{backend}"]
+
+[steps.pack-results]
+description = "Create the compact result bundle in the configured external directory."
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "analyses/d1i_fixed_budget_resource_conversion_v1", "--runtime-root", "runs/base/d1i_fixed_budget_resource_conversion_v1", "--runtime-root", "runs/interventions/d1i_fixed_budget_resource_conversion_v1", "--output", "{output}"]
+boolean_flags = { include_checkpoints = "--include-checkpoints" }

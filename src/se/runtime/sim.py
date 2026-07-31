@@ -451,7 +451,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.freeze_genotype = False
         self.capacity_ablation_enabled = False
         self.resource_affinity_ablation_enabled = False
-        self.resource_sensing_ablation_enabled = False
+        self.resource_sensing_ablation_enabled = self.resource_conversion_allocation_ablation_enabled = False
         self.resource_processing_support_ablation_enabled = False
         self.functional_modules_ablation_enabled = False
         self.functional_module_coupling_ablation_enabled = False
@@ -2368,6 +2368,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             "freeze_genotype": self.freeze_genotype,
             "capacity_ablation_enabled": self.capacity_ablation_enabled,
             "resource_sensing_ablation_enabled": self.resource_sensing_ablation_enabled,
+            "resource_conversion_allocation_ablation_enabled": self.resource_conversion_allocation_ablation_enabled,
             "environment_spatial_reversed": self.environment.spatial_reversed,
             "environment_resource_spatial_reversed": bool(
                 getattr(self.environment, "resource_spatial_reversed", False)

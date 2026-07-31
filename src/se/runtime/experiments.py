@@ -33,6 +33,7 @@ from se.env.danger_evidence import (
 )
 from se.env.world import Environment
 from se.env.resource_sensing import resource_sensing_enabled
+from se.differentiation.physiology import fixed_budget_resource_conversion_enabled
 from se.env.diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
     resource_field_diversity_metrics,
@@ -491,9 +492,12 @@ class SimulationExperimentMixin:
                 "transport-metabolism-messenger-tissue-v3",
                 "transport-metabolism-messenger-tissue-resource-v4",
                 "transport-metabolism-messenger-tissue-resource-v5",
+                "transport-metabolism-messenger-tissue-resource-v6",
+                "transport-metabolism-messenger-tissue-resource-v7",
+                "transport-metabolism-messenger-tissue-resource-v8",
             }:
                 raise ValueError(
-                    "messenger receptor blockade requires v5 regulatory physiology"
+                    "messenger receptor blockade requires regulatory physiology v2-v8"
                 )
             canonical = "block-physiology-messenger-receptors"
             self.physiology_messenger_receptor_blockade_enabled = True
@@ -573,6 +577,24 @@ class SimulationExperimentMixin:
                 "maintenance_cost_preserved": True,
                 "use_cost_preserved": True,
                 "development_cost_preserved": True,
+                "genotype_coordinates_modified": 0,
+                "inheritance_modified": False,
+                "future_offspring_expression_neutralized": True,
+            }
+        elif normalized == "neutralize-resource-conversion-allocation":
+            if not fixed_budget_resource_conversion_enabled(self.cfg):
+                raise ValueError(
+                    "neutralize-resource-conversion-allocation requires physiology resource-v8"
+                )
+            canonical = "neutralize-resource-conversion-allocation"
+            self.resource_conversion_allocation_ablation_enabled = True
+            details = {
+                "effective_conversion_allocation": "configured-neutral-channel-base",
+                "total_conversion_capacity_preserved": True,
+                "physiology_maintenance_cost_preserved": True,
+                "physiology_development_cost_preserved": True,
+                "resource_stores_preserved": True,
+                "resource_fields_modified": False,
                 "genotype_coordinates_modified": 0,
                 "inheritance_modified": False,
                 "future_offspring_expression_neutralized": True,

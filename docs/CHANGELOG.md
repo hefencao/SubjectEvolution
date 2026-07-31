@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.88.0
+
+- Freezes the D1-H demand-gated sensing pilot as valid but consequence-neutral.
+- Adds physiology `transport-metabolism-messenger-tissue-resource-v8` with inherited fixed-total four-channel conversion allocation.
+- Adds a genotype-, storage-, cost-, total-capacity-, and resource-field-preserving conversion-allocation neutralization.
+- Adds the parameterized D1-I source, paired, and external result-packaging workflow.
+- Keeps audit expansion paused and adds no threshold, reward, role label, population protection, or result feedback.
+
 ## v0.87.0
 
 - Freezes the D1-G three-seed calibration and records its fixed-budget but demand-blind limitation.

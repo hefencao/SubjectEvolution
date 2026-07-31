@@ -143,13 +143,18 @@ capability when they are omitted.
 
 ## Current ecosystem-construction check
 
-- D1-D manipulation support is valid; the unexpected negative paired outcome is
-  not caused by checkpoint, genotype, cost, or resource-field mismatch.
-- The source protocol used the archived non-persistent v1 orthogonal environment,
-  so the current task changes from tuning sensing radii to maintaining distinct
-  resource scales in the world substrate.
-- No reward, role, threshold, replacement seed, or post-hoc horizon is added.
-- Iteration history retention and artifact-only pruning are separate responsibilities; result packaging is a typed workflow step rather than a permission-sensitive shell script.
+- D1-H manipulation support is valid; zero demographic divergence is not caused
+  by checkpoint, genotype, resource-field, radius-budget, weight-budget, or cost
+  mismatch.
+- About 3.6 of four internal stores remain open, so the current task moves from
+  further sensing-allocation revisions to independent internal conversion
+  opportunity costs.
+- D1-I preserves total conversion capacity and physiology costs while changing
+  only inherited channel allocation; no reward, threshold, role, replacement
+  seed, or post-hoc horizon is added.
+- No new long-term principle remains only in chat: the zero-sum internal capacity
+  requirement is recorded in the charter-aligned status, architecture, issue,
+  iteration, and study documents.
 
 
 ## Declarative study execution

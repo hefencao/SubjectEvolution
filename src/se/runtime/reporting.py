@@ -752,6 +752,14 @@ class SimulationReportingMixin:
                     if self.resource_sensing_ablation_enabled
                     else self.cfg.entities.resource_sensing_schema
                 ),
+                "resource_conversion_allocation_ablation_enabled": (
+                    self.resource_conversion_allocation_ablation_enabled
+                ),
+                "resource_conversion_allocation_effective_schema": (
+                    "configured-neutral-channel-base-ablation-v1"
+                    if self.resource_conversion_allocation_ablation_enabled
+                    else self.cfg.physiology.schema
+                ),
                 "resource_processing_support_ablation_enabled": (
                     self.resource_processing_support_ablation_enabled
                 ),
@@ -1430,6 +1438,9 @@ class SimulationReportingMixin:
             ent,
             self.cfg,
             gene_start=ParametricPolicy.physiology_gene_start(self.cfg),
+            neutralize_conversion_allocation=(
+                self.resource_conversion_allocation_ablation_enabled
+            ),
         )
         affinity_metrics = resource_affinity_diagnostics(
             ent.alive, ent.genotype, self.cfg
@@ -1914,6 +1925,9 @@ class SimulationReportingMixin:
             "resource_sensing_radius_max": int(resource_sensing_metrics["resource_sensing_radius_max"]),
             "resource_sensing_ablation_enabled": bool(
                 self.resource_sensing_ablation_enabled
+            ),
+            "resource_conversion_allocation_ablation_enabled": bool(
+                self.resource_conversion_allocation_ablation_enabled
             ),
             "resource_sensing_effective_radius_mean": (
                 1.0

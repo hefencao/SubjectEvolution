@@ -997,6 +997,7 @@ def validate_config(cfg: SimulationConfig) -> None:
             "transport-metabolism-messenger-tissue-resource-v5",
             "transport-metabolism-messenger-tissue-resource-v6",
             "transport-metabolism-messenger-tissue-resource-v7",
+            "transport-metabolism-messenger-tissue-resource-v8",
         }
     ):
         raise ValueError(
@@ -2103,6 +2104,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         "transport-metabolism-messenger-tissue-resource-v5",
         "transport-metabolism-messenger-tissue-resource-v6",
         "transport-metabolism-messenger-tissue-resource-v7",
+        "transport-metabolism-messenger-tissue-resource-v8",
     }:
         raise ValueError(
             "physiology.schema must be 'disabled', 'oxygen-tissue-structure-v1', "
@@ -2111,7 +2113,8 @@ def validate_config(cfg: SimulationConfig) -> None:
             "'transport-metabolism-messenger-tissue-resource-v4', or "
             "'transport-metabolism-messenger-tissue-resource-v5', or "
             "'transport-metabolism-messenger-tissue-resource-v6', or "
-            "'transport-metabolism-messenger-tissue-resource-v7'"
+            "'transport-metabolism-messenger-tissue-resource-v7', or "
+            "'transport-metabolism-messenger-tissue-resource-v8'"
         )
     if pcfg.enabled != (pcfg.schema != "disabled"):
         raise ValueError("physiology enabled/schema fields must agree")
@@ -2167,6 +2170,7 @@ def validate_config(cfg: SimulationConfig) -> None:
                 "transport-metabolism-messenger-tissue-resource-v5",
                 "transport-metabolism-messenger-tissue-resource-v6",
                 "transport-metabolism-messenger-tissue-resource-v7",
+                "transport-metabolism-messenger-tissue-resource-v8",
             }
             if fcfg.schema == resource_metabolism_schema
             else {
@@ -2225,6 +2229,7 @@ def validate_config(cfg: SimulationConfig) -> None:
                 "transport-metabolism-messenger-tissue-resource-v5",
                 "transport-metabolism-messenger-tissue-resource-v6",
                 "transport-metabolism-messenger-tissue-resource-v7",
+                "transport-metabolism-messenger-tissue-resource-v8",
             }:
                 required_positive.extend(pcfg.resource_store_base_capacity)
                 required_positive.extend(pcfg.resource_conversion_per_tick)
@@ -2245,6 +2250,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         "transport-metabolism-messenger-tissue-resource-v5",
         "transport-metabolism-messenger-tissue-resource-v6",
         "transport-metabolism-messenger-tissue-resource-v7",
+        "transport-metabolism-messenger-tissue-resource-v8",
     } and any(
         value != 0.0
         for values in (
@@ -2256,7 +2262,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         for value in values
     ):
         raise ValueError(
-            "resource storage and conversion settings require physiology resource-v4/v5/v6/v7"
+            "resource storage and conversion settings require physiology resource-v4/v5/v6/v7/v8"
         )
     if pcfg.schema == "transport-metabolism-messenger-tissue-resource-v7":
         if (

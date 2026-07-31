@@ -17,6 +17,8 @@ import numpy as np
 from se.cfg import SimulationConfig
 from se.differentiation.physiology import (
     physiology_phenotype,
+    neutral_resource_conversion_capacity,
+    fixed_budget_resource_conversion_enabled,
     resource_metabolism_enabled,
     storage_constrained_intake_enabled,
     external_resource_recycling_enabled,
@@ -203,6 +205,7 @@ def settle_resource_metabolism(
     genotype: np.ndarray,
     gene_start: int,
     processing_support: np.ndarray | None = None,
+    neutralize_conversion_allocation: bool = False,
 ) -> ResourceMetabolismStep:
     """Convert bounded raw stores and decay the unprocessed remainder."""
 
@@ -214,6 +217,12 @@ def settle_resource_metabolism(
     conversion_capacity = np.asarray(
         phenotype.resource_conversion_capacity, dtype=np.float64
     )
+    if neutralize_conversion_allocation:
+        if not fixed_budget_resource_conversion_enabled(cfg):
+            raise ValueError(
+                "conversion-allocation neutralization requires physiology resource-v8"
+            )
+        conversion_capacity = neutral_resource_conversion_capacity(rows.size, cfg)
     if spatial_processing_enabled(cfg):
         support = np.asarray(processing_support, dtype=np.float64)
         if support.shape != store_before.shape:
@@ -364,6 +373,7 @@ def resource_metabolism_diagnostics(
     cfg: SimulationConfig,
     *,
     gene_start: int,
+    neutralize_conversion_allocation: bool = False,
 ) -> dict[str, object]:
     active = np.flatnonzero(np.asarray(entities.alive, dtype=bool)).astype(np.int32)
     if active.size == 0 or not resource_metabolism_enabled(cfg):
@@ -375,6 +385,10 @@ def resource_metabolism_diagnostics(
             "resource_store_occupancy_mean": [0.0] * RESOURCE_CHANNELS,
             "resource_store_capacity_mean": [0.0] * RESOURCE_CHANNELS,
             "resource_conversion_capacity_mean": [0.0] * RESOURCE_CHANNELS,
+            "resource_conversion_total_capacity_mean": 0.0,
+            "resource_conversion_allocation_effective_dimensions_mean": 0.0,
+            "resource_conversion_allocation_specialization_mean": 0.0,
+            "resource_conversion_fixed_budget_closed": False,
             "resource_metabolism_genetic_effective_dimensions": 0.0,
         }
     phenotype = physiology_phenotype(
@@ -382,7 +396,14 @@ def resource_metabolism_diagnostics(
     )
     stores = np.asarray(entities.resource_store[active], dtype=np.float64)
     capacity = np.asarray(phenotype.resource_store_capacity, dtype=np.float64)
-    conversion = np.asarray(phenotype.resource_conversion_capacity, dtype=np.float64)
+    inherited_conversion = np.asarray(
+        phenotype.resource_conversion_capacity, dtype=np.float64
+    )
+    conversion = (
+        neutral_resource_conversion_capacity(active.size, cfg)
+        if neutralize_conversion_allocation
+        else inherited_conversion
+    )
     normalized = np.column_stack(
         (
             capacity
@@ -390,7 +411,7 @@ def resource_metabolism_diagnostics(
                 np.asarray(cfg.physiology.resource_store_base_capacity, dtype=np.float64)[None, :],
                 1.0e-12,
             ),
-            conversion
+            inherited_conversion
             / np.maximum(
                 np.asarray(cfg.physiology.resource_conversion_per_tick, dtype=np.float64)[None, :],
                 1.0e-12,
@@ -406,6 +427,14 @@ def resource_metabolism_diagnostics(
         )
     else:
         effective = 0.0
+    conversion_totals = conversion.sum(axis=1)
+    conversion_shares = conversion / np.maximum(conversion_totals[:, None], 1.0e-30)
+    allocation_effective = 1.0 / np.maximum(
+        np.sum(conversion_shares * conversion_shares, axis=1), 1.0e-30
+    )
+    fixed_total = float(
+        np.asarray(cfg.physiology.resource_conversion_per_tick, dtype=np.float64).sum()
+    )
     return {
         "resource_metabolism_schema": cfg.physiology.schema,
         "resource_store_mean": stores.mean(axis=0).tolist(),
@@ -416,6 +445,16 @@ def resource_metabolism_diagnostics(
         ).mean(axis=0).tolist(),
         "resource_store_capacity_mean": capacity.mean(axis=0).tolist(),
         "resource_conversion_capacity_mean": conversion.mean(axis=0).tolist(),
+        "resource_conversion_total_capacity_mean": float(conversion_totals.mean()),
+        "resource_conversion_allocation_effective_dimensions_mean": float(
+            allocation_effective.mean()
+        ),
+        "resource_conversion_allocation_specialization_mean": float(
+            conversion_shares.max(axis=1).mean()
+        ),
+        "resource_conversion_fixed_budget_closed": bool(
+            np.allclose(conversion_totals, fixed_total, atol=1.0e-12, rtol=0.0)
+        ),
         "resource_metabolism_genetic_effective_dimensions": effective,
     }
 
@@ -489,6 +528,9 @@ def settle_resource_metabolism_before_step(simulation: Any, stats: Any) -> None:
         genotype=simulation.entities.genotype[rows],
         gene_start=simulation.policy.physiology_gene_start(simulation.cfg),
         processing_support=processing_support,
+        neutralize_conversion_allocation=(
+            simulation.resource_conversion_allocation_ablation_enabled
+        ),
     )
     stats.resource_converted = step.converted
     stats.resource_store_decay = step.decayed

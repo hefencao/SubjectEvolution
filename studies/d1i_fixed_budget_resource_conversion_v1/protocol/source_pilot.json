@@ -1,0 +1,502 @@
+{
+  "run": {
+    "seed": 88001,
+    "ticks": 600,
+    "metrics_period": 10,
+    "checkpoint_period": 60,
+    "gpu_harvest_conflict_planner": true,
+    "experiment_mode": "scientific",
+    "evolution_evaluation_period": 30,
+    "validation_mode": true,
+    "gpu_semantics_mode": "hybrid-accelerated",
+    "full_checkpoint_enabled": true,
+    "long_run_diagnostics_enabled": true,
+    "long_run_diagnostics_schema": "long-run-evolution-diagnostics-v1",
+    "spatial_stress_diagnostics_enabled": true,
+    "spatial_stress_diagnostics_schema": "spatial-local-stress-culture-diagnostics-v2",
+    "spatial_stress_regions_x": 4,
+    "spatial_stress_regions_y": 4,
+    "spatial_stress_region_schema": "normalized-fixed-count-grid-v1",
+    "subject_structure_diagnostics_enabled": true,
+    "subject_structure_diagnostics_schema": "stable-membership-subject-succession-v1",
+    "environment_atlas_diagnostics_enabled": true,
+    "environment_atlas_diagnostics_schema": "multiscale-subject-environment-atlas-v2",
+    "environment_atlas_scales": [
+      [
+        2,
+        2
+      ],
+      [
+        4,
+        4
+      ],
+      [
+        8,
+        8
+      ]
+    ]
+  },
+  "world": {
+    "width": 128.0,
+    "height": 128.0,
+    "grid_x": 32,
+    "grid_y": 32,
+    "initial_entities": 500,
+    "max_entities": 2048,
+    "periodic": true
+  },
+  "environment": {
+    "resource_regeneration": [
+      0.018,
+      0.018,
+      0.018,
+      0.018
+    ],
+    "resource_capacity": [
+      8.0,
+      8.0,
+      8.0,
+      8.0
+    ],
+    "season_period": 240,
+    "season_amplitude": 0.55,
+    "signal_decay": 0.08,
+    "signal_diffusion": 0.12,
+    "schema": "persistent-multiscale-four-resource-renewal-v3",
+    "resource_temporal_phase_offsets": [
+      0.0,
+      1.5707963267948966,
+      3.141592653589793,
+      4.71238898038469
+    ],
+    "resource_spatial_phase_x": [
+      0.0,
+      0.5,
+      1.0,
+      1.5
+    ],
+    "resource_spatial_phase_y": [
+      1.5,
+      1.0,
+      0.5,
+      0.0
+    ],
+    "harvest_channel_multipliers": [
+      0.65,
+      0.65,
+      0.65,
+      0.65
+    ],
+    "resource_effect_matrix": [
+      [
+        0.52,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.03,
+        0.018,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.03,
+        0.24,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.018,
+        0.0,
+        0.24
+      ]
+    ],
+    "hazard_spatial_phase_x": 0.75,
+    "hazard_spatial_phase_y": -0.5,
+    "hazard_temporal_multiplier": 1.7,
+    "hazard_secondary_amplitude": 0.15,
+    "mortality_trace_schema": "local-decaying-mortality-trace-v1",
+    "mortality_trace_decay": 0.04,
+    "mortality_trace_diffusion": 0.08,
+    "mortality_trace_deposit": 0.25,
+    "mortality_trace_max": 2.0,
+    "mortality_trace_observation_weight": 0.6,
+    "environment_process_schema": "disabled",
+    "environment_process_parameters": {},
+    "resource_cycle_periods": [
+      173,
+      257,
+      349,
+      431
+    ],
+    "resource_cycle_amplitudes": [
+      0.5,
+      0.5,
+      0.5,
+      0.5
+    ],
+    "resource_primary_wave_vectors": [
+      [
+        1.0,
+        0.0
+      ],
+      [
+        1.0,
+        1.0
+      ],
+      [
+        2.0,
+        1.0
+      ],
+      [
+        4.0,
+        -1.0
+      ]
+    ],
+    "resource_secondary_wave_vectors": [
+      [
+        1.0,
+        2.0
+      ],
+      [
+        2.0,
+        -1.0
+      ],
+      [
+        3.0,
+        2.0
+      ],
+      [
+        5.0,
+        2.0
+      ]
+    ],
+    "resource_primary_wave_amplitudes": [
+      0.26,
+      0.24,
+      0.22,
+      0.2
+    ],
+    "resource_secondary_wave_amplitudes": [
+      0.1,
+      0.11,
+      0.12,
+      0.13
+    ],
+    "resource_diffusion_rates": [
+      0.002,
+      0.004,
+      0.008,
+      0.016
+    ],
+    "physiology_environment_schema": "oxygen-terrain-wear-mosaic-v1",
+    "oxygen_floor": 0.22,
+    "oxygen_amplitude": 0.72,
+    "oxygen_period": 311,
+    "oxygen_wave_x": 1.0,
+    "oxygen_wave_y": -0.5,
+    "oxygen_phase_offset": 0.2,
+    "terrain_floor": 0.05,
+    "terrain_amplitude": 0.78,
+    "terrain_wave_x": 0.5,
+    "terrain_wave_y": 1.5,
+    "terrain_phase_offset": 1.1,
+    "wear_floor": 0.02,
+    "wear_amplitude": 0.72,
+    "wear_period": 419,
+    "wear_wave_x": -1.5,
+    "wear_wave_y": 0.75,
+    "wear_phase_offset": 2.0
+  },
+  "entities": {
+    "relation_slots": 8,
+    "maintenance_cost": 0.015,
+    "movement_cost": 0.01,
+    "signal_cost": 0.02,
+    "share_amount": 0.2,
+    "harvest_rate": 0.3,
+    "reproduction_threshold": 2.8,
+    "reproduction_cost": 1.4,
+    "initial_energy": 1.8,
+    "max_energy": 5.0,
+    "max_age": 5000,
+    "reproduction_capacity_arbitration": "stateless-random-v1",
+    "resource_affinity_schema": "normalized-four-resource-affinity-v1",
+    "resource_affinity_strength": 0.75,
+    "resource_affinity_min_efficiency": 0.25,
+    "resource_affinity_max_efficiency": 1.75,
+    "resource_sensing_schema": "inherited-demand-gated-affinity-budgeted-gradient-radius-v4",
+    "resource_sensing_radius_levels": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "resource_sensing_maintenance_energy_per_radius": 0.00015,
+    "resource_sensing_use_energy_per_radius": 0.0002,
+    "resource_sensing_development_energy_per_radius": 0.01,
+    "harvest_allocation_schema": "affinity-sampled-exclusive-harvest-v1"
+  },
+  "information": {
+    "channel_loss": 0.15,
+    "receiver_noise": 0.1,
+    "classification_error": 0.05,
+    "memory_decay": 0.01,
+    "max_signal_delay": 3,
+    "direct_message_capacity": 16,
+    "source_noise": 0.03,
+    "signal_flush_periods": [
+      1,
+      1,
+      1
+    ]
+  },
+  "policy": {
+    "temperature": 0.8,
+    "partner_samples": 4,
+    "mutation_std": 0.08,
+    "mutation_probability": 0.01,
+    "schema": "inherited-variable-latent-router-mlp-v1"
+  },
+  "social": {
+    "group_update_period": 50,
+    "trust_group_threshold": 0.12,
+    "group_min_members": 6,
+    "relation_decay": 0.002,
+    "trust_gain_share": 0.08,
+    "trust_loss_failed": 0.02,
+    "group_update_mode": "adaptive-topology-v1",
+    "group_update_min_period": 100,
+    "group_update_max_period": 300,
+    "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+    "group_label_propagation_rounds": 8
+  },
+  "control": {
+    "heuristic_social_guidance": false,
+    "heuristic_social_guidance_weight": 0.25,
+    "autonomy_recovery_fraction": 0.25,
+    "autonomy_activation_energy_fraction": 0.35,
+    "autonomy_harvest_threshold": 0.05
+  },
+  "knowledge": {
+    "enabled": true,
+    "schema": "dynamic-knowledge-latent-v1",
+    "initial_content_count": 16,
+    "initial_holders_fraction": 0.25,
+    "holder_capacity_bytes": 512,
+    "encoded_bytes_per_copy": 96,
+    "maintenance_energy_per_byte": 1e-06,
+    "transfer_period": 1,
+    "transfer_probability": 0.1,
+    "attention_slots_per_tick": 1,
+    "transfer_base_energy_cost": 0.002,
+    "transfer_energy_per_byte": 1e-05,
+    "receive_energy_per_byte": 5e-06,
+    "forget_probability": 0.0005,
+    "capacity_eviction": "oldest-copy-v1",
+    "log_transfer_events": true,
+    "learning_enabled": true,
+    "outcome_schema": "local-outcome-v1",
+    "experience_creation_enabled": true,
+    "experience_creation_requires_free_capacity": true,
+    "verification_energy_cost": 0.0002,
+    "confidence_learning_rate": 0.25,
+    "confidence_decay_per_tick": 0.0002,
+    "initial_experience_confidence": 0.25,
+    "max_updates_per_outcome": 1,
+    "log_outcome_updates": true,
+    "policy_influence_enabled": true,
+    "policy_residual_schema": "quantized-variable-latent-mlp-residual-v1",
+    "policy_min_confidence": 0.05,
+    "policy_min_local_samples": 1,
+    "policy_sample_saturation": 4.0,
+    "policy_unverified_transfer_weight": 0.2,
+    "policy_outcome_scales": [
+      1.0,
+      0.1,
+      0.3,
+      0.3,
+      0.25
+    ],
+    "policy_outcome_clip": 1.0,
+    "policy_max_abs_logit_residual": 0.75,
+    "log_policy_contributions": true,
+    "latent_policy_enabled": true,
+    "latent_schema": "variable-latent-knowledge-v1",
+    "latent_router_schema": "quantized-mlp-latent-router-v1",
+    "latent_length_levels": [
+      4,
+      8,
+      16,
+      32
+    ],
+    "latent_router_hidden_width": 8,
+    "latent_value_quantization_scale": 4096,
+    "latent_router_weight_quantization_scale": 2048,
+    "latent_outcome_injection": 0.5,
+    "latent_base_encoded_bytes": 32,
+    "latent_bytes_per_value": 2,
+    "latent_max_abs_logit_residual": 0.75,
+    "latent_length_mutation_probability": 0.125,
+    "latent_router_mlp_hidden_width": 8,
+    "latent_router_activation_clip": 1.0,
+    "routing_cost_enabled": true,
+    "routing_cost_schema": "latent-routing-compute-cost-v1",
+    "routing_budget_mode": "all-or-none-per-entity-v1",
+    "routing_base_energy_cost": 0.0,
+    "routing_energy_per_latent_dimension": 2e-08,
+    "routing_energy_per_mac": 2.865e-08,
+    "routing_energy_per_active_hidden_unit": 1e-08,
+    "routing_energy_per_emitted_action": 2e-06,
+    "routing_energy_per_saturation": 1e-07,
+    "routing_energy_per_clipped_output": 1e-07,
+    "working_memory_enabled": true,
+    "working_memory_schema": "quantized-working-memory-v1",
+    "working_memory_width": 4,
+    "working_memory_quantization_scale": 4096,
+    "working_memory_activation_clip": 1.0,
+    "working_memory_base_energy_cost": 1e-06,
+    "working_memory_energy_per_dimension": 2e-07,
+    "working_memory_energy_per_saturation": 1e-07,
+    "sparse_selection_enabled": true,
+    "sparse_selection_schema": "sparse-query-key-topk-router-v1",
+    "sparse_selection_top_k": 4,
+    "sparse_selection_score_clip": 1000000000,
+    "sparse_selection_base_energy_cost": 0.0,
+    "sparse_selection_energy_per_candidate": 1e-08,
+    "sparse_selection_energy_per_selected_copy": 2e-08,
+    "sparse_selection_capacity_schema": "inherited-discrete-topk-v1",
+    "sparse_selection_capacity_levels": [
+      0,
+      1,
+      2,
+      4,
+      8
+    ]
+  },
+  "differentiation": {
+    "enabled": true,
+    "schema": "inherited-elastic-capacities-v1",
+    "working_memory_min_dimensions": 0,
+    "working_memory_max_dimensions": 4,
+    "knowledge_min_bytes": 0,
+    "knowledge_max_bytes": 512,
+    "knowledge_quantum_bytes": 32,
+    "relation_min_slots": 0,
+    "relation_max_slots": 8,
+    "attention_min_slots": 0,
+    "attention_max_slots": 1,
+    "mutation_probability": 0.03,
+    "mutation_std": 0.16,
+    "maintenance_energy_per_working_memory_dimension": 1e-05,
+    "maintenance_energy_per_knowledge_byte": 1e-07,
+    "maintenance_energy_per_relation_slot": 5e-06,
+    "maintenance_energy_per_attention_slot": 1e-05,
+    "development_energy_per_working_memory_dimension": 0.002,
+    "development_energy_per_knowledge_byte": 1e-05,
+    "development_energy_per_relation_slot": 0.001,
+    "development_energy_per_attention_slot": 0.002
+  },
+  "functional_modules": {
+    "enabled": true,
+    "schema": "expression-gated-regulatory-resource-metabolism-v6",
+    "module_count": 4,
+    "input_schema": "internal-homeostasis-local-resources-abiotic-stores-feedforward-v5",
+    "output_schema": "harvest-regulatory-drive-v2",
+    "expression_threshold": 0.0,
+    "max_residual_fraction": 0.5,
+    "mutation_probability": 0.03,
+    "mutation_std": 0.16,
+    "maintenance_energy_per_expression": 8e-05,
+    "development_energy_per_expression": 0.008,
+    "coupling_schema": "lower-slot-signal-modulation-v1",
+    "maintenance_energy_per_coupling_weight": 2e-05,
+    "development_energy_per_coupling_weight": 0.002,
+    "maintenance_energy_per_embodied_weight": 0.0,
+    "development_energy_per_embodied_weight": 0.0,
+    "max_movement_speed_fraction": 0.0,
+    "max_signal_strength_fraction": 0.0,
+    "repair_material_per_tick": 0.0,
+    "repair_integrity_per_material": 0.0,
+    "repair_energy_per_material": 0.0,
+    "maintenance_energy_per_physiology_weight": 1e-05,
+    "development_energy_per_physiology_weight": 0.001
+  },
+  "physiology": {
+    "enabled": true,
+    "schema": "transport-metabolism-messenger-tissue-resource-v8",
+    "initial_oxygenation": 0.75,
+    "initial_tissue_condition": 1.0,
+    "initial_structure_condition": 1.0,
+    "oxygen_uptake_per_tick": 0.055,
+    "basal_oxygen_use_per_tick": 0.01,
+    "movement_oxygen_use_per_tick": 0.01,
+    "signal_oxygen_use_per_tick": 0.004,
+    "repair_oxygen_use_per_material": 0.1,
+    "perfusion_energy_per_tick": 0.0,
+    "hypoxia_threshold": 0.25,
+    "hypoxia_tissue_damage_per_tick": 0.0015,
+    "terrain_speed_penalty_fraction": 0.35,
+    "terrain_energy_cost_fraction": 0.25,
+    "wear_tissue_damage_per_tick": 0.0005,
+    "wear_structure_damage_per_tick": 0.0007,
+    "tissue_damage_integrity_fraction": 0.35,
+    "structure_damage_integrity_fraction": 0.45,
+    "repair_material_per_tick": 0.012,
+    "repair_energy_per_material": 0.2,
+    "repair_tissue_per_material": 0.05,
+    "repair_structure_per_material": 0.04,
+    "max_movement_speed_fraction": 0.6,
+    "max_signal_strength_fraction": 0.7,
+    "oxygen_gradient_weight": 0.8,
+    "initial_metabolic_fatigue": 0.05,
+    "initial_mobilization_messenger": 0.08,
+    "initial_maintenance_messenger": 0.08,
+    "initial_messenger_precursor": 0.8,
+    "messenger_synthesis_per_tick": 0.02,
+    "messenger_decay_per_tick": 0.04,
+    "messenger_precursor_use_per_unit": 0.5,
+    "messenger_precursor_recovery_per_tick": 0.01,
+    "messenger_precursor_material_per_unit": 0.02,
+    "messenger_energy_per_unit": 0.02,
+    "computation_energy_per_load": 0.0002,
+    "computation_oxygen_per_load": 0.0001,
+    "fatigue_gain_per_work": 0.002,
+    "fatigue_gain_per_hypoxia": 0.01,
+    "fatigue_clearance_per_tick": 0.008,
+    "mobilization_speed_gain": 0.4,
+    "mobilization_signal_gain": 0.3,
+    "mobilization_oxygen_cost_gain": 0.3,
+    "maintenance_repair_gain": 0.8,
+    "maintenance_clearance_gain": 0.5,
+    "maintenance_speed_penalty": 0.2,
+    "gene_mutation_probability": 0.03,
+    "gene_mutation_std": 0.12,
+    "maintenance_energy_per_capacity": 0.0002,
+    "development_energy_per_capacity": 0.01,
+    "resource_store_base_capacity": [
+      1.2,
+      1.2,
+      1.2,
+      1.2
+    ],
+    "resource_conversion_per_tick": [
+      0.04,
+      0.04,
+      0.04,
+      0.04
+    ],
+    "resource_store_decay_per_tick": [
+      0.002,
+      0.002,
+      0.002,
+      0.002
+    ]
+  }
+}

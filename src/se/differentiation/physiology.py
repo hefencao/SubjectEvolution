@@ -22,6 +22,7 @@ RESOURCE_METABOLISM_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-r
 CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v5"
 RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v6"
 SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v7"
+FIXED_BUDGET_RESOURCE_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v8"
 REGULATORY_PHYSIOLOGY_SCHEMA = CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA
 REGULATORY_PHYSIOLOGY_SCHEMAS = frozenset(
     {
@@ -31,6 +32,7 @@ REGULATORY_PHYSIOLOGY_SCHEMAS = frozenset(
         CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA,
         RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
         SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA,
+        FIXED_BUDGET_RESOURCE_PHYSIOLOGY_SCHEMA,
     }
 )
 PHYSIOLOGY_GENE_NAMES = (
@@ -97,6 +99,7 @@ def conservative_regulatory_physiology_enabled(cfg: SimulationConfig) -> bool:
             CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA,
             RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
             SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA,
+            FIXED_BUDGET_RESOURCE_PHYSIOLOGY_SCHEMA,
         }
     )
 
@@ -108,6 +111,7 @@ def resource_metabolism_enabled(cfg: SimulationConfig) -> bool:
             CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA,
             RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
             SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA,
+            FIXED_BUDGET_RESOURCE_PHYSIOLOGY_SCHEMA,
         }
     )
 
@@ -119,6 +123,7 @@ def storage_constrained_intake_enabled(cfg: SimulationConfig) -> bool:
             CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA,
             RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
             SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA,
+            FIXED_BUDGET_RESOURCE_PHYSIOLOGY_SCHEMA,
         }
     )
 
@@ -147,6 +152,15 @@ def spatial_processing_enabled(cfg: SimulationConfig) -> bool:
     )
 
 
+def fixed_budget_resource_conversion_enabled(cfg: SimulationConfig) -> bool:
+    """Return whether four conversion channels share one inherited budget."""
+
+    return bool(
+        cfg.physiology.enabled
+        and cfg.physiology.schema == FIXED_BUDGET_RESOURCE_PHYSIOLOGY_SCHEMA
+    )
+
+
 def physiology_gene_count(cfg: SimulationConfig) -> int:
     if not regulatory_physiology_enabled(cfg):
         return 0
@@ -167,6 +181,30 @@ def _bounded_symmetric(raw: np.ndarray, half_span: float = 0.5) -> np.ndarray:
 
 def _bounded_unit(raw: np.ndarray) -> np.ndarray:
     return 0.5 + 0.5 * np.tanh(raw.astype(np.float64))
+
+
+def _fixed_budget_conversion_capacity(
+    raw: np.ndarray, conversion_base: np.ndarray
+) -> np.ndarray:
+    """Allocate one fixed conversion total across channels by inherited weights."""
+
+    weights = _bounded_symmetric(raw) * np.asarray(conversion_base, dtype=np.float64)
+    totals = weights.sum(axis=1, keepdims=True)
+    fixed_total = float(np.asarray(conversion_base, dtype=np.float64).sum())
+    if fixed_total <= 0.0 or np.any(totals <= 0.0):
+        raise ValueError("fixed conversion budget requires positive channel bases")
+    return weights * (fixed_total / totals)
+
+
+def neutral_resource_conversion_capacity(
+    rows: int, cfg: SimulationConfig
+) -> np.ndarray:
+    """Return the genotype-neutral allocation with the same total capacity."""
+
+    base = np.asarray(cfg.physiology.resource_conversion_per_tick, dtype=np.float64)
+    if base.shape != (4,) or np.any(base <= 0.0):
+        raise ValueError("neutral conversion allocation requires four positive bases")
+    return np.repeat(base[None, :], int(rows), axis=0)
 
 
 def physiology_phenotype(
@@ -231,7 +269,9 @@ def physiology_phenotype(
             else np.zeros((values.shape[0], 4), dtype=np.float64)
         ),
         resource_conversion_capacity=(
-            conversion_base * _bounded_symmetric(resource_raw[:, 4:8])
+            _fixed_budget_conversion_capacity(resource_raw[:, 4:8], conversion_base)
+            if fixed_budget_resource_conversion_enabled(cfg)
+            else conversion_base * _bounded_symmetric(resource_raw[:, 4:8])
             if resource_metabolism_enabled(cfg)
             else np.zeros((values.shape[0], 4), dtype=np.float64)
         ),
@@ -324,9 +364,17 @@ def physiology_genome_energy(
             np.asarray(cfg.physiology.resource_conversion_per_tick, dtype=np.float64),
             1.0e-12,
         )
+        conversion_load = (
+            phenotype.resource_conversion_capacity.sum(axis=1)
+            / float(conversion_base.sum())
+            if fixed_budget_resource_conversion_enabled(cfg)
+            else (
+                phenotype.resource_conversion_capacity / conversion_base[None, :]
+            ).mean(axis=1)
+        )
         resource_load = 0.5 * (
             (phenotype.resource_store_capacity / store_base[None, :]).mean(axis=1)
-            + (phenotype.resource_conversion_capacity / conversion_base[None, :]).mean(axis=1)
+            + conversion_load
         )
         capacity_load = 0.75 * capacity_load + 0.25 * resource_load
     rate = (
@@ -341,6 +389,7 @@ __all__ = [
     "CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA",
     "RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA",
     "SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA",
+    "FIXED_BUDGET_RESOURCE_PHYSIOLOGY_SCHEMA",
     "CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA",
     "LEGACY_REGULATORY_PHYSIOLOGY_SCHEMA",
     "PHYSIOLOGY_GENE_COUNT",
@@ -360,6 +409,8 @@ __all__ = [
     "regulatory_physiology_enabled",
     "external_resource_recycling_enabled",
     "resource_metabolism_enabled",
+    "fixed_budget_resource_conversion_enabled",
+    "neutral_resource_conversion_capacity",
     "storage_constrained_intake_enabled",
     "spatial_processing_enabled",
 ]
