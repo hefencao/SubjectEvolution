@@ -362,6 +362,18 @@ class SimulationReportingMixin:
             "group_function_window_ticks": (
                 self.cfg.run.group_function_window_ticks
             ),
+            "reconnaissance_diagnostics_enabled": (
+                self.reconnaissance_diagnostics is not None
+            ),
+            "reconnaissance_diagnostics_schema": (
+                self.cfg.run.reconnaissance_diagnostics_schema
+            ),
+            "reconnaissance_window_ticks": (
+                self.cfg.run.reconnaissance_window_ticks
+            ),
+            "resource_load_schema": self.cfg.entities.resource_load_schema,
+            "resource_contest_schema": self.cfg.entities.resource_contest_schema,
+            "danger_sensing_schema": self.cfg.entities.danger_sensing_schema,
             "spatial_cultural_transfer_diagnostics_enabled": (
                 self.cfg.run.spatial_stress_diagnostics_schema
                 == "spatial-local-stress-culture-diagnostics-v2"
@@ -1199,6 +1211,10 @@ class SimulationReportingMixin:
         if self.group_function_diagnostics is not None:
             structure_environment_metrics.update(
                 self.group_function_diagnostics.latest_metrics()
+            )
+        if self.reconnaissance_diagnostics is not None:
+            structure_environment_metrics.update(
+                self.reconnaissance_diagnostics.latest_metrics()
             )
         if self.environment_atlas_diagnostics is not None:
             structure_environment_metrics.update(
@@ -2413,6 +2429,11 @@ class SimulationReportingMixin:
             "resource_sensing_maintenance_energy_step": stats.resource_sensing_maintenance_energy,
             "resource_sensing_use_energy_step": stats.resource_sensing_use_energy,
             "resource_sensing_development_energy_step": stats.resource_sensing_development_energy,
+            "resource_load_movement_energy_step": stats.resource_load_movement_energy,
+            "harvest_contest_events_step": stats.harvest_contest_events,
+            "harvest_contest_pressure_step": stats.harvest_contest_pressure,
+            "harvest_contest_energy_step": stats.harvest_contest_energy,
+            "harvest_contest_integrity_damage_step": stats.harvest_contest_integrity_damage,
             "benefit_classification_residual_step": (
                 stats.shared_energy - float(stats.benefit_flow_energy.sum())
             ),

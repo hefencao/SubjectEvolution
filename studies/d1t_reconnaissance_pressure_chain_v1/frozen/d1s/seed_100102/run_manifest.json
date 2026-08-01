@@ -1,0 +1,433 @@
+{
+  "version": "0.100.0",
+  "seed": 100102,
+  "requested_backend": "auto",
+  "execution_backend": "gpu-hybrid-accelerated",
+  "gpu_semantics_mode": "hybrid-accelerated",
+  "gpu_device_validated": true,
+  "gpu_acceleration_enabled": true,
+  "gpu_fallback_used": false,
+  "gpu_fallback_reason": null,
+  "gpu_latent_root_hash_batch_enabled": true,
+  "gpu_latent_root_hash_schema": "splitmix64-uint64-device-hash-cpu-ordered-quantization-v1",
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:16:10) [GCC 11.2.0]",
+  "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.41",
+  "numpy": "2.5.1",
+  "config_sha256": "4c41bc6974215402e31b61c98277a29fe0cbccee46d847171dc105f0760daa93",
+  "environment_schema": "structured-province-resource-network-v4",
+  "environment_resource_channels": 4,
+  "environment_spatially_asynchronous": true,
+  "environment_process": {
+    "api_schema": "additive-environment-field-process-v1",
+    "schema": "disabled",
+    "origin": "core-disabled",
+    "mechanism_class": "none",
+    "interpretation": "scientific-core-only",
+    "default_enabled": false,
+    "parameter_names": [],
+    "parameters_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+  },
+  "resource_affinity_enabled": true,
+  "resource_affinity_schema": "normalized-four-resource-affinity-v1",
+  "resource_affinity_strength": 0.75,
+  "harvest_allocation_schema": "affinity-sampled-exclusive-harvest-v1",
+  "resource_processing_schema": "phase-shifted-channel-processing-support-v1",
+  "resource_processing_support_amplitude": 0.65,
+  "resource_processing_support_orientation_reversed": false,
+  "resource_processing_energy_per_unit": [
+    0.006,
+    0.006,
+    0.006,
+    0.006
+  ],
+  "resource_affinity_gene_indices": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "resource_affinity_fixed_budget_q": 16384,
+  "long_run_diagnostics_enabled": true,
+  "long_run_diagnostics_schema": "long-run-evolution-diagnostics-v1",
+  "spatial_stress_diagnostics_enabled": true,
+  "spatial_stress_diagnostics_schema": "spatial-local-stress-culture-diagnostics-v2",
+  "spatial_stress_regions": [
+    4,
+    4
+  ],
+  "spatial_stress_region_partition": {
+    "schema": "normalized-fixed-count-grid-v1",
+    "mapping": "row-major-y-then-x",
+    "boundary_convention": "half-open except clipped outer boundary",
+    "regions_x": 4,
+    "regions_y": 4,
+    "region_count": 16,
+    "world_width": 128.0,
+    "world_height": 128.0,
+    "world_grid_x": 32,
+    "world_grid_y": 32,
+    "normalized_region_width": 0.25,
+    "normalized_region_height": 0.25,
+    "physical_region_width": 32.0,
+    "physical_region_height": 32.0,
+    "world_cells_per_region_x": 8.0,
+    "world_cells_per_region_y": 8.0,
+    "world_grid_aligned": true,
+    "feedback_to_world": false,
+    "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+    "partition_sha256": "80ca3a910af4d035ebdcc1b9fb961d80675113ed6ff16e84a7c3b5f30a34c3f9"
+  },
+  "subject_structure_diagnostics_enabled": true,
+  "subject_structure_diagnostics_schema": "stable-membership-subject-succession-v1",
+  "environment_atlas_diagnostics_enabled": true,
+  "environment_atlas_diagnostics_schema": "multiscale-subject-environment-atlas-v2",
+  "environment_atlas": {
+    "schema": "multiscale-subject-environment-atlas-v2",
+    "feedback_to_world": false,
+    "signature_dimensions": [
+      "resource_0_fraction",
+      "resource_1_fraction",
+      "resource_2_fraction",
+      "resource_3_fraction",
+      "hazard",
+      "mortality_trace"
+    ],
+    "scales": [
+      {
+        "schema": "normalized-fixed-count-grid-v1",
+        "mapping": "row-major-y-then-x",
+        "boundary_convention": "half-open except clipped outer boundary",
+        "regions_x": 2,
+        "regions_y": 2,
+        "region_count": 4,
+        "world_width": 128.0,
+        "world_height": 128.0,
+        "world_grid_x": 32,
+        "world_grid_y": 32,
+        "normalized_region_width": 0.5,
+        "normalized_region_height": 0.5,
+        "physical_region_width": 64.0,
+        "physical_region_height": 64.0,
+        "world_cells_per_region_x": 16.0,
+        "world_cells_per_region_y": 16.0,
+        "world_grid_aligned": true,
+        "feedback_to_world": false,
+        "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+        "partition_sha256": "e44cf1d76a49a7081e676977301038cd524d39a839a4594fc74f7ac2d14827cd"
+      },
+      {
+        "schema": "normalized-fixed-count-grid-v1",
+        "mapping": "row-major-y-then-x",
+        "boundary_convention": "half-open except clipped outer boundary",
+        "regions_x": 4,
+        "regions_y": 4,
+        "region_count": 16,
+        "world_width": 128.0,
+        "world_height": 128.0,
+        "world_grid_x": 32,
+        "world_grid_y": 32,
+        "normalized_region_width": 0.25,
+        "normalized_region_height": 0.25,
+        "physical_region_width": 32.0,
+        "physical_region_height": 32.0,
+        "world_cells_per_region_x": 8.0,
+        "world_cells_per_region_y": 8.0,
+        "world_grid_aligned": true,
+        "feedback_to_world": false,
+        "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+        "partition_sha256": "80ca3a910af4d035ebdcc1b9fb961d80675113ed6ff16e84a7c3b5f30a34c3f9"
+      },
+      {
+        "schema": "normalized-fixed-count-grid-v1",
+        "mapping": "row-major-y-then-x",
+        "boundary_convention": "half-open except clipped outer boundary",
+        "regions_x": 8,
+        "regions_y": 8,
+        "region_count": 64,
+        "world_width": 128.0,
+        "world_height": 128.0,
+        "world_grid_x": 32,
+        "world_grid_y": 32,
+        "normalized_region_width": 0.125,
+        "normalized_region_height": 0.125,
+        "physical_region_width": 16.0,
+        "physical_region_height": 16.0,
+        "world_cells_per_region_x": 4.0,
+        "world_cells_per_region_y": 4.0,
+        "world_grid_aligned": true,
+        "feedback_to_world": false,
+        "map_size_semantics": "fixed region counts over normalized coordinates; physical area and represented world-cell count scale with map dimensions and resolution",
+        "partition_sha256": "0fdbb1f57edbe87a4e6a7e2929f4614d1637a26822bfa8a314c3936571dbb876"
+      }
+    ],
+    "subject_association_interpretation": "between-subject share of realized regional exposure variance among labels with at least two members; descriptive, not causal and not a subjecthood score",
+    "resource_independence_metrics": true
+  },
+  "group_function_diagnostics_enabled": true,
+  "group_function_diagnostics_schema": "group-functional-division-diagnostics-v1",
+  "group_function_window_ticks": 120,
+  "spatial_cultural_transfer_diagnostics_enabled": true,
+  "strategy_schema": "inherited-variable-latent-router-mlp-v1",
+  "knowledge_schema": "dynamic-knowledge-latent-v1",
+  "knowledge_learning_enabled": true,
+  "knowledge_outcome_schema": "local-outcome-v1",
+  "knowledge_outcome_dense_log_enabled": false,
+  "knowledge_transfer_trigger_schema": "signal-action-partner-v1",
+  "knowledge_transfer_probability": 0.1,
+  "knowledge_transfer_period": 1,
+  "knowledge_cultural_metrics_require_committed_transfer": true,
+  "knowledge_policy_influence": true,
+  "knowledge_policy_dense_log_enabled": false,
+  "knowledge_policy_residual_schema": "quantized-variable-latent-mlp-residual-v1",
+  "knowledge_latent_policy_enabled": true,
+  "knowledge_latent_schema": "variable-latent-knowledge-v1",
+  "knowledge_latent_router_schema": "quantized-mlp-latent-router-v1",
+  "knowledge_latent_length_levels": [
+    4,
+    8,
+    16,
+    32
+  ],
+  "knowledge_latent_projection_width": 8,
+  "knowledge_latent_mlp_hidden_width": 8,
+  "knowledge_latent_activation": "integer-hard-tanh-v1",
+  "knowledge_latent_quantized_publish": true,
+  "knowledge_routing_cost_enabled": true,
+  "knowledge_routing_cost_dense_log_enabled": false,
+  "knowledge_routing_cost_schema": "latent-routing-compute-cost-v1",
+  "knowledge_routing_budget_mode": "all-or-none-per-entity-v1",
+  "knowledge_working_memory_enabled": true,
+  "knowledge_working_memory_dense_log_enabled": false,
+  "knowledge_working_memory_schema": "quantized-working-memory-v1",
+  "knowledge_working_memory_width": 4,
+  "knowledge_working_memory_numeric_semantics": "int16-state-integer-hard-clip-v1",
+  "knowledge_sparse_selection_enabled": true,
+  "knowledge_sparse_selection_dense_log_enabled": false,
+  "knowledge_sparse_selection_schema": "sparse-query-key-topk-router-v1",
+  "knowledge_sparse_selection_top_k": null,
+  "knowledge_sparse_selection_capacity_schema": "inherited-discrete-topk-v1",
+  "knowledge_sparse_selection_capacity_levels": [
+    0,
+    1,
+    2,
+    4,
+    8
+  ],
+  "knowledge_sparse_selection_authority": "ephemeral-workset-only",
+  "knowledge_global_category_embedding": false,
+  "knowledge_attention_softmax": false,
+  "knowledge_latent_external_optimizer": false,
+  "differentiation_enabled": true,
+  "differentiation_schema": "inherited-elastic-capacities-v1",
+  "differentiation_capacity_gene_start": 535,
+  "differentiation_capacity_gene_count": 4,
+  "differentiation_capacity_bounds": {
+    "working_memory_dimensions": [
+      0,
+      4
+    ],
+    "knowledge_bytes": [
+      0,
+      512
+    ],
+    "relation_slots": [
+      0,
+      8
+    ],
+    "knowledge_attention_slots": [
+      0,
+      1
+    ]
+  },
+  "differentiation_feedback_to_world": true,
+  "differentiation_role_labels": false,
+  "differentiation_diversity_protection": false,
+  "functional_modules_enabled": true,
+  "functional_modules_schema": "expression-gated-regulatory-resource-metabolism-v6",
+  "functional_modules_gene_start": 539,
+  "functional_modules_module_count": 4,
+  "functional_modules_gene_count": 165,
+  "functional_modules_input_schema": "internal-homeostasis-local-resources-abiotic-stores-feedforward-v5",
+  "functional_modules_output_schema": "harvest-regulatory-drive-v2",
+  "functional_modules_coupling_schema": "lower-slot-signal-modulation-v1",
+  "functional_modules_feedback_scope": "harvest-channel-request-only",
+  "functional_modules_action_selection": false,
+  "functional_modules_new_world_physics": false,
+  "functional_modules_diversity_protection": false,
+  "knowledge_candidate_tracking": false,
+  "knowledge_candidate_schema": null,
+  "knowledge_candidate_graph_schema": null,
+  "knowledge_candidate_diagnostic_only": true,
+  "validation_mode": true,
+  "checkpoint_lineage": [],
+  "event_log_scope": "full-run",
+  "environment_resource_dynamics": {
+    "schema": "structured-province-resource-network-v4",
+    "cycle_periods": [
+      173,
+      257,
+      349,
+      431
+    ],
+    "cycle_amplitudes": [
+      0.5,
+      0.5,
+      0.5,
+      0.5
+    ],
+    "primary_wave_vectors": [
+      [
+        1.0,
+        0.0
+      ],
+      [
+        1.0,
+        1.0
+      ],
+      [
+        2.0,
+        1.0
+      ],
+      [
+        4.0,
+        -1.0
+      ]
+    ],
+    "secondary_wave_vectors": [
+      [
+        1.0,
+        2.0
+      ],
+      [
+        2.0,
+        -1.0
+      ],
+      [
+        3.0,
+        2.0
+      ],
+      [
+        5.0,
+        2.0
+      ]
+    ],
+    "primary_wave_amplitudes": [
+      0.26,
+      0.24,
+      0.22,
+      0.2
+    ],
+    "secondary_wave_amplitudes": [
+      0.1,
+      0.11,
+      0.12,
+      0.13
+    ],
+    "diffusion_rates": [
+      0.002,
+      0.004,
+      0.008,
+      0.016
+    ],
+    "configured_spatial_scales": {
+      "schema": "configured-resource-spatial-scales-v1",
+      "primary": [
+        {
+          "x_cycles": 1.0,
+          "y_cycles": 0.0,
+          "cycles_magnitude": 1.0,
+          "approx_wavelength_cells": 32.0
+        },
+        {
+          "x_cycles": 1.0,
+          "y_cycles": 1.0,
+          "cycles_magnitude": 1.4142135623730951,
+          "approx_wavelength_cells": 22.62741699796952
+        },
+        {
+          "x_cycles": 2.0,
+          "y_cycles": 1.0,
+          "cycles_magnitude": 2.23606797749979,
+          "approx_wavelength_cells": 14.310835055998654
+        },
+        {
+          "x_cycles": 4.0,
+          "y_cycles": -1.0,
+          "cycles_magnitude": 4.123105625617661,
+          "approx_wavelength_cells": 7.761140001162655
+        }
+      ],
+      "secondary": [
+        {
+          "x_cycles": 1.0,
+          "y_cycles": 2.0,
+          "cycles_magnitude": 2.23606797749979,
+          "approx_wavelength_cells": 14.310835055998654
+        },
+        {
+          "x_cycles": 2.0,
+          "y_cycles": -1.0,
+          "cycles_magnitude": 2.23606797749979,
+          "approx_wavelength_cells": 14.310835055998654
+        },
+        {
+          "x_cycles": 3.0,
+          "y_cycles": 2.0,
+          "cycles_magnitude": 3.605551275463989,
+          "approx_wavelength_cells": 8.875203139603666
+        },
+        {
+          "x_cycles": 5.0,
+          "y_cycles": 2.0,
+          "cycles_magnitude": 5.385164807134504,
+          "approx_wavelength_cells": 5.9422508216656595
+        }
+      ],
+      "primary_wavelength_separation_ratio": 4.123105625617661,
+      "channel_scale_count": 4
+    },
+    "entity_state_feedback": false,
+    "lineage_feedback": false,
+    "group_feedback": false,
+    "renewal_contract": "moving-target-source-sink-v2"
+  },
+  "environment_resource_diversity_initial": {
+    "schema": "resource-field-diversity-metrics-v1",
+    "resource_effective_dimensions": 3.1559967312858994,
+    "resource_channel_correlation": [
+      [
+        1.0,
+        -0.29437910592494093,
+        -0.063162884329396,
+        -0.02689900778896688
+      ],
+      [
+        -0.29437910592494093,
+        1.0,
+        0.20263966947739198,
+        -0.4652573485978654
+      ],
+      [
+        -0.063162884329396,
+        0.20263966947739198,
+        1.0,
+        -0.18416895897188373
+      ],
+      [
+        -0.02689900778896688,
+        -0.4652573485978654,
+        -0.18416895897188373,
+        1.0
+      ]
+    ],
+    "resource_channel_mean_abs_correlation": 0.2060844958484075,
+    "resource_channel_max_abs_correlation": 0.4652573485978654,
+    "resource_spatial_cv_by_channel": [
+      0.5579020855608536,
+      0.526458023708263,
+      0.40052140737443315,
+      0.4554517599540006
+    ],
+    "resource_spatial_cv_mean": 0.4850833191493876
+  }
+}

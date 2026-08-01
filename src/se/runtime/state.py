@@ -132,6 +132,11 @@ class StepStats:
     resource_sensing_maintenance_energy: float = 0.0
     resource_sensing_use_energy: float = 0.0
     resource_sensing_development_energy: float = 0.0
+    resource_load_movement_energy: float = 0.0
+    harvest_contest_events: int = 0
+    harvest_contest_pressure: float = 0.0
+    harvest_contest_energy: float = 0.0
+    harvest_contest_integrity_damage: float = 0.0
     capacity_maintenance_energy: float = 0.0
     capacity_development_energy: float = 0.0
     functional_module_maintenance_energy: float = 0.0
@@ -287,6 +292,7 @@ class EntityState:
         )
         self.harvested_energy_total = np.zeros(cap, dtype=np.float32)
         self.shared_energy_received_total = np.zeros(cap, dtype=np.float32)
+        self.recent_contest_pressure = np.zeros(cap, dtype=np.float32)
         self.next_entity_id = np.uint64(initial + 1)
         self.free_slots = list(range(cap - 1, initial - 1, -1))
         self.free_slot_version = 0
@@ -503,6 +509,7 @@ class EntityState:
         self.working_memory_previous_observation_q[slots] = 0
         self.harvested_energy_total[slots] = 0.0
         self.shared_energy_received_total[slots] = 0.0
+        self.recent_contest_pressure[slots] = 0.0
         self.primary_subject_id[slots] = 0
         self.lineage_subject_id[slots] = 0
 
@@ -668,6 +675,7 @@ class EntityState:
         if resource_metabolism_enabled(self.cfg):
             self.resource_store[indices] = 0.0
         self.memory[indices] = 0.0
+        self.recent_contest_pressure[indices] = 0.0
         self.working_memory_q[indices] = 0
         self.working_memory_previous_observation_q[indices] = 0
         self.working_memory_capacity[indices] = 0

@@ -33,6 +33,8 @@ _METADATA_NAMES = {
     "environment_atlas_summary.json",
     "group_function_windows.jsonl",
     "group_function_summary.json",
+    "reconnaissance_windows.jsonl",
+    "reconnaissance_summary.json",
     "run_termination.json",
     "scientific_validity.json",
     "subject_structure_summary.json",

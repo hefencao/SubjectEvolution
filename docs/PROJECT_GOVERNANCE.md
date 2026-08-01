@@ -259,3 +259,14 @@ events and summaries. Missing evidence may be declared, but not reconstructed.
 - The new durable rule that random founders cannot pay a population-wide mature or combination cost is recorded in the charter, architecture, status, study, tests, and iteration note.
 - D1-O changes no shared physical substrate field and adds no new gene, reward, role, replacement seed, protection rule, or post-hoc threshold.
 - Current evidence authorizes capability design and source health only; paired commands remain undeclared until a later version consumes passing source evidence, and evolutionary interpretation remains unauthorized.
+
+## Reconnaissance and other emergent-function governance
+
+Scout-like language is prohibited unless multiple independent qualified runs
+show persistent within-group differentiation after the physical pressure,
+sensing, communication and receiver-action chain has been preregistered. Merely
+counting SIGNAL, FLEE, high sensing radius or frontier position is insufficient.
+Parameter-debug probes may report connected events, but they must set formal
+role, gene, selection and adaptation authorization to false. Increasing damage,
+ticks or group count is not an acceptable substitute for a missing actionable
+information interface.

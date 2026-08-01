@@ -104,7 +104,12 @@ from se.evolution.lifecycle import (
 )
 from ..metrics import MetricsWriter
 from .termination import write_run_termination
-from .resource_sensing import add_resource_sensing_operating_cost, effective_resource_sensing_observation, record_resource_sensing_development_cost
+from .resource_sensing import (
+    add_resource_sensing_operating_cost,
+    effective_danger_sensing_radius,
+    effective_resource_sensing_observation,
+    record_resource_sensing_development_cost,
+)
 from .reproduction import (
     reproduction_energy_cost,
     reproduction_energy_requirement,
@@ -114,6 +119,7 @@ from se.env.local_stress import LocalStressDiagnostics
 from ..event_cohort import EventCohortDiagnostics
 from se.subjects.succession import SubjectStructureDiagnostics
 from se.subjects.division import GroupFunctionDiagnostics
+from se.subjects.reconnaissance import build_reconnaissance_diagnostics, observe_reconnaissance_step
 from se.env.atlas import EnvironmentAtlasDiagnostics
 from se.differentiation.physiology import resource_metabolism_enabled
 from se.env.niches import (
@@ -146,6 +152,9 @@ from .state import EntityState, StepStats, _wrap_periodic_float32
 from .share_settlement import commit_shares, finalize_share_capacity
 from .embodied import apply_material_repair, movement_cost_with_power
 from .harvest_commit import commit_harvest_resolution
+from .signalling import emit_actor_signals
+from .harvest_contest import commit_harvest_contest, decay_recent_contest_pressure, resolve_harvest_contest
+from .load_burden import load_movement_energy, load_speed_multiplier, raw_resource_load_fraction
 from .resource_metabolism import (
     initialize_resource_metabolism_state,
     raw_harvest_room,
@@ -410,6 +419,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             if cfg.run.group_function_diagnostics_enabled
             else None
         )
+        self.reconnaissance_diagnostics = build_reconnaissance_diagnostics(self)
         # Run-local, diagnostic-only endpoint cohort decomposition used by
         # preregistered natural-event branches. It is never checkpoint state and
         # never feeds the world.
@@ -636,77 +646,12 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             tick=self.tick,
         )
     def _emit_signals(
-        self,
-        actors: np.ndarray,
-        cells: np.ndarray,
-        local_resources: np.ndarray,
-        target_indices: np.ndarray,
-        strength_multiplier: np.ndarray | None = None,
+        self, actors: np.ndarray, cells: np.ndarray, local_resources: np.ndarray,
+        target_indices: np.ndarray, strength_multiplier: np.ndarray | None = None,
     ) -> tuple[SignalEmissionPlan, int, float]:
-        if actors.size == 0:
-            return SignalEmissionPlan(()), 0, 0.0
-        ent = self.entities
-        actor_cells = cells
-        multiplier = (
-            np.ones(actors.size, dtype=np.float32)
-            if strength_multiplier is None
-            else np.asarray(strength_multiplier, dtype=np.float32)
+        return emit_actor_signals(
+            self, actors, cells, local_resources, target_indices, strength_multiplier
         )
-        if multiplier.shape != (actors.size,):
-            raise ValueError("signal strength multiplier must match actors")
-        resource_signal = public_resource_signal(local_resources, self.cfg)
-        strengths_resource = (
-            np.clip(resource_signal, 0.0, 2.0) * 0.15 * multiplier
-        )
-        actor_evidence_q = (
-            (
-                np.full(
-                    (actors.size, 2),
-                    DANGER_EVIDENCE_SCALE,
-                    dtype=np.int32,
-                )
-                if self.danger_evidence_ablation_enabled
-                else danger_evidence_quantized(ent.genotype[actors], self.cfg)
-            )
-            if danger_evidence_enabled(self.cfg)
-            else None
-        )
-        hazard = (
-            self.gpu_runtime.danger_for_cells(actor_cells, actor_evidence_q)
-            if self.gpu_runtime is not None
-            else self.environment.danger_for_cells(actor_cells, actor_evidence_q)
-        )
-        strengths_danger = hazard * 0.15 * multiplier
-        group_member = self.social.group_id[actors] != 0
-        strengths_social = group_member.astype(np.float32) * 0.12 * multiplier
-        signal_plan = SignalEmissionPlan(
-            batches=(
-                SignalEmissionBatch(0, actor_cells, strengths_resource, emitter="actor-resource"),
-                SignalEmissionBatch(1, actor_cells, strengths_danger, emitter="actor-danger"),
-                SignalEmissionBatch(2, actor_cells, strengths_social, emitter="actor-social"),
-            )
-        )
-        signal_energy = (
-            float(self.cfg.entities.signal_cost)
-            * np.square(multiplier.astype(np.float64))
-        )
-        ent.energy[actors] -= signal_energy.astype(np.float32)
-        valid_target = (target_indices >= 0) & ent.alive[target_indices]
-        safe_targets = np.where(valid_target, target_indices, 0)
-        payloads = np.stack(
-            [resource_signal, hazard, group_member.astype(np.float32)], axis=1
-        ).astype(np.float32)
-        direct_messages = 0
-        if self.direct_messages_enabled:
-            direct_messages = self.information.emit_direct(
-                ent.entity_id[actors],
-                ent.entity_id[safe_targets] * valid_target.astype(np.uint64),
-                payloads,
-                np.full(actors.size, 1.0, dtype=np.float32),
-                self.cfg.run.seed,
-                self.tick,
-            )
-        return signal_plan, direct_messages, float(signal_energy.sum(dtype=np.float64))
     def _flush_signal_emissions(self, plan: SignalEmissionPlan | None = None) -> None:
         """Commit channel batches whose modeled delivery cadence is due now."""
         # ``self.tick`` is zero-based during a step.  Flush against the
@@ -792,6 +737,8 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         signal_strength_multiplier = np.ones(ent.alive.size, dtype=np.float32)
         functional_context_metrics: dict[str, object] = {}
         effective_danger_evidence_q: np.ndarray | None = None
+        load_fraction_full = np.zeros(ent.alive.size, dtype=np.float32)
+        decay_recent_contest_pressure(ent, cfg)
         settle_resource_metabolism_before_step(self, stats)
         policy_energy = ent.energy
         if self.gpu_runtime is None:
@@ -869,8 +816,12 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 storage_room_fraction=active_storage_room_fraction,
             )
             resource_gradient, danger_gradient = self.environment.gradients_for_entities(
-                self.spatial.entity_cells, ent.alive.size, sensing_weights,
-                effective_danger_evidence_q, sensing_radii,
+                self.spatial.entity_cells,
+                ent.alive.size,
+                sensing_weights,
+                effective_danger_evidence_q,
+                sensing_radii,
+                effective_danger_sensing_radius(self),
             )
             resource_gradient = augment_gradient_with_oxygen(self, resource_gradient)
             if cfg.knowledge.enabled and cfg.knowledge.learning_enabled:
@@ -1014,6 +965,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     run_seed=cfg.run.seed,
                     tick=self.tick,
                     knowledge_plan=cost_free_knowledge_policy_plan,
+                    position_x=ent.x, position_y=ent.y,
                 )
             memory_free_decision = None
             if cfg.knowledge.working_memory_enabled:
@@ -1034,6 +986,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     run_seed=cfg.run.seed,
                     tick=self.tick,
                     knowledge_plan=knowledge_policy_plan,
+                    position_x=ent.x, position_y=ent.y,
                 )
             decision = self.policy.decide(
                 active=active,
@@ -1052,6 +1005,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 run_seed=cfg.run.seed,
                 tick=self.tick,
                 knowledge_plan=knowledge_policy_plan,
+                position_x=ent.x, position_y=ent.y,
             )
             if cost_free_decision is not None:
                 decision.cost_free_knowledge_action = cost_free_decision.action
@@ -1360,6 +1314,15 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         stats.move_social_fraction = float(
             np.mean(decision.action[grouped] == Action.MOVE_SOCIAL) if np.any(grouped) else 0.0
         )
+        active_load_fraction = raw_resource_load_fraction(
+            ent,
+            active,
+            cfg,
+            genotype=ent.genotype[active],
+            gene_start=self.policy.physiology_gene_start(cfg),
+            neutralize_store_allocation=self.resource_store_allocation_ablation_enabled,
+        )
+        load_fraction_full[active] = active_load_fraction
         # ----- Intent and conflict phases: no world state is changed here. -----
         phase_started = time.perf_counter()
         intents = build_intents(
@@ -1501,7 +1464,11 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         base_speed = (
             0.35 + 0.10 * np.clip(ent.genotype[movers, 5], -1.0, 1.0)
         ).astype(np.float32)
-        speed = base_speed * movement_speed_multiplier[movers]
+        speed = (
+            base_speed
+            * movement_speed_multiplier[movers]
+            * load_speed_multiplier(load_fraction_full[movers], cfg)
+        )
         ent.vx[movers] = intents.direction_x[movable_rows] * speed
         ent.vy[movers] = intents.direction_y[movable_rows] * speed
         ent.x[movers] += ent.vx[movers]
@@ -1521,6 +1488,25 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             resolution_plan,
             effective_resource_affinity_q,
             stats,
+        )
+        harvest_contest = resolve_harvest_contest(
+            actor_indices=intents.carrier_index[harvest_rows],
+            cell_ids=cells[harvest_rows],
+            gathered=gathered,
+            group_ids=self.social.group_id,
+            stable_ids=ent.entity_id,
+            cfg=cfg,
+        )
+        commit_harvest_contest(ent, harvest_contest)
+        stats.harvest_contest_events = harvest_contest.event_count
+        stats.harvest_contest_pressure = float(
+            harvest_contest.pressure.sum(dtype=np.float64)
+        )
+        stats.harvest_contest_energy = float(
+            harvest_contest.energy_cost.sum(dtype=np.float64)
+        )
+        stats.harvest_contest_integrity_damage = float(
+            harvest_contest.integrity_damage.sum(dtype=np.float64)
         )
         share = finalize_share_capacity(
             cfg=self.cfg, entities=self.entities,
@@ -1560,6 +1546,10 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             )
             stats.signals = int(signal_actors.size)
         self._flush_signal_emissions(signal_plan)
+        observe_reconnaissance_step(
+            self, active=active, load_fraction=load_fraction_full, actions=intents.action,
+            direction_x=intents.direction_x, direction_y=intents.direction_y, information=info,
+        )
         if (
             self.cfg.knowledge.enabled
             and not self.knowledge_transfer_ablation_enabled
@@ -1972,7 +1962,15 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.total_functional_module_movement_energy_delta += (
             stats.functional_module_movement_energy
         )
-        cost = float(cfg.entities.maintenance_cost) + movement_cost
+        load_energy = load_movement_energy(
+            moved_now[current_active],
+            load_fraction_full[current_active],
+            cfg,
+        )
+        stats.resource_load_movement_energy = float(
+            load_energy.sum(dtype=np.float64)
+        )
+        cost = float(cfg.entities.maintenance_cost) + movement_cost + load_energy
         if cfg.differentiation.enabled:
             capacity_cost = np.asarray(
                 capacity_maintenance_energy(
@@ -2345,6 +2343,8 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 self.environment_atlas_diagnostics.close()
             if self.group_function_diagnostics is not None:
                 self.group_function_diagnostics.close()
+            if self.reconnaissance_diagnostics is not None:
+                self.reconnaissance_diagnostics.close()
             if self._trajectory_file is not None:
                 self._trajectory_file.close()
         interventions_metadata: dict[str, object] = {

@@ -16,6 +16,7 @@ from se.knowledge.policy import KnowledgePolicyPlan
 from se.knowledge.latent import latent_router_gene_count, sparse_selection_gene_count
 from se.knowledge.working_memory import working_memory_gene_count
 from .random_api import RandomContext, Stream, categorical_from_logits, normal
+from .runtime.danger_messages import direct_danger_bearing
 from .runtime.reproduction import reproduction_energy_requirement
 
 
@@ -218,6 +219,8 @@ class ParametricPolicy:
         run_seed: int,
         tick: int,
         knowledge_plan: KnowledgePolicyPlan | None = None,
+        position_x: Any | None = None,
+        position_y: Any | None = None,
     ) -> PolicyDecision:
         xp = backend_from_array(active).xp
         ids = stable_ids[active]
@@ -332,14 +335,35 @@ class ParametricPolicy:
         dx = gx[active].astype(xp.float64)
         dy = gy[active].astype(xp.float64)
         dgx, dgy = danger_gradient
+        if self.cfg.entities.danger_message_direction_schema != "disabled":
+            if position_x is None or position_y is None:
+                raise ValueError(
+                    "source-bearing danger messages require entity positions"
+                )
+            direct_x, direct_y = direct_danger_bearing(
+                active=active,
+                stable_ids=stable_ids,
+                x=position_x,
+                y=position_y,
+                info=info,
+                cfg=self.cfg,
+            )
+            direction_weight = xp.float32(
+                self.cfg.entities.danger_message_direction_weight
+            )
+            dgx_active = dgx[active] + direction_weight * direct_x
+            dgy_active = dgy[active] + direction_weight * direct_y
+        else:
+            dgx_active = dgx[active]
+            dgy_active = dgy[active]
         group_dx, group_dy = group_direction
         move_social = action == int(Action.MOVE_SOCIAL)
         flee = action == int(Action.FLEE)
         resource_move = action == int(Action.MOVE_RESOURCE)
         dx = xp.where(move_social, group_dx[active], dx)
         dy = xp.where(move_social, group_dy[active], dy)
-        dx = xp.where(flee, -dgx[active], dx)
-        dy = xp.where(flee, -dgy[active], dy)
+        dx = xp.where(flee, -dgx_active, dx)
+        dy = xp.where(flee, -dgy_active, dy)
 
         # When gradients vanish, exploration supplies a direction.
         magnitude = xp.hypot(dx, dy)

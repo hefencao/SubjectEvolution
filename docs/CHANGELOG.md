@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.101.0
+
+- Closes D1-S as an overall formal failure: all seeds reproduce structured processing division, but seed 100101 violates the preregistered population floor.
+- Diagnoses absent scout-like division as a missing physical value chain rather than a simple shortage of ticks or group labels.
+- Adds opt-in raw-load mobility burden, symmetric local rival-harvest contest, shared inherited danger reach and contest-bearing danger signals.
+- Adds source-bearing direct danger-message geometry so FLEE can move away from the sender's conflict frontier on both CPU and GPU policy paths.
+- Adds read-only reconnaissance diagnostics that require stable group membership, frontier signalling, same-group danger reception and directionally aligned escape; no role label or reward feeds back into simulation.
+- Freezes debug seed 101011: the full physical chain is observed with a qualified debug population substrate, but no persistent reconnaissance-candidate lineage appears.
+- Keeps formal social-role, multi-seed role-panel, gene, paired, selection and adaptation authorization false.
+- Includes reconnaissance windows and summaries in compact result bundles and updates project version to 0.101.0.
+
 ## 0.100.0
 
 - Freezes the supplied D1-R formal result as threshold-not-reached: all three seeds complete tick 1800, but only two reproduce at least two persistent within-group division candidates.

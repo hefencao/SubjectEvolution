@@ -1,0 +1,8 @@
+{
+  "schema": "run-termination-v1",
+  "requested_tick": 1800,
+  "completed_tick": 1800,
+  "terminated_early": false,
+  "reason": null,
+  "scientific_effect_interpretation_authorized": null
+}

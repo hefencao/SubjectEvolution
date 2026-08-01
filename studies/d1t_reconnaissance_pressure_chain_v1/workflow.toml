@@ -1,0 +1,71 @@
+schema = "se-study-workflow-v1"
+study_id = "d1t_reconnaissance_pressure_chain_v1"
+title = "D1-T role-neutral reconnaissance pressure chain"
+
+[parameters.backend]
+type = "choice"
+default = "auto"
+choices = ["auto", "cpu", "gpu"]
+description = "Execution backend."
+
+[parameters.probe_seed]
+type = "int"
+default = 101011
+description = "Single exploratory environment-mechanism seed; never formal evidence."
+
+[parameters.template]
+type = "path"
+default = "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/source_config.json"
+description = "Frozen D1-S formal configuration."
+
+[parameters.generated_config]
+type = "path"
+default = "state/studies/d1t_reconnaissance_pressure_chain_v1/reconnaissance_pressure.json"
+description = "Generated D1-T role-neutral physical-chain config."
+
+[parameters.probe_root]
+type = "path"
+default = "runs/base/d1t_reconnaissance_pressure_chain_v1/probe"
+description = "Single-seed parameter-debug runtime root."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1t_reconnaissance_pressure_chain_v1"
+description = "Mechanism-chain analysis root."
+
+[parameters.output]
+type = "result-path"
+default = "d1t_reconnaissance_pressure_chain_v1_debug_results.zip"
+description = "External parameter-debug evidence bundle."
+
+[parameters.include_checkpoints]
+type = "bool"
+default = false
+description = "Include checkpoints only for explicit replay."
+
+[steps.evidence-audit]
+description = "Verify the frozen D1-S formal failure and configuration before constructing D1-T."
+command = ["python", "scripts/verify_frozen_files.py", "--lock", "{study_dir}/frozen/EVIDENCE_LOCK.json", "--output", "{analysis_root}/evidence_audit.json"]
+
+[steps.prepare-config]
+description = "Add only load burden, symmetric local harvest contest, shared inherited danger reach and observational reconnaissance diagnostics."
+command = ["se-reconnaissance-environment-config", "--template", "{template}", "--output", "{generated_config}", "--ticks", "900", "--load-speed-penalty", "0.35", "--load-movement-energy-fraction", "0.35", "--contest-energy-cost", "0.008", "--contest-integrity-damage", "0.0003", "--contest-pressure-retention", "0.90", "--contest-signal-weight", "1.0", "--contest-radius-cells", "1", "--danger-message-direction-weight", "1.0"]
+requires_json = [{ path = "{analysis_root}/evidence_audit.json", field = "passed", equals = true }]
+
+[steps.mechanism-probe]
+description = "Run one seed to verify the complete physical pressure-information chain; this is parameter debugging, not social-role evidence."
+command = ["se-multi", "--config", "{generated_config}", "--seeds", "{probe_seed}", "--output", "{probe_root}", "--backend", "{backend}", "--until-tick", "900", "--no-checkpoints", "--skip-post-run-audits"]
+requires_json = [
+  { path = "{generated_config}.manifest.json", field = "output_file_sha256", equals = "aed1c77a856404cb0d013a3293ac1f0d34c5562994c469e2577b83455160ac2c" },
+  { path = "{generated_config}.manifest.json", field = "authorization.scout_role_claim", equals = false },
+  { path = "{generated_config}.manifest.json", field = "authorization.gene_audit", equals = false },
+]
+
+[steps.mechanism-summary]
+description = "Check whether contest, load cost, danger-bearing messages and receiver responses were all physically observed in the probe."
+command = ["se-reconnaissance-summary", "--source-root", "{probe_root}", "--output", "{analysis_root}/mechanism_probe.json"]
+
+[steps.pack-results]
+description = "Package frozen D1-S evidence, actual config, runtime summaries and D1-T diagnostics externally."
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "{analysis_root}", "--runtime-root", "runs/base/d1t_reconnaissance_pressure_chain_v1", "--required-file", "{generated_config}", "--required-file", "{generated_config}.manifest.json", "--output", "{output}"]
+boolean_flags = { include_checkpoints = "--include-checkpoints" }

@@ -1,0 +1,134 @@
+{
+  "schema": "frozen-evidence-lock-v1",
+  "study_id": "d1t_reconnaissance_pressure_chain_v1",
+  "source_evidence": "d1s_replicated_material_circuits_v1 formal results",
+  "scientific_judgment": {
+    "physical_heterogeneity_ready_seed_count": 3,
+    "within_group_division_ready_seed_count": 3,
+    "population_substrate_ready_seed_count": 2,
+    "environment_plurality_threshold_reached": false,
+    "gene_audit_authorized": false
+  },
+  "files": [
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/RESULT_BUNDLE_MANIFEST.json",
+      "size": 15483,
+      "sha256": "5abb50e57faa762099c2002a9ca9c7de8c494a9daf7a4e9db186d8bf7bb0df6a"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/formal_structure.json",
+      "size": 6674,
+      "sha256": "257c857dde8d5f4b38b896a7a87f50584efa40f10bbb1b28bb6b1f656795e25c"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/long_run_analysis.json",
+      "size": 283662,
+      "sha256": "d680511590271f8ed464c4eb177a50f57e6c174a290c04ec88c3c5647c7c6493"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/multi_seed_index.json",
+      "size": 1608,
+      "sha256": "13e8eaddbb917a14cca360adb965df6959b7655b0ccc5835c13c8f8ea85ed770"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100101/environment_atlas_summary.json",
+      "size": 33070,
+      "sha256": "8169021e1c889c685afeb30e2b8552a5b41bdef7dc49893ffe03db2d85f42218"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100101/group_function_summary.json",
+      "size": 19402,
+      "sha256": "7983d300c60c8f3d08f25bba590ef0904a022e0d76abe5cabf016a3e487ff31a"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100101/run_manifest.json",
+      "size": 14449,
+      "sha256": "93db706ee6f41a710732079c0ba672803a91c5822b67b523baec8be19d0c72bb"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100101/run_termination.json",
+      "size": 191,
+      "sha256": "544401d46c433b0d7af424f3b56d3bf75db0474a45674cb10ba67a9f98296efb"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100101/scientific_validity.json",
+      "size": 9260,
+      "sha256": "5ab3152da3342444fa43b38d797d0a163dcabf4d730228bf9887ea32f306d567"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100101/summary.json",
+      "size": 43946,
+      "sha256": "0659c319ba845f41550ee7201eeb8f44d8dc2e28f77dedaf366c9db693a417a5"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100102/environment_atlas_summary.json",
+      "size": 33197,
+      "sha256": "434519c91fc42fb11804f5f51df1d29271b3a7996ac588fd06b17c6f93eb54c5"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100102/group_function_summary.json",
+      "size": 45328,
+      "sha256": "a4798168739f211c4e23a22f0c5a34060fd54675b9831e3e2467f1c1e7769bca"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100102/run_manifest.json",
+      "size": 14449,
+      "sha256": "08757700cf748e8fdb76a6dc7b3d018b3e5b6bdec4ffa47a6b29a35fca229b66"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100102/run_termination.json",
+      "size": 191,
+      "sha256": "544401d46c433b0d7af424f3b56d3bf75db0474a45674cb10ba67a9f98296efb"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100102/scientific_validity.json",
+      "size": 9260,
+      "sha256": "5ab3152da3342444fa43b38d797d0a163dcabf4d730228bf9887ea32f306d567"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100102/summary.json",
+      "size": 44085,
+      "sha256": "21e3858517ff8aaf87b025036080923757d88dff739810640839f7b1416e9944"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100103/environment_atlas_summary.json",
+      "size": 33146,
+      "sha256": "d3776bcfb4a34c95c1d844fe896a4cd4e56e6701c5b22a14554d7de4b52b1de3"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100103/group_function_summary.json",
+      "size": 21812,
+      "sha256": "db5a68990c4dcd533f73fae0b2ffa3570c636e34b9f084e219bbe4c194915d94"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100103/run_manifest.json",
+      "size": 14449,
+      "sha256": "4819c2f7993aadc824de7749121a125a44bc2ec3efa80a322ad337246e0a36c7"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100103/run_termination.json",
+      "size": 191,
+      "sha256": "544401d46c433b0d7af424f3b56d3bf75db0474a45674cb10ba67a9f98296efb"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100103/scientific_validity.json",
+      "size": 9260,
+      "sha256": "5ab3152da3342444fa43b38d797d0a163dcabf4d730228bf9887ea32f306d567"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/seed_100103/summary.json",
+      "size": 44047,
+      "sha256": "c8f7529c1995d5418316b1fc48d2a32fa8621c84bb682611ee90edca7513ff74"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/source_config.json",
+      "size": 16750,
+      "sha256": "ef504dc9a5f67ba702fd492f97c248b3a3a55fea986aefd816f99bef75c296ef"
+    },
+    {
+      "path": "studies/d1t_reconnaissance_pressure_chain_v1/frozen/d1s/source_config.json.manifest.json",
+      "size": 2321,
+      "sha256": "ab41e9bf8e7ffb9d4704925a3a1292cec795de8d77d10634f504b5297527086e"
+    }
+  ]
+}

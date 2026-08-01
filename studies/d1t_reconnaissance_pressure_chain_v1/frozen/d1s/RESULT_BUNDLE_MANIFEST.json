@@ -1,0 +1,361 @@
+{
+  "schema": "se-required-result-bundle-v1",
+  "study_root": "studies/d1s_replicated_material_circuits_v1",
+  "include_checkpoints": false,
+  "capability": "result-review-and-next-step-planning",
+  "files": [
+    {
+      "path": "analyses/d1s_replicated_material_circuits_v1/evidence_audit.json",
+      "size": 4928,
+      "sha256": "3562218e7376996333820d751205e1940f82ede9e1a9839a767b8c201269689d"
+    },
+    {
+      "path": "analyses/d1s_replicated_material_circuits_v1/formal_structure.json",
+      "size": 6674,
+      "sha256": "257c857dde8d5f4b38b896a7a87f50584efa40f10bbb1b28bb6b1f656795e25c"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/long_run_analysis.json",
+      "size": 283662,
+      "sha256": "d680511590271f8ed464c4eb177a50f57e6c174a290c04ec88c3c5647c7c6493"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/long_run_analysis.md",
+      "size": 35854,
+      "sha256": "f7fd0e11df961b3f0ff6d7b34685d1cee78d4f4e43b1a827e1a223a2266a1463"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/multi_seed_index.json",
+      "size": 1608,
+      "sha256": "13e8eaddbb917a14cca360adb965df6959b7655b0ccc5835c13c8f8ea85ed770"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100101/environment_atlas.jsonl",
+      "size": 274372,
+      "sha256": "7d2f37c7855953f22e0f975324763c46c34a0e2d484a2587d08488f5bfef2955"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100101/environment_atlas_summary.json",
+      "size": 33070,
+      "sha256": "8169021e1c889c685afeb30e2b8552a5b41bdef7dc49893ffe03db2d85f42218"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100101/evolution_progress.jsonl",
+      "size": 528348,
+      "sha256": "e101537a0fea41ce43ff03ff5fdb360a21d70fe1fffa6078bf5cd3c4a5397ab8"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100101/group_function_summary.json",
+      "size": 19402,
+      "sha256": "7983d300c60c8f3d08f25bba590ef0904a022e0d76abe5cabf016a3e487ff31a"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100101/group_function_windows.jsonl",
+      "size": 93812,
+      "sha256": "b636f134d24ad77cd5b4f25e5c9c34aae8ba6a1e42d6b841c763dc2e578716bf"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100101/resolved_config.json",
+      "size": 17572,
+      "sha256": "d92cf1d351ffeee87162fa88c7e4c079a9abe9d2a8084c7a69c968fefb63b7e2"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100101/run_manifest.json",
+      "size": 14449,
+      "sha256": "93db706ee6f41a710732079c0ba672803a91c5822b67b523baec8be19d0c72bb"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100101/run_termination.json",
+      "size": 191,
+      "sha256": "544401d46c433b0d7af424f3b56d3bf75db0474a45674cb10ba67a9f98296efb"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100101/scientific_validity.json",
+      "size": 9260,
+      "sha256": "5ab3152da3342444fa43b38d797d0a163dcabf4d730228bf9887ea32f306d567"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100101/subject_structure_summary.json",
+      "size": 3973,
+      "sha256": "921022909864c6d136bbfd113f817fa34d2b9a267b9bfebb8a6b93dbcdcd2b0c"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100101/subject_structure_transitions.jsonl",
+      "size": 46648,
+      "sha256": "bb80681d922d0c50863ef3e3252a83c2ff7050fca441fc253d634ff01d2b3284"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100101/summary.json",
+      "size": 43946,
+      "sha256": "0659c319ba845f41550ee7201eeb8f44d8dc2e28f77dedaf366c9db693a417a5"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100102/environment_atlas.jsonl",
+      "size": 275590,
+      "sha256": "7eecb6d3d460d4d33cf773b50f80825bf08dd0e376fdd89d90e8959bf42fafb8"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100102/environment_atlas_summary.json",
+      "size": 33197,
+      "sha256": "434519c91fc42fb11804f5f51df1d29271b3a7996ac588fd06b17c6f93eb54c5"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100102/evolution_progress.jsonl",
+      "size": 546753,
+      "sha256": "71e344c40af5991bb16ec22ed6627ea94734152bf79482ac382ebc1175cc2c51"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100102/group_function_summary.json",
+      "size": 45328,
+      "sha256": "a4798168739f211c4e23a22f0c5a34060fd54675b9831e3e2467f1c1e7769bca"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100102/group_function_windows.jsonl",
+      "size": 254630,
+      "sha256": "889787812177f873508673e9f88352ec13389462aee0be6fd5bc198507b34b6c"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100102/resolved_config.json",
+      "size": 17572,
+      "sha256": "ec9827f1ca7cc141c46cce11753c8dd15a4141b95d6cc54904b19a1a77567114"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100102/run_manifest.json",
+      "size": 14449,
+      "sha256": "08757700cf748e8fdb76a6dc7b3d018b3e5b6bdec4ffa47a6b29a35fca229b66"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100102/run_termination.json",
+      "size": 191,
+      "sha256": "544401d46c433b0d7af424f3b56d3bf75db0474a45674cb10ba67a9f98296efb"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100102/scientific_validity.json",
+      "size": 9260,
+      "sha256": "5ab3152da3342444fa43b38d797d0a163dcabf4d730228bf9887ea32f306d567"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100102/subject_structure_summary.json",
+      "size": 16535,
+      "sha256": "747145ff92ed16e3d8938d254d662f1ee32d303334efb0382cfae0e5e523ff02"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100102/subject_structure_transitions.jsonl",
+      "size": 125454,
+      "sha256": "83aebe73000d3ddf7a8e4fbb9718afa6c6e733e930883920387ddc6de366d4f0"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100102/summary.json",
+      "size": 44085,
+      "sha256": "21e3858517ff8aaf87b025036080923757d88dff739810640839f7b1416e9944"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100103/environment_atlas.jsonl",
+      "size": 275093,
+      "sha256": "8904488ead4d4a26cf6fad3a4b1c9544f08fcfa95308f7f308dca62872812b94"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100103/environment_atlas_summary.json",
+      "size": 33146,
+      "sha256": "d3776bcfb4a34c95c1d844fe896a4cd4e56e6701c5b22a14554d7de4b52b1de3"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100103/evolution_progress.jsonl",
+      "size": 540662,
+      "sha256": "d8a1b2dfb977561851781160827479535d38b4e3b3ded71de4e03d23720fa43b"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100103/group_function_summary.json",
+      "size": 21812,
+      "sha256": "db5a68990c4dcd533f73fae0b2ffa3570c636e34b9f084e219bbe4c194915d94"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100103/group_function_windows.jsonl",
+      "size": 165184,
+      "sha256": "78ae4bc5e3099829b1a7e8b47d3a597f7999244addede2cc32e5e96f9a56ebf6"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100103/resolved_config.json",
+      "size": 17572,
+      "sha256": "6a62be61716b3d80c6ff91aebec5a8ef22cdb75c7e2ad4be95c7e2bc368dd7db"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100103/run_manifest.json",
+      "size": 14449,
+      "sha256": "4819c2f7993aadc824de7749121a125a44bc2ec3efa80a322ad337246e0a36c7"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100103/run_termination.json",
+      "size": 191,
+      "sha256": "544401d46c433b0d7af424f3b56d3bf75db0474a45674cb10ba67a9f98296efb"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100103/scientific_validity.json",
+      "size": 9260,
+      "sha256": "5ab3152da3342444fa43b38d797d0a163dcabf4d730228bf9887ea32f306d567"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100103/subject_structure_summary.json",
+      "size": 9356,
+      "sha256": "ff6dbd0a1b7ee919b7d2c2a5af6340ca67445ee58a68309bf0f62e6d263adb02"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100103/subject_structure_transitions.jsonl",
+      "size": 83158,
+      "sha256": "778f1d084cd4c0f7b4326648bb2eb04054e1b1ae8ee8853deb6a67f1bad5df6e"
+    },
+    {
+      "path": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100103/summary.json",
+      "size": 44047,
+      "sha256": "c8f7529c1995d5418316b1fc48d2a32fa8621c84bb682611ee90edca7513ff74"
+    },
+    {
+      "path": "state/studies/d1s_replicated_material_circuits_v1/replicated_material_circuits.json",
+      "size": 16750,
+      "sha256": "ef504dc9a5f67ba702fd492f97c248b3a3a55fea986aefd816f99bef75c296ef"
+    },
+    {
+      "path": "state/studies/d1s_replicated_material_circuits_v1/replicated_material_circuits.json.manifest.json",
+      "size": 2321,
+      "sha256": "ab41e9bf8e7ffb9d4704925a3a1292cec795de8d77d10634f504b5297527086e"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/DESIGN.md",
+      "size": 1986,
+      "sha256": "1cb7b0a547565370e92e579f97efe7ae4e00035fe068121670ff94cc767146a4"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/README.md",
+      "size": 1722,
+      "sha256": "9f0f3d86c681bd48567d3d46e2b0d83c746fa01349f784bca1cbad7fa5fb0cc7"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/EVIDENCE_LOCK.json",
+      "size": 6262,
+      "sha256": "ddcb42f5a82651f0220341b4275490bde5700b699ed45384e611027484a6afb7"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/RESULT_BUNDLE_MANIFEST.json",
+      "size": 6274,
+      "sha256": "db0069c8fe55bd99e88d54d63808a9d1737f6293f3d72b1c7963faa201e13fe2"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/formal_structure.json",
+      "size": 5305,
+      "sha256": "6405300fc88f5d8d1b231a7e40e345239e26267af775b71ae90f6b899cea1b9a"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/long_run_analysis.json",
+      "size": 283056,
+      "sha256": "2a12c932743e102cf46a4d9cd6fc83ca79125284a733a51c65fb1d13289d8ed0"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/multi_seed_index.json",
+      "size": 1616,
+      "sha256": "626e06825fb2eab3677104aedb6ee9e1bd38b8bfaaff5028d25a2eb7670f68e6"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/seed_97101/run_manifest.json",
+      "size": 14454,
+      "sha256": "5924490b1a8b0f25ea56c9363915a0f06b297b0bfbda931baf32033cf11b0f5b"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/seed_97101/summary.json",
+      "size": 43948,
+      "sha256": "79fc5360c8d3ca2056bd1747aa98b499bfc07c83432366aa59867edb64f764c8"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/seed_97102/run_manifest.json",
+      "size": 14454,
+      "sha256": "d50459d57e8a0c01db12aa0b35d715e1dbad4dc0cb4c891615c40f59da79bebd"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/seed_97102/summary.json",
+      "size": 43866,
+      "sha256": "87d079bbddd5eaef95f6859db1ce667b3f9e8aca0fd617d19a740092b14e776e"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/seed_97103/run_manifest.json",
+      "size": 14454,
+      "sha256": "101e9bf66f995ecdf910e79699661952204c751cf3d515f08597cb1ca3253a41"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/seed_97103/summary.json",
+      "size": 43980,
+      "sha256": "26f7362a00bb186bf44c3b65dee085cb1669d379521a01dd619dacd97e4e4d66"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/source_config.json",
+      "size": 16697,
+      "sha256": "77208a82874ae48cfcf2dec7ee6e28b8ba968bb0242591d65656400602357932"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/source_config.json.manifest.json",
+      "size": 9190,
+      "sha256": "5ff6b58ff4a4333f35c832acec12bb86958f306d1ee40c847bd24a5bbf851651"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/environment_atlas_summary.json",
+      "size": 33048,
+      "sha256": "7c51d11128ea5446529b8ecf21f9ae803e5e07a177e952b07d92bec427c73005"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/evolution_progress.jsonl",
+      "size": 250343,
+      "sha256": "b8dccff447dff79fd9023e19d1af482002a7373a6dad4aad99de3719416e4815"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/group_function_summary.json",
+      "size": 15800,
+      "sha256": "b111e736005b58c15273ca2286858433cbb18694c728ae547f6bfa38e4e48de8"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/group_function_windows.jsonl",
+      "size": 61146,
+      "sha256": "5bc8d391d513e8c114b9d4f2922f345b195a569e21a11cef76dea47cdf9e5f53"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/probe_structure.json",
+      "size": 2859,
+      "sha256": "02a307ce5bbf5a47f9a6f1bd19d19e214db1d573385528261cc7ac9100dfa940"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/resolved_config.json",
+      "size": 17570,
+      "sha256": "678c179be4cefc6eaa0efef6b133074b44c3919c15c9ec115ef1a7da478cf62d"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/run_manifest.json",
+      "size": 14319,
+      "sha256": "7747aa0290adbd10f1de6fb5c04dd7d9b573cc4c23887a53e995ba41d90aeb43"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/source_config.json",
+      "size": 16750,
+      "sha256": "ef504dc9a5f67ba702fd492f97c248b3a3a55fea986aefd816f99bef75c296ef"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/source_config.json.manifest.json",
+      "size": 2313,
+      "sha256": "fe9cab1c8d7ce79179de963e5d2db6bf7d1808850220e388c99f096fbe1a9420"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/summary.json",
+      "size": 43781,
+      "sha256": "6ede3bdffcc095537a3f44238ed10f5082148bed5ed0c9bae9066d1d21954577"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/study.json",
+      "size": 843,
+      "sha256": "591b484586e09fbd1774e39fb9a40827bf0238e5b3ee8302eef6e7079328009b"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/workflow.toml",
+      "size": 6053,
+      "sha256": "677c8a140a978e2b16afab8bedc22aea8a318565d54710121f27b64661a7a9b6"
+    }
+  ],
+  "omitted": [
+    "checkpoint bytes (*.sechk); hashes remain in paired plans/results"
+  ]
+}

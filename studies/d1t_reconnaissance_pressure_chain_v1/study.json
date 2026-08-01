@@ -1,0 +1,29 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1t_reconnaissance_pressure_chain_v1",
+  "title": "D1-T role-neutral reconnaissance pressure chain",
+  "status": "mechanism-chain-connected-no-persistent-role",
+  "scientific_stage": "social-information-value-before-formal-environment-qualification",
+  "predecessor": {
+    "study_id": "d1s_replicated_material_circuits_v1",
+    "formal_result": "threshold-not-reached",
+    "physical_heterogeneity_ready_seed_count": 3,
+    "within_group_division_ready_seed_count": 3,
+    "population_substrate_ready_seed_count": 2
+  },
+  "authorization": {
+    "single_seed_environment_parameter_debugging": true,
+    "formal_multi_seed_environment_panel": false,
+    "scout_role_claim": false,
+    "single_run_gene_audit": false,
+    "formal_gene_audit": false,
+    "selection_or_adaptation_claim": false
+  },
+  "debug_result": {
+    "seed": 101011,
+    "completed_tick": 900,
+    "population_debug_substrate_ready": true,
+    "physical_information_value_chain_observed": true,
+    "persistent_reconnaissance_candidate_count": 0
+  }
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "seed": 100101,
+    "output": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100101",
+    "final_tick": 1800,
+    "alive": 239,
+    "evolution_progress": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100101/evolution_progress.jsonl",
+    "termination": {
+      "schema": "run-termination-v1",
+      "requested_tick": 1800,
+      "completed_tick": 1800,
+      "terminated_early": false,
+      "reason": null,
+      "scientific_effect_interpretation_authorized": null
+    },
+    "status": "completed"
+  },
+  {
+    "seed": 100102,
+    "output": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100102",
+    "final_tick": 1800,
+    "alive": 1053,
+    "evolution_progress": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100102/evolution_progress.jsonl",
+    "termination": {
+      "schema": "run-termination-v1",
+      "requested_tick": 1800,
+      "completed_tick": 1800,
+      "terminated_early": false,
+      "reason": null,
+      "scientific_effect_interpretation_authorized": null
+    },
+    "status": "completed"
+  },
+  {
+    "seed": 100103,
+    "output": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100103",
+    "final_tick": 1800,
+    "alive": 716,
+    "evolution_progress": "runs/base/d1s_replicated_material_circuits_v1/panel/seed_100103/evolution_progress.jsonl",
+    "termination": {
+      "schema": "run-termination-v1",
+      "requested_tick": 1800,
+      "completed_tick": 1800,
+      "terminated_early": false,
+      "reason": null,
+      "scientific_effect_interpretation_authorized": null
+    },
+    "status": "completed"
+  }
+]

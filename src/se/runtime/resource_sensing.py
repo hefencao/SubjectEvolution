@@ -11,6 +11,7 @@ from se.env.resource_sensing import (
     resource_sensing_channel_radii,
     resource_sensing_energy,
     resource_sensing_observation_weights_q,
+    resource_sensing_radius,
 )
 from se.env.niches import resource_affinity_quantized
 
@@ -116,6 +117,20 @@ def effective_resource_sensing_observation(
     )
 
 
+def effective_danger_sensing_radius(simulation: Any) -> np.ndarray | None:
+    """Reuse the paid inherited reach capacity for danger when explicitly enabled."""
+
+    if simulation.cfg.entities.danger_sensing_schema == "disabled":
+        return None
+    if simulation.cfg.entities.danger_sensing_schema != "shared-inherited-radius-v1":
+        raise ValueError("unsupported danger sensing schema")
+    if simulation.resource_sensing_ablation_enabled:
+        return np.ones(simulation.entities.alive.size, dtype=np.int16)
+    return resource_sensing_radius(
+        simulation.entities.genotype, simulation.cfg
+    ).astype(np.int16, copy=False)
+
+
 def record_resource_sensing_development_cost(
     simulation: Any, newborns: np.ndarray, stats: Any
 ) -> None:
@@ -150,6 +165,7 @@ def add_resource_sensing_operating_cost(
 
 __all__ = [
     "add_resource_sensing_operating_cost",
+    "effective_danger_sensing_radius",
     "effective_resource_sensing_observation",
     "effective_resource_sensing_radius",
     "effective_resource_sensing_weights",

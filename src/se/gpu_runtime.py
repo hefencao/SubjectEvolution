@@ -1026,12 +1026,21 @@ class HybridGpuRuntime:
             if channel_routed_sensing
             else device_resource_sensing_radius(genotype, self.cfg, xp=xp)
         )
+        danger_radius_device = (
+            device_resource_sensing_radius(genotype, self.cfg, xp=xp)
+            if self.cfg.entities.danger_sensing_schema
+            == "shared-inherited-radius-v1"
+            else None
+        )
+        if resource_sensing_ablation_enabled and danger_radius_device is not None:
+            danger_radius_device = xp.ones(capacity, dtype=xp.int16)
         resource_gradient, danger_gradient = self.environment.gradients_for_entities(
             self.spatial.entity_cells,
             entity.alive.size,
             observation_weights_device,
             danger_evidence_device,
             sensing_radius_device,
+            danger_radius_device,
         )
         cells_result: np.ndarray | None = None
         if physiology_environment is not None:
@@ -1244,6 +1253,8 @@ class HybridGpuRuntime:
                 run_seed=run_seed,
                 tick=tick,
                 knowledge_plan=cost_free_plan,
+                position_x=x,
+                position_y=y,
             )
         memory_free_device_decision = None
         if self.cfg.knowledge.working_memory_enabled:
@@ -1264,6 +1275,8 @@ class HybridGpuRuntime:
                 run_seed=run_seed,
                 tick=tick,
                 knowledge_plan=knowledge_policy_plan,
+                position_x=x,
+                position_y=y,
             )
         device_decision = policy.decide(
             active=active,
@@ -1282,6 +1295,8 @@ class HybridGpuRuntime:
             run_seed=run_seed,
             tick=tick,
             knowledge_plan=knowledge_policy_plan,
+            position_x=x,
+            position_y=y,
         )
         self.backend.synchronize()
         if routing_cost_result is not None and routing_cost_result.committed_total > 0.0:

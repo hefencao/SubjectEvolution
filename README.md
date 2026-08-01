@@ -1,35 +1,31 @@
-# SE v0.100
+# SE v0.101
 
 Reference implementation for nested-subject existence and ecological evolution
 simulation.
 
 ## Current direction
 
-D1-R is closed as a formal threshold failure. Its three complete seeds all
-showed physical heterogeneity and real within-group raw-resource exchange, but
-only seeds 97101 and 97102 reproduced at least two persistent division-candidate
-groups. Seed 97103 did not, and its trajectory also passed through a deep
-population bottleneck with low final founder-lineage breadth. The result does
-not authorize a gene audit or social/evolutionary interpretation.
+D1-S is closed as a formal threshold failure. All three seeds completed tick
+1800 and reproduced physical heterogeneity, real within-group raw-resource
+exchange and multiple persistent processing-division groups. Seed 100101,
+however, fell to 47 alive from 128 initial and failed the preregistered 0.50
+population-substrate floor. The result does not authorize gene or social-role
+interpretation.
 
-D1-S continues environment construction rather than changing genes. It keeps
-the complete subject, complementary recipes, exchange rules, costs and group
-diagnostics unchanged while making two shared physical changes:
+D1-T addresses a separate mechanism gap behind the absence of scout-like
+specialization. The previous world had no rival resource contest, no carrying
+burden, no inherited danger reach, and no directional use for danger messages.
+The opt-in D1-T chain adds role-neutral load costs, symmetric local harvest
+contest, shared inherited danger sensing, contest-bearing signals and FLEE
+movement away from a direct-message source. It adds no scout label, attack
+profession, reward or gene.
 
-- the antipodal material circuit for each resource channel becomes closer in
-  strength to the primary circuit;
-- all source and processing provinces are widened uniformly.
-
-Each channel is normalized after combining both circuits, so global mean
-material opportunity is unchanged. The aim is to create multiple independently
-reachable material loops capable of supporting more than one structured group,
-not to reward any genotype, lineage, group or role.
-
-The formal threshold remains at least two persistent division-candidate group
-lineages in every independent seed. D1-S additionally rejects runs whose
-recorded population falls below half the initial population or whose final
-effective founder-lineage count is below four. A group label, a single
-successful seed, or a rebound of a few lineages is not environment plurality.
+A preregistered single debug seed completed tick 900 with a healthy population
+and observed the complete pressure-information-response chain, but produced no
+persistent reconnaissance-candidate lineage. This shows the missing physical
+interfaces were more important than merely adding ticks or groups. The result
+is mechanism-debug evidence only; environment qualification and all gene,
+selection and role claims remain blocked.
 
 ## Workspace layout
 
@@ -51,18 +47,17 @@ se-study config
 The pointer lives in ignored `.se-workspace.toml` and does not affect protocol
 identity or release artifacts.
 
-## D1-S workflow
+## D1-T workflow
 
 ```text
-se-study show studies/d1s_replicated_material_circuits_v1
-se-study run studies/d1s_replicated_material_circuits_v1 evidence-audit
-se-study run studies/d1s_replicated_material_circuits_v1 prepare-config
-se-study run studies/d1s_replicated_material_circuits_v1 structured-panel --dry-run
-se-study run studies/d1s_replicated_material_circuits_v1 structure-summary --dry-run
+se-study show studies/d1t_reconnaissance_pressure_chain_v1
+se-study run studies/d1t_reconnaissance_pressure_chain_v1 evidence-audit
+se-study run studies/d1t_reconnaissance_pressure_chain_v1 prepare-config
+se-study run studies/d1t_reconnaissance_pressure_chain_v1 mechanism-probe --dry-run
+se-study run studies/d1t_reconnaissance_pressure_chain_v1 mechanism-summary --dry-run
 ```
 
-`environment-probe` remains available only for simple parameter debugging. No
-gene-persistence, paired, selection or candidate-ledger step is declared.
+The only runtime step is a single-seed mechanism probe. No formal social-structure panel, gene-persistence, paired, selection or candidate-ledger step is declared.
 
 ## Validation and packaging
 
@@ -76,7 +71,7 @@ make parity-gpu
 ```
 
 `make package` builds a disposable archive copy and keeps only the current
-v0.100 iteration note. Local history under `docs/迭代/` remains untouched.
+v0.101 iteration note. Local history under `docs/迭代/` remains untouched.
 
 ## Current documents
 
@@ -86,4 +81,4 @@ v0.100 iteration note. Local history under `docs/迭代/` remains untouched.
 - [Governance principles](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.100 D1-S iteration](docs/迭代/v0.100_D1-S_重复物质回路与瓶颈感知环境资格.md)
+- [v0.101 D1-T iteration](docs/迭代/v0.101_D1-T_对抗负重与侦察信息价值链.md)

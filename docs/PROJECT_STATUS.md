@@ -1,93 +1,73 @@
 # SE project status
 
-Version: **0.100.0**
+Version: **0.101.0**
 
 ## Current scientific task
 
-D1-R is formally closed as `threshold-not-reached`. All three seeds completed
-tick 1800 and showed physical heterogeneity plus real within-group raw-resource
-exchange, but the preregistered social-structure criterion was reproduced in
-only two seeds:
+D1-S is closed as `threshold-not-reached`. Seeds 100101, 100102 and 100103 all
+completed tick 1800 and all passed the physical-heterogeneity, real internal
+exchange and multiple persistent processing-division criteria. Seed 100101
+nevertheless reached only 47 alive from 128 initial, below the preregistered
+0.50 population floor. The formal environment gate therefore failed as a whole.
+No gene audit, selection estimate, ecological role or social-role conclusion is
+authorized.
 
-- seed 97101: two persistent division-candidate group lineages;
-- seed 97102: two persistent division-candidate group lineages;
-- seed 97103: no lineage persistent across two windows.
+D1-T is a bounded environment-mechanism task prompted by the absence of
+scout-like specialization. The diagnosis is that the prior system lacked a
+complete physical value chain rather than merely lacking ticks or group count:
+there was no rival resource contest, no load-dependent mobility trade-off, no
+inherited danger reach, and no directional action value for a danger message.
 
-The third seed also passed through a deep demographic bottleneck (42 alive from
-128 initial), finished with about 3.03 effective founder lineages and had one
-lineage represent about 44.3% of the final population. D1-R therefore does not
-show a replicated environment capable of supporting multiple structured groups.
-It authorizes neither gene audit nor adaptation, selection, niche, social-role
-or subjecthood interpretation.
+## D1-T role-neutral pressure chain
 
-The active task is D1-S: increase the number and accessibility of independent
-material-processing circuits while preserving role neutrality and total mean
-material opportunity.
+D1-T adds only opt-in physical interfaces:
 
-## D1-S shared physical change
+- raw-resource load reduces movement speed and increases movement energy;
+- rival coalitions harvesting overlapping channels within one grid-cell radius
+  incur symmetric contest pressure and small costs;
+- the existing inherited sensing radius can observe danger gradients;
+- recent contest pressure enters the existing danger signal;
+- a detected direct danger message supplies the current bearing of its source,
+  so a receiver that chooses FLEE can move away from that source;
+- read-only diagnostics track whether low-load, farther-ranging, higher-reach
+  senders connect contest exposure to same-group directional receiver response.
 
-D1-S keeps the complete inherited subject and all D1-R mechanisms unchanged. It
-changes only two environmental geometry parameters:
+No ATTACK action, scout label, fixed occupation, role reward, group subsidy or
+new inherited coordinate is introduced.
 
-1. the antipodal resource circuit weight rises from 0.35 to 0.55;
-2. all source and processing province radii are uniformly scaled by 1.15.
+## Frozen debug result
 
-Each resource-channel field is normalized after the primary and antipodal
-circuits are combined. The global mean external material opportunity therefore
-remains unchanged. No resource channel, recipe, exchange rule, group threshold,
-gene, mutation rate, maintenance cost, reproduction rule, lineage protection or
-role reward changes.
+After parameter values were fixed, independent debug seed 101011 completed tick
+900 with alive 127, minimum alive 86, cumulative births per initial 1.336,
+descendant fraction 0.819 and 15.538 effective final founder lineages. It
+recorded 47 contest actor-events, nonzero load cost, 163 frontier signal events,
+74 same-group danger messages and 5 directionally aligned FLEE responses. One
+candidate group-window occurred, but no candidate lineage persisted across two
+windows.
 
-A completed exploratory seed at tick 900 showed viable turnover, strong physical
-heterogeneity, real internal exchange, up to six simultaneous division
-candidates and one persistent group lineage. It is frozen as
-`parameter-debug-only`; it does not qualify the environment.
-
-## Formal D1-S gate
-
-Formal seeds are `100101,100102,100103`, each through tick 1800. Every seed must
-satisfy all existing D1-R physical and group-division criteria plus:
-
-- minimum recorded alive population / initial population >= 0.50;
-- final effective founder lineages >= 4.0;
-- at least two persistent division-candidate group lineages;
-- at least two simultaneous division candidates in a diagnostic window;
-- nonzero real within-group raw-resource exchange.
-
-All three seeds must pass. Thresholds are fixed before formal execution and may
-not be relaxed after observing results. A failed formal seed returns the project
-to shared-environment debugging; it does not authorize a gene-level correction.
-
-## Engineering changes
-
-- `resource_province_secondary_weight` is configurable with a disabled-default
-  compatibility value of 0.35.
-- D1-S config generation can uniformly scale province radii and records both
-  geometry changes in the manifest.
-- `se-environment-structure-summary` can apply optional whole-run bottleneck and
-  final lineage-breadth gates from `evolution_progress.jsonl`.
-- Compact result bundles now include evolution progress, group windows, group
-  summaries, environment-atlas rows/summaries, termination and scientific
-  validity metadata by default.
-- Frozen predecessor and parameter-debug files are verified by exact size and
-  SHA-256 before D1-S config generation.
-- D1-R historical workflow and evidence remain available, but its study status
-  is closed and its formal-panel authorization is false.
+The physical chain is therefore connected and compatible with the debug
+population substrate. Stable scout-like division is not established. More
+runtime alone is not the current default response; subsequent work must first
+improve replicated population and group continuity while retaining the
+role-neutral pressure chain.
 
 ## Authorization
 
 Authorized:
 
-- simple single-seed probes solely for debugging shared environmental geometry;
-- one unchanged three-seed D1-S formal structured-environment panel;
-- observational physical, demographic and group-structure summaries;
+- retain and test the D1-T physical interfaces under disabled-default
+  compatibility;
+- single-seed environment/mechanism debugging;
+- observational pressure, load, signal-delivery and directional-response
+  summaries;
+- continue shared population, environment and group-stability construction;
 - external result packaging without checkpoints by default.
 
 Not authorized:
 
+- a formal scout-role or social-occupation claim;
+- a D1-T multi-seed role panel in this version;
 - single-run or formal gene-retention audit;
-- changing a gene because it is thin, rare or absent;
-- paired mechanism experiments or candidate-ledger restart;
 - genotype-, lineage-, group- or role-specific support;
-- adaptation, selection, ecological-role, social-role, niche or subjecthood
+- paired benefit attribution, selection, adaptation, niche or subjecthood
   conclusions.

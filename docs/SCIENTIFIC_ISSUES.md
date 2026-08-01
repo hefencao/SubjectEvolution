@@ -278,3 +278,20 @@ and it consumes no new recurring or development budget. The unresolved issue is
 empirical: whether the distribution of endowments preserves healthy turnover on
 new independent seeds. A failed or marginal source stops the line before paired
 or evolutionary analysis.
+
+## D1-T: why scout-like division did not appear
+
+The pre-D1-T world could produce processing and exchange division but did not
+provide a complete reconnaissance value chain. Resource load had no mobility
+cost; entities did not contest resources; inherited resource sensing did not
+extend danger observation; contest evidence could not enter danger signalling;
+and FLEE direction ignored the source of a direct danger message. Consequently,
+more ticks or more group labels could not by themselves create a stable scout
+function.
+
+D1-T connects those interfaces without a role label. A single frozen debug seed
+shows contest, load cost, frontier signalling, same-group danger reception and
+directional escape, but no persistent candidate lineage. The open issue is now
+replicated population/group continuity and repeated information opportunity—not
+whether an isolated action count can be called a role. No genetic or adaptive
+interpretation is authorized.

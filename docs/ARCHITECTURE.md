@@ -1141,3 +1141,28 @@ report.
 `se-multi --thin-checkpoints-only` retains compact checkpoint statistics needed by whole-genome scans without serializing the complete world. `--disable-periodic-checkpoints` suppresses cadence-based full checkpoints while preserving explicitly requested thin checkpoint ticks. Full `.sechk` state remains opt-in for replay and result packaging. These storage flags change persistence policy only and do not alter simulation state or scientific protocol identity beyond the declared run configuration.
 
 The frozen D1-Q pilot lock binds the exact generated config, resolved runtime config, progress, staged health events, summary, termination, health report, cycle-aware equilibrium report, and SHA-256 for every included file. Its authorization object permits only the new independent integrated panel.
+
+## D1-T load, contest and source-bearing danger messages
+
+`runtime/load_burden.py` maps conservative raw-store occupancy to a mobility
+multiplier and movement-energy debit. The disabled schema returns the legacy
+unit multiplier and zero debit.
+
+`runtime/harvest_contest.py` executes after authoritative harvest settlement.
+It compares simultaneous overlapping-channel harvest by distinct current social
+coalitions within a configured local grid radius. Pressure and costs are
+symmetric, and the result updates only energy, integrity, a decaying contest
+memory and the existing danger-memory coordinate. No policy or group label is
+assigned by the resolver.
+
+`runtime/danger_messages.py` is shared by CPU and device policy paths. Under the
+opt-in source-bearing schema it resolves accepted direct-message stable IDs to
+current positions with periodic geometry and produces a weighted unit bearing
+toward danger-message sources. FLEE combines that bearing with the physical
+danger gradient and moves in the opposite direction. Disabled configs never
+invoke this path.
+
+`subjects/reconnaissance.py` is read-only. It tracks stable group cores across
+token changes and records frontier signalling, same-group danger-message
+reception and FLEE directions aligned away from the message source. Its output
+never feeds policy, fitness, grouping, reproduction or environment state.

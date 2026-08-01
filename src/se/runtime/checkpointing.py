@@ -103,6 +103,7 @@ from se.env.local_stress import LocalStressDiagnostics
 from ..event_cohort import EventCohortDiagnostics
 from se.subjects.succession import SubjectStructureDiagnostics
 from se.subjects.division import GroupFunctionDiagnostics
+from se.subjects.reconnaissance import ReconnaissanceDiagnostics
 from se.env.atlas import EnvironmentAtlasDiagnostics
 from se.env.niches import (
     AFFINITY_SCALE,
@@ -286,6 +287,11 @@ class SimulationCheckpointMixin:
                 if self.group_function_diagnostics is not None
                 else None
             ),
+            "reconnaissance_diagnostics": (
+                self.reconnaissance_diagnostics.snapshot_state()
+                if self.reconnaissance_diagnostics is not None
+                else None
+            ),
             "last_active": self.last_active.copy(),
             "last_cells": self.last_cells.copy(),
             "last_local_resources": self.last_local_resources.copy(),
@@ -431,6 +437,7 @@ class SimulationCheckpointMixin:
             ("maintenance_messenger", self.cfg.physiology.initial_maintenance_messenger),
             ("messenger_precursor", self.cfg.physiology.initial_messenger_precursor),
             ("physiology_sensor_multiplier", 1.0),
+            ("recent_contest_pressure", 0.0),
         ):
             if not hasattr(self.entities, name):
                 values = np.zeros(entity_capacity, dtype=np.float32)
@@ -702,6 +709,18 @@ class SimulationCheckpointMixin:
                     schema=self.cfg.run.group_function_diagnostics_schema,
                 )
             self.group_function_diagnostics.restore_state(group_function_state)
+        reconnaissance_state = state.get("reconnaissance_diagnostics")
+        if reconnaissance_state is not None:
+            if self.reconnaissance_diagnostics is None:
+                self.reconnaissance_diagnostics = ReconnaissanceDiagnostics(
+                    self.output_dir,
+                    window_ticks=self.cfg.run.reconnaissance_window_ticks,
+                    min_members=self.cfg.social.group_min_members,
+                    world_width=self.cfg.world.width,
+                    world_height=self.cfg.world.height,
+                    schema=self.cfg.run.reconnaissance_diagnostics_schema,
+                )
+            self.reconnaissance_diagnostics.restore_state(reconnaissance_state)
         self.last_active = np.asarray(state["last_active"], dtype=np.int32).copy()
         self.last_cells = np.asarray(state["last_cells"], dtype=np.int32).copy()
         self.last_local_resources = np.asarray(
@@ -1080,6 +1099,11 @@ class SimulationCheckpointMixin:
         branch.group_function_diagnostics = (
             self.group_function_diagnostics.clone(branch.output_dir)
             if self.group_function_diagnostics is not None
+            else None
+        )
+        branch.reconnaissance_diagnostics = (
+            self.reconnaissance_diagnostics.clone(branch.output_dir)
+            if self.reconnaissance_diagnostics is not None
             else None
         )
         branch.last_birth_allocation = copy.deepcopy(self.last_birth_allocation)

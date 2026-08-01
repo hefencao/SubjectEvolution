@@ -64,6 +64,35 @@ def strip_inactive_extensions(payload: dict[str, Any]) -> dict[str, Any]:
         ):
             entities.pop(key, None)
     if (
+        entities.get("resource_load_schema") == "disabled"
+        and float(entities.get("resource_load_speed_penalty_fraction", 0.0)) == 0.0
+        and float(entities.get("resource_load_movement_energy_fraction", 0.0)) == 0.0
+        and entities.get("resource_contest_schema") == "disabled"
+        and float(entities.get("resource_contest_energy_cost_per_pressure", 0.0)) == 0.0
+        and float(entities.get("resource_contest_integrity_damage_per_pressure", 0.0)) == 0.0
+        and float(entities.get("resource_contest_pressure_retention", 0.0)) == 0.0
+        and float(entities.get("resource_contest_signal_weight", 0.0)) == 0.0
+        and int(entities.get("resource_contest_radius_cells", 0)) == 0
+        and entities.get("danger_sensing_schema") == "disabled"
+        and entities.get("danger_message_direction_schema") == "disabled"
+        and float(entities.get("danger_message_direction_weight", 0.0)) == 0.0
+    ):
+        for key in (
+            "resource_load_schema",
+            "resource_load_speed_penalty_fraction",
+            "resource_load_movement_energy_fraction",
+            "resource_contest_schema",
+            "resource_contest_energy_cost_per_pressure",
+            "resource_contest_integrity_damage_per_pressure",
+            "resource_contest_pressure_retention",
+            "resource_contest_signal_weight",
+            "resource_contest_radius_cells",
+            "danger_sensing_schema",
+            "danger_message_direction_schema",
+            "danger_message_direction_weight",
+        ):
+            entities.pop(key, None)
+    if (
         entities.get("reproduction_schema") == "legacy-fixed-threshold-loss-v1"
         and float(entities.get("reproduction_parent_reserve", 0.0)) == 0.0
         and _nested_tuple(entities.get("reproduction_investment_levels", (0.0,))) == (0.0,)
@@ -85,6 +114,18 @@ def strip_inactive_extensions(payload: dict[str, Any]) -> dict[str, Any]:
             "group_function_diagnostics_enabled",
             "group_function_diagnostics_schema",
             "group_function_window_ticks",
+        ):
+            run.pop(key, None)
+
+    if (
+        run.get("reconnaissance_diagnostics_enabled") is False
+        and run.get("reconnaissance_diagnostics_schema") == "disabled"
+        and int(run.get("reconnaissance_window_ticks", 120)) == 120
+    ):
+        for key in (
+            "reconnaissance_diagnostics_enabled",
+            "reconnaissance_diagnostics_schema",
+            "reconnaissance_window_ticks",
         ):
             run.pop(key, None)
 

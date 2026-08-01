@@ -80,6 +80,12 @@ class RunConfig:
     group_function_diagnostics_enabled: bool = False
     group_function_diagnostics_schema: str = "disabled"
     group_function_window_ticks: int = 120
+    # Optional observational audit for role-neutral reconnaissance pressure.
+    # It records whether inherited sensing, signalling and receiver behaviour
+    # form a physically useful chain; it never labels roles or feeds policy.
+    reconnaissance_diagnostics_enabled: bool = False
+    reconnaissance_diagnostics_schema: str = "disabled"
+    reconnaissance_window_ticks: int = 120
 
 
 @dataclass(frozen=True)
@@ -293,6 +299,22 @@ class EntityConfig:
     resource_sensing_maintenance_energy_per_radius: float = 0.0
     resource_sensing_use_energy_per_radius: float = 0.0
     resource_sensing_development_energy_per_radius: float = 0.0
+    # D1-T opt-in physical trade-offs.  Disabled defaults preserve archived
+    # studies.  Raw stores may burden mobility; simultaneous rival harvest may
+    # impose local contest costs; the existing inherited sensing reach may be
+    # shared with danger observation without introducing a new gene.
+    resource_load_schema: str = "disabled"
+    resource_load_speed_penalty_fraction: float = 0.0
+    resource_load_movement_energy_fraction: float = 0.0
+    resource_contest_schema: str = "disabled"
+    resource_contest_energy_cost_per_pressure: float = 0.0
+    resource_contest_integrity_damage_per_pressure: float = 0.0
+    resource_contest_pressure_retention: float = 0.0
+    resource_contest_signal_weight: float = 0.0
+    resource_contest_radius_cells: int = 0
+    danger_sensing_schema: str = "disabled"
+    danger_message_direction_schema: str = "disabled"
+    danger_message_direction_weight: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -1353,6 +1375,123 @@ def validate_config(cfg: SimulationConfig) -> None:
     ):
         raise ValueError(
             "run.group_function_window_ticks must be a positive integer"
+        )
+    if cfg.run.reconnaissance_diagnostics_schema not in {
+        "disabled",
+        "reconnaissance-pressure-chain-diagnostics-v1",
+    }:
+        raise ValueError(
+            "run.reconnaissance_diagnostics_schema must be 'disabled' or "
+            "'reconnaissance-pressure-chain-diagnostics-v1'"
+        )
+    if cfg.run.reconnaissance_diagnostics_enabled != (
+        cfg.run.reconnaissance_diagnostics_schema
+        == "reconnaissance-pressure-chain-diagnostics-v1"
+    ):
+        raise ValueError(
+            "reconnaissance diagnostics enabled/schema fields must agree"
+        )
+    if (
+        not isinstance(cfg.run.reconnaissance_window_ticks, int)
+        or isinstance(cfg.run.reconnaissance_window_ticks, bool)
+        or cfg.run.reconnaissance_window_ticks <= 0
+    ):
+        raise ValueError(
+            "run.reconnaissance_window_ticks must be a positive integer"
+        )
+    if cfg.entities.resource_load_schema not in {
+        "disabled",
+        "raw-store-mobility-burden-v1",
+    }:
+        raise ValueError(
+            "entities.resource_load_schema must be 'disabled' or "
+            "'raw-store-mobility-burden-v1'"
+        )
+    if cfg.entities.resource_contest_schema not in {
+        "disabled",
+        "co-located-harvest-contest-v1",
+    }:
+        raise ValueError(
+            "entities.resource_contest_schema must be 'disabled' or "
+            "'co-located-harvest-contest-v1'"
+        )
+    if cfg.entities.danger_sensing_schema not in {
+        "disabled",
+        "shared-inherited-radius-v1",
+    }:
+        raise ValueError(
+            "entities.danger_sensing_schema must be 'disabled' or "
+            "'shared-inherited-radius-v1'"
+        )
+    if cfg.entities.danger_message_direction_schema not in {
+        "disabled",
+        "source-bearing-direct-message-v1",
+    }:
+        raise ValueError(
+            "entities.danger_message_direction_schema must be 'disabled' or "
+            "'source-bearing-direct-message-v1'"
+        )
+    for name, value in (
+        ("resource_load_speed_penalty_fraction", cfg.entities.resource_load_speed_penalty_fraction),
+        ("resource_load_movement_energy_fraction", cfg.entities.resource_load_movement_energy_fraction),
+        ("resource_contest_energy_cost_per_pressure", cfg.entities.resource_contest_energy_cost_per_pressure),
+        ("resource_contest_integrity_damage_per_pressure", cfg.entities.resource_contest_integrity_damage_per_pressure),
+        ("resource_contest_pressure_retention", cfg.entities.resource_contest_pressure_retention),
+        ("resource_contest_signal_weight", cfg.entities.resource_contest_signal_weight),
+        ("danger_message_direction_weight", cfg.entities.danger_message_direction_weight),
+    ):
+        if not math.isfinite(float(value)) or float(value) < 0.0:
+            raise ValueError(f"entities.{name} must be finite and non-negative")
+    if cfg.entities.resource_load_speed_penalty_fraction > 1.0:
+        raise ValueError(
+            "entities.resource_load_speed_penalty_fraction must be at most 1"
+        )
+    if cfg.entities.resource_contest_pressure_retention > 1.0:
+        raise ValueError(
+            "entities.resource_contest_pressure_retention must be at most 1"
+        )
+    if (
+        not isinstance(cfg.entities.resource_contest_radius_cells, int)
+        or isinstance(cfg.entities.resource_contest_radius_cells, bool)
+        or not 0 <= cfg.entities.resource_contest_radius_cells <= 2
+    ):
+        raise ValueError(
+            "entities.resource_contest_radius_cells must be an integer in [0, 2]"
+        )
+    if cfg.entities.resource_load_schema == "disabled" and (
+        cfg.entities.resource_load_speed_penalty_fraction != 0.0
+        or cfg.entities.resource_load_movement_energy_fraction != 0.0
+    ):
+        raise ValueError("disabled resource load schema requires zero costs")
+    if cfg.entities.resource_contest_schema == "disabled" and any(
+        value != 0.0
+        for value in (
+            cfg.entities.resource_contest_energy_cost_per_pressure,
+            cfg.entities.resource_contest_integrity_damage_per_pressure,
+            cfg.entities.resource_contest_pressure_retention,
+            cfg.entities.resource_contest_signal_weight,
+            cfg.entities.resource_contest_radius_cells,
+        )
+    ):
+        raise ValueError("disabled resource contest schema requires zero parameters")
+    if cfg.entities.danger_message_direction_schema == "disabled" and (
+        cfg.entities.danger_message_direction_weight != 0.0
+    ):
+        raise ValueError(
+            "disabled danger message direction requires zero weight"
+        )
+    if cfg.entities.danger_message_direction_schema != "disabled" and (
+        cfg.entities.resource_contest_schema == "disabled"
+        or cfg.entities.danger_message_direction_weight <= 0.0
+    ):
+        raise ValueError(
+            "source-bearing danger messages require enabled contest and positive weight"
+        )
+    if cfg.entities.danger_sensing_schema != "disabled" and (
+        cfg.entities.resource_sensing_schema == "disabled"
+    ):
+        raise ValueError(
+            "shared inherited danger sensing requires enabled resource sensing"
         )
     if not isinstance(cfg.run.full_checkpoint_enabled, bool):
         raise ValueError("run.full_checkpoint_enabled must be a boolean")

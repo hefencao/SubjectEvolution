@@ -493,6 +493,7 @@ class DeviceEnvironment:
         resource_affinity_q: Any | None = None,
         danger_evidence_q: Any | None = None,
         resource_sensing_radius: Any | None = None,
+        danger_sensing_radius: Any | None = None,
     ) -> tuple[tuple[Any, Any], tuple[Any, Any]]:
         xp = self.backend.xp
         cells = validate_cell_ids(
@@ -580,35 +581,56 @@ class DeviceEnvironment:
             rgx = rgx.astype(xp.float32)
             rgy = rgy.astype(xp.float32)
 
-        if danger_evidence_q is None:
-            public_danger = self.public_danger_field()
-            hazard_x = 0.5 * (
-                xp.roll(public_danger, -1, axis=1)
-                - xp.roll(public_danger, 1, axis=1)
-            )
-            hazard_y = 0.5 * (
-                xp.roll(public_danger, -1, axis=0)
-                - xp.roll(public_danger, 1, axis=0)
-            )
-            return (rgx, rgy), (gather(hazard_x), gather(hazard_y))
+        danger_radius = None
+        if danger_sensing_radius is not None:
+            danger_radius = xp.asarray(danger_sensing_radius, dtype=xp.int16)
+            if danger_radius.shape != (capacity,):
+                raise ValueError("danger sensing radius must be shaped [capacity]")
 
-        direct_x = 0.5 * (
-            xp.roll(self.hazard, -1, axis=1) - xp.roll(self.hazard, 1, axis=1)
+        def danger_gradient_components(values: Any) -> tuple[Any, Any]:
+            if danger_radius is None:
+                return (
+                    gather(xp.float32(0.5) * (
+                        xp.roll(values, -1, axis=1) - xp.roll(values, 1, axis=1)
+                    )),
+                    gather(xp.float32(0.5) * (
+                        xp.roll(values, -1, axis=0) - xp.roll(values, 1, axis=0)
+                    )),
+                )
+            gx = xp.zeros(capacity, dtype=xp.float32)
+            gy = xp.zeros(capacity, dtype=xp.float32)
+            matched = xp.zeros(capacity, dtype=bool)
+            for raw_radius in effective_resource_sensing_radius_levels(self.cfg):
+                radius = int(raw_radius)
+                scale = xp.float32(0.5 / radius)
+                selected = danger_radius == radius
+                field_x = scale * (
+                    xp.roll(values, -radius, axis=1)
+                    - xp.roll(values, radius, axis=1)
+                )
+                field_y = scale * (
+                    xp.roll(values, -radius, axis=0)
+                    - xp.roll(values, radius, axis=0)
+                )
+                gx = xp.where(selected, gather(field_x), gx)
+                gy = xp.where(selected, gather(field_y), gy)
+                matched |= selected
+            if bool(xp.any(~matched).item()):
+                raise ValueError("danger sensing radius contains an unconfigured level")
+            return gx, gy
+
+        if danger_evidence_q is None:
+            hazard_x, hazard_y = danger_gradient_components(
+                self.public_danger_field()
+            )
+            return (rgx, rgy), (hazard_x, hazard_y)
+
+        gathered_direct_x, gathered_direct_y = danger_gradient_components(
+            self.hazard
         )
-        direct_y = 0.5 * (
-            xp.roll(self.hazard, -1, axis=0) - xp.roll(self.hazard, 1, axis=0)
+        gathered_trace_x, gathered_trace_y = danger_gradient_components(
+            self.weighted_mortality_trace_field()
         )
-        trace_field = self.weighted_mortality_trace_field()
-        trace_x = 0.5 * (
-            xp.roll(trace_field, -1, axis=1) - xp.roll(trace_field, 1, axis=1)
-        )
-        trace_y = 0.5 * (
-            xp.roll(trace_field, -1, axis=0) - xp.roll(trace_field, 1, axis=0)
-        )
-        gathered_direct_x = gather(direct_x)
-        gathered_direct_y = gather(direct_y)
-        gathered_trace_x = gather(trace_x)
-        gathered_trace_y = gather(trace_y)
         weights = xp.asarray(danger_evidence_q, dtype=xp.int32)
         if weights.shape != (capacity, 2):
             raise ValueError("danger evidence must match world capacity and two sources")

@@ -639,3 +639,14 @@ founder 替换以及相邻检查点之间不过快的持续衰退。
 稳态或长期趋势的审计窗口必须由系统中已经配置的最长外部环境周期决定，不能固定使用少数最近窗口。若环境存在周期、准周期或慢速强迫，资格区间至少覆盖一个最长显式周期，并报告采样间隔、覆盖长度、人口均值、变异系数、归一化趋势和峰谷包络。短于环境周期的局部上升或下降必须保留为相位性 advisory，不能单独否决或授权长期稳态。
 
 该规则只修正观察尺度与物理时间尺度的匹配，不允许在看到结果后放宽既有健康、周转、谱系或多样性阈值。探索 seed 只能选择共享物理候选；正式资格必须使用新的独立 seed。通过单 seed source pilot 只授权新的独立整合 panel，不授权选择结论、逐基因修改或 paired 实验。
+
+## Physical value chain before social-function claims
+
+A repeated action or an analyst-assigned label is not a social function. Before
+claiming scout-like, guard-like, carrier-like or other differentiated function,
+the world must contain a complete role-neutral physical chain: a pressure or
+trade-off, an observable signal, a transmission path, an actionable receiver
+interface and a measurable downstream response. Each link must exist without a
+role reward or genotype-specific subsidy. Single-seed co-occurrence may debug
+that chain but cannot establish a stable role, causal value, selection or
+adaptation.
