@@ -16,6 +16,7 @@ SUBJECT_VM_STAGE3_SCHEMA = "partitioned-subject-graph-vm-stage3-token-trace-v1"
 SUBJECT_VM_STAGE3B_SCHEMA = "partitioned-subject-graph-vm-stage3b-local-eligibility-v1"
 SUBJECT_VM_STAGE3B2_SCHEMA = "partitioned-subject-graph-vm-stage3b2-delayed-association-v1"
 SUBJECT_VM_STAGE3B3_SCHEMA = "partitioned-subject-graph-vm-stage3b3-modulation-proposal-v1"
+SUBJECT_VM_STAGE3C1_SCHEMA = "partitioned-subject-graph-vm-stage3c1-target-binding-v1"
 SUBJECT_VM_ACTIVATION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_ACTIVATION_SCHEMA = "bounded-phased-forward-routing-v1"
 SUBJECT_VM_INPUT_PORT_SCHEMA = "objective-entity-input-ports-v1"
@@ -29,6 +30,8 @@ SUBJECT_VM_ASSOCIATION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_ASSOCIATION_SCHEMA = "bounded-delayed-token-similarity-candidate-v1"
 SUBJECT_VM_MODULATION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_MODULATION_SCHEMA = "bounded-objective-contrast-modulation-proposal-v1"
+SUBJECT_VM_TARGET_BINDING_DISABLED_SCHEMA = "disabled"
+SUBJECT_VM_TARGET_BINDING_SCHEMA = "bootstrap-single-winner-local-eligibility-binding-v1"
 SUBJECT_VM_MODULATION_FACT_WIDTH = 21
 SUBJECT_VM_MODULATION_TARGET_NAMES = (
     "node-bias",
@@ -157,6 +160,20 @@ class SubjectVMModulationConfig:
 
 
 @dataclass(frozen=True)
+class SubjectVMTargetBindingConfig:
+    """Stage-3C-1 exact target proposal binding without parameter writes.
+
+    The fixed single-winner selector is an explicit bootstrap bias used to
+    shorten graph-shaping search. It is not a universal attention claim.
+    Candidates are captured after decay and before current-tick eligibility
+    marks, preventing same-tick activity from selecting itself.
+    """
+
+    schema: str = SUBJECT_VM_TARGET_BINDING_DISABLED_SCHEMA
+    min_abs_eligibility: float = 0.0
+
+
+@dataclass(frozen=True)
 class SubjectVMConfig:
     """Disabled-by-default partitioned graph capacity contract."""
 
@@ -170,6 +187,7 @@ class SubjectVMConfig:
     eligibility: SubjectVMEligibilityConfig = SubjectVMEligibilityConfig()
     association: SubjectVMAssociationConfig = SubjectVMAssociationConfig()
     modulation: SubjectVMModulationConfig = SubjectVMModulationConfig()
+    target_binding: SubjectVMTargetBindingConfig = SubjectVMTargetBindingConfig()
 
     @property
     def total_node_capacity(self) -> int:
@@ -187,6 +205,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3B_SCHEMA,
             SUBJECT_VM_STAGE3B2_SCHEMA,
             SUBJECT_VM_STAGE3B3_SCHEMA,
+            SUBJECT_VM_STAGE3C1_SCHEMA,
         }
 
     @property
@@ -196,6 +215,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3B_SCHEMA,
             SUBJECT_VM_STAGE3B2_SCHEMA,
             SUBJECT_VM_STAGE3B3_SCHEMA,
+            SUBJECT_VM_STAGE3C1_SCHEMA,
         }
 
     @property
@@ -204,15 +224,24 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3B_SCHEMA,
             SUBJECT_VM_STAGE3B2_SCHEMA,
             SUBJECT_VM_STAGE3B3_SCHEMA,
+            SUBJECT_VM_STAGE3C1_SCHEMA,
         }
 
     @property
     def association_enabled(self) -> bool:
-        return self.schema in {SUBJECT_VM_STAGE3B2_SCHEMA, SUBJECT_VM_STAGE3B3_SCHEMA}
+        return self.schema in {
+            SUBJECT_VM_STAGE3B2_SCHEMA,
+            SUBJECT_VM_STAGE3B3_SCHEMA,
+            SUBJECT_VM_STAGE3C1_SCHEMA,
+        }
 
     @property
     def modulation_enabled(self) -> bool:
-        return self.schema == SUBJECT_VM_STAGE3B3_SCHEMA
+        return self.schema in {SUBJECT_VM_STAGE3B3_SCHEMA, SUBJECT_VM_STAGE3C1_SCHEMA}
+
+    @property
+    def target_binding_enabled(self) -> bool:
+        return self.schema == SUBJECT_VM_STAGE3C1_SCHEMA
 
 
 def _scan_forbidden_keys(value: Any, path: str = "subject_vm") -> None:
@@ -352,6 +381,21 @@ def _load_modulation_config(raw: Any) -> SubjectVMModulationConfig:
     )
 
 
+def _load_target_binding_config(raw: Any) -> SubjectVMTargetBindingConfig:
+    if raw is None:
+        return SubjectVMTargetBindingConfig()
+    if not isinstance(raw, Mapping):
+        raise ValueError("subject_vm.target_binding must be an object")
+    allowed = {"schema", "min_abs_eligibility"}
+    unknown = sorted(set(raw) - allowed)
+    if unknown:
+        raise ValueError(f"unknown subject_vm.target_binding fields: {unknown}")
+    return SubjectVMTargetBindingConfig(
+        schema=str(raw.get("schema", SUBJECT_VM_TARGET_BINDING_DISABLED_SCHEMA)),
+        min_abs_eligibility=float(raw.get("min_abs_eligibility", 0.0)),
+    )
+
+
 def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
     """Parse an optional Subject VM section without inventing legacy fields."""
     if raw is None:
@@ -368,6 +412,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         "eligibility",
         "association",
         "modulation",
+        "target_binding",
     }
     unknown = sorted(set(raw) - allowed)
     if unknown:
@@ -409,6 +454,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         eligibility=_load_eligibility_config(raw.get("eligibility")),
         association=_load_association_config(raw.get("association")),
         modulation=_load_modulation_config(raw.get("modulation")),
+        target_binding=_load_target_binding_config(raw.get("target_binding")),
     )
     validate_subject_vm_config(cfg)
     return cfg
@@ -442,6 +488,13 @@ def _validate_disabled_modulation(cfg: SubjectVMModulationConfig) -> None:
     if cfg != SubjectVMModulationConfig():
         raise ValueError(
             "inactive subject_vm modulation requires exact disabled defaults"
+        )
+
+
+def _validate_disabled_target_binding(cfg: SubjectVMTargetBindingConfig) -> None:
+    if cfg != SubjectVMTargetBindingConfig():
+        raise ValueError(
+            "inactive subject_vm target_binding requires exact disabled defaults"
         )
 
 
@@ -576,8 +629,21 @@ def _validate_modulation(
         raise ValueError("subject_vm modulation proposal_clip must be in (0, 64]")
 
 
+def _validate_target_binding(
+    cfg: SubjectVMTargetBindingConfig, *, eligibility: SubjectVMEligibilityConfig
+) -> None:
+    if cfg.schema != SUBJECT_VM_TARGET_BINDING_SCHEMA:
+        raise ValueError(
+            f"Stage-3C-1 subject_vm requires target binding schema {SUBJECT_VM_TARGET_BINDING_SCHEMA!r}"
+        )
+    if not 0.0 < cfg.min_abs_eligibility <= eligibility.clip:
+        raise ValueError(
+            "subject_vm target_binding min_abs_eligibility must be in (0, eligibility.clip]"
+        )
+
+
 def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
-    """Validate the frozen Stage-1/2/3A/3B-1/3B-2/3B-3 contracts."""
+    """Validate the frozen Stage-1 through Stage-3C-1 contracts."""
     if cfg.enabled:
         if cfg.schema not in {
             SUBJECT_VM_STAGE1_SCHEMA,
@@ -586,6 +652,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             SUBJECT_VM_STAGE3B_SCHEMA,
             SUBJECT_VM_STAGE3B2_SCHEMA,
             SUBJECT_VM_STAGE3B3_SCHEMA,
+            SUBJECT_VM_STAGE3C1_SCHEMA,
         }:
             raise ValueError("enabled subject_vm requires a supported stage schema")
         if tuple(region.name for region in cfg.regions) != SUBJECT_VM_REGION_NAMES:
@@ -617,6 +684,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_eligibility(cfg.eligibility)
             _validate_disabled_association(cfg.association)
             _validate_disabled_modulation(cfg.modulation)
+            _validate_disabled_target_binding(cfg.target_binding)
         else:
             _validate_activation(cfg.activation)
             if cfg.schema == SUBJECT_VM_STAGE2_SCHEMA:
@@ -624,17 +692,20 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
                 _validate_disabled_eligibility(cfg.eligibility)
                 _validate_disabled_association(cfg.association)
                 _validate_disabled_modulation(cfg.modulation)
+                _validate_disabled_target_binding(cfg.target_binding)
             else:
                 _validate_trace(cfg.trace)
                 if cfg.schema == SUBJECT_VM_STAGE3_SCHEMA:
                     _validate_disabled_eligibility(cfg.eligibility)
                     _validate_disabled_association(cfg.association)
                     _validate_disabled_modulation(cfg.modulation)
+                    _validate_disabled_target_binding(cfg.target_binding)
                 else:
                     _validate_eligibility(cfg.eligibility)
                     if cfg.schema == SUBJECT_VM_STAGE3B_SCHEMA:
                         _validate_disabled_association(cfg.association)
                         _validate_disabled_modulation(cfg.modulation)
+                        _validate_disabled_target_binding(cfg.target_binding)
                     else:
                         _validate_association(
                             cfg.association,
@@ -643,12 +714,19 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
                         )
                         if cfg.schema == SUBJECT_VM_STAGE3B2_SCHEMA:
                             _validate_disabled_modulation(cfg.modulation)
+                            _validate_disabled_target_binding(cfg.target_binding)
                         else:
                             _validate_modulation(
                                 cfg.modulation,
                                 trace=cfg.trace,
                                 association=cfg.association,
                             )
+                            if cfg.schema == SUBJECT_VM_STAGE3B3_SCHEMA:
+                                _validate_disabled_target_binding(cfg.target_binding)
+                            else:
+                                _validate_target_binding(
+                                    cfg.target_binding, eligibility=cfg.eligibility
+                                )
     else:
         if cfg.schema != SUBJECT_VM_DISABLED_SCHEMA:
             raise ValueError("disabled subject_vm requires schema 'disabled'")
@@ -665,6 +743,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
         _validate_disabled_eligibility(cfg.eligibility)
         _validate_disabled_association(cfg.association)
         _validate_disabled_modulation(cfg.modulation)
+        _validate_disabled_target_binding(cfg.target_binding)
 
 
 def _disabled_activation_payload(value: Any) -> bool:
@@ -739,6 +818,17 @@ def _disabled_modulation_payload(value: Any) -> bool:
     )
 
 
+def _disabled_target_binding_payload(value: Any) -> bool:
+    if value is None:
+        return True
+    if not isinstance(value, Mapping):
+        return False
+    return (
+        value.get("schema") == SUBJECT_VM_TARGET_BINDING_DISABLED_SCHEMA
+        and float(value.get("min_abs_eligibility", 0.0)) == 0.0
+    )
+
+
 def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]:
     """Remove exact inert extensions without changing frozen identities."""
     section = payload.get("subject_vm")
@@ -758,6 +848,10 @@ def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]
         section.get("modulation")
     ):
         section.pop("modulation", None)
+    if isinstance(section, dict) and _disabled_target_binding_payload(
+        section.get("target_binding")
+    ):
+        section.pop("target_binding", None)
     if (
         section.get("enabled") is False
         and section.get("schema") == SUBJECT_VM_DISABLED_SCHEMA
@@ -794,6 +888,9 @@ __all__ = [
     "SUBJECT_VM_STAGE3B_SCHEMA",
     "SUBJECT_VM_STAGE3B2_SCHEMA",
     "SUBJECT_VM_STAGE3B3_SCHEMA",
+    "SUBJECT_VM_STAGE3C1_SCHEMA",
+    "SUBJECT_VM_TARGET_BINDING_DISABLED_SCHEMA",
+    "SUBJECT_VM_TARGET_BINDING_SCHEMA",
     "SUBJECT_VM_TRACE_DISABLED_SCHEMA",
     "SUBJECT_VM_TRACE_SCHEMA",
     "SubjectVMActivationConfig",
@@ -802,6 +899,7 @@ __all__ = [
     "SubjectVMModulationConfig",
     "SubjectVMEligibilityConfig",
     "SubjectVMRegionConfig",
+    "SubjectVMTargetBindingConfig",
     "SubjectVMTraceConfig",
     "load_subject_vm_config",
     "strip_disabled_subject_vm_section",

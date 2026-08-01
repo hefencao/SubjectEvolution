@@ -1418,3 +1418,12 @@ All request and projection coordinates are excluded from association similarity,
 The event ring stores only a request flag, proposal flag, role-neutral reason code, scalar signal and six-dimensional family vector. It stores no exact node or edge target, no eligibility snapshot and no historical execution path. Stage 3B-3 therefore leaves local eligibility and every graph parameter unchanged.
 
 The next boundary must solve exact-target binding and same-tick safety. Current local eligibility can contain activity marked during the present activation, so a future updater may not simply multiply the Stage-3B-3 vector into the current eligibility arrays. A separately frozen contract must distinguish historical carriers from current-tick marks, preserve rejection and rollback, and define per-write, cumulative and physical-cost bounds before any parameter mutation is authorized.
+
+
+### Stage 3C-1 — bootstrap exact-target proposal binding (implemented in v0.115)
+
+Stage 3C-1 retains the fixed normalized-dot Stage-3B-2 address path as an explicit bootstrap baseline. This bias is accepted to shorten early graph-shaping search; it is not a claim that normalized-dot single-winner retrieval is the universal form of attention.
+
+After local eligibility decay and before current-tick node/edge execution, the activation adapter selects at most one compact candidate for each of the six generic parameter families. Selection requires an expressed flagged carrier, a positive age, and configured minimum absolute eligibility. Port-specific node families additionally require the corresponding port. Ranking uses absolute eligibility and stable node/edge ID tie-breaking. The resulting six-target snapshot is transient and independent of graph capacity beyond the scan itself.
+
+After objective commit, an already-produced family proposal may bind to the matching candidate. The event ring stores only bounded target kind, slot, stable ID, pre-activation eligibility, proposal component, bound flag and reason. It stores neither the complete eligibility state nor an execution path. No final delta is computed and no graph field is written.

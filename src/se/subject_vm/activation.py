@@ -12,6 +12,10 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from .binding import (
+    SubjectVMTargetCandidateBatch,
+    snapshot_pre_activation_target_candidates,
+)
 from .eligibility import (
     SubjectVMLocalEligibilityUsage,
     advance_local_eligibility,
@@ -47,6 +51,7 @@ class SubjectVMActivationResult:
     usage: SubjectVMActivationUsage
     thought_tokens: SubjectVMThoughtTokenBatch | None = None
     eligibility_usage: SubjectVMLocalEligibilityUsage | None = None
+    target_candidates: SubjectVMTargetCandidateBatch | None = None
 
 
 def _operator_output(
@@ -93,6 +98,16 @@ def execute_activation(
     storage.validate_internal()
     eligibility_usage = advance_local_eligibility(
         storage, rows=normalized_rows, tick=int(tick)
+    )
+    target_candidates = (
+        snapshot_pre_activation_target_candidates(
+            storage,
+            rows=normalized_rows,
+            tick=int(tick),
+            cfg=storage.cfg.target_binding,
+        )
+        if storage.cfg.target_binding_enabled
+        else None
     )
 
     activation_cfg = storage.cfg.activation
@@ -258,6 +273,7 @@ def execute_activation(
         usage=usage,
         thought_tokens=thought_tokens,
         eligibility_usage=eligibility_usage,
+        target_candidates=target_candidates,
     )
 
 

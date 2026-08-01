@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3b3-modulation-proposals-cpu-reference-implemented"
+    assert contract["status"] == "stage-3c1-exact-target-binding-cpu-reference-implemented"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,7 +24,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3B-3"
+    assert contract["current_stage"] == "3C-1"
     assert contract["stage_2_contract"]["plasticity"] is False
     assert contract["stage_3a_contract"]["persistent_node_edge_path"] is False
     assert contract["stage_3a_contract"]["plasticity"] is False
@@ -40,6 +40,17 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["stage_3b3_contract"]["specific_parameter_binding"] is False
     assert contract["stage_3b3_contract"]["eligibility_modulation"] is False
     assert contract["stage_3b3_contract"]["plasticity"] is False
+    assert contract["stage_3c1_contract"]["universal_attention_claim"] is False
+    assert contract["stage_3c1_contract"]["snapshot_before_current_activation_marks"] is True
+    assert contract["stage_3c1_contract"]["same_tick_new_activity_target"] is False
+    assert contract["stage_3c1_contract"]["parameter_update"] is False
+
+    target_binding = _load(
+        "protocols/decisions/subject_graph_vm_target_binding_v1.json"
+    )
+    assert target_binding["bootstrap_bias"]["universal_attention_claim"] is False
+    assert target_binding["candidate_timing"]["snapshot_before_current_activation_marks"] is True
+    assert target_binding["write_authority"]["parameter_write"] is False
 
     modulation = _load(
         "protocols/decisions/subject_graph_vm_modulation_proposal_v1.json"
@@ -56,6 +67,8 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert delayed_association["representation"]["request_coordinate_in_similarity"] is False
     assert delayed_association["candidate_selection"]["mandatory_assignment"] is False
     assert delayed_association["causal_order"]["parameter_update"] is False
+    assert delayed_association["architecture_role"] == "bootstrap-fixed-content-address-baseline"
+    assert delayed_association["universal_attention_claim"] is False
 
     local_eligibility = _load(
         "protocols/decisions/subject_graph_vm_local_eligibility_v1.json"

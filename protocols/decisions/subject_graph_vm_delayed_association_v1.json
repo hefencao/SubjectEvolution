@@ -65,5 +65,8 @@
     "persisting node IDs, edge IDs, activation masks or execution paths",
     "changing local eligibility or graph parameters",
     "claiming association candidates as learning, memory understanding or subjecthood"
-  ]
+  ],
+  "architecture_role": "bootstrap-fixed-content-address-baseline",
+  "universal_attention_claim": false,
+  "future_general_candidate_allocator_allowed": true
 }

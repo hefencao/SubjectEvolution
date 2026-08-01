@@ -1,0 +1,72 @@
+{
+  "schema": "se-subject-vm-target-binding-contract-v1",
+  "contract_id": "subject-graph-vm-target-binding-v1",
+  "status": "accepted-stage-3c1-engineering-boundary",
+  "release": "0.115.0",
+  "scope": "Bind an already-produced parameter-family proposal to at most one still-valid local eligibility carrier per family without computing or applying a parameter update.",
+  "bootstrap_bias": {
+    "selector": "single-winner-by-absolute-local-eligibility-v1",
+    "purpose": "shorten early graph-shaping search and provide an interpretable fixed baseline",
+    "universal_attention_claim": false,
+    "future_replacement_or_comparison_allowed": true
+  },
+  "candidate_timing": {
+    "eligibility_decay_first": true,
+    "snapshot_before_current_activation_marks": true,
+    "same_tick_new_activity_eligible": false,
+    "minimum_carrier_age_ticks": 1,
+    "persistent_full_eligibility_snapshot": false
+  },
+  "parameter_families": {
+    "node-bias": "expressed flagged node",
+    "node-input-gate": "expressed flagged node with an input port",
+    "node-output-gate": "expressed flagged node with an output port",
+    "node-trace-gate": "expressed flagged node with a trace port",
+    "edge-forward-gate": "expressed flagged edge",
+    "edge-bandwidth": "expressed flagged edge"
+  },
+  "selection": {
+    "threshold": "configured minimum absolute eligibility within the existing eligibility clip",
+    "ranking": "largest absolute pre-activation eligibility",
+    "tie_break": "lowest stable node or edge ID",
+    "maximum_targets_per_family": 1,
+    "mandatory_binding": false
+  },
+  "persisted": [
+    "binding requested flag",
+    "event has any bound target flag",
+    "per-family bound flag and role-neutral reason code",
+    "target kind, slot index and stable node or edge ID",
+    "pre-activation local eligibility value",
+    "unchanged parameter-family proposal component"
+  ],
+  "not_persisted": [
+    "complete node or edge execution path",
+    "full eligibility arrays",
+    "current-tick activation mask",
+    "computed parameter delta",
+    "reward, valence, polarity, trust or interest"
+  ],
+  "write_authority": {
+    "eligibility_write": false,
+    "parameter_write": false,
+    "retained_state_write": false,
+    "topology_write": false,
+    "physical_cost_debit": false,
+    "action_feedback": false
+  },
+  "compatibility": {
+    "disabled_target_binding": "canonically removed from configuration identity",
+    "v0114_checkpoint": "upgrade allocates empty binding metadata without fabricating targets",
+    "birth": "newborn event ring and pending target metadata start empty",
+    "clone_checkpoint_compaction": "committed bounded binding metadata is copied exactly",
+    "death": "binding metadata is cleared with the row"
+  },
+  "forbidden": [
+    "using current-tick activity as its own historical target",
+    "treating fixed single-winner selection as the only valid attention mechanism",
+    "multiplying proposal and eligibility into a final update in Stage 3C-1",
+    "writing graph parameters or topology",
+    "claiming bound proposals as causal credit, learning or subjecthood"
+  ]
+}

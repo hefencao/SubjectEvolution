@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.115.0
+
+- Adds Subject VM Stage 3C-1 exact target proposal binding without parameter writes.
+- Snapshots at most one still-valid local eligibility carrier per parameter family after decay and before current-tick activation marks.
+- Prevents same-tick activity from selecting itself as historical credit and stores only bounded target metadata, not full eligibility arrays or execution paths.
+- Explicitly classifies normalized-dot delayed association and single-winner eligibility selection as bootstrap biases for faster graph shaping, not universal attention claims.
+
 ## 0.114.0
 
 - Adds Subject VM Stage 3B-3 bounded, rejectable modulation proposals over six generic parameter families.

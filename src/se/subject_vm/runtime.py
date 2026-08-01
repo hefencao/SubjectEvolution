@@ -6,6 +6,7 @@ from typing import Any
 
 import numpy as np
 
+from .binding import SubjectVMTargetCandidateBatch
 from .activation import SubjectVMActivationResult, execute_activation
 from .config import SubjectVMConfig
 from .eligibility import SubjectVMLocalEligibilityUsage
@@ -23,7 +24,8 @@ RUNTIME_SCHEMA_V2 = "se-subject-vm-runtime-v2"
 RUNTIME_SCHEMA_V3 = "se-subject-vm-runtime-v3"
 RUNTIME_SCHEMA_V4 = "se-subject-vm-runtime-v4"
 RUNTIME_SCHEMA_V5 = "se-subject-vm-runtime-v5"
-RUNTIME_SCHEMA = "se-subject-vm-runtime-v6"
+RUNTIME_SCHEMA_V6 = "se-subject-vm-runtime-v6"
+RUNTIME_SCHEMA = "se-subject-vm-runtime-v7"
 
 
 @dataclass(frozen=True)
@@ -94,6 +96,16 @@ STAGE3B2_DEVICE_CONTRACT = SubjectVMDeviceContract(
 
 STAGE3B3_DEVICE_CONTRACT = SubjectVMDeviceContract(
     schema="subject-vm-stage3b3-modulation-proposal-cpu-reference-contract-v1",
+    host_authoritative=True,
+    device_allocation=False,
+    device_sync=False,
+    consumes_random_numbers=False,
+    affects_action_or_cost=True,
+    supported_execution_backends=("cpu",),
+)
+
+STAGE3C1_DEVICE_CONTRACT = SubjectVMDeviceContract(
+    schema="subject-vm-stage3c1-target-binding-cpu-reference-contract-v1",
     host_authoritative=True,
     device_allocation=False,
     device_sync=False,
@@ -180,6 +192,7 @@ class SubjectVMRuntime:
             eligibility_accounting or SubjectVMEligibilityAccounting()
         )
         self._pending_thought_tokens: SubjectVMThoughtTokenBatch | None = None
+        self._pending_target_candidates: SubjectVMTargetCandidateBatch | None = None
         if cfg.enabled != (storage is not None):
             raise ValueError("subject_vm runtime enabled/storage state disagrees")
         if cfg.trace_enabled != (trace_storage is not None):
@@ -206,7 +219,9 @@ class SubjectVMRuntime:
         if trace_storage is not None:
             trace_storage.initialize_rows(rows)
         mode = (
-            "initialized-stage3b3-empty"
+            "initialized-stage3c1-empty"
+            if cfg.target_binding_enabled
+            else "initialized-stage3b3-empty"
             if cfg.modulation_enabled
             else "initialized-stage3b2-empty"
             if cfg.association_enabled
@@ -253,7 +268,13 @@ class SubjectVMRuntime:
         return self._pending_thought_tokens is not None
 
     @property
+    def target_binding_enabled(self) -> bool:
+        return self.cfg.target_binding_enabled
+
+    @property
     def device_contract(self) -> SubjectVMDeviceContract:
+        if self.target_binding_enabled:
+            return STAGE3C1_DEVICE_CONTRACT
         if self.modulation_enabled:
             return STAGE3B3_DEVICE_CONTRACT
         if self.association_enabled:
@@ -296,8 +317,8 @@ class SubjectVMRuntime:
     ) -> SubjectVMActivationResult:
         if not self.activation_enabled or self.storage is None:
             raise RuntimeError("subject_vm activation is not enabled")
-        if self._pending_thought_tokens is not None:
-            raise RuntimeError("subject_vm prior thought token was not committed")
+        if self._pending_thought_tokens is not None or self._pending_target_candidates is not None:
+            raise RuntimeError("subject_vm prior activation metadata was not committed")
         result = execute_activation(
             self.storage,
             rows=rows,
@@ -314,6 +335,9 @@ class SubjectVMRuntime:
             and bool(np.any(result.thought_tokens.emitted))
             else None
         )
+        self._pending_target_candidates = (
+            result.target_candidates if self._pending_thought_tokens is not None else None
+        )
         return result
 
     def commit_objective_events(self, batch: SubjectVMObjectiveEventBatch) -> None:
@@ -327,11 +351,14 @@ class SubjectVMRuntime:
             owner_entity_ids=self.storage.owner_entity_id,
             owner_subject_ids=self.storage.owner_subject_id,
             accounting=self.trace_accounting,
+            target_candidates=self._pending_target_candidates,
         )
         self._pending_thought_tokens = None
+        self._pending_target_candidates = None
 
     def discard_pending_thought_tokens(self) -> None:
         self._pending_thought_tokens = None
+        self._pending_target_candidates = None
 
     def inherit_births(
         self,
@@ -396,7 +423,7 @@ class SubjectVMRuntime:
     def snapshot_state(self) -> dict[str, Any] | None:
         if self.storage is None:
             return None
-        if self._pending_thought_tokens is not None:
+        if self._pending_thought_tokens is not None or self._pending_target_candidates is not None:
             raise RuntimeError("subject_vm cannot checkpoint a partial activation phase")
         payload: dict[str, Any] = {
             "schema": RUNTIME_SCHEMA,
@@ -444,6 +471,7 @@ class SubjectVMRuntime:
         schema = payload.get("schema")
         if schema not in {
             RUNTIME_SCHEMA,
+            RUNTIME_SCHEMA_V6,
             RUNTIME_SCHEMA_V5,
             RUNTIME_SCHEMA_V4,
             RUNTIME_SCHEMA_V3,
@@ -464,6 +492,9 @@ class SubjectVMRuntime:
         compatibility_empty_modulation = (
             cfg.modulation_enabled and schema == RUNTIME_SCHEMA_V5
         )
+        compatibility_empty_binding = (
+            cfg.target_binding_enabled and schema == RUNTIME_SCHEMA_V6
+        )
         if schema == RUNTIME_SCHEMA_V1:
             expected_contract = STAGE1_DEVICE_CONTRACT.schema
         elif schema == RUNTIME_SCHEMA_V2:
@@ -474,9 +505,13 @@ class SubjectVMRuntime:
             expected_contract = STAGE3B_DEVICE_CONTRACT.schema
         elif schema == RUNTIME_SCHEMA_V5:
             expected_contract = STAGE3B2_DEVICE_CONTRACT.schema
+        elif schema == RUNTIME_SCHEMA_V6:
+            expected_contract = STAGE3B3_DEVICE_CONTRACT.schema
         else:
             expected_contract = (
-                STAGE3B3_DEVICE_CONTRACT.schema
+                STAGE3C1_DEVICE_CONTRACT.schema
+                if cfg.target_binding_enabled
+                else STAGE3B3_DEVICE_CONTRACT.schema
                 if cfg.modulation_enabled
                 else STAGE3B2_DEVICE_CONTRACT.schema
                 if cfg.association_enabled
@@ -546,6 +581,8 @@ class SubjectVMRuntime:
             restore_mode = "compatibility-empty-delayed-association-rebuild"
         if compatibility_empty_modulation:
             restore_mode = "compatibility-empty-modulation-proposal-rebuild"
+        if compatibility_empty_binding:
+            restore_mode = "compatibility-empty-target-binding-rebuild"
         return cls(
             cfg,
             entity_capacity,
@@ -568,6 +605,7 @@ class SubjectVMRuntime:
             "eligibility_enabled": self.eligibility_enabled,
             "association_enabled": self.association_enabled,
             "modulation_enabled": self.modulation_enabled,
+            "target_binding_enabled": self.target_binding_enabled,
             "restore_mode": self.restore_mode,
             "device_contract": self.device_contract.schema,
             "activation_accounting": asdict(self.activation_accounting),
@@ -580,7 +618,7 @@ class SubjectVMRuntime:
         }
 
     def clone(self) -> "SubjectVMRuntime":
-        if self._pending_thought_tokens is not None:
+        if self._pending_thought_tokens is not None or self._pending_target_candidates is not None:
             raise RuntimeError("subject_vm cannot clone a partial activation phase")
         return type(self)(
             self.cfg,
@@ -607,12 +645,14 @@ __all__ = [
     "RUNTIME_SCHEMA_V3",
     "RUNTIME_SCHEMA_V4",
     "RUNTIME_SCHEMA_V5",
+    "RUNTIME_SCHEMA_V6",
     "STAGE1_DEVICE_CONTRACT",
     "STAGE2_DEVICE_CONTRACT",
     "STAGE3_DEVICE_CONTRACT",
     "STAGE3B_DEVICE_CONTRACT",
     "STAGE3B2_DEVICE_CONTRACT",
     "STAGE3B3_DEVICE_CONTRACT",
+    "STAGE3C1_DEVICE_CONTRACT",
     "SubjectVMActivationAccounting",
     "SubjectVMDeviceContract",
     "SubjectVMEligibilityAccounting",

@@ -13,6 +13,11 @@ from typing import Any
 import numpy as np
 
 from .association import select_delayed_association_candidate
+from .binding import (
+    BINDING_REASON_CODES,
+    SubjectVMTargetCandidateBatch,
+    bind_modulation_targets,
+)
 from .config import (
     SUBJECT_VM_MODULATION_TARGET_NAMES,
     SUBJECT_VM_MODULATION_TARGET_WIDTH,
@@ -27,7 +32,8 @@ from .modulation import (
 
 TRACE_STORAGE_SCHEMA_V1 = "se-subject-vm-token-event-storage-v1"
 TRACE_STORAGE_SCHEMA_V2 = "se-subject-vm-token-event-storage-v2"
-TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v3"
+TRACE_STORAGE_SCHEMA_V3 = "se-subject-vm-token-event-storage-v3"
+TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v4"
 ACTION_PORT_WIDTH = 8
 RESOURCE_DELTA_WIDTH = 4
 OBJECTIVE_EVENT_DELTA_NAMES = (
@@ -99,6 +105,12 @@ class SubjectVMTraceAccounting:
     modulation_rejected_zero_target_weights: int = 0
     modulation_rejected_zero_signal: int = 0
     modulation_not_requested: int = 0
+    binding_requests: int = 0
+    binding_bound_events: int = 0
+    binding_bound_targets: int = 0
+    binding_rejected_no_modulation: int = 0
+    binding_rejected_zero_family: int = 0
+    binding_rejected_no_carrier: int = 0
     last_event_tick: int = -1
 
 
@@ -176,6 +188,47 @@ class SubjectVMTraceStorage:
             if cfg.modulation_enabled
             else None
         )
+        self.binding_requested = (
+            np.zeros((e, c), dtype=bool) if cfg.target_binding_enabled else None
+        )
+        self.binding_bound_any = (
+            np.zeros((e, c), dtype=bool) if cfg.target_binding_enabled else None
+        )
+        self.binding_family_bound = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=bool)
+            if cfg.target_binding_enabled
+            else None
+        )
+        self.binding_reason = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.uint8)
+            if cfg.target_binding_enabled
+            else None
+        )
+        self.binding_target_kind = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.uint8)
+            if cfg.target_binding_enabled
+            else None
+        )
+        self.binding_target_index = (
+            np.full((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), -1, dtype=np.int32)
+            if cfg.target_binding_enabled
+            else None
+        )
+        self.binding_target_id = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.uint32)
+            if cfg.target_binding_enabled
+            else None
+        )
+        self.binding_eligibility_value = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.float32)
+            if cfg.target_binding_enabled
+            else None
+        )
+        self.binding_family_proposal = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.float32)
+            if cfg.target_binding_enabled
+            else None
+        )
 
     @staticmethod
     def base_snapshot_array_names() -> tuple[str, ...]:
@@ -221,12 +274,28 @@ class SubjectVMTraceStorage:
             "modulation_vector",
         )
 
+    @staticmethod
+    def binding_snapshot_array_names() -> tuple[str, ...]:
+        return (
+            "binding_requested",
+            "binding_bound_any",
+            "binding_family_bound",
+            "binding_reason",
+            "binding_target_kind",
+            "binding_target_index",
+            "binding_target_id",
+            "binding_eligibility_value",
+            "binding_family_proposal",
+        )
+
     def snapshot_array_names(self) -> tuple[str, ...]:
         names = self.base_snapshot_array_names()
         if self.cfg.association_enabled:
             names += self.association_snapshot_array_names()
         if self.cfg.modulation_enabled:
             names += self.modulation_snapshot_array_names()
+        if self.cfg.target_binding_enabled:
+            names += self.binding_snapshot_array_names()
         return names
 
     def allocated_nbytes(self) -> int:
@@ -314,6 +383,25 @@ class SubjectVMTraceStorage:
             self.modulation_reason[row, slot] = 0
             self.modulation_signal[row, slot] = 0.0
             self.modulation_vector[row, slot] = 0.0
+        if self.cfg.target_binding_enabled:
+            assert self.binding_requested is not None
+            assert self.binding_bound_any is not None
+            assert self.binding_family_bound is not None
+            assert self.binding_reason is not None
+            assert self.binding_target_kind is not None
+            assert self.binding_target_index is not None
+            assert self.binding_target_id is not None
+            assert self.binding_eligibility_value is not None
+            assert self.binding_family_proposal is not None
+            self.binding_requested[row, slot] = False
+            self.binding_bound_any[row, slot] = False
+            self.binding_family_bound[row, slot] = False
+            self.binding_reason[row, slot] = 0
+            self.binding_target_kind[row, slot] = 0
+            self.binding_target_index[row, slot] = -1
+            self.binding_target_id[row, slot] = 0
+            self.binding_eligibility_value[row, slot] = 0.0
+            self.binding_family_proposal[row, slot] = 0.0
 
     def expire(self, tick: int) -> int:
         expired = self.event_valid & (
@@ -366,6 +454,7 @@ class SubjectVMTraceStorage:
         owner_entity_ids: np.ndarray,
         owner_subject_ids: np.ndarray,
         accounting: SubjectVMTraceAccounting,
+        target_candidates: SubjectVMTargetCandidateBatch | None = None,
     ) -> None:
         count = self._validate_event_batch(batch)
         rows = self._rows(batch.rows)
@@ -378,6 +467,26 @@ class SubjectVMTraceStorage:
             raise ValueError("subject_vm thought token has an invalid shape")
         if np.asarray(tokens.action_potentials).shape != (count, ACTION_PORT_WIDTH):
             raise ValueError("subject_vm action potentials have an invalid shape")
+        if self.cfg.target_binding_enabled:
+            if target_candidates is None:
+                raise ValueError("subject_vm target binding requires pre-activation candidates")
+            if int(target_candidates.tick) != int(batch.tick):
+                raise ValueError("subject_vm target candidates tick does not align")
+            candidate_rows = self._rows(target_candidates.rows)
+            if not np.array_equal(candidate_rows, rows):
+                raise ValueError("subject_vm target candidates rows do not align")
+            expected_shape = (count, SUBJECT_VM_MODULATION_TARGET_WIDTH)
+            for value in (
+                target_candidates.target_kind,
+                target_candidates.target_index,
+                target_candidates.target_id,
+                target_candidates.eligibility_value,
+                target_candidates.eligibility_age,
+            ):
+                if np.asarray(value).shape != expected_shape:
+                    raise ValueError("subject_vm target candidates have an invalid shape")
+        elif target_candidates is not None:
+            raise ValueError("inactive subject_vm target binding cannot accept candidates")
         if not np.array_equal(owner_entity_ids[rows], batch.entity_ids):
             raise ValueError("subject_vm trace entity ownership is stale")
         if not np.array_equal(owner_subject_ids[rows], batch.subject_ids):
@@ -477,6 +586,31 @@ class SubjectVMTraceStorage:
                     accounting.modulation_rejected_zero_target_weights += 1
                 elif modulation.reason == "zero-signal":
                     accounting.modulation_rejected_zero_signal += 1
+            binding = None
+            if self.cfg.target_binding_enabled:
+                assert modulation is not None and target_candidates is not None
+                binding = bind_modulation_targets(
+                    modulation=modulation,
+                    candidates=target_candidates,
+                    candidate_row=index,
+                )
+                if binding.requested:
+                    accounting.binding_requests += 1
+                else:
+                    accounting.binding_rejected_no_modulation += 1
+                if binding.bound_any:
+                    accounting.binding_bound_events += 1
+                accounting.binding_bound_targets += int(np.count_nonzero(binding.family_bound))
+                accounting.binding_rejected_zero_family += int(
+                    np.count_nonzero(
+                        binding.reason == BINDING_REASON_CODES["zero-family-proposal"]
+                    )
+                )
+                accounting.binding_rejected_no_carrier += int(
+                    np.count_nonzero(
+                        binding.reason == BINDING_REASON_CODES["no-valid-local-carrier"]
+                    )
+                )
             if self.event_valid[row, slot]:
                 accounting.overwritten_events += 1
             self._clear_slot(row, slot)
@@ -546,6 +680,25 @@ class SubjectVMTraceStorage:
                 self.modulation_vector[row, slot] = np.asarray(
                     modulation.vector, dtype=np.float32
                 )
+            if binding is not None:
+                assert self.binding_requested is not None
+                assert self.binding_bound_any is not None
+                assert self.binding_family_bound is not None
+                assert self.binding_reason is not None
+                assert self.binding_target_kind is not None
+                assert self.binding_target_index is not None
+                assert self.binding_target_id is not None
+                assert self.binding_eligibility_value is not None
+                assert self.binding_family_proposal is not None
+                self.binding_requested[row, slot] = binding.requested
+                self.binding_bound_any[row, slot] = binding.bound_any
+                self.binding_family_bound[row, slot] = binding.family_bound
+                self.binding_reason[row, slot] = binding.reason
+                self.binding_target_kind[row, slot] = binding.target_kind
+                self.binding_target_index[row, slot] = binding.target_index
+                self.binding_target_id[row, slot] = binding.target_id
+                self.binding_eligibility_value[row, slot] = binding.eligibility_value
+                self.binding_family_proposal[row, slot] = binding.family_proposal
             self.write_cursor[row] = np.uint32((slot + 1) % self.capacity)
             self.event_count[row] = np.uint32(np.count_nonzero(self.event_valid[row]))
             accounting.recorded_events += 1
@@ -579,7 +732,12 @@ class SubjectVMTraceStorage:
         cls, cfg: SubjectVMConfig, entity_capacity: int, payload: dict[str, Any]
     ) -> "SubjectVMTraceStorage":
         schema = payload.get("schema")
-        if schema not in {TRACE_STORAGE_SCHEMA, TRACE_STORAGE_SCHEMA_V2, TRACE_STORAGE_SCHEMA_V1}:
+        if schema not in {
+            TRACE_STORAGE_SCHEMA,
+            TRACE_STORAGE_SCHEMA_V3,
+            TRACE_STORAGE_SCHEMA_V2,
+            TRACE_STORAGE_SCHEMA_V1,
+        }:
             raise ValueError("unsupported subject_vm trace snapshot schema")
         result = cls(cfg, entity_capacity)
         expected = (
@@ -607,6 +765,12 @@ class SubjectVMTraceStorage:
             names = result.base_snapshot_array_names()
             if result.cfg.association_enabled:
                 names += result.association_snapshot_array_names()
+        elif schema == TRACE_STORAGE_SCHEMA_V3:
+            names = result.base_snapshot_array_names()
+            if result.cfg.association_enabled:
+                names += result.association_snapshot_array_names()
+            if result.cfg.modulation_enabled:
+                names += result.modulation_snapshot_array_names()
         else:
             names = result.snapshot_array_names()
         for name in names:
@@ -645,6 +809,17 @@ class SubjectVMTraceStorage:
                 else int(np.count_nonzero(self.modulation_proposed))
             ),
             "modulation_target_names": list(SUBJECT_VM_MODULATION_TARGET_NAMES),
+            "target_binding_enabled": self.cfg.target_binding_enabled,
+            "bound_target_events": (
+                0
+                if self.binding_bound_any is None
+                else int(np.count_nonzero(self.binding_bound_any))
+            ),
+            "bound_targets": (
+                0
+                if self.binding_family_bound is None
+                else int(np.count_nonzero(self.binding_family_bound))
+            ),
         }
 
 
@@ -656,6 +831,7 @@ __all__ = [
     "TRACE_STORAGE_SCHEMA",
     "TRACE_STORAGE_SCHEMA_V1",
     "TRACE_STORAGE_SCHEMA_V2",
+    "TRACE_STORAGE_SCHEMA_V3",
     "SubjectVMObjectiveEventBatch",
     "SubjectVMThoughtTokenBatch",
     "SubjectVMTraceAccounting",

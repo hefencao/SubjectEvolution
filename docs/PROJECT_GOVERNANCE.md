@@ -378,3 +378,8 @@ A Stage-3B-2 change is governance-compliant only when all of the following remai
 - old Stage-3B-1 configuration identity remains unchanged and old checkpoints rebuild empty association metadata;
 - Stage-3B-2 remains CPU-reference-only until an explicit packed-device contract is validated;
 - no engineering association result is described as learning, memory understanding, subjecthood or Epoch-1 evidence.
+
+
+### Bootstrap cognitive biases
+
+The project may retain bounded, replaceable fixed mechanisms when they materially shorten shaping and make failures diagnosable. Such mechanisms must be labelled as bootstrap baselines, must not carry concrete cognitive or social semantics, and must not be described as universal or emergent. Normalized-dot delayed association and single-winner local-eligibility target selection currently have this status. A later general allocator may replace or compare against them without invalidating their engineering-baseline value.

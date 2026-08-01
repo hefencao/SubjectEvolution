@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3b3-modulation-proposals-cpu-reference-implemented",
-  "project_version": "0.114.0",
+  "status": "stage-3c1-exact-target-binding-cpu-reference-implemented",
+  "project_version": "0.115.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -65,7 +65,7 @@
     {
       "stage": 3,
       "name": "token-event-trace-then-delayed-plasticity",
-      "runtime_change": "Stage 3A stores compact graph tokens and objective facts; Stage 3B-1 adds short-lived local activity eligibility; Stage 3B-2 records bounded delayed association candidates; Stage 3B-3 records rejectable parameter-family modulation proposals without parameter binding or update"
+      "runtime_change": "Stage 3A stores compact graph tokens and objective facts; Stage 3B-1 adds short-lived local activity eligibility; Stage 3B-2 records bootstrap delayed association candidates; Stage 3B-3 records rejectable parameter-family modulation proposals; Stage 3C-1 binds those proposals to bounded pre-activation local carriers without parameter writes"
     },
     {
       "stage": 4,
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3B-3",
+  "current_stage": "3C-1",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -141,6 +141,21 @@
     "specific_parameter_binding": false,
     "eligibility_modulation": false,
     "plasticity": false,
+    "backend": "cpu-reference-only",
+    "physical_cost_debit": false,
+    "scientific_qualification": false
+  },
+  "stage_3c1_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_target_binding_v1.json",
+    "representation": "bounded-exact-target-proposal-metadata",
+    "bootstrap_selector": "single-winner-by-absolute-local-eligibility-v1",
+    "universal_attention_claim": false,
+    "snapshot_before_current_activation_marks": true,
+    "same_tick_new_activity_target": false,
+    "maximum_targets_per_family": 1,
+    "mandatory_binding": false,
+    "parameter_delta_computed": false,
+    "parameter_update": false,
     "backend": "cpu-reference-only",
     "physical_cost_debit": false,
     "scientific_qualification": false
