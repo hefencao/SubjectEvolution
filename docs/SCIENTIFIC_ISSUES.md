@@ -375,3 +375,13 @@ D1-X/Y 的主要科学路径被拒绝，不是因为延迟或来源追踪无效�
 Stage-2 使用量只记录结构节点、结构边、节点执行、边传输、跨区传输和输出贡献次数，不扣除实体能量。该计数是后续成本合同的测量基础，不是免费认知已被科学授权。若在没有发育可达性、成本补偿和共享 checkpoint 对照前直接开展选择实验，结果会把人工植入图与真实演化能力混淆。
 
 下一风险是 Stage 3 将客观世界后果错误地转换成固定 reward。后续合同必须先冻结事件事实、实际参与节点/边 usage trace、有限保留、later-tick-only 更新和未分配后果，再允许任何塑性算子。相同客观后果应允许被不同继承图参数路由成不同未来变化；引擎本身不得指定其主观含义。
+
+## v0.110：保留旧实现不等于允许并行主体网络
+
+v0.109 之后，latent router、working memory、knowledge policy residual、sparse selection、functional modules 和 candidate/group graph 的源码仍然存在。这是为了维持历史配置、checkpoint、消融和固定认知基线，不代表它们已经被统一图吸收，也不代表允许多个网络共同拥有主体主线。
+
+v0.110 冻结并执行单一所有权：Stage-2 Subject VM 是唯一可选 action residual owner；legacy knowledge/latent/working-memory/sparse-selection route 与 Stage 2 冲突时配置直接失败。knowledge provenance、functional modules、candidate/group graph 可以共存，但分别只能是客观存储、身体机制和观测诊断。
+
+仍然开放的问题是如何在不复制旧固定语义的前提下复用通用 primitive。直接把 latent gene、working-memory coordinate 或 functional-module weight 映射成 Subject VM 节点，会把设计者给定结构伪装成统一图的演化结果。任何复用必须先形成角色中性、版本化的窄接口，并保持唯一节点/边身份。
+
+该所有权收敛只是 Stage 3 前的工程前置条件。它不提供 usage trace、延迟因果、plasticity、成本补偿或主体性证据。

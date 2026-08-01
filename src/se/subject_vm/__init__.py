@@ -30,6 +30,15 @@ from .ports import (
     SUBJECT_VM_OUTPUT_PORTS,
     build_objective_input_ports,
 )
+from .ownership import (
+    LEGACY_COMPONENT_DISPOSITIONS,
+    PRIMARY_OPTIONAL_ACTION_ROUTE_OWNER,
+    ROUTING_OWNERSHIP_SCHEMA,
+    LegacyComponentDisposition,
+    RoutingOwnershipView,
+    routing_ownership_manifest,
+    validate_routing_ownership,
+)
 from .runtime import (
     STAGE1_DEVICE_CONTRACT,
     STAGE2_DEVICE_CONTRACT,
@@ -78,4 +87,11 @@ __all__ = [
     "load_subject_vm_config",
     "strip_disabled_subject_vm_section",
     "validate_subject_vm_config",
+    "LEGACY_COMPONENT_DISPOSITIONS",
+    "PRIMARY_OPTIONAL_ACTION_ROUTE_OWNER",
+    "ROUTING_OWNERSHIP_SCHEMA",
+    "LegacyComponentDisposition",
+    "RoutingOwnershipView",
+    "routing_ownership_manifest",
+    "validate_routing_ownership",
 ]

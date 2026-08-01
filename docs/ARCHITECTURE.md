@@ -1314,6 +1314,18 @@ Full checkpoints delegate Subject VM snapshot/restore. A compatible checkpoint w
 
 The current implementation deliberately does not import or depend on concrete knowledge, social relation or group implementations. The Stage-2 adapter exposes only a frozen objective input vector and bounded action-potential output vector; it does not copy those systems into parallel route stores.
 
+### v0.110 legacy network disposition and route ownership
+
+The older knowledge residual, latent router, quantized working-memory router and sparse-selection path remain in `src/se/knowledge/` for frozen legacy configurations, checkpoints, ablations and fixed-cognition comparison panels. They are not migrated into `subject_vm`, and Stage-2 configuration validation rejects their simultaneous activation. A second policy-boundary guard rejects a realized legacy knowledge residual arriving together with Subject VM potentials.
+
+`src/se/subject_vm/ownership.py` contains only a narrow boolean ownership view and a machine-readable disposition registry. It must not import concrete knowledge, differentiation, social or candidate-subject modules. The registry distinguishes action-route baselines from components that may coexist without owning routing:
+
+- knowledge provenance is an objective content/reference store;
+- functional modules are embodied physiology/environment mechanisms;
+- candidate-subject and group graphs are observational diagnostics.
+
+Future access to those components must use narrow ports or stable references. Their arrays, semantic ledgers and identities are not copied into unified graph storage. Any reusable sparse-selection or arithmetic primitive requires a separately versioned role-neutral extraction rather than direct dependency on the legacy router.
+
 ### v0.109 Stage-2 CPU-reference activation adapter
 
 Stage 2 adds three narrow modules:

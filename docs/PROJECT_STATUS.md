@@ -1,50 +1,49 @@
 # SE project status
 
-Version: **0.109.0**
+Version: **0.110.0**
 
 ## Current scientific task
 
-Version 0.109 implements Stage 2 of `partitioned-subject-graph-vm-v1` as a CPU-reference activation adapter for hand-constructed, role-neutral graphs. Stage 1 lifecycle and checkpoint infrastructure remains intact. The graph can now read a frozen set of objective input ports, execute bounded deterministic node/edge routing, and contribute bounded action potentials to the existing policy arbitration boundary.
+Version 0.110 closes the routing-ownership ambiguity discovered after the Stage-2 CPU activation adapter. The codebase still contains the older knowledge residual, latent router, quantized working memory, sparse selection, functional-module and candidate/group graph implementations because they are required by frozen historical configurations, checkpoints and comparison baselines. They are not silently translated into the unified graph.
 
-The four initial regions remain computational search priors:
+The primary-path ownership rule is now explicit:
 
-- fast sensorimotor;
-- persistent state;
-- delayed association;
-- integrative drive.
+- inherited action strategy remains the minimal sensorimotor/genetic-logit baseline;
+- the existing action mask, categorical sampler, intent construction and world commit remain the sole physical action authority;
+- when Stage-2 Subject VM activation is enabled, Subject VM is the sole optional action-potential residual owner;
+- legacy knowledge residual, latent, working-memory and sparse-selection routes cannot coexecute with Stage 2;
+- knowledge provenance storage, functional modules and observational candidate/group graphs may coexist only in their original objective-storage, embodied-physics or diagnostic roles.
 
-Their names are not evidence that any node performs those functions. No consequence is assigned subjective value, no eligibility or plasticity update runs, no topology mutates, and no physical graph cost is charged in Stage 2.
+This is an engineering consolidation boundary, not a migration of old semantic weights into graph cognition.
 
 ## Engineering status
 
 Implemented and tested:
 
 - exact disabled-default normalization preserving frozen legacy config identities and checkpoint config hashes;
-- Stage-1 fixed-capacity storage, stable ownership, birth/death/clone/compaction/checkpoint and regional-branch lifecycle;
-- versioned Stage-2 activation configuration with frozen objective input and action-potential output port schemas;
-- four bounded role-neutral scalar operators: linear, tanh, retained linear and retained tanh;
-- deterministic within-tick activation phases, strict earlier-phase zero-delay edges and previous-state one-tick edges;
-- bounded edge bandwidth, node activation and aggregate output potentials;
-- integration into the existing policy logits before the existing physical action mask and categorical arbitration;
-- structural/use accounting as counts only, with no physical energy debit or selection interpretation;
-- checkpoint, clone and v0.108 Stage-1 runtime/storage compatibility;
-- exact CPU trajectory neutrality for disabled, Stage-1 and Stage-2 enabled-but-empty paths;
-- explicit CPU-reference-only Stage-2 device contract. GPU Stage-2 execution is rejected rather than silently ignored.
+- Stage-1 fixed-capacity storage, stable ownership and lifecycle/checkpoint integration;
+- Stage-2 bounded deterministic CPU-reference activation and action-potential integration;
+- machine-readable `subject-vm-routing-ownership-v1` component disposition registry;
+- configuration rejection of parallel optional legacy action routes under Stage 2;
+- policy-boundary runtime defense against simultaneous realized legacy knowledge and Subject VM residuals;
+- dependency-direction test preventing `subject_vm` from importing concrete knowledge, differentiation, social or candidate-subject implementations;
+- unchanged legacy execution when Subject VM Stage 2 is disabled;
+- objective knowledge/provenance and embodied functional mechanisms remain available without becoming graph-owned state.
 
-D1-X/Y remain:
+D1-X/Y and the latent/working-memory policy family remain:
 
 ```text
 rejected-as-primary-subject-model
 retained-as-fixed-cognition-baseline
 ```
 
-Their delayed-state and provenance machinery remains useful for comparison and engineering tests, but no new named benefit ledger is authorized on the primary path.
+They retain engineering and comparison value, but do not share routing ownership with the primary unified graph.
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage-2 engineering capability exists only for explicitly constructed graphs and has no evolutionary or scientific qualification.
-- `epoch-1-entity-subject-prototype`: not started. It requires delayed history use, behavioral intervention, baseline exceedance, cost compensation and independent replication under the v2 qualification contract.
-- `epoch-2-group-subject-prototype`: not started. Current group labels remain observational and do not own rules or graph state.
+- `epoch-0-ecological-carriers`: current era. Stage-2 execution and routing ownership are engineering capabilities only.
+- `epoch-1-entity-subject-prototype`: not started. It still requires delayed history use, intervention, baseline exceedance, cost compensation and independent replication.
+- `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
 No supplied checkpoint qualifies either later epoch.
 
@@ -52,6 +51,7 @@ No supplied checkpoint qualifies either later epoch.
 
 - objective event/usage traces;
 - delayed eligibility, credit or plasticity routing;
+- automatic conversion of legacy router genes/state into Subject VM nodes or edges;
 - topology mutation, developmental expression, node migration or region-capacity evolution;
 - physical structural, runtime, memory, bandwidth or plasticity cost debit;
 - fixed reward, trust, knowledge value, interest formula or group bonus;
@@ -59,4 +59,4 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-The next implementation decision must separately freeze Stage 3 objective event/usage traces and delayed plasticity. Stage 2 proves only that the unified graph can perform bounded deterministic transformations and reach the existing action arbitration boundary without designer-defined cognitive semantics.
+The next implementation decision may freeze Stage-3 objective event/usage traces only after preserving this single-owner boundary. Stage 3 must reference actual Subject VM node/edge use and objective world events; it must not revive a second latent, knowledge or attribution router alongside the graph.

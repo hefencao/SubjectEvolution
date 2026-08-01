@@ -11,6 +11,7 @@ from .subject_vm.config import (
     load_subject_vm_config,
     validate_subject_vm_config,
 )
+from .subject_vm.ownership import RoutingOwnershipView, validate_routing_ownership
 
 
 @dataclass(frozen=True)
@@ -1180,6 +1181,15 @@ def load_config(path: str | Path) -> SimulationConfig:
 
 def validate_config(cfg: SimulationConfig) -> None:
     validate_subject_vm_config(cfg.subject_vm)
+    validate_routing_ownership(
+        RoutingOwnershipView(
+            subject_vm_activation_enabled=cfg.subject_vm.activation_enabled,
+            knowledge_policy_influence_enabled=cfg.knowledge.policy_influence_enabled,
+            latent_router_enabled=cfg.knowledge.latent_policy_enabled,
+            working_memory_router_enabled=cfg.knowledge.working_memory_enabled,
+            sparse_selection_router_enabled=cfg.knowledge.sparse_selection_enabled,
+        )
+    )
     if cfg.world.initial_entities <= 0:
         raise ValueError("initial_entities must be positive")
     if cfg.world.max_entities < cfg.world.initial_entities:

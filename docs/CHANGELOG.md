@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.110.0
+
+- Freezes a machine-readable routing-ownership contract before Stage-3 trace/plasticity work.
+- Retains legacy knowledge residual, latent router and working-memory implementations as fixed-cognition baselines for old configurations, checkpoints and comparison panels; no automatic semantic migration is performed.
+- Makes Stage-2 Subject VM the sole optional primary-path action-residual owner and rejects configurations that also enable legacy knowledge, latent, working-memory or sparse-selection routing.
+- Adds a runtime defense at the policy boundary against simultaneous realized legacy knowledge residuals and Subject VM action potentials.
+- Keeps knowledge provenance stores, functional modules and candidate/group graphs outside Subject VM as objective storage, embodied mechanisms or observations reachable only through future narrow adapters.
+- Adds architecture tests proving `subject_vm` does not import concrete knowledge, differentiation, social or candidate-subject implementations.
+- Serializes isolated pytest file shards to remove cross-shard tool-resource races caused by round-robin membership changes while preserving deterministic shard reports.
+- Preserves disabled and legacy configuration identity, historical checkpoint behavior, action strategy, physical masks, action sampling and world-commit ownership.
+- Does not implement objective event traces, delayed plasticity, topology development, physical graph costs, GPU Stage-2 execution or Epoch-1 qualification.
+
 ## 0.109.0
 
 - Freezes and implements the Stage-2 CPU-reference activation adapter for `partitioned-subject-graph-vm-v1`.

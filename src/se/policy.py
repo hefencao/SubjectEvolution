@@ -298,6 +298,11 @@ class ParametricPolicy:
         )
         subject_vm_logits = None
         logits = genetic_logits + knowledge_logits
+        if subject_vm_potentials is not None and has_knowledge:
+            raise RuntimeError(
+                "multiple optional action-routing owners reached policy: "
+                "legacy knowledge residual and subject_vm"
+            )
         if subject_vm_potentials is not None:
             subject_vm_logits = xp.asarray(subject_vm_potentials, dtype=xp.float32)
             if subject_vm_logits.shape != logits.shape:

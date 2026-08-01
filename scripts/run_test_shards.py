@@ -28,37 +28,35 @@ def run(project: Path, shards: int, report: Path | None) -> int:
     started = time.perf_counter()
     results: list[dict[str, object]] = []
     passed = True
-    # Do not keep multiple concurrent pytest processes connected to unread
-    # PIPEs. A verbose shard can fill its pipe while the parent waits for an
-    # earlier shard, deadlocking the complete release gate. Per-shard files
-    # preserve concurrent execution without a bounded pipe buffer.
+    # Shards are process-isolated but intentionally serialized. Several release
+    # tests exercise build/install/study tooling that uses process-global caches
+    # and fixed external-tool resources. Adding one test file changes round-robin
+    # membership, so concurrent shards can expose an order-dependent cross-shard
+    # race even when every shard passes alone. Sequential subprocesses preserve
+    # isolation, deterministic membership and bounded output without that race.
     with tempfile.TemporaryDirectory(prefix="se-test-shards-") as temporary:
         log_dir = Path(temporary)
-        processes: list[tuple[int, list[Path], Path, subprocess.Popen[bytes]]] = []
         for index, group in enumerate(groups):
             command = [sys.executable, "-m", "pytest", "-q", *map(str, group)]
             log_path = log_dir / f"shard-{index + 1}.log"
             with log_path.open("wb") as stream:
-                process = subprocess.Popen(
+                completed = subprocess.run(
                     command,
                     cwd=project,
                     env=os.environ.copy(),
                     stdout=stream,
                     stderr=subprocess.STDOUT,
+                    check=False,
                 )
-            processes.append((index, group, log_path, process))
-
-        for index, group, log_path, process in processes:
-            returncode = process.wait()
             stdout = log_path.read_text(encoding="utf-8", errors="replace")
             print(f"\n===== pytest shard {index + 1}/{shard_count} =====")
             print(stdout, end="" if stdout.endswith("\n") else "\n")
-            if returncode != 0:
+            if completed.returncode != 0:
                 passed = False
             results.append(
                 {
                     "shard": index + 1,
-                    "returncode": returncode,
+                    "returncode": completed.returncode,
                     "test_file_count": len(group),
                     "test_files": [str(path.relative_to(project)) for path in group],
                     "stdout_tail": stdout.splitlines()[-8:],
@@ -67,6 +65,7 @@ def run(project: Path, shards: int, report: Path | None) -> int:
     payload = {
         "passed": passed,
         "schema": "deterministic-pytest-file-shards-v1",
+        "execution_mode": "sequential-isolated-subprocesses-v1",
         "source_tree_sha256": source_tree_fingerprint(project),
         "python": sys.executable,
         "shard_count": shard_count,

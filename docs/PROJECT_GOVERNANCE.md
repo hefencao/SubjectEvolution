@@ -348,3 +348,6 @@ information interface.
 - Stage-2 consumes no random numbers and performs no eligibility or plasticity writes. Any such write is a Stage-3 semantic change, not a refactor.
 - GPU Stage-2 execution is unsupported and must fail explicitly. Silent CPU fallback or silent graph-output omission would invalidate backend provenance.
 - A hand-constructed graph demonstrating action influence is an engineering fixture only. It is not an evolved phenotype, evidence of cognition, or Epoch-1 qualification.
+### Legacy route retention and single ownership
+
+Pre-Subject-VM routers may remain in the repository for frozen compatibility and fixed-cognition comparison, but they must not silently co-own the primary action-residual boundary. When Stage-2 Subject VM is active, configuration and runtime guards must enforce a single optional route owner. Objective provenance stores, embodied functional mechanisms and observational graphs may coexist only through narrow one-way adapters and must not be copied into Subject VM identity/state.

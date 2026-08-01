@@ -1,0 +1,70 @@
+{
+  "schema": "se-scientific-direction-decision-v1",
+  "decision_id": "subject-graph-vm-legacy-router-disposition-v1",
+  "status": "accepted-engineering-boundary",
+  "release": "0.110.0",
+  "scope": "Freeze ownership and compatibility treatment for pre-Subject-VM routers before objective usage trace and delayed plasticity work.",
+  "primary_optional_action_route_owner": "subject-vm",
+  "stable_boundaries": {
+    "inherited_action_strategy": "retained minimal sensorimotor baseline and genetic logits",
+    "physical_action_arbitration": "retained sole mask, categorical sampler, intent and world-commit authority",
+    "subject_vm": "sole optional primary-path action-potential residual owner when Stage 2 is enabled"
+  },
+  "legacy_components": [
+    {
+      "component": "knowledge-policy-residual",
+      "disposition": "retained-fixed-cognition-baseline",
+      "stage2_coexecution": "forbidden",
+      "boundary": "old configurations and comparison panels only"
+    },
+    {
+      "component": "latent-router",
+      "disposition": "retained-fixed-cognition-baseline",
+      "stage2_coexecution": "forbidden",
+      "boundary": "generic arithmetic may inform later extraction, but legacy route state is not copied into Subject VM"
+    },
+    {
+      "component": "working-memory-router",
+      "disposition": "retained-fixed-cognition-baseline",
+      "stage2_coexecution": "forbidden",
+      "boundary": "legacy latent baseline only; primary persistent state is Subject VM node state"
+    },
+    {
+      "component": "sparse-selection-router",
+      "disposition": "candidate-for-future-generic-extraction",
+      "stage2_coexecution": "forbidden",
+      "boundary": "future reuse requires a role-neutral Subject VM gate interface"
+    },
+    {
+      "component": "functional-modules",
+      "disposition": "retained-physical-mechanism",
+      "stage2_coexecution": "allowed",
+      "boundary": "embodied physiology/environment effects only; no copied graph identity or action residual"
+    },
+    {
+      "component": "knowledge-provenance-store",
+      "disposition": "retained-observational-mechanism",
+      "stage2_coexecution": "allowed",
+      "boundary": "objective content/provenance store; future graph access uses narrow references or ports"
+    },
+    {
+      "component": "candidate-subject-and-group-graphs",
+      "disposition": "retained-observational-mechanism",
+      "stage2_coexecution": "allowed",
+      "boundary": "diagnostics and labels only; no Subject VM ownership, bonus or plasticity"
+    }
+  ],
+  "compatibility": {
+    "legacy_configs": "unchanged when Subject VM Stage 2 is disabled",
+    "legacy_checkpoints": "unchanged; no automatic graph migration or fabricated topology",
+    "stage2_conflict_policy": "configuration validation rejects parallel legacy optional action routes",
+    "runtime_defense": "policy rejects simultaneous realized legacy knowledge residual and Subject VM potential"
+  },
+  "forbidden": [
+    "deleting frozen baseline implementations",
+    "automatically translating semantic legacy weights into graph cognition",
+    "copying knowledge, relation, group or functional-module stores into Subject VM",
+    "running multiple optional action-residual owners on the primary path",
+    "claiming routing consolidation as emergence or subjecthood evidence"
+  ]
+}

@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
 Status: **implementation contract frozen; runtime implementation not started**
-Project version: **0.109.0**
+Project version: **0.110.0**
 
 ## 1. Decision
 
@@ -256,6 +256,8 @@ Cost is necessary but not the only pruning mechanism. Bounded capacity, overwrit
 
 No existing component is automatically accepted as the final implementation. Adapters must preserve one dependency direction and avoid parallel competing routers.
 
+As of v0.110, this is enforced rather than left as documentation: Stage-2 Subject VM is the sole optional action-residual owner. Legacy knowledge residual, latent, working-memory and sparse-selection routes remain available only when Stage 2 is not active. Knowledge provenance, functional modules and candidate/group graphs may coexist solely as objective storage, embodied mechanisms or observations and are not imported into Subject VM.
+
 ## 11. Status of D1-X and D1-Y
 
 D1-X and D1-Y are rejected as the primary scientific model of subject formation because they prescribe semantic benefit channels and update formulas.
@@ -396,6 +398,20 @@ The runtime adapter adds bounded graph outputs to the existing policy logits bef
 Structural and use units are counted and checkpointed, but no physical energy is deducted. This prevents a temporary engineering coefficient from becoming an implicit selection function before developmental accessibility and cost compensation are frozen.
 
 Stage-2 execution is CPU-reference-only. GPU construction with a Stage-2 configuration fails explicitly. This is not a GPU parity claim or packed graph representation.
+
+## 13.3 v0.110 routing ownership and legacy disposition
+
+The repository deliberately retains pre-Subject-VM implementations because frozen configurations, checkpoints, ablations and fixed-cognition comparison panels depend on them. Retention is not co-ownership. `subject_vm/ownership.py` and `subject_graph_vm_legacy_router_disposition_v1.json` freeze the following boundary:
+
+- inherited action strategy remains the minimal genetic/sensorimotor baseline;
+- existing masks, sampling, intents and world settlement remain the physical action authority;
+- Stage-2 Subject VM is the sole optional primary-path action-potential residual owner;
+- knowledge residual, latent router, quantized working memory and sparse selection cannot coexecute with Stage 2;
+- knowledge provenance remains an objective external store reachable only through future narrow references or ports;
+- functional modules remain embodied mechanisms and are not copied into graph identity/state;
+- candidate-subject and group graphs remain observations and cannot publish graph state, action bonuses or plasticity.
+
+No automatic migration converts old semantic router genes, memory coordinates or ledgers into Subject VM nodes and edges. Such conversion would falsely present designer-built fixed cognition as an emerged unified graph. Generic arithmetic or selection primitives may be reused only after a separately versioned role-neutral extraction.
 
 ## 14. Deferred decisions
 
