@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c1-exact-target-binding-cpu-reference-implemented"
+    assert contract["status"] == "stage-3c2-update-safety-proposal-cpu-reference-implemented"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,7 +24,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3C-1"
+    assert contract["current_stage"] == "3C-2"
     assert contract["stage_2_contract"]["plasticity"] is False
     assert contract["stage_3a_contract"]["persistent_node_edge_path"] is False
     assert contract["stage_3a_contract"]["plasticity"] is False
@@ -44,6 +44,19 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["stage_3c1_contract"]["snapshot_before_current_activation_marks"] is True
     assert contract["stage_3c1_contract"]["same_tick_new_activity_target"] is False
     assert contract["stage_3c1_contract"]["parameter_update"] is False
+    assert contract["stage_3c2_contract"]["stable_target_revalidation"] is True
+    assert contract["stage_3c2_contract"]["per_subject_event_l1_budget"] is True
+    assert contract["stage_3c2_contract"]["actual_parameter_write"] is False
+    assert contract["stage_3c2_contract"]["applied_long_window_budget_ledger"] is False
+
+    update_safety = _load(
+        "protocols/decisions/subject_graph_vm_update_safety_v1.json"
+    )
+    assert update_safety["bootstrap_formula"]["objective_event_value"] is False
+    assert update_safety["bootstrap_formula"]["universal_learning_rule_claim"] is False
+    assert update_safety["target_revalidation"]["stable_target_id_required"] is True
+    assert update_safety["write_authority"]["parameter_write"] is False
+    assert update_safety["cumulative_budget"]["unexecuted_proposals_consume_long_window_budget"] is False
 
     target_binding = _load(
         "protocols/decisions/subject_graph_vm_target_binding_v1.json"

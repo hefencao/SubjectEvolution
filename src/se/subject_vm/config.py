@@ -17,6 +17,7 @@ SUBJECT_VM_STAGE3B_SCHEMA = "partitioned-subject-graph-vm-stage3b-local-eligibil
 SUBJECT_VM_STAGE3B2_SCHEMA = "partitioned-subject-graph-vm-stage3b2-delayed-association-v1"
 SUBJECT_VM_STAGE3B3_SCHEMA = "partitioned-subject-graph-vm-stage3b3-modulation-proposal-v1"
 SUBJECT_VM_STAGE3C1_SCHEMA = "partitioned-subject-graph-vm-stage3c1-target-binding-v1"
+SUBJECT_VM_STAGE3C2_SCHEMA = "partitioned-subject-graph-vm-stage3c2-update-safety-proposal-v1"
 SUBJECT_VM_ACTIVATION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_ACTIVATION_SCHEMA = "bounded-phased-forward-routing-v1"
 SUBJECT_VM_INPUT_PORT_SCHEMA = "objective-entity-input-ports-v1"
@@ -32,6 +33,8 @@ SUBJECT_VM_MODULATION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_MODULATION_SCHEMA = "bounded-objective-contrast-modulation-proposal-v1"
 SUBJECT_VM_TARGET_BINDING_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_TARGET_BINDING_SCHEMA = "bootstrap-single-winner-local-eligibility-binding-v1"
+SUBJECT_VM_UPDATE_SAFETY_DISABLED_SCHEMA = "disabled"
+SUBJECT_VM_UPDATE_SAFETY_SCHEMA = "bounded-compare-and-swap-delta-proposal-v1"
 SUBJECT_VM_MODULATION_FACT_WIDTH = 21
 SUBJECT_VM_MODULATION_TARGET_NAMES = (
     "node-bias",
@@ -174,6 +177,23 @@ class SubjectVMTargetBindingConfig:
 
 
 @dataclass(frozen=True)
+class SubjectVMUpdateSafetyConfig:
+    """Stage-3C-2 bounded candidate deltas without parameter writes.
+
+    Bounds are generic numerical safety envelopes.  They do not define event
+    value, reward, utility, or semantic parameter meaning.
+    """
+
+    schema: str = SUBJECT_VM_UPDATE_SAFETY_DISABLED_SCHEMA
+    step_scale: float = 0.0
+    min_abs_delta: float = 0.0
+    family_delta_clip: tuple[float, ...] = ()
+    event_l1_budget: float = 0.0
+    parameter_lower_bounds: tuple[float, ...] = ()
+    parameter_upper_bounds: tuple[float, ...] = ()
+
+
+@dataclass(frozen=True)
 class SubjectVMConfig:
     """Disabled-by-default partitioned graph capacity contract."""
 
@@ -188,6 +208,7 @@ class SubjectVMConfig:
     association: SubjectVMAssociationConfig = SubjectVMAssociationConfig()
     modulation: SubjectVMModulationConfig = SubjectVMModulationConfig()
     target_binding: SubjectVMTargetBindingConfig = SubjectVMTargetBindingConfig()
+    update_safety: SubjectVMUpdateSafetyConfig = SubjectVMUpdateSafetyConfig()
 
     @property
     def total_node_capacity(self) -> int:
@@ -206,6 +227,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3B2_SCHEMA,
             SUBJECT_VM_STAGE3B3_SCHEMA,
             SUBJECT_VM_STAGE3C1_SCHEMA,
+            SUBJECT_VM_STAGE3C2_SCHEMA,
         }
 
     @property
@@ -216,6 +238,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3B2_SCHEMA,
             SUBJECT_VM_STAGE3B3_SCHEMA,
             SUBJECT_VM_STAGE3C1_SCHEMA,
+            SUBJECT_VM_STAGE3C2_SCHEMA,
         }
 
     @property
@@ -225,6 +248,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3B2_SCHEMA,
             SUBJECT_VM_STAGE3B3_SCHEMA,
             SUBJECT_VM_STAGE3C1_SCHEMA,
+            SUBJECT_VM_STAGE3C2_SCHEMA,
         }
 
     @property
@@ -233,15 +257,24 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3B2_SCHEMA,
             SUBJECT_VM_STAGE3B3_SCHEMA,
             SUBJECT_VM_STAGE3C1_SCHEMA,
+            SUBJECT_VM_STAGE3C2_SCHEMA,
         }
 
     @property
     def modulation_enabled(self) -> bool:
-        return self.schema in {SUBJECT_VM_STAGE3B3_SCHEMA, SUBJECT_VM_STAGE3C1_SCHEMA}
+        return self.schema in {
+            SUBJECT_VM_STAGE3B3_SCHEMA,
+            SUBJECT_VM_STAGE3C1_SCHEMA,
+            SUBJECT_VM_STAGE3C2_SCHEMA,
+        }
 
     @property
     def target_binding_enabled(self) -> bool:
-        return self.schema == SUBJECT_VM_STAGE3C1_SCHEMA
+        return self.schema in {SUBJECT_VM_STAGE3C1_SCHEMA, SUBJECT_VM_STAGE3C2_SCHEMA}
+
+    @property
+    def update_safety_enabled(self) -> bool:
+        return self.schema == SUBJECT_VM_STAGE3C2_SCHEMA
 
 
 def _scan_forbidden_keys(value: Any, path: str = "subject_vm") -> None:
@@ -396,6 +429,50 @@ def _load_target_binding_config(raw: Any) -> SubjectVMTargetBindingConfig:
     )
 
 
+def _float_tuple(raw: Any, *, field: str) -> tuple[float, ...]:
+    if raw is None:
+        return ()
+    if not isinstance(raw, (list, tuple)):
+        raise ValueError(f"{field} must be a list")
+    return tuple(float(value) for value in raw)
+
+
+def _load_update_safety_config(raw: Any) -> SubjectVMUpdateSafetyConfig:
+    if raw is None:
+        return SubjectVMUpdateSafetyConfig()
+    if not isinstance(raw, Mapping):
+        raise ValueError("subject_vm.update_safety must be an object")
+    allowed = {
+        "schema",
+        "step_scale",
+        "min_abs_delta",
+        "family_delta_clip",
+        "event_l1_budget",
+        "parameter_lower_bounds",
+        "parameter_upper_bounds",
+    }
+    unknown = sorted(set(raw) - allowed)
+    if unknown:
+        raise ValueError(f"unknown subject_vm.update_safety fields: {unknown}")
+    return SubjectVMUpdateSafetyConfig(
+        schema=str(raw.get("schema", SUBJECT_VM_UPDATE_SAFETY_DISABLED_SCHEMA)),
+        step_scale=float(raw.get("step_scale", 0.0)),
+        min_abs_delta=float(raw.get("min_abs_delta", 0.0)),
+        family_delta_clip=_float_tuple(
+            raw.get("family_delta_clip"), field="subject_vm.update_safety.family_delta_clip"
+        ),
+        event_l1_budget=float(raw.get("event_l1_budget", 0.0)),
+        parameter_lower_bounds=_float_tuple(
+            raw.get("parameter_lower_bounds"),
+            field="subject_vm.update_safety.parameter_lower_bounds",
+        ),
+        parameter_upper_bounds=_float_tuple(
+            raw.get("parameter_upper_bounds"),
+            field="subject_vm.update_safety.parameter_upper_bounds",
+        ),
+    )
+
+
 def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
     """Parse an optional Subject VM section without inventing legacy fields."""
     if raw is None:
@@ -413,6 +490,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         "association",
         "modulation",
         "target_binding",
+        "update_safety",
     }
     unknown = sorted(set(raw) - allowed)
     if unknown:
@@ -455,6 +533,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         association=_load_association_config(raw.get("association")),
         modulation=_load_modulation_config(raw.get("modulation")),
         target_binding=_load_target_binding_config(raw.get("target_binding")),
+        update_safety=_load_update_safety_config(raw.get("update_safety")),
     )
     validate_subject_vm_config(cfg)
     return cfg
@@ -495,6 +574,13 @@ def _validate_disabled_target_binding(cfg: SubjectVMTargetBindingConfig) -> None
     if cfg != SubjectVMTargetBindingConfig():
         raise ValueError(
             "inactive subject_vm target_binding requires exact disabled defaults"
+        )
+
+
+def _validate_disabled_update_safety(cfg: SubjectVMUpdateSafetyConfig) -> None:
+    if cfg != SubjectVMUpdateSafetyConfig():
+        raise ValueError(
+            "inactive subject_vm update_safety requires exact disabled defaults"
         )
 
 
@@ -642,8 +728,52 @@ def _validate_target_binding(
         )
 
 
+def _validate_update_safety(cfg: SubjectVMUpdateSafetyConfig) -> None:
+    if cfg.schema != SUBJECT_VM_UPDATE_SAFETY_SCHEMA:
+        raise ValueError(
+            f"Stage-3C-2 subject_vm requires update safety schema {SUBJECT_VM_UPDATE_SAFETY_SCHEMA!r}"
+        )
+    if not 0.0 < cfg.step_scale <= 64.0:
+        raise ValueError("subject_vm update_safety step_scale must be in (0, 64]")
+    if not 0.0 < cfg.min_abs_delta <= 64.0:
+        raise ValueError("subject_vm update_safety min_abs_delta must be in (0, 64]")
+    width = SUBJECT_VM_MODULATION_TARGET_WIDTH
+    if len(cfg.family_delta_clip) != width:
+        raise ValueError("subject_vm update_safety family_delta_clip width mismatch")
+    if len(cfg.parameter_lower_bounds) != width or len(cfg.parameter_upper_bounds) != width:
+        raise ValueError("subject_vm update_safety parameter bound width mismatch")
+    values = (
+        *cfg.family_delta_clip,
+        *cfg.parameter_lower_bounds,
+        *cfg.parameter_upper_bounds,
+        cfg.event_l1_budget,
+    )
+    if any(not -64.0 <= float(value) <= 64.0 for value in values):
+        raise ValueError("subject_vm update_safety bounds must be finite in [-64, 64]")
+    if any(float(value) <= 0.0 for value in cfg.family_delta_clip):
+        raise ValueError("subject_vm update_safety family delta clips must be positive")
+    if cfg.min_abs_delta > min(cfg.family_delta_clip):
+        raise ValueError("subject_vm update_safety min_abs_delta exceeds a family clip")
+    if not 0.0 < cfg.event_l1_budget <= sum(cfg.family_delta_clip):
+        raise ValueError(
+            "subject_vm update_safety event_l1_budget must be in (0, sum(family_delta_clip)]"
+        )
+    for low, high, clip in zip(
+        cfg.parameter_lower_bounds,
+        cfg.parameter_upper_bounds,
+        cfg.family_delta_clip,
+        strict=True,
+    ):
+        if not float(low) < float(high):
+            raise ValueError("subject_vm update_safety lower bounds must be below upper bounds")
+        if float(clip) > float(high) - float(low):
+            raise ValueError("subject_vm update_safety family clip exceeds parameter range")
+    if cfg.parameter_lower_bounds[5] < 0.0:
+        raise ValueError("subject_vm edge bandwidth lower bound cannot be negative")
+
+
 def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
-    """Validate the frozen Stage-1 through Stage-3C-1 contracts."""
+    """Validate the frozen Stage-1 through Stage-3C-2 contracts."""
     if cfg.enabled:
         if cfg.schema not in {
             SUBJECT_VM_STAGE1_SCHEMA,
@@ -653,6 +783,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             SUBJECT_VM_STAGE3B2_SCHEMA,
             SUBJECT_VM_STAGE3B3_SCHEMA,
             SUBJECT_VM_STAGE3C1_SCHEMA,
+            SUBJECT_VM_STAGE3C2_SCHEMA,
         }:
             raise ValueError("enabled subject_vm requires a supported stage schema")
         if tuple(region.name for region in cfg.regions) != SUBJECT_VM_REGION_NAMES:
@@ -678,6 +809,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             raise ValueError("subject_vm total node capacity cannot exceed 65535")
         if cfg.total_edge_capacity > 65535:
             raise ValueError("subject_vm total edge capacity cannot exceed 65535")
+
         if cfg.schema == SUBJECT_VM_STAGE1_SCHEMA:
             _validate_disabled_activation(cfg.activation)
             _validate_disabled_trace(cfg.trace)
@@ -685,66 +817,83 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_association(cfg.association)
             _validate_disabled_modulation(cfg.modulation)
             _validate_disabled_target_binding(cfg.target_binding)
-        else:
-            _validate_activation(cfg.activation)
-            if cfg.schema == SUBJECT_VM_STAGE2_SCHEMA:
-                _validate_disabled_trace(cfg.trace)
-                _validate_disabled_eligibility(cfg.eligibility)
-                _validate_disabled_association(cfg.association)
-                _validate_disabled_modulation(cfg.modulation)
-                _validate_disabled_target_binding(cfg.target_binding)
-            else:
-                _validate_trace(cfg.trace)
-                if cfg.schema == SUBJECT_VM_STAGE3_SCHEMA:
-                    _validate_disabled_eligibility(cfg.eligibility)
-                    _validate_disabled_association(cfg.association)
-                    _validate_disabled_modulation(cfg.modulation)
-                    _validate_disabled_target_binding(cfg.target_binding)
-                else:
-                    _validate_eligibility(cfg.eligibility)
-                    if cfg.schema == SUBJECT_VM_STAGE3B_SCHEMA:
-                        _validate_disabled_association(cfg.association)
-                        _validate_disabled_modulation(cfg.modulation)
-                        _validate_disabled_target_binding(cfg.target_binding)
-                    else:
-                        _validate_association(
-                            cfg.association,
-                            trace=cfg.trace,
-                            eligibility=cfg.eligibility,
-                        )
-                        if cfg.schema == SUBJECT_VM_STAGE3B2_SCHEMA:
-                            _validate_disabled_modulation(cfg.modulation)
-                            _validate_disabled_target_binding(cfg.target_binding)
-                        else:
-                            _validate_modulation(
-                                cfg.modulation,
-                                trace=cfg.trace,
-                                association=cfg.association,
-                            )
-                            if cfg.schema == SUBJECT_VM_STAGE3B3_SCHEMA:
-                                _validate_disabled_target_binding(cfg.target_binding)
-                            else:
-                                _validate_target_binding(
-                                    cfg.target_binding, eligibility=cfg.eligibility
-                                )
-    else:
-        if cfg.schema != SUBJECT_VM_DISABLED_SCHEMA:
-            raise ValueError("disabled subject_vm requires schema 'disabled'")
-        if cfg.node_state_width != 0 or cfg.regions:
-            raise ValueError(
-                "disabled subject_vm requires zero state width and no region reservations"
-            )
-        if not cfg.inherit_structure_on_birth:
-            raise ValueError(
-                "disabled subject_vm must retain the canonical inheritance default"
-            )
-        _validate_disabled_activation(cfg.activation)
-        _validate_disabled_trace(cfg.trace)
-        _validate_disabled_eligibility(cfg.eligibility)
-        _validate_disabled_association(cfg.association)
-        _validate_disabled_modulation(cfg.modulation)
-        _validate_disabled_target_binding(cfg.target_binding)
+            _validate_disabled_update_safety(cfg.update_safety)
+            return
 
+        _validate_activation(cfg.activation)
+        if cfg.schema == SUBJECT_VM_STAGE2_SCHEMA:
+            _validate_disabled_trace(cfg.trace)
+            _validate_disabled_eligibility(cfg.eligibility)
+            _validate_disabled_association(cfg.association)
+            _validate_disabled_modulation(cfg.modulation)
+            _validate_disabled_target_binding(cfg.target_binding)
+            _validate_disabled_update_safety(cfg.update_safety)
+            return
+
+        _validate_trace(cfg.trace)
+        if cfg.schema == SUBJECT_VM_STAGE3_SCHEMA:
+            _validate_disabled_eligibility(cfg.eligibility)
+            _validate_disabled_association(cfg.association)
+            _validate_disabled_modulation(cfg.modulation)
+            _validate_disabled_target_binding(cfg.target_binding)
+            _validate_disabled_update_safety(cfg.update_safety)
+            return
+
+        _validate_eligibility(cfg.eligibility)
+        if cfg.schema == SUBJECT_VM_STAGE3B_SCHEMA:
+            _validate_disabled_association(cfg.association)
+            _validate_disabled_modulation(cfg.modulation)
+            _validate_disabled_target_binding(cfg.target_binding)
+            _validate_disabled_update_safety(cfg.update_safety)
+            return
+
+        _validate_association(
+            cfg.association,
+            trace=cfg.trace,
+            eligibility=cfg.eligibility,
+        )
+        if cfg.schema == SUBJECT_VM_STAGE3B2_SCHEMA:
+            _validate_disabled_modulation(cfg.modulation)
+            _validate_disabled_target_binding(cfg.target_binding)
+            _validate_disabled_update_safety(cfg.update_safety)
+            return
+
+        _validate_modulation(
+            cfg.modulation,
+            trace=cfg.trace,
+            association=cfg.association,
+        )
+        if cfg.schema == SUBJECT_VM_STAGE3B3_SCHEMA:
+            _validate_disabled_target_binding(cfg.target_binding)
+            _validate_disabled_update_safety(cfg.update_safety)
+            return
+
+        _validate_target_binding(
+            cfg.target_binding, eligibility=cfg.eligibility
+        )
+        if cfg.schema == SUBJECT_VM_STAGE3C1_SCHEMA:
+            _validate_disabled_update_safety(cfg.update_safety)
+        else:
+            _validate_update_safety(cfg.update_safety)
+        return
+
+    if cfg.schema != SUBJECT_VM_DISABLED_SCHEMA:
+        raise ValueError("disabled subject_vm requires schema 'disabled'")
+    if cfg.node_state_width != 0 or cfg.regions:
+        raise ValueError(
+            "disabled subject_vm requires zero state width and no region reservations"
+        )
+    if not cfg.inherit_structure_on_birth:
+        raise ValueError(
+            "disabled subject_vm must retain the canonical inheritance default"
+        )
+    _validate_disabled_activation(cfg.activation)
+    _validate_disabled_trace(cfg.trace)
+    _validate_disabled_eligibility(cfg.eligibility)
+    _validate_disabled_association(cfg.association)
+    _validate_disabled_modulation(cfg.modulation)
+    _validate_disabled_target_binding(cfg.target_binding)
+    _validate_disabled_update_safety(cfg.update_safety)
 
 def _disabled_activation_payload(value: Any) -> bool:
     if value is None:
@@ -829,6 +978,22 @@ def _disabled_target_binding_payload(value: Any) -> bool:
     )
 
 
+def _disabled_update_safety_payload(value: Any) -> bool:
+    if value is None:
+        return True
+    if not isinstance(value, Mapping):
+        return False
+    return (
+        value.get("schema") == SUBJECT_VM_UPDATE_SAFETY_DISABLED_SCHEMA
+        and float(value.get("step_scale", 0.0)) == 0.0
+        and float(value.get("min_abs_delta", 0.0)) == 0.0
+        and tuple(value.get("family_delta_clip", ())) == ()
+        and float(value.get("event_l1_budget", 0.0)) == 0.0
+        and tuple(value.get("parameter_lower_bounds", ())) == ()
+        and tuple(value.get("parameter_upper_bounds", ())) == ()
+    )
+
+
 def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]:
     """Remove exact inert extensions without changing frozen identities."""
     section = payload.get("subject_vm")
@@ -852,6 +1017,10 @@ def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]
         section.get("target_binding")
     ):
         section.pop("target_binding", None)
+    if isinstance(section, dict) and _disabled_update_safety_payload(
+        section.get("update_safety")
+    ):
+        section.pop("update_safety", None)
     if (
         section.get("enabled") is False
         and section.get("schema") == SUBJECT_VM_DISABLED_SCHEMA
@@ -889,8 +1058,11 @@ __all__ = [
     "SUBJECT_VM_STAGE3B2_SCHEMA",
     "SUBJECT_VM_STAGE3B3_SCHEMA",
     "SUBJECT_VM_STAGE3C1_SCHEMA",
+    "SUBJECT_VM_STAGE3C2_SCHEMA",
     "SUBJECT_VM_TARGET_BINDING_DISABLED_SCHEMA",
     "SUBJECT_VM_TARGET_BINDING_SCHEMA",
+    "SUBJECT_VM_UPDATE_SAFETY_DISABLED_SCHEMA",
+    "SUBJECT_VM_UPDATE_SAFETY_SCHEMA",
     "SUBJECT_VM_TRACE_DISABLED_SCHEMA",
     "SUBJECT_VM_TRACE_SCHEMA",
     "SubjectVMActivationConfig",
@@ -900,6 +1072,7 @@ __all__ = [
     "SubjectVMEligibilityConfig",
     "SubjectVMRegionConfig",
     "SubjectVMTargetBindingConfig",
+    "SubjectVMUpdateSafetyConfig",
     "SubjectVMTraceConfig",
     "load_subject_vm_config",
     "strip_disabled_subject_vm_section",

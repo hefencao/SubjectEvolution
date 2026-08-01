@@ -1427,3 +1427,21 @@ Stage 3C-1 retains the fixed normalized-dot Stage-3B-2 address path as an explic
 After local eligibility decay and before current-tick node/edge execution, the activation adapter selects at most one compact candidate for each of the six generic parameter families. Selection requires an expressed flagged carrier, a positive age, and configured minimum absolute eligibility. Port-specific node families additionally require the corresponding port. Ranking uses absolute eligibility and stable node/edge ID tie-breaking. The resulting six-target snapshot is transient and independent of graph capacity beyond the scan itself.
 
 After objective commit, an already-produced family proposal may bind to the matching candidate. The event ring stores only bounded target kind, slot, stable ID, pre-activation eligibility, proposal component, bound flag and reason. It stores neither the complete eligibility state nor an execution path. No final delta is computed and no graph field is written.
+
+### Stage 3C-2 — bounded update-safety proposals (implemented in v0.116)
+
+Stage 3C-2 adds `subject_vm/update_safety.py` without introducing a parameter writer. It receives only the already-bound Stage-3C-1 target metadata, current unified-graph storage and a numerical safety configuration.
+
+Before any candidate delta is formed, the target kind, slot, stable node/edge ID, expression state and family-specific port contract are revalidated. The current parameter value is read once and stored as an expected compare-and-swap value and rollback guard.
+
+The bootstrap candidate is:
+
+```text
+family proposal × historical local eligibility × neutral configured step scale
+```
+
+This is an engineering prior for reachable early shaping, not a universal learning-rule claim. Objective event coordinates remain unsigned; association similarity and delay do not enter candidate magnitude.
+
+Safety is layered: each family has an absolute delta clip; all surviving families share a per-subject event L1 envelope using proportional scaling; the projected value is then constrained by configured parameter bounds. Edge bandwidth remains nonnegative. Family ordering never decides which proposal receives the remaining event budget.
+
+The trace ring stores request/proposal flags, rejection reasons, expected current value, raw and bounded delta, projected value and clipping diagnostics. It stores no applied-update flag because no update occurs. Audit-only proposals do not consume a long-window applied budget. A later atomic apply contract must add actual acceptance, all-or-none writes, rollback and cumulative debit before permanent plasticity is enabled.

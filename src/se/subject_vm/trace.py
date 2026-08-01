@@ -29,11 +29,17 @@ from .modulation import (
     objective_fact_vector,
     propose_modulation,
 )
+from .storage import SubjectVMStorage
+from .update_safety import (
+    UPDATE_REASON_CODES,
+    propose_safe_parameter_deltas,
+)
 
 TRACE_STORAGE_SCHEMA_V1 = "se-subject-vm-token-event-storage-v1"
 TRACE_STORAGE_SCHEMA_V2 = "se-subject-vm-token-event-storage-v2"
 TRACE_STORAGE_SCHEMA_V3 = "se-subject-vm-token-event-storage-v3"
-TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v4"
+TRACE_STORAGE_SCHEMA_V4 = "se-subject-vm-token-event-storage-v4"
+TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v5"
 ACTION_PORT_WIDTH = 8
 RESOURCE_DELTA_WIDTH = 4
 OBJECTIVE_EVENT_DELTA_NAMES = (
@@ -111,6 +117,14 @@ class SubjectVMTraceAccounting:
     binding_rejected_no_modulation: int = 0
     binding_rejected_zero_family: int = 0
     binding_rejected_no_carrier: int = 0
+    update_requests: int = 0
+    update_proposed_events: int = 0
+    update_proposed_targets: int = 0
+    update_rejected_stale_target: int = 0
+    update_rejected_below_minimum: int = 0
+    update_rejected_parameter_bound: int = 0
+    update_family_clips: int = 0
+    update_event_budget_scales: int = 0
     last_event_tick: int = -1
 
 
@@ -229,6 +243,55 @@ class SubjectVMTraceStorage:
             if cfg.target_binding_enabled
             else None
         )
+        self.update_requested = (
+            np.zeros((e, c), dtype=bool) if cfg.update_safety_enabled else None
+        )
+        self.update_proposed_any = (
+            np.zeros((e, c), dtype=bool) if cfg.update_safety_enabled else None
+        )
+        self.update_family_proposed = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=bool)
+            if cfg.update_safety_enabled
+            else None
+        )
+        self.update_reason = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.uint8)
+            if cfg.update_safety_enabled
+            else None
+        )
+        self.update_expected_parameter_value = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.float32)
+            if cfg.update_safety_enabled
+            else None
+        )
+        self.update_raw_delta = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.float32)
+            if cfg.update_safety_enabled
+            else None
+        )
+        self.update_bounded_delta = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.float32)
+            if cfg.update_safety_enabled
+            else None
+        )
+        self.update_projected_parameter_value = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.float32)
+            if cfg.update_safety_enabled
+            else None
+        )
+        self.update_family_clip_applied = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=bool)
+            if cfg.update_safety_enabled
+            else None
+        )
+        self.update_parameter_bound_applied = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=bool)
+            if cfg.update_safety_enabled
+            else None
+        )
+        self.update_event_budget_scale = (
+            np.zeros((e, c), dtype=np.float32) if cfg.update_safety_enabled else None
+        )
 
     @staticmethod
     def base_snapshot_array_names() -> tuple[str, ...]:
@@ -288,6 +351,22 @@ class SubjectVMTraceStorage:
             "binding_family_proposal",
         )
 
+    @staticmethod
+    def update_snapshot_array_names() -> tuple[str, ...]:
+        return (
+            "update_requested",
+            "update_proposed_any",
+            "update_family_proposed",
+            "update_reason",
+            "update_expected_parameter_value",
+            "update_raw_delta",
+            "update_bounded_delta",
+            "update_projected_parameter_value",
+            "update_family_clip_applied",
+            "update_parameter_bound_applied",
+            "update_event_budget_scale",
+        )
+
     def snapshot_array_names(self) -> tuple[str, ...]:
         names = self.base_snapshot_array_names()
         if self.cfg.association_enabled:
@@ -296,6 +375,8 @@ class SubjectVMTraceStorage:
             names += self.modulation_snapshot_array_names()
         if self.cfg.target_binding_enabled:
             names += self.binding_snapshot_array_names()
+        if self.cfg.update_safety_enabled:
+            names += self.update_snapshot_array_names()
         return names
 
     def allocated_nbytes(self) -> int:
@@ -402,6 +483,29 @@ class SubjectVMTraceStorage:
             self.binding_target_id[row, slot] = 0
             self.binding_eligibility_value[row, slot] = 0.0
             self.binding_family_proposal[row, slot] = 0.0
+        if self.cfg.update_safety_enabled:
+            assert self.update_requested is not None
+            assert self.update_proposed_any is not None
+            assert self.update_family_proposed is not None
+            assert self.update_reason is not None
+            assert self.update_expected_parameter_value is not None
+            assert self.update_raw_delta is not None
+            assert self.update_bounded_delta is not None
+            assert self.update_projected_parameter_value is not None
+            assert self.update_family_clip_applied is not None
+            assert self.update_parameter_bound_applied is not None
+            assert self.update_event_budget_scale is not None
+            self.update_requested[row, slot] = False
+            self.update_proposed_any[row, slot] = False
+            self.update_family_proposed[row, slot] = False
+            self.update_reason[row, slot] = 0
+            self.update_expected_parameter_value[row, slot] = 0.0
+            self.update_raw_delta[row, slot] = 0.0
+            self.update_bounded_delta[row, slot] = 0.0
+            self.update_projected_parameter_value[row, slot] = 0.0
+            self.update_family_clip_applied[row, slot] = False
+            self.update_parameter_bound_applied[row, slot] = False
+            self.update_event_budget_scale[row, slot] = 0.0
 
     def expire(self, tick: int) -> int:
         expired = self.event_valid & (
@@ -455,6 +559,7 @@ class SubjectVMTraceStorage:
         owner_subject_ids: np.ndarray,
         accounting: SubjectVMTraceAccounting,
         target_candidates: SubjectVMTargetCandidateBatch | None = None,
+        graph_storage: SubjectVMStorage | None = None,
     ) -> None:
         count = self._validate_event_batch(batch)
         rows = self._rows(batch.rows)
@@ -487,6 +592,10 @@ class SubjectVMTraceStorage:
                     raise ValueError("subject_vm target candidates have an invalid shape")
         elif target_candidates is not None:
             raise ValueError("inactive subject_vm target binding cannot accept candidates")
+        if self.cfg.update_safety_enabled and graph_storage is None:
+            raise ValueError("subject_vm update safety requires graph storage")
+        if not self.cfg.update_safety_enabled and graph_storage is not None:
+            raise ValueError("inactive subject_vm update safety cannot accept graph storage")
         if not np.array_equal(owner_entity_ids[rows], batch.entity_ids):
             raise ValueError("subject_vm trace entity ownership is stale")
         if not np.array_equal(owner_subject_ids[rows], batch.subject_ids):
@@ -611,6 +720,43 @@ class SubjectVMTraceStorage:
                         binding.reason == BINDING_REASON_CODES["no-valid-local-carrier"]
                     )
                 )
+            update = None
+            if self.cfg.update_safety_enabled:
+                assert binding is not None and graph_storage is not None
+                update = propose_safe_parameter_deltas(
+                    graph_storage,
+                    row=row,
+                    binding=binding,
+                    cfg=self.cfg.update_safety,
+                )
+                if update.requested:
+                    accounting.update_requests += 1
+                if update.proposed_any:
+                    accounting.update_proposed_events += 1
+                accounting.update_proposed_targets += int(
+                    np.count_nonzero(update.family_proposed)
+                )
+                accounting.update_rejected_stale_target += int(
+                    np.count_nonzero(
+                        update.reason == UPDATE_REASON_CODES["stale-target"]
+                    )
+                )
+                accounting.update_rejected_below_minimum += int(
+                    np.count_nonzero(
+                        update.reason == UPDATE_REASON_CODES["candidate-below-minimum"]
+                    )
+                )
+                accounting.update_rejected_parameter_bound += int(
+                    np.count_nonzero(
+                        update.reason == UPDATE_REASON_CODES["parameter-bound-no-room"]
+                    )
+                )
+                accounting.update_family_clips += int(
+                    np.count_nonzero(update.family_clip_applied)
+                )
+                accounting.update_event_budget_scales += int(
+                    update.event_budget_scale < 1.0
+                )
             if self.event_valid[row, slot]:
                 accounting.overwritten_events += 1
             self._clear_slot(row, slot)
@@ -699,6 +845,39 @@ class SubjectVMTraceStorage:
                 self.binding_target_id[row, slot] = binding.target_id
                 self.binding_eligibility_value[row, slot] = binding.eligibility_value
                 self.binding_family_proposal[row, slot] = binding.family_proposal
+            if update is not None:
+                assert self.update_requested is not None
+                assert self.update_proposed_any is not None
+                assert self.update_family_proposed is not None
+                assert self.update_reason is not None
+                assert self.update_expected_parameter_value is not None
+                assert self.update_raw_delta is not None
+                assert self.update_bounded_delta is not None
+                assert self.update_projected_parameter_value is not None
+                assert self.update_family_clip_applied is not None
+                assert self.update_parameter_bound_applied is not None
+                assert self.update_event_budget_scale is not None
+                self.update_requested[row, slot] = update.requested
+                self.update_proposed_any[row, slot] = update.proposed_any
+                self.update_family_proposed[row, slot] = update.family_proposed
+                self.update_reason[row, slot] = update.reason
+                self.update_expected_parameter_value[row, slot] = (
+                    update.expected_parameter_value
+                )
+                self.update_raw_delta[row, slot] = update.raw_delta
+                self.update_bounded_delta[row, slot] = update.bounded_delta
+                self.update_projected_parameter_value[row, slot] = (
+                    update.projected_parameter_value
+                )
+                self.update_family_clip_applied[row, slot] = (
+                    update.family_clip_applied
+                )
+                self.update_parameter_bound_applied[row, slot] = (
+                    update.parameter_bound_applied
+                )
+                self.update_event_budget_scale[row, slot] = np.float32(
+                    update.event_budget_scale
+                )
             self.write_cursor[row] = np.uint32((slot + 1) % self.capacity)
             self.event_count[row] = np.uint32(np.count_nonzero(self.event_valid[row]))
             accounting.recorded_events += 1
@@ -734,6 +913,7 @@ class SubjectVMTraceStorage:
         schema = payload.get("schema")
         if schema not in {
             TRACE_STORAGE_SCHEMA,
+            TRACE_STORAGE_SCHEMA_V4,
             TRACE_STORAGE_SCHEMA_V3,
             TRACE_STORAGE_SCHEMA_V2,
             TRACE_STORAGE_SCHEMA_V1,
@@ -771,6 +951,14 @@ class SubjectVMTraceStorage:
                 names += result.association_snapshot_array_names()
             if result.cfg.modulation_enabled:
                 names += result.modulation_snapshot_array_names()
+        elif schema == TRACE_STORAGE_SCHEMA_V4:
+            names = result.base_snapshot_array_names()
+            if result.cfg.association_enabled:
+                names += result.association_snapshot_array_names()
+            if result.cfg.modulation_enabled:
+                names += result.modulation_snapshot_array_names()
+            if result.cfg.target_binding_enabled:
+                names += result.binding_snapshot_array_names()
         else:
             names = result.snapshot_array_names()
         for name in names:
@@ -820,6 +1008,18 @@ class SubjectVMTraceStorage:
                 if self.binding_family_bound is None
                 else int(np.count_nonzero(self.binding_family_bound))
             ),
+            "update_safety_enabled": self.cfg.update_safety_enabled,
+            "proposed_update_events": (
+                0
+                if self.update_proposed_any is None
+                else int(np.count_nonzero(self.update_proposed_any))
+            ),
+            "proposed_update_targets": (
+                0
+                if self.update_family_proposed is None
+                else int(np.count_nonzero(self.update_family_proposed))
+            ),
+            "parameter_writes": 0,
         }
 
 
@@ -832,6 +1032,7 @@ __all__ = [
     "TRACE_STORAGE_SCHEMA_V1",
     "TRACE_STORAGE_SCHEMA_V2",
     "TRACE_STORAGE_SCHEMA_V3",
+    "TRACE_STORAGE_SCHEMA_V4",
     "SubjectVMObjectiveEventBatch",
     "SubjectVMThoughtTokenBatch",
     "SubjectVMTraceAccounting",

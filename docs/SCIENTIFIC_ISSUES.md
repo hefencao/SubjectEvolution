@@ -431,3 +431,13 @@ Stage 3B-3 已能让统一图用连续 token 中的角色中性权重投影当�
 风险在于固定偏置可能限制未来解空间。因此 v0.115 将它们明确标记为 bootstrap baseline，并要求后续实验区分：固定寻址优势、统一图自身表示优势、真正可演化注意优势。当前不需要立即切换通用模型，但不能把固定机制的结果解释为注意机制已经自然涌现。
 
 Stage 3C-1 解决了同 tick eligibility contamination：候选在当前激活 marks 之前形成。它仍未解决目标因果正确性、更新方向、累计稳定性和物理成本。
+
+## v0.116：安全候选 delta 不是已发生的学习
+
+Stage 3C-2 首次把参数族提案和历史局部 eligibility 组合为具体候选 delta，但该公式仍是为了缩短搜索路径而采用的 bootstrap engineering prior。它不证明该乘法是普适信用分配规则，也不证明已绑定历史事件具有真实因果性。
+
+本版本通过 stable ID、槽位、表达状态和端口合同重新验证目标，并提供单族 clip、事件 L1 预算、参数合法区间和 expected-current-value 守卫。这些机制解决的是数值和事务安全，不解决“为什么该方向应被主体保留”的科学问题。
+
+特别需要区分 proposal 与 applied update。若把尚未执行的 audit proposal 计入长期累计塑性预算，会虚构不存在的学习并抑制后续候选；因此 v0.116 不建立 applied ledger，也不扣除物理可塑性成本。下一阶段只有在原子 compare-and-swap、all-or-none、rollback 和实际 accepted/applied 计数冻结后，才可以讨论有限参数写入。
+
+当前证据只支持候选 delta 可被安全界定和精确恢复，不支持行为改善、适应、价值形成或主体性。

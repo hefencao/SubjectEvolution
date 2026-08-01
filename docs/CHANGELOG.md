@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.116.0
+
+- Adds Subject VM Stage 3C-2 bounded update-safety proposals without graph parameter writes.
+- Revalidates stable target ID, slot, expression state, family kind and required port before forming a candidate delta.
+- Uses the role-neutral bootstrap product of family proposal, historical local eligibility and configured step scale.
+- Applies per-family delta clips, proportional per-event L1 scaling and configured parameter lower/upper projection.
+- Persists expected current parameter values as future compare-and-swap and rollback guards together with raw and bounded candidate deltas.
+- Keeps audit-only proposals from consuming an applied long-window budget and records zero parameter writes.
+- Upgrades v0.115 checkpoints to empty update-safety metadata without fabricating deltas.
+- Does not authorize parameter, eligibility, retained-state or topology writes, physical plasticity debit, learning claims or Epoch-1 qualification.
+
 ## 0.115.0
 
 - Adds Subject VM Stage 3C-1 exact target proposal binding without parameter writes.

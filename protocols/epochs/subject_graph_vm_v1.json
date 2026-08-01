@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c1-exact-target-binding-cpu-reference-implemented",
-  "project_version": "0.115.0",
+  "status": "stage-3c2-update-safety-proposal-cpu-reference-implemented",
+  "project_version": "0.116.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -65,7 +65,7 @@
     {
       "stage": 3,
       "name": "token-event-trace-then-delayed-plasticity",
-      "runtime_change": "Stage 3A stores compact graph tokens and objective facts; Stage 3B-1 adds short-lived local activity eligibility; Stage 3B-2 records bootstrap delayed association candidates; Stage 3B-3 records rejectable parameter-family modulation proposals; Stage 3C-1 binds those proposals to bounded pre-activation local carriers without parameter writes"
+      "runtime_change": "Stage 3A stores compact graph tokens and objective facts; Stage 3B-1 adds short-lived local activity eligibility; Stage 3B-2 records bootstrap delayed association candidates; Stage 3B-3 records rejectable parameter-family modulation proposals; Stage 3C-1 binds those proposals to bounded pre-activation local carriers; Stage 3C-2 emits bounded compare-and-swap candidate deltas without parameter writes"
     },
     {
       "stage": 4,
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3C-1",
+  "current_stage": "3C-2",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -156,6 +156,22 @@
     "mandatory_binding": false,
     "parameter_delta_computed": false,
     "parameter_update": false,
+    "backend": "cpu-reference-only",
+    "physical_cost_debit": false,
+    "scientific_qualification": false
+  },
+  "stage_3c2_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_update_safety_v1.json",
+    "representation": "bounded-compare-and-swap-candidate-delta-metadata",
+    "bootstrap_formula": "family-proposal-times-historical-local-eligibility-times-neutral-step-scale",
+    "universal_learning_rule_claim": false,
+    "stable_target_revalidation": true,
+    "per_family_delta_clip": true,
+    "per_subject_event_l1_budget": true,
+    "parameter_bounds_projection": true,
+    "expected_current_value_guard": true,
+    "actual_parameter_write": false,
+    "applied_long_window_budget_ledger": false,
     "backend": "cpu-reference-only",
     "physical_cost_debit": false,
     "scientific_qualification": false

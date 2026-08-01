@@ -1,0 +1,76 @@
+{
+  "schema": "se-subject-vm-update-safety-contract-v1",
+  "contract_id": "subject-graph-vm-update-safety-v1",
+  "status": "accepted-stage-3c2-engineering-boundary",
+  "release": "0.116.0",
+  "scope": "Convert an already-bound parameter-family proposal and historical local eligibility carrier into a bounded, rejectable compare-and-swap candidate delta without writing graph state.",
+  "bootstrap_formula": {
+    "candidate": "family proposal times historical local eligibility times configured neutral step scale",
+    "objective_event_value": false,
+    "association_similarity_as_strength": false,
+    "association_delay_as_strength": false,
+    "universal_learning_rule_claim": false,
+    "future_replacement_or_comparison_allowed": true
+  },
+  "target_revalidation": {
+    "stable_target_id_required": true,
+    "slot_index_required": true,
+    "target_must_remain_expressed": true,
+    "family_and_target_kind_must_match": true,
+    "required_port_must_remain_connected": true,
+    "current_parameter_must_be_finite": true
+  },
+  "safety_envelopes": {
+    "per_family_absolute_delta_clip": true,
+    "per_subject_event_l1_budget": true,
+    "event_budget_allocation": "proportional scaling without family-order priority",
+    "parameter_lower_upper_projection": true,
+    "edge_bandwidth_lower_bound_nonnegative": true,
+    "minimum_effective_delta": true
+  },
+  "persisted": [
+    "update request and any-proposal flags",
+    "per-family proposal flag and role-neutral reason code",
+    "expected current parameter value as compare-and-swap and rollback guard",
+    "raw candidate delta",
+    "bounded candidate delta",
+    "projected parameter value",
+    "family clip and parameter-bound flags",
+    "per-event budget scale"
+  ],
+  "write_authority": {
+    "parameter_write": false,
+    "eligibility_write": false,
+    "retained_state_write": false,
+    "topology_write": false,
+    "physical_cost_debit": false,
+    "action_feedback": false,
+    "random_number_consumption": false
+  },
+  "rollback_and_atomicity": {
+    "current_value_is_rollback_guard": true,
+    "future_apply_must_compare_target_id_slot_and_current_value": true,
+    "proposal_commit_is_not_parameter_commit": true,
+    "partial_parameter_writes": false
+  },
+  "cumulative_budget": {
+    "actual_applied_update_ledger": "not-yet-authorized",
+    "unexecuted_proposals_consume_long_window_budget": false,
+    "reason": "audit-only proposals must not fabricate applied plasticity or block later proposals"
+  },
+  "compatibility": {
+    "disabled_update_safety": "canonically removed from configuration identity",
+    "v0115_checkpoint": "upgrade allocates empty update-safety metadata without fabricating deltas",
+    "birth": "newborn event ring starts with no update proposals",
+    "clone_checkpoint_compaction": "committed bounded proposal metadata is copied exactly",
+    "death": "proposal metadata is cleared with the row"
+  },
+  "forbidden": [
+    "writing any graph parameter in Stage 3C-2",
+    "treating objective state changes as engine-defined positive or negative value",
+    "using association similarity or delay as update magnitude",
+    "allowing stale node or edge identity to receive a proposal",
+    "counting audit-only proposals as applied long-window plasticity",
+    "claiming candidate deltas as learning, adaptation or subjecthood"
+  ]
+}

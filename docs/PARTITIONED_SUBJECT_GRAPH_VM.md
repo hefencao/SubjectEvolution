@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
-Status: **implementation contract frozen; runtime implementation not started**
-Project version: **0.110.0**
+Status: **Stage 3C-2 CPU-reference engineering implementation complete; permanent parameter writes not authorized**
+Project version: **0.116.0**
 
 ## 1. Decision
 
@@ -488,3 +488,11 @@ Stage 3B-3 只在已经分配的延迟候选上生成一个可拒绝、定长的
 本项目允许为了缩短从混沌状态塑形的时间而预设可替换的通用认知偏置。现有 normalized-dot 单历史候选寻址和单赢家局部资格选择因此继续作为 bootstrap baseline，而不是立即切换到难以验证的完整通用注意模型。
 
 Stage 3C-1 在当前 tick 新活动发生前，从衰减后的局部 eligibility 中为六个参数族各选最多一个候选。当前行动新产生的资格不会进入该候选快照。世界提交后，参数族提案只能绑定该有界快照；没有候选时保持未绑定。该阶段仍不生成最终参数 delta，不修改节点、边或拓扑。
+
+## v0.116：Stage 3C-2 只形成带事务守卫的候选 delta
+
+Stage 3C-2 保留 v0.115 的 bootstrap 内容寻址和单赢家资格绑定。它不切换到完整通用注意模型，而是先修正永久写入前最明显的工程风险。
+
+每个 bound target 会在事件提交时重新验证 stable ID、slot、expressed 状态、参数族和必要端口。通过验证后，参数族提案、激活前历史 eligibility 与配置步长形成候选 delta。候选依次经过每族 clip、每事件 L1 比例缩放和参数上下界投影。当前参数值作为未来 compare-and-swap 与 rollback 守卫保存。
+
+该阶段没有 apply 接口，参数数组、eligibility、retained state 和 topology 均不改变。未执行提案也不占用实际长期更新预算。下一阶段必须先建立原子 dry-run/transaction 合同，再决定是否允许任何永久参数变化。
