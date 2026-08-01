@@ -745,7 +745,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             phase_started = time.perf_counter()
             self.environment.update(self.tick)
             record_resource_recycling_after_environment_update(self, stats)
-            self.information.propagate()
+            self.information.propagate(self.environment.terrain)
             stats.environment_seconds = time.perf_counter() - phase_started
             phase_started = time.perf_counter()
             active = self.spatial.build(ent.x, ent.y, ent.alive)

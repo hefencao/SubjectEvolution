@@ -1166,3 +1166,19 @@ invoke this path.
 token changes and records frontier signalling, same-group danger-message
 reception and FLEE directions aligned away from the message source. Its output
 never feeds policy, fitness, grouping, reproduction or environment state.
+
+## D1-U depletion competition and terrain signal boundary
+
+```text
+resolved harvest amounts
+        ↓ single conserved resource-field commit
+post-harvest current resource state → resource SIGNAL
+        +
+rival local channel overlap → observational depletion pressure only
+        ↓ no duplicate energy/integrity/danger settlement
+terrain permeability → field diffusion conductance
+terrain path + distance → direct-message attenuation
+```
+
+`rival-harvest-depletion-pressure-v2` never changes the committed resource ledger and adds no synthetic body damage. `post-harvest-current-v2` reads authoritative host or device resource values after settlement. `terrain-resisted-diffusion-v1` applies symmetric edge conductance; `terrain-distance-attenuated-v1` applies one role-neutral multiplier to direct payload and confidence. Legacy schemas and exact inactive defaults retain frozen protocol identities.
+

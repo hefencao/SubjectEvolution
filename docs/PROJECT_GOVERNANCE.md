@@ -270,3 +270,12 @@ Parameter-debug probes may report connected events, but they must set formal
 role, gene, selection and adaptation authorization to false. Increasing damage,
 ticks or group count is not an acceptable substitute for a missing actionable
 information interface.
+
+## D1-U 竞争语义与后端稳健性治理
+
+- 实际资源扣除与竞争观测必须分账；不得把同一耗竭重复计为资源减少和身体损伤。
+- SIGNAL 必须说明读取的是动作前快照还是提交后的当前状态；涉及竞争时默认优先当前物理状态。
+- 地形传播参数必须在 disabled-default 下保持旧协议身份。
+- 同配置跨后端对照可用于发现接线差异，但不得把事件计数差异直接解释为科学效应。
+- 某后端单次观察到完整链路，而另一后端没有时，只能继续调试，不得升级为正式 panel。
+

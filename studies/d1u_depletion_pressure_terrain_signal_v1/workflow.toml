@@ -1,0 +1,82 @@
+schema = "se-study-workflow-v1"
+study_id = "d1u_depletion_pressure_terrain_signal_v1"
+title = "D1-U resource depletion competition and terrain signal transport"
+
+[parameters.probe_seed]
+type = "int"
+default = 102011
+description = "Same debug seed for CPU and accelerated execution; never formal evidence."
+
+[parameters.template]
+type = "path"
+default = "studies/d1u_depletion_pressure_terrain_signal_v1/frozen/base/source_config.json"
+description = "Frozen D1-T resolved configuration."
+
+[parameters.generated_config]
+type = "path"
+default = "state/studies/d1u_depletion_pressure_terrain_signal_v1/depletion_signal.json"
+description = "Generated D1-U semantics-correction configuration."
+
+[parameters.cpu_root]
+type = "path"
+default = "runs/base/d1u_depletion_pressure_terrain_signal_v1/cpu"
+description = "CPU debug runtime root."
+
+[parameters.accelerated_root]
+type = "path"
+default = "runs/base/d1u_depletion_pressure_terrain_signal_v1/accelerated"
+description = "Auto-backend debug runtime root."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1u_depletion_pressure_terrain_signal_v1"
+description = "D1-U debug analysis root."
+
+[parameters.output]
+type = "result-path"
+default = "d1u_depletion_pressure_terrain_signal_v1_debug_results.zip"
+description = "External debug evidence bundle."
+
+[parameters.include_checkpoints]
+type = "bool"
+default = false
+description = "Include checkpoints only for explicit replay."
+
+[steps.evidence-audit]
+description = "Verify the frozen same-seed CPU and accelerated D1-T evidence."
+command = ["python", "scripts/verify_frozen_files.py", "--lock", "{study_dir}/frozen/EVIDENCE_LOCK.json", "--output", "{analysis_root}/evidence_audit.json"]
+
+[steps.prepare-config]
+description = "Replace synthetic body damage with depletion pressure and enable post-harvest, terrain-aware signal transport."
+command = ["se-depletion-signal-environment-config", "--template", "{template}", "--output", "{generated_config}", "--ticks", "600", "--signal-terrain-resistance", "0.45", "--direct-distance-decay", "0.025", "--direct-terrain-resistance", "0.45"]
+requires_json = [{ path = "{analysis_root}/evidence_audit.json", field = "passed", equals = true }]
+
+[steps.probe-cpu]
+description = "Run one CPU debug seed with corrected physical semantics."
+command = ["se-multi", "--config", "{generated_config}", "--seeds", "{probe_seed}", "--output", "{cpu_root}", "--backend", "cpu", "--until-tick", "600", "--no-checkpoints", "--skip-post-run-audits"]
+requires_json = [
+  { path = "{generated_config}.manifest.json", field = "output_file_sha256", equals = "e624ea7e85d7d4164888e2a10bd611f432254fadd12f7aab3f0b85ce7265448d" },
+  { path = "{generated_config}.manifest.json", field = "authorization.gene_audit", equals = false }
+]
+
+[steps.cpu-summary]
+description = "Check corrected competition and signal semantics in the CPU run."
+command = ["se-depletion-signal-debug", "summary", "--source-root", "{cpu_root}", "--output", "{analysis_root}/cpu_probe.json"]
+
+[steps.probe-accelerated]
+description = "Run the same seed with auto backend to expose accelerated execution when available."
+command = ["se-multi", "--config", "{generated_config}", "--seeds", "{probe_seed}", "--output", "{accelerated_root}", "--backend", "auto", "--until-tick", "600", "--no-checkpoints", "--skip-post-run-audits"]
+requires_json = [{ path = "{generated_config}.manifest.json", field = "output_file_sha256", equals = "e624ea7e85d7d4164888e2a10bd611f432254fadd12f7aab3f0b85ce7265448d" }]
+
+[steps.accelerated-summary]
+description = "Check corrected competition and signal semantics in the auto-backend run."
+command = ["se-depletion-signal-debug", "summary", "--source-root", "{accelerated_root}", "--output", "{analysis_root}/accelerated_probe.json"]
+
+[steps.backend-contrast]
+description = "Compare execution metadata and semantic readiness without requiring identical chaotic trajectories."
+command = ["se-depletion-signal-debug", "contrast", "--cpu", "{analysis_root}/cpu_probe.json", "--accelerated", "{analysis_root}/accelerated_probe.json", "--output", "{analysis_root}/backend_contrast.json"]
+
+[steps.pack-results]
+description = "Package frozen D1-T contrast, actual config, runtime summaries and D1-U debug analyses externally."
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "{analysis_root}", "--runtime-root", "runs/base/d1u_depletion_pressure_terrain_signal_v1", "--required-file", "{generated_config}", "--required-file", "{generated_config}.manifest.json", "--output", "{output}"]
+boolean_flags = { include_checkpoints = "--include-checkpoints" }

@@ -15,6 +15,7 @@ import numpy as np
 from se.cfg import SimulationConfig
 
 CONTEST_SCHEMA = "co-located-harvest-contest-v1"
+DEPLETION_PRESSURE_SCHEMA = "rival-harvest-depletion-pressure-v2"
 RESOURCE_CHANNELS = 4
 
 
@@ -24,6 +25,7 @@ class HarvestContestResult:
     pressure: np.ndarray
     energy_cost: np.ndarray
     integrity_damage: np.ndarray
+    danger_evidence: np.ndarray
 
     @classmethod
     def empty(cls) -> "HarvestContestResult":
@@ -32,6 +34,7 @@ class HarvestContestResult:
             pressure=np.empty(0, dtype=np.float32),
             energy_cost=np.empty(0, dtype=np.float32),
             integrity_damage=np.empty(0, dtype=np.float32),
+            danger_evidence=np.empty(0, dtype=np.float32),
         )
 
     @property
@@ -40,7 +43,10 @@ class HarvestContestResult:
 
 
 def resource_contest_enabled(cfg: SimulationConfig) -> bool:
-    return cfg.entities.resource_contest_schema == CONTEST_SCHEMA
+    return cfg.entities.resource_contest_schema in {
+        CONTEST_SCHEMA,
+        DEPLETION_PRESSURE_SCHEMA,
+    }
 
 
 def decay_recent_contest_pressure(entities: Any, cfg: SimulationConfig) -> None:
@@ -114,17 +120,27 @@ def resolve_harvest_contest(
         where=own_total > 0.0,
     )
     pressure = np.clip(pressure, 0.0, 1.0).astype(np.float32)
-    energy = pressure * np.float32(
-        cfg.entities.resource_contest_energy_cost_per_pressure
-    )
-    damage = pressure * np.float32(
-        cfg.entities.resource_contest_integrity_damage_per_pressure
-    )
+    if cfg.entities.resource_contest_schema == DEPLETION_PRESSURE_SCHEMA:
+        # Actual resource depletion has already been committed by the harvest
+        # resolver.  v2 records rival overlap as physical scarcity/pressure but
+        # adds no synthetic body damage or duplicate energy penalty.
+        energy = np.zeros_like(pressure, dtype=np.float32)
+        damage = np.zeros_like(pressure, dtype=np.float32)
+        danger_evidence = np.zeros_like(pressure, dtype=np.float32)
+    else:
+        energy = pressure * np.float32(
+            cfg.entities.resource_contest_energy_cost_per_pressure
+        )
+        damage = pressure * np.float32(
+            cfg.entities.resource_contest_integrity_damage_per_pressure
+        )
+        danger_evidence = pressure
     return HarvestContestResult(
         actor_indices=actors,
         pressure=pressure,
         energy_cost=energy.astype(np.float32),
         integrity_damage=damage.astype(np.float32),
+        danger_evidence=danger_evidence.astype(np.float32),
     )
 
 
@@ -143,12 +159,13 @@ def commit_harvest_contest(
     # The existing danger memory coordinate is a physical observation cache,
     # not a reward.  Contest exposure joins other local danger evidence.
     entities.memory[actors, 2] = np.maximum(
-        entities.memory[actors, 2], result.pressure
+        entities.memory[actors, 2], result.danger_evidence
     )
 
 
 __all__ = [
     "CONTEST_SCHEMA",
+    "DEPLETION_PRESSURE_SCHEMA",
     "HarvestContestResult",
     "commit_harvest_contest",
     "decay_recent_contest_pressure",

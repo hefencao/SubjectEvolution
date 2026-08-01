@@ -1,0 +1,71 @@
+{
+  "schema": "frozen-evidence-lock-v1",
+  "study_id": "d1u_depletion_pressure_terrain_signal_v1",
+  "source_evidence": "D1-T same-seed same-config CPU and accelerated debug results",
+  "scientific_judgment": {
+    "same_seed": true,
+    "same_resolved_config": true,
+    "cpu_physical_chain_observed": true,
+    "accelerated_physical_chain_observed": false,
+    "mechanism_qualification_backend_robust": false,
+    "formal_environment_panel_authorized": false,
+    "gene_audit_authorized": false
+  },
+  "files": [
+    {
+      "path": "studies/d1u_depletion_pressure_terrain_signal_v1/frozen/accelerated/mechanism_probe.json",
+      "size": 2170,
+      "sha256": "e39cb3e5ec095486f6c4075a5d457549b9ca1392558e3b58c2bb1b7e40487ef5"
+    },
+    {
+      "path": "studies/d1u_depletion_pressure_terrain_signal_v1/frozen/accelerated/reconnaissance_summary.json",
+      "size": 592,
+      "sha256": "9bf2256d40e2ac9ab6559de3829283a465ebc528ed968a4a79450f16468e47d0"
+    },
+    {
+      "path": "studies/d1u_depletion_pressure_terrain_signal_v1/frozen/accelerated/resolved_config.json",
+      "size": 18400,
+      "sha256": "c5ea37aa540b66fcaa4ed090f208df3230a98ae6574c1a934f4aa9c51a86b51a"
+    },
+    {
+      "path": "studies/d1u_depletion_pressure_terrain_signal_v1/frozen/accelerated/run_manifest.json",
+      "size": 14797,
+      "sha256": "278864dd882df8a0cfecba818dbedcb9881389616c11008c1e6ca0d3d4bb987e"
+    },
+    {
+      "path": "studies/d1u_depletion_pressure_terrain_signal_v1/frozen/accelerated/summary.json",
+      "size": 43874,
+      "sha256": "9e555c02e59350ee60a178c73c9b01480ec759b059afc2db13e5474b952ed4aa"
+    },
+    {
+      "path": "studies/d1u_depletion_pressure_terrain_signal_v1/frozen/base/source_config.json",
+      "size": 18400,
+      "sha256": "c5ea37aa540b66fcaa4ed090f208df3230a98ae6574c1a934f4aa9c51a86b51a"
+    },
+    {
+      "path": "studies/d1u_depletion_pressure_terrain_signal_v1/frozen/cpu/mechanism_probe.json",
+      "size": 2182,
+      "sha256": "5c44eb088d690b01f7b10a6ec8b268e3ab9cf1c43fa9f92602c7a4dacb7bcd38"
+    },
+    {
+      "path": "studies/d1u_depletion_pressure_terrain_signal_v1/frozen/cpu/reconnaissance_summary.json",
+      "size": 593,
+      "sha256": "d2bd6a2138e52b7967a9fbe8efe78188683d4e978424d2cb5a00439f5d597edf"
+    },
+    {
+      "path": "studies/d1u_depletion_pressure_terrain_signal_v1/frozen/cpu/resolved_config.json",
+      "size": 18400,
+      "sha256": "c5ea37aa540b66fcaa4ed090f208df3230a98ae6574c1a934f4aa9c51a86b51a"
+    },
+    {
+      "path": "studies/d1u_depletion_pressure_terrain_signal_v1/frozen/cpu/run_manifest.json",
+      "size": 14668,
+      "sha256": "9f1bc7bd78d2410e0ea2955b0ed209ae2ae28ea97d0a092046d7d912a7539b83"
+    },
+    {
+      "path": "studies/d1u_depletion_pressure_terrain_signal_v1/frozen/cpu/summary.json",
+      "size": 44069,
+      "sha256": "6529690839132efacda2f05966c911e20778cfe6ad8019b6efcea6c3c3b28034"
+    }
+  ]
+}

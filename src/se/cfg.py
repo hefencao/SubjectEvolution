@@ -107,6 +107,11 @@ class EnvironmentConfig:
     season_amplitude: float
     signal_decay: float
     signal_diffusion: float
+    # Legacy propagation is uniform and isotropic.  The opt-in terrain schema
+    # changes only physical transport conductance; it does not route or reward
+    # semantic content.
+    signal_propagation_schema: str = "uniform-isotropic-v1"
+    signal_terrain_resistance_fraction: float = 0.0
     # Legacy runs retain the original globally synchronized four-channel
     # resource field.  The heterogeneous schema adds spatial phase offsets
     # without changing the action vocabulary or hard-coding a preferred niche.
@@ -326,6 +331,15 @@ class InformationConfig:
     max_signal_delay: int
     direct_message_capacity: int = 16
     source_noise: float = 0.0
+    # Which physical resource state a SIGNAL action reports.  Archived runs use
+    # the pre-action observation; the opt-in v2 path samples the authoritative
+    # post-harvest field so implicit depletion competition reaches the resource
+    # channel without inventing extra damage.
+    resource_signal_observation_schema: str = "pre-action-local-v1"
+    # Optional direct-message attenuation through distance and terrain.
+    direct_message_propagation_schema: str = "unbounded-direct-v1"
+    direct_message_distance_decay_per_cell: float = 0.0
+    direct_message_terrain_resistance_fraction: float = 0.0
     # Field-emission delivery cadence for the current resource/danger/social
     # channels.  A period greater than one is an explicit aggregation delay:
     # events queue until that channel's next flush, while field propagation
@@ -750,6 +764,16 @@ def load_config(path: str | Path) -> SimulationConfig:
             season_amplitude=_require(raw, "environment")["season_amplitude"],
             signal_decay=_require(raw, "environment")["signal_decay"],
             signal_diffusion=_require(raw, "environment")["signal_diffusion"],
+            signal_propagation_schema=str(
+                _require(raw, "environment").get(
+                    "signal_propagation_schema", "uniform-isotropic-v1"
+                )
+            ),
+            signal_terrain_resistance_fraction=float(
+                _require(raw, "environment").get(
+                    "signal_terrain_resistance_fraction", 0.0
+                )
+            ),
             schema=_require(raw, "environment").get(
                 "schema", "legacy-four-channel-v1"
             ),
@@ -1410,10 +1434,12 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.entities.resource_contest_schema not in {
         "disabled",
         "co-located-harvest-contest-v1",
+        "rival-harvest-depletion-pressure-v2",
     }:
         raise ValueError(
-            "entities.resource_contest_schema must be 'disabled' or "
-            "'co-located-harvest-contest-v1'"
+            "entities.resource_contest_schema must be 'disabled', "
+            "'co-located-harvest-contest-v1', or "
+            "'rival-harvest-depletion-pressure-v2'"
         )
     if cfg.entities.danger_sensing_schema not in {
         "disabled",
@@ -1449,6 +1475,18 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.entities.resource_contest_pressure_retention > 1.0:
         raise ValueError(
             "entities.resource_contest_pressure_retention must be at most 1"
+        )
+    if (
+        cfg.entities.resource_contest_schema
+        == "rival-harvest-depletion-pressure-v2"
+        and (
+            cfg.entities.resource_contest_energy_cost_per_pressure != 0.0
+            or cfg.entities.resource_contest_integrity_damage_per_pressure != 0.0
+        )
+    ):
+        raise ValueError(
+            "rival-harvest-depletion-pressure-v2 uses natural resource depletion "
+            "and requires zero synthetic energy/integrity contest costs"
         )
     if (
         not isinstance(cfg.entities.resource_contest_radius_cells, int)
@@ -1790,6 +1828,37 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError(
             "environment.mortality_trace_observation_weight cannot be negative"
         )
+    if cfg.environment.signal_propagation_schema not in {
+        "uniform-isotropic-v1",
+        "terrain-resisted-diffusion-v1",
+    }:
+        raise ValueError(
+            "environment.signal_propagation_schema must be "
+            "'uniform-isotropic-v1' or 'terrain-resisted-diffusion-v1'"
+        )
+    if (
+        not math.isfinite(cfg.environment.signal_terrain_resistance_fraction)
+        or not 0.0 <= cfg.environment.signal_terrain_resistance_fraction <= 1.0
+    ):
+        raise ValueError(
+            "environment.signal_terrain_resistance_fraction must be in [0, 1]"
+        )
+    if (
+        cfg.environment.signal_propagation_schema == "uniform-isotropic-v1"
+        and cfg.environment.signal_terrain_resistance_fraction != 0.0
+    ):
+        raise ValueError(
+            "uniform signal propagation requires zero terrain resistance"
+        )
+    if (
+        cfg.environment.signal_propagation_schema
+        == "terrain-resisted-diffusion-v1"
+        and cfg.environment.physiology_environment_schema
+        != "oxygen-terrain-wear-mosaic-v1"
+    ):
+        raise ValueError(
+            "terrain-resisted signal propagation requires the terrain environment"
+        )
     if cfg.environment.physiology_environment_schema not in {
         "disabled",
         "oxygen-terrain-wear-mosaic-v1",
@@ -1976,6 +2045,57 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError("max_signal_delay cannot be negative")
     if cfg.information.direct_message_capacity < 0:
         raise ValueError("direct_message_capacity cannot be negative")
+    if cfg.information.resource_signal_observation_schema not in {
+        "pre-action-local-v1",
+        "post-harvest-current-v2",
+    }:
+        raise ValueError(
+            "information.resource_signal_observation_schema must be "
+            "'pre-action-local-v1' or 'post-harvest-current-v2'"
+        )
+    if cfg.information.direct_message_propagation_schema not in {
+        "unbounded-direct-v1",
+        "terrain-distance-attenuated-v1",
+    }:
+        raise ValueError(
+            "information.direct_message_propagation_schema must be "
+            "'unbounded-direct-v1' or 'terrain-distance-attenuated-v1'"
+        )
+    for name, value in (
+        (
+            "direct_message_distance_decay_per_cell",
+            cfg.information.direct_message_distance_decay_per_cell,
+        ),
+        (
+            "direct_message_terrain_resistance_fraction",
+            cfg.information.direct_message_terrain_resistance_fraction,
+        ),
+    ):
+        if not math.isfinite(float(value)) or float(value) < 0.0:
+            raise ValueError(f"information.{name} must be finite and non-negative")
+    if cfg.information.direct_message_terrain_resistance_fraction > 1.0:
+        raise ValueError(
+            "information.direct_message_terrain_resistance_fraction must be at most 1"
+        )
+    if (
+        cfg.information.direct_message_propagation_schema == "unbounded-direct-v1"
+        and (
+            cfg.information.direct_message_distance_decay_per_cell != 0.0
+            or cfg.information.direct_message_terrain_resistance_fraction != 0.0
+        )
+    ):
+        raise ValueError(
+            "unbounded direct-message propagation requires zero attenuation"
+        )
+    if (
+        cfg.information.direct_message_propagation_schema
+        == "terrain-distance-attenuated-v1"
+        and cfg.environment.physiology_environment_schema
+        != "oxygen-terrain-wear-mosaic-v1"
+    ):
+        raise ValueError(
+            "terrain-attenuated direct messages require the terrain environment"
+        )
     if len(cfg.information.signal_flush_periods) != 3 or any(
         not isinstance(period, int) or isinstance(period, bool) or period <= 0
         for period in cfg.information.signal_flush_periods

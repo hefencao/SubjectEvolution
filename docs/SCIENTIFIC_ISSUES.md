@@ -295,3 +295,10 @@ directional escape, but no persistent candidate lineage. The open issue is now
 replicated population/group continuity and repeated information opportunity—not
 whether an isolated action count can be called a role. No genetic or adaptive
 interpretation is authorized.
+
+## D1-U：耗竭竞争、信号映射与后端敏感性
+
+D1-T 的邻近竞争原先在资源已扣除后继续施加能量和完整性损失，无法区分自然耗竭竞争与未建模的直接干扰。资源信号还来自 harvest 前快照，而 contest pressure 被映射到 danger。D1-U 将其拆分为：实际耗竭、观测性重叠压力、提交后资源信号和独立危险通道。
+
+地形此前只影响移动，不影响信息传播，导致高成本地形无法形成通信阴影或距离约束。D1-U 新增角色中性的地形传播阻力。尚待检验的问题是：纠正后的资源信号是否产生可行动价值，以及 CPU/加速后端是否都能稳定执行相同语义。
+

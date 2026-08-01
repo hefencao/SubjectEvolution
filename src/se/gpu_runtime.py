@@ -764,7 +764,7 @@ class HybridGpuRuntime:
 
     def update_fields(self, tick: int) -> None:
         self.environment.update(tick)
-        self.information_field.propagate()
+        self.information_field.propagate(self.environment.terrain)
 
     def prepare(
         self,
@@ -1656,6 +1656,12 @@ class HybridGpuRuntime:
     def hazard_for_cells(self, cell_ids: np.ndarray) -> np.ndarray:
         cells = self._upload(cell_ids, dtype=self.backend.xp.int32)
         values = self.environment.hazard.reshape(-1)[cells]
+        return self._download(values).astype(np.float32, copy=False)
+
+    def resource_values_for_cells(self, cell_ids: np.ndarray) -> np.ndarray:
+        """Download only authoritative post-harvest resource values for cells."""
+        cells = self._upload(cell_ids, dtype=self.backend.xp.int32)
+        values = self.environment.cell_values(cells)
         return self._download(values).astype(np.float32, copy=False)
 
     def physiology_for_cells(self, cell_ids: np.ndarray) -> np.ndarray:

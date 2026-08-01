@@ -1,0 +1,33 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1u_depletion_pressure_terrain_signal_v1",
+  "title": "D1-U resource depletion competition and terrain signal transport",
+  "status": "semantic-correction-and-backend-debug",
+  "scientific_stage": "structured-environment-physical-semantics-before-formal-qualification",
+  "predecessor": {
+    "study_id": "d1t_reconnaissance_pressure_chain_v1",
+    "same_seed_same_config_backend_result": "inconsistent-mechanism-observation",
+    "cpu_chain_observed": true,
+    "accelerated_chain_observed": false
+  },
+  "authorization": {
+    "single_seed_cpu_accelerated_debug": true,
+    "formal_multi_seed_environment_panel": false,
+    "scout_role_claim": false,
+    "single_run_gene_audit": false,
+    "formal_gene_audit": false,
+    "selection_or_adaptation_claim": false
+  },
+  "debug_result": {
+    "seed": 102011,
+    "completed_tick": 600,
+    "cpu_final_alive": 55,
+    "cpu_minimum_population_floor_passed": false,
+    "contest_actor_events": 18,
+    "contest_energy_cost": 0.0,
+    "contest_integrity_damage": 0.0,
+    "cpu_semantics_ready": true,
+    "local_auto_execution_backend": "cpu-fallback-no-gpu",
+    "real_gpu_debug_completed": false
+  }
+}

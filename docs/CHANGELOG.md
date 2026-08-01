@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.102.0
+
+- Replaces synthetic rival-harvest body damage with observational depletion pressure; actual harvest depletion remains the sole resource-competition commit.
+- Makes resource signals read post-harvest current resource state.
+- Adds opt-in terrain-resisted field diffusion and terrain/distance-attenuated direct messages with exact disabled-default compatibility.
+- Freezes the same-seed D1-T CPU/GPU-hybrid diagnostic disagreement and adds D1-U backend debug contrast without scientific parity claims.
+- Adds D1-U workflow, tests, documentation and console entries.
+
 ## 0.101.0
 
 - Closes D1-S as an overall formal failure: all seeds reproduce structured processing division, but seed 100101 violates the preregistered population floor.

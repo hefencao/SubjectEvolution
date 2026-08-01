@@ -1,0 +1,12 @@
+{
+  "schema": "reconnaissance-pressure-chain-diagnostics-v1",
+  "window_ticks": 120,
+  "window_count": 8,
+  "total_frontier_signal_events": 163,
+  "total_same_group_danger_messages": 74,
+  "total_aligned_flee_responses": 5,
+  "total_candidate_group_windows": 1,
+  "persistent_reconnaissance_candidate_lineages": [],
+  "persistent_reconnaissance_candidate_count": 0,
+  "interpretation_boundary": "Candidates show an observationally connected pressure-sensing-signal-response chain. They are not assigned roles and do not establish causal benefit, selection, adaptation or stable occupation."
+}

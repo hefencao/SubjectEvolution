@@ -12,6 +12,11 @@ from se.env.danger_evidence import (
 )
 from se.env.niches import public_resource_signal
 from se.information import SignalEmissionBatch, SignalEmissionPlan
+from se.runtime.harvest_contest import DEPLETION_PRESSURE_SCHEMA
+from se.runtime.signal_transport import (
+    current_signal_resources,
+    direct_message_transport,
+)
 
 
 def emit_actor_signals(
@@ -32,7 +37,10 @@ def emit_actor_signals(
     )
     if multiplier.shape != (actors.size,):
         raise ValueError("signal strength multiplier must match actors")
-    resource_signal = public_resource_signal(local_resources, simulation.cfg)
+    signal_resources = current_signal_resources(
+        simulation, cells, local_resources
+    )
+    resource_signal = public_resource_signal(signal_resources, simulation.cfg)
     strengths_resource = np.clip(resource_signal, 0.0, 2.0) * 0.15 * multiplier
     actor_evidence_q = (
         (
@@ -48,8 +56,14 @@ def emit_actor_signals(
         if simulation.gpu_runtime is not None
         else simulation.environment.danger_for_cells(cells, actor_evidence_q)
     )
-    contest_signal = ent.recent_contest_pressure[actors] * np.float32(
-        simulation.cfg.entities.resource_contest_signal_weight
+    contest_signal = (
+        np.zeros(actors.size, dtype=np.float32)
+        if (
+            simulation.cfg.entities.resource_contest_schema
+            == DEPLETION_PRESSURE_SCHEMA
+        )
+        else ent.recent_contest_pressure[actors]
+        * np.float32(simulation.cfg.entities.resource_contest_signal_weight)
     )
     public_danger = np.maximum(hazard, contest_signal).astype(np.float32)
     group_member = simulation.social.group_id[actors] != 0
@@ -73,8 +87,13 @@ def emit_actor_signals(
     ent.energy[actors] -= signal_energy.astype(np.float32)
     valid_target = (target_indices >= 0) & ent.alive[target_indices]
     safe_targets = np.where(valid_target, target_indices, 0)
-    payloads = np.stack(
-        [resource_signal, public_danger, group_member.astype(np.float32)], axis=1
+    transport = direct_message_transport(simulation, actors, target_indices)
+    payloads = (
+        np.stack(
+            [resource_signal, public_danger, group_member.astype(np.float32)],
+            axis=1,
+        )
+        * transport[:, None]
     ).astype(np.float32)
     direct_messages = 0
     if simulation.direct_messages_enabled:
@@ -82,7 +101,7 @@ def emit_actor_signals(
             ent.entity_id[actors],
             ent.entity_id[safe_targets] * valid_target.astype(np.uint64),
             payloads,
-            np.ones(actors.size, dtype=np.float32),
+            transport,
             simulation.cfg.run.seed,
             simulation.tick,
         )

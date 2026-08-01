@@ -18,6 +18,7 @@ from .danger_evidence import DANGER_EVIDENCE_SCALE
 from .resource_sensing import effective_resource_sensing_radius_levels
 from .process import build_environment_process, environment_process_metadata
 from .physiology import physiology_fields
+from .signal import propagate_signal_field
 from .recycling import initialize_resource_residue, update_resource_recycling
 from .diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
@@ -730,19 +731,19 @@ class DeviceInformationField:
         self.source = xp.zeros_like(self.field)
         self.age = xp.zeros(shape, dtype=xp.uint16)
 
-    def propagate(self) -> None:
+    def propagate(self, terrain: Any | None = None) -> None:
         xp = self.backend.xp
-        decay = self.cfg.environment.signal_decay
-        diffusion = self.cfg.environment.signal_diffusion
-        center = self.field
-        neighbor_mean = (
-            xp.roll(center, 1, axis=1)
-            + xp.roll(center, -1, axis=1)
-            + xp.roll(center, 1, axis=2)
-            + xp.roll(center, -1, axis=2)
-        ) * 0.25
-        self.field = xp.maximum((1.0 - decay - diffusion) * center + diffusion * neighbor_mean + self.source, 0.0).astype(
-            xp.float32
+        self.field = propagate_signal_field(
+            self.field,
+            self.source,
+            decay=self.cfg.environment.signal_decay,
+            diffusion=self.cfg.environment.signal_diffusion,
+            schema=self.cfg.environment.signal_propagation_schema,
+            terrain=terrain,
+            terrain_resistance_fraction=(
+                self.cfg.environment.signal_terrain_resistance_fraction
+            ),
+            xp=xp,
         )
         active = self.field > 1e-6
         self.age = xp.where(active, xp.minimum(self.age.astype(xp.uint32) + 1, 65535), 0).astype(xp.uint16)

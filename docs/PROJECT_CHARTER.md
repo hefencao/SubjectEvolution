@@ -650,3 +650,10 @@ interface and a measurable downstream response. Each link must exist without a
 role reward or genotype-specific subsidy. Single-seed co-occurrence may debug
 that chain but cannot establish a stable role, causal value, selection or
 adaptation.
+
+## 5.8 资源竞争与信号介质边界
+
+资源被实际采集后造成的可用量下降本身就是竞争结果，不得在没有显式推挤、攻击、破坏或抢夺物理过程时，再把邻近采集重叠自动转换为身体伤害。竞争诊断应优先对应资源剩余量、耗竭率和可达性。信号传播必须受其物理介质约束；地形可以角色中性地改变扩散和衰减，但不得按预设消息价值、群体、基因或职业提供特权。
+
+同 seed、同配置在 CPU 与加速后端上不要求混沌轨迹相同，但若机制接线是否存在取决于后端，则该机制不得进入正式科学资格。
+

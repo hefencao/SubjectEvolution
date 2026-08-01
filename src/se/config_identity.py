@@ -162,6 +162,41 @@ def strip_inactive_extensions(payload: dict[str, Any]) -> dict[str, Any]:
         ):
             environment.pop(key, None)
 
+    if (
+        environment.get("signal_propagation_schema", "uniform-isotropic-v1")
+        == "uniform-isotropic-v1"
+        and float(environment.get("signal_terrain_resistance_fraction", 0.0)) == 0.0
+    ):
+        environment.pop("signal_propagation_schema", None)
+        environment.pop("signal_terrain_resistance_fraction", None)
+
+    information = result.get("information", {})
+    if (
+        information.get(
+            "resource_signal_observation_schema", "pre-action-local-v1"
+        )
+        == "pre-action-local-v1"
+        and information.get(
+            "direct_message_propagation_schema", "unbounded-direct-v1"
+        )
+        == "unbounded-direct-v1"
+        and float(
+            information.get("direct_message_distance_decay_per_cell", 0.0)
+        )
+        == 0.0
+        and float(
+            information.get("direct_message_terrain_resistance_fraction", 0.0)
+        )
+        == 0.0
+    ):
+        for key in (
+            "resource_signal_observation_schema",
+            "direct_message_propagation_schema",
+            "direct_message_distance_decay_per_cell",
+            "direct_message_terrain_resistance_fraction",
+        ):
+            information.pop(key, None)
+
     physiology = result.get("physiology", {})
     if (
         physiology.get("resource_conversion_network_schema")

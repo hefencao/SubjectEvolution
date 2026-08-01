@@ -1,0 +1,46 @@
+{
+  "schema": "reconnaissance-pressure-chain-summary-v1",
+  "mode": "single-seed-environment-parameter-debug",
+  "source_root": "runs/base/d1t_reconnaissance_pressure_chain_v1/probe",
+  "observed_run_count": 1,
+  "runs": [
+    {
+      "run": "seed_101011",
+      "initial_population": 128,
+      "alive": 112,
+      "cumulative_births_per_initial": 1.21875,
+      "descendant_alive_fraction": 0.7857142857142857,
+      "minimum_alive": 80.0,
+      "final_effective_lineages": 17.48251748251748,
+      "final_largest_lineage_fraction": 0.12,
+      "harvest_contest_events": 36.0,
+      "harvest_contest_pressure": 26.258800581097603,
+      "harvest_contest_energy": 0.21007041397388093,
+      "harvest_contest_integrity_damage": 0.007877640542574227,
+      "resource_load_movement_energy": 1.2887631219374016,
+      "schema": "reconnaissance-pressure-chain-diagnostics-v1",
+      "window_ticks": 120,
+      "window_count": 8,
+      "total_frontier_signal_events": 110,
+      "total_same_group_danger_messages": 0,
+      "total_aligned_flee_responses": 0,
+      "total_candidate_group_windows": 0,
+      "persistent_reconnaissance_candidate_lineages": [],
+      "persistent_reconnaissance_candidate_count": 0,
+      "interpretation_boundary": "Candidates show an observationally connected pressure-sensing-signal-response chain. They are not assigned roles and do not establish causal benefit, selection, adaptation or stable occupation.",
+      "population_debug_substrate_ready": true,
+      "physical_information_value_chain_observed": false
+    }
+  ],
+  "physical_chain_observed_run_count": 0,
+  "probe_mechanism_ready": false,
+  "authorization": {
+    "continue_shared_environment_parameter_debugging": true,
+    "mechanism_integration_ready": false,
+    "multi_seed_environment_panel": false,
+    "scout_role_claim": false,
+    "gene_audit": false,
+    "selection_or_adaptation_claim": false
+  },
+  "interpretation_boundary": "The probe checks whether contest, load, inherited sensing, signal delivery and receiver response are all physically active in one run. It cannot establish a scout role, causal information benefit, persistence across seeds or evolution."
+}

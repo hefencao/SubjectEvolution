@@ -6,6 +6,7 @@ from typing import Any
 import numpy as np
 
 from .cfg import SimulationConfig
+from .env.signal import propagate_signal_field
 from .random_api import RandomContext, Stream, bernoulli, normal, uniform01
 from .reductions import stable_segmented_sum, validate_cell_ids
 
@@ -318,18 +319,19 @@ class InformationSystem:
         self.age = np.zeros_like(self.field, dtype=np.uint16)
         self.pending_messages: list[PendingMessageBatch] = []
 
-    def propagate(self) -> None:
-        decay = self.cfg.environment.signal_decay
-        diffusion = self.cfg.environment.signal_diffusion
-        center = self.field
-        neighbor_mean = (
-            np.roll(center, 1, axis=1)
-            + np.roll(center, -1, axis=1)
-            + np.roll(center, 1, axis=2)
-            + np.roll(center, -1, axis=2)
-        ) * 0.25
-        self.field = ((1.0 - decay - diffusion) * center + diffusion * neighbor_mean + self.source).astype(np.float32)
-        self.field = np.maximum(self.field, 0.0)
+    def propagate(self, terrain: np.ndarray | None = None) -> None:
+        self.field = propagate_signal_field(
+            self.field,
+            self.source,
+            decay=self.cfg.environment.signal_decay,
+            diffusion=self.cfg.environment.signal_diffusion,
+            schema=self.cfg.environment.signal_propagation_schema,
+            terrain=terrain,
+            terrain_resistance_fraction=(
+                self.cfg.environment.signal_terrain_resistance_fraction
+            ),
+            xp=np,
+        )
         active = self.field > 1e-6
         self.age = np.where(active, np.minimum(self.age.astype(np.uint32) + 1, 65535), 0).astype(np.uint16)
         self.source.fill(0.0)
