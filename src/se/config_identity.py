@@ -18,6 +18,7 @@ _STRUCTURED_CENTERS = (
 )
 _STRUCTURED_RADII = (0.16, 0.18, 0.20, 0.17)
 _STRUCTURED_CONTRASTS = (0.85, 0.82, 0.80, 0.84)
+_STRUCTURED_SECONDARY_WEIGHT = 0.35
 _STRUCTURED_PROCESSING_OFFSETS = (
     (0.28, 0.20),
     (-0.24, 0.26),
@@ -96,6 +97,13 @@ def strip_inactive_extensions(payload: dict[str, Any]) -> dict[str, Any]:
         == _STRUCTURED_RADII
         and _nested_tuple(environment.get("resource_province_contrasts", _STRUCTURED_CONTRASTS))
         == _STRUCTURED_CONTRASTS
+        and float(
+            environment.get(
+                "resource_province_secondary_weight",
+                _STRUCTURED_SECONDARY_WEIGHT,
+            )
+        )
+        == _STRUCTURED_SECONDARY_WEIGHT
         and _nested_tuple(
             environment.get(
                 "resource_processing_province_offsets",
@@ -108,6 +116,7 @@ def strip_inactive_extensions(payload: dict[str, Any]) -> dict[str, Any]:
             "resource_province_centers",
             "resource_province_radii",
             "resource_province_contrasts",
+            "resource_province_secondary_weight",
             "resource_processing_province_offsets",
         ):
             environment.pop(key, None)

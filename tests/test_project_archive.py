@@ -11,11 +11,11 @@ def test_project_archive_prunes_iteration_history_only_in_copy(tmp_path: Path) -
     iteration = project / "docs" / "迭代"
     iteration.mkdir(parents=True)
     (project / "pyproject.toml").write_text(
-        '[project]\nname = "subject-evolution"\nversion = "0.99.0"\n',
+        '[project]\nname = "subject-evolution"\nversion = "0.100.0"\n',
         encoding="utf-8",
     )
-    current = iteration / "v0.99_current.md"
-    legacy_file = iteration / "v0.98_legacy.md"
+    current = iteration / "v0.100_current.md"
+    legacy_file = iteration / "v0.99_legacy.md"
     legacy_dir = iteration / "v0.26"
     legacy_root_dir = project / "docs" / "v0.26"
     current.write_text("current\n", encoding="utf-8")
@@ -27,7 +27,7 @@ def test_project_archive_prunes_iteration_history_only_in_copy(tmp_path: Path) -
 
     output = tmp_path / "project.zip"
     report = build_archive(project, output)
-    assert report["version"] == "0.99.0"
+    assert report["version"] == "0.100.0"
     assert current.is_file()
     assert legacy_file.is_file()
     assert (legacy_dir / "README.md").is_file()
@@ -37,7 +37,7 @@ def test_project_archive_prunes_iteration_history_only_in_copy(tmp_path: Path) -
         iteration_entries = [
             name for name in archive.namelist() if "/docs/迭代/" in name
         ]
-        assert iteration_entries == ["se_v099_project/docs/迭代/v0.99_current.md"]
+        assert iteration_entries == ["se_v0100_project/docs/迭代/v0.100_current.md"]
         assert not any("/docs/v0.26/" in name for name in archive.namelist())
         assert not any("/__pycache__/" in name for name in archive.namelist())
         assert not any(name.endswith(".pyc") for name in archive.namelist())

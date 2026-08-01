@@ -1,0 +1,107 @@
+schema = "se-study-workflow-v1"
+study_id = "d1s_replicated_material_circuits_v1"
+title = "D1-S replicated material circuits and bottleneck-aware qualification"
+
+[parameters.backend]
+type = "choice"
+default = "auto"
+choices = ["auto", "cpu", "gpu"]
+description = "Execution backend."
+
+[parameters.probe_seed]
+type = "int"
+default = 100021
+description = "Exploratory environment-debugging seed; never formal evidence."
+
+[parameters.panel_seeds]
+type = "csv-int"
+default = "100101,100102,100103"
+description = "Independent formal structured-environment seeds."
+
+[parameters.template]
+type = "path"
+default = "studies/d1s_replicated_material_circuits_v1/frozen/d1r/source_config.json"
+description = "Frozen D1-R generated config used as the unchanged subject and mechanism source."
+
+[parameters.generated_config]
+type = "path"
+default = "state/studies/d1s_replicated_material_circuits_v1/replicated_material_circuits.json"
+description = "Generated D1-S shared physical environment config."
+
+[parameters.secondary_weight]
+type = "float"
+default = 0.55
+minimum = 0.0
+maximum = 1.0
+description = "Relative weight of the antipodal circuit before per-channel mean normalization."
+
+[parameters.province_radius_scale]
+type = "float"
+default = 1.15
+minimum = 0.5
+maximum = 2.0
+description = "Uniform source and processing opportunity radius scale."
+
+[parameters.probe_root]
+type = "path"
+default = "runs/base/d1s_replicated_material_circuits_v1/probe"
+description = "Exploratory parameter-debugging runtime root."
+
+[parameters.panel_root]
+type = "path"
+default = "runs/base/d1s_replicated_material_circuits_v1/panel"
+description = "Formal multi-seed environment-structure runtime root."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1s_replicated_material_circuits_v1"
+description = "D1-S evidence and environment maturity analysis root."
+
+[parameters.output]
+type = "result-path"
+default = "d1s_replicated_material_circuits_v1_results.zip"
+description = "External result bundle."
+
+[parameters.include_checkpoints]
+type = "bool"
+default = false
+description = "Include checkpoints only when explicit replay is required."
+
+[steps.evidence-audit]
+description = "Verify the frozen D1-R failure evidence and exploratory parameter-debug evidence before generating D1-S."
+command = ["python", "scripts/verify_frozen_files.py", "--lock", "{study_dir}/frozen/EVIDENCE_LOCK.json", "--output", "{analysis_root}/evidence_audit.json"]
+
+[steps.prepare-config]
+description = "Create two more-equivalent normalized material circuits and uniformly widen their accessibility without changing genes, total mean material, costs or group rules."
+command = ["se-structured-environment-config", "--template", "{template}", "--output", "{generated_config}", "--regeneration", "0.015", "--province-secondary-weight", "{secondary_weight}", "--province-radius-scale", "{province_radius_scale}", "--processing-amplitude", "0.65", "--resource-share-amount", "0.12", "--recipe-rate-scale", "1.0", "--trust-threshold", "0.04", "--relation-decay", "0.0005", "--ticks", "1800"]
+requires_json = [{ path = "{analysis_root}/evidence_audit.json", field = "passed", equals = true }]
+
+[steps.environment-probe]
+description = "Run one exploratory seed only to debug shared circuit geometry; it cannot qualify the environment or any gene."
+command = ["se-multi", "--config", "{generated_config}", "--seeds", "{probe_seed}", "--output", "{probe_root}", "--backend", "{backend}", "--until-tick", "900", "--no-checkpoints", "--skip-post-run-audits"]
+requires_json = [
+  { path = "{generated_config}.manifest.json", field = "output_file_sha256", equals = "ef504dc9a5f67ba702fd492f97c248b3a3a55fea986aefd816f99bef75c296ef" },
+  { path = "{generated_config}.manifest.json", field = "authorization.single_run_gene_audit_authorized", equals = false },
+]
+
+[steps.probe-summary]
+description = "Summarize the exploratory probe with bottleneck and lineage diagnostics as parameter-debug evidence only."
+command = ["se-environment-structure-summary", "--source-root", "{probe_root}", "--mode", "exploratory", "--required-seed-count", "1", "--min-alive-fraction-over-run", "0.5", "--min-effective-lineages-final", "4.0", "--output", "{analysis_root}/probe_structure.json"]
+
+[steps.structured-panel]
+description = "Run the unchanged complete subject on three new independent seeds in the D1-S shared physical environment; no gene audit is attached."
+command = ["se-multi", "--config", "{generated_config}", "--seeds", "{panel_seeds}", "--output", "{panel_root}", "--backend", "{backend}", "--until-tick", "1800", "--no-checkpoints", "--skip-post-run-audits"]
+requires_json = [
+  { path = "{analysis_root}/evidence_audit.json", field = "passed", equals = true },
+  { path = "{generated_config}.manifest.json", field = "output_file_sha256", equals = "ef504dc9a5f67ba702fd492f97c248b3a3a55fea986aefd816f99bef75c296ef" },
+  { path = "{generated_config}.manifest.json", field = "authorization.formal_multi_seed_structure_panel_authorized", equals = true },
+]
+
+[steps.structure-summary]
+description = "Require every formal seed to avoid a deep bottleneck, retain lineage breadth, preserve physical heterogeneity and produce at least two persistent division-candidate groups."
+command = ["se-environment-structure-summary", "--source-root", "{panel_root}", "--mode", "formal", "--required-seed-count", "3", "--min-alive-fraction-over-run", "0.5", "--min-effective-lineages-final", "4.0", "--output", "{analysis_root}/formal_structure.json"]
+
+[steps.pack-results]
+description = "Package frozen predecessor evidence, actual config, progress, group windows, atlas summaries and D1-S analyses externally; no gene audit is included."
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "{analysis_root}", "--runtime-root", "runs/base/d1s_replicated_material_circuits_v1", "--required-file", "{generated_config}", "--required-file", "{generated_config}.manifest.json", "--output", "{output}"]
+boolean_flags = { include_checkpoints = "--include-checkpoints" }

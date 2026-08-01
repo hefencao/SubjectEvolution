@@ -1,0 +1,50 @@
+[
+  {
+    "seed": 97101,
+    "output": "runs/base/d1r_structured_environment_division_v1/panel/seed_97101",
+    "final_tick": 1800,
+    "alive": 570,
+    "evolution_progress": "runs/base/d1r_structured_environment_division_v1/panel/seed_97101/evolution_progress.jsonl",
+    "termination": {
+      "schema": "run-termination-v1",
+      "requested_tick": 1800,
+      "completed_tick": 1800,
+      "terminated_early": false,
+      "reason": null,
+      "scientific_effect_interpretation_authorized": null
+    },
+    "status": "completed"
+  },
+  {
+    "seed": 97102,
+    "output": "runs/base/d1r_structured_environment_division_v1/panel/seed_97102",
+    "final_tick": 1800,
+    "alive": 235,
+    "evolution_progress": "runs/base/d1r_structured_environment_division_v1/panel/seed_97102/evolution_progress.jsonl",
+    "termination": {
+      "schema": "run-termination-v1",
+      "requested_tick": 1800,
+      "completed_tick": 1800,
+      "terminated_early": false,
+      "reason": null,
+      "scientific_effect_interpretation_authorized": null
+    },
+    "status": "completed"
+  },
+  {
+    "seed": 97103,
+    "output": "runs/base/d1r_structured_environment_division_v1/panel/seed_97103",
+    "final_tick": 1800,
+    "alive": 253,
+    "evolution_progress": "runs/base/d1r_structured_environment_division_v1/panel/seed_97103/evolution_progress.jsonl",
+    "termination": {
+      "schema": "run-termination-v1",
+      "requested_tick": 1800,
+      "completed_tick": 1800,
+      "terminated_early": false,
+      "reason": null,
+      "scientific_effect_interpretation_authorized": null
+    },
+    "status": "completed"
+  }
+]

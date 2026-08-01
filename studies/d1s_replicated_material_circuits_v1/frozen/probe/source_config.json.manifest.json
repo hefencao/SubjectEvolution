@@ -1,0 +1,59 @@
+{
+  "schema": "structured-ecological-environment-config-v1",
+  "source": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/source_config.json",
+  "output": "studies/d1s_replicated_material_circuits_v1/frozen/probe/source_config.json",
+  "source_file_sha256": "77208a82874ae48cfcf2dec7ee6e28b8ba968bb0242591d65656400602357932",
+  "output_file_sha256": "ef504dc9a5f67ba702fd492f97c248b3a3a55fea986aefd816f99bef75c296ef",
+  "source_canonical_sha256": "8d490a36b9c713343a5eb7241241380a9e235239cfd54c569215c079ad46e252",
+  "output_canonical_sha256": "504571a7b590b448ed170be9e97b03bf7a6411ed0ceab1eab23ac14c6eb8006d",
+  "changed_paths": [
+    "environment.resource_province_radii",
+    "environment.resource_province_secondary_weight"
+  ],
+  "changes": {
+    "environment.resource_province_radii": {
+      "before": [
+        0.16,
+        0.18,
+        0.2,
+        0.17
+      ],
+      "after": [
+        0.184,
+        0.207,
+        0.23,
+        0.1955
+      ]
+    },
+    "environment.resource_province_secondary_weight": {
+      "before": null,
+      "after": 0.55
+    }
+  },
+  "genetic_coordinates_changed": 0,
+  "mutation_or_inheritance_changed": false,
+  "maintenance_or_reproduction_changed": false,
+  "role_or_group_label_reward_added": false,
+  "physical_structure": {
+    "resource_province_count": 4,
+    "source_circuit_copies_per_channel": 2,
+    "secondary_circuit_weight": 0.55,
+    "province_radius_scale": 1.15,
+    "global_channel_mean_preserved_by_normalization": true,
+    "processing_province_count": 4,
+    "processing_is_spatially_offset": true,
+    "complementary_recipe_count": 4,
+    "minimum_raw_channels_per_recipe": 2,
+    "raw_resource_exchange_enabled": true,
+    "group_function_diagnostics_enabled": true
+  },
+  "evidence_class": "environment-construction-not-qualification",
+  "authorization": {
+    "exploratory_parameter_probe_authorized": true,
+    "formal_multi_seed_structure_panel_authorized": true,
+    "single_run_gene_audit_authorized": false,
+    "formal_gene_audit_authorized": false,
+    "selection_claim_authorized": false
+  },
+  "interpretation_boundary": "This config creates physical opportunities and dependencies for transport, exchange and within-group functional differentiation. It does not preassign roles or prove that structured groups will emerge."
+}

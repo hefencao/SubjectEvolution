@@ -1,0 +1,60 @@
+{
+  "schema": "structured-environment-division-summary-v1",
+  "mode": "exploratory",
+  "source_root": "/mnt/data/d1s_probe_900",
+  "required_seed_count": 1,
+  "observed_seed_count": 1,
+  "seed_set_complete": true,
+  "runs": [
+    {
+      "run": "seed_100016",
+      "group_function_summary": "/mnt/data/d1s_probe_900/seed_100016/group_function_summary.json",
+      "environment_atlas_summary": "/mnt/data/d1s_probe_900/seed_100016/environment_atlas_summary.json",
+      "runtime_summary": "/mnt/data/d1s_probe_900/seed_100016/summary.json",
+      "resource_field_effective_dimensions": 2.679682709768464,
+      "resource_channel_mean_abs_correlation": 0.37149864921700987,
+      "region_signature_effective_dimensions": 3.085651046350799,
+      "region_signature_max_pairwise_distance": 1.1762323317667038,
+      "initial_population": 128,
+      "alive": 188,
+      "cumulative_births_per_initial": 2.015625,
+      "descendant_alive_fraction": 0.9148936170212766,
+      "population_substrate_ready": true,
+      "physical_heterogeneity_ready": true,
+      "persistent_division_candidate_count": 1,
+      "max_division_candidate_streak": 5,
+      "max_simultaneous_division_candidate_groups": 6,
+      "internal_raw_exchange_total": 133.5737691894585,
+      "within_group_division_ready": false
+    }
+  ],
+  "physical_heterogeneity_ready_seed_count": 1,
+  "population_substrate_ready_seed_count": 1,
+  "within_group_division_ready_seed_count": 0,
+  "multiple_structured_groups_seed_count": 1,
+  "environment_maturity_stage": "group-labels-without-within-group-division",
+  "environment_plurality_threshold_reached": false,
+  "evidence_class": "parameter-debug-only",
+  "authorization": {
+    "continue_environment_parameter_debugging": true,
+    "environment_plurality_claim": false,
+    "single_run_gene_audit": false,
+    "formal_gene_retention_audit": false,
+    "selection_or_adaptation_claim": false
+  },
+  "thresholds": {
+    "formal_minimum_seed_count": 3,
+    "resource_field_effective_dimensions_min": 1.75,
+    "region_signature_effective_dimensions_min": 1.5,
+    "region_signature_max_pairwise_distance_min": 0.2,
+    "persistent_division_candidate_windows_min": 2,
+    "all_formal_seeds_require_division": true,
+    "alive_fraction_to_initial_min": 0.5,
+    "cumulative_births_per_initial_min": 0.5,
+    "descendant_alive_fraction_min": 0.3,
+    "persistent_division_candidate_groups_min_per_seed": 2,
+    "all_formal_seeds_require_multiple_division_groups": true
+  },
+  "interpretation_boundary": "The threshold requires replicated physical heterogeneity, raw exchange and persistent within-group functional differentiation. It does not establish fixed roles, adaptation, selection, subjecthood, or permission for a single-round gene audit.",
+  "next_action": "adjust-only-shared-environment-exchange-or-processing-parameters-and-rerun-probes"
+}

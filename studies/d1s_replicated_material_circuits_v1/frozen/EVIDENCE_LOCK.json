@@ -1,0 +1,154 @@
+{
+  "schema": "frozen-evidence-lock-v1",
+  "study_id": "d1s_replicated_material_circuits_v1",
+  "source_result_bundle": {
+    "name": "d1r_structured_environment_division_v1_results.zip",
+    "sha256": "7998791a2cbd5ac7214d0367004854754d857e64e001d0f368ffdb56e678340f",
+    "formal_result": "threshold-not-reached",
+    "formal_seed_pass_count": 2,
+    "formal_seed_required_count": 3,
+    "reviewability_limit": "compact D1-R bundle omitted per-seed group windows, atlas summaries and evolution-progress rows; future bundles include them by default"
+  },
+  "parameter_debug": {
+    "evidence_class": "parameter-debug-only",
+    "selected_candidate": {
+      "secondary_circuit_weight": 0.55,
+      "province_radius_scale": 1.15
+    },
+    "completed_probe_seed": 100016,
+    "completed_probe_tick": 900,
+    "persistent_division_lineages": 1,
+    "max_simultaneous_division_candidates": 6,
+    "authorization": {
+      "formal_independent_panel_candidate": true,
+      "environment_plurality_claim": false,
+      "gene_audit": false,
+      "selection_or_adaptation_claim": false
+    }
+  },
+  "formal_gate": {
+    "minimum_alive_fraction_over_run": 0.5,
+    "minimum_effective_lineages_final": 4.0,
+    "persistent_division_group_lineages_per_seed": 2,
+    "all_independent_seeds_must_pass": true
+  },
+  "authorization": {
+    "prepare_candidate_config": true,
+    "formal_multi_seed_environment_panel": true,
+    "single_run_gene_audit": false,
+    "formal_gene_audit": false,
+    "selection_or_adaptation_claim": false
+  },
+  "files": [
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/RESULT_BUNDLE_MANIFEST.json",
+      "size": 6274,
+      "sha256": "db0069c8fe55bd99e88d54d63808a9d1737f6293f3d72b1c7963faa201e13fe2"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/formal_structure.json",
+      "size": 5305,
+      "sha256": "6405300fc88f5d8d1b231a7e40e345239e26267af775b71ae90f6b899cea1b9a"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/long_run_analysis.json",
+      "size": 283056,
+      "sha256": "2a12c932743e102cf46a4d9cd6fc83ca79125284a733a51c65fb1d13289d8ed0"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/multi_seed_index.json",
+      "size": 1616,
+      "sha256": "626e06825fb2eab3677104aedb6ee9e1bd38b8bfaaff5028d25a2eb7670f68e6"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/seed_97101/run_manifest.json",
+      "size": 14454,
+      "sha256": "5924490b1a8b0f25ea56c9363915a0f06b297b0bfbda931baf32033cf11b0f5b"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/seed_97101/summary.json",
+      "size": 43948,
+      "sha256": "79fc5360c8d3ca2056bd1747aa98b499bfc07c83432366aa59867edb64f764c8"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/seed_97102/run_manifest.json",
+      "size": 14454,
+      "sha256": "d50459d57e8a0c01db12aa0b35d715e1dbad4dc0cb4c891615c40f59da79bebd"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/seed_97102/summary.json",
+      "size": 43866,
+      "sha256": "87d079bbddd5eaef95f6859db1ce667b3f9e8aca0fd617d19a740092b14e776e"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/seed_97103/run_manifest.json",
+      "size": 14454,
+      "sha256": "101e9bf66f995ecdf910e79699661952204c751cf3d515f08597cb1ca3253a41"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/seed_97103/summary.json",
+      "size": 43980,
+      "sha256": "26f7362a00bb186bf44c3b65dee085cb1669d379521a01dd619dacd97e4e4d66"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/source_config.json",
+      "size": 16697,
+      "sha256": "77208a82874ae48cfcf2dec7ee6e28b8ba968bb0242591d65656400602357932"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/d1r/source_config.json.manifest.json",
+      "size": 9190,
+      "sha256": "5ff6b58ff4a4333f35c832acec12bb86958f306d1ee40c847bd24a5bbf851651"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/environment_atlas_summary.json",
+      "size": 33048,
+      "sha256": "7c51d11128ea5446529b8ecf21f9ae803e5e07a177e952b07d92bec427c73005"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/evolution_progress.jsonl",
+      "size": 250343,
+      "sha256": "b8dccff447dff79fd9023e19d1af482002a7373a6dad4aad99de3719416e4815"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/group_function_summary.json",
+      "size": 15800,
+      "sha256": "b111e736005b58c15273ca2286858433cbb18694c728ae547f6bfa38e4e48de8"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/group_function_windows.jsonl",
+      "size": 61146,
+      "sha256": "5bc8d391d513e8c114b9d4f2922f345b195a569e21a11cef76dea47cdf9e5f53"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/probe_structure.json",
+      "size": 2859,
+      "sha256": "02a307ce5bbf5a47f9a6f1bd19d19e214db1d573385528261cc7ac9100dfa940"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/resolved_config.json",
+      "size": 17570,
+      "sha256": "678c179be4cefc6eaa0efef6b133074b44c3919c15c9ec115ef1a7da478cf62d"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/run_manifest.json",
+      "size": 14319,
+      "sha256": "7747aa0290adbd10f1de6fb5c04dd7d9b573cc4c23887a53e995ba41d90aeb43"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/source_config.json",
+      "size": 16750,
+      "sha256": "ef504dc9a5f67ba702fd492f97c248b3a3a55fea986aefd816f99bef75c296ef"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/source_config.json.manifest.json",
+      "size": 2313,
+      "sha256": "fe9cab1c8d7ce79179de963e5d2db6bf7d1808850220e388c99f096fbe1a9420"
+    },
+    {
+      "path": "studies/d1s_replicated_material_circuits_v1/frozen/probe/summary.json",
+      "size": 43781,
+      "sha256": "6ede3bdffcc095537a3f44238ed10f5082148bed5ed0c9bae9066d1d21954577"
+    }
+  ]
+}

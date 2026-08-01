@@ -9,6 +9,7 @@ import numpy as np
 from se.analysis.environment_structure import build_report
 from se.cfg import load_config
 from se.cmd.study import load_workflow
+from se.env.diversity import resource_province_multiplier
 from se.experiments.d1_structured_environment import prepare
 from se.policy import Action, ParametricPolicy
 from se.runtime.resource_metabolism import settle_resource_metabolism
@@ -49,6 +50,53 @@ def test_structured_environment_generator_changes_only_shared_physical_substrate
     assert cfg.social.share_schema == "energy-and-raw-resource-need-balanced-v1"
     assert cfg.run.group_function_diagnostics_enabled
     assert report["authorization"]["single_run_gene_audit_authorized"] is False
+
+
+
+def test_secondary_circuit_weight_redistributes_without_adding_global_resource(
+    tmp_path: Path,
+) -> None:
+    default_output = tmp_path / "default.json"
+    mirrored_output = tmp_path / "mirrored.json"
+    prepare(template=TEMPLATE, output=default_output, ticks=2)
+    prepare(
+        template=TEMPLATE,
+        output=mirrored_output,
+        province_secondary_weight=0.75,
+        province_radius_scale=1.15,
+        ticks=2,
+    )
+    default_cfg = load_config(default_output)
+    mirrored_cfg = load_config(mirrored_output)
+    assert default_cfg.environment.resource_province_secondary_weight == 0.35
+    assert mirrored_cfg.environment.resource_province_secondary_weight == 0.75
+    assert mirrored_cfg.environment.resource_province_radii == (
+        0.184,
+        0.207,
+        0.23,
+        0.1955,
+    )
+
+    axis = np.linspace(0.0, 1.0, 128, endpoint=False, dtype=np.float64)
+    xnorm, ynorm = np.meshgrid(axis, axis, indexing="ij")
+    default = resource_province_multiplier(
+        default_cfg.environment, xnorm, ynorm, xp=np
+    )
+    mirrored = resource_province_multiplier(
+        mirrored_cfg.environment, xnorm, ynorm, xp=np
+    )
+    assert np.allclose(default.mean(axis=(1, 2)), 1.0, atol=1.0e-12)
+    assert np.allclose(mirrored.mean(axis=(1, 2)), 1.0, atol=1.0e-12)
+
+    primary = tuple(
+        int(round(value * 128)) % 128
+        for value in default_cfg.environment.resource_province_centers[0]
+    )
+    antipode = tuple((value + 64) % 128 for value in primary)
+    default_ratio = default[(0, *antipode)] / default[(0, *primary)]
+    mirrored_ratio = mirrored[(0, *antipode)] / mirrored[(0, *primary)]
+    assert mirrored_ratio > default_ratio
+    assert mirrored[(0, *primary)] < default[(0, *primary)]
 
 
 def test_complementary_recipe_requires_both_raw_channels(tmp_path: Path) -> None:
@@ -239,3 +287,71 @@ def test_d1r_workflow_keeps_auto_backend_and_no_gene_audit() -> None:
     assert "--skip-post-run-audits" in panel
     assert "gene-persistence" not in steps
     assert "paired" not in steps
+
+
+def test_formal_structure_can_require_bottleneck_and_lineage_breadth(
+    tmp_path: Path,
+) -> None:
+    for seed in (100101, 100102, 100103):
+        _write_formal_seed(tmp_path, seed)
+        rows = [
+            {
+                "tick": 120,
+                "alive": 96,
+                "effective_lineages": 12.0,
+                "largest_lineage_fraction": 0.12,
+            },
+            {
+                "tick": 1800,
+                "alive": 100,
+                "effective_lineages": 8.0,
+                "largest_lineage_fraction": 0.20,
+            },
+        ]
+        if seed == 100103:
+            rows[0]["alive"] = 40
+            rows[-1]["effective_lineages"] = 3.0
+        progress = tmp_path / f"seed_{seed}" / "evolution_progress.jsonl"
+        progress.write_text(
+            "".join(json.dumps(row) + "\n" for row in rows),
+            encoding="utf-8",
+        )
+
+    report = build_report(
+        source_root=tmp_path,
+        mode="formal",
+        required_seed_count=3,
+        min_alive_fraction_over_run=0.5,
+        min_effective_lineages_final=4.0,
+    )
+
+    assert report["environment_plurality_threshold_reached"] is False
+    assert report["environment_maturity_stage"] == "population-substrate-insufficient"
+    failed = next(row for row in report["runs"] if row["run"] == "seed_100103")
+    assert failed["minimum_alive_fraction_over_run"] == 0.3125
+    assert failed["bottleneck_ready"] is False
+    assert failed["lineage_breadth_ready"] is False
+    assert report["thresholds"]["effective_lineages_final_min"] == 4.0
+
+
+def test_d1s_workflow_adds_bottleneck_gate_without_gene_audit() -> None:
+    _, workflow = load_workflow("studies/d1s_replicated_material_circuits_v1")
+    steps = workflow["steps"]
+    assert set(steps) == {
+        "evidence-audit",
+        "prepare-config",
+        "environment-probe",
+        "probe-summary",
+        "structured-panel",
+        "structure-summary",
+        "pack-results",
+    }
+    formal = steps["structure-summary"]["command"]
+    assert "--min-alive-fraction-over-run" in formal
+    assert "--min-effective-lineages-final" in formal
+    rendered = " ".join(
+        token for step in steps.values() for token in step.get("command", [])
+    )
+    assert "gene-persistence" not in rendered
+    assert "paired" not in rendered
+    assert "candidate-ledger" not in rendered

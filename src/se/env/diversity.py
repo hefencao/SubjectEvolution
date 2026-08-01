@@ -148,7 +148,10 @@ def resource_province_multiplier(
         ynorm[None, :, :], secondary_centers[:, 1, None, None], xp
     )
     secondary = xp.exp(-(sx * sx + sy * sy) / (2.0 * radii * radii))
-    density = primary + 0.35 * secondary
+    density = (
+        primary
+        + float(environment.resource_province_secondary_weight) * secondary
+    )
     raw = (1.0 - contrasts) + contrasts * density
     means = xp.mean(raw, axis=(1, 2), keepdims=True)
     return raw / xp.maximum(means, 1.0e-12)

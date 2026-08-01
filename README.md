@@ -1,36 +1,35 @@
-# SE v0.97
+# SE v0.100
 
 Reference implementation for nested-subject existence and ecological evolution
 simulation.
 
 ## Current direction
 
-D1-Q is closed as a failed formal environment/demographic construction: the
-reported three-seed panel produced no passing seed. Its former executable
-genetic-retention steps have been removed. The project is not authorized to
-interpret coordinate thinning, run a one-round gene audit, or attach another
-isolated gene/environment pair.
+D1-R is closed as a formal threshold failure. Its three complete seeds all
+showed physical heterogeneity and real within-group raw-resource exchange, but
+only seeds 97101 and 97102 reproduced at least two persistent division-candidate
+groups. Seed 97103 did not, and its trajectory also passed through a deep
+population bottleneck with low final founder-lineage breadth. The result does
+not authorize a gene audit or social/evolutionary interpretation.
 
-D1-R first constructs an environment capable of producing structured dependence:
+D1-S continues environment construction rather than changing genes. It keeps
+the complete subject, complementary recipes, exchange rules, costs and group
+diagnostics unchanged while making two shared physical changes:
 
-- four separated and periodically forced raw-resource source provinces;
-- processing provinces displaced from source provinces;
-- complementary recipes that each require at least two raw channels;
-- bounded role-neutral raw-resource exchange;
-- exchange-supported social relations;
-- observational tracking of stable within-group harvesting, processing,
-  transport/exchange and coordination differences.
+- the antipodal material circuit for each resource channel becomes closer in
+  strength to the primary circuit;
+- all source and processing provinces are widened uniformly.
 
-A `group` label is not evidence of social structure. The minimum formal
-environment threshold is three viable independent seeds in which physical
-heterogeneity, real group-internal material exchange, and at least two persistent
-within-group division candidates are reproduced. This threshold still does not
-authorize gene analysis, adaptation or selection claims.
+Each channel is normalized after combining both circuits, so global mean
+material opportunity is unchanged. The aim is to create multiple independently
+reachable material loops capable of supporting more than one structured group,
+not to reward any genotype, lineage, group or role.
 
-The frozen D1-R seed 97011 is exploratory parameter-debug evidence only. It
-retains 91 entities at tick 600, produces five detected groups and one persistent
-division-candidate group lineage. It proves the new physical/exchange paths are
-active, but it does **not** pass the multiple-structured-group threshold.
+The formal threshold remains at least two persistent division-candidate group
+lineages in every independent seed. D1-S additionally rejects runs whose
+recorded population falls below half the initial population or whose final
+effective founder-lineage count is below four. A group label, a single
+successful seed, or a rebound of a few lineages is not environment plurality.
 
 ## Workspace layout
 
@@ -52,19 +51,18 @@ se-study config
 The pointer lives in ignored `.se-workspace.toml` and does not affect protocol
 identity or release artifacts.
 
-## D1-R workflow
+## D1-S workflow
 
 ```text
-se-study show studies/d1r_structured_environment_division_v1
-se-study run studies/d1r_structured_environment_division_v1 prepare-config --dry-run
-se-study run studies/d1r_structured_environment_division_v1 environment-probe --dry-run
-se-study run studies/d1r_structured_environment_division_v1 probe-summary --dry-run
-se-study run studies/d1r_structured_environment_division_v1 structured-panel --dry-run
-se-study run studies/d1r_structured_environment_division_v1 structure-summary --dry-run
+se-study show studies/d1s_replicated_material_circuits_v1
+se-study run studies/d1s_replicated_material_circuits_v1 evidence-audit
+se-study run studies/d1s_replicated_material_circuits_v1 prepare-config
+se-study run studies/d1s_replicated_material_circuits_v1 structured-panel --dry-run
+se-study run studies/d1s_replicated_material_circuits_v1 structure-summary --dry-run
 ```
 
-`environment-probe` is the only single-seed step and is restricted to parameter
-debugging. No gene-persistence, paired or candidate-ledger step is declared.
+`environment-probe` remains available only for simple parameter debugging. No
+gene-persistence, paired, selection or candidate-ledger step is declared.
 
 ## Validation and packaging
 
@@ -77,8 +75,8 @@ make conda-check
 make parity-gpu
 ```
 
-`make package` builds a disposable archive copy and keeps only the current v0.97
-iteration note. Local history under `docs/迭代/` remains untouched.
+`make package` builds a disposable archive copy and keeps only the current
+v0.100 iteration note. Local history under `docs/迭代/` remains untouched.
 
 ## Current documents
 
@@ -88,4 +86,4 @@ iteration note. Local history under `docs/迭代/` remains untouched.
 - [Governance principles](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.98 D1-R execution-fix iteration](docs/迭代/v0.98_D1-R_GPU延迟梯度与Workflow回归修复.md)
+- [v0.100 D1-S iteration](docs/迭代/v0.100_D1-S_重复物质回路与瓶颈感知环境资格.md)

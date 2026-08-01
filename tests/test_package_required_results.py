@@ -17,6 +17,15 @@ def test_compact_bundle_is_deterministic_and_omits_checkpoints(tmp_path: Path) -
     (study / "DESIGN.md").write_text("design\n", encoding="utf-8")
     (analysis / "paired_results.json").write_text("{}\n", encoding="utf-8")
     (runtime / "resolved_config.json").write_text("{}\n", encoding="utf-8")
+    (runtime / "evolution_progress.jsonl").write_text(
+        '{"tick": 1, "alive": 1}\n', encoding="utf-8"
+    )
+    (runtime / "group_function_summary.json").write_text(
+        '{"persistent_division_lineage_count": 0}\n', encoding="utf-8"
+    )
+    (runtime / "environment_atlas_summary.json").write_text(
+        '{"last": {"scales": []}}\n', encoding="utf-8"
+    )
     (runtime / "checkpoint_00000001.sechk").write_bytes(b"checkpoint")
     external = tmp_path.parent / f"{tmp_path.name}_results"
     first = external / "first.zip"
@@ -37,6 +46,9 @@ def test_compact_bundle_is_deterministic_and_omits_checkpoints(tmp_path: Path) -
         assert "studies/demo/DESIGN.md" in names
         assert "analyses/demo/paired_results.json" in names
         assert "runs/base/demo/seed_1/resolved_config.json" in names
+        assert "runs/base/demo/seed_1/evolution_progress.jsonl" in names
+        assert "runs/base/demo/seed_1/group_function_summary.json" in names
+        assert "runs/base/demo/seed_1/environment_atlas_summary.json" in names
         assert not any(name.endswith(".sechk") for name in names)
         manifest = json.loads(archive.read("RESULT_BUNDLE_MANIFEST.json"))
         assert manifest["capability"] == "result-review-and-next-step-planning"

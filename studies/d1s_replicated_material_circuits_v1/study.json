@@ -1,0 +1,26 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1s_replicated_material_circuits_v1",
+  "title": "D1-S replicated material circuits and bottleneck-aware environment qualification",
+  "status": "active-environment-construction",
+  "scientific_stage": "replicated-structured-environment-before-genetic-audit",
+  "formal_seed_count": 3,
+  "formal_seeds": [
+    100101,
+    100102,
+    100103
+  ],
+  "predecessor": {
+    "study_id": "d1r_structured_environment_division_v1",
+    "formal_result": "threshold-not-reached",
+    "passing_seed_count": 2,
+    "required_seed_count": 3
+  },
+  "authorization": {
+    "exploratory_single_seed_environment_debugging": true,
+    "formal_multi_seed_environment_structure_panel": true,
+    "single_run_gene_audit": false,
+    "formal_gene_audit": false,
+    "selection_or_adaptation_claim": false
+  }
+}

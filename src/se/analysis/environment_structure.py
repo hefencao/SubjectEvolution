@@ -67,11 +67,51 @@ def _atlas_metrics(path: Path | None) -> dict[str, float]:
     }
 
 
+def _progress_metrics(path: Path | None) -> dict[str, Any]:
+    if path is None or not path.exists():
+        return {
+            "progress_evidence_available": False,
+            "minimum_alive_over_run": None,
+            "effective_lineages_final": None,
+            "largest_lineage_fraction_final": None,
+        }
+    minimum_alive: int | None = None
+    final: dict[str, Any] | None = None
+    with path.open("r", encoding="utf-8") as stream:
+        for line in stream:
+            text = line.strip()
+            if not text:
+                continue
+            row = json.loads(text)
+            if not isinstance(row, dict):
+                raise ValueError(f"expected progress JSON object: {path}")
+            alive = int(row.get("alive", 0))
+            minimum_alive = alive if minimum_alive is None else min(minimum_alive, alive)
+            final = row
+    if final is None or minimum_alive is None:
+        return {
+            "progress_evidence_available": False,
+            "minimum_alive_over_run": None,
+            "effective_lineages_final": None,
+            "largest_lineage_fraction_final": None,
+        }
+    return {
+        "progress_evidence_available": True,
+        "minimum_alive_over_run": minimum_alive,
+        "effective_lineages_final": float(final.get("effective_lineages", 0.0)),
+        "largest_lineage_fraction_final": float(
+            final.get("largest_lineage_fraction", 1.0)
+        ),
+    }
+
+
 def build_report(
     *,
     source_root: str | Path,
     mode: str,
     required_seed_count: int,
+    min_alive_fraction_over_run: float | None = None,
+    min_effective_lineages_final: float | None = None,
 ) -> dict[str, Any]:
     root = Path(source_root)
     if mode not in {"exploratory", "formal"}:
@@ -80,6 +120,14 @@ def build_report(
         raise ValueError("required_seed_count must be positive")
     if mode == "formal" and int(required_seed_count) < 3:
         raise ValueError("formal environment structure evidence requires at least three seeds")
+    if min_alive_fraction_over_run is not None and not (
+        0.0 < float(min_alive_fraction_over_run) <= 1.0
+    ):
+        raise ValueError("min_alive_fraction_over_run must be in (0, 1]")
+    if min_effective_lineages_final is not None and float(
+        min_effective_lineages_final
+    ) <= 0.0:
+        raise ValueError("min_effective_lineages_final must be positive")
 
     group_files = sorted(root.rglob("group_function_summary.json"))
     runs: list[dict[str, Any]] = []
@@ -88,7 +136,9 @@ def build_report(
         atlas_path = group_path.with_name("environment_atlas_summary.json")
         summary_path = group_path.with_name("summary.json")
         config_path = group_path.with_name("resolved_config.json")
+        progress_path = group_path.with_name("evolution_progress.jsonl")
         atlas = _atlas_metrics(atlas_path if atlas_path.exists() else None)
+        progress = _progress_metrics(progress_path if progress_path.exists() else None)
         runtime = _load(summary_path) if summary_path.exists() else {}
         config = _load(config_path) if config_path.exists() else {}
         initial_population = int(
@@ -136,11 +186,35 @@ def build_report(
             and max_simultaneous >= 2
             and exchange_total > 1.0e-6
         )
+        minimum_alive = progress["minimum_alive_over_run"]
+        minimum_alive_fraction = (
+            float(minimum_alive) / initial_population
+            if initial_population > 0 and minimum_alive is not None
+            else None
+        )
+        bottleneck_ready = bool(
+            min_alive_fraction_over_run is None
+            or (
+                progress["progress_evidence_available"]
+                and minimum_alive_fraction is not None
+                and minimum_alive_fraction >= float(min_alive_fraction_over_run)
+            )
+        )
+        lineage_breadth_ready = bool(
+            min_effective_lineages_final is None
+            or (
+                progress["progress_evidence_available"]
+                and float(progress["effective_lineages_final"] or 0.0)
+                >= float(min_effective_lineages_final)
+            )
+        )
         population_ready = bool(
             initial_population > 0
             and alive >= 0.5 * initial_population
             and births_per_initial >= 0.5
             and descendant_fraction >= 0.30
+            and bottleneck_ready
+            and lineage_breadth_ready
         )
         runs.append(
             {
@@ -148,11 +222,18 @@ def build_report(
                 "group_function_summary": str(group_path),
                 "environment_atlas_summary": str(atlas_path) if atlas_path.exists() else None,
                 "runtime_summary": str(summary_path) if summary_path.exists() else None,
+                "evolution_progress": (
+                    str(progress_path) if progress_path.exists() else None
+                ),
                 **atlas,
+                **progress,
                 "initial_population": initial_population,
                 "alive": alive,
                 "cumulative_births_per_initial": births_per_initial,
                 "descendant_alive_fraction": descendant_fraction,
+                "minimum_alive_fraction_over_run": minimum_alive_fraction,
+                "bottleneck_ready": bottleneck_ready,
+                "lineage_breadth_ready": lineage_breadth_ready,
                 "population_substrate_ready": population_ready,
                 "physical_heterogeneity_ready": physical_ready,
                 "persistent_division_candidate_count": persistent_count,
@@ -233,6 +314,8 @@ def build_report(
             "alive_fraction_to_initial_min": 0.5,
             "cumulative_births_per_initial_min": 0.5,
             "descendant_alive_fraction_min": 0.30,
+            "minimum_alive_fraction_over_run": min_alive_fraction_over_run,
+            "effective_lineages_final_min": min_effective_lineages_final,
             "persistent_division_candidate_groups_min_per_seed": 2,
             "all_formal_seeds_require_multiple_division_groups": True,
         },
@@ -254,12 +337,16 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--source-root", required=True)
     parser.add_argument("--mode", choices=["exploratory", "formal"], required=True)
     parser.add_argument("--required-seed-count", type=int, required=True)
+    parser.add_argument("--min-alive-fraction-over-run", type=float)
+    parser.add_argument("--min-effective-lineages-final", type=float)
     parser.add_argument("--output", required=True)
     args = parser.parse_args(argv)
     report = build_report(
         source_root=args.source_root,
         mode=args.mode,
         required_seed_count=args.required_seed_count,
+        min_alive_fraction_over_run=args.min_alive_fraction_over_run,
+        min_effective_lineages_final=args.min_effective_lineages_final,
     )
     destination = Path(args.output)
     destination.parent.mkdir(parents=True, exist_ok=True)

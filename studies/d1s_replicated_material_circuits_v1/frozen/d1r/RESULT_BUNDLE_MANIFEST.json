@@ -1,0 +1,151 @@
+{
+  "schema": "se-required-result-bundle-v1",
+  "study_root": "studies/d1r_structured_environment_division_v1",
+  "include_checkpoints": false,
+  "capability": "result-review-and-next-step-planning",
+  "files": [
+    {
+      "path": "analyses/d1r_structured_environment_division_v1/formal_structure.json",
+      "size": 5305,
+      "sha256": "6405300fc88f5d8d1b231a7e40e345239e26267af775b71ae90f6b899cea1b9a"
+    },
+    {
+      "path": "runs/base/d1r_structured_environment_division_v1/panel/long_run_analysis.json",
+      "size": 283056,
+      "sha256": "2a12c932743e102cf46a4d9cd6fc83ca79125284a733a51c65fb1d13289d8ed0"
+    },
+    {
+      "path": "runs/base/d1r_structured_environment_division_v1/panel/long_run_analysis.md",
+      "size": 35922,
+      "sha256": "0a94bf43b57664c19ca228b463e231ba715761cc72798dcfa679cc4368f368f2"
+    },
+    {
+      "path": "runs/base/d1r_structured_environment_division_v1/panel/multi_seed_index.json",
+      "size": 1616,
+      "sha256": "626e06825fb2eab3677104aedb6ee9e1bd38b8bfaaff5028d25a2eb7670f68e6"
+    },
+    {
+      "path": "runs/base/d1r_structured_environment_division_v1/panel/seed_97101/resolved_config.json",
+      "size": 17518,
+      "sha256": "d950ce2c999b3ab33df8f8b84c7a796d936cfbafcf8cc07286623fbbbdbf7bba"
+    },
+    {
+      "path": "runs/base/d1r_structured_environment_division_v1/panel/seed_97101/run_manifest.json",
+      "size": 14454,
+      "sha256": "5924490b1a8b0f25ea56c9363915a0f06b297b0bfbda931baf32033cf11b0f5b"
+    },
+    {
+      "path": "runs/base/d1r_structured_environment_division_v1/panel/seed_97101/summary.json",
+      "size": 43948,
+      "sha256": "79fc5360c8d3ca2056bd1747aa98b499bfc07c83432366aa59867edb64f764c8"
+    },
+    {
+      "path": "runs/base/d1r_structured_environment_division_v1/panel/seed_97102/resolved_config.json",
+      "size": 17518,
+      "sha256": "6091ec327b50d8794a75fe21e9788f0122352c1b41b592540c334b468a68c95d"
+    },
+    {
+      "path": "runs/base/d1r_structured_environment_division_v1/panel/seed_97102/run_manifest.json",
+      "size": 14454,
+      "sha256": "d50459d57e8a0c01db12aa0b35d715e1dbad4dc0cb4c891615c40f59da79bebd"
+    },
+    {
+      "path": "runs/base/d1r_structured_environment_division_v1/panel/seed_97102/summary.json",
+      "size": 43866,
+      "sha256": "87d079bbddd5eaef95f6859db1ce667b3f9e8aca0fd617d19a740092b14e776e"
+    },
+    {
+      "path": "runs/base/d1r_structured_environment_division_v1/panel/seed_97103/resolved_config.json",
+      "size": 17518,
+      "sha256": "3ab997b4889fc1aeb0c784fa436134e787e524fd994639b4b77c9117de8e5e51"
+    },
+    {
+      "path": "runs/base/d1r_structured_environment_division_v1/panel/seed_97103/run_manifest.json",
+      "size": 14454,
+      "sha256": "101e9bf66f995ecdf910e79699661952204c751cf3d515f08597cb1ca3253a41"
+    },
+    {
+      "path": "runs/base/d1r_structured_environment_division_v1/panel/seed_97103/summary.json",
+      "size": 43980,
+      "sha256": "26f7362a00bb186bf44c3b65dee085cb1669d379521a01dd619dacd97e4e4d66"
+    },
+    {
+      "path": "state/studies/d1r_structured_environment_division_v1/structured_environment.json",
+      "size": 16697,
+      "sha256": "77208a82874ae48cfcf2dec7ee6e28b8ba968bb0242591d65656400602357932"
+    },
+    {
+      "path": "state/studies/d1r_structured_environment_division_v1/structured_environment.json.manifest.json",
+      "size": 9190,
+      "sha256": "5ff6b58ff4a4333f35c832acec12bb86958f306d1ee40c847bd24a5bbf851651"
+    },
+    {
+      "path": "studies/d1r_structured_environment_division_v1/DESIGN.md",
+      "size": 2074,
+      "sha256": "cb194da1f3ffb27507c5fe445944dce14ceef0a985ae3e7339fdd2be1130207a"
+    },
+    {
+      "path": "studies/d1r_structured_environment_division_v1/README.md",
+      "size": 1528,
+      "sha256": "45da5d4d25f7183a33b2408af6cc48f8b3b8adf3ca7107ec6f4004590e423108"
+    },
+    {
+      "path": "studies/d1r_structured_environment_division_v1/frozen/base/source_config.json",
+      "size": 14572,
+      "sha256": "06fab839934b0428bd0dac191d5a6ec37557c91c2c70475abeb550f248b52de0"
+    },
+    {
+      "path": "studies/d1r_structured_environment_division_v1/frozen/base/source_config.json.manifest.json",
+      "size": 2104,
+      "sha256": "9ca43b71339d8fd8563084766f18481224ca9f9db7e10f1d4e7951c0cd53ee98"
+    },
+    {
+      "path": "studies/d1r_structured_environment_division_v1/frozen/probe/EXPLORATORY_PROBE_LOCK.json",
+      "size": 1787,
+      "sha256": "b731ab6dc2d05d7225d70e3525fa47d7fc16e37b0372d2e32730866ee4a6db4b"
+    },
+    {
+      "path": "studies/d1r_structured_environment_division_v1/frozen/probe/environment_atlas_summary.json",
+      "size": 33053,
+      "sha256": "448c0ed6b1e3ccd891f066e655408270dbf1d16fb098b15512f3f84a3fcffd65"
+    },
+    {
+      "path": "studies/d1r_structured_environment_division_v1/frozen/probe/group_function_summary.json",
+      "size": 15278,
+      "sha256": "c29395097baff1ef837d3f828d21cfc97a08568457291ca0ed7df60317ba62e6"
+    },
+    {
+      "path": "studies/d1r_structured_environment_division_v1/frozen/probe/probe_structure.json",
+      "size": 2976,
+      "sha256": "626c63b1ee6e3b3ad4fcf4405478f4c358dead0cbf6910b4e1e343272c7fbc50"
+    },
+    {
+      "path": "studies/d1r_structured_environment_division_v1/frozen/probe/source_config.json",
+      "size": 16697,
+      "sha256": "77208a82874ae48cfcf2dec7ee6e28b8ba968bb0242591d65656400602357932"
+    },
+    {
+      "path": "studies/d1r_structured_environment_division_v1/frozen/probe/source_config.json.manifest.json",
+      "size": 9190,
+      "sha256": "5ff6b58ff4a4333f35c832acec12bb86958f306d1ee40c847bd24a5bbf851651"
+    },
+    {
+      "path": "studies/d1r_structured_environment_division_v1/frozen/probe/summary.json",
+      "size": 43732,
+      "sha256": "4fef29c782b0ee0b5349bde6a33263c75da93d0b7816af96a69b46fd1f323c5d"
+    },
+    {
+      "path": "studies/d1r_structured_environment_division_v1/study.json",
+      "size": 607,
+      "sha256": "19b6dc3085c4b2787d4a80fd05dd7eb31087d560ec267f5cd5210dc5a75e8fb6"
+    },
+    {
+      "path": "studies/d1r_structured_environment_division_v1/workflow.toml",
+      "size": 5691,
+      "sha256": "02ba6514d49a2f077a932b6ec83c8b747681f41a3d2c2aef887aaf324306e3fa"
+    }
+  ],
+  "omitted": [
+    "checkpoint bytes (*.sechk); hashes remain in paired plans/results"
+  ]
+}

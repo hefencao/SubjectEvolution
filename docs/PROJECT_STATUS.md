@@ -1,110 +1,93 @@
 # SE project status
 
-Version: **0.99.0**
+Version: **0.100.0**
 
 ## Current scientific task
 
-Version 0.99 is an engineering-only history-boundary repair. Local iteration
-history and retired study material may remain in the working tree and must not
-make `make test` fail. Clean-project archive rules are applied only to the
-disposable archive copy, which retains exactly the current iteration note. No
-D1-R scientific parameter or authorization changed.
+D1-R is formally closed as `threshold-not-reached`. All three seeds completed
+tick 1800 and showed physical heterogeneity plus real within-group raw-resource
+exchange, but the preregistered social-structure criterion was reproduced in
+only two seeds:
 
-## Engineering execution status
+- seed 97101: two persistent division-candidate group lineages;
+- seed 97102: two persistent division-candidate group lineages;
+- seed 97103: no lineage persistent across two windows.
 
-The D1-R formal workflow remains scientifically unchanged. Version 0.98 repairs
-the hybrid GPU execution boundary used by `backend=auto`: adaptive group refresh
-may become due after policy preparation when same-tick deaths or relation changes
-dirty social topology. The GPU runtime now retains the already computed
-policy-time resource gradient and materializes it on the host only when that late
-refresh actually occurs. The workflow is not forced to CPU, and ordinary GPU
-steps do not gain an unconditional gradient transfer.
+The third seed also passed through a deep demographic bottleneck (42 alive from
+128 initial), finished with about 3.03 effective founder lineages and had one
+lineage represent about 44.3% of the final population. D1-R therefore does not
+show a replicated environment capable of supporting multiple structured groups.
+It authorizes neither gene audit nor adaptation, selection, niche, social-role
+or subjecthood interpretation.
 
-The complete `make test` architecture gate remains active. The fix was kept out
-of additional `runtime/sim.py` growth rather than weakening the `<2500` line
-contract.
+The active task is D1-S: increase the number and accessibility of independent
+material-processing circuits while preserving role neutrality and total mean
+material opportunity.
 
-The active task is environment maturity, not genetic retention. The environment
-must first generate replicated, viable and structured social dependence. A
-trust-connected component or `group` label alone is explicitly below the
-threshold.
+## D1-S shared physical change
 
-D1-Q is retired. The user-reported formal panel had no passing seed, so its pilot
-qualification does not authorize retention interpretation, coordinate changes or
-another equilibrium audit loop. Former executable genetic-retention steps were
-removed from the D1-Q workflow.
+D1-S keeps the complete inherited subject and all D1-R mechanisms unchanged. It
+changes only two environmental geometry parameters:
 
-## D1-R environment substrate
+1. the antipodal resource circuit weight rises from 0.35 to 0.55;
+2. all source and processing province radii are uniformly scaled by 1.15.
 
-D1-R preserves the existing complete inherited subject and changes only shared
-physical, exchange and observational infrastructure:
+Each resource-channel field is normalized after the primary and antipodal
+circuits are combined. The global mean external material opportunity therefore
+remains unchanged. No resource channel, recipe, exchange rule, group threshold,
+gene, mutation rate, maintenance cost, reproduction rule, lineage protection or
+role reward changes.
 
-1. four raw resources have separated periodic source provinces;
-2. processing provinces are spatially displaced from source provinces;
-3. direct per-channel body effects are removed in the D1-R config;
-4. every body-producing recipe consumes at least two raw channels;
-5. raw material can be transferred by SHARE according only to donor surplus and
-   receiver storage room;
-6. successful exchange supports the existing uniformly decaying relation graph;
-7. group-internal functions are recorded without feeding back into action,
-   grouping, reproduction or fitness.
+A completed exploratory seed at tick 900 showed viable turnover, strong physical
+heterogeneity, real internal exchange, up to six simultaneous division
+candidates and one persistent group lineage. It is frozen as
+`parameter-debug-only`; it does not qualify the environment.
 
-No inherited coordinate, mutation rate, maintenance cost, reproduction rule,
-profession, group reward or protected genotype is added.
+## Formal D1-S gate
 
-## Exploratory probe status
+Formal seeds are `100101,100102,100103`, each through tick 1800. Every seed must
+satisfy all existing D1-R physical and group-division criteria plus:
 
-Frozen exploratory seed 97011 reaches tick 600 with:
-
-- alive: 91 from 128 initial;
-- cumulative births per initial: 0.922;
-- living descendant fraction: 0.648;
-- detected groups: 5;
-- grouped fraction: 0.451;
-- internal raw-resource exchange: 27.379 total;
-- resource-field effective dimensions: 3.085;
-- region-signature effective dimensions: 3.747;
-- persistent division-candidate group lineages: 1;
-- maximum simultaneous division candidates in one window: 3.
-
-This is parameter-debug evidence. It verifies physical heterogeneity, exchange,
-group formation and one persistent division candidate, but fails the required
-minimum of two persistent structured groups. It is not formal environment
-qualification.
-
-## Formal environment threshold
-
-D1-R formal evidence requires three independent seeds 97101--97103. Every seed
-must retain a viable multi-generation population and show:
-
-- nontrivial multi-axis physical heterogeneity;
-- real group-internal raw-resource exchange;
+- minimum recorded alive population / initial population >= 0.50;
+- final effective founder lineages >= 4.0;
 - at least two persistent division-candidate group lineages;
-- at least two simultaneous division candidates in a diagnostic window.
+- at least two simultaneous division candidates in a diagnostic window;
+- nonzero real within-group raw-resource exchange.
 
-A division candidate requires a stable core of at least six members, high member
-participation, multidimensional and specialized realized activity, multiple
-active recipes, internal exchange and nontrivial dependence on exchanged raw
-material. Group continuity is matched by stable-member overlap rather than by a
-root-derived group token.
+All three seeds must pass. Thresholds are fixed before formal execution and may
+not be relaxed after observing results. A failed formal seed returns the project
+to shared-environment debugging; it does not authorize a gene-level correction.
+
+## Engineering changes
+
+- `resource_province_secondary_weight` is configurable with a disabled-default
+  compatibility value of 0.35.
+- D1-S config generation can uniformly scale province radii and records both
+  geometry changes in the manifest.
+- `se-environment-structure-summary` can apply optional whole-run bottleneck and
+  final lineage-breadth gates from `evolution_progress.jsonl`.
+- Compact result bundles now include evolution progress, group windows, group
+  summaries, environment-atlas rows/summaries, termination and scientific
+  validity metadata by default.
+- Frozen predecessor and parameter-debug files are verified by exact size and
+  SHA-256 before D1-S config generation.
+- D1-R historical workflow and evidence remain available, but its study status
+  is closed and its formal-panel authorization is false.
 
 ## Authorization
 
 Authorized:
 
-- short single-seed probes solely for shared environment/exchange/processing
-  parameter debugging;
-- one unchanged three-seed formal structured-environment panel;
-- observational environment-structure summary and external result packaging.
+- simple single-seed probes solely for debugging shared environmental geometry;
+- one unchanged three-seed D1-S formal structured-environment panel;
+- observational physical, demographic and group-structure summaries;
+- external result packaging without checkpoints by default.
 
 Not authorized:
 
-- any single-run or formal gene-retention audit;
+- single-run or formal gene-retention audit;
 - changing a gene because it is thin, rare or absent;
-- adding one gene and one matching environment per iteration;
-- paired mechanism experiments, candidate ledger or selection estimates;
-- adaptation, ecological-role, social-role, niche or subjecthood claims.
-
-Even a passing D1-R environment threshold only authorizes freezing the
-structured environment and designing a later separate multi-generation genetic
-study. It does not automatically authorize that study in v0.98.
+- paired mechanism experiments or candidate-ledger restart;
+- genotype-, lineage-, group- or role-specific support;
+- adaptation, selection, ecological-role, social-role, niche or subjecthood
+  conclusions.

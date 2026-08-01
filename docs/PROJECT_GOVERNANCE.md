@@ -11,6 +11,14 @@ differentiation. Group labels, transient action differences and a single good
 seed are insufficient. Single-seed analysis is restricted to shared environment
 parameter debugging and can never authorize a gene change.
 
+## v0.100 check
+
+- D1-R formal evidence is complete but fails because only two of three seeds reproduce multiple persistent division-candidate groups.
+- Seed 97103 also crosses a deep population bottleneck and ends with insufficient founder-lineage breadth; its rebound cannot be treated as replicated social structure.
+- D1-S changes only shared material-circuit geometry, preserves per-channel global mean opportunity, and adds no role, genotype or group support.
+- The formal division threshold is unchanged. Whole-run minimum population and final effective-lineage gates are added before the new formal seeds run.
+- Single-seed probes remain parameter-debug evidence only; no genetic workflow step is restored.
+
 ## v0.97 check
 
 - The reported D1-Q formal panel has no passing seed; D1-Q genetic-retention

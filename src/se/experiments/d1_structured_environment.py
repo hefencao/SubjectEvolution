@@ -40,6 +40,8 @@ def prepare(
     template: str | Path,
     output: str | Path,
     regeneration: float = 0.015,
+    province_secondary_weight: float | None = None,
+    province_radius_scale: float | None = None,
     processing_amplitude: float = 0.65,
     resource_share_amount: float = 0.12,
     recipe_rate_scale: float = 1.0,
@@ -58,6 +60,14 @@ def prepare(
         raise ValueError("D1-R requires the integrated multiscale four-resource baseline")
     if float(regeneration) <= 0.0:
         raise ValueError("regeneration must be positive")
+    if province_secondary_weight is not None and not (
+        0.0 <= float(province_secondary_weight) <= 1.0
+    ):
+        raise ValueError("province secondary weight must be in [0, 1]")
+    if province_radius_scale is not None and not (
+        0.5 <= float(province_radius_scale) <= 2.0
+    ):
+        raise ValueError("province radius scale must be in [0.5, 2.0]")
     if not 0.0 < float(processing_amplitude) < 1.0:
         raise ValueError("processing amplitude must be in (0, 1)")
     if float(resource_share_amount) <= 0.0:
@@ -112,8 +122,18 @@ def prepare(
         "environment.resource_province_centers",
         [[0.18, 0.18], [0.82, 0.22], [0.24, 0.80], [0.78, 0.76]],
     )
-    change("environment.resource_province_radii", [0.16, 0.18, 0.20, 0.17])
+    base_radii = [0.16, 0.18, 0.20, 0.17]
+    radius_scale = 1.0 if province_radius_scale is None else float(province_radius_scale)
+    change(
+        "environment.resource_province_radii",
+        [round(value * radius_scale, 12) for value in base_radii],
+    )
     change("environment.resource_province_contrasts", [0.85, 0.82, 0.80, 0.84])
+    if province_secondary_weight is not None:
+        change(
+            "environment.resource_province_secondary_weight",
+            float(province_secondary_weight),
+        )
     change(
         "environment.resource_processing_province_offsets",
         [[0.28, 0.20], [-0.24, 0.26], [0.26, -0.22], [-0.28, -0.24]],
@@ -190,6 +210,7 @@ def prepare(
         "environment.resource_province_centers",
         "environment.resource_province_radii",
         "environment.resource_province_contrasts",
+        "environment.resource_province_secondary_weight",
         "environment.resource_processing_province_offsets",
         "environment.resource_processing_schema",
         "environment.resource_processing_support_amplitude",
@@ -236,6 +257,12 @@ def prepare(
         "role_or_group_label_reward_added": False,
         "physical_structure": {
             "resource_province_count": 4,
+            "source_circuit_copies_per_channel": 2,
+            "secondary_circuit_weight": float(
+                cfg.environment.resource_province_secondary_weight
+            ),
+            "province_radius_scale": radius_scale,
+            "global_channel_mean_preserved_by_normalization": True,
             "processing_province_count": 4,
             "processing_is_spatially_offset": True,
             "complementary_recipe_count": 4,
@@ -271,6 +298,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--template", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--regeneration", type=float, default=0.015)
+    parser.add_argument("--province-secondary-weight", type=float, default=None)
+    parser.add_argument("--province-radius-scale", type=float, default=None)
     parser.add_argument("--processing-amplitude", type=float, default=0.65)
     parser.add_argument("--resource-share-amount", type=float, default=0.12)
     parser.add_argument("--recipe-rate-scale", type=float, default=1.0)
@@ -284,6 +313,8 @@ def main(argv: list[str] | None = None) -> None:
                 template=args.template,
                 output=args.output,
                 regeneration=args.regeneration,
+                province_secondary_weight=args.province_secondary_weight,
+                province_radius_scale=args.province_radius_scale,
                 processing_amplitude=args.processing_amplitude,
                 resource_share_amount=args.resource_share_amount,
                 recipe_rate_scale=args.recipe_rate_scale,

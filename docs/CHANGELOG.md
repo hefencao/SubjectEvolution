@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.100.0
+
+- Freezes the supplied D1-R formal result as threshold-not-reached: all three seeds complete tick 1800, but only two reproduce at least two persistent within-group division candidates.
+- Records the deep bottleneck and low final lineage breadth of seed 97103 as a confound that blocks social-structure replication and all gene-level interpretation.
+- Adds configurable antipodal resource-circuit weight and uniform province-radius scaling while preserving the normalized per-channel global mean material opportunity.
+- Introduces D1-S with stronger replicated material circuits, new independent seeds and unchanged genes, recipes, exchange rules, costs, group thresholds and formal division criteria.
+- Adds optional whole-run minimum-population and final effective-lineage gates to the environment-structure summary.
+- Extends compact result packaging to include evolution progress, group windows/summaries, environment-atlas evidence, termination and scientific-validity metadata by default.
+- Adds exact size/SHA-256 verification for frozen predecessor and parameter-debug evidence.
+- Closes D1-R formal-panel authorization and declares no gene-retention, paired, selection or candidate-ledger workflow in D1-S.
+- Updates project version to 0.100.0.
+
+
 ## 0.99.0
 
 - Scopes current-iteration placement checks to the current version while allowing local historical documentation to remain.

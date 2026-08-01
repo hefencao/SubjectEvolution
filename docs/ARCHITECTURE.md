@@ -1,5 +1,24 @@
 # SE architecture
 
+## D1-S replicated material-circuit boundary
+
+```text
+primary source/processing circuit per channel
+        + configurable antipodal circuit
+        ↓ combine and normalize to unchanged channel mean
+uniformly widened source and processing provinces
+        ↓
+multiple independently reachable but complementary material loops
+        ↓ unchanged exchange, relation and group-function diagnostics
+whole-run bottleneck + final lineage-breadth gate
+        ↓ unchanged multi-group persistence gate
+```
+
+`EnvironmentConfig.resource_province_secondary_weight` defaults to 0.35, preserving the prior structured-environment field when older configs omit it. D1-S sets 0.55 and scales all province radii by 1.15 through `se-structured-environment-config`. The field generator normalizes each channel after combining primary and antipodal components, so the change affects spatial opportunity distribution rather than the global mean external supply.
+
+`se-environment-structure-summary` optionally reads `evolution_progress.jsonl` and applies a whole-run minimum-population fraction plus final effective-lineage threshold before a run can count as population-ready. These checks are analysis-only and cannot affect simulation state. Result packaging retains progress, group windows and atlas evidence without checkpoints by default.
+
+
 ## Hybrid GPU late group-refresh boundary
 
 ```text
@@ -154,6 +173,25 @@ establish stable ecological niches, because coexistence, removal and map-scale
 tests remain outstanding.
 
 # SE architecture
+
+## D1-S replicated material-circuit boundary
+
+```text
+primary source/processing circuit per channel
+        + configurable antipodal circuit
+        ↓ combine and normalize to unchanged channel mean
+uniformly widened source and processing provinces
+        ↓
+multiple independently reachable but complementary material loops
+        ↓ unchanged exchange, relation and group-function diagnostics
+whole-run bottleneck + final lineage-breadth gate
+        ↓ unchanged multi-group persistence gate
+```
+
+`EnvironmentConfig.resource_province_secondary_weight` defaults to 0.35, preserving the prior structured-environment field when older configs omit it. D1-S sets 0.55 and scales all province radii by 1.15 through `se-structured-environment-config`. The field generator normalizes each channel after combining primary and antipodal components, so the change affects spatial opportunity distribution rather than the global mean external supply.
+
+`se-environment-structure-summary` optionally reads `evolution_progress.jsonl` and applies a whole-run minimum-population fraction plus final effective-lineage threshold before a run can count as population-ready. These checks are analysis-only and cannot affect simulation state. Result packaging retains progress, group windows and atlas evidence without checkpoints by default.
+
 
 ## D1-R structured environment and observational division boundary
 

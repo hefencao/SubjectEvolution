@@ -155,6 +155,10 @@ class EnvironmentConfig:
     resource_province_contrasts: tuple[float, float, float, float] = (
         0.85, 0.82, 0.80, 0.84
     )
+    # Relative intensity of the role-neutral antipodal source/processing copy.
+    # D1-R used 0.35.  Raising it redistributes the same global channel mean
+    # across multiple equivalent circuits instead of adding material.
+    resource_province_secondary_weight: float = 0.35
     resource_processing_province_offsets: tuple[
         tuple[float, float],
         tuple[float, float],
@@ -803,6 +807,11 @@ def load_config(path: str | Path) -> SimulationConfig:
                 float(value)
                 for value in _require(raw, "environment").get(
                     "resource_province_contrasts", (0.85, 0.82, 0.80, 0.84)
+                )
+            ),
+            resource_province_secondary_weight=float(
+                _require(raw, "environment").get(
+                    "resource_province_secondary_weight", 0.35
                 )
             ),
             resource_processing_province_offsets=tuple(
@@ -1533,6 +1542,11 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError(
             "environment.resource_province_contrasts must contain four values in [0, 0.95]"
         )
+    secondary_weight = float(cfg.environment.resource_province_secondary_weight)
+    if not math.isfinite(secondary_weight) or not 0.0 <= secondary_weight <= 1.0:
+        raise ValueError(
+            "environment.resource_province_secondary_weight must be in [0, 1]"
+        )
     if cfg.environment.schema != "structured-province-resource-network-v4":
         defaults = EnvironmentConfig.__dataclass_fields__
         if (
@@ -1542,6 +1556,8 @@ def validate_config(cfg: SimulationConfig) -> None:
             != defaults["resource_province_radii"].default
             or cfg.environment.resource_province_contrasts
             != defaults["resource_province_contrasts"].default
+            or cfg.environment.resource_province_secondary_weight
+            != defaults["resource_province_secondary_weight"].default
             or cfg.environment.resource_processing_province_offsets
             != defaults["resource_processing_province_offsets"].default
         ):

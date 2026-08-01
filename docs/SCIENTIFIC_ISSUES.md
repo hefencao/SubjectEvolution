@@ -1,5 +1,16 @@
 # Scientific issues
 
+## D1-S replicated material circuits and bottleneck-aware social evidence
+
+D1-R confirms that separated sources, displaced processing, complementary recipes and raw-resource exchange are active, but it does not reproduce multiple persistent division-candidate groups in every seed. Seeds 97101 and 97102 pass the group-structure criterion; seed 97103 does not. The same seed falls to 42 entities and ends with only about 3.03 effective founder lineages, making drift and lineage concentration a material confound.
+
+The immediate issue is whether the world offers enough independently reachable material-processing circuits for several groups to form before one or two lineages dominate. D1-S strengthens the antipodal circuit and widens all provinces uniformly while normalizing every resource field to the same global mean. This tests opportunity geometry rather than total resource abundance or role-specific reward.
+
+The formal gate now excludes deep bottlenecks and insufficient final lineage breadth in addition to requiring physical heterogeneity, real internal exchange and at least two persistent division-candidate groups in every seed. The thresholds are execution qualifications, not rewards. Until all three new seeds pass, gene retention, selection, adaptation, niche, role and subjecthood analyses remain ineligible.
+
+The supplied compact D1-R bundle omitted per-seed group windows, environment-atlas summaries and evolution-progress rows. Available formal summaries are sufficient to record threshold failure, but not for full independent reconstruction of every group transition. Future compact bundles include these files by default.
+
+
 ## D1-R environment plurality and social-structure boundary
 
 The reported D1-Q formal panel has no passing seed. Its bounded pilot therefore
