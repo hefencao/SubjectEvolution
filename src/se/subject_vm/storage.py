@@ -1,4 +1,4 @@
-"""Fixed-capacity inert storage for the partitioned unified Subject Graph VM."""
+"""Fixed-capacity storage for the partitioned unified Subject Graph VM."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -6,9 +6,12 @@ from typing import Any
 
 import numpy as np
 
-from .config import SubjectVMConfig
+from .config import SUBJECT_VM_STAGE2_SCHEMA, SubjectVMConfig
 
-STORAGE_SCHEMA = "se-subject-vm-inert-storage-v1"
+STORAGE_SCHEMA_V1 = "se-subject-vm-inert-storage-v1"
+STORAGE_SCHEMA = "se-subject-vm-storage-v2"
+ACTIVATION_PHASE_MASK = np.uint8(1)
+SUPPORTED_OPERATOR_IDS = frozenset({0, 1, 2, 3})
 
 
 @dataclass(frozen=True)
@@ -23,11 +26,11 @@ class SubjectVMRegionUsage:
 
 
 class SubjectVMStorage:
-    """Host-authoritative fixed-shape storage with no execution semantics.
+    """Host-authoritative fixed-shape graph storage.
 
     Capacity is allocated only when the feature is explicitly enabled.  Node
-    and edge expression gates begin false; Stage 1 never executes, charges, or
-    mutates them during a simulation step.
+    and edge expression gates begin false.  Stage 1 never executes them; Stage
+    2 may execute only the role-neutral fields defined here.
     """
 
     def __init__(self, cfg: SubjectVMConfig, entity_capacity: int) -> None:
@@ -54,6 +57,12 @@ class SubjectVMStorage:
         self.node_state = np.zeros((e, n, d), dtype=np.float32)
         self.node_activation_period = np.zeros((e, n), dtype=np.uint16)
         self.node_activation_phase = np.zeros((e, n), dtype=np.uint16)
+        self.node_bias = np.zeros((e, n), dtype=np.float32)
+        self.node_retention = np.zeros((e, n), dtype=np.float32)
+        self.node_input_port = np.full((e, n), -1, dtype=np.int16)
+        self.node_input_gate = np.zeros((e, n), dtype=np.float32)
+        self.node_output_port = np.full((e, n), -1, dtype=np.int16)
+        self.node_output_gate = np.zeros((e, n), dtype=np.float32)
 
         self.edge_id = np.zeros((e, m), dtype=np.uint32)
         self.edge_expressed = np.zeros((e, m), dtype=bool)
@@ -65,7 +74,7 @@ class SubjectVMStorage:
         self.edge_bandwidth = np.zeros((e, m), dtype=np.float32)
         self.edge_phase_mask = np.zeros((e, m), dtype=np.uint8)
 
-        # Placeholder only. Stage 1 never writes eligibility or plasticity.
+        # Placeholder only. Stage 2 still never writes eligibility or plasticity.
         self.eligibility_value = np.zeros((e, m), dtype=np.float32)
         self.eligibility_age = np.zeros((e, m), dtype=np.uint16)
         self.plasticity_flags = np.zeros((e, m), dtype=np.uint8)
@@ -140,6 +149,12 @@ class SubjectVMStorage:
         self.node_state[rows] = 0.0
         self.node_activation_period[rows] = 0
         self.node_activation_phase[rows] = 0
+        self.node_bias[rows] = 0.0
+        self.node_retention[rows] = 0.0
+        self.node_input_port[rows] = -1
+        self.node_input_gate[rows] = 0.0
+        self.node_output_port[rows] = -1
+        self.node_output_gate[rows] = 0.0
         if self.edge_capacity:
             self.edge_id[rows] = 0
             self.edge_expressed[rows] = False
@@ -171,22 +186,7 @@ class SubjectVMStorage:
             raise ValueError("subject_vm cannot inherit from an unoccupied parent")
         self.initialize_rows(children, child_entity_ids, child_subject_ids)
         # Structural inheritance only. Dynamic state and eligibility reset.
-        for name in (
-            "node_expressed",
-            "node_region",
-            "node_operator_id",
-            "node_activation_period",
-            "node_activation_phase",
-            "edge_expressed",
-            "edge_region",
-            "edge_source",
-            "edge_target",
-            "edge_forward_gate",
-            "edge_delay",
-            "edge_bandwidth",
-            "edge_phase_mask",
-            "plasticity_flags",
-        ):
+        for name in self.structural_array_names():
             getattr(self, name)[children] = getattr(self, name)[parents]
 
     def move_rows(self, source_rows: np.ndarray, destination_rows: np.ndarray) -> None:
@@ -200,15 +200,41 @@ class SubjectVMStorage:
         if np.intersect1d(sources, destinations).size:
             raise ValueError("subject_vm compaction source/destination rows must differ")
         if np.any(~self.occupied[sources]) or np.any(self.occupied[destinations]):
-            raise ValueError("subject_vm compaction requires occupied sources and empty destinations")
-        array_names = self.snapshot_array_names()
-        for name in array_names:
+            raise ValueError(
+                "subject_vm compaction requires occupied sources and empty destinations"
+            )
+        for name in self.snapshot_array_names():
             array = getattr(self, name)
             array[destinations] = array[sources]
         self.clear_rows(sources)
 
     @staticmethod
-    def snapshot_array_names() -> tuple[str, ...]:
+    def structural_array_names() -> tuple[str, ...]:
+        return (
+            "node_expressed",
+            "node_region",
+            "node_operator_id",
+            "node_activation_period",
+            "node_activation_phase",
+            "node_bias",
+            "node_retention",
+            "node_input_port",
+            "node_input_gate",
+            "node_output_port",
+            "node_output_gate",
+            "edge_expressed",
+            "edge_region",
+            "edge_source",
+            "edge_target",
+            "edge_forward_gate",
+            "edge_delay",
+            "edge_bandwidth",
+            "edge_phase_mask",
+            "plasticity_flags",
+        )
+
+    @staticmethod
+    def stage1_snapshot_array_names() -> tuple[str, ...]:
         return (
             "occupied",
             "owner_entity_id",
@@ -234,6 +260,17 @@ class SubjectVMStorage:
             "plasticity_flags",
         )
 
+    @classmethod
+    def snapshot_array_names(cls) -> tuple[str, ...]:
+        return cls.stage1_snapshot_array_names()[:10] + (
+            "node_bias",
+            "node_retention",
+            "node_input_port",
+            "node_input_gate",
+            "node_output_port",
+            "node_output_gate",
+        ) + cls.stage1_snapshot_array_names()[10:]
+
     def snapshot_state(self) -> dict[str, Any]:
         return {
             "schema": STORAGE_SCHEMA,
@@ -254,8 +291,11 @@ class SubjectVMStorage:
         entity_capacity: int,
         payload: dict[str, Any],
     ) -> "SubjectVMStorage":
-        if payload.get("schema") != STORAGE_SCHEMA:
+        schema = payload.get("schema")
+        if schema not in {STORAGE_SCHEMA, STORAGE_SCHEMA_V1}:
             raise ValueError("unsupported subject_vm storage snapshot schema")
+        if schema == STORAGE_SCHEMA_V1 and cfg.schema == SUBJECT_VM_STAGE2_SCHEMA:
+            raise ValueError("Stage-2 subject_vm cannot restore a Stage-1 storage payload")
         result = cls(cfg, entity_capacity)
         expected = (
             result.entity_capacity,
@@ -274,7 +314,12 @@ class SubjectVMStorage:
         arrays = payload.get("arrays")
         if not isinstance(arrays, dict):
             raise ValueError("subject_vm checkpoint arrays are missing")
-        for name in result.snapshot_array_names():
+        names = (
+            result.stage1_snapshot_array_names()
+            if schema == STORAGE_SCHEMA_V1
+            else result.snapshot_array_names()
+        )
+        for name in names:
             if name not in arrays:
                 raise ValueError(f"subject_vm checkpoint is missing array {name}")
             expected_array = getattr(result, name)
@@ -284,6 +329,64 @@ class SubjectVMStorage:
             setattr(result, name, restored.copy())
         result.validate_internal()
         return result
+
+    def _validate_stage2_nodes(self) -> None:
+        expressed = self.node_expressed
+        if not np.any(expressed):
+            return
+        operators = self.node_operator_id[expressed]
+        if any(int(value) not in SUPPORTED_OPERATOR_IDS for value in operators):
+            raise ValueError("expressed Stage-2 subject_vm node has unsupported operator")
+        periods = self.node_activation_period[expressed]
+        if np.any(periods == 0):
+            raise ValueError("expressed Stage-2 subject_vm node requires a period")
+        for name in (
+            "node_bias",
+            "node_retention",
+            "node_input_gate",
+            "node_output_gate",
+        ):
+            if np.any(~np.isfinite(getattr(self, name)[expressed])):
+                raise ValueError(f"subject_vm {name} must be finite")
+        retention = self.node_retention[expressed]
+        if np.any((retention < 0.0) | (retention > 1.0)):
+            raise ValueError("subject_vm node retention must be in [0, 1]")
+        input_port = self.node_input_port[expressed]
+        output_port = self.node_output_port[expressed]
+        if np.any(input_port < -1) or np.any(input_port >= 16):
+            raise ValueError("subject_vm input port is outside the approved schema")
+        if np.any(output_port < -1) or np.any(output_port >= 8):
+            raise ValueError("subject_vm output port is outside the approved schema")
+
+    def _validate_stage2_edges(self) -> None:
+        expressed = self.edge_expressed
+        if not np.any(expressed):
+            return
+        rows, edges = np.nonzero(expressed)
+        source = self.edge_source[rows, edges]
+        target = self.edge_target[rows, edges]
+        if np.any(~self.node_expressed[rows, source]) or np.any(
+            ~self.node_expressed[rows, target]
+        ):
+            raise ValueError("expressed Stage-2 edge requires expressed endpoint nodes")
+        if np.any(self.edge_delay[rows, edges] > 1):
+            raise ValueError("Stage-2 subject_vm supports only zero/one-tick edge delay")
+        if np.any(self.edge_phase_mask[rows, edges] & ~ACTIVATION_PHASE_MASK):
+            raise ValueError("Stage-2 subject_vm edge has an unsupported phase bit")
+        if np.any(~np.isfinite(self.edge_forward_gate[rows, edges])) or np.any(
+            ~np.isfinite(self.edge_bandwidth[rows, edges])
+        ):
+            raise ValueError("subject_vm edge gate and bandwidth must be finite")
+        if np.any(self.edge_bandwidth[rows, edges] < 0.0):
+            raise ValueError("subject_vm edge bandwidth cannot be negative")
+        zero_delay = self.edge_delay[rows, edges] == 0
+        if np.any(
+            self.node_activation_phase[rows[zero_delay], source[zero_delay]]
+            >= self.node_activation_phase[rows[zero_delay], target[zero_delay]]
+        ):
+            raise ValueError(
+                "zero-delay Stage-2 edges require strictly increasing activation phase"
+            )
 
     def validate_internal(self) -> None:
         occupied = self.occupied
@@ -308,7 +411,10 @@ class SubjectVMStorage:
             if np.any(target < 0) or np.any(target >= self.node_capacity):
                 raise ValueError("expressed subject_vm edge target is invalid")
         if np.any(self.eligibility_value) or np.any(self.eligibility_age):
-            raise ValueError("Stage-1 subject_vm cannot contain active eligibility traces")
+            raise ValueError("Stage-1/2 subject_vm cannot contain eligibility traces")
+        if self.cfg.schema == SUBJECT_VM_STAGE2_SCHEMA:
+            self._validate_stage2_nodes()
+            self._validate_stage2_edges()
 
     def validate_owners(
         self,
@@ -329,6 +435,15 @@ class SubjectVMStorage:
         if not np.array_equal(self.owner_subject_id[rows], subject_ids[rows]):
             raise ValueError("subject_vm subject ownership is stale")
         self.validate_internal()
+
+    def has_expressed_graph(self, rows: np.ndarray) -> bool:
+        normalized = self._rows(rows)
+        if normalized.size == 0:
+            return False
+        return bool(
+            np.any(self.node_expressed[normalized])
+            or np.any(self.edge_expressed[normalized])
+        )
 
     def region_usage(self) -> tuple[SubjectVMRegionUsage, ...]:
         usage: list[SubjectVMRegionUsage] = []
@@ -370,7 +485,10 @@ class SubjectVMStorage:
 
 
 __all__ = [
+    "ACTIVATION_PHASE_MASK",
     "STORAGE_SCHEMA",
+    "STORAGE_SCHEMA_V1",
+    "SUPPORTED_OPERATOR_IDS",
     "SubjectVMRegionUsage",
     "SubjectVMStorage",
 ]

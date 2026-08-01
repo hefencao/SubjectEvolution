@@ -337,3 +337,14 @@ information interface.
 - Birth may inherit structure, but Stage 1 does not authorize a mutation distribution, developmental reward, graph cost or selection interpretation.
 - CPU/GPU-hybrid support currently means an explicit host-authoritative inert contract, not a device implementation or parity claim for future routing.
 - Activation routing, usage traces, delayed plasticity and Epoch 1 experiments each require separate authorization and tests.
+
+## v0.109 Stage-2 activation implementation check
+
+- Stage-2 configuration is opt-in and uses a distinct versioned schema. Stage-1 configurations remain inert and must not begin executing after upgrade.
+- The only approved runtime inputs are the frozen objective port vector. Adding partner categories, trust, group roles, named benefits or subjective value requires rejection rather than an undocumented adapter extension.
+- Generic operators and edge routing live under `subject_vm`; the action system remains the sole feasibility mask, categorical sampler, intent and world-commit authority.
+- Zero-delay edges require a strictly earlier source phase. One-tick edges read prior retained state. No implementation may reintroduce same-phase array-order dependence.
+- Stage-2 usage accounting is count-only. Converting usage to physical energy, maintenance, developmental or selection cost requires a separate Stage-4 decision and cost-compensation tests.
+- Stage-2 consumes no random numbers and performs no eligibility or plasticity writes. Any such write is a Stage-3 semantic change, not a refactor.
+- GPU Stage-2 execution is unsupported and must fail explicitly. Silent CPU fallback or silent graph-output omission would invalidate backend provenance.
+- A hand-constructed graph demonstrating action influence is an engineering fixture only. It is not an evolved phenotype, evidence of cognition, or Epoch-1 qualification.

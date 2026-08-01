@@ -1286,7 +1286,7 @@ The graph shares one routing and identity contract. Existing latent, working-mem
 
 The engine supplies objective event and provenance facts only. Delayed association may route consequence eligibility to graph elements that actually participated in the relevant computation. It does not receive fixed valence for energy, integrity, resources, knowledge accuracy, protection, reproduction, partners or groups. Unassigned consequence is valid and expires with bounded traces.
 
-The implementation is staged. v0.108 implements disabled-by-default inert graph configuration/storage, checkpoint and lifecycle support with exact neutral behavior. Forward activation, delayed plasticity, developmental mutation and emergence studies still require later stages and separate tests.
+The implementation is staged. v0.108 implemented disabled-by-default inert graph configuration/storage, checkpoint and lifecycle support with exact neutral behavior. v0.109 adds the separately frozen Stage-2 CPU-reference activation adapter. Delayed plasticity, developmental mutation, physical graph-cost conversion and emergence studies still require later stages and separate tests.
 
 New implementation belongs under `src/se/subject_vm/`; it must not enlarge `runtime/sim.py`, `subjects/social.py` or `knowledge/system.py` into another monolith. Configuration, runtime, policy, checkpoint and lifecycle modules call narrow subject-VM interfaces.
 
@@ -1312,4 +1312,28 @@ Disabled configuration allocates no graph arrays and normalizes out of legacy co
 
 Full checkpoints delegate Subject VM snapshot/restore. A compatible checkpoint without the field restores disabled state directly, or reconstructs an empty enabled container bound to current stable owners. Epoch bases inherit the state through the existing full-checkpoint boundary; regional active-set branches release pruned rows through the same lifecycle hook.
 
-The current implementation deliberately does not import or depend on concrete knowledge, social relation or group implementations. Future adapters may expose narrow ports, but must not copy those systems into parallel route stores.
+The current implementation deliberately does not import or depend on concrete knowledge, social relation or group implementations. The Stage-2 adapter exposes only a frozen objective input vector and bounded action-potential output vector; it does not copy those systems into parallel route stores.
+
+### v0.109 Stage-2 CPU-reference activation adapter
+
+Stage 2 adds three narrow modules:
+
+```text
+subject_vm/ports.py       objective engine state -> fixed 16-scalar input vector
+subject_vm/activation.py deterministic bounded node/edge execution
+runtime/subject_vm_activation.py simulation state -> VM -> action-potential adapter
+```
+
+The approved inputs are constant one, normalized body energy/integrity/fertility, four normalized local resource coordinates, three existing signal coordinates, mean uncertainty and four retained policy-state coordinates. These are objective engine values and do not carry a fixed positive/negative interpretation.
+
+Every expressed node has a generic input binding, bias, retention coefficient, bounded operator, within-tick phase and optional output binding. Stage 2 supports bounded linear, tanh, retained-linear and retained-tanh operators. A node update period remains inherited from its region reservation unless its inherited structure changes it.
+
+Zero-delay edges may connect only a strictly earlier activation phase to a later phase. One-tick edges read the previous retained scalar state. Nodes in the same phase are therefore order-independent, and the executor consumes no random numbers. Edge bandwidth bounds each transmission; node and aggregate output clips bound the complete transformation.
+
+Action potentials are added to the existing policy logits before the existing physical action mask and categorical sampler. The Subject VM does not create a second controller, action enum, intent builder or world-commit path. A graph cannot bypass SHARE, SIGNAL or REPRODUCE feasibility masks.
+
+Stage-2 accounting records structural nodes/edges, node executions, edge and cross-region transmissions, and output contributions. These are engineering usage units only. No energy debit, reward, selection advantage or developmental cost is assigned until a separately frozen Stage-4 physical-cost contract exists.
+
+The Stage-2 executor is CPU-reference-only. A GPU run with Stage-2 configuration is rejected at construction rather than silently ignoring graph outputs. Disabled, Stage-1 and Stage-2 enabled-but-empty paths retain the previous device behavior and exact CPU trajectory neutrality.
+
+Checkpoint schema v2 stores activation bindings, dynamic state and accounting. The loader accepts v0.108 Stage-1 runtime/storage schemas and fills all new activation bindings with inert defaults. It does not fabricate Stage-2 behavior in an old checkpoint.

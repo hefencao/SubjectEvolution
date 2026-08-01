@@ -46,6 +46,7 @@ class PolicyDecision:
     action_mask: Any | None = None
     genetic_logits: Any | None = None
     knowledge_logits: Any | None = None
+    subject_vm_logits: Any | None = None
     genetic_action: Any | None = None
     # L2 diagnostic shadow: the inherited L1 linear router evaluated with the
     # same knowledge batch and counter-based action draw.
@@ -221,6 +222,7 @@ class ParametricPolicy:
         knowledge_plan: KnowledgePolicyPlan | None = None,
         position_x: Any | None = None,
         position_y: Any | None = None,
+        subject_vm_potentials: Any | None = None,
     ) -> PolicyDecision:
         xp = backend_from_array(active).xp
         ids = stable_ids[active]
@@ -294,7 +296,15 @@ class ParametricPolicy:
             if knowledge_plan is not None and knowledge_plan.comparison_size
             else None
         )
+        subject_vm_logits = None
         logits = genetic_logits + knowledge_logits
+        if subject_vm_potentials is not None:
+            subject_vm_logits = xp.asarray(subject_vm_potentials, dtype=xp.float32)
+            if subject_vm_logits.shape != logits.shape:
+                raise ValueError("subject_vm action potentials must align with policy logits")
+            if bool(xp.any(~xp.isfinite(subject_vm_logits))):
+                raise ValueError("subject_vm action potentials must be finite")
+            logits = logits + subject_vm_logits
 
         mask = xp.ones_like(logits, dtype=bool)
         mask[:, Action.SHARE] = partner_exists > 0
@@ -395,6 +405,7 @@ class ParametricPolicy:
             action_mask=mask,
             genetic_logits=genetic_logits,
             knowledge_logits=knowledge_logits,
+            subject_vm_logits=subject_vm_logits,
             genetic_action=genetic_action,
             linear_knowledge_logits=linear_knowledge_logits,
             linear_knowledge_action=linear_knowledge_action,

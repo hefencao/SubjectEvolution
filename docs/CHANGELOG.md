@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.109.0
+
+- Freezes and implements the Stage-2 CPU-reference activation adapter for `partitioned-subject-graph-vm-v1`.
+- Adds approved objective input ports and bounded action-potential output ports without fixed reward, trust, knowledge value, role or group semantics.
+- Adds four role-neutral scalar operators, region update schedules, deterministic within-tick phases, strict zero-delay causal ordering and one-tick recurrent edges.
+- Adds bounded node, edge-bandwidth and aggregate output execution with no random-number consumption.
+- Integrates graph action potentials into the existing policy logits before the existing physical action mask and categorical arbitration; no competing controller or action lifecycle is introduced.
+- Adds structural and use accounting as checkpointed counts only; Stage 2 does not debit physical energy or authorize selection interpretation.
+- Preserves exact disabled, Stage-1 and enabled-but-empty CPU trajectories, and restores v0.108 Stage-1 runtime/storage payloads with zero activation bindings.
+- Declares Stage-2 execution CPU-reference-only and rejects GPU execution rather than silently dropping graph effects.
+- Hardens full-suite validation by draining concurrent pytest shards through per-shard files, and makes `conda-check` reject an unactivated environment before it can test against a stale editable checkout.
+- Does not implement usage traces, delayed plasticity, topology mutation, developmental expression, physical graph costs, Epoch 1 experiments or subjecthood claims.
+
 ## 0.108.0
 
 - Implements Stage 1 inert `partitioned-subject-graph-vm-v1` infrastructure under `src/se/subject_vm/` without routing graph output into action.

@@ -140,11 +140,11 @@ from se.subjects.social import (
 )
 from se.env.spatial import SpatialIndex
 from se.subjects.graph import CandidateSubjectGraph
-from se.subject_vm import SubjectVMRuntime
 from .checkpointing import SimulationCheckpointMixin
 from .experiments import SimulationExperimentMixin
 from .reporting import SimulationReportingMixin
 from .state import EntityState, StepStats, _wrap_periodic_float32
+from .subject_vm_activation import initialize_subject_vm_runtime, subject_vm_action_potentials
 from .share_settlement import commit_shares, finalize_share_capacity
 from .embodied import apply_material_repair, movement_cost_with_power
 from .harvest_commit import commit_harvest_resolution
@@ -301,7 +301,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         )
         self.entities.primary_subject_id[initial] = body_subjects
         self.entities.lineage_subject_id[initial] = lineage_subjects
-        self.subject_vm = SubjectVMRuntime.initialize(cfg.subject_vm, entity_capacity=cfg.world.max_entities, active_rows=initial, entity_ids=self.entities.entity_id, subject_ids=self.entities.primary_subject_id)
+        self.subject_vm = initialize_subject_vm_runtime(self, initial)
         self.knowledge = KnowledgeSystem(
             cfg,
             self.output_dir,
@@ -941,11 +941,11 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 group_direction = (self.social.group_dir_x, self.social.group_dir_y)
             else:
                 group_direction = (np.zeros_like(self.social.group_dir_x), np.zeros_like(self.social.group_dir_y))
+            subject_vm_potentials = subject_vm_action_potentials(
+                self, active, policy_energy[active], policy_local_resources, info
+            )
             cost_free_decision = None
-            if (
-                routing_cost_result is not None
-                and routing_cost_result.rejected_action_count > 0
-            ):
+            if routing_cost_result is not None and routing_cost_result.rejected_action_count > 0:
                 cost_free_decision = self.policy.decide(
                     active=active,
                     stable_ids=ent.entity_id,
@@ -963,7 +963,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     run_seed=cfg.run.seed,
                     tick=self.tick,
                     knowledge_plan=cost_free_knowledge_policy_plan,
-                    position_x=ent.x, position_y=ent.y,
+                    position_x=ent.x, position_y=ent.y, subject_vm_potentials=subject_vm_potentials,
                 )
             memory_free_decision = None
             if cfg.knowledge.working_memory_enabled:
@@ -984,7 +984,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     run_seed=cfg.run.seed,
                     tick=self.tick,
                     knowledge_plan=knowledge_policy_plan,
-                    position_x=ent.x, position_y=ent.y,
+                    position_x=ent.x, position_y=ent.y, subject_vm_potentials=subject_vm_potentials,
                 )
             decision = self.policy.decide(
                 active=active,
@@ -1003,7 +1003,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 run_seed=cfg.run.seed,
                 tick=self.tick,
                 knowledge_plan=knowledge_policy_plan,
-                position_x=ent.x, position_y=ent.y,
+                position_x=ent.x, position_y=ent.y, subject_vm_potentials=subject_vm_potentials,
             )
             if cost_free_decision is not None:
                 decision.cost_free_knowledge_action = cost_free_decision.action

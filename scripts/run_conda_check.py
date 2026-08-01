@@ -11,12 +11,22 @@ import subprocess
 import sys
 
 
+def _require_conda_environment() -> None:
+    if not os.environ.get("CONDA_PREFIX"):
+        raise RuntimeError("activate the intended conda environment before conda-check")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project", default=".")
     parser.add_argument("--shards", type=int, default=5)
     parser.add_argument("--docs-dir", required=True)
     args = parser.parse_args()
+    try:
+        _require_conda_environment()
+    except RuntimeError as exc:
+        print(str(exc), file=sys.stderr)
+        raise SystemExit(2) from exc
     project = Path(args.project).resolve()
     docs = (project / args.docs_dir).resolve()
     docs.mkdir(parents=True, exist_ok=True)

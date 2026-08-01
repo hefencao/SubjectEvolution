@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-1-inert-schema-storage-implemented",
-  "project_version": "0.108.0",
+  "status": "stage-2-activation-routing-cpu-reference-implemented",
+  "project_version": "0.109.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -81,5 +81,16 @@
   "legacy_status": {
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
+  },
+  "current_stage": 2,
+  "stage_2_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
+    "input_port_schema": "objective-entity-input-ports-v1",
+    "output_port_schema": "action-potential-output-ports-v1",
+    "execution": "bounded-phased-forward-routing-v1",
+    "backend": "cpu-reference-only",
+    "cost_accounting": "count-only-no-physical-debit",
+    "plasticity": false,
+    "scientific_qualification": false
   }
 }

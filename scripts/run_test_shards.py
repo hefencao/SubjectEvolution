@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import time
 
 try:
@@ -25,36 +26,44 @@ def run(project: Path, shards: int, report: Path | None) -> int:
     shard_count = max(1, min(int(shards), len(files)))
     groups = [files[index::shard_count] for index in range(shard_count)]
     started = time.perf_counter()
-    processes: list[tuple[int, list[Path], subprocess.Popen[str]]] = []
-    for index, group in enumerate(groups):
-        command = [sys.executable, "-m", "pytest", "-q", *map(str, group)]
-        process = subprocess.Popen(
-            command,
-            cwd=project,
-            env=os.environ.copy(),
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-        )
-        processes.append((index, group, process))
-
     results: list[dict[str, object]] = []
     passed = True
-    for index, group, process in processes:
-        stdout, _ = process.communicate()
-        print(f"\n===== pytest shard {index + 1}/{shard_count} =====")
-        print(stdout, end="" if stdout.endswith("\n") else "\n")
-        if process.returncode != 0:
-            passed = False
-        results.append(
-            {
-                "shard": index + 1,
-                "returncode": process.returncode,
-                "test_file_count": len(group),
-                "test_files": [str(path.relative_to(project)) for path in group],
-                "stdout_tail": stdout.splitlines()[-8:],
-            }
-        )
+    # Do not keep multiple concurrent pytest processes connected to unread
+    # PIPEs. A verbose shard can fill its pipe while the parent waits for an
+    # earlier shard, deadlocking the complete release gate. Per-shard files
+    # preserve concurrent execution without a bounded pipe buffer.
+    with tempfile.TemporaryDirectory(prefix="se-test-shards-") as temporary:
+        log_dir = Path(temporary)
+        processes: list[tuple[int, list[Path], Path, subprocess.Popen[bytes]]] = []
+        for index, group in enumerate(groups):
+            command = [sys.executable, "-m", "pytest", "-q", *map(str, group)]
+            log_path = log_dir / f"shard-{index + 1}.log"
+            with log_path.open("wb") as stream:
+                process = subprocess.Popen(
+                    command,
+                    cwd=project,
+                    env=os.environ.copy(),
+                    stdout=stream,
+                    stderr=subprocess.STDOUT,
+                )
+            processes.append((index, group, log_path, process))
+
+        for index, group, log_path, process in processes:
+            returncode = process.wait()
+            stdout = log_path.read_text(encoding="utf-8", errors="replace")
+            print(f"\n===== pytest shard {index + 1}/{shard_count} =====")
+            print(stdout, end="" if stdout.endswith("\n") else "\n")
+            if returncode != 0:
+                passed = False
+            results.append(
+                {
+                    "shard": index + 1,
+                    "returncode": returncode,
+                    "test_file_count": len(group),
+                    "test_files": [str(path.relative_to(project)) for path in group],
+                    "stdout_tail": stdout.splitlines()[-8:],
+                }
+            )
     payload = {
         "passed": passed,
         "schema": "deterministic-pytest-file-shards-v1",

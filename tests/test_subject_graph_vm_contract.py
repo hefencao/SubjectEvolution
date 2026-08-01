@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-1-inert-schema-storage-implemented"
+    assert contract["status"] == "stage-2-activation-routing-cpu-reference-implemented"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,6 +24,13 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
+    assert contract["current_stage"] == 2
+    assert contract["stage_2_contract"]["plasticity"] is False
+
+    activation = _load("protocols/decisions/subject_graph_vm_activation_v1.json")
+    assert activation["status"] == "accepted-engineering-stage-only"
+    assert activation["accounting"]["physical_energy_debit"] is False
+    assert activation["causal_order"]["same_phase_order_dependence"] is False
     assert contract["legacy_status"]["d1x_d1y"].startswith("rejected-as-primary")
 
 

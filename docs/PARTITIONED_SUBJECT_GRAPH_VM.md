@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
 Status: **implementation contract frozen; runtime implementation not started**
-Project version: **0.108.0**
+Project version: **0.109.0**
 
 ## 1. Decision
 
@@ -297,18 +297,20 @@ Implemented:
 
 Acceptance met on the CPU reference path: enabling an empty graph changes no entity, environment, information, social or action trajectory state. The enabled metadata/storage itself is the only added state.
 
-### Stage 2 — activation routing adapter
+### Stage 2 — activation routing adapter (implemented in v0.109)
 
-Implement:
+Implemented:
 
-- approved input and output ports;
-- region update schedules;
-- generic forward routing;
-- integration with existing action arbitration;
-- structural/use cost accounting;
-- no delayed plasticity yet.
+- frozen `objective-entity-input-ports-v1` and `action-potential-output-ports-v1`;
+- region update periods plus deterministic within-tick activation phases;
+- four bounded role-neutral scalar operators;
+- strictly earlier-phase zero-delay routing and previous-state one-tick routing;
+- edge bandwidth, node activation and aggregate output bounds;
+- additive integration into existing policy logits before existing feasibility masks and categorical arbitration;
+- checkpointed structural/use accounting as counts only;
+- no delayed plasticity, physical energy debit or random-number consumption.
 
-Acceptance: hand-constructed role-neutral test graphs reproduce deterministic bounded transformations without adding reward semantics.
+Acceptance met on the CPU reference path: hand-constructed role-neutral graphs reproduce deterministic bounded transformations, Stage-2 empty graphs remain exactly neutral, and v0.108 Stage-1 checkpoints restore with inert activation bindings.
 
 ### Stage 3 — objective usage trace and delayed plasticity
 
@@ -358,8 +360,10 @@ src/se/subject_vm/lifecycle.py
 src/se/subject_vm/runtime.py
 src/se/subject_vm/__init__.py
 
-# Deferred Stage-2/3 modules, not present yet:
-# activation.py, traces.py, plasticity.py, costs.py
+# Stage-2 modules implemented in v0.109:
+# activation.py, ports.py
+# Deferred Stage-3/4 modules:
+# traces.py, plasticity.py, costs.py
 ```
 
 Integration points should remain thin:
@@ -373,19 +377,30 @@ Integration points should remain thin:
 
 Do not place the new implementation into `subjects/social.py`, `knowledge/system.py` or `runtime/sim.py` merely because related data already exists there.
 
-## 13.1 v0.108 implementation status
+## 13.1 v0.108 Stage-1 implementation status
 
 The Stage-1 runtime uses a tiny disabled null object and allocates fixed arrays only when explicitly enabled. It binds every occupied row to a current entity ID and stable primary subject ID, inherits structure without dynamic state, clears rows before slot reuse, and delegates checkpoint/clone/regional-branch handling through the existing lifecycle.
 
-The current CPU/GPU-hybrid contract is intentionally inert and host-authoritative: no device graph allocation, no graph synchronization, no graph kernel, no RNG use, no action output and no graph cost. This is not the future packed GPU representation.
+The Stage-1 CPU/GPU-hybrid contract remains intentionally inert and host-authoritative: no device graph allocation, graph synchronization, RNG use, action output or graph cost.
 
 A missing graph field in a compatible checkpoint is reconstructed only as an empty container. No historical expression, state, eligibility or plasticity is fabricated.
 
+## 13.2 v0.109 Stage-2 implementation status
+
+The Stage-2 contract is frozen in `protocols/decisions/subject_graph_vm_activation_v1.json`. It exposes 16 objective scalar inputs and eight action-potential outputs. Input names describe engine coordinates only; they do not define subjective value.
+
+The CPU reference executor uses retained scalar state coordinate zero as the current node activation. It supports bounded linear, tanh, retained-linear and retained-tanh operators. Update periods determine whether a node runs on a tick; activation phases determine deterministic within-tick order. A zero-delay edge requires a strictly earlier source phase, while a one-tick edge reads the prior retained state. Same-phase execution is order-independent.
+
+The runtime adapter adds bounded graph outputs to the existing policy logits before the existing physical action mask and categorical arbitration. The graph does not own action sampling, intents, conflict resolution or world settlement.
+
+Structural and use units are counted and checkpointed, but no physical energy is deducted. This prevents a temporary engineering coefficient from becoming an implicit selection function before developmental accessibility and cost compensation are frozen.
+
+Stage-2 execution is CPU-reference-only. GPU construction with a Stage-2 configuration fails explicitly. This is not a GPU parity claim or packed graph representation.
+
 ## 14. Deferred decisions
 
-The following remain intentionally open until Stage 1/2 prototypes measure cost and complexity:
+The following remain intentionally open after the Stage-2 CPU reference prototype:
 
-- exact initial neutral operator set;
 - hard versus continuous region membership after v1;
 - whether edge plasticity changes weights, gates, state or all three;
 - how much topology changes during life versus reproduction;

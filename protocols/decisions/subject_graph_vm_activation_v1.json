@@ -1,0 +1,75 @@
+{
+  "schema": "se-scientific-direction-decision-v1",
+  "decision_id": "subject-graph-vm-activation-routing-v1",
+  "status": "accepted-engineering-stage-only",
+  "release": "0.109.0",
+  "scope": "Stage 2 CPU reference activation routing for hand-constructed role-neutral graphs; no plasticity, mutation, reward, emergence study or scientific qualification.",
+  "input_port_schema": {
+    "id": "objective-entity-input-ports-v1",
+    "ports": [
+      "constant-one",
+      "body-energy-ratio",
+      "body-integrity",
+      "body-fertility",
+      "local-resource-ratio-0",
+      "local-resource-ratio-1",
+      "local-resource-ratio-2",
+      "local-resource-ratio-3",
+      "signal-0",
+      "signal-1",
+      "signal-2",
+      "uncertainty-mean",
+      "retained-policy-state-0",
+      "retained-policy-state-1",
+      "retained-policy-state-2",
+      "retained-policy-state-3"
+    ],
+    "interpretation": "objective normalized engine state only; no subjective value or partner-role label"
+  },
+  "output_port_schema": {
+    "id": "action-potential-output-ports-v1",
+    "width": 8,
+    "integration": "bounded additive potentials enter the existing policy logits before the existing physical action mask and categorical arbitration"
+  },
+  "operators": [
+    {"id": 0, "name": "bounded-linear"},
+    {"id": 1, "name": "bounded-tanh"},
+    {"id": 2, "name": "bounded-retained-linear"},
+    {"id": 3, "name": "bounded-retained-tanh"}
+  ],
+  "causal_order": {
+    "region_schedule": "node update period is inherited from its reserved region unless structurally changed",
+    "within_tick": "ascending node activation phase",
+    "zero_delay_edge": "source phase must be strictly earlier than target phase",
+    "one_tick_edge": "reads previous retained scalar state",
+    "same_phase_order_dependence": false,
+    "random_number_consumption": false
+  },
+  "accounting": {
+    "mode": "count-only-v1",
+    "units": [
+      "structural-node",
+      "structural-edge",
+      "node-execution",
+      "edge-transmission",
+      "cross-region-transmission",
+      "output-contribution"
+    ],
+    "physical_energy_debit": false,
+    "reason": "Stage 4 must separately freeze physical cost conversion and developmental accessibility before selection studies"
+  },
+  "device_contract": {
+    "reference_backend": "cpu",
+    "gpu_stage2_execution": "unsupported",
+    "empty_stage1_or_disabled_gpu_path": "unchanged"
+  },
+  "forbidden": [
+    "fixed reward or valence",
+    "trust friend enemy or group semantics",
+    "knowledge value or interest formula",
+    "delayed plasticity or credit routing",
+    "topology mutation or developmental expression",
+    "physical graph-cost debit",
+    "Epoch 1 panel or subjecthood conclusion"
+  ]
+}

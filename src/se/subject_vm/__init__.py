@@ -1,8 +1,23 @@
-"""Partitioned unified Subject Graph VM Stage-1 public boundary."""
+"""Partitioned unified Subject Graph VM public boundary."""
+from .activation import (
+    OP_LINEAR,
+    OP_RETAINED_LINEAR,
+    OP_RETAINED_TANH,
+    OP_TANH,
+    SubjectVMActivationResult,
+    SubjectVMActivationUsage,
+    execute_activation,
+)
 from .config import (
+    SUBJECT_VM_ACTIVATION_DISABLED_SCHEMA,
+    SUBJECT_VM_ACTIVATION_SCHEMA,
     SUBJECT_VM_DISABLED_SCHEMA,
+    SUBJECT_VM_INPUT_PORT_SCHEMA,
+    SUBJECT_VM_OUTPUT_PORT_SCHEMA,
     SUBJECT_VM_REGION_NAMES,
     SUBJECT_VM_STAGE1_SCHEMA,
+    SUBJECT_VM_STAGE2_SCHEMA,
+    SubjectVMActivationConfig,
     SubjectVMConfig,
     SubjectVMRegionConfig,
     load_subject_vm_config,
@@ -10,18 +25,46 @@ from .config import (
     validate_subject_vm_config,
 )
 from .lifecycle import SubjectVMMutationPlan, compact_rows
+from .ports import (
+    SUBJECT_VM_INPUT_PORTS,
+    SUBJECT_VM_OUTPUT_PORTS,
+    build_objective_input_ports,
+)
 from .runtime import (
     STAGE1_DEVICE_CONTRACT,
+    STAGE2_DEVICE_CONTRACT,
+    SubjectVMActivationAccounting,
     SubjectVMDeviceContract,
     SubjectVMRuntime,
 )
-from .storage import SubjectVMRegionUsage, SubjectVMStorage
+from .storage import (
+    ACTIVATION_PHASE_MASK,
+    SubjectVMRegionUsage,
+    SubjectVMStorage,
+)
 
 __all__ = [
+    "ACTIVATION_PHASE_MASK",
+    "OP_LINEAR",
+    "OP_RETAINED_LINEAR",
+    "OP_RETAINED_TANH",
+    "OP_TANH",
     "STAGE1_DEVICE_CONTRACT",
+    "STAGE2_DEVICE_CONTRACT",
+    "SUBJECT_VM_ACTIVATION_DISABLED_SCHEMA",
+    "SUBJECT_VM_ACTIVATION_SCHEMA",
     "SUBJECT_VM_DISABLED_SCHEMA",
+    "SUBJECT_VM_INPUT_PORTS",
+    "SUBJECT_VM_INPUT_PORT_SCHEMA",
+    "SUBJECT_VM_OUTPUT_PORTS",
+    "SUBJECT_VM_OUTPUT_PORT_SCHEMA",
     "SUBJECT_VM_REGION_NAMES",
     "SUBJECT_VM_STAGE1_SCHEMA",
+    "SUBJECT_VM_STAGE2_SCHEMA",
+    "SubjectVMActivationAccounting",
+    "SubjectVMActivationConfig",
+    "SubjectVMActivationResult",
+    "SubjectVMActivationUsage",
     "SubjectVMConfig",
     "SubjectVMDeviceContract",
     "SubjectVMMutationPlan",
@@ -29,7 +72,9 @@ __all__ = [
     "SubjectVMRegionUsage",
     "SubjectVMRuntime",
     "SubjectVMStorage",
+    "build_objective_input_ports",
     "compact_rows",
+    "execute_activation",
     "load_subject_vm_config",
     "strip_disabled_subject_vm_section",
     "validate_subject_vm_config",
