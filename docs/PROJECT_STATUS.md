@@ -1,8 +1,22 @@
 # SE project status
 
-Version: **0.97.0**
+Version: **0.98.0**
 
 ## Current scientific task
+
+## Engineering execution status
+
+The D1-R formal workflow remains scientifically unchanged. Version 0.98 repairs
+the hybrid GPU execution boundary used by `backend=auto`: adaptive group refresh
+may become due after policy preparation when same-tick deaths or relation changes
+dirty social topology. The GPU runtime now retains the already computed
+policy-time resource gradient and materializes it on the host only when that late
+refresh actually occurs. The workflow is not forced to CPU, and ordinary GPU
+steps do not gain an unconditional gradient transfer.
+
+The complete `make test` architecture gate remains active. The fix was kept out
+of additional `runtime/sim.py` growth rather than weakening the `<2500` line
+contract.
 
 The active task is environment maturity, not genetic retention. The environment
 must first generate replicated, viable and structured social dependence. A
@@ -87,4 +101,4 @@ Not authorized:
 
 Even a passing D1-R environment threshold only authorizes freezing the
 structured environment and designing a later separate multi-generation genetic
-study. It does not automatically authorize that study in v0.97.
+study. It does not automatically authorize that study in v0.98.

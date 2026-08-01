@@ -418,6 +418,7 @@ class HybridGpuRuntime:
         self._device_preprocess_rows = 0
         self._device_resident_host_bytes_avoided = 0
         self._device_latent_root_rows = 0
+        self._prepared_resource_gradient: tuple[Any, Any] | None = None
         self.memory_pool = GpuMemoryPoolController(
             self.backend.xp,
             policy=cfg.run.gpu_memory_pool_policy,
@@ -436,6 +437,7 @@ class HybridGpuRuntime:
         self._device_preprocess_rows = 0
         self._device_resident_host_bytes_avoided = 0
         self._device_latent_root_rows = 0
+        self._prepared_resource_gradient = None
 
     def finish_step_transfer_measurement(self) -> GpuTransferStats:
         memory = self.memory_pool.finish_step()
@@ -475,6 +477,25 @@ class HybridGpuRuntime:
         if self._measure_transfers:
             self._device_to_host_bytes += int(value.nbytes)
         return self.backend.to_numpy(value)
+
+    def download_prepared_resource_gradient(self) -> tuple[np.ndarray, np.ndarray]:
+        """Materialize the current step's device gradient only when CPU commit needs it.
+
+        Adaptive group refresh may become due after policy preparation when a
+        death or relation update dirties the social topology.  Retaining the
+        already computed device gradient lets that late CPU boundary download
+        the exact policy-time values without forcing an eager transfer every
+        tick or recomputing from stale host fields.
+        """
+
+        prepared = self._prepared_resource_gradient
+        if prepared is None:
+            raise RuntimeError("GPU step has no prepared resource gradient")
+        gradient_x, gradient_y = prepared
+        return (
+            self._download(gradient_x).astype(np.float32, copy=False),
+            self._download(gradient_y).astype(np.float32, copy=False),
+        )
 
     def _copy_into(self, destination: Any, value: np.ndarray) -> None:
         """Copy one contiguous host value into an existing device buffer."""
@@ -821,6 +842,7 @@ class HybridGpuRuntime:
                     else None
                 ),
             )
+            self._prepared_resource_gradient = None
             return GpuPreparedStep(
                 empty,
                 empty,
@@ -1035,6 +1057,7 @@ class HybridGpuRuntime:
             )
             resource_gradient[0][active] += oxygen_weight * oxygen_gx[active]
             resource_gradient[1][active] += oxygen_weight * oxygen_gy[active]
+        self._prepared_resource_gradient = resource_gradient
         self.backend.synchronize()
         observation_seconds = time.perf_counter() - timer
 

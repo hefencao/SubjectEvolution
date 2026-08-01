@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.98.0
+
+- Fixes hybrid GPU D1-R runs that could fail with `GPU step omitted required resource gradients` when a same-tick death or relation-topology change made adaptive group refresh due after GPU policy preparation.
+- Retains the already computed device resource gradient for the current step and downloads it only at the late CPU group-refresh boundary; the workflow remains `backend=auto` and does not fall back to CPU.
+- Adds regression coverage for late prepared-gradient materialization, missing prepared state, D1-R workflow commands, and the unchanged architecture size gate.
+- Keeps `runtime/sim.py` below the existing 2500-line architecture limit without relaxing the test.
+- Makes no change to D1-R environment parameters, genome, costs, group criteria, seeds, ticks, or scientific authorization.
+- Updates project version to 0.98.0.
+
 ## 0.97.0
 
 - Retires D1-Q genetic-retention execution after the reported formal panel has no passing seed; preserves only historical config/demographic reproduction and packaging steps.

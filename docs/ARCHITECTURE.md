@@ -1,5 +1,23 @@
 # SE architecture
 
+## Hybrid GPU late group-refresh boundary
+
+```text
+GPU field/observation/policy preparation
+        ↓ retains device resource-gradient tuple for current tick
+CPU action, settlement, births/deaths and relation updates
+        ↓ may dirty adaptive group topology after preparation
+late group refresh becomes due
+        ↓ on-demand materialization of the retained policy-time gradient
+existing deterministic CPU group-label planner
+```
+
+The host copy is requested only when the CPU commit phase actually needs it.
+This preserves the exact gradient used by the policy, avoids recomputation from
+potentially stale host environment fields, and avoids an unconditional
+device-to-host transfer on every GPU tick. Transfer telemetry includes the late
+download. CPU execution continues to provide the gradient directly.
+
 ## D1-R structured environment and observational division boundary
 
 ```text

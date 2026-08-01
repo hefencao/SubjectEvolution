@@ -5,6 +5,7 @@ from types import SimpleNamespace
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from se.backend import resolve_backend
 from se.cfg import load_config
@@ -14,6 +15,7 @@ from se.env.niches import policy_resource_view, resource_affinity_quantized
 from se.env.world import Environment
 from se.gpu_runtime import (
     GpuTransferStats,
+    HybridGpuRuntime,
     device_danger_evidence_quantized,
     device_policy_resource_view,
     device_resource_affinity_quantized,
@@ -244,3 +246,33 @@ def test_large_gpu_presets_preserve_density_and_cell_scale() -> None:
         assert cfg.run.validation_mode is False
         assert cfg.run.full_checkpoint_enabled is True
         assert cfg.run.checkpoint_period == 100
+
+
+def test_gpu_prepared_gradient_can_be_downloaded_at_late_group_refresh() -> None:
+    class ArrayBackend:
+        @staticmethod
+        def to_numpy(value: np.ndarray) -> np.ndarray:
+            return np.asarray(value)
+
+    runtime = object.__new__(HybridGpuRuntime)
+    runtime.backend = ArrayBackend()
+    runtime._measure_transfers = True
+    runtime._device_to_host_bytes = 0
+    runtime._prepared_resource_gradient = (
+        np.asarray([1.0, 2.0], dtype=np.float32),
+        np.asarray([3.0, 4.0], dtype=np.float32),
+    )
+
+    gradient = runtime.download_prepared_resource_gradient()
+
+    assert np.array_equal(gradient[0], np.asarray([1.0, 2.0], dtype=np.float32))
+    assert np.array_equal(gradient[1], np.asarray([3.0, 4.0], dtype=np.float32))
+    assert runtime._device_to_host_bytes == 4 * np.dtype(np.float32).itemsize
+
+
+def test_gpu_prepared_gradient_rejects_missing_step_state() -> None:
+    runtime = object.__new__(HybridGpuRuntime)
+    runtime._prepared_resource_gradient = None
+
+    with pytest.raises(RuntimeError, match="no prepared resource gradient"):
+        runtime.download_prepared_resource_gradient()

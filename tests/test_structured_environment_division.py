@@ -8,6 +8,7 @@ import numpy as np
 
 from se.analysis.environment_structure import build_report
 from se.cfg import load_config
+from se.cmd.study import load_workflow
 from se.experiments.d1_structured_environment import prepare
 from se.policy import Action, ParametricPolicy
 from se.runtime.resource_metabolism import settle_resource_metabolism
@@ -224,3 +225,17 @@ def test_structured_manifest_marks_spatial_asynchrony(tmp_path: Path) -> None:
     Simulation(cfg, tmp_path / "run", backend="cpu")
     manifest = json.loads((tmp_path / "run/run_manifest.json").read_text())
     assert manifest["environment_spatially_asynchronous"] is True
+
+
+def test_d1r_workflow_keeps_auto_backend_and_no_gene_audit() -> None:
+    _, workflow = load_workflow(ROOT / "studies/d1r_structured_environment_division_v1")
+    steps = workflow["steps"]
+    panel = steps["structured-panel"]["command"]
+
+    assert "--backend" in panel
+    backend_index = panel.index("--backend")
+    assert panel[backend_index + 1] == "{backend}"
+    assert "--no-checkpoints" in panel
+    assert "--skip-post-run-audits" in panel
+    assert "gene-persistence" not in steps
+    assert "paired" not in steps

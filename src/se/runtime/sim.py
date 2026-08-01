@@ -2094,7 +2094,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             group_active = np.flatnonzero(ent.alive).astype(np.int32)
             if self.social_connections_enabled:
                 if resource_gradient is None:
-                    raise RuntimeError("GPU step omitted required resource gradients")
+                    resource_gradient = self.gpu_runtime.download_prepared_resource_gradient()
                 group_snapshot = self.social.group_detection_snapshot(
                     ent.alive,
                     ent.entity_id,

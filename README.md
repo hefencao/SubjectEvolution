@@ -88,4 +88,4 @@ iteration note. Local history under `docs/迭代/` remains untouched.
 - [Governance principles](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.97 D1-R iteration](docs/迭代/v0.97_D1-R_结构化资源网络与群体内分工基础.md)
+- [v0.98 D1-R execution-fix iteration](docs/迭代/v0.98_D1-R_GPU延迟梯度与Workflow回归修复.md)
