@@ -351,6 +351,9 @@ def build_regional_branch(
     outside = np.flatnonzero(ent.alive & ~inside).astype(np.int32)
     selected_ids = ent.entity_id[inside].copy()
     if outside.size:
+        simulation.subject_vm.release_deaths(
+            outside, ent.entity_id, ent.primary_subject_id
+        )
         simulation.subjects.mark_dead(outside, simulation.tick)
         ent.energy[outside] = 0.0
         death_plan = plan_death_events(

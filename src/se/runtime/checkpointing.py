@@ -128,6 +128,7 @@ from se.subjects.social import (
 )
 from se.env.spatial import SpatialIndex
 from se.subjects.graph import CandidateSubjectGraph
+from se.subject_vm import SubjectVMConfig, SubjectVMRuntime
 
 
 
@@ -173,6 +174,7 @@ class SimulationCheckpointMixin:
             },
             "social": copy.deepcopy(self.social),
             "subjects": self.subjects.clone(),
+            "subject_vm": self.subject_vm.snapshot_state(),
             "knowledge": self.knowledge.snapshot_state(),
             "last_group_summary": copy.deepcopy(self.last_group_summary),
             "last_group_plan": copy.deepcopy(self.last_group_plan),
@@ -547,6 +549,12 @@ class SimulationCheckpointMixin:
             self.social.interest_feedback_knowledge_delay_total = 0
             self.social.interest_feedback_knowledge_orphaned = 0
         self.subjects = copy.deepcopy(state["subjects"])
+        self.subject_vm = SubjectVMRuntime.restore(
+            self.cfg.subject_vm, entity_capacity=entity_capacity,
+            payload=state.get("subject_vm"), alive=self.entities.alive,
+            entity_ids=self.entities.entity_id,
+            subject_ids=self.entities.primary_subject_id,
+        )
         self.knowledge.restore_state(state["knowledge"])
         self.knowledge.cfg = self.cfg
         self.knowledge.kcfg = self.cfg.knowledge
@@ -932,6 +940,8 @@ class SimulationCheckpointMixin:
         """Create a fresh run from a trusted full-world checkpoint bundle."""
         metadata, record = read_checkpoint_bundle(checkpoint)
         cfg = record["config"]
+        if not hasattr(cfg, "subject_vm"):
+            cfg = replace(cfg, subject_vm=SubjectVMConfig())
         checkpoint_tick = int(record["simulation"]["tick"])
         run_overrides: dict[str, object] = {}
         if until_tick is not None:
@@ -1010,6 +1020,7 @@ class SimulationCheckpointMixin:
         branch.spatial = copy.deepcopy(self.spatial)
         branch.social = copy.deepcopy(self.social)
         branch.subjects = self.subjects.clone()
+        branch.subject_vm = self.subject_vm.clone()
         branch.knowledge.close()
         branch.knowledge = self.knowledge.clone(branch.output_dir)
         branch.tick = self.tick

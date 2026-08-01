@@ -25,6 +25,7 @@ def test_short_package_layout_is_canonical() -> None:
     assert (PACKAGE / "evolution").is_dir()
     assert (PACKAGE / "knowledge").is_dir()
     assert (PACKAGE / "subjects").is_dir()
+    assert (PACKAGE / "subject_vm").is_dir()
     assert (PACKAGE / "gui").is_dir()
     assert (PACKAGE / "cmd").is_dir()
     assert not (PACKAGE / "domains").exists()
@@ -73,7 +74,7 @@ def test_command_implementations_are_canonical() -> None:
 def test_gui_is_external_to_runtime_and_science_domains() -> None:
     runtime_sources = list((PACKAGE / "runtime").glob("*.py"))
     domain_sources = []
-    for dirname in ("env", "evolution", "knowledge", "subjects"):
+    for dirname in ("env", "evolution", "knowledge", "subjects", "subject_vm"):
         domain_sources.extend((PACKAGE / dirname).rglob("*.py"))
     for path in runtime_sources + domain_sources:
         text = path.read_text(encoding="utf-8")

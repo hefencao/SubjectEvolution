@@ -31,3 +31,7 @@ Both retain aggregate mechanism and cost counters while suppressing selected den
 ## Tiered exploration
 
 The reusable smoke preset remains `mvp_d3n_exploration_smoke.json`. Candidate-specific screen, replication, confirmation, and robustness configs now live inside the owning study directory so their scientific design, frozen evidence, and commands cannot drift apart.
+
+## Subject Graph VM Stage-1 smoke
+
+`mvp_short_subject_vm_stage1_smoke.json` enables only the inert Stage-1 fixed-capacity container on a short CPU-friendly run. It is for lifecycle/checkpoint neutrality verification, not emergence, cognition or subjecthood experiments.

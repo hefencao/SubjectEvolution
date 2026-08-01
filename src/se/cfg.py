@@ -1,10 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import json
 import math
 from pathlib import Path
 from typing import Any
+
+from .subject_vm.config import (
+    SubjectVMConfig,
+    load_subject_vm_config,
+    validate_subject_vm_config,
+)
 
 
 @dataclass(frozen=True)
@@ -739,6 +745,7 @@ class SimulationConfig:
     policy: PolicyConfig
     social: SocialConfig
     control: ControlConfig
+    subject_vm: SubjectVMConfig = field(default_factory=SubjectVMConfig)
 
     @property
     def cell_width(self) -> float:
@@ -1165,12 +1172,14 @@ def load_config(path: str | Path) -> SimulationConfig:
         policy=PolicyConfig(**policy_raw),
         social=SocialConfig(**_require(raw, "social")),
         control=ControlConfig(**raw.get("control", {})),
+        subject_vm=load_subject_vm_config(raw.get("subject_vm")),
     )
     validate_config(cfg)
     return cfg
 
 
 def validate_config(cfg: SimulationConfig) -> None:
+    validate_subject_vm_config(cfg.subject_vm)
     if cfg.world.initial_entities <= 0:
         raise ValueError("initial_entities must be positive")
     if cfg.world.max_entities < cfg.world.initial_entities:

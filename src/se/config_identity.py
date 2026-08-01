@@ -10,6 +10,8 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
+from .subject_vm.config import strip_disabled_subject_vm_section
+
 _STRUCTURED_CENTERS = (
     (0.18, 0.18),
     (0.82, 0.22),
@@ -279,6 +281,7 @@ def strip_inactive_extensions(payload: dict[str, Any]) -> dict[str, Any]:
         ):
             social.pop(key, None)
 
+    strip_disabled_subject_vm_section(result)
     return result
 
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.108.0
+
+- Implements Stage 1 inert `partitioned-subject-graph-vm-v1` infrastructure under `src/se/subject_vm/` without routing graph output into action.
+- Adds disabled-by-default versioned configuration with exact canonical normalization and rejection of concrete cognition fields such as trust, friend/enemy, knowledge value, interest reward and group bonuses.
+- Adds fixed-capacity unified node/edge identity storage partitioned into the four frozen computational regions, including internal state, activation metadata and future plasticity-eligibility placeholders.
+- Adds stable entity/subject ownership, structural birth inheritance with dynamic-state reset, death cleanup, slot reuse protection, explicit compaction boundary, clone, checkpoint and regional-branch handling.
+- Preserves frozen legacy config identities and checkpoint config hashes when the Subject VM is disabled; compatible checkpoints lacking the new field restore safely.
+- Declares a host-authoritative Stage-1 CPU/GPU-hybrid contract with no device allocation, synchronization, random-number use, action effect or runtime cost.
+- Adds exact neutrality tests for disabled versus enabled-but-empty CPU trajectories and a short infrastructure smoke configuration.
+- Does not implement activation routing, delayed plasticity, graph mutation/costs, relation/group replacement, Epoch 1 qualification or any subjecthood claim.
+
 ## 0.107.0
 
 - Freezes `partitioned-subject-graph-vm-v1` as the primary entity-subject implementation direction without changing runtime behavior.

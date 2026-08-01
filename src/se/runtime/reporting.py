@@ -11,6 +11,7 @@ import time
 import numpy as np
 
 from .. import __version__
+from ..subject_vm.config import strip_disabled_subject_vm_section
 from ..backend import BackendUnavailableError, resolve_backend
 from ..checkpointing import read_checkpoint_bundle, write_checkpoint_bundle
 from ..cfg import SimulationConfig
@@ -163,7 +164,7 @@ class SimulationReportingMixin:
         predeclared target, reporting cadence, checkpoint cadence and resolved
         backend without using run outcomes to alter the world.
         """
-        config_payload = asdict(self.cfg)
+        config_payload = strip_disabled_subject_vm_section(asdict(self.cfg))
         canonical = json.dumps(
             config_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
         ).encode("utf-8")

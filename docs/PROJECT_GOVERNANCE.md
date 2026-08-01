@@ -328,3 +328,12 @@ information interface.
 - Stage 1 implementation is restricted to disabled-by-default inert graph schema/storage and lifecycle integration. No action effect, delayed plasticity, reward input, relation replacement or group-rule behavior is authorized.
 - New subject-graph code must use a dedicated package and narrow integration interfaces. Existing large orchestration, social and knowledge modules must not absorb the implementation.
 - Epoch 1 requires functional evidence under the v2 contract: delayed history use, behavioral intervention, baseline exceedance, cost compensation and independent replication. Matching region names, relation counts or topology across seeds is not required and is not sufficient.
+
+## v0.108 Stage-1 implementation check
+
+- Stage 1 is implemented as inert infrastructure only. Empty enabled storage must remain trajectory-neutral and cannot be cited as cognitive or subject evidence.
+- The disabled section must normalize away exactly so frozen config identities and checkpoint config hashes remain stable.
+- Stable entity and subject ownership must be checked before death cleanup or row reuse; recycled entity rows cannot inherit prior graph state accidentally.
+- Birth may inherit structure, but Stage 1 does not authorize a mutation distribution, developmental reward, graph cost or selection interpretation.
+- CPU/GPU-hybrid support currently means an explicit host-authoritative inert contract, not a device implementation or parity claim for future routing.
+- Activation routing, usage traces, delayed plasticity and Epoch 1 experiments each require separate authorization and tests.

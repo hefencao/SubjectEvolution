@@ -188,6 +188,10 @@ def test_v020_checkpoint_config_hash_accepts_physically_stored_fields(tmp_path: 
 
     cfg = base_config()
     legacy_payload = asdict(cfg)
+    # A v0.20 checkpoint physically predates the disabled-by-default
+    # Subject VM extension; omit it from both the expected payload and pickle.
+    legacy_payload.pop("subject_vm")
+    vars(cfg).pop("subject_vm")
     for name in (
         "mortality_trace_schema",
         "mortality_trace_decay",

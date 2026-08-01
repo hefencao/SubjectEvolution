@@ -1286,8 +1286,30 @@ The graph shares one routing and identity contract. Existing latent, working-mem
 
 The engine supplies objective event and provenance facts only. Delayed association may route consequence eligibility to graph elements that actually participated in the relevant computation. It does not receive fixed valence for energy, integrity, resources, knowledge accuracy, protection, reproduction, partners or groups. Unassigned consequence is valid and expires with bounded traces.
 
-The implementation is staged. v0.107 authorizes documentation and contracts only. The next release may add disabled-by-default inert graph configuration/storage, checkpoint and lifecycle support, with exact neutral behavior. Forward activation, delayed plasticity, developmental mutation and emergence studies require later stages and separate tests.
+The implementation is staged. v0.108 implements disabled-by-default inert graph configuration/storage, checkpoint and lifecycle support with exact neutral behavior. Forward activation, delayed plasticity, developmental mutation and emergence studies still require later stages and separate tests.
 
 New implementation belongs under `src/se/subject_vm/`; it must not enlarge `runtime/sim.py`, `subjects/social.py` or `knowledge/system.py` into another monolith. Configuration, runtime, policy, checkpoint and lifecycle modules call narrow subject-VM interfaces.
 
 D1-X/Y remain reproducible fixed-cognition comparison baselines. Their semantic material and knowledge ledgers are not extended with more named benefit channels on the primary path.
+
+### v0.108 Stage-1 inert storage implementation
+
+Stage 1 now lives under `src/se/subject_vm/` and is integrated through narrow lifecycle and checkpoint hooks. `runtime/sim.py`, `subjects/social.py` and `knowledge/system.py` do not own graph internals.
+
+```text
+SubjectVMConfig
+  -> SubjectVMRuntime (disabled null object or enabled host owner)
+      -> SubjectVMStorage (fixed-capacity arrays)
+      -> lifecycle hooks (birth/death/compaction)
+      -> checkpoint snapshot/restore and clone
+```
+
+The storage owns one per-subject node/edge identity space with fixed region reservations. It stores expression gates, region assignment, generic operator IDs, bounded node state, activation schedule metadata, edge endpoints/gates/delay/bandwidth/phase masks, and zero-valued future eligibility placeholders. Stage 1 does not execute any of them.
+
+Ownership is keyed by both current entity ID and stable primary subject ID. Death cleanup validates both before clearing a row; later slot reuse initializes a fresh empty row. Newborns inherit only structure and routing metadata. Dynamic node state and eligibility reset, and the only authorized mutation boundary is `none-v1`.
+
+Disabled configuration allocates no graph arrays and normalizes out of legacy configuration identity. Enabled-but-empty storage is host-authoritative and has no device allocation, synchronization, random-number consumption, action output or cost. This preserves CPU trajectory neutrality and leaves packed GPU representation to a later stage.
+
+Full checkpoints delegate Subject VM snapshot/restore. A compatible checkpoint without the field restores disabled state directly, or reconstructs an empty enabled container bound to current stable owners. Epoch bases inherit the state through the existing full-checkpoint boundary; regional active-set branches release pruned rows through the same lifecycle hook.
+
+The current implementation deliberately does not import or depend on concrete knowledge, social relation or group implementations. Future adapters may expose narrow ports, but must not copy those systems into parallel route stores.

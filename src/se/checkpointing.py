@@ -23,6 +23,7 @@ from typing import Any
 import numpy as np
 
 from . import __version__
+from .subject_vm.config import SubjectVMConfig, strip_disabled_subject_vm_section
 
 
 CHECKPOINT_SCHEMA = "se-full-checkpoint-v1"
@@ -70,7 +71,17 @@ def _pickle_checkpoint_state(state: dict[str, Any]) -> bytes:
 
 
 def _config_sha256(config: Any) -> str:
-    payload = json.dumps(asdict(config), ensure_ascii=False, sort_keys=True).encode("utf-8")
+    added_subject_vm = False
+    if is_dataclass(config) and not hasattr(config, "subject_vm"):
+        object.__setattr__(config, "subject_vm", SubjectVMConfig())
+        added_subject_vm = True
+    try:
+        config_payload = asdict(config)
+    finally:
+        if added_subject_vm:
+            object.__delattr__(config, "subject_vm")
+    config_payload = strip_disabled_subject_vm_section(config_payload)
+    payload = json.dumps(config_payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 
 
@@ -100,8 +111,11 @@ def _stored_dataclass_payload(value: Any) -> Any:
 
 
 def _stored_config_sha256(config: Any) -> str:
+    stored_payload = _stored_dataclass_payload(config)
+    if isinstance(stored_payload, dict):
+        strip_disabled_subject_vm_section(stored_payload)
     payload = json.dumps(
-        _stored_dataclass_payload(config), ensure_ascii=False, sort_keys=True
+        stored_payload, ensure_ascii=False, sort_keys=True
     ).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 

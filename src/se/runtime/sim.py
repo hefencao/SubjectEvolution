@@ -13,16 +13,10 @@ from .. import __version__
 from ..backend import BackendUnavailableError, resolve_backend
 from ..checkpointing import read_checkpoint_bundle, write_checkpoint_bundle
 from ..cfg import SimulationConfig
-from se.subjects.control import (
-    AutonomyRecoveryArbiter,
-    ControlArbiter,
-    ControllerKind,
-    HeuristicSocialGuidanceArbiter,
-    SingleProposalControlArbiter,
-    autonomy_recovery_control_proposal,
-    body_control_proposal,
-    social_guidance_control_proposal,
-)
+from se.subjects.control import (AutonomyRecoveryArbiter, ControlArbiter, ControllerKind,
+    HeuristicSocialGuidanceArbiter, SingleProposalControlArbiter,
+    autonomy_recovery_control_proposal, body_control_proposal,
+    social_guidance_control_proposal)
 from ..device_state import EntityDeviceCommitPlan, build_entity_device_commit_plan
 from se.differentiation.capacity import (
     capacity_development_energy,
@@ -146,6 +140,7 @@ from se.subjects.social import (
 )
 from se.env.spatial import SpatialIndex
 from se.subjects.graph import CandidateSubjectGraph
+from se.subject_vm import SubjectVMRuntime
 from .checkpointing import SimulationCheckpointMixin
 from .experiments import SimulationExperimentMixin
 from .reporting import SimulationReportingMixin
@@ -306,6 +301,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         )
         self.entities.primary_subject_id[initial] = body_subjects
         self.entities.lineage_subject_id[initial] = lineage_subjects
+        self.subject_vm = SubjectVMRuntime.initialize(cfg.subject_vm, entity_capacity=cfg.world.max_entities, active_rows=initial, entity_ids=self.entities.entity_id, subject_ids=self.entities.primary_subject_id)
         self.knowledge = KnowledgeSystem(
             cfg,
             self.output_dir,
@@ -593,6 +589,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 or np.any(ent.working_memory_previous_observation_q[inactive] != 0)
             ):
                 raise AssertionError("inactive slots retain working-memory state")
+        self.subject_vm.validate_owners(ent.alive, ent.entity_id, ent.primary_subject_id)
         self.knowledge.validate(ent.alive, ent.primary_subject_id)
     @property
     def benefit_internal_energy_total(self) -> float:
@@ -1691,6 +1688,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 )
                 ent.primary_subject_id[newborns] = body_subjects
                 ent.lineage_subject_id[newborns] = lineage_subjects
+                self.subject_vm.inherit_births(accepted_parents, newborns, ent.entity_id, ent.primary_subject_id)
                 ent.energy[accepted_parents] -= np.asarray(
                     reproduction_energy_cost(ent.genotype[accepted_parents], cfg),
                     dtype=np.float32,
@@ -2060,6 +2058,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 self.environment.deposit_mortality_trace(death_cells)
             else:
                 self.gpu_runtime.deposit_mortality_trace(death_cells)
+            self.subject_vm.release_deaths(dead, ent.entity_id, ent.primary_subject_id)
             self.subjects.mark_dead(dead, self.tick)
             ent.commit_deaths(death_events)
             self.autonomy_restored[dead] = False

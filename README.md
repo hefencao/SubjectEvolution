@@ -1,10 +1,10 @@
-# SE v0.107
+# SE v0.108
 
 Reference implementation for nested-subject existence and ecological evolution simulation.
 
 ## Current direction
 
-Version 0.107 freezes the design for the next subject-formation substrate without changing runtime behavior.
+Version 0.108 implements Stage 1 of the subject-formation substrate as an inert, disabled-by-default container without changing action or world behavior.
 
 The project will use a **partitioned unified subject graph**:
 
@@ -35,9 +35,9 @@ se-study config
 
 The pointer lives in ignored `.se-workspace.toml` and does not affect protocol identity or release artifacts.
 
-## Implementation starting point
+## Implemented Stage 1 boundary
 
-The next implementation release is restricted to Stage 1 of the frozen contract: disabled-by-default Subject Graph VM configuration and inert fixed-capacity storage, including checkpoint and lifecycle handling. It must not yet influence action policy or add a subjective reward.
+The repository now contains disabled-by-default Subject Graph VM configuration and inert fixed-capacity storage under `src/se/subject_vm/`, including stable ownership, birth/death, clone, checkpoint, compatibility restore and regional-branch handling. Empty enabled storage is exactly neutral. Activation routing, plasticity, graph costs and subjective reward remain absent.
 
 See:
 
@@ -60,7 +60,7 @@ make conda-check
 make parity-gpu
 ```
 
-`make package` builds a disposable archive copy and keeps only the current v0.107 iteration note. Local history under `docs/迭代/` remains untouched.
+`make package` builds a disposable archive copy and keeps only the current v0.108 iteration note. Local history under `docs/迭代/` remains untouched.
 
 ## Current documents
 
@@ -71,4 +71,4 @@ make parity-gpu
 - [Architecture](docs/ARCHITECTURE.md)
 - [Partitioned Subject Graph VM](docs/PARTITIONED_SUBJECT_GRAPH_VM.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.107 D1-Z iteration](docs/迭代/v0.107_D1-Z_分区统一主体图实现准备.md)
+- [v0.108 D1-Z iteration](docs/迭代/v0.108_D1-Z_分区统一主体图惰性基础设施.md)

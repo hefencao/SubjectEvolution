@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "implementation-contract-frozen-runtime-not-started",
-  "project_version": "0.107.0",
+  "status": "stage-1-inert-schema-storage-implemented",
+  "project_version": "0.108.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",

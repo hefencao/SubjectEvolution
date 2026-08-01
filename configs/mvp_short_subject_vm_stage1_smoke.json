@@ -1,0 +1,123 @@
+{
+  "run": {
+    "seed": 10001,
+    "ticks": 4,
+    "metrics_period": 2,
+    "checkpoint_period": 4,
+    "gpu_harvest_conflict_planner": true,
+    "experiment_mode": "scientific",
+    "evolution_evaluation_period": 500,
+    "spatial_stress_region_schema": "normalized-fixed-count-grid-v1",
+    "full_checkpoint_enabled": true
+  },
+  "world": {
+    "width": 256.0,
+    "height": 256.0,
+    "grid_x": 64,
+    "grid_y": 64,
+    "initial_entities": 64,
+    "max_entities": 128,
+    "periodic": true
+  },
+  "environment": {
+    "resource_regeneration": [
+      0.03,
+      0.012,
+      0.008,
+      0.004
+    ],
+    "resource_capacity": [
+      10.0,
+      7.0,
+      5.0,
+      3.0
+    ],
+    "season_period": 400,
+    "season_amplitude": 0.35,
+    "signal_decay": 0.08,
+    "signal_diffusion": 0.12
+  },
+  "entities": {
+    "relation_slots": 8,
+    "maintenance_cost": 0.015,
+    "movement_cost": 0.01,
+    "signal_cost": 0.02,
+    "share_amount": 0.2,
+    "harvest_rate": 0.3,
+    "reproduction_threshold": 2.8,
+    "reproduction_cost": 1.4,
+    "initial_energy": 1.8,
+    "max_energy": 5.0,
+    "max_age": 5000,
+    "reproduction_capacity_arbitration": "stateless-random-v1"
+  },
+  "information": {
+    "channel_loss": 0.15,
+    "receiver_noise": 0.1,
+    "classification_error": 0.05,
+    "memory_decay": 0.01,
+    "max_signal_delay": 3,
+    "direct_message_capacity": 16,
+    "source_noise": 0.03,
+    "signal_flush_periods": [
+      1,
+      1,
+      1
+    ]
+  },
+  "policy": {
+    "temperature": 0.8,
+    "partner_samples": 4,
+    "mutation_std": 0.08,
+    "mutation_probability": 0.01
+  },
+  "social": {
+    "group_update_period": 50,
+    "trust_group_threshold": 0.12,
+    "group_min_members": 6,
+    "relation_decay": 0.002,
+    "trust_gain_share": 0.08,
+    "trust_loss_failed": 0.02,
+    "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+    "group_label_propagation_rounds": 8
+  },
+  "control": {
+    "heuristic_social_guidance": false,
+    "heuristic_social_guidance_weight": 0.25,
+    "autonomy_recovery_fraction": 0.25,
+    "autonomy_activation_energy_fraction": 0.35,
+    "autonomy_harvest_threshold": 0.05
+  },
+  "subject_vm": {
+    "enabled": true,
+    "schema": "partitioned-subject-graph-vm-stage1-v1",
+    "node_state_width": 4,
+    "inherit_structure_on_birth": true,
+    "regions": [
+      {
+        "name": "fast-sensorimotor",
+        "node_capacity": 4,
+        "edge_capacity": 8,
+        "update_period": 1
+      },
+      {
+        "name": "persistent-state",
+        "node_capacity": 4,
+        "edge_capacity": 8,
+        "update_period": 2
+      },
+      {
+        "name": "delayed-association",
+        "node_capacity": 4,
+        "edge_capacity": 8,
+        "update_period": 4
+      },
+      {
+        "name": "integrative-drive",
+        "node_capacity": 4,
+        "edge_capacity": 8,
+        "update_period": 1
+      }
+    ]
+  }
+}

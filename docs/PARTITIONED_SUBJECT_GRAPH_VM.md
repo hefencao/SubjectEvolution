@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
 Status: **implementation contract frozen; runtime implementation not started**
-Project version: **0.107.0**
+Project version: **0.108.0**
 
 ## 1. Decision
 
@@ -284,9 +284,9 @@ Deliverables:
 
 No runtime behavior changes.
 
-### Stage 1 — inert graph schema and storage
+### Stage 1 — inert graph schema and storage (implemented in v0.108)
 
-Implement only:
+Implemented:
 
 - versioned disabled-by-default config schema;
 - fixed-capacity node, edge, region and state storage;
@@ -295,7 +295,7 @@ Implement only:
 - zero-output and zero-cost disabled path;
 - CPU reference lifecycle tests.
 
-Acceptance: enabling an empty graph changes no world outcome except declared metadata and zero-valued diagnostics.
+Acceptance met on the CPU reference path: enabling an empty graph changes no entity, environment, information, social or action trajectory state. The enabled metadata/storage itself is the only added state.
 
 ### Stage 2 — activation routing adapter
 
@@ -352,13 +352,14 @@ No group-rule implementation begins before this stage passes.
 Preferred new modules:
 
 ```text
-src/se/subject_vm/types.py
+src/se/subject_vm/config.py
 src/se/subject_vm/storage.py
-src/se/subject_vm/activation.py
-src/se/subject_vm/traces.py
-src/se/subject_vm/plasticity.py
-src/se/subject_vm/costs.py
 src/se/subject_vm/lifecycle.py
+src/se/subject_vm/runtime.py
+src/se/subject_vm/__init__.py
+
+# Deferred Stage-2/3 modules, not present yet:
+# activation.py, traces.py, plasticity.py, costs.py
 ```
 
 Integration points should remain thin:
@@ -371,6 +372,14 @@ Integration points should remain thin:
 - reporting: reads diagnostics, never alters state.
 
 Do not place the new implementation into `subjects/social.py`, `knowledge/system.py` or `runtime/sim.py` merely because related data already exists there.
+
+## 13.1 v0.108 implementation status
+
+The Stage-1 runtime uses a tiny disabled null object and allocates fixed arrays only when explicitly enabled. It binds every occupied row to a current entity ID and stable primary subject ID, inherits structure without dynamic state, clears rows before slot reuse, and delegates checkpoint/clone/regional-branch handling through the existing lifecycle.
+
+The current CPU/GPU-hybrid contract is intentionally inert and host-authoritative: no device graph allocation, no graph synchronization, no graph kernel, no RNG use, no action output and no graph cost. This is not the future packed GPU representation.
+
+A missing graph field in a compatible checkpoint is reconstructed only as an empty container. No historical expression, state, eligibility or plasticity is fabricated.
 
 ## 14. Deferred decisions
 
