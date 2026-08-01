@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.112.0
+
+- Adds Subject VM Stage 3B-1 short-lived local node/edge eligibility carriers inside the existing unified graph.
+- Marks only graph-selected actual executed-node output and bandwidth-bounded edge transmission; no historical execution path is copied into the token/event ring.
+- Adds deterministic elapsed-tick decay, clipping and fixed-horizon expiry with checkpointed accounting counts only.
+- Preserves structural eligibility gates/flags across birth while resetting dynamic values and ages; clone, checkpoint, compaction and death follow the existing stable-owner lifecycle.
+- Upgrades v0.111 Stage-3A runtime/storage payloads to explicitly empty local eligibility without fabricating historical activity.
+- Keeps objective events unsigned and entirely disconnected from eligibility updates in this stage; unassigned events remain valid.
+- Keeps action outputs, entity trajectories and RNG consumption neutral relative to Stage 3A for the same graph.
+- Does not implement token/event matching, credit assignment, parameter plasticity, physical cost debit, GPU execution or Epoch-1 qualification.
+
 ## 0.111.0
 
 - Adds Subject VM Stage 3A graph-produced continuous internal tokens and bounded objective-event history.

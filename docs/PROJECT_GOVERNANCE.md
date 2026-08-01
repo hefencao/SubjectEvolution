@@ -348,6 +348,17 @@ information interface.
 - Stage-2 consumes no random numbers and performs no eligibility or plasticity writes. Any such write is a Stage-3 semantic change, not a refactor.
 - GPU Stage-2 execution is unsupported and must fail explicitly. Silent CPU fallback or silent graph-output omission would invalidate backend provenance.
 - A hand-constructed graph demonstrating action influence is an engineering fixture only. It is not an evolved phenotype, evidence of cognition, or Epoch-1 qualification.
+## v0.112 Stage-3B-1 local eligibility implementation check
+
+- Local eligibility belongs to the existing unified node/edge storage; it is not a second trace network or credit router.
+- Participation flags and gates are graph structure. Dynamic values and ages are short-lived local state and must not be copied into the long-term token/event ring.
+- Marks may use only actual bounded node output and actual bounded edge transmission. Their sign is computational direction, never event valence.
+- Objective events, named state coordinates and provenance records cannot write, sign or scale eligibility in Stage 3B-1.
+- Birth resets dynamic eligibility; clone and checkpoint preserve only committed state; death and compaction follow stable-owner lifecycle.
+- Decay and expiry consume no random numbers and cannot feed the same action that created the mark.
+- Any token/event matcher, eligibility modulator or graph-parameter update is a separately authorized Stage-3B-2 semantic change.
+- Engineering fixtures proving local marks are not evidence of attribution, learning, memory, cognition or subjecthood.
+
 ### Legacy route retention and single ownership
 
 Pre-Subject-VM routers may remain in the repository for frozen compatibility and fixed-cognition comparison, but they must not silently co-own the primary action-residual boundary. When Stage-2 Subject VM is active, configuration and runtime guards must enforce a single optional route owner. Objective provenance stores, embodied functional mechanisms and observational graphs may coexist only through narrow one-way adapters and must not be copied into Subject VM identity/state.

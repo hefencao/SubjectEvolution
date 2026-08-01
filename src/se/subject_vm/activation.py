@@ -1,8 +1,10 @@
 """Deterministic CPU reference executor for Subject VM activation.
 
-Stage 3A adds only a graph-produced continuous token readout.  The executor does
-not retain a persistent node/edge path, assign value, update eligibility, or
-consume random numbers.
+Stage 3A adds a graph-produced continuous token readout. Stage 3B-1 may leave
+short-lived local eligibility on graph-selected executed nodes and transmitted
+edges. The executor does not retain a persistent node/edge path, assign event
+value, update parameters, feed eligibility into the same action, or consume
+random numbers.
 """
 from __future__ import annotations
 
@@ -10,6 +12,12 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from .eligibility import (
+    SubjectVMLocalEligibilityUsage,
+    advance_local_eligibility,
+    mark_edge_eligibility,
+    mark_node_eligibility,
+)
 from .storage import ACTIVATION_PHASE_MASK, SubjectVMStorage
 from .trace import SubjectVMThoughtTokenBatch
 
@@ -38,6 +46,7 @@ class SubjectVMActivationResult:
     action_potentials: np.ndarray
     usage: SubjectVMActivationUsage
     thought_tokens: SubjectVMThoughtTokenBatch | None = None
+    eligibility_usage: SubjectVMLocalEligibilityUsage | None = None
 
 
 def _operator_output(
@@ -82,6 +91,9 @@ def execute_activation(
     if normalized_rows.size and np.any(~storage.occupied[normalized_rows]):
         raise ValueError("subject_vm activation rows must be occupied")
     storage.validate_internal()
+    eligibility_usage = advance_local_eligibility(
+        storage, rows=normalized_rows, tick=int(tick)
+    )
 
     activation_cfg = storage.cfg.activation
     activation_clip = float(activation_cfg.activation_clip)
@@ -153,10 +165,19 @@ def execute_activation(
                             storage.edge_forward_gate[row, edge]
                         )
                         bandwidth = float(storage.edge_bandwidth[row, edge])
-                        accumulator += float(
+                        bounded_contribution = float(
                             np.clip(contribution, -bandwidth, bandwidth)
                         )
+                        accumulator += bounded_contribution
                         transmitted_edges += 1
+                        if mark_edge_eligibility(
+                            storage,
+                            row=row,
+                            edge=edge,
+                            local_activity=bounded_contribution,
+                        ):
+                            assert eligibility_usage is not None
+                            eligibility_usage.edge_marks += 1
                         if (
                             storage.node_region[row, source]
                             != storage.node_region[row, node]
@@ -171,6 +192,11 @@ def execute_activation(
                     activation_clip,
                 )
                 executed_nodes += 1
+                if mark_node_eligibility(
+                    storage, row=row, node=node, local_activity=float(current[node])
+                ):
+                    assert eligibility_usage is not None
+                    eligibility_usage.node_marks += 1
 
         storage.node_state[row, expressed, 0] = current[expressed].astype(np.float32)
         output_nodes = np.flatnonzero(expressed & (storage.node_output_port[row] >= 0))
@@ -231,6 +257,7 @@ def execute_activation(
         action_potentials=potentials,
         usage=usage,
         thought_tokens=thought_tokens,
+        eligibility_usage=eligibility_usage,
     )
 
 

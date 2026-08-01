@@ -1,0 +1,54 @@
+{
+  "schema": "se-subject-vm-local-eligibility-contract-v1",
+  "contract_id": "subject-graph-vm-local-eligibility-v1",
+  "status": "accepted-engineering-stage-only",
+  "release": "0.112.0",
+  "scope": "Stage 3B-1 short-lived local node/edge activity carriers without event assignment or parameter update",
+  "representation": {
+    "location": "inside the unified Subject VM node/edge storage",
+    "persistent_full_path": false,
+    "long_term_event_ring_copy": false,
+    "node_value": "bounded signed executed-node output multiplied by a graph-owned eligibility gate",
+    "edge_value": "bounded signed actual edge transmission multiplied by a graph-owned eligibility gate",
+    "sign_is": "local computational direction only, not objective or subjective valence"
+  },
+  "lifecycle": {
+    "decay": "configured deterministic multiplicative decay by elapsed ticks",
+    "expiry": "configured fixed maximum age",
+    "birth": "inherit gates and participation flags but reset values and ages",
+    "clone": "copy committed local eligibility state",
+    "death": "clear values, ages and last-tick state",
+    "compaction": "move local state with the stable owner",
+    "checkpoint": "exact replay state; older Stage-3A payloads upgrade to empty local eligibility"
+  },
+  "causal_order": {
+    "activity_mark": "during activation after the actual bounded local value is known",
+    "objective_event_effect": false,
+    "same_tick_action_feedback": false,
+    "parameter_update": false,
+    "random_number_consumption": false
+  },
+  "event_semantics": {
+    "fixed_positive_or_negative_meaning": false,
+    "mandatory_assignment": false,
+    "unassigned_event_allowed": true,
+    "token_event_matching": false,
+    "credit_assignment": false
+  },
+  "accounting": {
+    "node_marks": true,
+    "edge_marks": true,
+    "decay_and_expiry_units": true,
+    "physical_energy_debit": false,
+    "selection_interpretation": false
+  },
+  "forbidden": [
+    "persistent executed-node or transmitted-edge histories",
+    "reward, valence, polarity, trust, interest or knowledge-value fields",
+    "objective-event-driven eligibility updates in Stage 3B-1",
+    "weight, gate, state-retention or topology plasticity",
+    "same-tick self-confirmation",
+    "scientific subjecthood or emergence claims"
+  ],
+  "future_boundary": "A separately frozen later stage may combine historical continuous tokens, unsigned objective facts and still-live local eligibility through a generic modulator. No event is required to receive credit."
+}

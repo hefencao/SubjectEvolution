@@ -331,18 +331,33 @@ Implemented:
 
 Acceptance met on the CPU reference path: nearby node values produce nearby token values, only graph-expressed readouts create records, Stage 3A is behavior/RNG neutral relative to Stage 2, and checkpoint/lifecycle round trips preserve bounded history.
 
-### Stage 3B — local eligibility and delayed association (not implemented)
+### Stage 3B-1 — short-lived local eligibility carriers (implemented in v0.112)
+
+Implemented:
+
+- graph-owned per-node and per-edge participation flags and bounded gates;
+- local node marks from actual executed node output;
+- local edge marks from actual bandwidth-bounded transmission;
+- deterministic elapsed-tick decay and fixed-horizon expiry;
+- exact checkpoint, clone, compaction and death handling;
+- structural inheritance with dynamic value/age reset on birth;
+- no copy into the persistent token/event ring;
+- no objective-event write, value assignment, parameter update or same-tick feedback.
+
+Acceptance met on the CPU reference path: local marks depend only on graph-selected actual activity, expire without external events, survive exact replay, and leave action outputs and RNG consumption neutral relative to Stage 3A.
+
+### Stage 3B-2 — delayed association and generic modulation (not implemented)
 
 Future work may implement:
 
-- short-lived local node/edge eligibility or another bounded local bridge;
-- later-tick association between historical tokens and objective events;
+- later-tick association between historical continuous tokens and objective events;
+- generic modulation of still-live local eligibility;
 - generic delayed update operators;
 - unexplained residual through unassigned events;
 - later-tick-only state changes;
 - no fixed valence mapping.
 
-Acceptance will require the same objective event to produce different future changes under different inherited graph parameters without changing event facts or persisting a whole-network path history.
+Acceptance will require the same objective event facts to produce different future changes under different inherited graph parameters without changing event facts or persisting a whole-network path history.
 
 ### Stage 4 — developmental variation and lifecycle pruning
 

@@ -13,6 +13,7 @@ SUBJECT_VM_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_STAGE1_SCHEMA = "partitioned-subject-graph-vm-stage1-v1"
 SUBJECT_VM_STAGE2_SCHEMA = "partitioned-subject-graph-vm-stage2-activation-v1"
 SUBJECT_VM_STAGE3_SCHEMA = "partitioned-subject-graph-vm-stage3-token-trace-v1"
+SUBJECT_VM_STAGE3B_SCHEMA = "partitioned-subject-graph-vm-stage3b-local-eligibility-v1"
 SUBJECT_VM_ACTIVATION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_ACTIVATION_SCHEMA = "bounded-phased-forward-routing-v1"
 SUBJECT_VM_INPUT_PORT_SCHEMA = "objective-entity-input-ports-v1"
@@ -20,6 +21,8 @@ SUBJECT_VM_OUTPUT_PORT_SCHEMA = "action-potential-output-ports-v1"
 SUBJECT_VM_TRACE_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_TRACE_SCHEMA = "continuous-internal-token-objective-event-v1"
 SUBJECT_VM_OBJECTIVE_EVENT_SCHEMA = "objective-action-state-delta-v1"
+SUBJECT_VM_ELIGIBILITY_DISABLED_SCHEMA = "disabled"
+SUBJECT_VM_ELIGIBILITY_SCHEMA = "local-decaying-activity-eligibility-v1"
 SUBJECT_VM_REGION_NAMES = (
     "fast-sensorimotor",
     "persistent-state",
@@ -88,6 +91,21 @@ class SubjectVMTraceConfig:
 
 
 @dataclass(frozen=True)
+class SubjectVMEligibilityConfig:
+    """Stage-3B-1 short-lived local activity carrier.
+
+    Eligibility is unsigned with respect to world outcomes: values retain the
+    signed local activation/transmission selected by graph gates, but no event
+    field is assigned positive or negative meaning and no parameter is updated.
+    """
+
+    schema: str = SUBJECT_VM_ELIGIBILITY_DISABLED_SCHEMA
+    decay: float = 0.0
+    clip: float = 0.0
+    max_age_ticks: int = 0
+
+
+@dataclass(frozen=True)
 class SubjectVMConfig:
     """Disabled-by-default partitioned graph capacity contract."""
 
@@ -98,6 +116,7 @@ class SubjectVMConfig:
     regions: tuple[SubjectVMRegionConfig, ...] = ()
     activation: SubjectVMActivationConfig = SubjectVMActivationConfig()
     trace: SubjectVMTraceConfig = SubjectVMTraceConfig()
+    eligibility: SubjectVMEligibilityConfig = SubjectVMEligibilityConfig()
 
     @property
     def total_node_capacity(self) -> int:
@@ -109,11 +128,19 @@ class SubjectVMConfig:
 
     @property
     def activation_enabled(self) -> bool:
-        return self.schema in {SUBJECT_VM_STAGE2_SCHEMA, SUBJECT_VM_STAGE3_SCHEMA}
+        return self.schema in {
+            SUBJECT_VM_STAGE2_SCHEMA,
+            SUBJECT_VM_STAGE3_SCHEMA,
+            SUBJECT_VM_STAGE3B_SCHEMA,
+        }
 
     @property
     def trace_enabled(self) -> bool:
-        return self.schema == SUBJECT_VM_STAGE3_SCHEMA
+        return self.schema in {SUBJECT_VM_STAGE3_SCHEMA, SUBJECT_VM_STAGE3B_SCHEMA}
+
+    @property
+    def eligibility_enabled(self) -> bool:
+        return self.schema == SUBJECT_VM_STAGE3B_SCHEMA
 
 
 def _scan_forbidden_keys(value: Any, path: str = "subject_vm") -> None:
@@ -184,6 +211,23 @@ def _load_trace_config(raw: Any) -> SubjectVMTraceConfig:
     )
 
 
+def _load_eligibility_config(raw: Any) -> SubjectVMEligibilityConfig:
+    if raw is None:
+        return SubjectVMEligibilityConfig()
+    if not isinstance(raw, Mapping):
+        raise ValueError("subject_vm.eligibility must be an object")
+    allowed = {"schema", "decay", "clip", "max_age_ticks"}
+    unknown = sorted(set(raw) - allowed)
+    if unknown:
+        raise ValueError(f"unknown subject_vm.eligibility fields: {unknown}")
+    return SubjectVMEligibilityConfig(
+        schema=str(raw.get("schema", SUBJECT_VM_ELIGIBILITY_DISABLED_SCHEMA)),
+        decay=float(raw.get("decay", 0.0)),
+        clip=float(raw.get("clip", 0.0)),
+        max_age_ticks=int(raw.get("max_age_ticks", 0)),
+    )
+
+
 def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
     """Parse an optional Subject VM section without inventing legacy fields."""
     if raw is None:
@@ -197,6 +241,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         "regions",
         "activation",
         "trace",
+        "eligibility",
     }
     unknown = sorted(set(raw) - allowed)
     if unknown:
@@ -235,6 +280,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         regions=tuple(regions),
         activation=_load_activation_config(raw.get("activation")),
         trace=_load_trace_config(raw.get("trace")),
+        eligibility=_load_eligibility_config(raw.get("eligibility")),
     )
     validate_subject_vm_config(cfg)
     return cfg
@@ -248,6 +294,13 @@ def _validate_disabled_activation(cfg: SubjectVMActivationConfig) -> None:
 def _validate_disabled_trace(cfg: SubjectVMTraceConfig) -> None:
     if cfg != SubjectVMTraceConfig():
         raise ValueError("inactive subject_vm trace requires exact disabled defaults")
+
+
+def _validate_disabled_eligibility(cfg: SubjectVMEligibilityConfig) -> None:
+    if cfg != SubjectVMEligibilityConfig():
+        raise ValueError(
+            "inactive subject_vm eligibility requires exact disabled defaults"
+        )
 
 
 def _validate_activation(cfg: SubjectVMActivationConfig) -> None:
@@ -288,13 +341,27 @@ def _validate_trace(cfg: SubjectVMTraceConfig) -> None:
         raise ValueError("subject_vm trace retention_ticks must be positive")
 
 
+def _validate_eligibility(cfg: SubjectVMEligibilityConfig) -> None:
+    if cfg.schema != SUBJECT_VM_ELIGIBILITY_SCHEMA:
+        raise ValueError(
+            f"Stage-3B subject_vm requires eligibility schema {SUBJECT_VM_ELIGIBILITY_SCHEMA!r}"
+        )
+    if not 0.0 <= cfg.decay < 1.0:
+        raise ValueError("subject_vm eligibility decay must be in [0, 1)")
+    if not 0.0 < cfg.clip <= 64.0:
+        raise ValueError("subject_vm eligibility clip must be in (0, 64]")
+    if not 1 <= cfg.max_age_ticks <= 65535:
+        raise ValueError("subject_vm eligibility max_age_ticks must be in [1, 65535]")
+
+
 def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
-    """Validate the frozen Stage-1/2/3A contracts."""
+    """Validate the frozen Stage-1/2/3A/3B-1 contracts."""
     if cfg.enabled:
         if cfg.schema not in {
             SUBJECT_VM_STAGE1_SCHEMA,
             SUBJECT_VM_STAGE2_SCHEMA,
             SUBJECT_VM_STAGE3_SCHEMA,
+            SUBJECT_VM_STAGE3B_SCHEMA,
         }:
             raise ValueError("enabled subject_vm requires a supported stage schema")
         if tuple(region.name for region in cfg.regions) != SUBJECT_VM_REGION_NAMES:
@@ -323,12 +390,18 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
         if cfg.schema == SUBJECT_VM_STAGE1_SCHEMA:
             _validate_disabled_activation(cfg.activation)
             _validate_disabled_trace(cfg.trace)
+            _validate_disabled_eligibility(cfg.eligibility)
         else:
             _validate_activation(cfg.activation)
             if cfg.schema == SUBJECT_VM_STAGE2_SCHEMA:
                 _validate_disabled_trace(cfg.trace)
+                _validate_disabled_eligibility(cfg.eligibility)
             else:
                 _validate_trace(cfg.trace)
+                if cfg.schema == SUBJECT_VM_STAGE3_SCHEMA:
+                    _validate_disabled_eligibility(cfg.eligibility)
+                else:
+                    _validate_eligibility(cfg.eligibility)
     else:
         if cfg.schema != SUBJECT_VM_DISABLED_SCHEMA:
             raise ValueError("disabled subject_vm requires schema 'disabled'")
@@ -342,6 +415,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             )
         _validate_disabled_activation(cfg.activation)
         _validate_disabled_trace(cfg.trace)
+        _validate_disabled_eligibility(cfg.eligibility)
 
 
 def _disabled_activation_payload(value: Any) -> bool:
@@ -373,6 +447,19 @@ def _disabled_trace_payload(value: Any) -> bool:
     )
 
 
+def _disabled_eligibility_payload(value: Any) -> bool:
+    if value is None:
+        return True
+    if not isinstance(value, Mapping):
+        return False
+    return (
+        value.get("schema") == SUBJECT_VM_ELIGIBILITY_DISABLED_SCHEMA
+        and float(value.get("decay", 0.0)) == 0.0
+        and float(value.get("clip", 0.0)) == 0.0
+        and int(value.get("max_age_ticks", 0)) == 0
+    )
+
+
 def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]:
     """Remove exact inert extensions without changing frozen identities."""
     section = payload.get("subject_vm")
@@ -380,6 +467,10 @@ def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]
         return payload
     if isinstance(section, dict) and _disabled_trace_payload(section.get("trace")):
         section.pop("trace", None)
+    if isinstance(section, dict) and _disabled_eligibility_payload(
+        section.get("eligibility")
+    ):
+        section.pop("eligibility", None)
     if (
         section.get("enabled") is False
         and section.get("schema") == SUBJECT_VM_DISABLED_SCHEMA
@@ -397,6 +488,8 @@ __all__ = [
     "SUBJECT_VM_ACTIVATION_DISABLED_SCHEMA",
     "SUBJECT_VM_ACTIVATION_SCHEMA",
     "SUBJECT_VM_DISABLED_SCHEMA",
+    "SUBJECT_VM_ELIGIBILITY_DISABLED_SCHEMA",
+    "SUBJECT_VM_ELIGIBILITY_SCHEMA",
     "SUBJECT_VM_INPUT_PORT_SCHEMA",
     "SUBJECT_VM_OBJECTIVE_EVENT_SCHEMA",
     "SUBJECT_VM_OUTPUT_PORT_SCHEMA",
@@ -404,10 +497,12 @@ __all__ = [
     "SUBJECT_VM_STAGE1_SCHEMA",
     "SUBJECT_VM_STAGE2_SCHEMA",
     "SUBJECT_VM_STAGE3_SCHEMA",
+    "SUBJECT_VM_STAGE3B_SCHEMA",
     "SUBJECT_VM_TRACE_DISABLED_SCHEMA",
     "SUBJECT_VM_TRACE_SCHEMA",
     "SubjectVMActivationConfig",
     "SubjectVMConfig",
+    "SubjectVMEligibilityConfig",
     "SubjectVMRegionConfig",
     "SubjectVMTraceConfig",
     "load_subject_vm_config",

@@ -8,6 +8,7 @@ import numpy as np
 
 from .activation import SubjectVMActivationResult, execute_activation
 from .config import SubjectVMConfig
+from .eligibility import SubjectVMLocalEligibilityUsage
 from .lifecycle import inherit_birth_rows, release_dead_rows
 from .storage import SubjectVMRegionUsage, SubjectVMStorage
 from .trace import (
@@ -19,7 +20,8 @@ from .trace import (
 
 RUNTIME_SCHEMA_V1 = "se-subject-vm-runtime-stage1-v1"
 RUNTIME_SCHEMA_V2 = "se-subject-vm-runtime-v2"
-RUNTIME_SCHEMA = "se-subject-vm-runtime-v3"
+RUNTIME_SCHEMA_V3 = "se-subject-vm-runtime-v3"
+RUNTIME_SCHEMA = "se-subject-vm-runtime-v4"
 
 
 @dataclass(frozen=True)
@@ -68,6 +70,16 @@ STAGE3_DEVICE_CONTRACT = SubjectVMDeviceContract(
     supported_execution_backends=("cpu",),
 )
 
+STAGE3B_DEVICE_CONTRACT = SubjectVMDeviceContract(
+    schema="subject-vm-stage3b-local-eligibility-cpu-reference-contract-v1",
+    host_authoritative=True,
+    device_allocation=False,
+    device_sync=False,
+    consumes_random_numbers=False,
+    affects_action_or_cost=True,
+    supported_execution_backends=("cpu",),
+)
+
 
 @dataclass
 class SubjectVMActivationAccounting:
@@ -94,6 +106,30 @@ class SubjectVMActivationAccounting:
         self.last_activation_tick = usage.tick
 
 
+@dataclass
+class SubjectVMEligibilityAccounting:
+    activation_calls: int = 0
+    decay_calls: int = 0
+    decayed_node_units: int = 0
+    decayed_edge_units: int = 0
+    expired_node_units: int = 0
+    expired_edge_units: int = 0
+    node_mark_units: int = 0
+    edge_mark_units: int = 0
+    last_eligibility_tick: int = -1
+
+    def record(self, usage: SubjectVMLocalEligibilityUsage) -> None:
+        self.activation_calls += 1
+        self.decay_calls += int(usage.decay_calls)
+        self.decayed_node_units += int(usage.decayed_nodes)
+        self.decayed_edge_units += int(usage.decayed_edges)
+        self.expired_node_units += int(usage.expired_nodes)
+        self.expired_edge_units += int(usage.expired_edges)
+        self.node_mark_units += int(usage.node_marks)
+        self.edge_mark_units += int(usage.edge_marks)
+        self.last_eligibility_tick = int(usage.tick)
+
+
 class SubjectVMRuntime:
     """No-op when disabled; graph, token-ring and lifecycle owner when enabled."""
 
@@ -107,6 +143,7 @@ class SubjectVMRuntime:
         restore_mode: str = "initialized",
         activation_accounting: SubjectVMActivationAccounting | None = None,
         trace_accounting: SubjectVMTraceAccounting | None = None,
+        eligibility_accounting: SubjectVMEligibilityAccounting | None = None,
     ) -> None:
         self.cfg = cfg
         self.entity_capacity = int(entity_capacity)
@@ -117,6 +154,9 @@ class SubjectVMRuntime:
             activation_accounting or SubjectVMActivationAccounting()
         )
         self.trace_accounting = trace_accounting or SubjectVMTraceAccounting()
+        self.eligibility_accounting = (
+            eligibility_accounting or SubjectVMEligibilityAccounting()
+        )
         self._pending_thought_tokens: SubjectVMThoughtTokenBatch | None = None
         if cfg.enabled != (storage is not None):
             raise ValueError("subject_vm runtime enabled/storage state disagrees")
@@ -144,7 +184,9 @@ class SubjectVMRuntime:
         if trace_storage is not None:
             trace_storage.initialize_rows(rows)
         mode = (
-            "initialized-stage3-empty"
+            "initialized-stage3b-empty"
+            if cfg.eligibility_enabled
+            else "initialized-stage3-empty"
             if cfg.trace_enabled
             else ("initialized-stage2-empty" if cfg.activation_enabled else "initialized-empty")
         )
@@ -169,11 +211,17 @@ class SubjectVMRuntime:
         return self.cfg.trace_enabled
 
     @property
+    def eligibility_enabled(self) -> bool:
+        return self.cfg.eligibility_enabled
+
+    @property
     def has_pending_thought_tokens(self) -> bool:
         return self._pending_thought_tokens is not None
 
     @property
     def device_contract(self) -> SubjectVMDeviceContract:
+        if self.eligibility_enabled:
+            return STAGE3B_DEVICE_CONTRACT
         if self.trace_enabled:
             return STAGE3_DEVICE_CONTRACT
         return STAGE2_DEVICE_CONTRACT if self.activation_enabled else STAGE1_DEVICE_CONTRACT
@@ -220,6 +268,8 @@ class SubjectVMRuntime:
             output_width=output_width,
         )
         self.activation_accounting.record(result)
+        if result.eligibility_usage is not None:
+            self.eligibility_accounting.record(result.eligibility_usage)
         self._pending_thought_tokens = (
             result.thought_tokens
             if result.thought_tokens is not None
@@ -321,6 +371,10 @@ class SubjectVMRuntime:
             assert self.trace_storage is not None
             payload["trace_accounting"] = asdict(self.trace_accounting)
             payload["trace_storage"] = self.trace_storage.snapshot_state()
+        if self.eligibility_enabled:
+            payload["eligibility_accounting"] = asdict(
+                self.eligibility_accounting
+            )
         return payload
 
     @classmethod
@@ -350,23 +404,35 @@ class SubjectVMRuntime:
             result.restore_mode = "compatibility-empty-rebuild"
             return result
         schema = payload.get("schema")
-        if schema not in {RUNTIME_SCHEMA, RUNTIME_SCHEMA_V2, RUNTIME_SCHEMA_V1}:
+        if schema not in {
+            RUNTIME_SCHEMA, RUNTIME_SCHEMA_V3, RUNTIME_SCHEMA_V2, RUNTIME_SCHEMA_V1
+        }:
             raise ValueError("unsupported subject_vm runtime checkpoint schema")
         if schema == RUNTIME_SCHEMA_V1 and cfg.activation_enabled:
             raise ValueError("active subject_vm cannot restore Stage-1 runtime state")
         compatibility_empty_trace = cfg.trace_enabled and schema == RUNTIME_SCHEMA_V2
+        compatibility_empty_eligibility = cfg.eligibility_enabled and schema in {
+            RUNTIME_SCHEMA_V2,
+            RUNTIME_SCHEMA_V3,
+        }
         if schema == RUNTIME_SCHEMA_V1:
             expected_contract = STAGE1_DEVICE_CONTRACT.schema
-        elif compatibility_empty_trace:
+        elif schema == RUNTIME_SCHEMA_V2:
             expected_contract = STAGE2_DEVICE_CONTRACT.schema
+        elif schema == RUNTIME_SCHEMA_V3:
+            expected_contract = STAGE3_DEVICE_CONTRACT.schema
         else:
             expected_contract = (
-                STAGE3_DEVICE_CONTRACT.schema
-                if cfg.trace_enabled
+                STAGE3B_DEVICE_CONTRACT.schema
+                if cfg.eligibility_enabled
                 else (
-                    STAGE2_DEVICE_CONTRACT.schema
-                    if cfg.activation_enabled
-                    else STAGE1_DEVICE_CONTRACT.schema
+                    STAGE3_DEVICE_CONTRACT.schema
+                    if cfg.trace_enabled
+                    else (
+                        STAGE2_DEVICE_CONTRACT.schema
+                        if cfg.activation_enabled
+                        else STAGE1_DEVICE_CONTRACT.schema
+                    )
                 )
             )
         if payload.get("device_contract") != expected_contract:
@@ -384,6 +450,7 @@ class SubjectVMRuntime:
         )
         trace_storage = None
         trace_accounting = SubjectVMTraceAccounting()
+        eligibility_accounting = SubjectVMEligibilityAccounting()
         restore_mode = str(payload.get("restore_mode", "checkpoint-restored"))
         if cfg.trace_enabled:
             if compatibility_empty_trace:
@@ -401,6 +468,23 @@ class SubjectVMRuntime:
                         for key, default in asdict(SubjectVMTraceAccounting()).items()
                     }
                 )
+        if cfg.eligibility_enabled:
+            if compatibility_empty_eligibility:
+                restore_mode = (
+                    "compatibility-empty-token-trace-and-local-eligibility-rebuild"
+                    if compatibility_empty_trace
+                    else "compatibility-empty-local-eligibility-rebuild"
+                )
+            else:
+                eligibility_raw = payload.get("eligibility_accounting", {})
+                eligibility_accounting = SubjectVMEligibilityAccounting(
+                    **{
+                        key: int(eligibility_raw.get(key, default))
+                        for key, default in asdict(
+                            SubjectVMEligibilityAccounting()
+                        ).items()
+                    }
+                )
         return cls(
             cfg,
             entity_capacity,
@@ -409,6 +493,7 @@ class SubjectVMRuntime:
             restore_mode=restore_mode,
             activation_accounting=activation_accounting,
             trace_accounting=trace_accounting,
+            eligibility_accounting=eligibility_accounting,
         )
 
     def region_usage(self) -> tuple[SubjectVMRegionUsage, ...]:
@@ -419,10 +504,12 @@ class SubjectVMRuntime:
             "enabled": self.enabled,
             "activation_enabled": self.activation_enabled,
             "trace_enabled": self.trace_enabled,
+            "eligibility_enabled": self.eligibility_enabled,
             "restore_mode": self.restore_mode,
             "device_contract": self.device_contract.schema,
             "activation_accounting": asdict(self.activation_accounting),
             "trace_accounting": asdict(self.trace_accounting),
+            "eligibility_accounting": asdict(self.eligibility_accounting),
             "trace_storage": (
                 None if self.trace_storage is None else self.trace_storage.diagnostics()
             ),
@@ -444,6 +531,9 @@ class SubjectVMRuntime:
                 **asdict(self.activation_accounting)
             ),
             trace_accounting=SubjectVMTraceAccounting(**asdict(self.trace_accounting)),
+            eligibility_accounting=SubjectVMEligibilityAccounting(
+                **asdict(self.eligibility_accounting)
+            ),
         )
 
 
@@ -451,10 +541,13 @@ __all__ = [
     "RUNTIME_SCHEMA",
     "RUNTIME_SCHEMA_V1",
     "RUNTIME_SCHEMA_V2",
+    "RUNTIME_SCHEMA_V3",
     "STAGE1_DEVICE_CONTRACT",
     "STAGE2_DEVICE_CONTRACT",
     "STAGE3_DEVICE_CONTRACT",
+    "STAGE3B_DEVICE_CONTRACT",
     "SubjectVMActivationAccounting",
     "SubjectVMDeviceContract",
+    "SubjectVMEligibilityAccounting",
     "SubjectVMRuntime",
 ]

@@ -1286,7 +1286,7 @@ The graph shares one routing and identity contract. Existing latent, working-mem
 
 The engine supplies objective event and provenance facts only. The graph may emit a compact continuous internal token through generic readout ports. Long-term history stores that token rather than a complete historical node/edge path. Any future graph-element update must rely on short-lived local eligibility or another separately frozen local bridge; it does not receive fixed valence for energy, integrity, resources, knowledge accuracy, protection, reproduction, partners or groups. Unassigned consequence remains valid and expires with bounded history.
 
-The implementation is staged. v0.108 implemented disabled-by-default inert graph configuration/storage, checkpoint and lifecycle support with exact neutral behavior. v0.109 added the separately frozen Stage-2 CPU-reference activation adapter, and v0.110 froze single optional-route ownership. v0.111 adds only a continuous graph-produced token and bounded objective-event ring. Local eligibility, delayed association, plasticity, developmental mutation, physical graph-cost conversion and emergence studies still require later stages and separate tests.
+The implementation is staged. v0.108 implemented disabled-by-default inert graph configuration/storage, checkpoint and lifecycle support with exact neutral behavior. v0.109 added the separately frozen Stage-2 CPU-reference activation adapter, and v0.110 froze single optional-route ownership. v0.111 added a continuous graph-produced token and bounded objective-event ring. v0.112 adds only short-lived local node/edge activity eligibility inside the unified graph. Delayed token/event association, event modulation, parameter plasticity, developmental mutation, physical graph-cost conversion and emergence studies still require later stages and separate tests.
 
 New implementation belongs under `src/se/subject_vm/`; it must not enlarge `runtime/sim.py`, `subjects/social.py` or `knowledge/system.py` into another monolith. Configuration, runtime, policy, checkpoint and lifecycle modules call narrow subject-VM interfaces.
 
@@ -1332,6 +1332,20 @@ The persistent ring stores the token, stable event and subject references, actua
 Token recording is after action arbitration and authoritative world effects. It consumes no random numbers, feeds no information back into the same tick, and writes neither eligibility nor graph parameters. Births inherit graph structure but not token history; death clears history; compaction and clone move/copy it with the stable owner; Stage-2 checkpoints may upgrade only to an explicitly empty token ring.
 
 This is still not attribution or plasticity. A later local eligibility contract must bridge token-level delayed association back to graph elements without reintroducing a persistent whole-network path log. Objective energy, integrity, information, resource and reproduction facts remain unsigned; no polarity or reward is implied.
+
+### v0.112 Stage-3B-1 short-lived local eligibility carriers
+
+Stage 3B-1 adds one narrow module inside the existing graph owner:
+
+```text
+subject_vm/eligibility.py  elapsed-tick decay, expiry and local activity marks
+```
+
+A node or edge participates only when its graph-owned eligibility flag and gate are expressed. An executed node may leave its bounded signed output locally; a transmitted edge may leave its actual bandwidth-bounded signed contribution locally. The sign records computational direction only. It is not an objective-event sign, subjective valence, reward or evidence that the element was beneficial.
+
+Eligibility is short-lived graph state, not a historical path log. Values decay deterministically by elapsed ticks, expire at a fixed configured age, remain bounded, and are checkpointed only for exact replay. They are never copied into the long-term token/event ring. Birth inherits only participation flags and gates while resetting values and ages; clone copies committed state; death clears it; compaction moves it with the stable owner.
+
+Objective event commit has no eligibility write in v0.112. No token/event matcher, modulator, credit router, weight update, retained-state update or topology update exists. The same graph therefore produces the same action outputs and consumes the same random numbers as Stage 3A. A future Stage-3B-2 contract must separately define how bounded historical tokens, unsigned objective facts and still-live local eligibility may interact while permitting every event to remain unassigned.
 
 ### v0.110 legacy network disposition and route ownership
 
