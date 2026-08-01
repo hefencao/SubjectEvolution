@@ -1,0 +1,55 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _load(relative: str) -> dict:
+    return json.loads((ROOT / relative).read_text(encoding="utf-8"))
+
+
+def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
+    contract = _load("protocols/epochs/subject_graph_vm_v1.json")
+    assert contract["status"] == "implementation-contract-frozen-runtime-not-started"
+    assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
+    assert contract["graph_model"]["initial_regions"] == [
+        "fast-sensorimotor",
+        "persistent-state",
+        "delayed-association",
+        "integrative-drive",
+    ]
+    assert contract["routing"]["shared_graph"] is True
+    assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
+    assert contract["routing"]["unassigned_credit_allowed"] is True
+    assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
+    assert contract["legacy_status"]["d1x_d1y"].startswith("rejected-as-primary")
+
+
+def test_epoch_one_uses_functional_v2_contract_not_semantic_ledgers() -> None:
+    registry = _load("protocols/epochs/subject_epochs_v1.json")
+    epoch = next(
+        item for item in registry["epochs"]
+        if item["epoch_id"] == "epoch-1-entity-subject-prototype"
+    )
+    assert epoch["entry_contract"]["contract_id"] == "entity-subject-functional-qualification-v2"
+    assert epoch["entry_contract"]["contract_file"] == "protocols/epochs/entity_subject_functional_qualification_v2.json"
+
+    contract = _load(epoch["entry_contract"]["contract_file"])
+    stages = {item["stage"] for item in contract["required_stages"]}
+    assert {
+        "delayed-history-use",
+        "behavioral-control",
+        "baseline-exceedance",
+        "cost-compensation",
+        "long-horizon-replication",
+    } <= stages
+    assert any("designer-defined material or knowledge" in item for item in contract["forbidden_shortcuts"])
+
+
+def test_old_interest_contract_is_retained_only_as_superseded_baseline() -> None:
+    old = _load("protocols/epochs/interest_feedback_network_qualification_v1.json")
+    assert old["status"] == "superseded-as-primary-contract"
+    assert old["superseded_by"] == "entity-subject-functional-qualification-v2"
+    assert "fixed-cognition comparison baseline" in old["retained_use"]

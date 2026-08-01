@@ -316,3 +316,15 @@ information interface.
 - Material and knowledge ledgers settle independently. Protection, conflict assistance and opportunity cost must be added as separate auditable channels rather than folded into either existing channel.
 - Evidence whose source entity has died must not be attached to a recycled entity row. Until historical subject identity is implemented, such evidence remains orphaned and cannot update a living partner relation.
 - D1-Y remains a single-seed semantics debug. No Epoch 1 entry, formal relation panel, group rule, gene audit or subjecthood claim is authorized.
+
+
+## D1-Z cognitive-architecture and implementation governance
+
+- General cognitive architecture may be prescribed because cognition-architecture discovery is not the project objective. Concrete cognition, subjective valence, social concepts and role conclusions may not be prescribed.
+- The primary substrate is one unified node/edge graph with initially biased regions. Regions reduce search time but cannot be treated as evidence of navigation, attribution, interest, language or other cognitive functions.
+- Interest and decision may overlap in recurrent graph state. The mandatory separation is causal phase order: current actions cannot receive credit from outcomes that do not yet exist.
+- The world runtime may record objective events, provenance and actual usage eligibility. It may not assign fixed positive or negative meanings to physical coordinates or named event classes.
+- D1-X/Y are frozen fixed-cognition comparison baselines. Adding protection, conflict, opportunity-cost or other named semantic ledgers to them is not authorized as the primary subject path.
+- Stage 1 implementation is restricted to disabled-by-default inert graph schema/storage and lifecycle integration. No action effect, delayed plasticity, reward input, relation replacement or group-rule behavior is authorized.
+- New subject-graph code must use a dedicated package and narrow integration interfaces. Existing large orchestration, social and knowledge modules must not absorb the implementation.
+- Epoch 1 requires functional evidence under the v2 contract: delayed history use, behavioral intervention, baseline exceedance, cost compensation and independent replication. Matching region names, relation counts or topology across seeds is not required and is not sufficient.

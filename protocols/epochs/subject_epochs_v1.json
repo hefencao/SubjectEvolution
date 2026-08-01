@@ -1,17 +1,18 @@
 {
   "schema": "se-epoch-registry-v1",
   "registry_id": "subject-formation-epochs-v1",
-  "principle": "A later epoch begins only from a qualified, frozen full-world checkpoint. Epochs separate long-horizon emergence from short mechanism development; they do not turn milestone names into rewards or controllers.",
+  "principle": "A later epoch begins only from a qualified, frozen full-world checkpoint. Epochs separate long-horizon emergence from short mechanism development. General cognitive architecture priors are allowed, but concrete cognitive contents, subjective values, social concepts and role conclusions cannot be supplied as answers.",
   "epochs": [
     {
       "epoch_id": "epoch-0-ecological-carriers",
-      "title": "生态承载体与结构化环境",
+      "title": "生态承载体与分区主体图塑形",
       "previous_epoch": null,
       "status": "current-development-era",
       "entry_contract": null,
       "allowed_conclusions": [
         "physical and information wiring",
         "population and lineage qualification",
+        "partitioned subject-graph architecture and neutral routing validation",
         "observational ecological and group-structure diagnostics"
       ],
       "prohibited_conclusions": [
@@ -22,28 +23,31 @@
     },
     {
       "epoch_id": "epoch-1-entity-subject-prototype",
-      "title": "实体主体雏形：利益反馈关系网络",
+      "title": "实体主体雏形：涌现的跨时程内部动力结构",
       "previous_epoch": "epoch-0-ecological-carriers",
       "status": "planned-entry-gate",
       "entry_contract": {
-        "contract_id": "interest-feedback-network-qualification-v1",
+        "contract_id": "entity-subject-functional-qualification-v2",
         "required_evidence": [
-          "relations are updated from delayed realized costs, benefits and reciprocal consequences rather than fixed SHARE success increments",
-          "the feedback network persists across multiple generations and independent seeds",
-          "network structure predicts later cooperation or avoidance beyond spatial proximity and kinship",
-          "neutralizing feedback while retaining interaction opportunities changes the network and continuation outcomes"
+          "a nontrivial evolved internal graph state depends on delayed history",
+          "that state changes later behavior under shared-checkpoint intervention",
+          "its effect exceeds reflex, proximity, kinship, recent-event and fixed-cognition baselines",
+          "its continuation effect compensates for explicit cognitive costs",
+          "functionally equivalent structures recur across independent seeds or lineages without requiring identical representations"
         ],
         "forbidden_substitutes": [
+          "fixed semantic material or knowledge ledgers",
           "trust threshold connected components",
-          "one-run group counts",
-          "fixed designer-assigned relation gains",
+          "one-run group or relation counts",
+          "architectural region labels treated as cognitive functions",
           "role labels or reward bonuses"
         ],
-        "contract_file": "protocols/epochs/interest_feedback_network_qualification_v1.json"
+        "contract_file": "protocols/epochs/entity_subject_functional_qualification_v2.json"
       },
       "allowed_conclusions": [
-        "candidate entity-level interest boundary",
-        "persistent learned partner differentiation"
+        "candidate entity-level internal continuation boundary",
+        "persistent delayed internal control of behavior",
+        "candidate interest-decision closure without prescribed semantic content"
       ],
       "prohibited_conclusions": [
         "group subjecthood",
@@ -58,11 +62,11 @@
       "entry_contract": {
         "contract_id": "effective-group-rules-qualification-v1",
         "required_evidence": [
-          "group rules are stored as group state rather than copied designer policy",
-          "rules measurably constrain or redirect member actions",
-          "rule effects persist through member turnover",
-          "group-level continuation or resource control changes when rules are neutralized from a shared checkpoint",
-          "membership and enforcement arise from relation, interest and order feedback rather than group labels"
+          "shared or externalized control state arises from interacting entity subject graphs rather than copied designer policy",
+          "the shared state measurably constrains or redirects member actions",
+          "control effects persist through member turnover",
+          "group-level continuation or resource control changes when shared control state is neutralized from a common checkpoint",
+          "membership, enforcement and effective rules arise from evolved internal and inter-entity dynamics rather than group labels"
         ],
         "forbidden_substitutes": [
           "connected-component labels",

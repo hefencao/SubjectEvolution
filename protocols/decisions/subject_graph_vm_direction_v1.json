@@ -1,0 +1,18 @@
+{
+  "schema": "se-scientific-direction-decision-v1",
+  "decision_id": "subject-graph-vm-primary-direction-v1",
+  "status": "accepted",
+  "release": "0.107.0",
+  "decision": "Adopt a partitioned unified subject graph as the primary subject-formation substrate. Preset general cognitive architecture and regions to reduce search time, while forbidding preset concrete cognition or semantic value formulas.",
+  "rejected_primary_path": "Continue expanding D1-X/Y with separate designer-defined material, knowledge, protection, conflict or opportunity-cost attribution ledgers.",
+  "retained_baselines": [
+    "D1-X",
+    "D1-Y"
+  ],
+  "rationale": [
+    "a completely unstructured graph may require impractical evolutionary time to form useful long-timescale computation",
+    "fully separate semantic networks duplicate routing and impose designer cognition",
+    "one graph with biased regions permits rapid shaping, cross-region overlap and later architectural variation",
+    "interest and decision may overlap on the same graph while causal phase ordering prevents same-tick self-confirmation"
+  ]
+}

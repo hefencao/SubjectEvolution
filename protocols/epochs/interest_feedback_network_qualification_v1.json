@@ -2,7 +2,7 @@
   "schema": "se-epoch-entry-contract-v1",
   "contract_id": "interest-feedback-network-qualification-v1",
   "target_epoch": "epoch-1-entity-subject-prototype",
-  "status": "not-yet-qualified",
+  "status": "superseded-as-primary-contract",
   "required_stages": [
     {
       "stage": "material-interest-semantics",
@@ -31,5 +31,11 @@
     "one-run relation counts",
     "designer-provided partner classes",
     "subjecthood scores without the entry evidence"
+  ],
+  "superseded_by": "entity-subject-functional-qualification-v2",
+  "retained_use": [
+    "historical D1-X/Y interpretation",
+    "fixed-cognition comparison baseline",
+    "engineering tests for delayed ledgers and source provenance"
   ]
 }

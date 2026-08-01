@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.107.0
+
+- Freezes `partitioned-subject-graph-vm-v1` as the primary entity-subject implementation direction without changing runtime behavior.
+- Allows preset general cognitive architecture and initially biased computational regions while forbidding preset concrete cognition, subjective valence, social concepts and role conclusions.
+- Defines one stable node/edge identity space with fast sensorimotor, persistent-state, delayed-association and integrative-drive regions, shared activation routing and later delayed-plasticity routing.
+- Defines causal phase safety, bounded objective provenance, unassigned consequence, developmental activation and separate structural/runtime/memory/bandwidth/plasticity costs.
+- Replaces the Epoch 1 primary contract with functional qualification v2: delayed history use, behavioral intervention, baseline exceedance, cost compensation and independent replication without requiring matching representations.
+- Marks D1-X/Y as rejected primary subject models while retaining them as fixed-cognition comparison baselines and engineering fixtures.
+- Authorizes only the next inert schema/storage implementation stage; action influence, plasticity, group rules and subjecthood claims remain unauthorized.
+
 ## 0.106.0
 
 - Adds opt-in `delayed-multichannel-interest-v2`, retaining D1-X material return as one short-horizon channel rather than complete partner value.

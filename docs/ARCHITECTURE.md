@@ -1262,3 +1262,32 @@ Prediction error is normalized by the existing per-outcome policy scales. Signed
 `KnowledgeVerificationCreditAudit` is a transient, checkpointed audit boundary between the knowledge system and the social relation system. `runtime/interest_feedback.py` owns identity mapping and refuses to attach credit to a recycled entity row. Missing living sources are counted as orphaned evidence.
 
 This design does not yet provide historical relation storage. The next architectural boundary must key durable partner memory by stable subject identity while allowing a separate live-entity index for action targeting. It must define death retention, inheritance, capacity eviction and regional-branch semantics before orphaned evidence can affect later relations.
+
+
+## D1-Z partitioned unified subject-graph implementation boundary
+
+D1-Z replaces the primary expansion path of semantic relation ledgers with an implementation contract for `partitioned-subject-graph-vm-v1`.
+
+```text
+one stable node/edge identity space
+        ├── fast sensorimotor region
+        ├── persistent-state region
+        ├── delayed-association region
+        └── integrative-drive region
+
+activation phase: current inputs/state → action potentials
+world phase: authoritative physical execution and objective event facts
+plasticity phase: realized consequences + bounded usage eligibility → future graph state
+```
+
+Regions are developmental search priors. They are not separate services and their names are not evidence that a node performs a cognitive function. Initial hard membership may be used for the first implementation, but capacity, cross-region bandwidth and later node reassignment must be versionable.
+
+The graph shares one routing and identity contract. Existing latent, working-memory, knowledge and functional-module systems may supply adapters or operators, but they must not create parallel incompatible route stores. The action system remains the authoritative actuator/arbitration boundary; it may later consume graph action potentials but must not own graph internals.
+
+The engine supplies objective event and provenance facts only. Delayed association may route consequence eligibility to graph elements that actually participated in the relevant computation. It does not receive fixed valence for energy, integrity, resources, knowledge accuracy, protection, reproduction, partners or groups. Unassigned consequence is valid and expires with bounded traces.
+
+The implementation is staged. v0.107 authorizes documentation and contracts only. The next release may add disabled-by-default inert graph configuration/storage, checkpoint and lifecycle support, with exact neutral behavior. Forward activation, delayed plasticity, developmental mutation and emergence studies require later stages and separate tests.
+
+New implementation belongs under `src/se/subject_vm/`; it must not enlarge `runtime/sim.py`, `subjects/social.py` or `knowledge/system.py` into another monolith. Configuration, runtime, policy, checkpoint and lifecycle modules call narrow subject-VM interfaces.
+
+D1-X/Y remain reproducible fixed-cognition comparison baselines. Their semantic material and knowledge ledgers are not extended with more named benefit channels on the primary path.

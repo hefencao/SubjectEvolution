@@ -1,0 +1,85 @@
+{
+  "schema": "se-subject-graph-vm-contract-v1",
+  "contract_id": "partitioned-subject-graph-vm-v1",
+  "status": "implementation-contract-frozen-runtime-not-started",
+  "project_version": "0.107.0",
+  "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
+  "graph_model": {
+    "identity": "one-unified-node-edge-identity-space",
+    "regions_are": "developmental-search-priors-not-semantic-modules",
+    "initial_regions": [
+      "fast-sensorimotor",
+      "persistent-state",
+      "delayed-association",
+      "integrative-drive"
+    ],
+    "future_overlap": "region assignment and cross-region bandwidth may evolve; later schemas may permit soft membership"
+  },
+  "routing": {
+    "activation_phase": "current inputs and retained state may affect current action potentials",
+    "plasticity_phase": "realized objective consequences may update only future state through bounded eligibility traces",
+    "shared_graph": true,
+    "same_tick_self_confirmation_forbidden": true,
+    "unassigned_credit_allowed": true
+  },
+  "objective_engine_facts": [
+    "event identity and time",
+    "stable participating subject identities",
+    "actual action and target",
+    "physical context and objective state delta",
+    "content provenance actually read",
+    "node and edge usage eligibility"
+  ],
+  "forbidden_concrete_cognition": [
+    "fixed subjective valence for energy, integrity, resources, information or reproduction",
+    "fixed trust, friend, enemy, betrayal, cooperation or role semantics",
+    "fixed material, knowledge, protection or conflict benefit formulas",
+    "group-label bonuses or conflict targeting",
+    "diagnostic labels fed back into behavior"
+  ],
+  "costs": [
+    "expressed node maintenance",
+    "node execution",
+    "retained state capacity and duration",
+    "active edge bandwidth",
+    "cross-region transport",
+    "plasticity update",
+    "developmental structure creation"
+  ],
+  "implementation_stages": [
+    {
+      "stage": 0,
+      "name": "contract-freeze",
+      "runtime_change": false
+    },
+    {
+      "stage": 1,
+      "name": "inert-schema-storage",
+      "runtime_change": "disabled path must be exactly neutral"
+    },
+    {
+      "stage": 2,
+      "name": "activation-routing",
+      "runtime_change": "generic graph may influence bounded action potentials"
+    },
+    {
+      "stage": 3,
+      "name": "objective-traces-delayed-plasticity",
+      "runtime_change": "later consequences may change future graph state without fixed valence"
+    },
+    {
+      "stage": 4,
+      "name": "developmental-variation-pruning-cost",
+      "runtime_change": "topology and capacities may evolve under explicit cost"
+    },
+    {
+      "stage": 5,
+      "name": "emergence-and-epoch-qualification",
+      "runtime_change": "scientific studies only after health qualification"
+    }
+  ],
+  "legacy_status": {
+    "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
+    "trust_group_graph": "legacy-observational-structure-not-subject-vm"
+  }
+}

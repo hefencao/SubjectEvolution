@@ -83,8 +83,9 @@ def test_interest_feedback_debug_never_claims_epoch_one(tmp_path: Path) -> None:
     assert report["authorization"]["epoch_1_base_checkpoint"] is False
 
 
-def test_epoch_one_contract_remains_unqualified() -> None:
+def test_interest_feedback_contract_is_retained_as_superseded_baseline() -> None:
     contract = json.loads((ROOT / "protocols/epochs/interest_feedback_network_qualification_v1.json").read_text())
     assert contract["target_epoch"] == "epoch-1-entity-subject-prototype"
-    assert contract["status"] == "not-yet-qualified"
+    assert contract["status"] == "superseded-as-primary-contract"
+    assert contract["superseded_by"] == "entity-subject-functional-qualification-v2"
     assert len(contract["required_stages"]) == 5

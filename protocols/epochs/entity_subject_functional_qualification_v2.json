@@ -1,0 +1,45 @@
+{
+  "schema": "se-epoch-entry-contract-v2",
+  "contract_id": "entity-subject-functional-qualification-v2",
+  "target_epoch": "epoch-1-entity-subject-prototype",
+  "status": "planned-not-yet-qualified",
+  "architecture_contract": "protocols/epochs/subject_graph_vm_v1.json",
+  "required_stages": [
+    {
+      "stage": "nontrivial-internal-dynamics",
+      "requirement": "evolved graph state persists beyond immediate observation and differs across histories under the same current observation"
+    },
+    {
+      "stage": "delayed-history-use",
+      "requirement": "bounded delayed event history changes later graph state without a designer-defined semantic benefit ledger"
+    },
+    {
+      "stage": "behavioral-control",
+      "requirement": "neutralizing graph state, plasticity or preregistered cross-region routes from a shared checkpoint changes later actions"
+    },
+    {
+      "stage": "baseline-exceedance",
+      "requirement": "graph state predicts or controls later behavior beyond reflex, proximity, kinship, encounter-frequency, recent-event and fixed D1-X/Y baselines"
+    },
+    {
+      "stage": "cost-compensation",
+      "requirement": "the expressed graph's continuation effect compensates for measured structural, execution, memory, bandwidth and plasticity costs"
+    },
+    {
+      "stage": "long-horizon-replication",
+      "requirement": "functionally equivalent delayed internal control recurs across independent seeds or multiple lineages and persists across generations"
+    },
+    {
+      "stage": "representation-neutrality",
+      "requirement": "qualification does not require matching internal node meanings or topology across seeds"
+    }
+  ],
+  "forbidden_shortcuts": [
+    "fixed SHARE trust increments",
+    "designer-defined material or knowledge value formulas",
+    "named partner, role or group classes",
+    "one-run relation or group counts",
+    "subjecthood scores without shared-checkpoint intervention",
+    "assuming architectural region names are cognitive functions"
+  ]
+}

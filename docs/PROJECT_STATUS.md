@@ -1,41 +1,50 @@
 # SE project status
 
-Version: **0.106.0**
+Version: **0.107.0**
 
 ## Current scientific task
 
-D1-Y extends the D1-X delayed material-interest relation with an independently settled long-horizon knowledge channel. A transferred knowledge copy is attributed to its source only when the receiver later verifies the copy against a realized five-dimensional outcome. Prediction quality, confidence-weighted evidence and verification delay remain separately observable; they are not collapsed into the short-window material-return ratio.
+The current task is no longer to add more designer-defined benefit ledgers to D1-X/Y. Those studies demonstrated useful delayed-state, provenance and reporting machinery, but their material and knowledge update rules prescribe concrete cognitive meanings and are rejected as the primary entity-subject model.
 
-Debug seed 106011 completed tick 900 with 88 living entities after a minimum of 60. It produced 456 material settlements, 58 committed knowledge transfers, 27 later-verified transferred copies, 234 source-attributed knowledge evidence events and six knowledge-window settlements. Mean verification delay was about 142.7 ticks. The run ended with 168 live directed relation edges and measurable partner differentiation. It also produced 110 orphaned knowledge events because the source subject was no longer represented by a living entity row, exposing the need for stable historical partner identity.
+The accepted next substrate is `partitioned-subject-graph-vm-v1`: one unified evolvable graph with initially biased fast sensorimotor, persistent-state, delayed-association and integrative-drive regions. The regional architecture is an allowed search prior. Region names do not prescribe what an entity values, believes or represents.
 
-The run validates multi-channel and multi-timescale relationship semantics only. Its population falls below the debug floor of 64, information quality is not yet causal information use or downstream benefit, and no Epoch 1 base is authorized.
+Version 0.107 freezes architecture, causal phases, costs, implementation stages and Epoch 1 qualification. It does not change simulation behavior.
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Physical carriers, structured environments, exchange, communication and all prerequisite interest channels may be implemented, but no entity or group subjecthood is inferred.
-- `epoch-1-entity-subject-prototype`: begins only after multi-channel realized interest feedback forms predictive relation networks that persist across generations and independent seeds and survive cost-preserving neutralization.
-- `epoch-2-group-subject-prototype`: begins only after group-owned rules measurably redirect member actions, persist through turnover and change group continuation under shared-checkpoint neutralization.
+- `epoch-0-ecological-carriers`: current era, now including development of a role-neutral partitioned subject-graph virtual machine. Architecture, event provenance, routing and costs may be implemented; concrete value, trust, role and social meanings may not be supplied.
+- `epoch-1-entity-subject-prototype`: begins only when an evolved delayed internal structure changes later behavior, exceeds simple and fixed-cognition baselines, compensates for its costs and recurs across independent evolutionary histories. Internal representations need not match.
+- `epoch-2-group-subject-prototype`: begins only when shared or externalized control state emerges from entity interactions, persists through member turnover and causally redirects group continuation without using group labels as physical rules.
 
 No supplied checkpoint currently passes either later-epoch contract.
 
+## Primary architecture decision
+
+The project may preset general cognitive architecture because discovering cognition architecture from a fully unstructured graph is not the research objective and may require impractical evolutionary time. It may not preset concrete cognition.
+
+Authorized architecture priors include regions, update schedules, persistent capacity, delayed eligibility, generic operators, phase ordering and explicit costs. Forbidden answers include fixed subjective valence, trust rules, partner classes, named social functions and fixed benefit formulas.
+
+D1-X/Y remain available as fixed-cognition comparison baselines and engineering fixtures only.
+
+## Implementation authorization
+
+Authorized next implementation stage:
+
+- Stage 1 inert Subject Graph VM schema and fixed-capacity storage;
+- disabled-by-default and exactly neutral execution path;
+- checkpoint, clone, birth/death and regional-branch lifecycle support;
+- one node and edge identity model with region assignment;
+- configuration identity and architecture tests.
+
+Not yet authorized:
+
+- routing graph output into live action policy;
+- delayed plasticity or subjective update rules;
+- semantic benefit inputs or a universal reward;
+- relation/group replacement;
+- group-rule implementation;
+- Epoch 1, selection, adaptation or subjecthood claims.
+
 ## Epoch bases and regional branches
 
-`se-epoch freeze-base` freezes a qualified complete checkpoint together with its matching qualification report, epoch registry and SHA-256 lock. `regional-active-set-branch-v1` can then reduce active entity scale while preserving the complete environmental coordinate frame and field phase. It remains an explicit intervention, not exact full-world continuation.
-
-## Authorization
-
-Authorized:
-
-- continuing role-neutral implementation of material, information, protection, conflict-assistance and opportunity-cost consequence channels during Epoch 0;
-- debugging separately observable short- and long-horizon partner evidence;
-- replacing row-addressed relation credit with stable historical subject identity;
-- testing whether relation state predicts later choices after controlling distance, kinship and encounter frequency;
-- freezing an epoch base only after its registered qualification contract passes.
-
-Not authorized:
-
-- declaring Epoch 1 from the D1-Y debug run;
-- treating verified prediction quality as proven causal knowledge use or fitness benefit;
-- merging all benefit channels into one hand-tuned scalar at event time;
-- treating current trust-threshold groups as rule-bearing subjects;
-- starting group-rule implementation, gene audit, selection, adaptation or social-role claims from this sample.
+`se-epoch freeze-base` remains the checkpoint boundary. Future epoch bases must include Subject Graph VM topology, region state, expression and route state once implemented. `regional-active-set-branch-v1` remains an explicit entity-pruning intervention and must eventually delegate graph pruning through stable subject and node identities.

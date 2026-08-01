@@ -229,3 +229,12 @@ The v5 architecture is retained. The supplied long-run result exposed a settleme
 The conservative physiology substrate is retained. The next limitation was not another missing module output but immediate settlement of all harvested channels into body outcomes. D3-A adds inherited bounded stores and delayed conversion while preserving the fixed operator kernel, existing resource-effect matrix, and equal base parameters across channels.
 
 This creates a temporal processing axis and exposes internal inventory to operator input selection. It does not yet add spatial processing sites, detritus, trophic transfer, or a claim of metabolic specialization.
+
+
+## v0.107 分区统一主体图补充评估
+
+通用功能算子、遗传重复和表达门控仍是可复用基础，但不应把所有节点初始化为一个完全无结构的统一池。为缩短有效结构的演化搜索时间，主体图采用预设计算区域；区域内连接、更新频率和状态容量提供发育偏置，跨区边负责功能整合。
+
+这不改变原评估中的语义边界：通用算子不能自行创造新的世界能力，也不能通过节点名称创造利益、信任或社会角色。区域只能规定计算条件，不能规定认知内容。
+
+推荐实现顺序为：固定容量与 disabled-neutral 存储、前向激活路由、客观 usage trace 与延迟可塑性、发育和成本、最后才是长期演化与中和实验。不得在第一版中同时开放任意拓扑、生命周期结构学习和完整 GPU 动态图。

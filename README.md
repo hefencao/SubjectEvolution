@@ -1,18 +1,20 @@
-# SE v0.106
+# SE v0.107
 
 Reference implementation for nested-subject existence and ecological evolution simulation.
 
 ## Current direction
 
-D1-Y replaces the idea that one short material-return ratio can represent complete partner value. Relationship learning now has independently auditable channels and timescales:
+Version 0.107 freezes the design for the next subject-formation substrate without changing runtime behavior.
 
-- short-horizon material giving and receiving remain one channel;
-- transferred knowledge creates a separate long-horizon channel only after the receiver later verifies its prediction against a realized five-dimensional outcome;
-- material and knowledge windows settle independently rather than being collapsed into one scalar formula at event time;
-- fixed SHARE trust bonuses and penalties remain disabled in the D1-Y configuration;
-- knowledge quality is evidence of verified information value, not yet proof that the receiver used the information or gained a causal survival advantage.
+The project will use a **partitioned unified subject graph**:
 
-The D1-Y debug run demonstrates multi-timescale relation semantics but does not enter Epoch 1. Population qualification, stable historical partner identity after death, protection/conflict/opportunity-cost channels, predictive validity and shared-checkpoint neutralization remain open.
+- one evolvable node/edge identity space;
+- initially biased fast sensorimotor, persistent-state, delayed-association and integrative-drive regions;
+- shared activation routing and later delayed-plasticity routing on the same graph;
+- explicit structural, execution, memory, bandwidth and plasticity costs;
+- no built-in trust, benefit, friend, enemy, knowledge-value or social-role semantics.
+
+The project may preset general cognitive architecture to reduce evolutionary search time. It must not preset concrete cognition. D1-X/Y are retained as fixed-cognition comparison baselines and engineering fixtures, not extended as the primary subject model.
 
 ## Workspace layout
 
@@ -33,17 +35,16 @@ se-study config
 
 The pointer lives in ignored `.se-workspace.toml` and does not affect protocol identity or release artifacts.
 
-## D1-Y workflow
+## Implementation starting point
 
-```text
-se-study show studies/d1y_multichannel_interest_feedback_v1
-se-study run studies/d1y_multichannel_interest_feedback_v1 evidence-audit
-se-study run studies/d1y_multichannel_interest_feedback_v1 prepare-config
-se-study run studies/d1y_multichannel_interest_feedback_v1 relation-probe --dry-run
-se-study run studies/d1y_multichannel_interest_feedback_v1 relation-summary --dry-run
-```
+The next implementation release is restricted to Stage 1 of the frozen contract: disabled-by-default Subject Graph VM configuration and inert fixed-capacity storage, including checkpoint and lifecycle handling. It must not yet influence action policy or add a subjective reward.
 
-The workflow is a single-seed semantics debug. It contains no formal Epoch 1 panel, group-rule implementation, gene audit, selection test or subjecthood claim.
+See:
+
+- [Partitioned Subject Graph VM v1](docs/PARTITIONED_SUBJECT_GRAPH_VM.md)
+- [Machine-readable architecture contract](protocols/epochs/subject_graph_vm_v1.json)
+- [Epoch 1 functional qualification v2](protocols/epochs/entity_subject_functional_qualification_v2.json)
+- [Primary-direction decision](protocols/decisions/subject_graph_vm_direction_v1.md)
 
 ## Epoch bases and regional branches
 
@@ -51,7 +52,7 @@ Long-horizon evolution may freeze a qualified full-world checkpoint as an immuta
 
 ## Validation and packaging
 
-Run `make conda-sync` only after changing package metadata, entry points, dependencies, package structure or editable checkout location. Normal validation:
+Run `make conda-sync` after changing package metadata, entry points, dependencies, package structure or editable checkout location. Normal validation:
 
 ```text
 make test
@@ -59,7 +60,7 @@ make conda-check
 make parity-gpu
 ```
 
-`make package` builds a disposable archive copy and keeps only the current v0.106 iteration note. Local history under `docs/迭代/` remains untouched.
+`make package` builds a disposable archive copy and keeps only the current v0.107 iteration note. Local history under `docs/迭代/` remains untouched.
 
 ## Current documents
 
@@ -68,5 +69,6 @@ make parity-gpu
 - [Scientific issues](docs/SCIENTIFIC_ISSUES.md)
 - [Governance principles](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Partitioned Subject Graph VM](docs/PARTITIONED_SUBJECT_GRAPH_VM.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.106 D1-Y iteration](docs/迭代/v0.106_D1-Y_多时程多通道利益反馈与知识价值归因.md)
+- [v0.107 D1-Z iteration](docs/迭代/v0.107_D1-Z_分区统一主体图实现准备.md)

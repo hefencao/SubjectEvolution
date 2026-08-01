@@ -47,7 +47,7 @@ def _epoch_base(tmp_path: Path, checkpoint: Path) -> Path:
                 "schema": "test-qualification-v1",
                 "passed": True,
                 "epoch_id": "epoch-1-entity-subject-prototype",
-                "contract_id": "interest-feedback-network-qualification-v1",
+                "contract_id": "entity-subject-functional-qualification-v2",
                 "source_checkpoint_sha256": _sha(checkpoint),
             }
         ),
@@ -69,7 +69,7 @@ def test_epoch_registry_declares_subject_milestones() -> None:
     epochs = {entry["epoch_id"]: entry for entry in registry["epochs"]}
     assert (
         epochs["epoch-1-entity-subject-prototype"]["entry_contract"]["contract_id"]
-        == "interest-feedback-network-qualification-v1"
+        == "entity-subject-functional-qualification-v2"
     )
     assert (
         epochs["epoch-2-group-subject-prototype"]["entry_contract"]["contract_id"]
@@ -85,7 +85,7 @@ def test_epoch_base_rejects_unqualified_checkpoint(tmp_path: Path) -> None:
             {
                 "passed": False,
                 "epoch_id": "epoch-1-entity-subject-prototype",
-                "contract_id": "interest-feedback-network-qualification-v1",
+                "contract_id": "entity-subject-functional-qualification-v2",
                 "source_checkpoint_sha256": _sha(checkpoint),
             }
         ),
