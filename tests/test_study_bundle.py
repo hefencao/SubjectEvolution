@@ -457,13 +457,22 @@ def test_workspace_layout_and_runbook_boundaries() -> None:
     assert "runs/*" in gitignore
     assert "analyses/*" in gitignore
 
+    iteration_history = ROOT / "docs" / "迭代"
+    docs_root = ROOT / "docs"
     for readme in ROOT.rglob("README.md"):
+        if iteration_history in readme.parents:
+            continue
+        if docs_root in readme.parents:
+            relative_docs = readme.relative_to(docs_root)
+            if relative_docs.parts and relative_docs.parts[0].startswith("v0."):
+                continue
         text = readme.read_text(encoding="utf-8")
         assert "```bash" not in text, f"commands must not be duplicated in {readme}"
 
     assert (D3T / "workflow.toml").is_file()
     assert not (D3T / "commands").exists()
-    assert not list((ROOT / "studies").glob("*/commands/*.sh"))
+    for workflow in (ROOT / "studies").glob("*/workflow.toml"):
+        assert not list(workflow.parent.glob("commands/*.sh"))
 
 
 

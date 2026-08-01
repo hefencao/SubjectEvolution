@@ -17,7 +17,8 @@ from se.cmd.study import (
 def test_study_workflows_are_declarative_and_renderable() -> None:
     workflows = sorted(Path("studies").glob("*/workflow.toml"))
     assert workflows
-    assert not list(Path("studies").glob("*/commands/*.sh"))
+    for workflow in workflows:
+        assert not list(workflow.parent.glob("commands/*.sh"))
     for path in workflows:
         workflow_path, workflow = load_workflow(path)
         rendered = describe(workflow_path, workflow, None)

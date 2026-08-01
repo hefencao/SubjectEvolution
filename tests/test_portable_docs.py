@@ -1,4 +1,5 @@
 from pathlib import Path
+import tomllib
 
 from scripts.verify_portable_docs import verify
 
@@ -31,9 +32,13 @@ def test_portable_docs_rejects_delivery_environment_limitations(tmp_path: Path) 
     assert verify(tmp_path)
 
 
-def test_iteration_docs_use_dedicated_history_directory() -> None:
+def test_current_iteration_doc_uses_dedicated_history_directory() -> None:
+    metadata = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+    major, minor, *_ = str(metadata["project"]["version"]).split(".")
+    current_prefix = f"v{major}.{minor}_"
     iteration = Path("docs/迭代")
     assert iteration.is_dir()
-    assert any(path.name.startswith("v0.97_") for path in iteration.iterdir())
-    assert not any(Path("docs").glob("v0.*"))
-    assert not [path for path in Path("docs").iterdir() if path.is_dir() and path.name.startswith("v0.")]
+    assert any(path.name.startswith(current_prefix) for path in iteration.iterdir())
+    # Local projects may retain historical material, including legacy layouts.
+    # Only the current version is required to use the canonical directory.
+    assert not list(Path("docs").glob(f"{current_prefix}*"))

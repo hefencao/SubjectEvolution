@@ -11,12 +11,29 @@ import argparse
 import fnmatch
 import json
 from pathlib import Path
+import re
 import shutil
 import stat
 import tempfile
 import tomllib
 import zipfile
 
+
+
+def _prune_legacy_version_docs(project: Path) -> list[str]:
+    root = project / "docs"
+    if not root.exists():
+        return []
+    removed: list[str] = []
+    for path in sorted(root.iterdir()):
+        if not re.match(r"^v\d+\.", path.name):
+            continue
+        removed.append(path.relative_to(project).as_posix())
+        if path.is_dir() and not path.is_symlink():
+            shutil.rmtree(path)
+        else:
+            path.unlink()
+    return removed
 
 
 def _prune_iteration_docs(project: Path, version: str) -> list[str]:
@@ -26,8 +43,12 @@ def _prune_iteration_docs(project: Path, version: str) -> list[str]:
     prefix = f"v{version}_"
     removed: list[str] = []
     for path in sorted(root.iterdir()):
-        if path.is_file() and not path.name.startswith(prefix):
-            removed.append(path.relative_to(project).as_posix())
+        if path.name.startswith(prefix):
+            continue
+        removed.append(path.relative_to(project).as_posix())
+        if path.is_dir() and not path.is_symlink():
+            shutil.rmtree(path)
+        else:
             path.unlink()
     return removed
 
@@ -86,6 +107,7 @@ def build_archive(project: Path, output: Path) -> dict[str, object]:
         # Preserve the established user-facing root naming with zero-padded minor.
         archive_root = temp / f"se_v{int(major):01d}{int(minor):02d}_project"
         _copy_project(project, archive_root)
+        removed_legacy = _prune_legacy_version_docs(archive_root)
         removed = _prune_iteration_docs(archive_root, iteration_version)
         current = sorted((archive_root / "docs" / "迭代").glob(f"v{iteration_version}_*"))
         if len(current) != 1:
@@ -107,6 +129,7 @@ def build_archive(project: Path, output: Path) -> dict[str, object]:
         "output": str(output),
         "current_iteration_doc": current[0].name,
         "pruned_iteration_docs": removed,
+        "pruned_legacy_version_docs": removed_legacy,
         "file_count": len(files),
     }
 

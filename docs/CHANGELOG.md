@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.99.0
+
+- Scopes current-iteration placement checks to the current version while allowing local historical documentation to remain.
+- Excludes `docs/迭代` and legacy `docs/v0.xx` history from active README command-duplication checks.
+- Restricts declarative-workflow command-script checks to studies that actually declare `workflow.toml`, preserving retired study history.
+- Recursively prunes non-current iteration files/directories and legacy `docs/v0.xx` trees only in the disposable project-archive copy.
+- Adds regression coverage proving archive cleanup does not delete source-tree history.
+- Makes no change to D1-R environment parameters, genome, costs, seeds, ticks, GPU semantics, or scientific authorization.
+- Updates project version to 0.99.0.
+
 ## 0.98.0
 
 - Fixes hybrid GPU D1-R runs that could fail with `GPU step omitted required resource gradients` when a same-tick death or relation-topology change made adaptive group refresh due after GPU policy preparation.

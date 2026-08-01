@@ -1,8 +1,14 @@
 # SE project status
 
-Version: **0.98.0**
+Version: **0.99.0**
 
 ## Current scientific task
+
+Version 0.99 is an engineering-only history-boundary repair. Local iteration
+history and retired study material may remain in the working tree and must not
+make `make test` fail. Clean-project archive rules are applied only to the
+disposable archive copy, which retains exactly the current iteration note. No
+D1-R scientific parameter or authorization changed.
 
 ## Engineering execution status
 
