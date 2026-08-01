@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.104.0
+
+- Introduces versioned scientific epochs separating long-horizon emergence from short mechanism development.
+- Registers the entity-subject prototype gate as a realized interest-feedback network and the group-subject prototype gate as effective group-owned rules; current fixed SHARE trust and threshold groups explicitly fail both gates.
+- Adds `se-epoch show`, `freeze-base`, `region-plan` and `region-branch`.
+- Freezes qualified full-world checkpoints together with matching qualification, registry and SHA-256 lock.
+- Adds `regional-active-set-branch-v1`, preserving the complete environment coordinate frame while pruning outside entities, cross-boundary relations and delayed messages.
+- Records regional pruning as an intervention rather than biological death or exact full-world continuation.
+- Defers physical-grid cropping until source-coordinate, halo/open-boundary flux and relaxation contracts exist.
+- Adds D1-W workflow, tests and documentation; no epoch transition, interest-feedback relation update or group rule is claimed.
+
 ## 0.103.0
 
 - Separates movement resistance from communication-medium openness instead of forcing terrain to affect locomotion and signal transport in the same direction.

@@ -1,0 +1,27 @@
+schema = "se-study-workflow-v1"
+study_id = "d1w_epoch_base_regional_branch_v1"
+title = "D1-W epoch base and regional active-set branch"
+
+[parameters.registry]
+type = "path"
+default = "protocols/epochs/subject_epochs_v1.json"
+description = "Versioned epoch registry."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1w_epoch_base_regional_branch_v1"
+description = "Infrastructure audit output."
+
+[parameters.output]
+type = "result-path"
+default = "d1w_epoch_base_regional_branch_v1_results.zip"
+description = "External infrastructure result bundle."
+
+[steps.epoch-contract]
+description = "Validate and render the epoch registry."
+command = ["se-epoch", "show", "--registry", "{registry}", "--output", "{analysis_root}/epoch_registry.json"]
+
+[steps.pack-results]
+description = "Package the epoch contracts and infrastructure audit externally."
+requires_json = [{ path = "{analysis_root}/epoch_registry.json", field = "schema", equals = "se-epoch-registry-v1" }]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "{analysis_root}", "--required-file", "{registry}", "--output", "{output}"]

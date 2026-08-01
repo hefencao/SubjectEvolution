@@ -1211,3 +1211,25 @@ INTERFERE intent
 ```
 
 No stage may read group, lineage or named role as a physical bonus. Attack damage, seizure and defensive structures remain later capabilities after low-lethality interference preserves the demographic substrate.
+
+## D1-W epoch base and regional active-set boundary
+
+```text
+long full-world evolution
+        ↓ preregistered epoch-entry qualification
+qualified full-world checkpoint + evidence + registry hashes
+        ↓ freeze
+immutable epoch base
+        ├── exact full-world replay
+        └── regional-active-set intervention
+                ↓ preserve complete field coordinate frame
+           prune outside entities / crossing relations / delayed messages
+                ↓
+           smaller active population for mechanism development
+```
+
+`se-epoch freeze-base` verifies the epoch ID, contract ID and source checkpoint SHA-256 before copying any artifact. The resulting directory includes `base.sechk`, `qualification.json`, `epoch_registry.json`, `epoch_base.json` and `EPOCH_BASE_LOCK.json`.
+
+`regional-active-set-branch-v1` deliberately does not resize the world grid. It removes active entities outside normalized bounds, severs relation targets and pending direct messages that cross the selected boundary, clears uncommitted field-emission batches, rebuilds the spatial index and records the operation in checkpoint lineage and intervention history. Biological death counters are unchanged because pruning is a branch construction operation.
+
+Preserving the complete field coordinate frame retains source seasonal phases, resource geometry, terrain and signal-medium state. It reduces entity-side computation but not field-grid computation. A later physical subworld schema must add source coordinate offsets, boundary reservoirs or halo cells, conserved material/information flux and a crop-relaxation contract before it can claim a meaningful local continuation.

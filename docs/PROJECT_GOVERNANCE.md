@@ -288,3 +288,13 @@ information interface.
 - 直接冲突必须是显式动作，不能通过邻近采集、不同 group 或竞争诊断暗中扣除身体状态。
 - 新冲突动作必须版本化策略输出宽度、遗传坐标和 checkpoint 解释；旧配置默认禁用。
 - 在人口底座不合格时，只允许动作合同和短程物理调试，不允许冲突收益、社会角色或遗传结论。
+
+## Epoch baseline and regional-branch governance
+
+- An epoch transition requires a versioned entry contract, an explicit `passed=true` qualification report, and a checkpoint SHA-256 that matches the qualified source.
+- The checkpoint, qualification, epoch registry and manifest are frozen together. Changing any one creates a new epoch-base identity.
+- Current fixed SHARE trust deltas and trust-threshold connected components cannot satisfy the entity-subject or group-subject epoch gates.
+- A regional branch is an intervention. Its manifest must record selected bounds, removed entities, severed relation/message edges, retained coordinate frame and whether the physical grid was cropped.
+- `regional-active-set-branch-v1` preserves the full field grid and therefore may support mechanism debugging, but cannot support claims that full-world emergence continues unchanged.
+- Physical grid cropping requires an explicit source-coordinate frame, halo or open-boundary material/information flux, and a preregistered relaxation interval. It must not be approximated silently.
+- Epoch bases may include full checkpoints even though ordinary compact result bundles exclude checkpoints by default; this is an explicit replay artifact, not routine evidence packaging.

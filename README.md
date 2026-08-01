@@ -70,3 +70,9 @@ make parity-gpu
 - [Architecture](docs/ARCHITECTURE.md)
 - [Changelog](docs/CHANGELOG.md)
 - [v0.103 D1-V iteration](docs/迭代/v0.103_D1-V_独立信号介质与直接冲突接入边界.md)
+
+## 纪元基线与区域分支
+
+长期演化达到预注册主体形成门后，可通过 `se-epoch` 将完整 checkpoint、qualification、epoch registry 与哈希锁冻结为下一纪元基线。区域分支 v1 保留完整环境场，只裁剪活跃实体和跨边界社会状态。
+
+具体参数和执行顺序由 `studies/d1w_epoch_base_regional_branch_v1/workflow.toml` 与 `se-epoch --help` 提供，根 README 不复制命令。该分支是局部机制开发用 intervention，不是完整世界的无偏缩小版。

@@ -309,3 +309,11 @@ D1-T 的邻近竞争原先在资源已扣除后继续施加能量和完整性损
 D1-U 使用同一个 terrain 场同时降低移动与通信，无法表示高山难走但视野开放、狭窄通道易走但遮挡严重等环境。D1-V 将通信介质拆成独立 `signal_openness` 场，并保留 terrain 只负责移动。两者的相关性由地图配置决定。尚待检验的是：独立介质是否产生稳定、可行动的信息差，而非仅改变传播数值。
 
 直接冲突有助于形成防御、干扰、护送和侦察压力，但当前不能直接启用。被动耗竭已经构成竞争；直接冲突必须提供额外、明确且守恒的干预过程。推荐先实现低致死 `INTERFERE`，并在合格人口底座上验证其成本、目标解析、失败、有限位移或采集中断、物料散失、信号进入和 CPU/GPU 语义。
+
+## D1 epoch formation issues
+
+| ID | Status | Issue | Required next step |
+|---|---|---|---|
+| D1-20 | active, ontology blocked | Current relation trust increases or decreases by fixed constants after SHARE success/failure. This is designer-defined reinforcement, not yet a learned interest-feedback network. | Add delayed realized cost/benefit/reciprocity accounting and require cross-seed, multi-generation persistence plus cost-preserving neutralization before Epoch 1. |
+| D1-21 | active, group subject blocked | Current group labels are thresholded connected components of the relation table. They contain no group-owned rule state that constrains members. | Keep labels observational. Require group-owned rule storage, enforcement effects, turnover persistence and shared-checkpoint rule neutralization before Epoch 2. |
+| D1-22 | infrastructure implemented, physical crop open | Re-running the entire prehistory for every mechanism is inefficient, but naive spatial crop changes seasonal phase, resource renewal and boundary flux. | Freeze qualified epoch bases. Use active-set regional branches now; implement source-coordinate and boundary-flux contracts before physical-grid crop. |

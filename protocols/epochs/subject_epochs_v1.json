@@ -1,0 +1,83 @@
+{
+  "schema": "se-epoch-registry-v1",
+  "registry_id": "subject-formation-epochs-v1",
+  "principle": "A later epoch begins only from a qualified, frozen full-world checkpoint. Epochs separate long-horizon emergence from short mechanism development; they do not turn milestone names into rewards or controllers.",
+  "epochs": [
+    {
+      "epoch_id": "epoch-0-ecological-carriers",
+      "title": "生态承载体与结构化环境",
+      "previous_epoch": null,
+      "status": "current-development-era",
+      "entry_contract": null,
+      "allowed_conclusions": [
+        "physical and information wiring",
+        "population and lineage qualification",
+        "observational ecological and group-structure diagnostics"
+      ],
+      "prohibited_conclusions": [
+        "entity subjecthood",
+        "group subjecthood",
+        "institutional agency"
+      ]
+    },
+    {
+      "epoch_id": "epoch-1-entity-subject-prototype",
+      "title": "实体主体雏形：利益反馈关系网络",
+      "previous_epoch": "epoch-0-ecological-carriers",
+      "status": "planned-entry-gate",
+      "entry_contract": {
+        "contract_id": "interest-feedback-network-qualification-v1",
+        "required_evidence": [
+          "relations are updated from delayed realized costs, benefits and reciprocal consequences rather than fixed SHARE success increments",
+          "the feedback network persists across multiple generations and independent seeds",
+          "network structure predicts later cooperation or avoidance beyond spatial proximity and kinship",
+          "neutralizing feedback while retaining interaction opportunities changes the network and continuation outcomes"
+        ],
+        "forbidden_substitutes": [
+          "trust threshold connected components",
+          "one-run group counts",
+          "fixed designer-assigned relation gains",
+          "role labels or reward bonuses"
+        ]
+      },
+      "allowed_conclusions": [
+        "candidate entity-level interest boundary",
+        "persistent learned partner differentiation"
+      ],
+      "prohibited_conclusions": [
+        "group subjecthood",
+        "effective rules or institutions"
+      ]
+    },
+    {
+      "epoch_id": "epoch-2-group-subject-prototype",
+      "title": "Group 主体雏形：规章有效化",
+      "previous_epoch": "epoch-1-entity-subject-prototype",
+      "status": "planned-entry-gate",
+      "entry_contract": {
+        "contract_id": "effective-group-rules-qualification-v1",
+        "required_evidence": [
+          "group rules are stored as group state rather than copied designer policy",
+          "rules measurably constrain or redirect member actions",
+          "rule effects persist through member turnover",
+          "group-level continuation or resource control changes when rules are neutralized from a shared checkpoint",
+          "membership and enforcement arise from relation, interest and order feedback rather than group labels"
+        ],
+        "forbidden_substitutes": [
+          "connected-component labels",
+          "group bonuses",
+          "hard-coded leaders",
+          "fixed obedience rewards"
+        ]
+      },
+      "allowed_conclusions": [
+        "candidate group-level control boundary",
+        "rule-mediated group continuation"
+      ],
+      "prohibited_conclusions": [
+        "fully developed institution",
+        "arbitrary nested subjecthood"
+      ]
+    }
+  ]
+}

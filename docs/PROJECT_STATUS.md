@@ -1,46 +1,43 @@
 # SE project status
 
-Version: **0.103.0**
+Version: **0.104.0**
 
 ## Current scientific task
 
-The supplied D1-U same-seed result bundle shows that CPU and GPU-hybrid both execute the corrected depletion and signal semantics. Both record 18 rival-overlap events with zero duplicate contest energy and integrity cost. Their final populations are 55 and 53, so the physical wiring is available but the population substrate is not qualified.
+D1-V has separated locomotion resistance from signal-medium openness. The next scientific bottleneck is not a new conflict actuator but the ontological status of relationships and groups: current relations still receive fixed trust increments from SHARE success/failure, and current groups remain thresholded connected components of that relation table. They are useful measurements, but they do not yet qualify as learned interest networks or group subjects.
 
-D1-V corrects the remaining terrain-model coupling before any direct-conflict implementation. Movement resistance and communication openness are now independent environmental fields. Their correlation is a configured property of a particular map, not a global physical law.
+D1-W introduces epoch governance so long-horizon emergence and short mechanism development are no longer mixed. A later epoch may begin only from a qualified, frozen full-world checkpoint whose entry contract, evidence and hashes are locked.
 
-## D1-V independent medium
+## Epoch milestones
 
-- `terrain` affects locomotor speed and movement-energy accounting only.
-- `signal_openness` affects field-signal conductance and direct-message attenuation only.
-- The fields have separate schemas, floors, amplitudes, periods, wave vectors and phase.
-- Positive, negative and near-zero movement/signal correlation are all representable.
-- The D1-V debug map deliberately makes high movement resistance coincide with high signal openness to demonstrate a hard-to-traverse but long-view region.
-- Inactive defaults preserve old configuration identity and old propagation semantics.
+- `epoch-0-ecological-carriers`: current development era. Physical carriers, structured environments, exchange, communication and observational groups may be studied, but no entity or group subjecthood is inferred.
+- `epoch-1-entity-subject-prototype`: begins only after relations are formed by delayed realized interest feedback rather than fixed SHARE trust deltas, persist across generations and seeds, and survive cost-preserving neutralization.
+- `epoch-2-group-subject-prototype`: begins only after group-owned rules measurably redirect member actions, persist through turnover and change group continuation under shared-checkpoint neutralization.
 
-## D1-V local debug result
+No supplied checkpoint currently passes either later-epoch contract.
 
-Seed 103011 completed tick 240 on CPU with 107 living entities. Both movement resistance and signal openness had non-zero spatial variance, and the configured map produced a correlation effectively equal to +1. This is intentional: it demonstrates that a region may be hard to traverse while remaining signal-open because the two fields are independent even when one map aligns them. Tests also verify negative correlation after a phase reversal. The result proves transport wiring only and does not qualify information value, social differentiation or population stability.
+## Epoch bases and regional branches
 
-## Direct-conflict assessment
+`se-epoch freeze-base` freezes a qualified complete checkpoint together with the qualification report, epoch registry and SHA-256 lock. Later work may branch from that base instead of repeating the entire evolutionary prehistory.
 
-Direct conflict is scientifically useful only when it is an explicit action with a target, range, actor cost, failure path, bounded outcome and observable evidence. It must remain separate from passive resource depletion. The recommended first actuator is low-lethality `INTERFERE`, able to cause limited displacement, harvest interruption or carried-material spill without identity-based bonuses.
+`regional-active-set-branch-v1` selects a normalized spatial region, preserves the complete environment coordinate frame and fields, and removes outside entities, cross-boundary relations, delayed cross-boundary direct messages and pending field emissions. It reduces the active entity scale while keeping environmental phase and global field provenance. It is an explicit intervention, not exact full-world continuation and not an unbiased miniature world.
 
-It is not enabled in v0.103 because the current population substrate remains below its debug floor, the action vocabulary and inherited policy width require versioned migration, and the complete target/cost/outcome/backend contract has not yet been qualified.
+True physical-grid cropping remains blocked until source-coordinate offsets, halo/open-boundary material and information flux, and crop relaxation rules are versioned.
 
 ## Authorization
 
 Authorized:
 
-- one D1-V CPU transport-semantics probe;
-- debugging independent movement and signal fields;
-- checking that old disabled configurations keep their protocol identity;
-- packaging transport evidence without checkpoints by default;
-- designing, but not executing, a future explicit interference actuator.
+- defining and validating epoch contracts;
+- freezing a checkpoint only after an explicit matching qualification passes;
+- building regional active-set branches for local mechanism development;
+- comparing branch behavior with its full-world epoch base while respecting the intervention boundary;
+- auditing the current fixed-trust relationship semantics.
 
 Not authorized:
 
-- direct conflict, attack or body-damage execution;
-- formal environment or social-role panel;
-- scout-role claim;
-- gene-retention, paired, selection, adaptation, niche or subjecthood interpretation;
-- treating a configured movement/signal correlation as evidence of information benefit.
+- declaring epoch 1 or epoch 2 reached;
+- treating current trust-threshold groups as emergent social subjects;
+- using regional branches as formal evidence that full-world emergence persists;
+- physical-grid cropping without boundary-flux and source-coordinate contracts;
+- gene, selection, adaptation, role or institution claims.

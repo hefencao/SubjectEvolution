@@ -1,0 +1,20 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1w_epoch_base_regional_branch_v1",
+  "title": "D1-W epoch base and regional active-set branch",
+  "status": "infrastructure-ready-no-epoch-qualified",
+  "scientific_stage": "epoch-governance-and-trusted-branching",
+  "predecessor": {
+    "study_id": "d1v_independent_signal_medium_v1",
+    "epoch_1_qualified": false,
+    "epoch_2_qualified": false
+  },
+  "authorization": {
+    "freeze_qualified_epoch_base": true,
+    "regional_active_set_branch": true,
+    "physical_grid_crop": false,
+    "claim_entity_subjecthood": false,
+    "claim_group_subjecthood": false,
+    "gene_audit": false
+  }
+}
