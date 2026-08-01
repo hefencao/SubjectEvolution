@@ -1233,3 +1233,9 @@ immutable epoch base
 `regional-active-set-branch-v1` deliberately does not resize the world grid. It removes active entities outside normalized bounds, severs relation targets and pending direct messages that cross the selected boundary, clears uncommitted field-emission batches, rebuilds the spatial index and records the operation in checkpoint lineage and intervention history. Biological death counters are unchanged because pruning is a branch construction operation.
 
 Preserving the complete field coordinate frame retains source seasonal phases, resource geometry, terrain and signal-medium state. It reduces entity-side computation but not field-grid computation. A later physical subworld schema must add source coordinate offsets, boundary reservoirs or halo cells, conserved material/information flux and a crop-relaxation contract before it can claim a meaningful local continuation.
+
+## D1-X delayed material-interest relation boundary
+
+`SocialSystem` retains the fixed-slot directed relation store for checkpoint and group-label compatibility, but the opt-in `delayed-material-interest-v1` schema separates interaction materialization from partner-value learning. Successful SHARE commits create/refresh both directed relation slots with zero immediate trust delta. Realized energy and raw transfers are normalized by their configured per-action amounts and accumulated as directed own giving and receiving. A later window settlement moves the directed relation value toward the observed receiving share of total bilateral material evidence.
+
+The ledger is part of trusted checkpoint state and is reset on relation replacement, capacity pruning, death-target clearing and regional branch removal. Metric rows expose settlement counts, sign counts, pending edges and partner differentiation. Current group detection still consumes the resulting thresholded relation table and remains observational; it is not an Epoch 1 controller.

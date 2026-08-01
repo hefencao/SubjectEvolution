@@ -122,6 +122,8 @@ def commit_shares(
 ) -> tuple[float, np.ndarray]:
     """Apply one capacity-resolved energy/raw share plan."""
     if share.rows.size == 0:
+        if social_connections_enabled:
+            social.settle_interest_feedback(int(share.relation_updates.tick))
         return 0.0, np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
     committed_energy = share.success & share.valid_target & (share.amounts > 1.0e-8)
     if np.any(committed_energy):
@@ -152,6 +154,15 @@ def commit_shares(
         entities.resource_store[:] = np.maximum(entities.resource_store, 0.0)
     if social_connections_enabled:
         social.apply_relation_updates(share.relation_updates)
+        social.record_material_interest_feedback(
+            share.owner_indices,
+            share.target_indices,
+            share.amounts,
+            share.resource_amounts,
+            share.success & share.valid_target,
+            int(share.relation_updates.tick),
+        )
+        social.settle_interest_feedback(int(share.relation_updates.tick))
     energy_total = float(
         np.asarray(share.amounts[committed_energy], dtype=np.float64).sum()
     )

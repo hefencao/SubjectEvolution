@@ -248,6 +248,20 @@ def strip_inactive_extensions(payload: dict[str, Any]) -> dict[str, Any]:
 
     social = result.get("social", {})
     if (
+        social.get("relation_update_schema", "fixed-share-trust-v1")
+        == "fixed-share-trust-v1"
+        and int(social.get("interest_feedback_window_ticks", 0)) == 0
+        and float(social.get("interest_feedback_learning_rate", 0.0)) == 0.0
+        and float(social.get("interest_feedback_min_material", 0.0)) == 0.0
+    ):
+        for key in (
+            "relation_update_schema",
+            "interest_feedback_window_ticks",
+            "interest_feedback_learning_rate",
+            "interest_feedback_min_material",
+        ):
+            social.pop(key, None)
+    if (
         social.get("share_schema") == "energy-only-v1"
         and float(social.get("resource_share_amount", 0.0)) == 0.0
         and float(social.get("resource_share_reserve_fraction", 0.25)) == 0.25

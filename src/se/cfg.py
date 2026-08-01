@@ -680,6 +680,14 @@ class SocialConfig:
     relation_decay: float
     trust_gain_share: float
     trust_loss_failed: float
+    # Relationship values historically changed by fixed constants on SHARE
+    # success/failure.  The opt-in interest-feedback schema keeps the same
+    # fixed-capacity relation store but delays value updates until a window of
+    # realized bilateral material costs and receipts can be settled.
+    relation_update_schema: str = "fixed-share-trust-v1"
+    interest_feedback_window_ticks: int = 0
+    interest_feedback_learning_rate: float = 0.0
+    interest_feedback_min_material: float = 0.0
     # Legacy configs keep fixed periodic recomputation.  The adaptive schema
     # refreshes only after a topology-relevant relation change, a predicted
     # trust-threshold decay crossing, or a bounded maximum staleness interval.
@@ -2232,6 +2240,38 @@ def validate_config(cfg: SimulationConfig) -> None:
 
     if cfg.social.group_update_period <= 0:
         raise ValueError("social.group_update_period must be positive")
+    if cfg.social.relation_update_schema not in {
+        "fixed-share-trust-v1",
+        "delayed-material-interest-v1",
+    }:
+        raise ValueError(
+            "social.relation_update_schema must be 'fixed-share-trust-v1' or "
+            "'delayed-material-interest-v1'"
+        )
+    feedback_values = (
+        cfg.social.interest_feedback_learning_rate,
+        cfg.social.interest_feedback_min_material,
+    )
+    if any(not math.isfinite(float(value)) or value < 0.0 for value in feedback_values):
+        raise ValueError("social interest-feedback parameters must be finite and non-negative")
+    if cfg.social.relation_update_schema == "fixed-share-trust-v1":
+        if (
+            cfg.social.interest_feedback_window_ticks != 0
+            or cfg.social.interest_feedback_learning_rate != 0.0
+            or cfg.social.interest_feedback_min_material != 0.0
+        ):
+            raise ValueError(
+                "fixed SHARE trust requires neutral interest-feedback parameters"
+            )
+    else:
+        if cfg.social.interest_feedback_window_ticks <= 0:
+            raise ValueError("delayed material interest requires a positive window")
+        if cfg.social.interest_feedback_learning_rate <= 0.0:
+            raise ValueError("delayed material interest requires a positive learning rate")
+        if cfg.social.interest_feedback_learning_rate > 1.0:
+            raise ValueError("interest-feedback learning rate cannot exceed 1")
+        if cfg.social.interest_feedback_min_material <= 0.0:
+            raise ValueError("delayed material interest requires positive minimum material")
     if cfg.social.group_update_mode not in {
         "periodic-v1",
         "adaptive-topology-v1",

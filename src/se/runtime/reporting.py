@@ -1502,6 +1502,7 @@ class SimulationReportingMixin:
             reproduction_investment_std = 0.0
             reproduction_requirement_mean = 0.0
             reproduction_requirement_std = 0.0
+        interest_feedback = self.social.interest_feedback_diagnostics(ent.alive)
         if self.gpu_runtime is None:
             physiology_metric_fields = (
                 self.environment.oxygen,
@@ -1764,6 +1765,7 @@ class SimulationReportingMixin:
             "group_last_dirty_reason": self.social.last_group_dirty_reason,
             "grouped_fraction": grouped_fraction,
             "social_dependency_proxy": social_dependency,
+            **interest_feedback,
             "strategy_mean_abs_weight": strategy_mean_abs_weight,
             "raw_strategy_gene_diversity": raw_strategy_gene_diversity,
             "knowledge_outcome_preference_energy_mean": float(knowledge_preference_mean[0]),

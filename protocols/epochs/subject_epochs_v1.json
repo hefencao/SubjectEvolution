@@ -38,7 +38,8 @@
           "one-run group counts",
           "fixed designer-assigned relation gains",
           "role labels or reward bonuses"
-        ]
+        ],
+        "contract_file": "protocols/epochs/interest_feedback_network_qualification_v1.json"
       },
       "allowed_conclusions": [
         "candidate entity-level interest boundary",

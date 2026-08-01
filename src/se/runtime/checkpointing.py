@@ -517,6 +517,18 @@ class SimulationCheckpointMixin:
             self.social.last_group_dirty_reason = "legacy-checkpoint"
         elif not hasattr(self.social, "last_group_dirty_reason"):
             self.social.last_group_dirty_reason = "legacy-checkpoint"
+        relation_shape = self.social.target.shape
+        if not hasattr(self.social, "interest_given"):
+            self.social.interest_given = np.zeros(relation_shape, dtype=np.float32)
+            self.social.interest_received = np.zeros(relation_shape, dtype=np.float32)
+            self.social.interest_window_start = np.full(
+                relation_shape, -1, dtype=np.int64
+            )
+            self.social.interest_feedback_settlements = 0
+            self.social.interest_feedback_positive = 0
+            self.social.interest_feedback_negative = 0
+            self.social.interest_feedback_neutral = 0
+            self.social.interest_feedback_material_total = 0.0
         self.subjects = copy.deepcopy(state["subjects"])
         self.knowledge.restore_state(state["knowledge"])
         self.knowledge.cfg = self.cfg

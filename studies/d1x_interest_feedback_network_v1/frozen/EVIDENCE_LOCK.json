@@ -1,0 +1,16 @@
+{
+  "schema": "frozen-evidence-lock-v1",
+  "study_id": "d1x_interest_feedback_network_v1",
+  "files": [
+    {
+      "path": "studies/d1x_interest_feedback_network_v1/frozen/d1v/source_config.json",
+      "size": 19155,
+      "sha256": "8e204f96342723a262ddb26b057e4a55eeb280a593a24d04b80d8849e81500c0"
+    },
+    {
+      "path": "studies/d1x_interest_feedback_network_v1/frozen/d1v/source_config.json.manifest.json",
+      "size": 4067,
+      "sha256": "31fe5977bc28ee41755c84fc043364262f26151e79b408eeb50b761486fcfbe6"
+    }
+  ]
+}

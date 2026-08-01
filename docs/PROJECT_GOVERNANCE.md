@@ -298,3 +298,11 @@ information interface.
 - `regional-active-set-branch-v1` preserves the full field grid and therefore may support mechanism debugging, but cannot support claims that full-world emergence continues unchanged.
 - Physical grid cropping requires an explicit source-coordinate frame, halo or open-boundary material/information flux, and a preregistered relaxation interval. It must not be approximated silently.
 - Epoch bases may include full checkpoints even though ordinary compact result bundles exclude checkpoints by default; this is an explicit replay artifact, not routine evidence packaging.
+
+## D1-X interest-feedback governance
+
+- Immediate action success, failed capacity arbitration and group membership cannot by themselves create positive or negative partner value.
+- Interest feedback must be based on realized consequences owned by the evaluating entity; D1-X currently covers only material giving and receiving.
+- A relation semantics debug may verify settlement and differentiation, but cannot qualify Epoch 1 without independent long-horizon persistence, predictive controls and shared-checkpoint neutralization.
+- Later information, protection and conflict consequence ledgers must remain separately observable before any combined utility rule is introduced.
+- Current group labels may observe the relation network but cannot feed bonuses, conflict identity or rule enforcement back into it.

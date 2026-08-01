@@ -1,0 +1,35 @@
+{
+  "schema": "se-epoch-entry-contract-v1",
+  "contract_id": "interest-feedback-network-qualification-v1",
+  "target_epoch": "epoch-1-entity-subject-prototype",
+  "status": "not-yet-qualified",
+  "required_stages": [
+    {
+      "stage": "material-interest-semantics",
+      "requirement": "fixed designer trust increments are disabled and directed relation values are updated from delayed realized own costs and receipts"
+    },
+    {
+      "stage": "consequence-breadth",
+      "requirement": "material, information, protection, conflict and downstream continuation consequences have explicit observable ledgers without role rewards"
+    },
+    {
+      "stage": "predictive-network",
+      "requirement": "learned partner differentiation predicts later cooperation, avoidance or conflict beyond proximity, kinship and encounter frequency"
+    },
+    {
+      "stage": "long-horizon-replication",
+      "requirement": "the network persists across multiple generations and independent seeds in a qualified environment"
+    },
+    {
+      "stage": "shared-checkpoint-neutralization",
+      "requirement": "neutralizing interest feedback while retaining opportunities, genes, world state and random streams changes network and continuation outcomes"
+    }
+  ],
+  "forbidden_shortcuts": [
+    "fixed SHARE success bonuses",
+    "group-label membership bonuses",
+    "one-run relation counts",
+    "designer-provided partner classes",
+    "subjecthood scores without the entry evidence"
+  ]
+}

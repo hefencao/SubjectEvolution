@@ -1,12 +1,12 @@
 # SE project status
 
-Version: **0.104.0**
+Version: **0.105.0**
 
 ## Current scientific task
 
-D1-V has separated locomotion resistance from signal-medium openness. The next scientific bottleneck is not a new conflict actuator but the ontological status of relationships and groups: current relations still receive fixed trust increments from SHARE success/failure, and current groups remain thresholded connected components of that relation table. They are useful measurements, but they do not yet qualify as learned interest networks or group subjects.
+D1-X replaces fixed SHARE-success/failure trust increments with an opt-in delayed ledger of each entity's realized material giving, receiving and observed partner return rate. In debug seed 105011, 328 delayed settlements produced 89 live directed relation edges and measurable partner differentiation without any fixed trust bonus or penalty. The same run fell to 55 living entities and formed no threshold group, so it validates relationship semantics only; it does not authorize a formal long-horizon panel. Protection, information, conflict assistance, prediction beyond proximity/kinship, independent multi-seed persistence and shared-checkpoint neutralization remain unresolved.
 
-D1-W introduces epoch governance so long-horizon emergence and short mechanism development are no longer mixed. A later epoch may begin only from a qualified, frozen full-world checkpoint whose entry contract, evidence and hashes are locked.
+D1-W epoch governance remains active. No supplied checkpoint enters Epoch 1, and current group labels remain observational thresholded relation components rather than subjects or rule-bearing groups.
 
 ## Epoch milestones
 
@@ -32,11 +32,12 @@ Authorized:
 - freezing a checkpoint only after an explicit matching qualification passes;
 - building regional active-set branches for local mechanism development;
 - comparing branch behavior with its full-world epoch base while respecting the intervention boundary;
-- auditing the current fixed-trust relationship semantics.
+- debugging delayed material-interest relationship semantics without claiming Epoch 1;
+- extending explicit consequence ledgers before predictive and neutralization tests.
 
 Not authorized:
 
-- declaring epoch 1 or epoch 2 reached;
+- declaring epoch 1 or epoch 2 reached from D1-X material-return debug alone;
 - treating current trust-threshold groups as emergent social subjects;
 - using regional branches as formal evidence that full-world emergence persists;
 - physical-grid cropping without boundary-flux and source-coordinate contracts;

@@ -1,0 +1,20 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1x_interest_feedback_network_v1",
+  "title": "D1-X delayed material-interest relationship network",
+  "status": "epoch-1-prerequisite-semantics-debug",
+  "scientific_stage": "replace-fixed-trust-before-entity-subject-epoch",
+  "predecessor": {
+    "study_id": "d1v_independent_signal_medium_v1",
+    "transport_semantics_ready": true,
+    "epoch_1_ready": false
+  },
+  "authorization": {
+    "single_seed_relation_semantics_debug": true,
+    "epoch_1_entry": false,
+    "group_rule_implementation": false,
+    "formal_multi_seed_panel": false,
+    "gene_audit": false,
+    "subjecthood_claim": false
+  }
+}

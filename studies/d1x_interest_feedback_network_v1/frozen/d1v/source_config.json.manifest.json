@@ -1,0 +1,114 @@
+{
+  "schema": "independent-signal-medium-config-v1",
+  "source": "studies/d1v_independent_signal_medium_v1/frozen/d1u/source_config.json",
+  "output": "studies/d1x_interest_feedback_network_v1/frozen/d1v/source_config.json",
+  "source_file_sha256": "e624ea7e85d7d4164888e2a10bd611f432254fadd12f7aab3f0b85ce7265448d",
+  "output_file_sha256": "8e204f96342723a262ddb26b057e4a55eeb280a593a24d04b80d8849e81500c0",
+  "source_canonical_sha256": "211351022ba7337ea13dae94b16bfaaa02eab7feffd4b43fa5f6ff8ecf60350c",
+  "output_canonical_sha256": "402a5a4d5051577e59c3c150e48efb50d256772caae6c09f33eff2b30399b982",
+  "changed_paths": [
+    "environment.signal_medium_conductance_fraction",
+    "environment.signal_medium_schema",
+    "environment.signal_openness_amplitude",
+    "environment.signal_openness_floor",
+    "environment.signal_openness_period",
+    "environment.signal_openness_phase_offset",
+    "environment.signal_openness_wave_x",
+    "environment.signal_openness_wave_y",
+    "environment.signal_propagation_schema",
+    "environment.signal_terrain_resistance_fraction",
+    "information.direct_message_medium_resistance_fraction",
+    "information.direct_message_propagation_schema",
+    "information.direct_message_terrain_resistance_fraction",
+    "run.checkpoint_period",
+    "run.ticks"
+  ],
+  "changes": {
+    "run.ticks": {
+      "before": 600,
+      "after": 240
+    },
+    "run.checkpoint_period": {
+      "before": 600,
+      "after": 240
+    },
+    "environment.signal_propagation_schema": {
+      "before": "terrain-resisted-diffusion-v1",
+      "after": "independent-openness-diffusion-v2"
+    },
+    "environment.signal_terrain_resistance_fraction": {
+      "before": 0.45,
+      "after": 0.0
+    },
+    "environment.signal_medium_schema": {
+      "before": null,
+      "after": "independent-openness-mosaic-v1"
+    },
+    "environment.signal_medium_conductance_fraction": {
+      "before": null,
+      "after": 0.65
+    },
+    "environment.signal_openness_floor": {
+      "before": null,
+      "after": 0.25
+    },
+    "environment.signal_openness_amplitude": {
+      "before": null,
+      "after": 0.75
+    },
+    "environment.signal_openness_period": {
+      "before": null,
+      "after": 0
+    },
+    "environment.signal_openness_wave_x": {
+      "before": null,
+      "after": 0.5
+    },
+    "environment.signal_openness_wave_y": {
+      "before": null,
+      "after": 1.5
+    },
+    "environment.signal_openness_phase_offset": {
+      "before": null,
+      "after": 1.1
+    },
+    "information.direct_message_propagation_schema": {
+      "before": "terrain-distance-attenuated-v1",
+      "after": "openness-distance-attenuated-v2"
+    },
+    "information.direct_message_terrain_resistance_fraction": {
+      "before": 0.45,
+      "after": 0.0
+    },
+    "information.direct_message_medium_resistance_fraction": {
+      "before": null,
+      "after": 0.55
+    }
+  },
+  "genetic_coordinates_changed": 0,
+  "movement_formula_changed": false,
+  "resource_geometry_or_mean_flux_changed": false,
+  "direct_conflict_enabled": false,
+  "transport_fields": {
+    "signal_openness_mean": 0.598172637342941,
+    "signal_openness_std": 0.19412077741867395,
+    "movement_resistance_mean": 0.41209954315490904,
+    "movement_resistance_std": 0.2018856082817129,
+    "movement_signal_correlation": 0.9999999999999949
+  },
+  "physical_semantics": {
+    "movement_field": "terrain resistance",
+    "signal_field": "independent openness",
+    "field_signal_transport": "independent-openness-diffusion-v2",
+    "direct_message_transport": "openness-distance-attenuated-v2",
+    "fixed_direction_coupling": false
+  },
+  "authorization": {
+    "transport_semantics_debug": true,
+    "direct_conflict_implementation": false,
+    "formal_environment_panel": false,
+    "gene_audit": false,
+    "social_role_claim": false
+  },
+  "interpretation_boundary": "D1-V separates movement resistance from signal transport. Positive, negative, or near-zero spatial correlation is configurable and does not by itself prove information benefit or social differentiation."
+}

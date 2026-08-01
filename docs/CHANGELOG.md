@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.105.0
+
+- Adds opt-in `delayed-material-interest-v1` relationship updates and keeps exact legacy fixed SHARE trust semantics by default.
+- Removes immediate trust gain/loss from the D1-X configuration; successful transfers create bilateral familiarity and accumulate directed realized giving/receiving ledgers and partner-return learning.
+- Settles material-interest windows after a configured delay, moving directed partner value toward the observed share of material returned by that partner within the bilateral evidence window, without group, role, lineage or genotype bonuses.
+- Adds relation-network metrics, D1-X configuration/debug tools, a staged Epoch 1 entry contract and a declarative debug workflow.
+- Keeps Epoch 1 unqualified: non-material consequences, predictive validity, independent long-horizon replication and shared-checkpoint neutralization are still required.
+- Preserves old config identity and checkpoint compatibility when the new schema is disabled.
+
 ## 0.104.0
 
 - Introduces versioned scientific epochs separating long-horizon emergence from short mechanism development.
