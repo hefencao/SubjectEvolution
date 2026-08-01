@@ -1,0 +1,33 @@
+{
+  "schema": "depletion-signal-debug-summary-v1",
+  "source_root": "runs/base/d1u_depletion_pressure_terrain_signal_v1/accelerated",
+  "runs": [
+    {
+      "run": "seed_102011",
+      "seed": 102011,
+      "requested_backend": "auto",
+      "execution_backend": "gpu-hybrid-accelerated",
+      "config_sha256": "ee8b1243391c42a77b747d66c8272b4cd931d7a6779b4feb5278f46fb377858c",
+      "alive": 53,
+      "harvest_contest_events": 18.0,
+      "harvest_contest_pressure": 13.415557578089647,
+      "harvest_contest_energy": 0.0,
+      "harvest_contest_integrity_damage": 0.0,
+      "resource_load_movement_energy": 0.6623752961829306,
+      "competition_semantics": "rival-harvest-depletion-pressure-v2",
+      "resource_signal_semantics": "post-harvest-current-v2",
+      "field_signal_transport": "terrain-resisted-diffusion-v1",
+      "direct_message_transport": "terrain-distance-attenuated-v1",
+      "duplicate_body_cost_absent": true
+    }
+  ],
+  "run_count": 1,
+  "semantics_ready": true,
+  "authorization": {
+    "continue_environment_debugging": true,
+    "formal_environment_panel": false,
+    "gene_audit": false,
+    "scout_role_claim": false
+  },
+  "interpretation_boundary": "This report checks physical semantics and execution plumbing only. Event counts or backend differences are not evidence of benefit, selection, or a social role."
+}

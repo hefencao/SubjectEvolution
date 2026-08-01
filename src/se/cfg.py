@@ -112,6 +112,19 @@ class EnvironmentConfig:
     # semantic content.
     signal_propagation_schema: str = "uniform-isotropic-v1"
     signal_terrain_resistance_fraction: float = 0.0
+    # Signal transport is a separate physical layer from locomotion terrain.
+    # Archived terrain-resisted propagation remains available, while the
+    # independent-openness schema can represent hard-to-traverse but highly
+    # visible ridges, easy corridors with poor visibility, fog, canopy, or
+    # other communication media without changing movement resistance.
+    signal_medium_schema: str = "disabled"
+    signal_medium_conductance_fraction: float = 0.0
+    signal_openness_floor: float = 1.0
+    signal_openness_amplitude: float = 0.0
+    signal_openness_period: int = 0
+    signal_openness_wave_x: float = 1.0
+    signal_openness_wave_y: float = 0.0
+    signal_openness_phase_offset: float = 0.0
     # Legacy runs retain the original globally synchronized four-channel
     # resource field.  The heterogeneous schema adds spatial phase offsets
     # without changing the action vocabulary or hard-coding a preferred niche.
@@ -340,6 +353,10 @@ class InformationConfig:
     direct_message_propagation_schema: str = "unbounded-direct-v1"
     direct_message_distance_decay_per_cell: float = 0.0
     direct_message_terrain_resistance_fraction: float = 0.0
+    # v2 direct transport reads the independent signal-openness layer rather
+    # than reusing locomotion terrain.  The legacy terrain field remains exact
+    # for archived configs.
+    direct_message_medium_resistance_fraction: float = 0.0
     # Field-emission delivery cadence for the current resource/danger/social
     # channels.  A period greater than one is an explicit aggregation delay:
     # events queue until that channel's next flush, while field propagation
@@ -772,6 +789,34 @@ def load_config(path: str | Path) -> SimulationConfig:
             signal_terrain_resistance_fraction=float(
                 _require(raw, "environment").get(
                     "signal_terrain_resistance_fraction", 0.0
+                )
+            ),
+            signal_medium_schema=str(
+                _require(raw, "environment").get("signal_medium_schema", "disabled")
+            ),
+            signal_medium_conductance_fraction=float(
+                _require(raw, "environment").get(
+                    "signal_medium_conductance_fraction", 0.0
+                )
+            ),
+            signal_openness_floor=float(
+                _require(raw, "environment").get("signal_openness_floor", 1.0)
+            ),
+            signal_openness_amplitude=float(
+                _require(raw, "environment").get("signal_openness_amplitude", 0.0)
+            ),
+            signal_openness_period=int(
+                _require(raw, "environment").get("signal_openness_period", 0)
+            ),
+            signal_openness_wave_x=float(
+                _require(raw, "environment").get("signal_openness_wave_x", 1.0)
+            ),
+            signal_openness_wave_y=float(
+                _require(raw, "environment").get("signal_openness_wave_y", 0.0)
+            ),
+            signal_openness_phase_offset=float(
+                _require(raw, "environment").get(
+                    "signal_openness_phase_offset", 0.0
                 )
             ),
             schema=_require(raw, "environment").get(
@@ -1831,10 +1876,11 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.environment.signal_propagation_schema not in {
         "uniform-isotropic-v1",
         "terrain-resisted-diffusion-v1",
+        "independent-openness-diffusion-v2",
     }:
         raise ValueError(
-            "environment.signal_propagation_schema must be "
-            "'uniform-isotropic-v1' or 'terrain-resisted-diffusion-v1'"
+            "environment.signal_propagation_schema must be uniform, "
+            "terrain-resisted, or independent-openness"
         )
     if (
         not math.isfinite(cfg.environment.signal_terrain_resistance_fraction)
@@ -1858,6 +1904,62 @@ def validate_config(cfg: SimulationConfig) -> None:
     ):
         raise ValueError(
             "terrain-resisted signal propagation requires the terrain environment"
+        )
+    if cfg.environment.signal_medium_schema not in {
+        "disabled",
+        "independent-openness-mosaic-v1",
+    }:
+        raise ValueError(
+            "environment.signal_medium_schema must be disabled or "
+            "independent-openness-mosaic-v1"
+        )
+    for name, value in (
+        (
+            "signal_medium_conductance_fraction",
+            cfg.environment.signal_medium_conductance_fraction,
+        ),
+        ("signal_openness_floor", cfg.environment.signal_openness_floor),
+        ("signal_openness_amplitude", cfg.environment.signal_openness_amplitude),
+        ("signal_openness_wave_x", cfg.environment.signal_openness_wave_x),
+        ("signal_openness_wave_y", cfg.environment.signal_openness_wave_y),
+        ("signal_openness_phase_offset", cfg.environment.signal_openness_phase_offset),
+    ):
+        if not math.isfinite(float(value)):
+            raise ValueError(f"environment.{name} must be finite")
+    if not 0.0 <= cfg.environment.signal_medium_conductance_fraction <= 1.0:
+        raise ValueError(
+            "environment.signal_medium_conductance_fraction must be in [0, 1]"
+        )
+    if not 0.0 <= cfg.environment.signal_openness_floor <= 1.0:
+        raise ValueError("environment.signal_openness_floor must be in [0, 1]")
+    if not 0.0 <= cfg.environment.signal_openness_amplitude <= 1.0:
+        raise ValueError("environment.signal_openness_amplitude must be in [0, 1]")
+    if cfg.environment.signal_openness_period < 0:
+        raise ValueError("environment.signal_openness_period cannot be negative")
+    independent_signal = (
+        cfg.environment.signal_propagation_schema
+        == "independent-openness-diffusion-v2"
+    )
+    if independent_signal and cfg.environment.signal_medium_schema != (
+        "independent-openness-mosaic-v1"
+    ):
+        raise ValueError(
+            "independent signal propagation requires an independent signal medium"
+        )
+    if not independent_signal and any(
+        value != default
+        for value, default in (
+            (cfg.environment.signal_medium_conductance_fraction, 0.0),
+            (cfg.environment.signal_openness_floor, 1.0),
+            (cfg.environment.signal_openness_amplitude, 0.0),
+            (cfg.environment.signal_openness_period, 0),
+            (cfg.environment.signal_openness_wave_x, 1.0),
+            (cfg.environment.signal_openness_wave_y, 0.0),
+            (cfg.environment.signal_openness_phase_offset, 0.0),
+        )
+    ):
+        raise ValueError(
+            "inactive independent signal medium requires default parameters"
         )
     if cfg.environment.physiology_environment_schema not in {
         "disabled",
@@ -2056,10 +2158,10 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.information.direct_message_propagation_schema not in {
         "unbounded-direct-v1",
         "terrain-distance-attenuated-v1",
+        "openness-distance-attenuated-v2",
     }:
         raise ValueError(
-            "information.direct_message_propagation_schema must be "
-            "'unbounded-direct-v1' or 'terrain-distance-attenuated-v1'"
+            "information.direct_message_propagation_schema is unsupported"
         )
     for name, value in (
         (
@@ -2070,6 +2172,10 @@ def validate_config(cfg: SimulationConfig) -> None:
             "direct_message_terrain_resistance_fraction",
             cfg.information.direct_message_terrain_resistance_fraction,
         ),
+        (
+            "direct_message_medium_resistance_fraction",
+            cfg.information.direct_message_medium_resistance_fraction,
+        ),
     ):
         if not math.isfinite(float(value)) or float(value) < 0.0:
             raise ValueError(f"information.{name} must be finite and non-negative")
@@ -2077,11 +2183,16 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError(
             "information.direct_message_terrain_resistance_fraction must be at most 1"
         )
+    if cfg.information.direct_message_medium_resistance_fraction > 1.0:
+        raise ValueError(
+            "information.direct_message_medium_resistance_fraction must be at most 1"
+        )
     if (
         cfg.information.direct_message_propagation_schema == "unbounded-direct-v1"
         and (
             cfg.information.direct_message_distance_decay_per_cell != 0.0
             or cfg.information.direct_message_terrain_resistance_fraction != 0.0
+            or cfg.information.direct_message_medium_resistance_fraction != 0.0
         )
     ):
         raise ValueError(
@@ -2095,6 +2206,23 @@ def validate_config(cfg: SimulationConfig) -> None:
     ):
         raise ValueError(
             "terrain-attenuated direct messages require the terrain environment"
+        )
+    if (
+        cfg.information.direct_message_propagation_schema
+        == "openness-distance-attenuated-v2"
+        and cfg.environment.signal_medium_schema
+        != "independent-openness-mosaic-v1"
+    ):
+        raise ValueError(
+            "openness-attenuated direct messages require an independent signal medium"
+        )
+    if (
+        cfg.information.direct_message_propagation_schema
+        != "openness-distance-attenuated-v2"
+        and cfg.information.direct_message_medium_resistance_fraction != 0.0
+    ):
+        raise ValueError(
+            "inactive direct signal medium requires zero medium resistance"
         )
     if len(cfg.information.signal_flush_periods) != 3 or any(
         not isinstance(period, int) or isinstance(period, bool) or period <= 0

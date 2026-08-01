@@ -166,9 +166,28 @@ def strip_inactive_extensions(payload: dict[str, Any]) -> dict[str, Any]:
         environment.get("signal_propagation_schema", "uniform-isotropic-v1")
         == "uniform-isotropic-v1"
         and float(environment.get("signal_terrain_resistance_fraction", 0.0)) == 0.0
+        and environment.get("signal_medium_schema", "disabled") == "disabled"
+        and float(environment.get("signal_medium_conductance_fraction", 0.0)) == 0.0
+        and float(environment.get("signal_openness_floor", 1.0)) == 1.0
+        and float(environment.get("signal_openness_amplitude", 0.0)) == 0.0
+        and int(environment.get("signal_openness_period", 0)) == 0
+        and float(environment.get("signal_openness_wave_x", 1.0)) == 1.0
+        and float(environment.get("signal_openness_wave_y", 0.0)) == 0.0
+        and float(environment.get("signal_openness_phase_offset", 0.0)) == 0.0
     ):
-        environment.pop("signal_propagation_schema", None)
-        environment.pop("signal_terrain_resistance_fraction", None)
+        for key in (
+            "signal_propagation_schema",
+            "signal_terrain_resistance_fraction",
+            "signal_medium_schema",
+            "signal_medium_conductance_fraction",
+            "signal_openness_floor",
+            "signal_openness_amplitude",
+            "signal_openness_period",
+            "signal_openness_wave_x",
+            "signal_openness_wave_y",
+            "signal_openness_phase_offset",
+        ):
+            environment.pop(key, None)
 
     information = result.get("information", {})
     if (
@@ -188,12 +207,17 @@ def strip_inactive_extensions(payload: dict[str, Any]) -> dict[str, Any]:
             information.get("direct_message_terrain_resistance_fraction", 0.0)
         )
         == 0.0
+        and float(
+            information.get("direct_message_medium_resistance_fraction", 0.0)
+        )
+        == 0.0
     ):
         for key in (
             "resource_signal_observation_schema",
             "direct_message_propagation_schema",
             "direct_message_distance_decay_per_cell",
             "direct_message_terrain_resistance_fraction",
+            "direct_message_medium_resistance_fraction",
         ):
             information.pop(key, None)
 

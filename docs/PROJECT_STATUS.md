@@ -1,44 +1,46 @@
 # SE project status
 
-Version: **0.102.0**
+Version: **0.103.0**
 
 ## Current scientific task
 
-D1-S remains closed as `threshold-not-reached`. D1-T remains mechanism-debug evidence only. The newly uploaded D1-T bundle shows that the same seed 101011 and the same resolved-config hash produced different diagnostic readiness across execution backends:
+The supplied D1-U same-seed result bundle shows that CPU and GPU-hybrid both execute the corrected depletion and signal semantics. Both record 18 rival-overlap events with zero duplicate contest energy and integrity cost. Their final populations are 55 and 53, so the physical wiring is available but the population substrate is not qualified.
 
-- CPU: 47 rival-overlap actor events, 74 same-group danger messages, 5 aligned flee responses, diagnostic chain observed;
-- GPU-hybrid: 36 rival-overlap actor events, 0 same-group danger messages, 0 aligned flee responses, diagnostic chain not observed.
+D1-V corrects the remaining terrain-model coupling before any direct-conflict implementation. Movement resistance and communication openness are now independent environmental fields. Their correlation is a configured property of a particular map, not a global physical law.
 
-Chaotic trajectories need not be bitwise identical, but a mechanism cannot be called qualified when its observed existence depends on which backend ran the same configuration. D1-T therefore does not authorize a formal scout-role panel or any genetic interpretation.
+## D1-V independent medium
 
-## D1-U physical-semantics correction
+- `terrain` affects locomotor speed and movement-energy accounting only.
+- `signal_openness` affects field-signal conductance and direct-message attenuation only.
+- The fields have separate schemas, floors, amplitudes, periods, wave vectors and phase.
+- Positive, negative and near-zero movement/signal correlation are all representable.
+- The D1-V debug map deliberately makes high movement resistance coincide with high signal openness to demonstrate a hard-to-traverse but long-view region.
+- Inactive defaults preserve old configuration identity and old propagation semantics.
 
-D1-U corrects three interfaces:
+## D1-V local debug result
 
-1. Resource depletion is the competition mechanism. Simultaneous nearby rival demand is recorded as an observational overlap pressure, but does not add synthetic energy loss, integrity damage or danger memory.
-2. Resource signals use the current field after the harvest commit, so the message represents actual remaining material rather than a stale pre-action snapshot.
-3. Terrain affects signal transport. Grid fields diffuse through terrain-dependent conductance, and direct messages attenuate with path terrain and distance.
+Seed 103011 completed tick 240 on CPU with 107 living entities. Both movement resistance and signal openness had non-zero spatial variance, and the configured map produced a correlation effectively equal to +1. This is intentional: it demonstrates that a region may be hard to traverse while remaining signal-open because the two fields are independent even when one map aligns them. Tests also verify negative correlation after a phase reversal. The result proves transport wiring only and does not qualify information value, social differentiation or population stability.
 
-Movement load and terrain formulas are not changed in D1-U. No new gene, role, reward, attack action, resource geometry, mean flux, maintenance cost or reproduction rule is introduced.
+## Direct-conflict assessment
 
-## D1-U local debug result
+Direct conflict is scientifically useful only when it is an explicit action with a target, range, actor cost, failure path, bounded outcome and observable evidence. It must remain separate from passive resource depletion. The recommended first actuator is low-lethality `INTERFERE`, able to cause limited displacement, harvest interruption or carried-material spill without identity-based bonuses.
 
-Seed 102011 completed tick 600 on CPU. It recorded 18 rival-overlap actor events while contest energy and integrity costs remained exactly zero, confirming the corrected accounting. The final population was 55 and crossed below the 64-entity debug floor, so the run is not population-ready. Local `backend=auto` resolved to `cpu-fallback-no-gpu`; a real accelerated-device contrast remains outstanding.
+It is not enabled in v0.103 because the current population substrate remains below its debug floor, the action vocabulary and inherited policy width require versioned migration, and the complete target/cost/outcome/backend contract has not yet been qualified.
 
 ## Authorization
 
 Authorized:
 
-- frozen audit of the same-seed D1-T CPU/GPU-hybrid discrepancy;
-- one CPU and one auto-backend D1-U debug run with the same seed and configuration;
-- semantic checks that contest body costs remain zero and terrain-aware transport executes;
-- continued environment and group-continuity work after semantic debugging;
-- external result packaging without checkpoints by default.
+- one D1-V CPU transport-semantics probe;
+- debugging independent movement and signal fields;
+- checking that old disabled configurations keep their protocol identity;
+- packaging transport evidence without checkpoints by default;
+- designing, but not executing, a future explicit interference actuator.
 
 Not authorized:
 
-- formal scout-role or social-occupation claims;
-- a D1-U formal multi-seed environment panel;
-- single-run or formal gene-retention audit;
-- paired benefit attribution, selection, adaptation, niche or subjecthood conclusions;
-- treating CPU/GPU event-count equality as a scientific requirement.
+- direct conflict, attack or body-damage execution;
+- formal environment or social-role panel;
+- scout-role claim;
+- gene-retention, paired, selection, adaptation, niche or subjecthood interpretation;
+- treating a configured movement/signal correlation as evidence of information benefit.

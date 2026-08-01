@@ -652,6 +652,9 @@ class HybridGpuRuntime:
         self.environment.terrain = self._upload(
             environment.terrain, dtype=xp.float32, copy=True
         )
+        self.environment.signal_openness = self._upload(
+            environment.signal_openness, dtype=xp.float32, copy=True
+        )
         self.environment.wear = self._upload(
             environment.wear, dtype=xp.float32, copy=True
         )
@@ -710,6 +713,9 @@ class HybridGpuRuntime:
         environment.terrain = self._download(self.environment.terrain).astype(
             np.float32, copy=False
         )
+        environment.signal_openness = self._download(
+            self.environment.signal_openness
+        ).astype(np.float32, copy=False)
         environment.wear = self._download(self.environment.wear).astype(
             np.float32, copy=False
         )
@@ -764,7 +770,9 @@ class HybridGpuRuntime:
 
     def update_fields(self, tick: int) -> None:
         self.environment.update(tick)
-        self.information_field.propagate(self.environment.terrain)
+        self.information_field.propagate(
+            self.environment.terrain, self.environment.signal_openness
+        )
 
     def prepare(
         self,
@@ -1678,6 +1686,16 @@ class HybridGpuRuntime:
                 self.environment.oxygen,
                 self.environment.terrain,
                 self.environment.wear,
+            )
+        )
+
+    def transport_fields_to_host(self) -> tuple[np.ndarray, np.ndarray]:
+        """Materialize current movement resistance and signal openness."""
+        return tuple(
+            self._download(value).astype(np.float32, copy=False)
+            for value in (
+                self.environment.terrain,
+                self.environment.signal_openness,
             )
         )
 

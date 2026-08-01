@@ -1,22 +1,22 @@
-# SE v0.102
+# SE v0.103
 
 Reference implementation for nested-subject existence and ecological evolution simulation.
 
 ## Current direction
 
-D1-S remains a formal environment-threshold failure because one of three seeds crossed the preregistered population floor even though all three produced structured processing division. D1-T then tested whether load, local competition, inherited danger reach and directional messages could support scout-like differentiation.
+D1-U corrected depletion competition and signal accounting. The supplied same-seed CPU and GPU-hybrid debug bundle now shows that both backends execute those corrected semantics, but both populations finish near 55 and therefore do not qualify an environment or social-role claim.
 
-The uploaded same-seed, same-config D1-T results are backend-sensitive: the CPU run observed the complete diagnostic chain, while the GPU-hybrid run observed no same-group danger-message delivery or aligned flee response. D1-T therefore does not qualify the mechanism.
+D1-V addresses a separate physical modelling error: movement resistance and signal transport no longer share one mandatory terrain axis.
 
-D1-U corrects the physical semantics before any further social interpretation:
+- `terrain` remains the movement-resistance field used by locomotion and movement energy;
+- `signal_openness` is an independent communication-medium field used by grid signals and direct messages;
+- their spatial correlation may be positive, negative or near zero;
+- a hard-to-traverse elevated region can therefore be signal-open, while an easy corridor can be signal-occluded;
+- old configurations retain exact disabled-default behaviour and frozen protocol identity.
 
-- harvested resources are depleted once by the harvest commit; rival overlap is recorded as scarcity pressure, not duplicated as synthetic energy or integrity damage;
-- resource signals read the post-harvest current field;
-- terrain resists both grid-field signal diffusion and direct-message transport;
-- CPU and accelerated runs use the same seed and config for debug comparison, without requiring identical chaotic trajectories;
-- no formal environment panel, gene audit, scout role or selection claim is declared.
+Direct conflict is assessed but not enabled. A future first implementation should be an explicit, low-lethality, default-disabled `INTERFERE` action with target, range, cost, failure and bounded physical outcome. Natural resource depletion remains competition and must not silently become body damage.
 
-The local CPU debug seed completed tick 600 with corrected zero duplicate body cost, but ended at 55 alive and is not population-ready. The local auto backend fell back to CPU, so real-device verification remains outstanding.
+D1-V is transport-semantics debug only. It declares no formal environment panel, direct-conflict run, gene audit, scout role, selection or adaptation claim.
 
 ## Workspace layout
 
@@ -37,17 +37,17 @@ se-study config
 
 The pointer lives in ignored `.se-workspace.toml` and does not affect protocol identity or release artifacts.
 
-## D1-U workflow
+## D1-V workflow
 
 ```text
-se-study show studies/d1u_depletion_pressure_terrain_signal_v1
-se-study run studies/d1u_depletion_pressure_terrain_signal_v1 evidence-audit
-se-study run studies/d1u_depletion_pressure_terrain_signal_v1 prepare-config
-se-study run studies/d1u_depletion_pressure_terrain_signal_v1 probe-cpu --dry-run
-se-study run studies/d1u_depletion_pressure_terrain_signal_v1 probe-accelerated --dry-run
+se-study show studies/d1v_independent_signal_medium_v1
+se-study run studies/d1v_independent_signal_medium_v1 evidence-audit
+se-study run studies/d1v_independent_signal_medium_v1 prepare-config
+se-study run studies/d1v_independent_signal_medium_v1 transport-probe --dry-run
+se-study run studies/d1v_independent_signal_medium_v1 transport-summary --dry-run
 ```
 
-The workflow contains only physical-semantics and backend debug steps. It declares no formal social-structure panel, gene-persistence, paired, selection or candidate-ledger step.
+The workflow contains one CPU transport-semantics probe. It has no conflict, formal panel, gene-persistence, paired, selection or candidate-ledger step.
 
 ## Validation and packaging
 
@@ -59,7 +59,7 @@ make conda-check
 make parity-gpu
 ```
 
-`make package` builds a disposable archive copy and keeps only the current v0.102 iteration note. Local history under `docs/迭代/` remains untouched.
+`make package` builds a disposable archive copy and keeps only the current v0.103 iteration note. Local history under `docs/迭代/` remains untouched.
 
 ## Current documents
 
@@ -69,4 +69,4 @@ make parity-gpu
 - [Governance principles](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.102 D1-U iteration](docs/迭代/v0.102_D1-U_资源耗竭竞争与地形信号传播.md)
+- [v0.103 D1-V iteration](docs/迭代/v0.103_D1-V_独立信号介质与直接冲突接入边界.md)

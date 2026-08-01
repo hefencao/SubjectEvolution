@@ -1,0 +1,22 @@
+{
+  "schema": "mechanism-backend-debug-contrast-v1",
+  "comparable": true,
+  "pairs": [
+    {
+      "same_seed": true,
+      "same_config_sha256": true,
+      "cpu_execution_backend": "cpu",
+      "accelerated_execution_backend": "gpu-hybrid-accelerated",
+      "alive_delta": -2,
+      "contest_event_delta": 0.0
+    }
+  ],
+  "both_semantics_ready": true,
+  "backend_parity_claim": false,
+  "authorization": {
+    "debug_backend_sensitive_mechanism": true,
+    "formal_scientific_equivalence": false,
+    "gene_audit": false
+  },
+  "interpretation_boundary": "Chaotic trajectories need not be identical. The contrast only requires the same configuration and corrected physical semantics to execute on both backends."
+}

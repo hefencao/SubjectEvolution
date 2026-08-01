@@ -1,0 +1,26 @@
+{
+  "schema": "frozen-evidence-lock-v1",
+  "study_id": "d1v_independent_signal_medium_v1",
+  "files": [
+    {
+      "path": "studies/d1v_independent_signal_medium_v1/frozen/d1u/accelerated_probe.json",
+      "size": 1355,
+      "sha256": "410279637a5540a3782152bcbe6e42cd0f8539cfcbb2305e46c6dd1249070ea6"
+    },
+    {
+      "path": "studies/d1v_independent_signal_medium_v1/frozen/d1u/backend_contrast.json",
+      "size": 720,
+      "sha256": "c70e7ea66dc56a88ed8e347b039c2c9a5b96148a47cf1771863729d41b7f6c96"
+    },
+    {
+      "path": "studies/d1v_independent_signal_medium_v1/frozen/d1u/cpu_probe.json",
+      "size": 1327,
+      "sha256": "6b00d9931845d90086a7d4dc39fb430210574082cb2ec09adfb44be29580d119"
+    },
+    {
+      "path": "studies/d1v_independent_signal_medium_v1/frozen/d1u/source_config.json",
+      "size": 18769,
+      "sha256": "e624ea7e85d7d4164888e2a10bd611f432254fadd12f7aab3f0b85ce7265448d"
+    }
+  ]
+}

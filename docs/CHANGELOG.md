@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.103.0
+
+- Separates movement resistance from communication-medium openness instead of forcing terrain to affect locomotion and signal transport in the same direction.
+- Adds opt-in independent signal-openness mosaics for field diffusion and direct-message attenuation while preserving exact legacy defaults.
+- Reports movement-resistance and signal-openness variance and spatial correlation as map properties rather than universal laws.
+- Freezes D1-U CPU/GPU-hybrid corrected-semantics evidence while retaining the failed population-readiness boundary.
+- Assesses direct conflict as a future explicit, low-lethality, default-disabled `INTERFERE` actuator and does not enable attack or synthetic body damage.
+- Adds D1-V workflow, tests, documentation and console entries.
+
 ## 0.102.0
 
 - Replaces synthetic rival-harvest body damage with observational depletion pressure; actual harvest depletion remains the sole resource-competition commit.

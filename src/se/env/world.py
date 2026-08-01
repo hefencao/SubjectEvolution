@@ -25,6 +25,7 @@ from .diversity import (
 )
 from .niches import AFFINITY_SCALE, RESOURCE_CHANNELS
 from .physiology import physiology_fields
+from .signal_medium import signal_openness_field
 from ..reductions import stable_segmented_sum, validate_cell_ids
 
 
@@ -103,6 +104,7 @@ class Environment:
         self.mortality_trace = np.zeros((gy, gx), dtype=np.float32)
         initialize_resource_residue(self)
         self.oxygen, self.terrain, self.wear = physiology_fields(cfg, 0)
+        self.signal_openness = signal_openness_field(cfg, 0)
 
     def _normalized_grid(self, xx: np.ndarray, yy: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         return diversity_normalized_grid(
@@ -280,10 +282,12 @@ class Environment:
 
     def update_physiology_fields(self, tick: int) -> None:
         self.oxygen, self.terrain, self.wear = physiology_fields(self.cfg, tick)
+        self.signal_openness = signal_openness_field(self.cfg, tick)
         if self.spatial_reversed:
             self.oxygen = self.oxygen[::-1, ::-1].copy()
             self.terrain = self.terrain[::-1, ::-1].copy()
             self.wear = self.wear[::-1, ::-1].copy()
+            self.signal_openness = self.signal_openness[::-1, ::-1].copy()
 
     def physiology_for_cells(self, cell_ids: np.ndarray) -> np.ndarray:
         cells = validate_cell_ids(cell_ids, self.cfg.world.grid_x * self.cfg.world.grid_y)

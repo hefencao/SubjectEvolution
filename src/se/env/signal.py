@@ -11,6 +11,7 @@ from typing import Any
 
 UNIFORM_SIGNAL_SCHEMA = "uniform-isotropic-v1"
 TERRAIN_SIGNAL_SCHEMA = "terrain-resisted-diffusion-v1"
+OPENNESS_SIGNAL_SCHEMA = "independent-openness-diffusion-v2"
 
 
 def propagate_signal_field(
@@ -22,6 +23,8 @@ def propagate_signal_field(
     schema: str,
     terrain: Any | None = None,
     terrain_resistance_fraction: float = 0.0,
+    signal_openness: Any | None = None,
+    medium_conductance_fraction: float = 0.0,
     xp: Any,
 ) -> Any:
     """Advance a non-negative multi-channel signal field by one tick.
@@ -47,16 +50,25 @@ def propagate_signal_field(
             0.0,
         ).astype(xp.float32)
 
-    if schema != TERRAIN_SIGNAL_SCHEMA:
+    if schema == TERRAIN_SIGNAL_SCHEMA:
+        if terrain is None:
+            raise ValueError("terrain-aware signal propagation requires terrain")
+        terrain_values = xp.clip(xp.asarray(terrain, dtype=xp.float32), 0.0, 1.0)
+        permeability = xp.clip(
+            1.0 - float(terrain_resistance_fraction) * terrain_values,
+            0.05,
+            1.0,
+        )
+    elif schema == OPENNESS_SIGNAL_SCHEMA:
+        if signal_openness is None:
+            raise ValueError("independent signal propagation requires signal openness")
+        openness = xp.clip(
+            xp.asarray(signal_openness, dtype=xp.float32), 0.0, 1.0
+        )
+        coupling = float(medium_conductance_fraction)
+        permeability = xp.clip((1.0 - coupling) + coupling * openness, 0.05, 1.0)
+    else:
         raise ValueError(f"unsupported signal propagation schema: {schema}")
-    if terrain is None:
-        raise ValueError("terrain-aware signal propagation requires terrain")
-    terrain_values = xp.clip(xp.asarray(terrain, dtype=xp.float32), 0.0, 1.0)
-    permeability = xp.clip(
-        1.0 - float(terrain_resistance_fraction) * terrain_values,
-        0.05,
-        1.0,
-    )
     flux = xp.zeros_like(center)
     for axis, shift in ((1, 1), (1, -1), (2, 1), (2, -1)):
         neighbor = xp.roll(center, shift, axis=axis)
@@ -70,6 +82,7 @@ def propagate_signal_field(
 
 
 __all__ = [
+    "OPENNESS_SIGNAL_SCHEMA",
     "TERRAIN_SIGNAL_SCHEMA",
     "UNIFORM_SIGNAL_SCHEMA",
     "propagate_signal_field",

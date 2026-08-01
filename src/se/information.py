@@ -319,7 +319,11 @@ class InformationSystem:
         self.age = np.zeros_like(self.field, dtype=np.uint16)
         self.pending_messages: list[PendingMessageBatch] = []
 
-    def propagate(self, terrain: np.ndarray | None = None) -> None:
+    def propagate(
+        self,
+        terrain: np.ndarray | None = None,
+        signal_openness: np.ndarray | None = None,
+    ) -> None:
         self.field = propagate_signal_field(
             self.field,
             self.source,
@@ -329,6 +333,10 @@ class InformationSystem:
             terrain=terrain,
             terrain_resistance_fraction=(
                 self.cfg.environment.signal_terrain_resistance_fraction
+            ),
+            signal_openness=signal_openness,
+            medium_conductance_fraction=(
+                self.cfg.environment.signal_medium_conductance_fraction
             ),
             xp=np,
         )

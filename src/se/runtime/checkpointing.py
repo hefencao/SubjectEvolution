@@ -475,7 +475,10 @@ class SimulationCheckpointMixin:
             )
         if not hasattr(self.environment, "resource_processing_support_reversed"):
             self.environment.resource_processing_support_reversed = False
-        if not all(hasattr(self.environment, name) for name in ("oxygen", "terrain", "wear")):
+        if not all(
+            hasattr(self.environment, name)
+            for name in ("oxygen", "terrain", "wear", "signal_openness")
+        ):
             self.environment.update_physiology_fields(int(state["tick"]))
         self.information = copy.deepcopy(state["information"])
         self.information.cfg = self.cfg

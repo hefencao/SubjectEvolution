@@ -18,6 +18,7 @@ from .danger_evidence import DANGER_EVIDENCE_SCALE
 from .resource_sensing import effective_resource_sensing_radius_levels
 from .process import build_environment_process, environment_process_metadata
 from .physiology import physiology_fields
+from .signal_medium import signal_openness_field
 from .signal import propagate_signal_field
 from .recycling import initialize_resource_residue, update_resource_recycling
 from .diversity import (
@@ -112,6 +113,7 @@ class DeviceEnvironment:
             )
         self.hazard = self._hazard_pattern(0)
         self.oxygen, self.terrain, self.wear = physiology_fields(cfg, 0, xp=xp)
+        self.signal_openness = signal_openness_field(cfg, 0, xp=xp)
         self.mortality_trace = xp.zeros((gy, gx), dtype=xp.float32)
         initialize_resource_residue(self)
 
@@ -421,10 +423,12 @@ class DeviceEnvironment:
         self.oxygen, self.terrain, self.wear = physiology_fields(
             self.cfg, tick, xp=xp
         )
+        self.signal_openness = signal_openness_field(self.cfg, tick, xp=xp)
         if self.spatial_reversed:
             self.oxygen = self.oxygen[::-1, ::-1].copy()
             self.terrain = self.terrain[::-1, ::-1].copy()
             self.wear = self.wear[::-1, ::-1].copy()
+            self.signal_openness = self.signal_openness[::-1, ::-1].copy()
         self._update_mortality_trace()
 
     def resource_diversity_metrics(self) -> dict[str, Any]:
@@ -731,7 +735,9 @@ class DeviceInformationField:
         self.source = xp.zeros_like(self.field)
         self.age = xp.zeros(shape, dtype=xp.uint16)
 
-    def propagate(self, terrain: Any | None = None) -> None:
+    def propagate(
+        self, terrain: Any | None = None, signal_openness: Any | None = None
+    ) -> None:
         xp = self.backend.xp
         self.field = propagate_signal_field(
             self.field,
@@ -742,6 +748,10 @@ class DeviceInformationField:
             terrain=terrain,
             terrain_resistance_fraction=(
                 self.cfg.environment.signal_terrain_resistance_fraction
+            ),
+            signal_openness=signal_openness,
+            medium_conductance_fraction=(
+                self.cfg.environment.signal_medium_conductance_fraction
             ),
             xp=xp,
         )

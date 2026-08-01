@@ -1,0 +1,21 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1v_independent_signal_medium_v1",
+  "title": "D1-V independent signal medium and direct-conflict boundary",
+  "status": "physical-field-decoupling-debug",
+  "scientific_stage": "structured-environment-medium-separation-before-direct-conflict",
+  "predecessor": {
+    "study_id": "d1u_depletion_pressure_terrain_signal_v1",
+    "cpu_semantics_ready": true,
+    "accelerated_semantics_ready": true,
+    "population_ready": false
+  },
+  "authorization": {
+    "single_seed_transport_debug": true,
+    "direct_conflict_implementation": false,
+    "formal_multi_seed_environment_panel": false,
+    "single_run_gene_audit": false,
+    "formal_gene_audit": false,
+    "social_role_claim": false
+  }
+}

@@ -1182,3 +1182,32 @@ terrain path + distance → direct-message attenuation
 
 `rival-harvest-depletion-pressure-v2` never changes the committed resource ledger and adds no synthetic body damage. `post-harvest-current-v2` reads authoritative host or device resource values after settlement. `terrain-resisted-diffusion-v1` applies symmetric edge conductance; `terrain-distance-attenuated-v1` applies one role-neutral multiplier to direct payload and confidence. Legacy schemas and exact inactive defaults retain frozen protocol identities.
 
+
+
+## D1-V independent signal-medium boundary
+
+```text
+movement resistance field (terrain) ──→ locomotor multiplier / movement cost
+
+signal openness field ──→ edge conductance for grid signals
+                     └──→ path attenuation for direct messages
+
+configured correlation: positive, negative, or near zero
+```
+
+`se.env.signal_medium` generates the role-neutral communication-medium field independently from movement terrain. `independent-openness-diffusion-v2` uses openness-derived symmetric edge conductance; `openness-distance-attenuated-v2` uses path openness and grid distance for direct payload and confidence. The legacy uniform and terrain-resisted schemas remain available and exact inactive defaults are stripped by config identity normalization.
+
+Environment and device mirrors own `signal_openness` alongside terrain. Checkpoint restoration rebuilds it for legacy snapshots, while current checkpoint, clone and host/device synchronization paths carry it explicitly. Reporting materializes both fields and emits their variances and spatial correlation.
+
+Direct conflict is not implemented by D1-V. A future action must use a versioned actuator schema rather than reuse observational depletion pressure. The recommended initial pipeline is:
+
+```text
+INTERFERE intent
+→ explicit local target resolution
+→ actor cost and exposure commit
+→ bounded success/failure settlement
+→ displacement / harvest interruption / limited carried-material spill
+→ observable event and signal update
+```
+
+No stage may read group, lineage or named role as a physical bonus. Attack damage, seizure and defensive structures remain later capabilities after low-lethality interference preserves the demographic substrate.

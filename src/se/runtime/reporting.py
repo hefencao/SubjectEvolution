@@ -42,6 +42,7 @@ from se.env.danger_evidence import (
 )
 from se.env.world import Environment
 from se.env.physiology import field_metrics as physiology_field_metrics
+from se.env.signal_medium import medium_metrics as signal_medium_metrics
 from se.env.diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
     PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
@@ -1512,6 +1513,14 @@ class SimulationReportingMixin:
         physiology_environment_metrics = physiology_field_metrics(
             *physiology_metric_fields
         )
+        signal_openness_field = (
+            self.environment.signal_openness
+            if self.gpu_runtime is None
+            else self.gpu_runtime.transport_fields_to_host()[1]
+        )
+        signal_medium_environment_metrics = signal_medium_metrics(
+            signal_openness_field, physiology_metric_fields[1]
+        )
         physiology_genetic_metrics = physiology_diagnostics(
             ent.genotype,
             ent.alive,
@@ -1839,6 +1848,14 @@ class SimulationReportingMixin:
             "physiology_environment_standard_deviations": (
                 physiology_environment_metrics.standard_deviations
             ),
+            "signal_medium_schema": self.cfg.environment.signal_medium_schema,
+            "signal_propagation_schema": (
+                self.cfg.environment.signal_propagation_schema
+            ),
+            "direct_message_propagation_schema": (
+                self.cfg.information.direct_message_propagation_schema
+            ),
+            **signal_medium_environment_metrics,
             "physiology_genetic_effective_dimensions": float(
                 physiology_genetic_metrics["effective_dimensions"]
             ),
