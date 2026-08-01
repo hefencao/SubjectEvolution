@@ -1,14 +1,8 @@
-"""Bounded delayed token-association candidates for Subject VM Stage 3B-2.
-
-Association is content addressing, not credit assignment.  A current graph token
-may request a deterministic lookup among older bounded-ring tokens.  The result
-is only a stable event reference, delay and continuous similarity score.  No
-objective event coordinate is interpreted, no eligibility is changed and no
-graph parameter is updated here.
-"""
+"""Bounded delayed content-address candidates for Subject VM Stage 3B-2."""
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Iterable
 
 import numpy as np
 
@@ -26,15 +20,20 @@ class SubjectVMDelayedAssociationCandidate:
     reason: str = "not-requested"
 
 
-def _query_without_request_coordinate(
-    token: np.ndarray, *, request_port: int
+def _query_without_control_coordinates(
+    token: np.ndarray,
+    *,
+    request_port: int,
+    excluded_ports: Iterable[int] = (),
 ) -> np.ndarray:
     query = np.asarray(token, dtype=np.float64).copy()
     if query.ndim != 1:
         raise ValueError("subject_vm association token must be one-dimensional")
-    if not 0 <= int(request_port) < query.size:
-        raise ValueError("subject_vm association request port is outside token width")
-    query[int(request_port)] = 0.0
+    controls = {int(request_port), *(int(value) for value in excluded_ports)}
+    if any(port < 0 or port >= query.size for port in controls):
+        raise ValueError("subject_vm association excluded port is outside token width")
+    for port in controls:
+        query[port] = 0.0
     return query
 
 
@@ -48,13 +47,14 @@ def select_delayed_association_candidate(
     event_ticks: np.ndarray,
     historical_tokens: np.ndarray,
     excluded_slot: int,
+    excluded_token_ports: Iterable[int] = (),
 ) -> SubjectVMDelayedAssociationCandidate:
     """Select one deterministic historical-token candidate or remain unassigned.
 
-    The request strength is read from one graph-produced token coordinate.  That
-    coordinate is excluded from similarity, so a routing gate cannot improve its
-    own match score.  Candidates must be strictly older than the configured
-    minimum delay and remain inside both the bounded ring and maximum delay.
+    Request and optional downstream-control coordinates are excluded from both
+    query and candidate vectors.  Therefore a request/proposal gate cannot
+    improve its own content-address score.  Similarity remains only an address
+    criterion; it is never used as value or modulation strength.
     """
     token = np.asarray(current_token, dtype=np.float64)
     if np.any(~np.isfinite(token)):
@@ -63,8 +63,10 @@ def select_delayed_association_candidate(
     if request < float(cfg.request_threshold):
         return SubjectVMDelayedAssociationCandidate(requested=False, assigned=False)
 
-    query = _query_without_request_coordinate(
-        token, request_port=int(cfg.request_token_port)
+    query = _query_without_control_coordinates(
+        token,
+        request_port=int(cfg.request_token_port),
+        excluded_ports=excluded_token_ports,
     )
     query_norm = float(np.linalg.norm(query))
     if query_norm == 0.0:
@@ -96,8 +98,10 @@ def select_delayed_association_candidate(
     best_tick = -1
     best_event_id = np.iinfo(np.uint64).max
     for slot in candidate_slots.tolist():
-        candidate = _query_without_request_coordinate(
-            candidates[slot], request_port=int(cfg.request_token_port)
+        candidate = _query_without_control_coordinates(
+            candidates[slot],
+            request_port=int(cfg.request_token_port),
+            excluded_ports=excluded_token_ports,
         )
         candidate_norm = float(np.linalg.norm(candidate))
         if candidate_norm == 0.0:

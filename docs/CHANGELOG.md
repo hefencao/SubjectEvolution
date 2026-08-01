@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.114.0
+
+- Adds Subject VM Stage 3B-3 bounded, rejectable modulation proposals over six generic parameter families.
+- Uses graph-produced token coordinates for a proposal request, twenty-one objective-fact projection weights and six parameter-family weights.
+- Excludes all association, proposal-request, fact-projection and target-projection controls from delayed-token similarity.
+- Computes proposal strength from normalized current-minus-historical objective facts without fixed reward, valence or polarity.
+- Keeps association similarity and delay out of proposal magnitude; they remain address metadata only.
+- Stores only request/proposal flags, a role-neutral reason code, bounded scalar signal and six-dimensional family vector.
+- Performs no concrete node/edge binding, eligibility modulation, graph parameter write, action feedback, RNG use or physical plasticity debit.
+- Upgrades v0.113 checkpoints to empty proposal metadata without fabricating proposals.
+
 ## 0.113.0
 
 - Adds Subject VM Stage 3B-2 bounded delayed association candidates inside the existing continuous token/objective-event ring.

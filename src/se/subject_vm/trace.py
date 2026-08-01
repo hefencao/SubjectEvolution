@@ -13,10 +13,21 @@ from typing import Any
 import numpy as np
 
 from .association import select_delayed_association_candidate
-from .config import SubjectVMConfig
+from .config import (
+    SUBJECT_VM_MODULATION_TARGET_NAMES,
+    SUBJECT_VM_MODULATION_TARGET_WIDTH,
+    SubjectVMConfig,
+)
+from .modulation import (
+    MODULATION_REASON_CODES,
+    modulation_control_ports,
+    objective_fact_vector,
+    propose_modulation,
+)
 
 TRACE_STORAGE_SCHEMA_V1 = "se-subject-vm-token-event-storage-v1"
-TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v2"
+TRACE_STORAGE_SCHEMA_V2 = "se-subject-vm-token-event-storage-v2"
+TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v3"
 ACTION_PORT_WIDTH = 8
 RESOURCE_DELTA_WIDTH = 4
 OBJECTIVE_EVENT_DELTA_NAMES = (
@@ -79,6 +90,15 @@ class SubjectVMTraceAccounting:
     association_unassigned_zero_query: int = 0
     association_unassigned_no_candidate: int = 0
     association_unassigned_below_threshold: int = 0
+    modulation_requests: int = 0
+    modulation_proposals: int = 0
+    modulation_rejected_no_association: int = 0
+    modulation_rejected_missing_history: int = 0
+    modulation_rejected_zero_fact_weights: int = 0
+    modulation_rejected_zero_fact_contrast: int = 0
+    modulation_rejected_zero_target_weights: int = 0
+    modulation_rejected_zero_signal: int = 0
+    modulation_not_requested: int = 0
     last_event_tick: int = -1
 
 
@@ -139,6 +159,23 @@ class SubjectVMTraceStorage:
         self.association_similarity = (
             np.zeros((e, c), dtype=np.float32) if cfg.association_enabled else None
         )
+        self.modulation_requested = (
+            np.zeros((e, c), dtype=bool) if cfg.modulation_enabled else None
+        )
+        self.modulation_proposed = (
+            np.zeros((e, c), dtype=bool) if cfg.modulation_enabled else None
+        )
+        self.modulation_reason = (
+            np.zeros((e, c), dtype=np.uint8) if cfg.modulation_enabled else None
+        )
+        self.modulation_signal = (
+            np.zeros((e, c), dtype=np.float32) if cfg.modulation_enabled else None
+        )
+        self.modulation_vector = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.float32)
+            if cfg.modulation_enabled
+            else None
+        )
 
     @staticmethod
     def base_snapshot_array_names() -> tuple[str, ...]:
@@ -174,13 +211,23 @@ class SubjectVMTraceStorage:
             "association_similarity",
         )
 
+    @staticmethod
+    def modulation_snapshot_array_names() -> tuple[str, ...]:
+        return (
+            "modulation_requested",
+            "modulation_proposed",
+            "modulation_reason",
+            "modulation_signal",
+            "modulation_vector",
+        )
+
     def snapshot_array_names(self) -> tuple[str, ...]:
         names = self.base_snapshot_array_names()
-        return (
-            names + self.association_snapshot_array_names()
-            if self.cfg.association_enabled
-            else names
-        )
+        if self.cfg.association_enabled:
+            names += self.association_snapshot_array_names()
+        if self.cfg.modulation_enabled:
+            names += self.modulation_snapshot_array_names()
+        return names
 
     def allocated_nbytes(self) -> int:
         return int(
@@ -205,7 +252,7 @@ class SubjectVMTraceStorage:
             return
         for name in self.snapshot_array_names():
             array = getattr(self, name)
-            if name in {"event_tick", "action_id"}:
+            if name in {"event_tick", "action_id", "associated_event_tick"}:
                 array[rows] = -1
             else:
                 array[rows] = 0
@@ -256,6 +303,17 @@ class SubjectVMTraceStorage:
             self.associated_event_tick[row, slot] = -1
             self.association_delay_ticks[row, slot] = 0
             self.association_similarity[row, slot] = 0.0
+        if self.cfg.modulation_enabled:
+            assert self.modulation_requested is not None
+            assert self.modulation_proposed is not None
+            assert self.modulation_reason is not None
+            assert self.modulation_signal is not None
+            assert self.modulation_vector is not None
+            self.modulation_requested[row, slot] = False
+            self.modulation_proposed[row, slot] = False
+            self.modulation_reason[row, slot] = 0
+            self.modulation_signal[row, slot] = 0.0
+            self.modulation_vector[row, slot] = 0.0
 
     def expire(self, tick: int) -> int:
         expired = self.event_valid & (
@@ -352,6 +410,11 @@ class SubjectVMTraceStorage:
                     event_ticks=self.event_tick[row],
                     historical_tokens=self.thought_token[row],
                     excluded_slot=slot,
+                    excluded_token_ports=(
+                        modulation_control_ports(self.cfg.modulation)
+                        if self.cfg.modulation_enabled
+                        else ()
+                    ),
                 )
                 if association.requested:
                     accounting.association_requests += 1
@@ -365,6 +428,55 @@ class SubjectVMTraceStorage:
                     accounting.association_unassigned_no_candidate += 1
                 elif association.reason == "below-threshold":
                     accounting.association_unassigned_below_threshold += 1
+            modulation = None
+            if self.cfg.modulation_enabled:
+                assert association is not None
+                current_facts = objective_fact_vector(
+                    objective_delta=batch.objective_delta[index],
+                    resource_delta=batch.resolution_resource_delta[index],
+                    internal_resource_delta=batch.resolution_internal_resource_delta[index],
+                    energy_cost=float(batch.resolution_energy_cost[index]),
+                )
+                historical_facts = None
+                if association.assigned:
+                    matches = np.flatnonzero(
+                        self.event_valid[row]
+                        & (self.event_id[row] == np.uint64(association.associated_event_id))
+                        & (self.event_tick[row] == int(association.associated_event_tick))
+                    )
+                    if matches.size == 1:
+                        historical_slot = int(matches[0])
+                        historical_facts = objective_fact_vector(
+                            objective_delta=self.objective_delta[row, historical_slot],
+                            resource_delta=self.resolution_resource_delta[row, historical_slot],
+                            internal_resource_delta=self.resolution_internal_resource_delta[row, historical_slot],
+                            energy_cost=float(self.resolution_energy_cost[row, historical_slot]),
+                        )
+                modulation = propose_modulation(
+                    cfg=self.cfg.modulation,
+                    current_token=np.asarray(tokens.tokens[index], dtype=np.float32),
+                    association=association,
+                    current_facts=current_facts,
+                    historical_facts=historical_facts,
+                )
+                if modulation.requested:
+                    accounting.modulation_requests += 1
+                else:
+                    accounting.modulation_not_requested += 1
+                if modulation.proposed:
+                    accounting.modulation_proposals += 1
+                elif modulation.reason == "no-association":
+                    accounting.modulation_rejected_no_association += 1
+                elif modulation.reason == "missing-historical-event":
+                    accounting.modulation_rejected_missing_history += 1
+                elif modulation.reason == "zero-fact-weights":
+                    accounting.modulation_rejected_zero_fact_weights += 1
+                elif modulation.reason == "zero-fact-contrast":
+                    accounting.modulation_rejected_zero_fact_contrast += 1
+                elif modulation.reason == "zero-target-weights":
+                    accounting.modulation_rejected_zero_target_weights += 1
+                elif modulation.reason == "zero-signal":
+                    accounting.modulation_rejected_zero_signal += 1
             if self.event_valid[row, slot]:
                 accounting.overwritten_events += 1
             self._clear_slot(row, slot)
@@ -419,6 +531,21 @@ class SubjectVMTraceStorage:
                 self.association_similarity[row, slot] = np.float32(
                     association.similarity
                 )
+            if modulation is not None:
+                assert self.modulation_requested is not None
+                assert self.modulation_proposed is not None
+                assert self.modulation_reason is not None
+                assert self.modulation_signal is not None
+                assert self.modulation_vector is not None
+                self.modulation_requested[row, slot] = modulation.requested
+                self.modulation_proposed[row, slot] = modulation.proposed
+                self.modulation_reason[row, slot] = np.uint8(
+                    MODULATION_REASON_CODES[modulation.reason]
+                )
+                self.modulation_signal[row, slot] = np.float32(modulation.signal)
+                self.modulation_vector[row, slot] = np.asarray(
+                    modulation.vector, dtype=np.float32
+                )
             self.write_cursor[row] = np.uint32((slot + 1) % self.capacity)
             self.event_count[row] = np.uint32(np.count_nonzero(self.event_valid[row]))
             accounting.recorded_events += 1
@@ -452,7 +579,7 @@ class SubjectVMTraceStorage:
         cls, cfg: SubjectVMConfig, entity_capacity: int, payload: dict[str, Any]
     ) -> "SubjectVMTraceStorage":
         schema = payload.get("schema")
-        if schema not in {TRACE_STORAGE_SCHEMA, TRACE_STORAGE_SCHEMA_V1}:
+        if schema not in {TRACE_STORAGE_SCHEMA, TRACE_STORAGE_SCHEMA_V2, TRACE_STORAGE_SCHEMA_V1}:
             raise ValueError("unsupported subject_vm trace snapshot schema")
         result = cls(cfg, entity_capacity)
         expected = (
@@ -474,11 +601,14 @@ class SubjectVMTraceStorage:
         arrays = payload.get("arrays")
         if not isinstance(arrays, dict):
             raise ValueError("subject_vm trace checkpoint arrays are missing")
-        names = (
-            result.base_snapshot_array_names()
-            if schema == TRACE_STORAGE_SCHEMA_V1
-            else result.snapshot_array_names()
-        )
+        if schema == TRACE_STORAGE_SCHEMA_V1:
+            names = result.base_snapshot_array_names()
+        elif schema == TRACE_STORAGE_SCHEMA_V2:
+            names = result.base_snapshot_array_names()
+            if result.cfg.association_enabled:
+                names += result.association_snapshot_array_names()
+        else:
+            names = result.snapshot_array_names()
         for name in names:
             if name not in arrays:
                 raise ValueError(f"subject_vm trace checkpoint is missing array {name}")
@@ -508,6 +638,13 @@ class SubjectVMTraceStorage:
                 if self.association_assigned is None
                 else int(np.count_nonzero(self.association_assigned))
             ),
+            "modulation_enabled": self.cfg.modulation_enabled,
+            "proposed_modulations": (
+                0
+                if self.modulation_proposed is None
+                else int(np.count_nonzero(self.modulation_proposed))
+            ),
+            "modulation_target_names": list(SUBJECT_VM_MODULATION_TARGET_NAMES),
         }
 
 
@@ -518,6 +655,7 @@ __all__ = [
     "RESOURCE_DELTA_WIDTH",
     "TRACE_STORAGE_SCHEMA",
     "TRACE_STORAGE_SCHEMA_V1",
+    "TRACE_STORAGE_SCHEMA_V2",
     "SubjectVMObjectiveEventBatch",
     "SubjectVMThoughtTokenBatch",
     "SubjectVMTraceAccounting",

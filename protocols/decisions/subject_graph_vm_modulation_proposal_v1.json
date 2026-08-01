@@ -1,0 +1,95 @@
+{
+  "schema": "se-subject-vm-modulation-proposal-contract-v1",
+  "contract_id": "subject-graph-vm-modulation-proposal-v1",
+  "status": "accepted-stage-3b3-engineering-boundary",
+  "release": "0.114.0",
+  "scope": "Generate bounded, rejectable parameter-family modulation proposals from an already committed delayed association candidate without eligibility modulation or parameter writes.",
+  "inputs": {
+    "association": "one assigned Stage-3B-2 historical event reference",
+    "current_facts": "current post-commit continuous objective fact vector",
+    "historical_facts": "objective fact vector stored with the assigned historical event",
+    "graph_control": "reserved coordinates in the current graph-produced continuous token"
+  },
+  "token_controls": {
+    "request": "one graph-produced request coordinate",
+    "fact_projection": "twenty-one graph-produced weights over current-minus-historical objective facts",
+    "target_projection": "six graph-produced weights over generic parameter families",
+    "association_similarity": "all request, fact-projection and target-projection coordinates are excluded",
+    "cryptographic_hash": false
+  },
+  "objective_fact_vector": [
+    "energy delta",
+    "integrity delta",
+    "fertility delta",
+    "position x delta",
+    "position y delta",
+    "velocity x delta",
+    "velocity y delta",
+    "information-store delta",
+    "four external resource deltas",
+    "four internal resource deltas",
+    "resolution energy cost"
+  ],
+  "parameter_families": [
+    "node-bias",
+    "node-input-gate",
+    "node-output-gate",
+    "node-trace-gate",
+    "edge-forward-gate",
+    "edge-bandwidth"
+  ],
+  "proposal_math": {
+    "fact_signal": "normalized dot product between graph-produced fact weights and normalized current-minus-historical fact contrast",
+    "target_vector": "fact signal multiplied by normalized graph-produced parameter-family weights",
+    "clip": "symmetric configured component bound",
+    "association_similarity_as_strength": false,
+    "delay_as_strength": false,
+    "random_numbers": false
+  },
+  "rejectable_outcomes": [
+    "no graph request",
+    "no assigned delayed association",
+    "missing historical event",
+    "zero fact weights",
+    "zero objective fact contrast",
+    "zero parameter-family weights",
+    "zero projected signal"
+  ],
+  "persisted": [
+    "request flag",
+    "proposal-present flag",
+    "bounded scalar signal",
+    "six-dimensional parameter-family proposal vector",
+    "role-neutral reason code"
+  ],
+  "not_persisted": [
+    "specific node or edge target IDs",
+    "eligibility snapshot",
+    "complete execution path",
+    "reward, valence, polarity or trust",
+    "causal-credit conclusion"
+  ],
+  "causal_order": {
+    "same_tick_candidate": false,
+    "association_required": true,
+    "eligibility_modulation": false,
+    "parameter_binding": false,
+    "parameter_update": false,
+    "action_feedback": false,
+    "physical_cost_debit": false
+  },
+  "compatibility": {
+    "disabled_modulation": "canonically removed from configuration identity",
+    "v0113_checkpoint": "upgrade creates empty modulation-proposal metadata without fabricating proposals",
+    "birth": "newborn event ring starts empty",
+    "clone_checkpoint_compaction": "committed proposal metadata is copied exactly",
+    "death": "proposal metadata is cleared with the row"
+  },
+  "forbidden": [
+    "treating any objective coordinate as engine-defined positive or negative value",
+    "using association similarity or delay as credit strength",
+    "binding a proposal to concrete graph slots in Stage 3B-3",
+    "writing node, edge, retained-state or topology parameters",
+    "claiming a proposal as learning, causal attribution or subjecthood"
+  ]
+}

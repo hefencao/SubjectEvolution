@@ -470,3 +470,14 @@ The result may be unassigned. When assigned, the current event stores only the h
 No event fact changes local eligibility in this stage. No graph parameter is updated, no topology is modified, no physical cost is debited and no random value is drawn. Stage 3B-2 therefore remains behavior-neutral relative to Stage 3B-1 for the same graph and simulation seed.
 
 A later stage may propose modulation only from a committed delayed candidate and still-live local eligibility. That later contract must preserve no-update outcomes, prevent current-tick self-confirmation and keep designer event semantics out of the update path.
+
+
+## v0.114：Stage 3B-3 调制提案不是参数更新
+
+Stage 3B-3 只在已经分配的延迟候选上生成一个可拒绝、定长的参数族提案。统一图通过连续 token 提供提案请求、客观事实投影权重和六个通用参数族方向。运行时只计算当前事件与候选历史事件的客观事实差，并用图产生的权重形成有界向量。
+
+提案控制坐标全部从关联相似度中移除；关联相似度和延迟也不参与提案强度。因此“相似”仍只是内容地址，不是因果信用。能量、完整性、资源、信息、繁殖或行动成功等坐标没有引擎规定的正负价值，只有图产生的投影符号能够选择或反转它们。
+
+提案只到参数族，不绑定具体节点或边，不读取或复制 eligibility 快照，不写 node bias、gate、edge bandwidth、retained state 或 topology。原因是当前 tick 的局部 eligibility 可能与较早活动聚合在同一载体中；在没有冻结历史/当前活动隔离、回滚、累计稳定性和物理成本前，直接写入会重新引入同 tick 自我确证和隐藏选择函数。
+
+当前证据只支持：已提交的历史候选和客观事实差能够被图控制的连续投影转换为可审计、可拒绝、行为中性的参数族提案。它不支持已经完成归因、学习、价值形成、参数塑性或主体性。

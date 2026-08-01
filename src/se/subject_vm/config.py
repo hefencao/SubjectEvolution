@@ -15,6 +15,7 @@ SUBJECT_VM_STAGE2_SCHEMA = "partitioned-subject-graph-vm-stage2-activation-v1"
 SUBJECT_VM_STAGE3_SCHEMA = "partitioned-subject-graph-vm-stage3-token-trace-v1"
 SUBJECT_VM_STAGE3B_SCHEMA = "partitioned-subject-graph-vm-stage3b-local-eligibility-v1"
 SUBJECT_VM_STAGE3B2_SCHEMA = "partitioned-subject-graph-vm-stage3b2-delayed-association-v1"
+SUBJECT_VM_STAGE3B3_SCHEMA = "partitioned-subject-graph-vm-stage3b3-modulation-proposal-v1"
 SUBJECT_VM_ACTIVATION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_ACTIVATION_SCHEMA = "bounded-phased-forward-routing-v1"
 SUBJECT_VM_INPUT_PORT_SCHEMA = "objective-entity-input-ports-v1"
@@ -26,6 +27,18 @@ SUBJECT_VM_ELIGIBILITY_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_ELIGIBILITY_SCHEMA = "local-decaying-activity-eligibility-v1"
 SUBJECT_VM_ASSOCIATION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_ASSOCIATION_SCHEMA = "bounded-delayed-token-similarity-candidate-v1"
+SUBJECT_VM_MODULATION_DISABLED_SCHEMA = "disabled"
+SUBJECT_VM_MODULATION_SCHEMA = "bounded-objective-contrast-modulation-proposal-v1"
+SUBJECT_VM_MODULATION_FACT_WIDTH = 21
+SUBJECT_VM_MODULATION_TARGET_NAMES = (
+    "node-bias",
+    "node-input-gate",
+    "node-output-gate",
+    "node-trace-gate",
+    "edge-forward-gate",
+    "edge-bandwidth",
+)
+SUBJECT_VM_MODULATION_TARGET_WIDTH = len(SUBJECT_VM_MODULATION_TARGET_NAMES)
 SUBJECT_VM_REGION_NAMES = (
     "fast-sensorimotor",
     "persistent-state",
@@ -126,6 +139,24 @@ class SubjectVMAssociationConfig:
 
 
 @dataclass(frozen=True)
+class SubjectVMModulationConfig:
+    """Stage-3B-3 compact, rejectable modulation-proposal contract.
+
+    The graph supplies bounded token coordinates that project a current-versus-
+    historical objective fact contrast into generic parameter-family proposal
+    coordinates.  The proposal is audit-only in this stage: it never binds an
+    exact node or edge and never writes eligibility or graph parameters.
+    """
+
+    schema: str = SUBJECT_VM_MODULATION_DISABLED_SCHEMA
+    request_token_port: int = -1
+    request_threshold: float = 0.0
+    fact_weight_start_port: int = -1
+    target_weight_start_port: int = -1
+    proposal_clip: float = 0.0
+
+
+@dataclass(frozen=True)
 class SubjectVMConfig:
     """Disabled-by-default partitioned graph capacity contract."""
 
@@ -138,6 +169,7 @@ class SubjectVMConfig:
     trace: SubjectVMTraceConfig = SubjectVMTraceConfig()
     eligibility: SubjectVMEligibilityConfig = SubjectVMEligibilityConfig()
     association: SubjectVMAssociationConfig = SubjectVMAssociationConfig()
+    modulation: SubjectVMModulationConfig = SubjectVMModulationConfig()
 
     @property
     def total_node_capacity(self) -> int:
@@ -154,6 +186,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3_SCHEMA,
             SUBJECT_VM_STAGE3B_SCHEMA,
             SUBJECT_VM_STAGE3B2_SCHEMA,
+            SUBJECT_VM_STAGE3B3_SCHEMA,
         }
 
     @property
@@ -162,15 +195,24 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3_SCHEMA,
             SUBJECT_VM_STAGE3B_SCHEMA,
             SUBJECT_VM_STAGE3B2_SCHEMA,
+            SUBJECT_VM_STAGE3B3_SCHEMA,
         }
 
     @property
     def eligibility_enabled(self) -> bool:
-        return self.schema in {SUBJECT_VM_STAGE3B_SCHEMA, SUBJECT_VM_STAGE3B2_SCHEMA}
+        return self.schema in {
+            SUBJECT_VM_STAGE3B_SCHEMA,
+            SUBJECT_VM_STAGE3B2_SCHEMA,
+            SUBJECT_VM_STAGE3B3_SCHEMA,
+        }
 
     @property
     def association_enabled(self) -> bool:
-        return self.schema == SUBJECT_VM_STAGE3B2_SCHEMA
+        return self.schema in {SUBJECT_VM_STAGE3B2_SCHEMA, SUBJECT_VM_STAGE3B3_SCHEMA}
+
+    @property
+    def modulation_enabled(self) -> bool:
+        return self.schema == SUBJECT_VM_STAGE3B3_SCHEMA
 
 
 def _scan_forbidden_keys(value: Any, path: str = "subject_vm") -> None:
@@ -284,6 +326,32 @@ def _load_association_config(raw: Any) -> SubjectVMAssociationConfig:
     )
 
 
+def _load_modulation_config(raw: Any) -> SubjectVMModulationConfig:
+    if raw is None:
+        return SubjectVMModulationConfig()
+    if not isinstance(raw, Mapping):
+        raise ValueError("subject_vm.modulation must be an object")
+    allowed = {
+        "schema",
+        "request_token_port",
+        "request_threshold",
+        "fact_weight_start_port",
+        "target_weight_start_port",
+        "proposal_clip",
+    }
+    unknown = sorted(set(raw) - allowed)
+    if unknown:
+        raise ValueError(f"unknown subject_vm.modulation fields: {unknown}")
+    return SubjectVMModulationConfig(
+        schema=str(raw.get("schema", SUBJECT_VM_MODULATION_DISABLED_SCHEMA)),
+        request_token_port=int(raw.get("request_token_port", -1)),
+        request_threshold=float(raw.get("request_threshold", 0.0)),
+        fact_weight_start_port=int(raw.get("fact_weight_start_port", -1)),
+        target_weight_start_port=int(raw.get("target_weight_start_port", -1)),
+        proposal_clip=float(raw.get("proposal_clip", 0.0)),
+    )
+
+
 def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
     """Parse an optional Subject VM section without inventing legacy fields."""
     if raw is None:
@@ -299,6 +367,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         "trace",
         "eligibility",
         "association",
+        "modulation",
     }
     unknown = sorted(set(raw) - allowed)
     if unknown:
@@ -339,6 +408,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         trace=_load_trace_config(raw.get("trace")),
         eligibility=_load_eligibility_config(raw.get("eligibility")),
         association=_load_association_config(raw.get("association")),
+        modulation=_load_modulation_config(raw.get("modulation")),
     )
     validate_subject_vm_config(cfg)
     return cfg
@@ -365,6 +435,13 @@ def _validate_disabled_association(cfg: SubjectVMAssociationConfig) -> None:
     if cfg != SubjectVMAssociationConfig():
         raise ValueError(
             "inactive subject_vm association requires exact disabled defaults"
+        )
+
+
+def _validate_disabled_modulation(cfg: SubjectVMModulationConfig) -> None:
+    if cfg != SubjectVMModulationConfig():
+        raise ValueError(
+            "inactive subject_vm modulation requires exact disabled defaults"
         )
 
 
@@ -452,8 +529,55 @@ def _validate_association(
         )
 
 
+def _validate_modulation(
+    cfg: SubjectVMModulationConfig,
+    *,
+    trace: SubjectVMTraceConfig,
+    association: SubjectVMAssociationConfig,
+) -> None:
+    if cfg.schema != SUBJECT_VM_MODULATION_SCHEMA:
+        raise ValueError(
+            f"Stage-3B-3 subject_vm requires modulation schema {SUBJECT_VM_MODULATION_SCHEMA!r}"
+        )
+    if not 0 <= cfg.request_token_port < trace.token_width:
+        raise ValueError("subject_vm modulation request_token_port is outside token width")
+    if not 0.0 < cfg.request_threshold <= trace.token_clip:
+        raise ValueError(
+            "subject_vm modulation request_threshold must be in (0, token_clip]"
+        )
+    if cfg.fact_weight_start_port < 0:
+        raise ValueError("subject_vm modulation fact_weight_start_port must be non-negative")
+    fact_ports = set(
+        range(
+            cfg.fact_weight_start_port,
+            cfg.fact_weight_start_port + SUBJECT_VM_MODULATION_FACT_WIDTH,
+        )
+    )
+    if not fact_ports or max(fact_ports) >= trace.token_width:
+        raise ValueError("subject_vm modulation fact-weight block exceeds token width")
+    if cfg.target_weight_start_port < 0:
+        raise ValueError("subject_vm modulation target_weight_start_port must be non-negative")
+    target_ports = set(
+        range(
+            cfg.target_weight_start_port,
+            cfg.target_weight_start_port + SUBJECT_VM_MODULATION_TARGET_WIDTH,
+        )
+    )
+    if not target_ports or max(target_ports) >= trace.token_width:
+        raise ValueError("subject_vm modulation target-weight block exceeds token width")
+    control_ports = {int(cfg.request_token_port)} | fact_ports | target_ports
+    if len(control_ports) != 1 + len(fact_ports) + len(target_ports):
+        raise ValueError("subject_vm modulation token controls must not overlap")
+    if int(association.request_token_port) in control_ports:
+        raise ValueError(
+            "subject_vm association and modulation control ports must not overlap"
+        )
+    if not 0.0 < cfg.proposal_clip <= 64.0:
+        raise ValueError("subject_vm modulation proposal_clip must be in (0, 64]")
+
+
 def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
-    """Validate the frozen Stage-1/2/3A/3B-1/3B-2 contracts."""
+    """Validate the frozen Stage-1/2/3A/3B-1/3B-2/3B-3 contracts."""
     if cfg.enabled:
         if cfg.schema not in {
             SUBJECT_VM_STAGE1_SCHEMA,
@@ -461,6 +585,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             SUBJECT_VM_STAGE3_SCHEMA,
             SUBJECT_VM_STAGE3B_SCHEMA,
             SUBJECT_VM_STAGE3B2_SCHEMA,
+            SUBJECT_VM_STAGE3B3_SCHEMA,
         }:
             raise ValueError("enabled subject_vm requires a supported stage schema")
         if tuple(region.name for region in cfg.regions) != SUBJECT_VM_REGION_NAMES:
@@ -491,27 +616,39 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_trace(cfg.trace)
             _validate_disabled_eligibility(cfg.eligibility)
             _validate_disabled_association(cfg.association)
+            _validate_disabled_modulation(cfg.modulation)
         else:
             _validate_activation(cfg.activation)
             if cfg.schema == SUBJECT_VM_STAGE2_SCHEMA:
                 _validate_disabled_trace(cfg.trace)
                 _validate_disabled_eligibility(cfg.eligibility)
                 _validate_disabled_association(cfg.association)
+                _validate_disabled_modulation(cfg.modulation)
             else:
                 _validate_trace(cfg.trace)
                 if cfg.schema == SUBJECT_VM_STAGE3_SCHEMA:
                     _validate_disabled_eligibility(cfg.eligibility)
                     _validate_disabled_association(cfg.association)
+                    _validate_disabled_modulation(cfg.modulation)
                 else:
                     _validate_eligibility(cfg.eligibility)
                     if cfg.schema == SUBJECT_VM_STAGE3B_SCHEMA:
                         _validate_disabled_association(cfg.association)
+                        _validate_disabled_modulation(cfg.modulation)
                     else:
                         _validate_association(
                             cfg.association,
                             trace=cfg.trace,
                             eligibility=cfg.eligibility,
                         )
+                        if cfg.schema == SUBJECT_VM_STAGE3B2_SCHEMA:
+                            _validate_disabled_modulation(cfg.modulation)
+                        else:
+                            _validate_modulation(
+                                cfg.modulation,
+                                trace=cfg.trace,
+                                association=cfg.association,
+                            )
     else:
         if cfg.schema != SUBJECT_VM_DISABLED_SCHEMA:
             raise ValueError("disabled subject_vm requires schema 'disabled'")
@@ -527,6 +664,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
         _validate_disabled_trace(cfg.trace)
         _validate_disabled_eligibility(cfg.eligibility)
         _validate_disabled_association(cfg.association)
+        _validate_disabled_modulation(cfg.modulation)
 
 
 def _disabled_activation_payload(value: Any) -> bool:
@@ -586,6 +724,21 @@ def _disabled_association_payload(value: Any) -> bool:
     )
 
 
+def _disabled_modulation_payload(value: Any) -> bool:
+    if value is None:
+        return True
+    if not isinstance(value, Mapping):
+        return False
+    return (
+        value.get("schema") == SUBJECT_VM_MODULATION_DISABLED_SCHEMA
+        and int(value.get("request_token_port", -1)) == -1
+        and float(value.get("request_threshold", 0.0)) == 0.0
+        and int(value.get("fact_weight_start_port", -1)) == -1
+        and int(value.get("target_weight_start_port", -1)) == -1
+        and float(value.get("proposal_clip", 0.0)) == 0.0
+    )
+
+
 def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]:
     """Remove exact inert extensions without changing frozen identities."""
     section = payload.get("subject_vm")
@@ -601,6 +754,10 @@ def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]
         section.get("association")
     ):
         section.pop("association", None)
+    if isinstance(section, dict) and _disabled_modulation_payload(
+        section.get("modulation")
+    ):
+        section.pop("modulation", None)
     if (
         section.get("enabled") is False
         and section.get("schema") == SUBJECT_VM_DISABLED_SCHEMA
@@ -623,6 +780,11 @@ __all__ = [
     "SUBJECT_VM_ELIGIBILITY_DISABLED_SCHEMA",
     "SUBJECT_VM_ELIGIBILITY_SCHEMA",
     "SUBJECT_VM_INPUT_PORT_SCHEMA",
+    "SUBJECT_VM_MODULATION_DISABLED_SCHEMA",
+    "SUBJECT_VM_MODULATION_FACT_WIDTH",
+    "SUBJECT_VM_MODULATION_SCHEMA",
+    "SUBJECT_VM_MODULATION_TARGET_NAMES",
+    "SUBJECT_VM_MODULATION_TARGET_WIDTH",
     "SUBJECT_VM_OBJECTIVE_EVENT_SCHEMA",
     "SUBJECT_VM_OUTPUT_PORT_SCHEMA",
     "SUBJECT_VM_REGION_NAMES",
@@ -631,11 +793,13 @@ __all__ = [
     "SUBJECT_VM_STAGE3_SCHEMA",
     "SUBJECT_VM_STAGE3B_SCHEMA",
     "SUBJECT_VM_STAGE3B2_SCHEMA",
+    "SUBJECT_VM_STAGE3B3_SCHEMA",
     "SUBJECT_VM_TRACE_DISABLED_SCHEMA",
     "SUBJECT_VM_TRACE_SCHEMA",
     "SubjectVMActivationConfig",
     "SubjectVMAssociationConfig",
     "SubjectVMConfig",
+    "SubjectVMModulationConfig",
     "SubjectVMEligibilityConfig",
     "SubjectVMRegionConfig",
     "SubjectVMTraceConfig",

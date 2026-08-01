@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3b2-delayed-association-candidates-cpu-reference-implemented"
+    assert contract["status"] == "stage-3b3-modulation-proposals-cpu-reference-implemented"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,7 +24,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3B-2"
+    assert contract["current_stage"] == "3B-3"
     assert contract["stage_2_contract"]["plasticity"] is False
     assert contract["stage_3a_contract"]["persistent_node_edge_path"] is False
     assert contract["stage_3a_contract"]["plasticity"] is False
@@ -35,6 +35,19 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["stage_3b2_contract"]["mandatory_assignment"] is False
     assert contract["stage_3b2_contract"]["eligibility_modulation"] is False
     assert contract["stage_3b2_contract"]["plasticity"] is False
+    assert contract["stage_3b3_contract"]["association_required"] is True
+    assert contract["stage_3b3_contract"]["association_similarity_as_strength"] is False
+    assert contract["stage_3b3_contract"]["specific_parameter_binding"] is False
+    assert contract["stage_3b3_contract"]["eligibility_modulation"] is False
+    assert contract["stage_3b3_contract"]["plasticity"] is False
+
+    modulation = _load(
+        "protocols/decisions/subject_graph_vm_modulation_proposal_v1.json"
+    )
+    assert modulation["token_controls"]["cryptographic_hash"] is False
+    assert modulation["proposal_math"]["association_similarity_as_strength"] is False
+    assert modulation["causal_order"]["parameter_binding"] is False
+    assert modulation["causal_order"]["parameter_update"] is False
 
     delayed_association = _load(
         "protocols/decisions/subject_graph_vm_delayed_association_v1.json"
