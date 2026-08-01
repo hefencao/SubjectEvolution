@@ -138,7 +138,7 @@ def validate_routing_ownership(view: RoutingOwnershipView) -> None:
     if conflicts:
         joined = ", ".join(conflicts)
         raise ValueError(
-            "Stage-2 subject_vm is the sole optional action-routing owner; "
+            "active Subject VM is the sole optional action-routing owner; "
             f"disable legacy baseline routes before enabling it: {joined}"
         )
 

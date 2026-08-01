@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.111.0
+
+- Adds Subject VM Stage 3A graph-produced continuous internal tokens and bounded objective-event history.
+- Rejects persistent per-event node/edge path storage: no executed-node IDs, transmitted-edge IDs, activation masks or whole-network snapshots enter the long-term ring or checkpoint.
+- Adds generic per-node token readout ports and gates so the graph, rather than the engine, chooses which internal values contribute to a fixed-width token.
+- Keeps continuous token geometry as the authoritative representation; cryptographic or avalanche hashes are not used for learning or attribution.
+- Records objective action resolution, stable subject references, sampled probability and post-commit body/position/information/raw-store deltas without reward, valence or polarity.
+- Makes trace memory independent of graph node/edge capacity and preserves bounded expiry, birth/death reset, compaction, clone, checkpoint and Stage-2 empty-ring upgrade behavior.
+- Keeps eligibility, credit, plasticity, physical cost debit, topology development, GPU execution and Epoch 1 qualification unauthorized.
+
 ## 0.110.0
 
 - Freezes a machine-readable routing-ownership contract before Stage-3 trace/plasticity work.

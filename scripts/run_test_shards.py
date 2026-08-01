@@ -39,24 +39,38 @@ def run(project: Path, shards: int, report: Path | None) -> int:
         for index, group in enumerate(groups):
             command = [sys.executable, "-m", "pytest", "-q", *map(str, group)]
             log_path = log_dir / f"shard-{index + 1}.log"
+            print(
+                f"starting pytest shard {index + 1}/{shard_count} "
+                f"({len(group)} files)",
+                flush=True,
+            )
             with log_path.open("wb") as stream:
-                completed = subprocess.run(
+                process = subprocess.Popen(
                     command,
                     cwd=project,
                     env=os.environ.copy(),
                     stdout=stream,
                     stderr=subprocess.STDOUT,
-                    check=False,
                 )
+                next_heartbeat = time.monotonic() + 30.0
+                while process.poll() is None:
+                    time.sleep(1.0)
+                    if time.monotonic() >= next_heartbeat:
+                        print(
+                            f"pytest shard {index + 1}/{shard_count} still running",
+                            flush=True,
+                        )
+                        next_heartbeat = time.monotonic() + 30.0
+                returncode = int(process.returncode)
             stdout = log_path.read_text(encoding="utf-8", errors="replace")
             print(f"\n===== pytest shard {index + 1}/{shard_count} =====")
             print(stdout, end="" if stdout.endswith("\n") else "\n")
-            if completed.returncode != 0:
+            if returncode != 0:
                 passed = False
             results.append(
                 {
                     "shard": index + 1,
-                    "returncode": completed.returncode,
+                    "returncode": returncode,
                     "test_file_count": len(group),
                     "test_files": [str(path.relative_to(project)) for path in group],
                     "stdout_tail": stdout.splitlines()[-8:],

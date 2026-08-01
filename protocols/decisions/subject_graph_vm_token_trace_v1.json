@@ -1,0 +1,66 @@
+{
+  "schema": "se-subject-vm-token-trace-decision-v1",
+  "decision_id": "subject-vm-stage3a-continuous-token-objective-event-v1",
+  "release": "0.111.0",
+  "status": "implemented-engineering-infrastructure-only",
+  "scope": "Store bounded graph-produced continuous internal tokens and objective post-commit event facts without persistent node/edge path history, value interpretation, eligibility, credit or plasticity.",
+  "representation": {
+    "primary": "continuous-fixed-width-token",
+    "producer": "generic graph readout ports selected by graph structure",
+    "similarity": "continuous geometry remains available for later approximate association",
+    "cryptographic_hash": "forbidden-as-primary-learning-representation",
+    "optional_future_hash_use": "indexing-or-diagnostics-only-never-authoritative-state"
+  },
+  "phase_order": [
+    "activation updates graph state and emits bounded action potentials",
+    "graph-defined token readout compresses selected current node values",
+    "existing action arbitration and authoritative world commit execute",
+    "post-commit objective facts are paired with the token for later ticks only"
+  ],
+  "persistent_record": [
+    "event identity and tick",
+    "stable carrier and resolved target subject identities",
+    "actual action resolution and sampled probability",
+    "graph-produced continuous token",
+    "bounded action-potential vector",
+    "objective body position information and raw-store deltas",
+    "resolution resource deltas and energy cost"
+  ],
+  "explicitly_not_persisted": [
+    "executed node IDs",
+    "transmitted edge IDs",
+    "full activation masks",
+    "complete internal graph snapshots",
+    "designer-labeled concepts"
+  ],
+  "retention": {
+    "storage": "fixed per-living-subject ring",
+    "memory_scaling": "entity-capacity times event-capacity times token-width; independent of graph node-edge capacity",
+    "expiry": "bounded tick retention",
+    "birth": "history not inherited",
+    "death": "cleared with owner row",
+    "compaction": "moved with stable owner",
+    "checkpoint": "exact round trip",
+    "legacy_upgrade": "Stage-2 payload rebuilds an empty token ring explicitly"
+  },
+  "forbidden": [
+    "reward valence or polarity",
+    "energy integrity resources information or reproduction assigned fixed subjective sign",
+    "persistent whole-network path trace",
+    "eligibility updates",
+    "credit assignment",
+    "weight topology or action changes caused by recording",
+    "same-tick self-confirmation",
+    "knowledge relation group or diagnostic semantic imports"
+  ],
+  "unimplemented": [
+    "short-lived local eligibility dynamics",
+    "later-tick token-event association",
+    "content provenance actually read",
+    "delayed plasticity",
+    "physical token-memory or computation cost debit",
+    "GPU execution",
+    "developmental token-readout variation",
+    "Epoch 1 qualification"
+  ]
+}

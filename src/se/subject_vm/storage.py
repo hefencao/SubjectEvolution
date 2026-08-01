@@ -6,10 +6,15 @@ from typing import Any
 
 import numpy as np
 
-from .config import SUBJECT_VM_STAGE2_SCHEMA, SubjectVMConfig
+from .config import (
+    SUBJECT_VM_STAGE2_SCHEMA,
+    SUBJECT_VM_STAGE3_SCHEMA,
+    SubjectVMConfig,
+)
 
 STORAGE_SCHEMA_V1 = "se-subject-vm-inert-storage-v1"
-STORAGE_SCHEMA = "se-subject-vm-storage-v2"
+STORAGE_SCHEMA_V2 = "se-subject-vm-storage-v2"
+STORAGE_SCHEMA = "se-subject-vm-storage-v3"
 ACTIVATION_PHASE_MASK = np.uint8(1)
 SUPPORTED_OPERATOR_IDS = frozenset({0, 1, 2, 3})
 
@@ -63,6 +68,8 @@ class SubjectVMStorage:
         self.node_input_gate = np.zeros((e, n), dtype=np.float32)
         self.node_output_port = np.full((e, n), -1, dtype=np.int16)
         self.node_output_gate = np.zeros((e, n), dtype=np.float32)
+        self.node_trace_port = np.full((e, n), -1, dtype=np.int16)
+        self.node_trace_gate = np.zeros((e, n), dtype=np.float32)
 
         self.edge_id = np.zeros((e, m), dtype=np.uint32)
         self.edge_expressed = np.zeros((e, m), dtype=bool)
@@ -155,6 +162,8 @@ class SubjectVMStorage:
         self.node_input_gate[rows] = 0.0
         self.node_output_port[rows] = -1
         self.node_output_gate[rows] = 0.0
+        self.node_trace_port[rows] = -1
+        self.node_trace_gate[rows] = 0.0
         if self.edge_capacity:
             self.edge_id[rows] = 0
             self.edge_expressed[rows] = False
@@ -222,6 +231,8 @@ class SubjectVMStorage:
             "node_input_gate",
             "node_output_port",
             "node_output_gate",
+            "node_trace_port",
+            "node_trace_gate",
             "edge_expressed",
             "edge_region",
             "edge_source",
@@ -261,7 +272,7 @@ class SubjectVMStorage:
         )
 
     @classmethod
-    def snapshot_array_names(cls) -> tuple[str, ...]:
+    def stage2_snapshot_array_names(cls) -> tuple[str, ...]:
         return cls.stage1_snapshot_array_names()[:10] + (
             "node_bias",
             "node_retention",
@@ -270,6 +281,15 @@ class SubjectVMStorage:
             "node_output_port",
             "node_output_gate",
         ) + cls.stage1_snapshot_array_names()[10:]
+
+    @classmethod
+    def snapshot_array_names(cls) -> tuple[str, ...]:
+        names = cls.stage2_snapshot_array_names()
+        insertion = names.index("edge_id")
+        return names[:insertion] + (
+            "node_trace_port",
+            "node_trace_gate",
+        ) + names[insertion:]
 
     def snapshot_state(self) -> dict[str, Any]:
         return {
@@ -292,10 +312,10 @@ class SubjectVMStorage:
         payload: dict[str, Any],
     ) -> "SubjectVMStorage":
         schema = payload.get("schema")
-        if schema not in {STORAGE_SCHEMA, STORAGE_SCHEMA_V1}:
+        if schema not in {STORAGE_SCHEMA, STORAGE_SCHEMA_V2, STORAGE_SCHEMA_V1}:
             raise ValueError("unsupported subject_vm storage snapshot schema")
-        if schema == STORAGE_SCHEMA_V1 and cfg.schema == SUBJECT_VM_STAGE2_SCHEMA:
-            raise ValueError("Stage-2 subject_vm cannot restore a Stage-1 storage payload")
+        if schema == STORAGE_SCHEMA_V1 and cfg.activation_enabled:
+            raise ValueError("active subject_vm cannot restore a Stage-1 storage payload")
         result = cls(cfg, entity_capacity)
         expected = (
             result.entity_capacity,
@@ -314,11 +334,12 @@ class SubjectVMStorage:
         arrays = payload.get("arrays")
         if not isinstance(arrays, dict):
             raise ValueError("subject_vm checkpoint arrays are missing")
-        names = (
-            result.stage1_snapshot_array_names()
-            if schema == STORAGE_SCHEMA_V1
-            else result.snapshot_array_names()
-        )
+        if schema == STORAGE_SCHEMA_V1:
+            names = result.stage1_snapshot_array_names()
+        elif schema == STORAGE_SCHEMA_V2:
+            names = result.stage2_snapshot_array_names()
+        else:
+            names = result.snapshot_array_names()
         for name in names:
             if name not in arrays:
                 raise ValueError(f"subject_vm checkpoint is missing array {name}")
@@ -345,6 +366,7 @@ class SubjectVMStorage:
             "node_retention",
             "node_input_gate",
             "node_output_gate",
+            "node_trace_gate",
         ):
             if np.any(~np.isfinite(getattr(self, name)[expressed])):
                 raise ValueError(f"subject_vm {name} must be finite")
@@ -357,6 +379,12 @@ class SubjectVMStorage:
             raise ValueError("subject_vm input port is outside the approved schema")
         if np.any(output_port < -1) or np.any(output_port >= 8):
             raise ValueError("subject_vm output port is outside the approved schema")
+        trace_port = self.node_trace_port[expressed]
+        if self.cfg.schema == SUBJECT_VM_STAGE3_SCHEMA:
+            if np.any(trace_port < -1) or np.any(trace_port >= self.cfg.trace.token_width):
+                raise ValueError("subject_vm trace port is outside the approved token width")
+        elif np.any(trace_port != -1) or np.any(self.node_trace_gate[expressed] != 0.0):
+            raise ValueError("Stage-1/2 subject_vm cannot express trace-token readouts")
 
     def _validate_stage2_edges(self) -> None:
         expressed = self.edge_expressed
@@ -411,8 +439,12 @@ class SubjectVMStorage:
             if np.any(target < 0) or np.any(target >= self.node_capacity):
                 raise ValueError("expressed subject_vm edge target is invalid")
         if np.any(self.eligibility_value) or np.any(self.eligibility_age):
-            raise ValueError("Stage-1/2 subject_vm cannot contain eligibility traces")
-        if self.cfg.schema == SUBJECT_VM_STAGE2_SCHEMA:
+            raise ValueError("Stage-1/2/3A subject_vm cannot contain eligibility traces")
+        if self.cfg.schema != SUBJECT_VM_STAGE3_SCHEMA and (
+            np.any(self.node_trace_port != -1) or np.any(self.node_trace_gate != 0.0)
+        ):
+            raise ValueError("Stage-1/2 subject_vm cannot contain token readouts")
+        if self.cfg.activation_enabled:
             self._validate_stage2_nodes()
             self._validate_stage2_edges()
 

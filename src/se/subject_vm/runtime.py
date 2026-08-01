@@ -7,12 +7,19 @@ from typing import Any
 import numpy as np
 
 from .activation import SubjectVMActivationResult, execute_activation
-from .config import SUBJECT_VM_STAGE2_SCHEMA, SubjectVMConfig
+from .config import SubjectVMConfig
 from .lifecycle import inherit_birth_rows, release_dead_rows
 from .storage import SubjectVMRegionUsage, SubjectVMStorage
+from .trace import (
+    SubjectVMObjectiveEventBatch,
+    SubjectVMThoughtTokenBatch,
+    SubjectVMTraceAccounting,
+    SubjectVMTraceStorage,
+)
 
 RUNTIME_SCHEMA_V1 = "se-subject-vm-runtime-stage1-v1"
-RUNTIME_SCHEMA = "se-subject-vm-runtime-v2"
+RUNTIME_SCHEMA_V2 = "se-subject-vm-runtime-v2"
+RUNTIME_SCHEMA = "se-subject-vm-runtime-v3"
 
 
 @dataclass(frozen=True)
@@ -33,11 +40,26 @@ STAGE1_DEVICE_CONTRACT = SubjectVMDeviceContract(
     device_sync=False,
     consumes_random_numbers=False,
     affects_action_or_cost=False,
-    supported_execution_backends=("cpu", "cpu-fallback-no-gpu", "gpu-strict-reference", "gpu-hybrid-accelerated"),
+    supported_execution_backends=(
+        "cpu",
+        "cpu-fallback-no-gpu",
+        "gpu-strict-reference",
+        "gpu-hybrid-accelerated",
+    ),
 )
 
 STAGE2_DEVICE_CONTRACT = SubjectVMDeviceContract(
     schema="subject-vm-stage2-cpu-reference-device-contract-v1",
+    host_authoritative=True,
+    device_allocation=False,
+    device_sync=False,
+    consumes_random_numbers=False,
+    affects_action_or_cost=True,
+    supported_execution_backends=("cpu",),
+)
+
+STAGE3_DEVICE_CONTRACT = SubjectVMDeviceContract(
+    schema="subject-vm-stage3-token-trace-cpu-reference-contract-v1",
     host_authoritative=True,
     device_allocation=False,
     device_sync=False,
@@ -56,6 +78,7 @@ class SubjectVMActivationAccounting:
     edge_transmission_units: int = 0
     cross_region_transmission_units: int = 0
     output_contribution_units: int = 0
+    token_contribution_units: int = 0
     last_activation_tick: int = -1
 
     def record(self, result: SubjectVMActivationResult) -> None:
@@ -67,11 +90,12 @@ class SubjectVMActivationAccounting:
         self.edge_transmission_units += usage.transmitted_edges
         self.cross_region_transmission_units += usage.cross_region_transmissions
         self.output_contribution_units += usage.output_contributions
+        self.token_contribution_units += usage.token_contributions
         self.last_activation_tick = usage.tick
 
 
 class SubjectVMRuntime:
-    """Tiny no-op wrapper when disabled; fixed storage owner when enabled."""
+    """No-op when disabled; graph, token-ring and lifecycle owner when enabled."""
 
     def __init__(
         self,
@@ -79,18 +103,25 @@ class SubjectVMRuntime:
         entity_capacity: int,
         storage: SubjectVMStorage | None = None,
         *,
+        trace_storage: SubjectVMTraceStorage | None = None,
         restore_mode: str = "initialized",
         activation_accounting: SubjectVMActivationAccounting | None = None,
+        trace_accounting: SubjectVMTraceAccounting | None = None,
     ) -> None:
         self.cfg = cfg
         self.entity_capacity = int(entity_capacity)
         self.storage = storage
+        self.trace_storage = trace_storage
         self.restore_mode = str(restore_mode)
         self.activation_accounting = (
             activation_accounting or SubjectVMActivationAccounting()
         )
+        self.trace_accounting = trace_accounting or SubjectVMTraceAccounting()
+        self._pending_thought_tokens: SubjectVMThoughtTokenBatch | None = None
         if cfg.enabled != (storage is not None):
             raise ValueError("subject_vm runtime enabled/storage state disagrees")
+        if cfg.trace_enabled != (trace_storage is not None):
+            raise ValueError("subject_vm runtime trace configuration/storage disagrees")
 
     @classmethod
     def initialize(
@@ -107,8 +138,23 @@ class SubjectVMRuntime:
         storage = SubjectVMStorage(cfg, entity_capacity)
         rows = np.asarray(active_rows, dtype=np.int32)
         storage.initialize_rows(rows, entity_ids[rows], subject_ids[rows])
-        mode = "initialized-stage2-empty" if cfg.activation_enabled else "initialized-empty"
-        return cls(cfg, entity_capacity, storage, restore_mode=mode)
+        trace_storage = (
+            SubjectVMTraceStorage(cfg, entity_capacity) if cfg.trace_enabled else None
+        )
+        if trace_storage is not None:
+            trace_storage.initialize_rows(rows)
+        mode = (
+            "initialized-stage3-empty"
+            if cfg.trace_enabled
+            else ("initialized-stage2-empty" if cfg.activation_enabled else "initialized-empty")
+        )
+        return cls(
+            cfg,
+            entity_capacity,
+            storage,
+            trace_storage=trace_storage,
+            restore_mode=mode,
+        )
 
     @property
     def enabled(self) -> bool:
@@ -116,10 +162,20 @@ class SubjectVMRuntime:
 
     @property
     def activation_enabled(self) -> bool:
-        return self.cfg.schema == SUBJECT_VM_STAGE2_SCHEMA
+        return self.cfg.activation_enabled
+
+    @property
+    def trace_enabled(self) -> bool:
+        return self.cfg.trace_enabled
+
+    @property
+    def has_pending_thought_tokens(self) -> bool:
+        return self._pending_thought_tokens is not None
 
     @property
     def device_contract(self) -> SubjectVMDeviceContract:
+        if self.trace_enabled:
+            return STAGE3_DEVICE_CONTRACT
         return STAGE2_DEVICE_CONTRACT if self.activation_enabled else STAGE1_DEVICE_CONTRACT
 
     def require_execution_backend(
@@ -154,6 +210,8 @@ class SubjectVMRuntime:
     ) -> SubjectVMActivationResult:
         if not self.activation_enabled or self.storage is None:
             raise RuntimeError("subject_vm activation is not enabled")
+        if self._pending_thought_tokens is not None:
+            raise RuntimeError("subject_vm prior thought token was not committed")
         result = execute_activation(
             self.storage,
             rows=rows,
@@ -162,7 +220,30 @@ class SubjectVMRuntime:
             output_width=output_width,
         )
         self.activation_accounting.record(result)
+        self._pending_thought_tokens = (
+            result.thought_tokens
+            if result.thought_tokens is not None
+            and bool(np.any(result.thought_tokens.emitted))
+            else None
+        )
         return result
+
+    def commit_objective_events(self, batch: SubjectVMObjectiveEventBatch) -> None:
+        if not self.trace_enabled or self.trace_storage is None or self.storage is None:
+            raise RuntimeError("subject_vm token/event trace is not enabled")
+        if self._pending_thought_tokens is None:
+            raise RuntimeError("subject_vm objective event has no pending thought token")
+        self.trace_storage.append(
+            batch,
+            self._pending_thought_tokens,
+            owner_entity_ids=self.storage.owner_entity_id,
+            owner_subject_ids=self.storage.owner_subject_id,
+            accounting=self.trace_accounting,
+        )
+        self._pending_thought_tokens = None
+
+    def discard_pending_thought_tokens(self) -> None:
+        self._pending_thought_tokens = None
 
     def inherit_births(
         self,
@@ -177,14 +258,16 @@ class SubjectVMRuntime:
             self.storage.initialize_rows(
                 child_rows, entity_ids[child_rows], subject_ids[child_rows]
             )
-            return
-        inherit_birth_rows(
-            self.storage,
-            parent_rows=parent_rows,
-            child_rows=child_rows,
-            child_entity_ids=entity_ids[child_rows],
-            child_subject_ids=subject_ids[child_rows],
-        )
+        else:
+            inherit_birth_rows(
+                self.storage,
+                parent_rows=parent_rows,
+                child_rows=child_rows,
+                child_entity_ids=entity_ids[child_rows],
+                child_subject_ids=subject_ids[child_rows],
+            )
+        if self.trace_storage is not None:
+            self.trace_storage.initialize_rows(np.asarray(child_rows, dtype=np.int32))
 
     def release_deaths(
         self,
@@ -192,14 +275,26 @@ class SubjectVMRuntime:
         entity_ids: np.ndarray,
         subject_ids: np.ndarray,
     ) -> None:
-        if self.storage is None or np.asarray(rows).size == 0:
+        normalized = np.asarray(rows, dtype=np.int32)
+        if self.storage is None or normalized.size == 0:
             return
+        if self.trace_storage is not None:
+            self.trace_storage.clear_rows(normalized)
         release_dead_rows(
             self.storage,
-            rows=rows,
-            expected_entity_ids=entity_ids[rows],
-            expected_subject_ids=subject_ids[rows],
+            rows=normalized,
+            expected_entity_ids=entity_ids[normalized],
+            expected_subject_ids=subject_ids[normalized],
         )
+
+    def compact_rows(
+        self, source_rows: np.ndarray, destination_rows: np.ndarray
+    ) -> None:
+        if self.storage is None:
+            return
+        self.storage.move_rows(source_rows, destination_rows)
+        if self.trace_storage is not None:
+            self.trace_storage.move_rows(source_rows, destination_rows)
 
     def validate_owners(
         self,
@@ -213,13 +308,20 @@ class SubjectVMRuntime:
     def snapshot_state(self) -> dict[str, Any] | None:
         if self.storage is None:
             return None
-        return {
+        if self._pending_thought_tokens is not None:
+            raise RuntimeError("subject_vm cannot checkpoint a partial activation phase")
+        payload: dict[str, Any] = {
             "schema": RUNTIME_SCHEMA,
             "restore_mode": self.restore_mode,
             "device_contract": self.device_contract.schema,
             "activation_accounting": asdict(self.activation_accounting),
             "storage": self.storage.snapshot_state(),
         }
+        if self.trace_enabled:
+            assert self.trace_storage is not None
+            payload["trace_accounting"] = asdict(self.trace_accounting)
+            payload["trace_storage"] = self.trace_storage.snapshot_state()
+        return payload
 
     @classmethod
     def restore(
@@ -248,15 +350,25 @@ class SubjectVMRuntime:
             result.restore_mode = "compatibility-empty-rebuild"
             return result
         schema = payload.get("schema")
-        if schema not in {RUNTIME_SCHEMA, RUNTIME_SCHEMA_V1}:
+        if schema not in {RUNTIME_SCHEMA, RUNTIME_SCHEMA_V2, RUNTIME_SCHEMA_V1}:
             raise ValueError("unsupported subject_vm runtime checkpoint schema")
         if schema == RUNTIME_SCHEMA_V1 and cfg.activation_enabled:
-            raise ValueError("Stage-2 subject_vm cannot restore Stage-1 runtime state")
-        expected_contract = (
-            STAGE1_DEVICE_CONTRACT.schema
-            if schema == RUNTIME_SCHEMA_V1
-            else (STAGE2_DEVICE_CONTRACT.schema if cfg.activation_enabled else STAGE1_DEVICE_CONTRACT.schema)
-        )
+            raise ValueError("active subject_vm cannot restore Stage-1 runtime state")
+        compatibility_empty_trace = cfg.trace_enabled and schema == RUNTIME_SCHEMA_V2
+        if schema == RUNTIME_SCHEMA_V1:
+            expected_contract = STAGE1_DEVICE_CONTRACT.schema
+        elif compatibility_empty_trace:
+            expected_contract = STAGE2_DEVICE_CONTRACT.schema
+        else:
+            expected_contract = (
+                STAGE3_DEVICE_CONTRACT.schema
+                if cfg.trace_enabled
+                else (
+                    STAGE2_DEVICE_CONTRACT.schema
+                    if cfg.activation_enabled
+                    else STAGE1_DEVICE_CONTRACT.schema
+                )
+            )
         if payload.get("device_contract") != expected_contract:
             raise ValueError("subject_vm device contract mismatch")
         storage = SubjectVMStorage.from_snapshot(
@@ -264,18 +376,39 @@ class SubjectVMRuntime:
         )
         storage.validate_owners(alive, entity_ids, subject_ids)
         accounting_raw = payload.get("activation_accounting", {})
-        accounting = SubjectVMActivationAccounting(
+        activation_accounting = SubjectVMActivationAccounting(
             **{
                 key: int(accounting_raw.get(key, default))
                 for key, default in asdict(SubjectVMActivationAccounting()).items()
             }
         )
+        trace_storage = None
+        trace_accounting = SubjectVMTraceAccounting()
+        restore_mode = str(payload.get("restore_mode", "checkpoint-restored"))
+        if cfg.trace_enabled:
+            if compatibility_empty_trace:
+                trace_storage = SubjectVMTraceStorage(cfg, entity_capacity)
+                trace_storage.initialize_rows(rows)
+                restore_mode = "compatibility-empty-token-trace-rebuild"
+            else:
+                trace_storage = SubjectVMTraceStorage.from_snapshot(
+                    cfg, entity_capacity, payload["trace_storage"]
+                )
+                trace_raw = payload.get("trace_accounting", {})
+                trace_accounting = SubjectVMTraceAccounting(
+                    **{
+                        key: int(trace_raw.get(key, default))
+                        for key, default in asdict(SubjectVMTraceAccounting()).items()
+                    }
+                )
         return cls(
             cfg,
             entity_capacity,
             storage,
-            restore_mode=str(payload.get("restore_mode", "checkpoint-restored")),
-            activation_accounting=accounting,
+            trace_storage=trace_storage,
+            restore_mode=restore_mode,
+            activation_accounting=activation_accounting,
+            trace_accounting=trace_accounting,
         )
 
     def region_usage(self) -> tuple[SubjectVMRegionUsage, ...]:
@@ -285,29 +418,42 @@ class SubjectVMRuntime:
         return {
             "enabled": self.enabled,
             "activation_enabled": self.activation_enabled,
+            "trace_enabled": self.trace_enabled,
             "restore_mode": self.restore_mode,
             "device_contract": self.device_contract.schema,
             "activation_accounting": asdict(self.activation_accounting),
+            "trace_accounting": asdict(self.trace_accounting),
+            "trace_storage": (
+                None if self.trace_storage is None else self.trace_storage.diagnostics()
+            ),
             "regions": [asdict(value) for value in self.region_usage()],
         }
 
     def clone(self) -> "SubjectVMRuntime":
+        if self._pending_thought_tokens is not None:
+            raise RuntimeError("subject_vm cannot clone a partial activation phase")
         return type(self)(
             self.cfg,
             self.entity_capacity,
             None if self.storage is None else self.storage.clone(),
+            trace_storage=(
+                None if self.trace_storage is None else self.trace_storage.clone()
+            ),
             restore_mode=self.restore_mode,
             activation_accounting=SubjectVMActivationAccounting(
                 **asdict(self.activation_accounting)
             ),
+            trace_accounting=SubjectVMTraceAccounting(**asdict(self.trace_accounting)),
         )
 
 
 __all__ = [
     "RUNTIME_SCHEMA",
     "RUNTIME_SCHEMA_V1",
+    "RUNTIME_SCHEMA_V2",
     "STAGE1_DEVICE_CONTRACT",
     "STAGE2_DEVICE_CONTRACT",
+    "STAGE3_DEVICE_CONTRACT",
     "SubjectVMActivationAccounting",
     "SubjectVMDeviceContract",
     "SubjectVMRuntime",

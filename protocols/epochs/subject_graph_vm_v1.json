@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-2-activation-routing-cpu-reference-implemented",
-  "project_version": "0.109.0",
+  "status": "stage-3a-continuous-token-objective-event-cpu-reference-implemented",
+  "project_version": "0.111.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -27,8 +27,8 @@
     "stable participating subject identities",
     "actual action and target",
     "physical context and objective state delta",
-    "content provenance actually read",
-    "node and edge usage eligibility"
+    "graph-produced bounded continuous internal token",
+    "content provenance actually read remains future work"
   ],
   "forbidden_concrete_cognition": [
     "fixed subjective valence for energy, integrity, resources, information or reproduction",
@@ -64,8 +64,8 @@
     },
     {
       "stage": 3,
-      "name": "objective-traces-delayed-plasticity",
-      "runtime_change": "later consequences may change future graph state without fixed valence"
+      "name": "token-event-trace-then-delayed-plasticity",
+      "runtime_change": "Stage 3A stores compact graph tokens and objective facts; later sub-stages may form eligibility and update future graph state"
     },
     {
       "stage": 4,
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": 2,
+  "current_stage": "3A",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -91,6 +91,18 @@
     "backend": "cpu-reference-only",
     "cost_accounting": "count-only-no-physical-debit",
     "plasticity": false,
+    "scientific_qualification": false
+  },
+  "stage_3a_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_token_trace_v1.json",
+    "representation": "continuous-fixed-width-graph-produced-token",
+    "persistent_node_edge_path": false,
+    "objective_event_pairing": true,
+    "eligibility": false,
+    "credit_assignment": false,
+    "plasticity": false,
+    "backend": "cpu-reference-only",
+    "physical_cost_debit": false,
     "scientific_qualification": false
   }
 }

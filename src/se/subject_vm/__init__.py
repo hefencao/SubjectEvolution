@@ -17,9 +17,14 @@ from .config import (
     SUBJECT_VM_REGION_NAMES,
     SUBJECT_VM_STAGE1_SCHEMA,
     SUBJECT_VM_STAGE2_SCHEMA,
+    SUBJECT_VM_STAGE3_SCHEMA,
+    SUBJECT_VM_TRACE_DISABLED_SCHEMA,
+    SUBJECT_VM_TRACE_SCHEMA,
+    SUBJECT_VM_OBJECTIVE_EVENT_SCHEMA,
     SubjectVMActivationConfig,
     SubjectVMConfig,
     SubjectVMRegionConfig,
+    SubjectVMTraceConfig,
     load_subject_vm_config,
     strip_disabled_subject_vm_section,
     validate_subject_vm_config,
@@ -42,9 +47,18 @@ from .ownership import (
 from .runtime import (
     STAGE1_DEVICE_CONTRACT,
     STAGE2_DEVICE_CONTRACT,
+    STAGE3_DEVICE_CONTRACT,
     SubjectVMActivationAccounting,
     SubjectVMDeviceContract,
     SubjectVMRuntime,
+)
+from .trace import (
+    ACTION_PORT_WIDTH,
+    OBJECTIVE_EVENT_DELTA_NAMES,
+    SubjectVMObjectiveEventBatch,
+    SubjectVMThoughtTokenBatch,
+    SubjectVMTraceAccounting,
+    SubjectVMTraceStorage,
 )
 from .storage import (
     ACTIVATION_PHASE_MASK,
@@ -53,6 +67,18 @@ from .storage import (
 )
 
 __all__ = [
+    "ACTION_PORT_WIDTH",
+    "OBJECTIVE_EVENT_DELTA_NAMES",
+    "STAGE3_DEVICE_CONTRACT",
+    "SUBJECT_VM_OBJECTIVE_EVENT_SCHEMA",
+    "SUBJECT_VM_STAGE3_SCHEMA",
+    "SUBJECT_VM_TRACE_DISABLED_SCHEMA",
+    "SUBJECT_VM_TRACE_SCHEMA",
+    "SubjectVMObjectiveEventBatch",
+    "SubjectVMThoughtTokenBatch",
+    "SubjectVMTraceAccounting",
+    "SubjectVMTraceConfig",
+    "SubjectVMTraceStorage",
     "ACTIVATION_PHASE_MASK",
     "OP_LINEAR",
     "OP_RETAINED_LINEAR",

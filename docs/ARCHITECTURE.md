@@ -1277,16 +1277,16 @@ one stable node/edge identity space
 
 activation phase: current inputs/state → action potentials
 world phase: authoritative physical execution and objective event facts
-plasticity phase: realized consequences + bounded usage eligibility → future graph state
+plasticity phase: graph-produced token + objective events + local bounded eligibility → future graph state
 ```
 
 Regions are developmental search priors. They are not separate services and their names are not evidence that a node performs a cognitive function. Initial hard membership may be used for the first implementation, but capacity, cross-region bandwidth and later node reassignment must be versionable.
 
 The graph shares one routing and identity contract. Existing latent, working-memory, knowledge and functional-module systems may supply adapters or operators, but they must not create parallel incompatible route stores. The action system remains the authoritative actuator/arbitration boundary; it may later consume graph action potentials but must not own graph internals.
 
-The engine supplies objective event and provenance facts only. Delayed association may route consequence eligibility to graph elements that actually participated in the relevant computation. It does not receive fixed valence for energy, integrity, resources, knowledge accuracy, protection, reproduction, partners or groups. Unassigned consequence is valid and expires with bounded traces.
+The engine supplies objective event and provenance facts only. The graph may emit a compact continuous internal token through generic readout ports. Long-term history stores that token rather than a complete historical node/edge path. Any future graph-element update must rely on short-lived local eligibility or another separately frozen local bridge; it does not receive fixed valence for energy, integrity, resources, knowledge accuracy, protection, reproduction, partners or groups. Unassigned consequence remains valid and expires with bounded history.
 
-The implementation is staged. v0.108 implemented disabled-by-default inert graph configuration/storage, checkpoint and lifecycle support with exact neutral behavior. v0.109 adds the separately frozen Stage-2 CPU-reference activation adapter. Delayed plasticity, developmental mutation, physical graph-cost conversion and emergence studies still require later stages and separate tests.
+The implementation is staged. v0.108 implemented disabled-by-default inert graph configuration/storage, checkpoint and lifecycle support with exact neutral behavior. v0.109 added the separately frozen Stage-2 CPU-reference activation adapter, and v0.110 froze single optional-route ownership. v0.111 adds only a continuous graph-produced token and bounded objective-event ring. Local eligibility, delayed association, plasticity, developmental mutation, physical graph-cost conversion and emergence studies still require later stages and separate tests.
 
 New implementation belongs under `src/se/subject_vm/`; it must not enlarge `runtime/sim.py`, `subjects/social.py` or `knowledge/system.py` into another monolith. Configuration, runtime, policy, checkpoint and lifecycle modules call narrow subject-VM interfaces.
 
@@ -1313,6 +1313,25 @@ Disabled configuration allocates no graph arrays and normalizes out of legacy co
 Full checkpoints delegate Subject VM snapshot/restore. A compatible checkpoint without the field restores disabled state directly, or reconstructs an empty enabled container bound to current stable owners. Epoch bases inherit the state through the existing full-checkpoint boundary; regional active-set branches release pruned rows through the same lifecycle hook.
 
 The current implementation deliberately does not import or depend on concrete knowledge, social relation or group implementations. The Stage-2 adapter exposes only a frozen objective input vector and bounded action-potential output vector; it does not copy those systems into parallel route stores.
+
+### v0.111 Stage-3A continuous token and objective-event trace
+
+Stage 3A introduces two narrow modules without creating a second attribution network:
+
+```text
+subject_vm/trace.py          bounded token/event ring and checkpoint state
+runtime/subject_vm_trace.py  pre/post world-commit objective fact adapter
+```
+
+The graph owns token formation. Each expressed node may optionally bind its current scalar value to one token coordinate through `node_trace_port` and `node_trace_gate`. Multiple nodes may pool into one coordinate, and the complete token is clipped by a generic configured bound. No region is privileged, no designer concept is assigned to a coordinate, and a graph with no trace readout emits no persistent token record.
+
+The primary representation is a continuous fixed-width vector. A cryptographic or avalanche hash is explicitly unsuitable as the learning representation because nearby internal states would lose neighborhood structure. A future hash may be used only as a non-authoritative index or diagnostic fingerprint; it cannot replace the stored token or define equality for credit.
+
+The persistent ring stores the token, stable event and subject references, actual action resolution, sampled probability, bounded action potentials, and objective post-commit deltas. It does **not** store executed-node IDs, transmitted-edge IDs, activation masks, or complete graph snapshots. Its allocated memory depends on entity capacity, per-subject event capacity and token width, not graph node or edge capacity.
+
+Token recording is after action arbitration and authoritative world effects. It consumes no random numbers, feeds no information back into the same tick, and writes neither eligibility nor graph parameters. Births inherit graph structure but not token history; death clears history; compaction and clone move/copy it with the stable owner; Stage-2 checkpoints may upgrade only to an explicitly empty token ring.
+
+This is still not attribution or plasticity. A later local eligibility contract must bridge token-level delayed association back to graph elements without reintroducing a persistent whole-network path log. Objective energy, integrity, information, resource and reproduction facts remain unsigned; no polarity or reward is implied.
 
 ### v0.110 legacy network disposition and route ownership
 

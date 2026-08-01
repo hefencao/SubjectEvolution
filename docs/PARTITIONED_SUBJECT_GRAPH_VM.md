@@ -100,7 +100,7 @@ It may later carry spatial, source, partner or self-state representations, but n
 Properties:
 
 - receives objective event deltas only after the relevant action phase;
-- can access bounded usage traces identifying prior participating nodes and routes;
+- can access bounded graph-produced internal tokens and objective event facts;
 - supports delayed, accumulated and residual updates;
 - cannot alter the action whose outcome has not yet occurred;
 - does not contain fixed positive or negative outcome labels.
@@ -146,7 +146,8 @@ Every expressed node has at least:
 - expression gate;
 - state-retention parameters;
 - plasticity gate;
-- structural and execution cost metadata.
+- structural and execution cost metadata;
+- optional generic continuous-token readout port and gate.
 
 Node operator IDs must be cognitively neutral. The initial operator set should be small enough to audit and expressive enough to combine.
 
@@ -187,23 +188,24 @@ observation / body state / retained state / messages
 After real consequences exist:
 
 ```text
-objective state and event deltas
-+ bounded usage traces
-→ delayed-association and eligible graph routes
-→ future node/edge/internal-state changes
+historical graph-produced token
++ later objective state and event facts
++ short-lived local eligibility or another frozen local bridge
+→ delayed association and future graph changes
 ```
 
-The runtime does not require all consequence magnitude to be distributed. Unrouted consequence naturally remains unexplained and expires with bounded traces.
+The runtime does not require any event magnitude to be distributed. Unassociated objective facts may remain unexplained and expire with bounded token/event history.
 
 ### 7.3 Phase safety
 
 The first implementation must mechanically enforce:
 
 1. an action cannot receive credit from its own not-yet-realized outcome;
-2. only nodes, edges, content references or sources present in the usage trace are eligible;
-3. plasticity changes affect later ticks only;
-4. world provenance cannot be rewritten by the subject graph;
-5. diagnostic observers cannot feed labels back into the graph.
+2. long-term history cannot retain a complete node/edge execution path;
+3. any future micro-level update requires a separately bounded local eligibility bridge;
+4. plasticity changes affect later ticks only;
+5. world provenance cannot be rewritten by the subject graph;
+6. diagnostic observers cannot feed labels back into the graph.
 
 ## 8. Event and provenance substrate
 
@@ -215,10 +217,10 @@ The engine records objective facts, not cognitive interpretation. A bounded even
 - location and relevant physical context;
 - objective pre/post state delta;
 - content or signal provenance that actually entered computation;
-- graph node and edge usage trace needed for later eligibility;
+- graph-produced bounded continuous internal token;
 - parent or source event IDs where physically defined.
 
-The engine must not preserve unlimited free history for every subject. World event retention, usage-trace retention and subject-owned memory are separate capacities.
+The engine must not preserve unlimited free history for every subject. World event retention, token/event retention, short-lived local eligibility and subject-owned memory are separate capacities.
 
 ## 9. Development, cost and evolutionary accessibility
 
@@ -314,18 +316,33 @@ Implemented:
 
 Acceptance met on the CPU reference path: hand-constructed role-neutral graphs reproduce deterministic bounded transformations, Stage-2 empty graphs remain exactly neutral, and v0.108 Stage-1 checkpoints restore with inert activation bindings.
 
-### Stage 3 — objective usage trace and delayed plasticity
+### Stage 3A — compact internal token and objective-event trace (implemented in v0.111)
 
-Implement:
+Implemented:
 
-- bounded event/usage traces;
-- eligibility routing to prior participants;
+- graph-selected generic token readout ports and gates;
+- continuous fixed-width token geometry rather than cryptographic hash identity;
+- bounded per-subject token/event ring and expiry;
+- actual action-resolution and objective post-commit state deltas;
+- no persistent executed-node IDs, transmitted-edge IDs, activation masks or full graph snapshots;
+- memory independent of graph node/edge capacity;
+- birth/death/compaction/checkpoint/clone lifecycle integration;
+- no eligibility, credit, plasticity, fixed valence or same-tick feedback.
+
+Acceptance met on the CPU reference path: nearby node values produce nearby token values, only graph-expressed readouts create records, Stage 3A is behavior/RNG neutral relative to Stage 2, and checkpoint/lifecycle round trips preserve bounded history.
+
+### Stage 3B — local eligibility and delayed association (not implemented)
+
+Future work may implement:
+
+- short-lived local node/edge eligibility or another bounded local bridge;
+- later-tick association between historical tokens and objective events;
 - generic delayed update operators;
-- unexplained residual through unassigned credit;
+- unexplained residual through unassigned events;
 - later-tick-only state changes;
 - no fixed valence mapping.
 
-Acceptance: synthetic tests can route the same objective outcome differently under different inherited graph parameters without changing the event facts.
+Acceptance will require the same objective event to produce different future changes under different inherited graph parameters without changing event facts or persisting a whole-network path history.
 
 ### Stage 4 — developmental variation and lifecycle pruning
 

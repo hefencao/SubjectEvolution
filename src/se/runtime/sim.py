@@ -145,6 +145,7 @@ from .experiments import SimulationExperimentMixin
 from .reporting import SimulationReportingMixin
 from .state import EntityState, StepStats, _wrap_periodic_float32
 from .subject_vm_activation import initialize_subject_vm_runtime, subject_vm_action_potentials
+from .subject_vm_trace import capture_subject_vm_objective_snapshot, commit_subject_vm_objective_events
 from .share_settlement import commit_shares, finalize_share_capacity
 from .embodied import apply_material_repair, movement_cost_with_power
 from .harvest_commit import commit_harvest_resolution
@@ -1430,8 +1431,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         self.autonomy_harvest_attempts += stats.autonomy_harvest_attempts
         self.autonomy_harvest_successes += stats.autonomy_harvest_successes
         stats.conflict_seconds = time.perf_counter() - phase_started
-        self.last_intents = intents
-        self.last_resolutions = resolutions
+        self.last_intents, self.last_resolutions, subject_vm_objective_snapshot = intents, resolutions, capture_subject_vm_objective_snapshot(self, intents)
         knowledge_pre_energy: np.ndarray | None = None
         knowledge_pre_integrity: np.ndarray | None = None
         knowledge_pre_information: np.ndarray | None = None
@@ -2034,6 +2034,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             self.policy.update_memory(
                 active, ent.memory, policy_local_resources, info
             )
+        commit_subject_vm_objective_events(self, subject_vm_objective_snapshot, resolutions)
         death_events = plan_death_events(
             active=current_active,
             entity_ids=ent.entity_id,

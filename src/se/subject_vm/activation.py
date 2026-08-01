@@ -1,7 +1,8 @@
-"""Deterministic CPU reference executor for Stage-2 Subject VM activation.
+"""Deterministic CPU reference executor for Subject VM activation.
 
-The executor implements bounded role-neutral scalar routing only.  It has no
-reward, plasticity, provenance rewrite, semantic labels, or random draws.
+Stage 3A adds only a graph-produced continuous token readout.  The executor does
+not retain a persistent node/edge path, assign value, update eligibility, or
+consume random numbers.
 """
 from __future__ import annotations
 
@@ -10,6 +11,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from .storage import ACTIVATION_PHASE_MASK, SubjectVMStorage
+from .trace import SubjectVMThoughtTokenBatch
 
 OP_LINEAR = 0
 OP_TANH = 1
@@ -27,6 +29,7 @@ class SubjectVMActivationUsage:
     transmitted_edges: int
     cross_region_transmissions: int
     output_contributions: int
+    token_contributions: int
     retained_state_values: int
 
 
@@ -34,6 +37,7 @@ class SubjectVMActivationUsage:
 class SubjectVMActivationResult:
     action_potentials: np.ndarray
     usage: SubjectVMActivationUsage
+    thought_tokens: SubjectVMThoughtTokenBatch | None = None
 
 
 def _operator_output(
@@ -51,7 +55,7 @@ def _operator_output(
         value = retention * previous + accumulator
     elif operator_id == OP_RETAINED_TANH:
         value = clip * np.tanh((retention * previous + accumulator) / clip)
-    else:  # validation should catch this before execution
+    else:
         raise ValueError(f"unsupported Subject VM operator ID: {operator_id}")
     return float(np.clip(value, -clip, clip))
 
@@ -64,12 +68,7 @@ def execute_activation(
     tick: int,
     output_width: int,
 ) -> SubjectVMActivationResult:
-    """Execute one bounded activation phase for selected world rows.
-
-    Zero-delay edges may read only a source from a strictly earlier within-tick
-    activation phase.  One-tick edges always read the previous retained scalar
-    state.  Nodes within the same phase therefore remain order-independent.
-    """
+    """Execute bounded activation and optional graph-defined token readout."""
     normalized_rows = storage._rows(rows)
     inputs = np.asarray(input_values, dtype=np.float32)
     if inputs.ndim != 2 or inputs.shape[0] != normalized_rows.size:
@@ -88,6 +87,16 @@ def execute_activation(
     activation_clip = float(activation_cfg.activation_clip)
     output_clip = float(activation_cfg.output_clip)
     potentials = np.zeros((normalized_rows.size, output_width), dtype=np.float32)
+    token_width = int(storage.cfg.trace.token_width) if storage.cfg.trace_enabled else 0
+    token_clip = float(storage.cfg.trace.token_clip) if storage.cfg.trace_enabled else 0.0
+    tokens = (
+        np.zeros((normalized_rows.size, token_width), dtype=np.float32)
+        if token_width
+        else None
+    )
+    emitted = (
+        np.zeros(normalized_rows.size, dtype=bool) if token_width else None
+    )
 
     structural_nodes = int(np.count_nonzero(storage.node_expressed[normalized_rows]))
     structural_edges = int(np.count_nonzero(storage.edge_expressed[normalized_rows]))
@@ -95,6 +104,7 @@ def execute_activation(
     transmitted_edges = 0
     cross_region_transmissions = 0
     output_contributions = 0
+    token_contributions = 0
 
     for batch_index, row in enumerate(normalized_rows.tolist()):
         expressed = storage.node_expressed[row]
@@ -134,18 +144,18 @@ def execute_activation(
                     )
                     for edge in incoming.tolist():
                         source = int(storage.edge_source[row, edge])
-                        if int(storage.edge_delay[row, edge]) == 0:
-                            source_value = current[source]
-                        else:
-                            source_value = previous[source]
+                        source_value = (
+                            current[source]
+                            if int(storage.edge_delay[row, edge]) == 0
+                            else previous[source]
+                        )
                         contribution = source_value * float(
                             storage.edge_forward_gate[row, edge]
                         )
                         bandwidth = float(storage.edge_bandwidth[row, edge])
-                        contribution = float(
+                        accumulator += float(
                             np.clip(contribution, -bandwidth, bandwidth)
                         )
-                        accumulator += contribution
                         transmitted_edges += 1
                         if (
                             storage.node_region[row, source]
@@ -163,13 +173,12 @@ def execute_activation(
                 executed_nodes += 1
 
         storage.node_state[row, expressed, 0] = current[expressed].astype(np.float32)
-        output_nodes = np.flatnonzero(
-            expressed & (storage.node_output_port[row] >= 0)
-        )
+        output_nodes = np.flatnonzero(expressed & (storage.node_output_port[row] >= 0))
         for node in output_nodes.tolist():
             port = int(storage.node_output_port[row, node])
-            contribution = current[node] * float(storage.node_output_gate[row, node])
-            potentials[batch_index, port] += np.float32(contribution)
+            potentials[batch_index, port] += np.float32(
+                current[node] * float(storage.node_output_gate[row, node])
+            )
             output_contributions += 1
         np.clip(
             potentials[batch_index],
@@ -177,6 +186,25 @@ def execute_activation(
             output_clip,
             out=potentials[batch_index],
         )
+
+        if tokens is not None and emitted is not None:
+            token_nodes = np.flatnonzero(
+                expressed & (storage.node_trace_port[row] >= 0)
+            )
+            if token_nodes.size:
+                emitted[batch_index] = True
+            for node in token_nodes.tolist():
+                port = int(storage.node_trace_port[row, node])
+                tokens[batch_index, port] += np.float32(
+                    current[node] * float(storage.node_trace_gate[row, node])
+                )
+                token_contributions += 1
+            np.clip(
+                tokens[batch_index],
+                -token_clip,
+                token_clip,
+                out=tokens[batch_index],
+            )
 
     usage = SubjectVMActivationUsage(
         tick=int(tick),
@@ -187,11 +215,23 @@ def execute_activation(
         transmitted_edges=transmitted_edges,
         cross_region_transmissions=cross_region_transmissions,
         output_contributions=output_contributions,
-        retained_state_values=int(
-            np.count_nonzero(storage.node_state[normalized_rows])
-        ),
+        token_contributions=token_contributions,
+        retained_state_values=int(np.count_nonzero(storage.node_state[normalized_rows])),
     )
-    return SubjectVMActivationResult(action_potentials=potentials, usage=usage)
+    thought_tokens = None
+    if tokens is not None and emitted is not None:
+        thought_tokens = SubjectVMThoughtTokenBatch(
+            tick=int(tick),
+            rows=normalized_rows.copy(),
+            emitted=emitted,
+            tokens=tokens,
+            action_potentials=potentials.copy(),
+        )
+    return SubjectVMActivationResult(
+        action_potentials=potentials,
+        usage=usage,
+        thought_tokens=thought_tokens,
+    )
 
 
 __all__ = [
