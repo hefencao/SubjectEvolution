@@ -14,6 +14,7 @@ SUBJECT_VM_STAGE1_SCHEMA = "partitioned-subject-graph-vm-stage1-v1"
 SUBJECT_VM_STAGE2_SCHEMA = "partitioned-subject-graph-vm-stage2-activation-v1"
 SUBJECT_VM_STAGE3_SCHEMA = "partitioned-subject-graph-vm-stage3-token-trace-v1"
 SUBJECT_VM_STAGE3B_SCHEMA = "partitioned-subject-graph-vm-stage3b-local-eligibility-v1"
+SUBJECT_VM_STAGE3B2_SCHEMA = "partitioned-subject-graph-vm-stage3b2-delayed-association-v1"
 SUBJECT_VM_ACTIVATION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_ACTIVATION_SCHEMA = "bounded-phased-forward-routing-v1"
 SUBJECT_VM_INPUT_PORT_SCHEMA = "objective-entity-input-ports-v1"
@@ -23,6 +24,8 @@ SUBJECT_VM_TRACE_SCHEMA = "continuous-internal-token-objective-event-v1"
 SUBJECT_VM_OBJECTIVE_EVENT_SCHEMA = "objective-action-state-delta-v1"
 SUBJECT_VM_ELIGIBILITY_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_ELIGIBILITY_SCHEMA = "local-decaying-activity-eligibility-v1"
+SUBJECT_VM_ASSOCIATION_DISABLED_SCHEMA = "disabled"
+SUBJECT_VM_ASSOCIATION_SCHEMA = "bounded-delayed-token-similarity-candidate-v1"
 SUBJECT_VM_REGION_NAMES = (
     "fast-sensorimotor",
     "persistent-state",
@@ -106,6 +109,23 @@ class SubjectVMEligibilityConfig:
 
 
 @dataclass(frozen=True)
+class SubjectVMAssociationConfig:
+    """Stage-3B-2 bounded delayed content-address candidate contract.
+
+    One graph-produced token coordinate is a role-neutral request gate.  It is
+    excluded from similarity.  Selection records only a historical event
+    reference, delay and score; it cannot assign value or update parameters.
+    """
+
+    schema: str = SUBJECT_VM_ASSOCIATION_DISABLED_SCHEMA
+    request_token_port: int = -1
+    request_threshold: float = 0.0
+    similarity_threshold: float = 0.0
+    min_delay_ticks: int = 0
+    max_delay_ticks: int = 0
+
+
+@dataclass(frozen=True)
 class SubjectVMConfig:
     """Disabled-by-default partitioned graph capacity contract."""
 
@@ -117,6 +137,7 @@ class SubjectVMConfig:
     activation: SubjectVMActivationConfig = SubjectVMActivationConfig()
     trace: SubjectVMTraceConfig = SubjectVMTraceConfig()
     eligibility: SubjectVMEligibilityConfig = SubjectVMEligibilityConfig()
+    association: SubjectVMAssociationConfig = SubjectVMAssociationConfig()
 
     @property
     def total_node_capacity(self) -> int:
@@ -132,15 +153,24 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE2_SCHEMA,
             SUBJECT_VM_STAGE3_SCHEMA,
             SUBJECT_VM_STAGE3B_SCHEMA,
+            SUBJECT_VM_STAGE3B2_SCHEMA,
         }
 
     @property
     def trace_enabled(self) -> bool:
-        return self.schema in {SUBJECT_VM_STAGE3_SCHEMA, SUBJECT_VM_STAGE3B_SCHEMA}
+        return self.schema in {
+            SUBJECT_VM_STAGE3_SCHEMA,
+            SUBJECT_VM_STAGE3B_SCHEMA,
+            SUBJECT_VM_STAGE3B2_SCHEMA,
+        }
 
     @property
     def eligibility_enabled(self) -> bool:
-        return self.schema == SUBJECT_VM_STAGE3B_SCHEMA
+        return self.schema in {SUBJECT_VM_STAGE3B_SCHEMA, SUBJECT_VM_STAGE3B2_SCHEMA}
+
+    @property
+    def association_enabled(self) -> bool:
+        return self.schema == SUBJECT_VM_STAGE3B2_SCHEMA
 
 
 def _scan_forbidden_keys(value: Any, path: str = "subject_vm") -> None:
@@ -228,6 +258,32 @@ def _load_eligibility_config(raw: Any) -> SubjectVMEligibilityConfig:
     )
 
 
+def _load_association_config(raw: Any) -> SubjectVMAssociationConfig:
+    if raw is None:
+        return SubjectVMAssociationConfig()
+    if not isinstance(raw, Mapping):
+        raise ValueError("subject_vm.association must be an object")
+    allowed = {
+        "schema",
+        "request_token_port",
+        "request_threshold",
+        "similarity_threshold",
+        "min_delay_ticks",
+        "max_delay_ticks",
+    }
+    unknown = sorted(set(raw) - allowed)
+    if unknown:
+        raise ValueError(f"unknown subject_vm.association fields: {unknown}")
+    return SubjectVMAssociationConfig(
+        schema=str(raw.get("schema", SUBJECT_VM_ASSOCIATION_DISABLED_SCHEMA)),
+        request_token_port=int(raw.get("request_token_port", -1)),
+        request_threshold=float(raw.get("request_threshold", 0.0)),
+        similarity_threshold=float(raw.get("similarity_threshold", 0.0)),
+        min_delay_ticks=int(raw.get("min_delay_ticks", 0)),
+        max_delay_ticks=int(raw.get("max_delay_ticks", 0)),
+    )
+
+
 def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
     """Parse an optional Subject VM section without inventing legacy fields."""
     if raw is None:
@@ -242,6 +298,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         "activation",
         "trace",
         "eligibility",
+        "association",
     }
     unknown = sorted(set(raw) - allowed)
     if unknown:
@@ -281,6 +338,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         activation=_load_activation_config(raw.get("activation")),
         trace=_load_trace_config(raw.get("trace")),
         eligibility=_load_eligibility_config(raw.get("eligibility")),
+        association=_load_association_config(raw.get("association")),
     )
     validate_subject_vm_config(cfg)
     return cfg
@@ -300,6 +358,13 @@ def _validate_disabled_eligibility(cfg: SubjectVMEligibilityConfig) -> None:
     if cfg != SubjectVMEligibilityConfig():
         raise ValueError(
             "inactive subject_vm eligibility requires exact disabled defaults"
+        )
+
+
+def _validate_disabled_association(cfg: SubjectVMAssociationConfig) -> None:
+    if cfg != SubjectVMAssociationConfig():
+        raise ValueError(
+            "inactive subject_vm association requires exact disabled defaults"
         )
 
 
@@ -354,14 +419,48 @@ def _validate_eligibility(cfg: SubjectVMEligibilityConfig) -> None:
         raise ValueError("subject_vm eligibility max_age_ticks must be in [1, 65535]")
 
 
+def _validate_association(
+    cfg: SubjectVMAssociationConfig, *, trace: SubjectVMTraceConfig, eligibility: SubjectVMEligibilityConfig
+) -> None:
+    if cfg.schema != SUBJECT_VM_ASSOCIATION_SCHEMA:
+        raise ValueError(
+            f"Stage-3B-2 subject_vm requires association schema {SUBJECT_VM_ASSOCIATION_SCHEMA!r}"
+        )
+    if not 0 <= cfg.request_token_port < trace.token_width:
+        raise ValueError("subject_vm association request_token_port is outside token width")
+    if not 0.0 < cfg.request_threshold <= trace.token_clip:
+        raise ValueError(
+            "subject_vm association request_threshold must be in (0, token_clip]"
+        )
+    if not -1.0 <= cfg.similarity_threshold <= 1.0:
+        raise ValueError(
+            "subject_vm association similarity_threshold must be in [-1, 1]"
+        )
+    if cfg.min_delay_ticks < 1:
+        raise ValueError("subject_vm association min_delay_ticks must be at least 1")
+    if cfg.max_delay_ticks < cfg.min_delay_ticks:
+        raise ValueError(
+            "subject_vm association max_delay_ticks must be >= min_delay_ticks"
+        )
+    if cfg.max_delay_ticks > trace.retention_ticks:
+        raise ValueError(
+            "subject_vm association horizon cannot exceed trace retention"
+        )
+    if cfg.max_delay_ticks > eligibility.max_age_ticks:
+        raise ValueError(
+            "subject_vm association horizon cannot exceed local eligibility horizon"
+        )
+
+
 def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
-    """Validate the frozen Stage-1/2/3A/3B-1 contracts."""
+    """Validate the frozen Stage-1/2/3A/3B-1/3B-2 contracts."""
     if cfg.enabled:
         if cfg.schema not in {
             SUBJECT_VM_STAGE1_SCHEMA,
             SUBJECT_VM_STAGE2_SCHEMA,
             SUBJECT_VM_STAGE3_SCHEMA,
             SUBJECT_VM_STAGE3B_SCHEMA,
+            SUBJECT_VM_STAGE3B2_SCHEMA,
         }:
             raise ValueError("enabled subject_vm requires a supported stage schema")
         if tuple(region.name for region in cfg.regions) != SUBJECT_VM_REGION_NAMES:
@@ -391,17 +490,28 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_activation(cfg.activation)
             _validate_disabled_trace(cfg.trace)
             _validate_disabled_eligibility(cfg.eligibility)
+            _validate_disabled_association(cfg.association)
         else:
             _validate_activation(cfg.activation)
             if cfg.schema == SUBJECT_VM_STAGE2_SCHEMA:
                 _validate_disabled_trace(cfg.trace)
                 _validate_disabled_eligibility(cfg.eligibility)
+                _validate_disabled_association(cfg.association)
             else:
                 _validate_trace(cfg.trace)
                 if cfg.schema == SUBJECT_VM_STAGE3_SCHEMA:
                     _validate_disabled_eligibility(cfg.eligibility)
+                    _validate_disabled_association(cfg.association)
                 else:
                     _validate_eligibility(cfg.eligibility)
+                    if cfg.schema == SUBJECT_VM_STAGE3B_SCHEMA:
+                        _validate_disabled_association(cfg.association)
+                    else:
+                        _validate_association(
+                            cfg.association,
+                            trace=cfg.trace,
+                            eligibility=cfg.eligibility,
+                        )
     else:
         if cfg.schema != SUBJECT_VM_DISABLED_SCHEMA:
             raise ValueError("disabled subject_vm requires schema 'disabled'")
@@ -416,6 +526,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
         _validate_disabled_activation(cfg.activation)
         _validate_disabled_trace(cfg.trace)
         _validate_disabled_eligibility(cfg.eligibility)
+        _validate_disabled_association(cfg.association)
 
 
 def _disabled_activation_payload(value: Any) -> bool:
@@ -460,6 +571,21 @@ def _disabled_eligibility_payload(value: Any) -> bool:
     )
 
 
+def _disabled_association_payload(value: Any) -> bool:
+    if value is None:
+        return True
+    if not isinstance(value, Mapping):
+        return False
+    return (
+        value.get("schema") == SUBJECT_VM_ASSOCIATION_DISABLED_SCHEMA
+        and int(value.get("request_token_port", -1)) == -1
+        and float(value.get("request_threshold", 0.0)) == 0.0
+        and float(value.get("similarity_threshold", 0.0)) == 0.0
+        and int(value.get("min_delay_ticks", 0)) == 0
+        and int(value.get("max_delay_ticks", 0)) == 0
+    )
+
+
 def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]:
     """Remove exact inert extensions without changing frozen identities."""
     section = payload.get("subject_vm")
@@ -471,6 +597,10 @@ def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]
         section.get("eligibility")
     ):
         section.pop("eligibility", None)
+    if isinstance(section, dict) and _disabled_association_payload(
+        section.get("association")
+    ):
+        section.pop("association", None)
     if (
         section.get("enabled") is False
         and section.get("schema") == SUBJECT_VM_DISABLED_SCHEMA
@@ -486,6 +616,8 @@ def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]
 __all__ = [
     "FORBIDDEN_COGNITIVE_FIELDS",
     "SUBJECT_VM_ACTIVATION_DISABLED_SCHEMA",
+    "SUBJECT_VM_ASSOCIATION_DISABLED_SCHEMA",
+    "SUBJECT_VM_ASSOCIATION_SCHEMA",
     "SUBJECT_VM_ACTIVATION_SCHEMA",
     "SUBJECT_VM_DISABLED_SCHEMA",
     "SUBJECT_VM_ELIGIBILITY_DISABLED_SCHEMA",
@@ -498,9 +630,11 @@ __all__ = [
     "SUBJECT_VM_STAGE2_SCHEMA",
     "SUBJECT_VM_STAGE3_SCHEMA",
     "SUBJECT_VM_STAGE3B_SCHEMA",
+    "SUBJECT_VM_STAGE3B2_SCHEMA",
     "SUBJECT_VM_TRACE_DISABLED_SCHEMA",
     "SUBJECT_VM_TRACE_SCHEMA",
     "SubjectVMActivationConfig",
+    "SubjectVMAssociationConfig",
     "SubjectVMConfig",
     "SubjectVMEligibilityConfig",
     "SubjectVMRegionConfig",

@@ -458,3 +458,15 @@ The following remain intentionally open after the Stage-2 CPU reference prototyp
 - externalized/shared graph state for Epoch 2.
 
 These are implementation choices, not permissions to add concrete cognitive semantics.
+
+### Stage 3B-2 — bounded delayed association candidates (implemented in v0.113)
+
+Stage 3B-2 introduces a bounded content-addressing step but still does not perform credit or plasticity.
+
+One continuous token coordinate is configured as a role-neutral request gate. A positive request above threshold asks the existing per-subject event ring for one older token candidate. The request coordinate is removed before normalized-dot similarity so the control signal cannot improve its own match. Only events inside a strictly positive configured delay window are eligible, and that window cannot exceed either event retention or local eligibility lifetime.
+
+The result may be unassigned. When assigned, the current event stores only the historical event ID, historical tick, delay and similarity. This is a candidate link between a later objective event record and an earlier graph-produced representation. It does not assert causality, value, correctness or semantic identity.
+
+No event fact changes local eligibility in this stage. No graph parameter is updated, no topology is modified, no physical cost is debited and no random value is drawn. Stage 3B-2 therefore remains behavior-neutral relative to Stage 3B-1 for the same graph and simulation seed.
+
+A later stage may propose modulation only from a committed delayed candidate and still-live local eligibility. That later contract must preserve no-update outcomes, prevent current-tick self-confirmation and keep designer event semantics out of the update path.

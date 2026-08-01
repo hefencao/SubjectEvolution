@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.113.0
+
+- Adds Subject VM Stage 3B-2 bounded delayed association candidates inside the existing continuous token/objective-event ring.
+- Uses one graph-produced token coordinate as an association request gate and excludes that control coordinate from similarity.
+- Selects only strictly older candidates inside configured delay, trace-retention and local-eligibility horizons using deterministic normalized token similarity and stable tie-breaking.
+- Preserves explicit unassigned outcomes for no request, zero query, missing candidates and below-threshold similarity.
+- Stores only stable historical event reference, event tick, delay and similarity; no node/edge IDs, activation masks or full execution paths are persisted.
+- Upgrades v0.112 Stage-3B-1 checkpoints to empty association metadata without fabricating delayed links.
+- Keeps objective event coordinates unsigned and disconnected from eligibility modulation, graph parameter writes, action output and RNG consumption.
+- Does not implement credit assignment, modulation, plasticity, physical graph costs, GPU execution or Epoch-1 qualification.
+
 ## 0.112.0
 
 - Adds Subject VM Stage 3B-1 short-lived local node/edge eligibility carriers inside the existing unified graph.

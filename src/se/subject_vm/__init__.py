@@ -1,3 +1,7 @@
+from .association import (
+    SubjectVMDelayedAssociationCandidate,
+    select_delayed_association_candidate,
+)
 """Partitioned unified Subject Graph VM public boundary."""
 from .activation import (
     OP_LINEAR,
@@ -10,6 +14,8 @@ from .activation import (
 )
 from .config import (
     SUBJECT_VM_ACTIVATION_DISABLED_SCHEMA,
+    SUBJECT_VM_ASSOCIATION_DISABLED_SCHEMA,
+    SUBJECT_VM_ASSOCIATION_SCHEMA,
     SUBJECT_VM_ACTIVATION_SCHEMA,
     SUBJECT_VM_DISABLED_SCHEMA,
     SUBJECT_VM_ELIGIBILITY_DISABLED_SCHEMA,
@@ -21,10 +27,12 @@ from .config import (
     SUBJECT_VM_STAGE2_SCHEMA,
     SUBJECT_VM_STAGE3_SCHEMA,
     SUBJECT_VM_STAGE3B_SCHEMA,
+    SUBJECT_VM_STAGE3B2_SCHEMA,
     SUBJECT_VM_TRACE_DISABLED_SCHEMA,
     SUBJECT_VM_TRACE_SCHEMA,
     SUBJECT_VM_OBJECTIVE_EVENT_SCHEMA,
     SubjectVMActivationConfig,
+    SubjectVMAssociationConfig,
     SubjectVMConfig,
     SubjectVMEligibilityConfig,
     SubjectVMRegionConfig,
@@ -59,6 +67,7 @@ from .runtime import (
     STAGE2_DEVICE_CONTRACT,
     STAGE3_DEVICE_CONTRACT,
     STAGE3B_DEVICE_CONTRACT,
+    STAGE3B2_DEVICE_CONTRACT,
     SubjectVMActivationAccounting,
     SubjectVMDeviceContract,
     SubjectVMEligibilityAccounting,
@@ -81,14 +90,18 @@ from .storage import (
 
 __all__ = [
     "ACTION_PORT_WIDTH",
+    "SubjectVMDelayedAssociationCandidate",
+    "select_delayed_association_candidate",
     "OBJECTIVE_EVENT_DELTA_NAMES",
     "STAGE3_DEVICE_CONTRACT",
     "STAGE3B_DEVICE_CONTRACT",
+    "STAGE3B2_DEVICE_CONTRACT",
     "SUBJECT_VM_OBJECTIVE_EVENT_SCHEMA",
     "SUBJECT_VM_ELIGIBILITY_DISABLED_SCHEMA",
     "SUBJECT_VM_ELIGIBILITY_SCHEMA",
     "SUBJECT_VM_STAGE3_SCHEMA",
     "SUBJECT_VM_STAGE3B_SCHEMA",
+    "SUBJECT_VM_STAGE3B2_SCHEMA",
     "SUBJECT_VM_TRACE_DISABLED_SCHEMA",
     "SUBJECT_VM_TRACE_SCHEMA",
     "SubjectVMObjectiveEventBatch",
@@ -106,6 +119,8 @@ __all__ = [
     "STAGE1_DEVICE_CONTRACT",
     "STAGE2_DEVICE_CONTRACT",
     "SUBJECT_VM_ACTIVATION_DISABLED_SCHEMA",
+    "SUBJECT_VM_ASSOCIATION_DISABLED_SCHEMA",
+    "SUBJECT_VM_ASSOCIATION_SCHEMA",
     "SUBJECT_VM_ACTIVATION_SCHEMA",
     "SUBJECT_VM_DISABLED_SCHEMA",
     "SUBJECT_VM_INPUT_PORTS",
@@ -117,6 +132,7 @@ __all__ = [
     "SUBJECT_VM_STAGE2_SCHEMA",
     "SubjectVMActivationAccounting",
     "SubjectVMActivationConfig",
+    "SubjectVMAssociationConfig",
     "SubjectVMActivationResult",
     "SubjectVMActivationUsage",
     "SubjectVMConfig",

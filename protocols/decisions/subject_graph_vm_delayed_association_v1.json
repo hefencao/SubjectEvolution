@@ -1,0 +1,69 @@
+{
+  "schema": "se-scientific-direction-decision-v1",
+  "decision_id": "subject-graph-vm-delayed-association-v1",
+  "status": "accepted-engineering-stage-only",
+  "release": "0.113.0",
+  "scope": "Stage 3B-2 bounded delayed association candidates without event valuation, eligibility modulation or parameter update",
+  "representation": {
+    "query": "current continuous graph-produced token",
+    "request_control": "one graph-produced token coordinate selected by configuration",
+    "request_coordinate_in_similarity": false,
+    "candidate_memory": "existing bounded objective-event token ring",
+    "result": "stable historical event reference plus delay and normalized similarity",
+    "persistent_full_path": false,
+    "cryptographic_hash": false
+  },
+  "candidate_selection": {
+    "metric": "normalized-dot-continuous-token-v1",
+    "minimum_delay_ticks": "strictly-positive-configured-bound",
+    "maximum_delay_ticks": "bounded-by-both-token-retention-and-local-eligibility-horizon",
+    "same_tick_candidate": false,
+    "current-overwrite-slot_candidate": false,
+    "deterministic_tie_break": [
+      "higher similarity",
+      "newer eligible event tick",
+      "lower stable event ID"
+    ],
+    "mandatory_assignment": false,
+    "unassigned_reasons": [
+      "request below graph gate threshold",
+      "zero query after removing request coordinate",
+      "no historical candidate in the delay window",
+      "all candidate tokens are zero",
+      "best similarity below threshold"
+    ]
+  },
+  "event_semantics": {
+    "objective_event_coordinates_used_as_value": false,
+    "fixed_positive_or_negative_meaning": false,
+    "reward": false,
+    "valence": false,
+    "polarity": false,
+    "trust_or_interest": false
+  },
+  "causal_order": {
+    "current_token_generated_before_world_commit": true,
+    "current_objective_event_recorded_after_world_commit": true,
+    "historical_candidate_must_precede_current_tick": true,
+    "eligibility_modulation": false,
+    "parameter_update": false,
+    "action_change": false,
+    "random_number_consumption": false
+  },
+  "compatibility": {
+    "stage3b1_config_identity": "unchanged because disabled association is canonically removed",
+    "stage3b1_checkpoint": "upgrade creates empty association metadata without fabricating links",
+    "birth": "newborn trace ring and delayed associations start empty",
+    "clone_checkpoint_compaction": "committed association metadata is copied exactly",
+    "death": "row association metadata is cleared"
+  },
+  "forbidden": [
+    "interpreting token similarity as credit, cause, correctness or value",
+    "assigning every objective event",
+    "using the request coordinate to improve similarity",
+    "same-tick self-confirmation",
+    "persisting node IDs, edge IDs, activation masks or execution paths",
+    "changing local eligibility or graph parameters",
+    "claiming association candidates as learning, memory understanding or subjecthood"
+  ]
+}

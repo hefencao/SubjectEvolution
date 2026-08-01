@@ -1286,7 +1286,7 @@ The graph shares one routing and identity contract. Existing latent, working-mem
 
 The engine supplies objective event and provenance facts only. The graph may emit a compact continuous internal token through generic readout ports. Long-term history stores that token rather than a complete historical node/edge path. Any future graph-element update must rely on short-lived local eligibility or another separately frozen local bridge; it does not receive fixed valence for energy, integrity, resources, knowledge accuracy, protection, reproduction, partners or groups. Unassigned consequence remains valid and expires with bounded history.
 
-The implementation is staged. v0.108 implemented disabled-by-default inert graph configuration/storage, checkpoint and lifecycle support with exact neutral behavior. v0.109 added the separately frozen Stage-2 CPU-reference activation adapter, and v0.110 froze single optional-route ownership. v0.111 added a continuous graph-produced token and bounded objective-event ring. v0.112 adds only short-lived local node/edge activity eligibility inside the unified graph. Delayed token/event association, event modulation, parameter plasticity, developmental mutation, physical graph-cost conversion and emergence studies still require later stages and separate tests.
+The implementation is staged. v0.108 implemented disabled-by-default inert graph configuration/storage, checkpoint and lifecycle support with exact neutral behavior. v0.109 added the separately frozen Stage-2 CPU-reference activation adapter, and v0.110 froze single optional-route ownership. v0.111 added a continuous graph-produced token and bounded objective-event ring. v0.112 added short-lived local node/edge activity eligibility inside the unified graph. v0.113 adds only bounded delayed association candidates between a current token request and an older similar token. Event modulation, parameter plasticity, developmental mutation, physical graph-cost conversion and emergence studies still require later stages and separate tests.
 
 New implementation belongs under `src/se/subject_vm/`; it must not enlarge `runtime/sim.py`, `subjects/social.py` or `knowledge/system.py` into another monolith. Configuration, runtime, policy, checkpoint and lifecycle modules call narrow subject-VM interfaces.
 
@@ -1345,7 +1345,7 @@ A node or edge participates only when its graph-owned eligibility flag and gate 
 
 Eligibility is short-lived graph state, not a historical path log. Values decay deterministically by elapsed ticks, expire at a fixed configured age, remain bounded, and are checkpointed only for exact replay. They are never copied into the long-term token/event ring. Birth inherits only participation flags and gates while resetting values and ages; clone copies committed state; death clears it; compaction moves it with the stable owner.
 
-Objective event commit has no eligibility write in v0.112. No token/event matcher, modulator, credit router, weight update, retained-state update or topology update exists. The same graph therefore produces the same action outputs and consumes the same random numbers as Stage 3A. A future Stage-3B-2 contract must separately define how bounded historical tokens, unsigned objective facts and still-live local eligibility may interact while permitting every event to remain unassigned.
+Objective event commit has no eligibility write in v0.112. No modulator, credit router, weight update, retained-state update or topology update exists. The same graph therefore produces the same action outputs and consumes the same random numbers as Stage 3A. v0.113 adds only a bounded token-similarity candidate matcher while preserving unassigned events; it still does not connect objective facts to local eligibility or parameter writes.
 
 ### v0.110 legacy network disposition and route ownership
 
@@ -1382,3 +1382,28 @@ Stage-2 accounting records structural nodes/edges, node executions, edge and cro
 The Stage-2 executor is CPU-reference-only. A GPU run with Stage-2 configuration is rejected at construction rather than silently ignoring graph outputs. Disabled, Stage-1 and Stage-2 enabled-but-empty paths retain the previous device behavior and exact CPU trajectory neutrality.
 
 Checkpoint schema v2 stores activation bindings, dynamic state and accounting. The loader accepts v0.108 Stage-1 runtime/storage schemas and fills all new activation bindings with inert defaults. It does not fabricate Stage-2 behavior in an old checkpoint.
+
+### v0.113 Stage-3B-2 bounded delayed association candidates
+
+Stage 3B-2 remains inside the existing `SubjectVMRuntime` and `SubjectVMTraceStorage` ownership boundary. It adds no second memory service, credit router or parameter store.
+
+```text
+current graph-produced token
+  -> graph request coordinate reaches threshold?
+      -> no: current event remains unassigned
+      -> yes: bounded historical token candidates
+          -> positive configured delay only
+          -> normalized continuous similarity
+          -> deterministic tie break
+          -> stable historical event reference + delay + score
+```
+
+The request coordinate is selected by configuration but produced through the same generic node token readout used by Stage 3A. The coordinate is removed from both query and candidate vectors before similarity, preventing a stronger request gate from improving its own match. Similarity is therefore only a role-neutral content-addressing primitive over the graph's remaining continuous representation.
+
+Candidate search is bounded by the already allocated per-subject event ring. The current write slot is excluded, same-tick records are forbidden, and `max_delay_ticks` cannot exceed either token retention or the local eligibility lifetime. Search consumes no random numbers. Equal scores resolve by newer eligible event tick and then lower stable event ID, so checkpoint replay and CPU parity remain deterministic.
+
+Association arrays are allocated only for Stage 3B-2. Stage 3A and Stage 3B-1 keep their previous trace allocation. A committed record stores request/assignment flags, stable associated event ID and tick, delay and similarity. It does not copy the historical token again, copy objective event vectors, capture node/edge paths or retain an eligibility snapshot.
+
+No objective event coordinate participates in selection or receives value semantics. A link means only that the current graph token requested and found a sufficiently similar older token under the configured generic metric. It is not causal credit, a reward, a remembered concept, a good/bad judgement or evidence of subjectivity. `eligibility_value`, node/edge gates, weights, retained state and topology remain unchanged by event commit.
+
+The next architecture boundary is a graph-controlled modulation proposal over an already committed association and still-live local eligibility. It must support no proposal/no update, exclude current-tick eligibility, declare generic parameter targets, and remain separate from the later physical-costed write phase.

@@ -21,7 +21,8 @@ from .trace import (
 RUNTIME_SCHEMA_V1 = "se-subject-vm-runtime-stage1-v1"
 RUNTIME_SCHEMA_V2 = "se-subject-vm-runtime-v2"
 RUNTIME_SCHEMA_V3 = "se-subject-vm-runtime-v3"
-RUNTIME_SCHEMA = "se-subject-vm-runtime-v4"
+RUNTIME_SCHEMA_V4 = "se-subject-vm-runtime-v4"
+RUNTIME_SCHEMA = "se-subject-vm-runtime-v5"
 
 
 @dataclass(frozen=True)
@@ -72,6 +73,16 @@ STAGE3_DEVICE_CONTRACT = SubjectVMDeviceContract(
 
 STAGE3B_DEVICE_CONTRACT = SubjectVMDeviceContract(
     schema="subject-vm-stage3b-local-eligibility-cpu-reference-contract-v1",
+    host_authoritative=True,
+    device_allocation=False,
+    device_sync=False,
+    consumes_random_numbers=False,
+    affects_action_or_cost=True,
+    supported_execution_backends=("cpu",),
+)
+
+STAGE3B2_DEVICE_CONTRACT = SubjectVMDeviceContract(
+    schema="subject-vm-stage3b2-delayed-association-cpu-reference-contract-v1",
     host_authoritative=True,
     device_allocation=False,
     device_sync=False,
@@ -184,7 +195,9 @@ class SubjectVMRuntime:
         if trace_storage is not None:
             trace_storage.initialize_rows(rows)
         mode = (
-            "initialized-stage3b-empty"
+            "initialized-stage3b2-empty"
+            if cfg.association_enabled
+            else "initialized-stage3b-empty"
             if cfg.eligibility_enabled
             else "initialized-stage3-empty"
             if cfg.trace_enabled
@@ -215,11 +228,17 @@ class SubjectVMRuntime:
         return self.cfg.eligibility_enabled
 
     @property
+    def association_enabled(self) -> bool:
+        return self.cfg.association_enabled
+
+    @property
     def has_pending_thought_tokens(self) -> bool:
         return self._pending_thought_tokens is not None
 
     @property
     def device_contract(self) -> SubjectVMDeviceContract:
+        if self.association_enabled:
+            return STAGE3B2_DEVICE_CONTRACT
         if self.eligibility_enabled:
             return STAGE3B_DEVICE_CONTRACT
         if self.trace_enabled:
@@ -405,7 +424,11 @@ class SubjectVMRuntime:
             return result
         schema = payload.get("schema")
         if schema not in {
-            RUNTIME_SCHEMA, RUNTIME_SCHEMA_V3, RUNTIME_SCHEMA_V2, RUNTIME_SCHEMA_V1
+            RUNTIME_SCHEMA,
+            RUNTIME_SCHEMA_V4,
+            RUNTIME_SCHEMA_V3,
+            RUNTIME_SCHEMA_V2,
+            RUNTIME_SCHEMA_V1,
         }:
             raise ValueError("unsupported subject_vm runtime checkpoint schema")
         if schema == RUNTIME_SCHEMA_V1 and cfg.activation_enabled:
@@ -415,15 +438,22 @@ class SubjectVMRuntime:
             RUNTIME_SCHEMA_V2,
             RUNTIME_SCHEMA_V3,
         }
+        compatibility_empty_association = (
+            cfg.association_enabled and schema == RUNTIME_SCHEMA_V4
+        )
         if schema == RUNTIME_SCHEMA_V1:
             expected_contract = STAGE1_DEVICE_CONTRACT.schema
         elif schema == RUNTIME_SCHEMA_V2:
             expected_contract = STAGE2_DEVICE_CONTRACT.schema
         elif schema == RUNTIME_SCHEMA_V3:
             expected_contract = STAGE3_DEVICE_CONTRACT.schema
+        elif schema == RUNTIME_SCHEMA_V4:
+            expected_contract = STAGE3B_DEVICE_CONTRACT.schema
         else:
             expected_contract = (
-                STAGE3B_DEVICE_CONTRACT.schema
+                STAGE3B2_DEVICE_CONTRACT.schema
+                if cfg.association_enabled
+                else STAGE3B_DEVICE_CONTRACT.schema
                 if cfg.eligibility_enabled
                 else (
                     STAGE3_DEVICE_CONTRACT.schema
@@ -485,6 +515,8 @@ class SubjectVMRuntime:
                         ).items()
                     }
                 )
+        if compatibility_empty_association:
+            restore_mode = "compatibility-empty-delayed-association-rebuild"
         return cls(
             cfg,
             entity_capacity,
@@ -505,6 +537,7 @@ class SubjectVMRuntime:
             "activation_enabled": self.activation_enabled,
             "trace_enabled": self.trace_enabled,
             "eligibility_enabled": self.eligibility_enabled,
+            "association_enabled": self.association_enabled,
             "restore_mode": self.restore_mode,
             "device_contract": self.device_contract.schema,
             "activation_accounting": asdict(self.activation_accounting),
@@ -542,10 +575,12 @@ __all__ = [
     "RUNTIME_SCHEMA_V1",
     "RUNTIME_SCHEMA_V2",
     "RUNTIME_SCHEMA_V3",
+    "RUNTIME_SCHEMA_V4",
     "STAGE1_DEVICE_CONTRACT",
     "STAGE2_DEVICE_CONTRACT",
     "STAGE3_DEVICE_CONTRACT",
     "STAGE3B_DEVICE_CONTRACT",
+    "STAGE3B2_DEVICE_CONTRACT",
     "SubjectVMActivationAccounting",
     "SubjectVMDeviceContract",
     "SubjectVMEligibilityAccounting",

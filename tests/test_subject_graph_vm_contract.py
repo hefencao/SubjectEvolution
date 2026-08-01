@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3b1-local-eligibility-cpu-reference-implemented"
+    assert contract["status"] == "stage-3b2-delayed-association-candidates-cpu-reference-implemented"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,13 +24,25 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3B-1"
+    assert contract["current_stage"] == "3B-2"
     assert contract["stage_2_contract"]["plasticity"] is False
     assert contract["stage_3a_contract"]["persistent_node_edge_path"] is False
     assert contract["stage_3a_contract"]["plasticity"] is False
     assert contract["stage_3b1_contract"]["persistent_node_edge_path"] is False
     assert contract["stage_3b1_contract"]["objective_event_effect"] is False
     assert contract["stage_3b1_contract"]["plasticity"] is False
+    assert contract["stage_3b2_contract"]["same_tick_candidate"] is False
+    assert contract["stage_3b2_contract"]["mandatory_assignment"] is False
+    assert contract["stage_3b2_contract"]["eligibility_modulation"] is False
+    assert contract["stage_3b2_contract"]["plasticity"] is False
+
+    delayed_association = _load(
+        "protocols/decisions/subject_graph_vm_delayed_association_v1.json"
+    )
+    assert delayed_association["representation"]["cryptographic_hash"] is False
+    assert delayed_association["representation"]["request_coordinate_in_similarity"] is False
+    assert delayed_association["candidate_selection"]["mandatory_assignment"] is False
+    assert delayed_association["causal_order"]["parameter_update"] is False
 
     local_eligibility = _load(
         "protocols/decisions/subject_graph_vm_local_eligibility_v1.json"

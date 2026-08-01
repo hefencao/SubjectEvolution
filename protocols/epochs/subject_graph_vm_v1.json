@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3b1-local-eligibility-cpu-reference-implemented",
-  "project_version": "0.112.0",
+  "status": "stage-3b2-delayed-association-candidates-cpu-reference-implemented",
+  "project_version": "0.113.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -65,7 +65,7 @@
     {
       "stage": 3,
       "name": "token-event-trace-then-delayed-plasticity",
-      "runtime_change": "Stage 3A stores compact graph tokens and objective facts; Stage 3B-1 adds short-lived local activity eligibility without event assignment or parameter update"
+      "runtime_change": "Stage 3A stores compact graph tokens and objective facts; Stage 3B-1 adds short-lived local activity eligibility; Stage 3B-2 records bounded delayed association candidates without modulation or parameter update"
     },
     {
       "stage": 4,
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3B-1",
+  "current_stage": "3B-2",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -112,6 +112,20 @@
     "objective_event_effect": false,
     "token_event_matching": false,
     "credit_assignment": false,
+    "plasticity": false,
+    "backend": "cpu-reference-only",
+    "physical_cost_debit": false,
+    "scientific_qualification": false
+  },
+  "stage_3b2_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_delayed_association_v1.json",
+    "representation": "bounded-continuous-token-content-address-candidate",
+    "request_control": "graph-produced-reserved-token-coordinate",
+    "request_coordinate_in_similarity": false,
+    "same_tick_candidate": false,
+    "mandatory_assignment": false,
+    "objective_event_value": false,
+    "eligibility_modulation": false,
     "plasticity": false,
     "backend": "cpu-reference-only",
     "physical_cost_debit": false,

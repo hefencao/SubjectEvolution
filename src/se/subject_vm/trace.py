@@ -12,9 +12,11 @@ from typing import Any
 
 import numpy as np
 
+from .association import select_delayed_association_candidate
 from .config import SubjectVMConfig
 
-TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v1"
+TRACE_STORAGE_SCHEMA_V1 = "se-subject-vm-token-event-storage-v1"
+TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v2"
 ACTION_PORT_WIDTH = 8
 RESOURCE_DELTA_WIDTH = 4
 OBJECTIVE_EVENT_DELTA_NAMES = (
@@ -71,6 +73,12 @@ class SubjectVMTraceAccounting:
     expired_events: int = 0
     overwritten_events: int = 0
     emitted_tokens: int = 0
+    association_requests: int = 0
+    association_assignments: int = 0
+    association_unassigned_no_request: int = 0
+    association_unassigned_zero_query: int = 0
+    association_unassigned_no_candidate: int = 0
+    association_unassigned_below_threshold: int = 0
     last_event_tick: int = -1
 
 
@@ -113,9 +121,27 @@ class SubjectVMTraceStorage:
             (e, c, RESOURCE_DELTA_WIDTH), dtype=np.float32
         )
         self.resolution_energy_cost = np.zeros((e, c), dtype=np.float32)
+        self.association_requested = (
+            np.zeros((e, c), dtype=bool) if cfg.association_enabled else None
+        )
+        self.association_assigned = (
+            np.zeros((e, c), dtype=bool) if cfg.association_enabled else None
+        )
+        self.associated_event_id = (
+            np.zeros((e, c), dtype=np.uint64) if cfg.association_enabled else None
+        )
+        self.associated_event_tick = (
+            np.full((e, c), -1, dtype=np.int64) if cfg.association_enabled else None
+        )
+        self.association_delay_ticks = (
+            np.zeros((e, c), dtype=np.uint32) if cfg.association_enabled else None
+        )
+        self.association_similarity = (
+            np.zeros((e, c), dtype=np.float32) if cfg.association_enabled else None
+        )
 
     @staticmethod
-    def snapshot_array_names() -> tuple[str, ...]:
+    def base_snapshot_array_names() -> tuple[str, ...]:
         return (
             "write_cursor",
             "event_count",
@@ -135,6 +161,25 @@ class SubjectVMTraceStorage:
             "resolution_resource_delta",
             "resolution_internal_resource_delta",
             "resolution_energy_cost",
+        )
+
+    @staticmethod
+    def association_snapshot_array_names() -> tuple[str, ...]:
+        return (
+            "association_requested",
+            "association_assigned",
+            "associated_event_id",
+            "associated_event_tick",
+            "association_delay_ticks",
+            "association_similarity",
+        )
+
+    def snapshot_array_names(self) -> tuple[str, ...]:
+        names = self.base_snapshot_array_names()
+        return (
+            names + self.association_snapshot_array_names()
+            if self.cfg.association_enabled
+            else names
         )
 
     def allocated_nbytes(self) -> int:
@@ -198,6 +243,19 @@ class SubjectVMTraceStorage:
         self.resolution_resource_delta[row, slot] = 0.0
         self.resolution_internal_resource_delta[row, slot] = 0.0
         self.resolution_energy_cost[row, slot] = 0.0
+        if self.cfg.association_enabled:
+            assert self.association_requested is not None
+            assert self.association_assigned is not None
+            assert self.associated_event_id is not None
+            assert self.associated_event_tick is not None
+            assert self.association_delay_ticks is not None
+            assert self.association_similarity is not None
+            self.association_requested[row, slot] = False
+            self.association_assigned[row, slot] = False
+            self.associated_event_id[row, slot] = 0
+            self.associated_event_tick[row, slot] = -1
+            self.association_delay_ticks[row, slot] = 0
+            self.association_similarity[row, slot] = 0.0
 
     def expire(self, tick: int) -> int:
         expired = self.event_valid & (
@@ -283,6 +341,30 @@ class SubjectVMTraceStorage:
         for index in np.flatnonzero(emitted).tolist():
             row = int(rows[index])
             slot = int(self.write_cursor[row] % self.capacity)
+            association = None
+            if self.cfg.association_enabled:
+                association = select_delayed_association_candidate(
+                    cfg=self.cfg.association,
+                    current_tick=int(batch.tick),
+                    current_token=np.asarray(tokens.tokens[index], dtype=np.float32),
+                    event_valid=self.event_valid[row],
+                    event_ids=self.event_id[row],
+                    event_ticks=self.event_tick[row],
+                    historical_tokens=self.thought_token[row],
+                    excluded_slot=slot,
+                )
+                if association.requested:
+                    accounting.association_requests += 1
+                else:
+                    accounting.association_unassigned_no_request += 1
+                if association.assigned:
+                    accounting.association_assignments += 1
+                elif association.reason in {"zero-query", "zero-candidate"}:
+                    accounting.association_unassigned_zero_query += 1
+                elif association.reason == "no-candidate":
+                    accounting.association_unassigned_no_candidate += 1
+                elif association.reason == "below-threshold":
+                    accounting.association_unassigned_below_threshold += 1
             if self.event_valid[row, slot]:
                 accounting.overwritten_events += 1
             self._clear_slot(row, slot)
@@ -316,6 +398,27 @@ class SubjectVMTraceStorage:
             self.resolution_energy_cost[row, slot] = np.float32(
                 batch.resolution_energy_cost[index]
             )
+            if association is not None:
+                assert self.association_requested is not None
+                assert self.association_assigned is not None
+                assert self.associated_event_id is not None
+                assert self.associated_event_tick is not None
+                assert self.association_delay_ticks is not None
+                assert self.association_similarity is not None
+                self.association_requested[row, slot] = association.requested
+                self.association_assigned[row, slot] = association.assigned
+                self.associated_event_id[row, slot] = np.uint64(
+                    association.associated_event_id
+                )
+                self.associated_event_tick[row, slot] = int(
+                    association.associated_event_tick
+                )
+                self.association_delay_ticks[row, slot] = np.uint32(
+                    association.delay_ticks
+                )
+                self.association_similarity[row, slot] = np.float32(
+                    association.similarity
+                )
             self.write_cursor[row] = np.uint32((slot + 1) % self.capacity)
             self.event_count[row] = np.uint32(np.count_nonzero(self.event_valid[row]))
             accounting.recorded_events += 1
@@ -348,7 +451,8 @@ class SubjectVMTraceStorage:
     def from_snapshot(
         cls, cfg: SubjectVMConfig, entity_capacity: int, payload: dict[str, Any]
     ) -> "SubjectVMTraceStorage":
-        if payload.get("schema") != TRACE_STORAGE_SCHEMA:
+        schema = payload.get("schema")
+        if schema not in {TRACE_STORAGE_SCHEMA, TRACE_STORAGE_SCHEMA_V1}:
             raise ValueError("unsupported subject_vm trace snapshot schema")
         result = cls(cfg, entity_capacity)
         expected = (
@@ -370,7 +474,12 @@ class SubjectVMTraceStorage:
         arrays = payload.get("arrays")
         if not isinstance(arrays, dict):
             raise ValueError("subject_vm trace checkpoint arrays are missing")
-        for name in result.snapshot_array_names():
+        names = (
+            result.base_snapshot_array_names()
+            if schema == TRACE_STORAGE_SCHEMA_V1
+            else result.snapshot_array_names()
+        )
+        for name in names:
             if name not in arrays:
                 raise ValueError(f"subject_vm trace checkpoint is missing array {name}")
             expected_array = getattr(result, name)
@@ -393,6 +502,12 @@ class SubjectVMTraceStorage:
             "token_width": self.token_width,
             "allocated_nbytes": self.allocated_nbytes(),
             "stored_events": int(np.count_nonzero(self.event_valid)),
+            "association_enabled": self.cfg.association_enabled,
+            "assigned_associations": (
+                0
+                if self.association_assigned is None
+                else int(np.count_nonzero(self.association_assigned))
+            ),
         }
 
 
@@ -402,6 +517,7 @@ __all__ = [
     "OBJECTIVE_EVENT_DELTA_WIDTH",
     "RESOURCE_DELTA_WIDTH",
     "TRACE_STORAGE_SCHEMA",
+    "TRACE_STORAGE_SCHEMA_V1",
     "SubjectVMObjectiveEventBatch",
     "SubjectVMThoughtTokenBatch",
     "SubjectVMTraceAccounting",

@@ -10,6 +10,7 @@ from .config import (
     SUBJECT_VM_STAGE2_SCHEMA,
     SUBJECT_VM_STAGE3_SCHEMA,
     SUBJECT_VM_STAGE3B_SCHEMA,
+    SUBJECT_VM_STAGE3B2_SCHEMA,
     SubjectVMConfig,
 )
 
@@ -418,7 +419,11 @@ class SubjectVMStorage:
         if np.any(output_port < -1) or np.any(output_port >= 8):
             raise ValueError("subject_vm output port is outside the approved schema")
         trace_port = self.node_trace_port[expressed]
-        if self.cfg.schema in {SUBJECT_VM_STAGE3_SCHEMA, SUBJECT_VM_STAGE3B_SCHEMA}:
+        if self.cfg.schema in {
+            SUBJECT_VM_STAGE3_SCHEMA,
+            SUBJECT_VM_STAGE3B_SCHEMA,
+            SUBJECT_VM_STAGE3B2_SCHEMA,
+        }:
             if np.any(trace_port < -1) or np.any(trace_port >= self.cfg.trace.token_width):
                 raise ValueError("subject_vm trace port is outside the approved token width")
         elif np.any(trace_port != -1) or np.any(self.node_trace_gate[expressed] != 0.0):
@@ -535,7 +540,11 @@ class SubjectVMStorage:
             raise ValueError(
                 "Stage-1/2/3A subject_vm cannot contain local eligibility state"
             )
-        if self.cfg.schema not in {SUBJECT_VM_STAGE3_SCHEMA, SUBJECT_VM_STAGE3B_SCHEMA} and (
+        if self.cfg.schema not in {
+            SUBJECT_VM_STAGE3_SCHEMA,
+            SUBJECT_VM_STAGE3B_SCHEMA,
+            SUBJECT_VM_STAGE3B2_SCHEMA,
+        } and (
             np.any(self.node_trace_port != -1) or np.any(self.node_trace_gate != 0.0)
         ):
             raise ValueError("Stage-1/2 subject_vm cannot contain token readouts")

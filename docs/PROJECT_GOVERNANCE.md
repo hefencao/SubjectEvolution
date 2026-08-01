@@ -362,3 +362,19 @@ information interface.
 ### Legacy route retention and single ownership
 
 Pre-Subject-VM routers may remain in the repository for frozen compatibility and fixed-cognition comparison, but they must not silently co-own the primary action-residual boundary. When Stage-2 Subject VM is active, configuration and runtime guards must enforce a single optional route owner. Objective provenance stores, embodied functional mechanisms and observational graphs may coexist only through narrow one-way adapters and must not be copied into Subject VM identity/state.
+
+## v0.113 Stage-3B-2 delayed association implementation check
+
+A Stage-3B-2 change is governance-compliant only when all of the following remain true:
+
+- association requests are graph-produced and may remain absent;
+- the request coordinate is excluded from token similarity;
+- candidates are strictly older than the current tick and bounded by configured retention;
+- every event is allowed to remain unassigned;
+- deterministic similarity is recorded only as an addressing diagnostic, not causal credit or value;
+- objective event coordinates do not select sign, magnitude or parameter target;
+- no event commit writes eligibility, node/edge parameters, retained state or topology;
+- no node IDs, edge IDs, activation masks or full execution paths enter persistent history;
+- old Stage-3B-1 configuration identity remains unchanged and old checkpoints rebuild empty association metadata;
+- Stage-3B-2 remains CPU-reference-only until an explicit packed-device contract is validated;
+- no engineering association result is described as learning, memory understanding, subjecthood or Epoch-1 evidence.
