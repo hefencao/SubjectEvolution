@@ -388,11 +388,23 @@ class SocialSystem:
         self.interest_given = np.zeros((capacity, k), dtype=np.float32)
         self.interest_received = np.zeros((capacity, k), dtype=np.float32)
         self.interest_window_start = np.full((capacity, k), -1, dtype=np.int64)
+        self.interest_knowledge_value = np.zeros((capacity, k), dtype=np.float32)
+        self.interest_knowledge_evidence = np.zeros((capacity, k), dtype=np.float32)
+        self.interest_knowledge_window_start = np.full(
+            (capacity, k), -1, dtype=np.int64
+        )
         self.interest_feedback_settlements = 0
         self.interest_feedback_positive = 0
         self.interest_feedback_negative = 0
         self.interest_feedback_neutral = 0
         self.interest_feedback_material_total = 0.0
+        self.interest_feedback_material_settlements = 0
+        self.interest_feedback_knowledge_settlements = 0
+        self.interest_feedback_knowledge_events = 0
+        self.interest_feedback_knowledge_evidence_total = 0.0
+        self.interest_feedback_knowledge_value_total = 0.0
+        self.interest_feedback_knowledge_delay_total = 0
+        self.interest_feedback_knowledge_orphaned = 0
         self.group_id = np.zeros(capacity, dtype=np.uint64)
         self.group_age = np.zeros(capacity, dtype=np.uint32)
         self.group_dir_x = np.zeros(capacity, dtype=np.float32)
@@ -447,6 +459,9 @@ class SocialSystem:
             self.interest_given[cut_rows, cut_slots] = 0.0
             self.interest_received[cut_rows, cut_slots] = 0.0
             self.interest_window_start[cut_rows, cut_slots] = -1
+            self.interest_knowledge_value[cut_rows, cut_slots] = 0.0
+            self.interest_knowledge_evidence[cut_rows, cut_slots] = 0.0
+            self.interest_knowledge_window_start[cut_rows, cut_slots] = -1
             if had_links:
                 self._mark_group_labels_dirty("relation-capacity-trim")
         changed = old != values
@@ -474,6 +489,9 @@ class SocialSystem:
         self.interest_given[indices] = 0.0
         self.interest_received[indices] = 0.0
         self.interest_window_start[indices] = -1
+        self.interest_knowledge_value[indices] = 0.0
+        self.interest_knowledge_evidence[indices] = 0.0
+        self.interest_knowledge_window_start[indices] = -1
         self.effective_capacity[indices] = 0
         self.group_id[indices] = 0
         self.group_age[indices] = 0
@@ -545,6 +563,9 @@ class SocialSystem:
             self.interest_given[owner, slot] = 0.0
             self.interest_received[owner, slot] = 0.0
             self.interest_window_start[owner, slot] = -1
+            self.interest_knowledge_value[owner, slot] = 0.0
+            self.interest_knowledge_evidence[owner, slot] = 0.0
+            self.interest_knowledge_window_start[owner, slot] = -1
         self.trust[owner, slot] = np.clip(self.trust[owner, slot] + trust_delta, 0.0, 1.0)
         self.familiarity[owner, slot] = np.clip(self.familiarity[owner, slot] + 0.05, 0.0, 1.0)
         self.last_interaction[owner, slot] = tick
@@ -600,6 +621,9 @@ class SocialSystem:
             self.interest_given[inserted_owners, inserted_slots] = 0.0
             self.interest_received[inserted_owners, inserted_slots] = 0.0
             self.interest_window_start[inserted_owners, inserted_slots] = -1
+            self.interest_knowledge_value[inserted_owners, inserted_slots] = 0.0
+            self.interest_knowledge_evidence[inserted_owners, inserted_slots] = 0.0
+            self.interest_knowledge_window_start[inserted_owners, inserted_slots] = -1
         self.trust[owners, slots] = np.clip(self.trust[owners, slots] + trust_delta, 0.0, 1.0)
         self.familiarity[owners, slots] = np.clip(
             self.familiarity[owners, slots] + familiarity_delta, 0.0, 1.0
@@ -725,7 +749,10 @@ class SocialSystem:
         partner value changes here; the window is settled later so immediate
         action success cannot masquerade as learned trust.
         """
-        if self.cfg.social.relation_update_schema != "delayed-material-interest-v1":
+        if self.cfg.social.relation_update_schema not in {
+            "delayed-material-interest-v1",
+            "delayed-multichannel-interest-v2",
+        }:
             return
         owner_values = np.asarray(owners, dtype=np.int32)
         target_values = np.asarray(targets, dtype=np.int32)
@@ -762,54 +789,153 @@ class SocialSystem:
                     self.interest_window_start[target, reverse] = int(tick)
             self.interest_feedback_material_total += magnitude
 
-    def settle_interest_feedback(self, tick: int) -> int:
-        """Learn a delayed directed material-return expectation."""
-        if self.cfg.social.relation_update_schema != "delayed-material-interest-v1":
-            return 0
-        window = int(self.cfg.social.interest_feedback_window_ticks)
-        starts = self.interest_window_start
-        due = (
-            (self.target >= 0)
-            & (starts >= 0)
-            & ((int(tick) - starts + 1) >= window)
+    def record_knowledge_interest_feedback(
+        self,
+        owners: np.ndarray,
+        targets: np.ndarray,
+        signed_quality: np.ndarray,
+        evidence: np.ndarray,
+        delay_ticks: np.ndarray,
+        tick: int,
+    ) -> None:
+        """Accumulate delayed non-material knowledge quality by partner.
+
+        The value is not a transfer reward.  It is emitted only when a copy
+        received from the target is later checked against an actual local
+        five-dimensional outcome.  Positive and negative predictive quality
+        remain separately observable until the long knowledge window settles.
+        """
+        if self.cfg.social.relation_update_schema != "delayed-multichannel-interest-v2":
+            return
+        owner_values = np.asarray(owners, dtype=np.int32)
+        target_values = np.asarray(targets, dtype=np.int32)
+        quality_values = np.asarray(signed_quality, dtype=np.float32)
+        evidence_values = np.asarray(evidence, dtype=np.float32)
+        delay_values = np.asarray(delay_ticks, dtype=np.uint32)
+        arrays = (target_values, quality_values, evidence_values, delay_values)
+        if any(value.shape != owner_values.shape for value in arrays):
+            raise ValueError("knowledge interest arrays must align")
+        valid = (
+            (owner_values >= 0)
+            & (target_values >= 0)
+            & (owner_values != target_values)
+            & np.isfinite(quality_values)
+            & np.isfinite(evidence_values)
+            & (evidence_values > 0.0)
         )
-        if not np.any(due):
-            return 0
-        owners, slots = np.nonzero(due)
+        for index in np.flatnonzero(valid).tolist():
+            owner = int(owner_values[index])
+            target = int(target_values[index])
+            slot = self._relation_slot(owner, target)
+            if slot < 0:
+                self._update_one(owner, target, 0.0, int(tick))
+                slot = self._relation_slot(owner, target)
+            if slot < 0:
+                continue
+            weight = float(evidence_values[index])
+            value = float(np.clip(quality_values[index], -1.0, 1.0))
+            self.interest_knowledge_value[owner, slot] += np.float32(value * weight)
+            self.interest_knowledge_evidence[owner, slot] += np.float32(weight)
+            if self.interest_knowledge_window_start[owner, slot] < 0:
+                self.interest_knowledge_window_start[owner, slot] = int(tick)
+            self.interest_feedback_knowledge_events += 1
+            self.interest_feedback_knowledge_evidence_total += weight
+            self.interest_feedback_knowledge_value_total += value * weight
+            self.interest_feedback_knowledge_delay_total += int(delay_values[index])
+
+    def note_orphaned_knowledge_interest(self, count: int) -> None:
+        self.interest_feedback_knowledge_orphaned += max(int(count), 0)
+
+    def _apply_interest_target(
+        self, owners: np.ndarray, slots: np.ndarray, target: np.ndarray,
+        confidence: np.ndarray, learning_rate: float, tick: int, reason: str,
+    ) -> np.ndarray:
+        if owners.size == 0:
+            return np.empty(0, dtype=np.float32)
         self._materialize_decay(np.unique(owners).astype(np.int32), int(tick) - 1)
-        given = self.interest_given[owners, slots].astype(np.float64)
-        received = self.interest_received[owners, slots].astype(np.float64)
-        evidence = given + received
-        minimum = float(self.cfg.social.interest_feedback_min_material)
-        confidence = np.clip(evidence / minimum, 0.0, 1.0)
-        observed_return = np.divide(
-            received,
-            np.maximum(evidence, minimum),
-            out=np.zeros_like(evidence),
-            where=np.maximum(evidence, minimum) > 0.0,
-        )
         current = self.trust[owners, slots].astype(np.float64)
-        delta = (
-            float(self.cfg.social.interest_feedback_learning_rate)
-            * confidence
-            * (observed_return - current)
-        ).astype(np.float32)
+        delta = (float(learning_rate) * confidence * (target - current)).astype(np.float32)
         threshold = np.float32(self.cfg.social.trust_group_threshold)
         before = self.trust[owners, slots] >= threshold
         self.trust[owners, slots] = np.clip(current + delta, 0.0, 1.0)
         after = self.trust[owners, slots] >= threshold
         if np.any(before != after):
-            self._mark_group_labels_dirty("interest-feedback-threshold")
+            self._mark_group_labels_dirty(reason)
         self.last_interaction[owners, slots] = int(tick)
         self.last_decay_tick[owners, slots] = int(tick) - 1
-        self.interest_given[owners, slots] = 0.0
-        self.interest_received[owners, slots] = 0.0
-        self.interest_window_start[owners, slots] = -1
         self.interest_feedback_settlements += int(delta.size)
         self.interest_feedback_positive += int(np.count_nonzero(delta > 1.0e-8))
         self.interest_feedback_negative += int(np.count_nonzero(delta < -1.0e-8))
         self.interest_feedback_neutral += int(np.count_nonzero(np.abs(delta) <= 1.0e-8))
-        return int(delta.size)
+        return delta
+
+    def settle_interest_feedback(self, tick: int) -> int:
+        """Settle material and knowledge evidence on independent timescales."""
+        schema = self.cfg.social.relation_update_schema
+        if schema not in {
+            "delayed-material-interest-v1",
+            "delayed-multichannel-interest-v2",
+        }:
+            return 0
+        settled = 0
+        material_due = (
+            (self.target >= 0)
+            & (self.interest_window_start >= 0)
+            & ((int(tick) - self.interest_window_start + 1)
+               >= int(self.cfg.social.interest_feedback_window_ticks))
+        )
+        if np.any(material_due):
+            owners, slots = np.nonzero(material_due)
+            given = self.interest_given[owners, slots].astype(np.float64)
+            received = self.interest_received[owners, slots].astype(np.float64)
+            evidence = given + received
+            minimum = float(self.cfg.social.interest_feedback_min_material)
+            confidence = np.clip(evidence / minimum, 0.0, 1.0)
+            target = np.divide(
+                received, np.maximum(evidence, minimum),
+                out=np.zeros_like(evidence), where=np.maximum(evidence, minimum) > 0.0,
+            )
+            self._apply_interest_target(
+                owners, slots, target, confidence,
+                self.cfg.social.interest_feedback_learning_rate, tick,
+                "material-interest-threshold",
+            )
+            self.interest_given[owners, slots] = 0.0
+            self.interest_received[owners, slots] = 0.0
+            self.interest_window_start[owners, slots] = -1
+            self.interest_feedback_material_settlements += int(owners.size)
+            settled += int(owners.size)
+        if schema == "delayed-multichannel-interest-v2":
+            knowledge_due = (
+                (self.target >= 0)
+                & (self.interest_knowledge_window_start >= 0)
+                & ((int(tick) - self.interest_knowledge_window_start + 1)
+                   >= int(self.cfg.social.knowledge_interest_window_ticks))
+            )
+            if np.any(knowledge_due):
+                owners, slots = np.nonzero(knowledge_due)
+                evidence = self.interest_knowledge_evidence[owners, slots].astype(np.float64)
+                signed = np.divide(
+                    self.interest_knowledge_value[owners, slots].astype(np.float64),
+                    np.maximum(evidence, 1.0e-30), out=np.zeros_like(evidence),
+                    where=evidence > 0.0,
+                )
+                target = 0.5 + 0.5 * np.clip(signed, -1.0, 1.0)
+                confidence = np.clip(
+                    evidence / float(self.cfg.social.knowledge_interest_min_evidence),
+                    0.0, 1.0,
+                )
+                self._apply_interest_target(
+                    owners, slots, target, confidence,
+                    self.cfg.social.knowledge_interest_learning_rate, tick,
+                    "knowledge-interest-threshold",
+                )
+                self.interest_knowledge_value[owners, slots] = 0.0
+                self.interest_knowledge_evidence[owners, slots] = 0.0
+                self.interest_knowledge_window_start[owners, slots] = -1
+                self.interest_feedback_knowledge_settlements += int(owners.size)
+                settled += int(owners.size)
+        return settled
 
     def interest_feedback_diagnostics(self, alive: np.ndarray) -> dict[str, float | int | str]:
         valid = self.target >= 0
@@ -818,7 +944,8 @@ class SocialSystem:
             valid &= np.asarray(alive, dtype=bool)[:, None]
             valid &= np.asarray(alive, dtype=bool)[safe]
         trust = self.trust[valid].astype(np.float64)
-        pending = (self.interest_given + self.interest_received)[valid].astype(np.float64)
+        material_pending = (self.interest_given + self.interest_received)[valid].astype(np.float64)
+        knowledge_pending = self.interest_knowledge_evidence[valid].astype(np.float64)
         per_owner_std: list[float] = []
         for owner in np.flatnonzero(np.asarray(alive, dtype=bool)).tolist():
             row = valid[owner]
@@ -830,7 +957,15 @@ class SocialSystem:
             "relation_trust_mean": float(trust.mean()) if trust.size else 0.0,
             "relation_trust_std": float(trust.std()) if trust.size else 0.0,
             "relation_positive_edge_count": int(np.count_nonzero(trust > 1.0e-8)),
-            "relation_pending_feedback_edge_count": int(np.count_nonzero(pending > 1.0e-8)),
+            "relation_pending_feedback_edge_count": int(np.count_nonzero(
+                (material_pending > 1.0e-8) | (knowledge_pending > 1.0e-8)
+            )),
+            "relation_pending_material_edge_count": int(
+                np.count_nonzero(material_pending > 1.0e-8)
+            ),
+            "relation_pending_knowledge_edge_count": int(
+                np.count_nonzero(knowledge_pending > 1.0e-8)
+            ),
             "relation_partner_differentiation_mean_std": (
                 float(np.mean(per_owner_std)) if per_owner_std else 0.0
             ),
@@ -839,6 +974,29 @@ class SocialSystem:
             "interest_feedback_negative_total": int(self.interest_feedback_negative),
             "interest_feedback_neutral_total": int(self.interest_feedback_neutral),
             "interest_feedback_material_total": float(self.interest_feedback_material_total),
+            "interest_feedback_material_settlements_total": int(
+                self.interest_feedback_material_settlements
+            ),
+            "interest_feedback_knowledge_settlements_total": int(
+                self.interest_feedback_knowledge_settlements
+            ),
+            "interest_feedback_knowledge_events_total": int(
+                self.interest_feedback_knowledge_events
+            ),
+            "interest_feedback_knowledge_evidence_total": float(
+                self.interest_feedback_knowledge_evidence_total
+            ),
+            "interest_feedback_knowledge_signed_value_total": float(
+                self.interest_feedback_knowledge_value_total
+            ),
+            "interest_feedback_knowledge_mean_delay_ticks": (
+                float(self.interest_feedback_knowledge_delay_total)
+                / self.interest_feedback_knowledge_events
+                if self.interest_feedback_knowledge_events else 0.0
+            ),
+            "interest_feedback_knowledge_orphaned_total": int(
+                self.interest_feedback_knowledge_orphaned
+            ),
         }
 
     def record_shares(self, owners: np.ndarray, targets: np.ndarray, success: np.ndarray, tick: int) -> None:
@@ -868,6 +1026,9 @@ class SocialSystem:
             self.interest_given[dead_link] = 0.0
             self.interest_received[dead_link] = 0.0
             self.interest_window_start[dead_link] = -1
+            self.interest_knowledge_value[dead_link] = 0.0
+            self.interest_knowledge_evidence[dead_link] = 0.0
+            self.interest_knowledge_window_start[dead_link] = -1
             self._mark_group_labels_dirty("dead-relation-target")
 
     def _predict_next_decay_crossing_tick(self, tick: int) -> int:

@@ -253,12 +253,18 @@ def strip_inactive_extensions(payload: dict[str, Any]) -> dict[str, Any]:
         and int(social.get("interest_feedback_window_ticks", 0)) == 0
         and float(social.get("interest_feedback_learning_rate", 0.0)) == 0.0
         and float(social.get("interest_feedback_min_material", 0.0)) == 0.0
+        and int(social.get("knowledge_interest_window_ticks", 0)) == 0
+        and float(social.get("knowledge_interest_learning_rate", 0.0)) == 0.0
+        and float(social.get("knowledge_interest_min_evidence", 0.0)) == 0.0
     ):
         for key in (
             "relation_update_schema",
             "interest_feedback_window_ticks",
             "interest_feedback_learning_rate",
             "interest_feedback_min_material",
+            "knowledge_interest_window_ticks",
+            "knowledge_interest_learning_rate",
+            "knowledge_interest_min_evidence",
         ):
             social.pop(key, None)
     if (

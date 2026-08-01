@@ -1,0 +1,26 @@
+{
+  "schema": "frozen-evidence-lock-v1",
+  "study_id": "d1y_multichannel_interest_feedback_v1",
+  "files": [
+    {
+      "path": "studies/d1y_multichannel_interest_feedback_v1/frozen/d1x/source_config.json",
+      "size": 19346,
+      "sha256": "e0b822f30ea209aa58719f961a10f97f71eb252f476587c9720ffe3764a46c3e"
+    },
+    {
+      "path": "studies/d1y_multichannel_interest_feedback_v1/frozen/d1x/source_config.json.manifest.json",
+      "size": 2615,
+      "sha256": "65b6ec85e102639b6f0ea8a29deea4ad653f0ce3484dc052fcfc78f6e6556f9a"
+    },
+    {
+      "path": "studies/d1y_multichannel_interest_feedback_v1/frozen/d1x/debug_summary.json",
+      "size": 2020,
+      "sha256": "b584083e78916f5715f94ff04acdd67c72664b324d3f7818831caf339e7ddd6c"
+    },
+    {
+      "path": "studies/d1y_multichannel_interest_feedback_v1/frozen/d1x/long_run_analysis.json",
+      "size": 76890,
+      "sha256": "8d11b8eed1eaae956b9349a32c982bf80c7f94897ad93fd26579d87fb07c0426"
+    }
+  ]
+}

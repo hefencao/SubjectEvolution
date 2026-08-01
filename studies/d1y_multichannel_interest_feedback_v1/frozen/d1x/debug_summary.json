@@ -1,0 +1,49 @@
+{
+  "schema": "delayed-material-interest-debug-summary-v1",
+  "source_root": "runs/base/d1x_interest_feedback_network_v1/probe",
+  "runs": [
+    {
+      "run": "seed_105011",
+      "seed": 105011,
+      "requested_backend": "cpu",
+      "execution_backend": "cpu",
+      "config_sha256": "9f3143dc1edd26d0ed373cf5da906754a739c91e72fd59a559857baadbe6ca0b",
+      "final_tick": 720,
+      "final_alive": 55,
+      "minimum_alive": 55,
+      "final_groups": 0,
+      "final_grouped_fraction": 0.0,
+      "relation_update_schema": "delayed-material-interest-v1",
+      "relation_edge_count": 89,
+      "relation_trust_mean": 0.046473781902636034,
+      "relation_trust_std": 0.04675529233182588,
+      "relation_partner_differentiation_mean_std": 0.027544364511326802,
+      "interest_feedback_settlements_total": 328,
+      "interest_feedback_positive_total": 228,
+      "interest_feedback_negative_total": 10,
+      "interest_feedback_neutral_total": 90,
+      "interest_feedback_material_total": 939.1003861288137,
+      "fixed_trust_gain": 0.0,
+      "fixed_trust_loss": 0.0
+    }
+  ],
+  "run_count": 1,
+  "semantics_ready": true,
+  "population_debug_ready": false,
+  "epoch_1_ready": false,
+  "missing_epoch_1_evidence": [
+    "independent multi-seed persistence across multiple generations",
+    "partner-network prediction beyond proximity, kinship and encounter frequency",
+    "shared-checkpoint feedback neutralization",
+    "non-material delayed consequences such as protection and information value"
+  ],
+  "authorization": {
+    "continue_interest_feedback_development": true,
+    "formal_long_horizon_panel": false,
+    "epoch_1_base_checkpoint": false,
+    "group_rule_implementation": false,
+    "formal_subjecthood_claim": false,
+    "gene_audit": false
+  },
+  "interpretation_boundary": "This debug report verifies removal of fixed SHARE trust bonuses and delayed learning from realized bilateral material return. It is not an Epoch 1 qualification and does not make current group labels into subjects."
+}

@@ -529,6 +529,23 @@ class SimulationCheckpointMixin:
             self.social.interest_feedback_negative = 0
             self.social.interest_feedback_neutral = 0
             self.social.interest_feedback_material_total = 0.0
+        if not hasattr(self.social, "interest_knowledge_value"):
+            self.social.interest_knowledge_value = np.zeros(
+                relation_shape, dtype=np.float32
+            )
+            self.social.interest_knowledge_evidence = np.zeros(
+                relation_shape, dtype=np.float32
+            )
+            self.social.interest_knowledge_window_start = np.full(
+                relation_shape, -1, dtype=np.int64
+            )
+            self.social.interest_feedback_material_settlements = 0
+            self.social.interest_feedback_knowledge_settlements = 0
+            self.social.interest_feedback_knowledge_events = 0
+            self.social.interest_feedback_knowledge_evidence_total = 0.0
+            self.social.interest_feedback_knowledge_value_total = 0.0
+            self.social.interest_feedback_knowledge_delay_total = 0
+            self.social.interest_feedback_knowledge_orphaned = 0
         self.subjects = copy.deepcopy(state["subjects"])
         self.knowledge.restore_state(state["knowledge"])
         self.knowledge.cfg = self.cfg

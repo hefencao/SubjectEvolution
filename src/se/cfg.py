@@ -688,6 +688,12 @@ class SocialConfig:
     interest_feedback_window_ticks: int = 0
     interest_feedback_learning_rate: float = 0.0
     interest_feedback_min_material: float = 0.0
+    # Knowledge supplied by a partner can be verified long after transfer.
+    # The v2 schema therefore keeps a separate long-horizon evidence window
+    # instead of forcing every consequence through the short material ratio.
+    knowledge_interest_window_ticks: int = 0
+    knowledge_interest_learning_rate: float = 0.0
+    knowledge_interest_min_evidence: float = 0.0
     # Legacy configs keep fixed periodic recomputation.  The adaptive schema
     # refreshes only after a topology-relevant relation change, a predicted
     # trust-threshold decay crossing, or a bounded maximum staleness interval.
@@ -2243,14 +2249,17 @@ def validate_config(cfg: SimulationConfig) -> None:
     if cfg.social.relation_update_schema not in {
         "fixed-share-trust-v1",
         "delayed-material-interest-v1",
+        "delayed-multichannel-interest-v2",
     }:
         raise ValueError(
-            "social.relation_update_schema must be 'fixed-share-trust-v1' or "
-            "'delayed-material-interest-v1'"
+            "social.relation_update_schema must be fixed-share-trust-v1, "
+            "delayed-material-interest-v1, or delayed-multichannel-interest-v2"
         )
     feedback_values = (
         cfg.social.interest_feedback_learning_rate,
         cfg.social.interest_feedback_min_material,
+        cfg.social.knowledge_interest_learning_rate,
+        cfg.social.knowledge_interest_min_evidence,
     )
     if any(not math.isfinite(float(value)) or value < 0.0 for value in feedback_values):
         raise ValueError("social interest-feedback parameters must be finite and non-negative")
@@ -2259,19 +2268,36 @@ def validate_config(cfg: SimulationConfig) -> None:
             cfg.social.interest_feedback_window_ticks != 0
             or cfg.social.interest_feedback_learning_rate != 0.0
             or cfg.social.interest_feedback_min_material != 0.0
+            or cfg.social.knowledge_interest_window_ticks != 0
+            or cfg.social.knowledge_interest_learning_rate != 0.0
+            or cfg.social.knowledge_interest_min_evidence != 0.0
         ):
             raise ValueError(
                 "fixed SHARE trust requires neutral interest-feedback parameters"
             )
     else:
         if cfg.social.interest_feedback_window_ticks <= 0:
-            raise ValueError("delayed material interest requires a positive window")
+            raise ValueError("delayed interest requires a positive material window")
         if cfg.social.interest_feedback_learning_rate <= 0.0:
-            raise ValueError("delayed material interest requires a positive learning rate")
+            raise ValueError("delayed interest requires a positive material learning rate")
         if cfg.social.interest_feedback_learning_rate > 1.0:
             raise ValueError("interest-feedback learning rate cannot exceed 1")
         if cfg.social.interest_feedback_min_material <= 0.0:
-            raise ValueError("delayed material interest requires positive minimum material")
+            raise ValueError("delayed interest requires positive minimum material")
+        if cfg.social.relation_update_schema == "delayed-material-interest-v1":
+            if (
+                cfg.social.knowledge_interest_window_ticks != 0
+                or cfg.social.knowledge_interest_learning_rate != 0.0
+                or cfg.social.knowledge_interest_min_evidence != 0.0
+            ):
+                raise ValueError("material-only interest requires neutral knowledge parameters")
+        else:
+            if cfg.social.knowledge_interest_window_ticks <= 0:
+                raise ValueError("multichannel interest requires a positive knowledge window")
+            if not 0.0 < cfg.social.knowledge_interest_learning_rate <= 1.0:
+                raise ValueError("knowledge-interest learning rate must be in (0, 1]")
+            if cfg.social.knowledge_interest_min_evidence <= 0.0:
+                raise ValueError("multichannel interest requires positive knowledge evidence")
     if cfg.social.group_update_mode not in {
         "periodic-v1",
         "adaptive-topology-v1",

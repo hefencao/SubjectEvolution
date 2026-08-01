@@ -314,10 +314,18 @@ D1-U 使用同一个 terrain 场同时降低移动与通信，无法表示高山
 
 | ID | Status | Issue | Required next step |
 |---|---|---|---|
-| D1-20 | partial semantics implemented, ontology blocked | D1-X removes fixed SHARE trust deltas and learns directed partner-return values from delayed realized material exchange. The debug run produces partner differentiation, but its population falls below the debug floor and material return alone omits information, protection, conflict assistance and downstream survival consequences. | Restore a qualified demographic substrate, add separately observable consequence ledgers, then require prediction beyond proximity/kinship/encounter frequency, cross-seed multi-generation persistence and shared-checkpoint neutralization before Epoch 1. |
+| D1-20 | multi-channel semantics implemented, qualification blocked | D1-Y keeps material return as one short channel and adds delayed source-attributed knowledge verification. The debug run produces 234 knowledge evidence events and six long-window settlements, but population falls below the floor, 110 events lose a living source row, and verified accuracy is not yet causal use or downstream benefit. | Implement stable historical subject identity, protection/conflict/opportunity-cost channels, causal knowledge-use neutralization, predictive controls and independent multi-generation replication before Epoch 1. |
 | D1-21 | active, group subject blocked | Current group labels are thresholded connected components of the relation table. They contain no group-owned rule state that constrains members. | Keep labels observational. Require group-owned rule storage, enforcement effects, turnover persistence and shared-checkpoint rule neutralization before Epoch 2. |
 | D1-22 | infrastructure implemented, physical crop open | Re-running the entire prehistory for every mechanism is inefficient, but naive spatial crop changes seasonal phase, resource renewal and boundary flux. | Freeze qualified epoch bases. Use active-set regional branches now; implement source-coordinate and boundary-flux contracts before physical-grid crop. |
 
 ## D1-X：利益反馈网络仍缺少的证据
 
 D1-X 消除了 SHARE 成功即固定加 trust 的最直接预设，并建立延迟物质给予、接收与伙伴回馈率账本。但物质回馈率并不等于完整利益：信息、保护、冲突协助、机会成本和后续存活影响尚未归因。当前开放问题是如何分别记录这些后果，并检验关系是否在控制距离、亲缘和接触频率后仍预测未来合作或回避。只有跨 seed、跨多代持续并通过共享 checkpoint 反馈中和，才可冻结 Epoch 1 起点。
+
+## D1-Y：知识价值归因仍未等于知识收益
+
+D1-Y 解决了“物质回馈率代表全部利益”的错误：知识副本只有在较晚的真实结果中被验证后，才生成带来源、证据权重和延迟的关系证据。调试 seed 中存在 234 条知识证据和约 143 tick 的平均延迟，说明长时程非物质通道真实接线。
+
+但当前记录的是预测准确度，不是使用因果。接收者可能没有在决策中使用该副本，也可能准确知识没有改变任何损失、资源、存活或繁殖机会。因此 Epoch 1 前仍必须完成：知识可用性或 policy 路由的共享 checkpoint 中和；对行动和后果的因果归因；控制距离、亲缘与接触频率后的关系预测；跨 seed、多代持续。
+
+另有 110 条验证事件因来源主体死亡而成为 orphaned evidence。当前关系存储仍按活实体行寻址，不能安全表达对已死亡伙伴的历史记忆。下一结构债务是以稳定 subject ID 保存历史伙伴状态，并为死亡、后代继承和区域分支定义可审计的记忆保留规则。

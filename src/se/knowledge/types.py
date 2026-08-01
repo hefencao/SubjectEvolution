@@ -328,6 +328,62 @@ class KnowledgeTransferCommitAudit:
         return int(self.committed_content_ids.size)
 
 
+@dataclass(frozen=True)
+class KnowledgeVerificationCreditAudit:
+    """Transferred knowledge verified against a later realized outcome.
+
+    Values are signed prediction-quality observations in ``[-1, 1]``.  They
+    are not rewards: each row records how closely a transferred copy predicted
+    the receiver's later five-dimensional consequence vector, plus the copy's
+    local confidence as evidence weight.
+    """
+
+    tick: int
+    receiver_entity_indices: np.ndarray
+    receiver_subject_ids: np.ndarray
+    source_subject_ids: np.ndarray
+    signed_quality: np.ndarray
+    evidence: np.ndarray
+    delay_ticks: np.ndarray
+
+    @classmethod
+    def empty(cls, tick: int = 0) -> "KnowledgeVerificationCreditAudit":
+        return cls(
+            tick=int(tick),
+            receiver_entity_indices=np.empty(0, dtype=np.int32),
+            receiver_subject_ids=np.empty(0, dtype=np.uint64),
+            source_subject_ids=np.empty(0, dtype=np.uint64),
+            signed_quality=np.empty(0, dtype=np.float32),
+            evidence=np.empty(0, dtype=np.float32),
+            delay_ticks=np.empty(0, dtype=np.uint32),
+        )
+
+    @property
+    def size(self) -> int:
+        return int(self.source_subject_ids.size)
+
+    def validate(self, entity_capacity: int) -> None:
+        count = self.size
+        vectors = (
+            self.receiver_entity_indices, self.receiver_subject_ids,
+            self.source_subject_ids, self.signed_quality, self.evidence,
+            self.delay_ticks,
+        )
+        if any(np.asarray(value).shape != (count,) for value in vectors):
+            raise ValueError("knowledge verification credit vectors must align")
+        if self.tick < 0 or (count and (
+            np.any(self.receiver_entity_indices < 0)
+            or np.any(self.receiver_entity_indices >= entity_capacity)
+            or np.any(self.receiver_subject_ids == 0)
+            or np.any(self.source_subject_ids == 0)
+            or np.any(~np.isfinite(self.signed_quality))
+            or np.any((self.signed_quality < -1.0) | (self.signed_quality > 1.0))
+            or np.any(~np.isfinite(self.evidence))
+            or np.any(self.evidence <= 0.0)
+        )):
+            raise ValueError("knowledge verification credit contains invalid values")
+
+
 @dataclass
 class KnowledgeStepStats:
     maintenance_energy: float = 0.0
@@ -427,7 +483,8 @@ class KnowledgeStepStats:
 
 __all__ = [
     "KnowledgeObservationPlan", "KnowledgeOutcomePlan", "KnowledgeTransferPlan",
-    "KnowledgeTransferCommitAudit", "KnowledgeStepStats", "encode_local_context",
+    "KnowledgeTransferCommitAudit", "KnowledgeVerificationCreditAudit",
+    "KnowledgeStepStats", "encode_local_context",
     "OUTCOME_WIDTH", "OUTCOME_ENERGY", "OUTCOME_INTEGRITY", "OUTCOME_MATERIAL",
     "OUTCOME_INFORMATION", "OUTCOME_REPRODUCTION_OPPORTUNITY",
     "OUTCOME_STATUS_FAILED", "OUTCOME_STATUS_SUCCESS", "OUTCOME_STATUS_PARTIAL",

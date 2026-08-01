@@ -1,0 +1,73 @@
+{
+  "schema": "delayed-material-interest-config-v1",
+  "source": "studies/d1x_interest_feedback_network_v1/frozen/d1v/source_config.json",
+  "output": "state/studies/d1x_interest_feedback_network_v1/interest_feedback.json",
+  "source_file_sha256": "8e204f96342723a262ddb26b057e4a55eeb280a593a24d04b80d8849e81500c0",
+  "output_file_sha256": "e0b822f30ea209aa58719f961a10f97f71eb252f476587c9720ffe3764a46c3e",
+  "source_canonical_sha256": "402a5a4d5051577e59c3c150e48efb50d256772caae6c09f33eff2b30399b982",
+  "output_canonical_sha256": "aa7a8bb14f930ac849926912935797faf27758d1f21d37cc0015ca83094a83a1",
+  "changed_paths": [
+    "run.checkpoint_period",
+    "run.ticks",
+    "social.interest_feedback_learning_rate",
+    "social.interest_feedback_min_material",
+    "social.interest_feedback_window_ticks",
+    "social.relation_update_schema",
+    "social.trust_gain_share",
+    "social.trust_loss_failed"
+  ],
+  "changes": {
+    "run.ticks": {
+      "before": 240,
+      "after": 720
+    },
+    "run.checkpoint_period": {
+      "before": 240,
+      "after": 720
+    },
+    "social.relation_update_schema": {
+      "before": null,
+      "after": "delayed-material-interest-v1"
+    },
+    "social.interest_feedback_window_ticks": {
+      "before": null,
+      "after": 120
+    },
+    "social.interest_feedback_learning_rate": {
+      "before": null,
+      "after": 0.08
+    },
+    "social.interest_feedback_min_material": {
+      "before": null,
+      "after": 0.5
+    },
+    "social.trust_gain_share": {
+      "before": 0.08,
+      "after": 0.0
+    },
+    "social.trust_loss_failed": {
+      "before": 0.02,
+      "after": 0.0
+    }
+  },
+  "genetic_coordinates_changed": 0,
+  "environment_or_movement_changed": false,
+  "direct_conflict_enabled": false,
+  "fixed_share_trust_enabled": false,
+  "relation_semantics": {
+    "schema": "delayed-material-interest-v1",
+    "window_ticks": 120,
+    "learning_rate": 0.08,
+    "minimum_material": 0.5,
+    "material_basis": "realized energy/raw transfers normalized by configured per-action transfer amounts; directed realized receiving share within total bilateral material evidence"
+  },
+  "authorization": {
+    "single_seed_relation_semantics_debug": true,
+    "epoch_1_entry": false,
+    "group_rule_implementation": false,
+    "formal_multi_seed_panel": false,
+    "gene_audit": false,
+    "subjecthood_claim": false
+  },
+  "interpretation_boundary": "D1-X removes fixed SHARE trust increments and tests a delayed material balance ledger. It does not establish predictive partner models, broader non-material consequences, multi-seed persistence, or Epoch 1 entry."
+}

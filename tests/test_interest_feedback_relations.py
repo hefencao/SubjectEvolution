@@ -126,6 +126,9 @@ def test_inactive_interest_feedback_fields_do_not_change_frozen_identity() -> No
     assert "interest_feedback_window_ticks" not in social
     assert "interest_feedback_learning_rate" not in social
     assert "interest_feedback_min_material" not in social
+    assert "knowledge_interest_window_ticks" not in social
+    assert "knowledge_interest_learning_rate" not in social
+    assert "knowledge_interest_min_evidence" not in social
 
 
 def test_interest_feedback_checkpoint_round_trip(tmp_path: Path) -> None:
@@ -154,4 +157,73 @@ def test_interest_feedback_checkpoint_round_trip(tmp_path: Path) -> None:
     np.testing.assert_array_equal(
         restored.social.interest_window_start, simulation.social.interest_window_start
     )
+    np.testing.assert_array_equal(
+        restored.social.interest_knowledge_value, simulation.social.interest_knowledge_value
+    )
+    np.testing.assert_array_equal(
+        restored.social.interest_knowledge_evidence, simulation.social.interest_knowledge_evidence
+    )
     assert restored.social.interest_feedback_settlements == simulation.social.interest_feedback_settlements
+
+
+def multichannel_config():
+    cfg = feedback_config()
+    cfg = replace(
+        cfg,
+        social=replace(
+            cfg.social,
+            relation_update_schema="delayed-multichannel-interest-v2",
+            knowledge_interest_window_ticks=8,
+            knowledge_interest_learning_rate=0.1,
+            knowledge_interest_min_evidence=0.5,
+        ),
+    )
+    validate_config(cfg)
+    return cfg
+
+
+def test_multichannel_knowledge_feedback_uses_independent_long_window() -> None:
+    cfg = multichannel_config()
+    social = SocialSystem(cfg, 4)
+    social.set_effective_capacities(
+        np.asarray([0, 1], dtype=np.int32), np.asarray([2, 2], dtype=np.int32)
+    )
+    social.record_knowledge_interest_feedback(
+        np.asarray([0], dtype=np.int32),
+        np.asarray([1], dtype=np.int32),
+        np.asarray([1.0], dtype=np.float32),
+        np.asarray([1.0], dtype=np.float32),
+        np.asarray([20], dtype=np.uint32),
+        tick=1,
+    )
+    slot = social._relation_slot(0, 1)
+    assert slot >= 0
+    assert social.settle_interest_feedback(4) == 0
+    assert float(social.trust[0, slot]) == 0.0
+    assert social.settle_interest_feedback(8) == 1
+    assert float(social.trust[0, slot]) > 0.0
+    diagnostics = social.interest_feedback_diagnostics(np.asarray([1, 1, 0, 0], dtype=bool))
+    assert diagnostics["interest_feedback_knowledge_events_total"] == 1
+    assert diagnostics["interest_feedback_knowledge_settlements_total"] == 1
+    assert diagnostics["interest_feedback_knowledge_mean_delay_ticks"] == 20.0
+
+
+def test_multichannel_negative_knowledge_quality_can_reduce_partner_value() -> None:
+    cfg = multichannel_config()
+    social = SocialSystem(cfg, 3)
+    social.set_effective_capacities(
+        np.asarray([0, 1], dtype=np.int32), np.asarray([2, 2], dtype=np.int32)
+    )
+    social._update_one(0, 1, 0.8, tick=0)
+    slot = social._relation_slot(0, 1)
+    social.record_knowledge_interest_feedback(
+        np.asarray([0], dtype=np.int32),
+        np.asarray([1], dtype=np.int32),
+        np.asarray([-1.0], dtype=np.float32),
+        np.asarray([1.0], dtype=np.float32),
+        np.asarray([12], dtype=np.uint32),
+        tick=1,
+    )
+    before = float(social.trust[0, slot])
+    assert social.settle_interest_feedback(8) == 1
+    assert float(social.trust[0, slot]) < before

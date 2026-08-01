@@ -1239,3 +1239,26 @@ Preserving the complete field coordinate frame retains source seasonal phases, r
 `SocialSystem` retains the fixed-slot directed relation store for checkpoint and group-label compatibility, but the opt-in `delayed-material-interest-v1` schema separates interaction materialization from partner-value learning. Successful SHARE commits create/refresh both directed relation slots with zero immediate trust delta. Realized energy and raw transfers are normalized by their configured per-action amounts and accumulated as directed own giving and receiving. A later window settlement moves the directed relation value toward the observed receiving share of total bilateral material evidence.
 
 The ledger is part of trusted checkpoint state and is reset on relation replacement, capacity pruning, death-target clearing and regional branch removal. Metric rows expose settlement counts, sign counts, pending edges and partner differentiation. Current group detection still consumes the resulting thresholded relation table and remains observational; it is not an Epoch 1 controller.
+
+## D1-Y multi-timescale consequence-ledger boundary
+
+`delayed-multichannel-interest-v2` keeps the fixed-slot directed relation table for compatibility while separating evidence production from relation settlement. Material giving and receiving remain in the D1-X short window. Knowledge verification uses a distinct long window and learning rate.
+
+Transferred-copy attribution follows this path:
+
+```text
+knowledge transfer commit
+    -> copy stores stable source_subject_id
+    -> receiver later performs a matching action
+    -> realized five-dimensional outcome becomes available
+    -> compare prior transferred prediction with realized outcome
+    -> emit signed quality + confidence evidence + verification delay
+    -> map stable source identity to a valid relation target
+    -> settle the knowledge channel on its own window
+```
+
+Prediction error is normalized by the existing per-outcome policy scales. Signed quality remains in `[-1, 1]`; evidence weight is the copy confidence before verification; delay is measured from copy creation to verification. The knowledge channel moves partner value toward a bounded quality target, independently of material settlement.
+
+`KnowledgeVerificationCreditAudit` is a transient, checkpointed audit boundary between the knowledge system and the social relation system. `runtime/interest_feedback.py` owns identity mapping and refuses to attach credit to a recycled entity row. Missing living sources are counted as orphaned evidence.
+
+This design does not yet provide historical relation storage. The next architectural boundary must key durable partner memory by stable subject identity while allowing a separate live-entity index for action targeting. It must define death retention, inheritance, capacity eviction and regional-branch semantics before orphaned evidence can affect later relations.

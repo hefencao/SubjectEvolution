@@ -19,10 +19,12 @@ from .types import (
     ACQUISITION_PRIVATE_EXPERIENCE, ACQUISITION_SEED, ACQUISITION_TRANSFER,
     KnowledgeObservationPlan, KnowledgeOutcomePlan, KnowledgeStepStats,
     KnowledgeTransferCommitAudit, KnowledgeTransferPlan,
+    KnowledgeVerificationCreditAudit,
     OUTCOME_ENERGY, OUTCOME_INFORMATION, OUTCOME_INTEGRITY, OUTCOME_MATERIAL,
     OUTCOME_REPRODUCTION_OPPORTUNITY, OUTCOME_STATUS_FAILED,
     OUTCOME_STATUS_PARTIAL, OUTCOME_STATUS_SUCCESS, OUTCOME_WIDTH, _readonly,
 )
+from .verification_credit import transferred_copy_verification_credit
 
 
 from .diagnostics import KnowledgeDiagnosticsMixin
@@ -54,6 +56,7 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
         self.arena = KnowledgeArena()
         self.last_transfer_plan = KnowledgeTransferPlan.empty(0)
         self.last_transfer_commit_audit = KnowledgeTransferCommitAudit.empty(0)
+        self.last_verification_credit_audit = KnowledgeVerificationCreditAudit.empty(0)
         self.last_outcome_plan = KnowledgeOutcomePlan.empty(0)
         self.observation = KnowledgeObservationPlan.empty(0)
         self.totals = KnowledgeStepStats()
@@ -295,6 +298,9 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
             "latent_store": copy.deepcopy(self.latent_store),
             "arena": copy.deepcopy(self.arena),
             "last_transfer_plan": copy.deepcopy(self.last_transfer_plan),
+            "last_verification_credit_audit": copy.deepcopy(
+                self.last_verification_credit_audit
+            ),
             "last_outcome_plan": copy.deepcopy(self.last_outcome_plan),
             "observation": copy.deepcopy(self.observation),
             "totals": copy.deepcopy(self.totals),
@@ -315,6 +321,12 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
         self.last_transfer_plan = copy.deepcopy(state["last_transfer_plan"])
         self.last_transfer_commit_audit = KnowledgeTransferCommitAudit.empty(
             int(self.last_transfer_plan.tick)
+        )
+        self.last_verification_credit_audit = copy.deepcopy(
+            state.get(
+                "last_verification_credit_audit",
+                KnowledgeVerificationCreditAudit.empty(int(self.last_transfer_plan.tick)),
+            )
         )
         self.last_outcome_plan = copy.deepcopy(state["last_outcome_plan"])
         self.observation = copy.deepcopy(state["observation"])
@@ -344,6 +356,9 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
         result.last_transfer_plan = copy.deepcopy(self.last_transfer_plan)
         result.last_transfer_commit_audit = copy.deepcopy(
             self.last_transfer_commit_audit
+        )
+        result.last_verification_credit_audit = copy.deepcopy(
+            self.last_verification_credit_audit
         )
         result.last_outcome_plan = copy.deepcopy(self.last_outcome_plan)
         result.observation = copy.deepcopy(self.observation)
@@ -1116,6 +1131,9 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
             ),
         )
         self.last_outcome_plan = plan
+        self.last_verification_credit_audit = KnowledgeVerificationCreditAudit.empty(
+            int(plan.tick)
+        )
         if not self.kcfg.enabled or not self.kcfg.learning_enabled or plan.size == 0:
             return stats
         plan.validate(alive.size)
@@ -1188,6 +1206,14 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                 }
             )
 
+        credit_receivers: list[int] = []
+        credit_receiver_subjects: list[int] = []
+        credit_sources: list[int] = []
+        credit_quality: list[float] = []
+        credit_evidence: list[float] = []
+        credit_delays: list[int] = []
+        scales = np.asarray(self.kcfg.policy_outcome_scales, dtype=np.float64)
+
         canonical = np.lexsort((plan.entity_ids, plan.holder_subject_ids))
         verification_cost = float(self.kcfg.verification_energy_cost)
         for plan_row in canonical:
@@ -1217,6 +1243,25 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                     sample_before = int(self.arena.sample_count[copy_row])
                     confidence_before = float(self.arena.confidence[copy_row])
                     mean_before = self.arena.outcome_mean[copy_row].copy()
+                    if int(self.arena.acquisition_kind[copy_row]) == ACQUISITION_TRANSFER:
+                        source_subject = int(self.arena.source_subject_id[copy_row])
+                        if source_subject > 0 and source_subject != holder:
+                            signed_quality, evidence, delay = (
+                                transferred_copy_verification_credit(
+                                    outcome=outcome,
+                                    prior_mean=mean_before,
+                                    outcome_scales=scales,
+                                    prior_confidence=confidence_before,
+                                    created_tick=int(self.arena.created_tick[copy_row]),
+                                    verification_tick=int(plan.tick),
+                                )
+                            )
+                            credit_receivers.append(carrier)
+                            credit_receiver_subjects.append(holder)
+                            credit_sources.append(source_subject)
+                            credit_quality.append(signed_quality)
+                            credit_evidence.append(evidence)
+                            credit_delays.append(delay)
                     next_sample = sample_before + 1
                     delta = outcome - mean_before
                     mean_after = mean_before + delta / np.float32(next_sample)
@@ -1347,6 +1392,17 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
                 confidence_before=0.0,
             )
 
+        self.last_verification_credit_audit = KnowledgeVerificationCreditAudit(
+            tick=int(plan.tick),
+            receiver_entity_indices=np.asarray(credit_receivers, dtype=np.int32),
+            receiver_subject_ids=np.asarray(credit_receiver_subjects, dtype=np.uint64),
+            source_subject_ids=np.asarray(credit_sources, dtype=np.uint64),
+            signed_quality=np.asarray(credit_quality, dtype=np.float32),
+            evidence=np.asarray(credit_evidence, dtype=np.float32),
+            delay_ticks=np.asarray(credit_delays, dtype=np.uint32),
+        )
+        self.last_verification_credit_audit.validate(alive.size)
+
         if self.latent_store is not None:
             if latent_catalog_builder is None:
                 self.latent_store.ensure_catalog(self.catalog)
@@ -1439,13 +1495,5 @@ class KnowledgeSystem(KnowledgeLoggingMixin, KnowledgeDiagnosticsMixin):
             fertility=fertility,
             reproduction_threshold=reproduction_threshold,
         )
-
-
-
-
-
-
-
-
 
 __all__ = ["KnowledgeSystem"]

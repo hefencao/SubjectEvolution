@@ -306,3 +306,13 @@ information interface.
 - A relation semantics debug may verify settlement and differentiation, but cannot qualify Epoch 1 without independent long-horizon persistence, predictive controls and shared-checkpoint neutralization.
 - Later information, protection and conflict consequence ledgers must remain separately observable before any combined utility rule is introduced.
 - Current group labels may observe the relation network but cannot feed bonuses, conflict identity or rule enforcement back into it.
+
+## D1-Y multi-channel interest governance
+
+- The D1-X material return ratio is retained only as one short-horizon material channel. It must never be described as complete partner interest.
+- Epoch 0 must implement physically available non-material consequence channels when they are prerequisites for later emergence; epoch labels do not justify postponing necessary causal interfaces.
+- Knowledge credit requires a transferred copy, a stable source identity, later receiver-side verification against a realized outcome, explicit delay and evidence weight.
+- Verified prediction quality is observational information value. Claims of causal use or downstream benefit require shared-checkpoint neutralization of copy availability or policy access while preserving world state and paid costs.
+- Material and knowledge ledgers settle independently. Protection, conflict assistance and opportunity cost must be added as separate auditable channels rather than folded into either existing channel.
+- Evidence whose source entity has died must not be attached to a recycled entity row. Until historical subject identity is implemented, such evidence remains orphaned and cannot update a living partner relation.
+- D1-Y remains a single-seed semantics debug. No Epoch 1 entry, formal relation panel, group rule, gene audit or subjecthood claim is authorized.

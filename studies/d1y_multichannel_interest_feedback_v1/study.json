@@ -1,0 +1,21 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1y_multichannel_interest_feedback_v1",
+  "title": "D1-Y multi-timescale material and knowledge interest feedback",
+  "status": "epoch-1-prerequisite-multichannel-semantics-debug",
+  "scientific_stage": "implement-non-material-interest-before-entity-subject-epoch",
+  "predecessor": {
+    "study_id": "d1x_interest_feedback_network_v1",
+    "material_feedback_semantics_ready": true,
+    "population_debug_ready": false,
+    "epoch_1_ready": false
+  },
+  "authorization": {
+    "single_seed_multichannel_semantics_debug": true,
+    "epoch_1_entry": false,
+    "group_rule_implementation": false,
+    "formal_multi_seed_panel": false,
+    "gene_audit": false,
+    "subjecthood_claim": false
+  }
+}

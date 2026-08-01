@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.106.0
+
+- Adds opt-in `delayed-multichannel-interest-v2`, retaining D1-X material return as one short-horizon channel rather than complete partner value.
+- Attributes transferred knowledge to its stable source only after later receiver-side verification against a realized five-dimensional outcome.
+- Records signed prediction quality, confidence-weighted evidence and verification delay, and settles knowledge on an independent long window and learning rate.
+- Keeps material and knowledge evidence separately auditable; verified information quality is explicitly not yet causal information use or downstream fitness benefit.
+- Adds checkpoint-compatible knowledge-interest ledgers, orphaned-source accounting, D1-Y configuration/debug tools, workflow and tests.
+- Freezes debug seed 106011: 234 knowledge evidence events and six knowledge settlements occur, but population falls below the debug floor and 110 events expose the missing historical-subject relation store.
+- Preserves legacy relation semantics and protocol identity when the new schema is disabled; no Epoch 1, group-rule, gene, selection or subjecthood authorization is granted.
+
 ## 0.105.0
 
 - Adds opt-in `delayed-material-interest-v1` relationship updates and keeps exact legacy fixed SHARE trust semantics by default.

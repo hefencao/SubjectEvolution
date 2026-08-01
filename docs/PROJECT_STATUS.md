@@ -1,44 +1,41 @@
 # SE project status
 
-Version: **0.105.0**
+Version: **0.106.0**
 
 ## Current scientific task
 
-D1-X replaces fixed SHARE-success/failure trust increments with an opt-in delayed ledger of each entity's realized material giving, receiving and observed partner return rate. In debug seed 105011, 328 delayed settlements produced 89 live directed relation edges and measurable partner differentiation without any fixed trust bonus or penalty. The same run fell to 55 living entities and formed no threshold group, so it validates relationship semantics only; it does not authorize a formal long-horizon panel. Protection, information, conflict assistance, prediction beyond proximity/kinship, independent multi-seed persistence and shared-checkpoint neutralization remain unresolved.
+D1-Y extends the D1-X delayed material-interest relation with an independently settled long-horizon knowledge channel. A transferred knowledge copy is attributed to its source only when the receiver later verifies the copy against a realized five-dimensional outcome. Prediction quality, confidence-weighted evidence and verification delay remain separately observable; they are not collapsed into the short-window material-return ratio.
 
-D1-W epoch governance remains active. No supplied checkpoint enters Epoch 1, and current group labels remain observational thresholded relation components rather than subjects or rule-bearing groups.
+Debug seed 106011 completed tick 900 with 88 living entities after a minimum of 60. It produced 456 material settlements, 58 committed knowledge transfers, 27 later-verified transferred copies, 234 source-attributed knowledge evidence events and six knowledge-window settlements. Mean verification delay was about 142.7 ticks. The run ended with 168 live directed relation edges and measurable partner differentiation. It also produced 110 orphaned knowledge events because the source subject was no longer represented by a living entity row, exposing the need for stable historical partner identity.
+
+The run validates multi-channel and multi-timescale relationship semantics only. Its population falls below the debug floor of 64, information quality is not yet causal information use or downstream benefit, and no Epoch 1 base is authorized.
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current development era. Physical carriers, structured environments, exchange, communication and observational groups may be studied, but no entity or group subjecthood is inferred.
-- `epoch-1-entity-subject-prototype`: begins only after relations are formed by delayed realized interest feedback rather than fixed SHARE trust deltas, persist across generations and seeds, and survive cost-preserving neutralization.
+- `epoch-0-ecological-carriers`: current era. Physical carriers, structured environments, exchange, communication and all prerequisite interest channels may be implemented, but no entity or group subjecthood is inferred.
+- `epoch-1-entity-subject-prototype`: begins only after multi-channel realized interest feedback forms predictive relation networks that persist across generations and independent seeds and survive cost-preserving neutralization.
 - `epoch-2-group-subject-prototype`: begins only after group-owned rules measurably redirect member actions, persist through turnover and change group continuation under shared-checkpoint neutralization.
 
 No supplied checkpoint currently passes either later-epoch contract.
 
 ## Epoch bases and regional branches
 
-`se-epoch freeze-base` freezes a qualified complete checkpoint together with the qualification report, epoch registry and SHA-256 lock. Later work may branch from that base instead of repeating the entire evolutionary prehistory.
-
-`regional-active-set-branch-v1` selects a normalized spatial region, preserves the complete environment coordinate frame and fields, and removes outside entities, cross-boundary relations, delayed cross-boundary direct messages and pending field emissions. It reduces the active entity scale while keeping environmental phase and global field provenance. It is an explicit intervention, not exact full-world continuation and not an unbiased miniature world.
-
-True physical-grid cropping remains blocked until source-coordinate offsets, halo/open-boundary material and information flux, and crop relaxation rules are versioned.
+`se-epoch freeze-base` freezes a qualified complete checkpoint together with its matching qualification report, epoch registry and SHA-256 lock. `regional-active-set-branch-v1` can then reduce active entity scale while preserving the complete environmental coordinate frame and field phase. It remains an explicit intervention, not exact full-world continuation.
 
 ## Authorization
 
 Authorized:
 
-- defining and validating epoch contracts;
-- freezing a checkpoint only after an explicit matching qualification passes;
-- building regional active-set branches for local mechanism development;
-- comparing branch behavior with its full-world epoch base while respecting the intervention boundary;
-- debugging delayed material-interest relationship semantics without claiming Epoch 1;
-- extending explicit consequence ledgers before predictive and neutralization tests.
+- continuing role-neutral implementation of material, information, protection, conflict-assistance and opportunity-cost consequence channels during Epoch 0;
+- debugging separately observable short- and long-horizon partner evidence;
+- replacing row-addressed relation credit with stable historical subject identity;
+- testing whether relation state predicts later choices after controlling distance, kinship and encounter frequency;
+- freezing an epoch base only after its registered qualification contract passes.
 
 Not authorized:
 
-- declaring epoch 1 or epoch 2 reached from D1-X material-return debug alone;
-- treating current trust-threshold groups as emergent social subjects;
-- using regional branches as formal evidence that full-world emergence persists;
-- physical-grid cropping without boundary-flux and source-coordinate contracts;
-- gene, selection, adaptation, role or institution claims.
+- declaring Epoch 1 from the D1-Y debug run;
+- treating verified prediction quality as proven causal knowledge use or fitness benefit;
+- merging all benefit channels into one hand-tuned scalar at event time;
+- treating current trust-threshold groups as rule-bearing subjects;
+- starting group-rule implementation, gene audit, selection, adaptation or social-role claims from this sample.

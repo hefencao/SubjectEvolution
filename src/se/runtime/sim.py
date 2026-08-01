@@ -104,6 +104,7 @@ from se.evolution.lifecycle import (
 )
 from ..metrics import MetricsWriter
 from .termination import write_run_termination
+from .interest_feedback import commit_knowledge_verification_interest
 from .resource_sensing import (
     add_resource_sensing_operating_cost,
     effective_danger_sensing_radius,
@@ -1858,6 +1859,8 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     else None
                 ),
             )
+            commit_knowledge_verification_interest(
+                self.social, self.knowledge.last_verification_credit_audit, alive=ent.alive, primary_subject_ids=ent.primary_subject_id, tick=self.tick)
             for field_name in KnowledgeStepStats.__dataclass_fields__:
                 setattr(
                     knowledge_stats,
@@ -2487,10 +2490,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             },
             "knowledge": self.knowledge.summary(),
         }
-        (self.output_dir / "scientific_validity.json").write_text(
-            json.dumps(self.scientific_validity(), ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
+        (self.output_dir / "scientific_validity.json").write_text(json.dumps(self.scientific_validity(), ensure_ascii=False, indent=2), encoding="utf-8")
         (self.output_dir / "run_metadata.json").write_text(
             json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8"
         )

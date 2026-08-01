@@ -1,0 +1,65 @@
+schema = "se-study-workflow-v1"
+study_id = "d1y_multichannel_interest_feedback_v1"
+title = "D1-Y multi-timescale material and knowledge interest feedback"
+
+[parameters.probe_seed]
+type = "int"
+default = 106011
+description = "Single multichannel relation-semantics debug seed; never Epoch 1 evidence."
+
+[parameters.template]
+type = "path"
+default = "studies/d1y_multichannel_interest_feedback_v1/frozen/d1x/source_config.json"
+description = "Frozen D1-X generated configuration from the supplied debug result."
+
+[parameters.generated_config]
+type = "path"
+default = "state/studies/d1y_multichannel_interest_feedback_v1/multichannel_interest.json"
+description = "Generated D1-Y relation configuration."
+
+[parameters.runtime_root]
+type = "path"
+default = "runs/base/d1y_multichannel_interest_feedback_v1/probe"
+description = "Single debug runtime root."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1y_multichannel_interest_feedback_v1"
+description = "D1-Y debug analysis root."
+
+[parameters.output]
+type = "result-path"
+default = "d1y_multichannel_interest_feedback_v1_debug_results.zip"
+description = "External debug result bundle."
+
+[parameters.include_checkpoints]
+type = "bool"
+default = false
+description = "Include checkpoints only for explicit replay."
+
+[steps.evidence-audit]
+description = "Verify the supplied D1-X source, manifest and failure-boundary evidence."
+command = ["python", "scripts/verify_frozen_files.py", "--lock", "{study_dir}/frozen/EVIDENCE_LOCK.json", "--output", "{analysis_root}/evidence_audit.json"]
+
+[steps.prepare-config]
+description = "Add a long-horizon verified-knowledge channel without changing genes or environment."
+command = ["se-multichannel-interest-config", "--template", "{template}", "--output", "{generated_config}", "--ticks", "900", "--material-window-ticks", "120", "--material-learning-rate", "0.08", "--minimum-material", "0.5", "--knowledge-window-ticks", "360", "--knowledge-learning-rate", "0.04", "--minimum-knowledge-evidence", "0.5"]
+requires_json = [{ path = "{analysis_root}/evidence_audit.json", field = "passed", equals = true }]
+
+[steps.relation-probe]
+description = "Run one CPU multichannel semantics probe; not an Epoch 1 qualification."
+command = ["se-multi", "--config", "{generated_config}", "--seeds", "{probe_seed}", "--output", "{runtime_root}", "--backend", "cpu", "--until-tick", "900", "--no-checkpoints", "--skip-post-run-audits"]
+requires_json = [
+  { path = "{generated_config}.manifest.json", field = "authorization.epoch_1_entry", equals = false },
+  { path = "{generated_config}.manifest.json", field = "fixed_share_trust_enabled", equals = false }
+]
+
+[steps.relation-summary]
+description = "Verify material and delayed knowledge evidence while retaining the Epoch 1 boundary."
+command = ["se-multichannel-interest-debug", "--source-root", "{runtime_root}", "--output", "{analysis_root}/multichannel_interest.json"]
+
+[steps.pack-results]
+description = "Package frozen D1-X evidence, generated config, runtime and debug summary externally."
+requires_json = [{ path = "{analysis_root}/multichannel_interest.json", field = "semantics_ready", equals = true }]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "{analysis_root}", "--runtime-root", "{runtime_root}", "--required-file", "{generated_config}", "--required-file", "{generated_config}.manifest.json", "--output", "{output}"]
+boolean_flags = { include_checkpoints = "--include-checkpoints" }
