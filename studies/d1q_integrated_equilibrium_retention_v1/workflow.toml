@@ -53,10 +53,6 @@ type = "bool"
 default = false
 description = "Include checkpoints only when explicit replay is required."
 
-[steps.evidence-audit]
-description = "Reclassify D1-P relative contraction and expose expansion/lineage confounds without per-gene experiments."
-command = ["se-integrated-retention-audit", "--gene-persistence", "{study_dir}/frozen/d1p/gene_persistence.json", "--long-run-analysis", "{study_dir}/frozen/d1p/long_run_analysis.json", "--health-report", "{study_dir}/frozen/d1p/panel_health.json", "--config", "{template}", "--output", "{analysis_root}/d1p_retention_audit_v2.json"]
-
 [steps.prepare-config]
 description = "Lower only the shared four-channel external renewal vector; preserve all 704 inherited coordinates and environment geometry."
 command = ["se-equilibrium-source-config", "--template", "{template}", "--output", "{generated_config}"]
@@ -92,17 +88,7 @@ description = "Require all independent panel seeds to reach the preregistered se
 command = ["se-equilibrium-audit", "--source-root", "{panel_root}", "--required-seed-count", "3", "--output", "{analysis_root}/panel_equilibrium.json"]
 requires_json = [{ path = "{analysis_root}/panel_health.json", field = "ready", equals = true }]
 
-[steps.gene-persistence]
-description = "Measure raw per-coordinate checkpoint statistics for the whole inherited genome."
-command = ["se-gene-persistence", "--source-root", "{panel_root}", "--config", "{generated_config}", "--health-report", "{analysis_root}/panel_health.json", "--output", "{analysis_root}/gene_persistence_v1.json"]
-requires_json = [{ path = "{analysis_root}/panel_equilibrium.json", field = "ready", equals = true }]
-
-[steps.integrated-retention]
-description = "Classify cross-seed relative retention only after equilibrium qualification; never generate one experiment per coordinate."
-command = ["se-integrated-retention-audit", "--gene-persistence", "{analysis_root}/gene_persistence_v1.json", "--long-run-analysis", "{panel_root}/long_run_analysis.json", "--health-report", "{analysis_root}/panel_health.json", "--equilibrium-report", "{analysis_root}/panel_equilibrium.json", "--config", "{generated_config}", "--output", "{analysis_root}/integrated_retention.json"]
-requires_json = [{ path = "{analysis_root}/panel_equilibrium.json", field = "ready", equals = true }]
-
 [steps.pack-results]
-description = "Package the study definition, actual config, health/equilibrium evidence and whole-genome retention reports externally."
+description = "Package the retired study definition, actual config and health/equilibrium failure evidence externally; no genetic-retention step is declared."
 command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "{analysis_root}", "--runtime-root", "runs/base/d1q_integrated_equilibrium_retention_v1", "--required-file", "{generated_config}", "--required-file", "{generated_config}.manifest.json", "--output", "{output}"]
 boolean_flags = { include_checkpoints = "--include-checkpoints" }

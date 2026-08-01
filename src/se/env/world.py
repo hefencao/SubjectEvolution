@@ -13,6 +13,7 @@ from .diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
     PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
     MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA,
+    STRUCTURED_PROVINCE_ENVIRONMENT_SCHEMA,
     diffuse_resource_fields,
     normalized_grid as diversity_normalized_grid,
     orthogonal_base_pattern,
@@ -53,6 +54,7 @@ class Environment:
             ORTHOGONAL_ENVIRONMENT_SCHEMA,
             PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
             MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA,
+            STRUCTURED_PROVINCE_ENVIRONMENT_SCHEMA,
         }:
             xnorm, ynorm = self._normalized_grid(xx, yy)
             base_pattern = orthogonal_base_pattern(
@@ -462,6 +464,7 @@ class Environment:
             ORTHOGONAL_ENVIRONMENT_SCHEMA,
             PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
             MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA,
+            STRUCTURED_PROVINCE_ENVIRONMENT_SCHEMA,
         }:
             resources = diffuse_resource_fields(
                 resources, self.cfg.environment.resource_diffusion_rates, xp=np

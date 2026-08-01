@@ -1,5 +1,30 @@
 # Scientific issues
 
+## D1-R environment plurality and social-structure boundary
+
+The reported D1-Q formal panel has no passing seed. Its bounded pilot therefore
+cannot support coordinate-retention interpretation, and the former active
+genetic-retention workflow is retired. The immediate scientific problem is not
+which gene thins, but whether the world contains enough spatially separated
+source, processing and exchange constraints to produce several viable groups
+with persistent internal functional dependence.
+
+D1-R adds four source provinces, spatially displaced processing provinces,
+complementary multi-resource recipes and bounded raw-resource sharing without
+changing any inherited coordinate or assigning roles. The first exploratory
+probe shows strong physical dimensionality, viable turnover, real internal raw
+exchange and one persistent division-candidate group lineage. It does not meet
+the required two persistent structured groups per seed and remains parameter
+debug evidence only.
+
+Open questions are whether the same unchanged environment produces at least two
+persistent division-candidate groups in each of three independent seeds, whether
+those groups remain viable across multiple environmental cycles, and whether
+exchange dependence is materially nontrivial rather than incidental. Until that
+formal threshold passes, no gene-retention, adaptation, ecological-role or
+subjecthood analysis is eligible.
+
+
 ## D1-Q cycle-aware equilibrium boundary
 
 D1-P provides valid execution and turnover evidence but not a settled sample: every formal seed ends at its population maximum and founder-lineage breadth differs materially. Relative retention exposes six strong and 66 moderate contraction signals, yet expansion and lineage concentration confound whether those signals reflect stable ecological filtering, transient founder sampling, or continuous-weight concentration. No coordinate is currently authorized for adjustment.

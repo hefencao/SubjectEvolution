@@ -1,0 +1,123 @@
+schema = "se-study-workflow-v1"
+study_id = "d1r_structured_environment_division_v1"
+title = "D1-R structured resource network and within-group division"
+
+[parameters.backend]
+type = "choice"
+default = "auto"
+choices = ["auto", "cpu", "gpu"]
+description = "Execution backend."
+
+[parameters.probe_seed]
+type = "int"
+default = 97011
+description = "Exploratory environment-debugging seed; never formal evidence."
+
+[parameters.panel_seeds]
+type = "csv-int"
+default = "97101,97102,97103"
+description = "Independent formal structured-environment seeds."
+
+[parameters.template]
+type = "path"
+default = "studies/d1r_structured_environment_division_v1/frozen/base/source_config.json"
+description = "D1-Q subject baseline used only as a mechanism/config source, not inherited qualification."
+
+[parameters.generated_config]
+type = "path"
+default = "state/studies/d1r_structured_environment_division_v1/structured_environment.json"
+description = "Generated role-neutral structured environment config."
+
+[parameters.regeneration]
+type = "float"
+default = 0.015
+minimum = 0.0001
+maximum = 0.1
+description = "Uniform four-channel external regeneration used for environment debugging."
+
+[parameters.processing_amplitude]
+type = "float"
+default = 0.65
+minimum = 0.05
+maximum = 0.95
+description = "Shared spatial processing support contrast."
+
+[parameters.resource_share_amount]
+type = "float"
+default = 0.12
+minimum = 0.001
+maximum = 1.0
+description = "Maximum role-neutral raw-resource transfer per successful share."
+
+[parameters.recipe_rate_scale]
+type = "float"
+default = 1.0
+minimum = 0.1
+maximum = 5.0
+description = "Uniform scale for all complementary processing recipes."
+
+[parameters.trust_threshold]
+type = "float"
+default = 0.04
+minimum = 0.001
+maximum = 1.0
+description = "Exchange-supported relation threshold used only by the existing neutral group detector."
+
+[parameters.relation_decay]
+type = "float"
+default = 0.0005
+minimum = 0.0
+maximum = 0.2
+description = "Uniform decay of exchange-supported relations."
+
+[parameters.probe_root]
+type = "path"
+default = "runs/base/d1r_structured_environment_division_v1/probe"
+description = "Exploratory parameter-debugging runtime root."
+
+[parameters.panel_root]
+type = "path"
+default = "runs/base/d1r_structured_environment_division_v1/panel"
+description = "Formal multi-seed environment-structure runtime root."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1r_structured_environment_division_v1"
+description = "Environment maturity analysis root."
+
+[parameters.output]
+type = "result-path"
+default = "d1r_structured_environment_division_v1_results.zip"
+description = "External result bundle."
+
+[parameters.include_checkpoints]
+type = "bool"
+default = false
+description = "Include checkpoints only when explicit replay is required."
+
+[steps.prepare-config]
+description = "Create source and processing provinces, complementary recipes and raw exchange without changing inherited coordinates or assigning roles."
+command = ["se-structured-environment-config", "--template", "{template}", "--output", "{generated_config}", "--regeneration", "{regeneration}", "--processing-amplitude", "{processing_amplitude}", "--resource-share-amount", "{resource_share_amount}", "--recipe-rate-scale", "{recipe_rate_scale}", "--trust-threshold", "{trust_threshold}", "--relation-decay", "{relation_decay}", "--ticks", "1800"]
+
+[steps.environment-probe]
+description = "Run one short exploratory seed only to debug shared environment, processing and exchange parameters; it cannot qualify the environment or any gene."
+command = ["se-multi", "--config", "{generated_config}", "--seeds", "{probe_seed}", "--output", "{probe_root}", "--backend", "{backend}", "--until-tick", "600", "--no-checkpoints", "--skip-post-run-audits"]
+requires_json = [{ path = "{generated_config}.manifest.json", field = "schema", equals = "structured-ecological-environment-config-v1" }]
+
+[steps.probe-summary]
+description = "Summarize the exploratory probe as parameter-debug evidence only; never authorize a gene or environment claim."
+command = ["se-environment-structure-summary", "--source-root", "{probe_root}", "--mode", "exploratory", "--required-seed-count", "1", "--output", "{analysis_root}/probe_structure.json"]
+
+[steps.structured-panel]
+description = "Run three independent seeds of the unchanged complete subject in the structured environment; no gene audit is attached."
+command = ["se-multi", "--config", "{generated_config}", "--seeds", "{panel_seeds}", "--output", "{panel_root}", "--backend", "{backend}", "--until-tick", "1800", "--no-checkpoints", "--skip-post-run-audits"]
+requires_json = [{ path = "{generated_config}.manifest.json", field = "authorization.formal_multi_seed_structure_panel_authorized", equals = true }]
+
+[steps.structure-summary]
+description = "Require replicated viable population, physical heterogeneity, internal exchange and at least two persistent division-candidate groups in every seed."
+command = ["se-environment-structure-summary", "--source-root", "{panel_root}", "--mode", "formal", "--required-seed-count", "3", "--output", "{analysis_root}/formal_structure.json"]
+
+[steps.pack-results]
+description = "Package the study, actual config, exploratory report and formal environment-structure evidence externally; no gene audit is included."
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "{analysis_root}", "--runtime-root", "runs/base/d1r_structured_environment_division_v1", "--required-file", "{generated_config}", "--required-file", "{generated_config}.manifest.json", "--output", "{output}"]
+boolean_flags = { include_checkpoints = "--include-checkpoints" }

@@ -1,0 +1,16 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1r_structured_environment_division_v1",
+  "title": "D1-R structured resource network and within-group division",
+  "status": "active-environment-construction",
+  "scientific_stage": "environment-plurality-before-genetic-audit",
+  "formal_seed_count": 3,
+  "formal_seeds": [97101, 97102, 97103],
+  "authorization": {
+    "exploratory_single_seed_environment_debugging": true,
+    "formal_multi_seed_environment_structure_panel": true,
+    "single_run_gene_audit": false,
+    "formal_gene_audit": false,
+    "selection_or_adaptation_claim": false
+  }
+}

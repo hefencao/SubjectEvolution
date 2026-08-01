@@ -1,0 +1,398 @@
+{
+  "schema": "structured-ecological-environment-config-v1",
+  "source": "studies/d1r_structured_environment_division_v1/frozen/base/source_config.json",
+  "output": "state/studies/d1r_structured_environment_division_v1/structured_environment.json",
+  "source_file_sha256": "06fab839934b0428bd0dac191d5a6ec37557c91c2c70475abeb550f248b52de0",
+  "output_file_sha256": "77208a82874ae48cfcf2dec7ee6e28b8ba968bb0242591d65656400602357932",
+  "source_canonical_sha256": "a36980a1425aef4b12902c4d438a1c73d57520f09344b1a7fe5c79234b578ed3",
+  "output_canonical_sha256": "8d490a36b9c713343a5eb7241241380a9e235239cfd54c569215c079ad46e252",
+  "changed_paths": [
+    "environment.resource_effect_matrix",
+    "environment.resource_processing_province_offsets",
+    "environment.resource_processing_schema",
+    "environment.resource_processing_support_amplitude",
+    "environment.resource_province_centers",
+    "environment.resource_province_contrasts",
+    "environment.resource_province_radii",
+    "environment.resource_regeneration",
+    "environment.schema",
+    "knowledge.log_outcome_updates",
+    "knowledge.log_policy_contributions",
+    "knowledge.log_routing_costs",
+    "knowledge.log_sparse_selection_events",
+    "knowledge.log_transfer_events",
+    "knowledge.log_working_memory_updates",
+    "physiology.resource_conversion_network_schema",
+    "physiology.resource_processing_energy_per_unit",
+    "physiology.resource_recipe_effect_matrix",
+    "physiology.resource_recipe_rate_per_tick",
+    "physiology.resource_recipe_stoichiometry",
+    "physiology.schema",
+    "run.checkpoint_period",
+    "run.checkpoint_ticks",
+    "run.evolution_evaluation_period",
+    "run.full_checkpoint_enabled",
+    "run.group_function_diagnostics_enabled",
+    "run.group_function_diagnostics_schema",
+    "run.group_function_window_ticks",
+    "run.metrics_period",
+    "run.ticks",
+    "social.group_update_max_period",
+    "social.group_update_min_period",
+    "social.relation_decay",
+    "social.resource_share_amount",
+    "social.resource_share_reserve_fraction",
+    "social.share_schema",
+    "social.trust_group_threshold"
+  ],
+  "changes": {
+    "run.ticks": {
+      "before": 480,
+      "after": 1800
+    },
+    "run.metrics_period": {
+      "before": 30,
+      "after": 60
+    },
+    "run.checkpoint_period": {
+      "before": 120,
+      "after": 600
+    },
+    "run.checkpoint_ticks": {
+      "before": [
+        480
+      ],
+      "after": []
+    },
+    "run.full_checkpoint_enabled": {
+      "before": true,
+      "after": false
+    },
+    "run.evolution_evaluation_period": {
+      "before": 30,
+      "after": 120
+    },
+    "run.group_function_diagnostics_enabled": {
+      "before": null,
+      "after": true
+    },
+    "run.group_function_diagnostics_schema": {
+      "before": null,
+      "after": "group-functional-division-diagnostics-v1"
+    },
+    "run.group_function_window_ticks": {
+      "before": null,
+      "after": 120
+    },
+    "knowledge.log_transfer_events": {
+      "before": true,
+      "after": false
+    },
+    "knowledge.log_outcome_updates": {
+      "before": true,
+      "after": false
+    },
+    "knowledge.log_policy_contributions": {
+      "before": true,
+      "after": false
+    },
+    "knowledge.log_routing_costs": {
+      "before": null,
+      "after": false
+    },
+    "knowledge.log_working_memory_updates": {
+      "before": null,
+      "after": false
+    },
+    "knowledge.log_sparse_selection_events": {
+      "before": null,
+      "after": false
+    },
+    "environment.schema": {
+      "before": "persistent-multiscale-four-resource-renewal-v3",
+      "after": "structured-province-resource-network-v4"
+    },
+    "environment.resource_regeneration": {
+      "before": [
+        0.00675,
+        0.00675,
+        0.00675,
+        0.00675
+      ],
+      "after": [
+        0.015,
+        0.015,
+        0.015,
+        0.015
+      ]
+    },
+    "environment.resource_province_centers": {
+      "before": null,
+      "after": [
+        [
+          0.18,
+          0.18
+        ],
+        [
+          0.82,
+          0.22
+        ],
+        [
+          0.24,
+          0.8
+        ],
+        [
+          0.78,
+          0.76
+        ]
+      ]
+    },
+    "environment.resource_province_radii": {
+      "before": null,
+      "after": [
+        0.16,
+        0.18,
+        0.2,
+        0.17
+      ]
+    },
+    "environment.resource_province_contrasts": {
+      "before": null,
+      "after": [
+        0.85,
+        0.82,
+        0.8,
+        0.84
+      ]
+    },
+    "environment.resource_processing_province_offsets": {
+      "before": null,
+      "after": [
+        [
+          0.28,
+          0.2
+        ],
+        [
+          -0.24,
+          0.26
+        ],
+        [
+          0.26,
+          -0.22
+        ],
+        [
+          -0.28,
+          -0.24
+        ]
+      ]
+    },
+    "environment.resource_processing_schema": {
+      "before": null,
+      "after": "phase-shifted-channel-processing-support-v1"
+    },
+    "environment.resource_processing_support_amplitude": {
+      "before": null,
+      "after": 0.65
+    },
+    "environment.resource_effect_matrix": {
+      "before": [
+        [
+          0.52,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.03,
+          0.018,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.03,
+          0.24,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.018,
+          0.0,
+          0.24
+        ]
+      ],
+      "after": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    "physiology.schema": {
+      "before": "transport-metabolism-messenger-tissue-resource-v9",
+      "after": "transport-metabolism-messenger-tissue-resource-v11"
+    },
+    "physiology.resource_conversion_network_schema": {
+      "before": null,
+      "after": "paired-complementary-recipes-v1"
+    },
+    "physiology.resource_recipe_stoichiometry": {
+      "before": null,
+      "after": [
+        [
+          1.0,
+          0.7,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.7,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.7
+        ],
+        [
+          0.7,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "physiology.resource_recipe_effect_matrix": {
+      "before": null,
+      "after": [
+        [
+          0.95,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.05,
+          0.03,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.025,
+          0.32,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.025,
+          0.0,
+          0.32
+        ]
+      ]
+    },
+    "physiology.resource_recipe_rate_per_tick": {
+      "before": null,
+      "after": [
+        0.035,
+        0.032,
+        0.03,
+        0.03
+      ]
+    },
+    "physiology.resource_processing_energy_per_unit": {
+      "before": null,
+      "after": [
+        0.006,
+        0.006,
+        0.006,
+        0.006
+      ]
+    },
+    "social.share_schema": {
+      "before": null,
+      "after": "energy-and-raw-resource-need-balanced-v1"
+    },
+    "social.resource_share_amount": {
+      "before": null,
+      "after": 0.12
+    },
+    "social.resource_share_reserve_fraction": {
+      "before": null,
+      "after": 0.25
+    },
+    "social.trust_group_threshold": {
+      "before": 0.12,
+      "after": 0.04
+    },
+    "social.relation_decay": {
+      "before": 0.002,
+      "after": 0.0005
+    },
+    "social.group_update_min_period": {
+      "before": 100,
+      "after": 50
+    },
+    "social.group_update_max_period": {
+      "before": 300,
+      "after": 100
+    }
+  },
+  "genetic_coordinates_changed": 0,
+  "mutation_or_inheritance_changed": false,
+  "maintenance_or_reproduction_changed": false,
+  "role_or_group_label_reward_added": false,
+  "physical_structure": {
+    "resource_province_count": 4,
+    "processing_province_count": 4,
+    "processing_is_spatially_offset": true,
+    "complementary_recipe_count": 4,
+    "minimum_raw_channels_per_recipe": 2,
+    "raw_resource_exchange_enabled": true,
+    "group_function_diagnostics_enabled": true
+  },
+  "evidence_class": "environment-construction-not-qualification",
+  "authorization": {
+    "exploratory_parameter_probe_authorized": true,
+    "formal_multi_seed_structure_panel_authorized": true,
+    "single_run_gene_audit_authorized": false,
+    "formal_gene_audit_authorized": false,
+    "selection_claim_authorized": false
+  },
+  "interpretation_boundary": "This config creates physical opportunities and dependencies for transport, exchange and within-group functional differentiation. It does not preassign roles or prove that structured groups will emerge."
+}

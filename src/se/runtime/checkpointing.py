@@ -102,6 +102,7 @@ from ..metrics import MetricsWriter
 from se.env.local_stress import LocalStressDiagnostics
 from ..event_cohort import EventCohortDiagnostics
 from se.subjects.succession import SubjectStructureDiagnostics
+from se.subjects.division import GroupFunctionDiagnostics
 from se.env.atlas import EnvironmentAtlasDiagnostics
 from se.env.niches import (
     AFFINITY_SCALE,
@@ -178,6 +179,7 @@ class SimulationCheckpointMixin:
             "total_deaths": int(self.total_deaths),
             "total_death_cause_counts": self.total_death_cause_counts.copy(),
             "total_shared_energy": float(self.total_shared_energy),
+            "total_shared_resources": self.total_shared_resources.copy(),
             "total_harvested_resources": self.total_harvested_resources.copy(),
             "total_requested_harvest_resources": self.total_requested_harvest_resources.copy(),
             **(
@@ -277,6 +279,11 @@ class SimulationCheckpointMixin:
             "environment_atlas_diagnostics": (
                 self.environment_atlas_diagnostics.snapshot_state()
                 if self.environment_atlas_diagnostics is not None
+                else None
+            ),
+            "group_function_diagnostics": (
+                self.group_function_diagnostics.snapshot_state()
+                if self.group_function_diagnostics is not None
                 else None
             ),
             "last_active": self.last_active.copy(),
@@ -516,6 +523,9 @@ class SimulationCheckpointMixin:
         if self.total_death_cause_counts.shape != (8,):
             raise ValueError("checkpoint death-cause counts must contain eight buckets")
         self.total_shared_energy = float(state["total_shared_energy"])
+        self.total_shared_resources = np.asarray(
+            state.get("total_shared_resources", np.zeros(4)), dtype=np.float64
+        ).copy()
         self.total_harvested_resources = np.asarray(
             state.get("total_harvested_resources", np.zeros(4)), dtype=np.float64
         ).copy()
@@ -682,6 +692,16 @@ class SimulationCheckpointMixin:
                     scales=self.cfg.run.environment_atlas_scales,
                 )
             self.environment_atlas_diagnostics.restore_state(environment_atlas_state)
+        group_function_state = state.get("group_function_diagnostics")
+        if group_function_state is not None:
+            if self.group_function_diagnostics is None:
+                self.group_function_diagnostics = GroupFunctionDiagnostics(
+                    self.output_dir,
+                    window_ticks=self.cfg.run.group_function_window_ticks,
+                    min_members=self.cfg.social.group_min_members,
+                    schema=self.cfg.run.group_function_diagnostics_schema,
+                )
+            self.group_function_diagnostics.restore_state(group_function_state)
         self.last_active = np.asarray(state["last_active"], dtype=np.int32).copy()
         self.last_cells = np.asarray(state["last_cells"], dtype=np.int32).copy()
         self.last_local_resources = np.asarray(
@@ -949,6 +969,7 @@ class SimulationCheckpointMixin:
         branch.total_deaths = self.total_deaths
         branch.total_death_cause_counts = self.total_death_cause_counts.copy()
         branch.total_shared_energy = self.total_shared_energy
+        branch.total_shared_resources = self.total_shared_resources.copy()
         branch.total_harvested_resources = self.total_harvested_resources.copy()
         branch.total_requested_harvest_resources = (
             self.total_requested_harvest_resources.copy()
@@ -1054,6 +1075,11 @@ class SimulationCheckpointMixin:
         branch.environment_atlas_diagnostics = (
             self.environment_atlas_diagnostics.clone(branch.output_dir)
             if self.environment_atlas_diagnostics is not None
+            else None
+        )
+        branch.group_function_diagnostics = (
+            self.group_function_diagnostics.clone(branch.output_dir)
+            if self.group_function_diagnostics is not None
             else None
         )
         branch.last_birth_allocation = copy.deepcopy(self.last_birth_allocation)

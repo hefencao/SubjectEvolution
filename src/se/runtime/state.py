@@ -126,6 +126,9 @@ class StepStats:
         default_factory=lambda: np.zeros(5, dtype=np.float64)
     )
     shared_energy: float = 0.0
+    shared_resources: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=np.float64)
+    )
     resource_sensing_maintenance_energy: float = 0.0
     resource_sensing_use_energy: float = 0.0
     resource_sensing_development_energy: float = 0.0

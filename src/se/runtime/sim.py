@@ -113,6 +113,7 @@ from .reproduction import (
 from se.env.local_stress import LocalStressDiagnostics
 from ..event_cohort import EventCohortDiagnostics
 from se.subjects.succession import SubjectStructureDiagnostics
+from se.subjects.division import GroupFunctionDiagnostics
 from se.env.atlas import EnvironmentAtlasDiagnostics
 from se.differentiation.physiology import resource_metabolism_enabled
 from se.env.niches import (
@@ -134,7 +135,6 @@ from se.subjects.social import (
     GroupLabelPlanner,
     GroupSummary,
     SocialSystem,
-    build_share_relation_update_plan,
     ungrouped_group_label_plan,
 )
 from se.env.spatial import SpatialIndex
@@ -143,11 +143,13 @@ from .checkpointing import SimulationCheckpointMixin
 from .experiments import SimulationExperimentMixin
 from .reporting import SimulationReportingMixin
 from .state import EntityState, StepStats, _wrap_periodic_float32
+from .share_settlement import commit_shares, finalize_share_capacity
 from .embodied import apply_material_repair, movement_cost_with_power
 from .harvest_commit import commit_harvest_resolution
 from .resource_metabolism import (
     initialize_resource_metabolism_state,
     raw_harvest_room,
+    resource_store_capacity_and_room,
     record_resource_recycling_after_environment_update,
     record_resource_store_death_loss,
     settle_resource_metabolism_before_step,
@@ -324,6 +326,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         # Index by the canonical DeathCause signature code (1..7).
         self.total_death_cause_counts = np.zeros(8, dtype=np.int64)
         self.total_shared_energy = 0.0
+        self.total_shared_resources = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
         self.total_harvested_resources = np.zeros(4, dtype=np.float64)
         self.total_requested_harvest_resources = np.zeros(4, dtype=np.float64)
         initialize_resource_metabolism_state(self)
@@ -395,6 +398,16 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 schema=cfg.run.environment_atlas_diagnostics_schema,
             )
             if cfg.run.environment_atlas_diagnostics_enabled
+            else None
+        )
+        self.group_function_diagnostics = (
+            GroupFunctionDiagnostics(
+                self.output_dir,
+                window_ticks=cfg.run.group_function_window_ticks,
+                min_members=cfg.social.group_min_members,
+                schema=cfg.run.group_function_diagnostics_schema,
+            )
+            if cfg.run.group_function_diagnostics_enabled
             else None
         )
         # Run-local, diagnostic-only endpoint cohort decomposition used by
@@ -583,80 +596,6 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
     @property
     def benefit_unbounded_energy_total(self) -> float:
         return float(self.benefit_flow_energy_total[BenefitFlowKind.UNBOUNDED])
-    def _finalize_share_capacity(
-        self,
-        share: ShareResolution,
-        resolutions: ActionResolutionBatch,
-    ) -> ShareResolution:
-        """Re-arbitrate receiver capacity against post-harvest energy.
-        The intent resolver observes the pre-commit snapshot.  A target may
-        harvest in the same commit phase, so its remaining capacity can be
-        smaller by the time shares are applied.  Re-scaling here preserves the
-        max-energy invariant and updates relation/audit plans to the amount
-        actually committed rather than silently discarding overflow.
-        """
-        if share.rows.size == 0:
-            return share
-        proposed = np.asarray(share.amounts, dtype=np.float32)
-        safe_targets = np.where(share.valid_target, share.target_indices, 0)
-        total_by_target = np.bincount(
-            safe_targets,
-            weights=np.where(share.valid_target, proposed, 0.0),
-            minlength=self.entities.alive.size,
-        ).astype(np.float32)
-        capacity = np.maximum(
-            self.cfg.entities.max_energy - self.entities.energy, 0.0
-        ).astype(np.float32)
-        scale = np.ones(self.entities.alive.size, dtype=np.float32)
-        occupied = total_by_target > 0.0
-        scale[occupied] = np.minimum(
-            1.0, capacity[occupied] / total_by_target[occupied]
-        )
-        actual = proposed * scale[safe_targets]
-        success = share.valid_target & (actual > 1e-8)
-        resolutions.success[share.rows] = success
-        capacity_failed = share.valid_target & (proposed > 1e-8) & ~success
-        resolutions.failure_reason[share.rows[capacity_failed]] = (
-            FailureReason.INSUFFICIENT_CAPACITY
-        )
-        resolutions.resource_delta[share.rows, 0] = -actual
-        relation_updates = build_share_relation_update_plan(
-            self.cfg,
-            share.rows,
-            share.owner_indices,
-            share.target_indices,
-            success,
-            share.valid_target,
-            self.tick,
-        )
-        return ShareResolution(
-            rows=share.rows,
-            owner_indices=share.owner_indices,
-            target_indices=share.target_indices,
-            amounts=actual.astype(np.float32, copy=False),
-            success=success,
-            valid_target=share.valid_target,
-            relation_updates=relation_updates,
-        )
-    def _commit_shares(self, share: ShareResolution) -> float:
-        """Apply one self-contained share plan without consulting last-step state."""
-        if share.rows.size == 0:
-            return 0.0
-        committed = share.success & share.valid_target & (share.amounts > 1e-8)
-        if np.any(committed):
-            owners = share.owner_indices[committed]
-            targets = share.target_indices[committed]
-            amounts = share.amounts[committed]
-            np.add.at(self.entities.energy, owners, -amounts)
-            np.add.at(self.entities.energy, targets, amounts)
-            np.add.at(self.entities.shared_energy_received_total, targets, amounts)
-        if self.social_connections_enabled:
-            self.social.apply_relation_updates(share.relation_updates)
-        # Use the same float64 accounting domain as the exhaustive boundary
-        # partition.  World energy writes above retain their original FP32
-        # semantics; this only makes the diagnostic conservation residual
-        # meaningful over long windows.
-        return float(np.asarray(share.amounts[committed], dtype=np.float64).sum())
     def _record_benefit_boundary(
         self,
         share: ShareResolution,
@@ -1451,6 +1390,31 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 (ent.alive.size, RESOURCE_CHANNELS), dtype=np.float32
             )
             raw_harvest_storage_room[active] = active_raw_harvest_room
+        resource_store_snapshot = None
+        resource_store_capacity_snapshot = None
+        if (
+            cfg.social.share_schema
+            == "energy-and-raw-resource-need-balanced-v1"
+        ):
+            active_capacity, _ = resource_store_capacity_and_room(
+                ent,
+                active,
+                cfg,
+                genotype=ent.genotype[active],
+                gene_start=self.policy.physiology_gene_start(cfg),
+                neutralize_store_allocation=(
+                    self.resource_store_allocation_ablation_enabled
+                ),
+            )
+            resource_store_snapshot = np.asarray(
+                ent.resource_store, dtype=np.float32
+            ).copy()
+            resource_store_capacity_snapshot = np.zeros(
+                (ent.alive.size, RESOURCE_CHANNELS), dtype=np.float32
+            )
+            resource_store_capacity_snapshot[active] = active_capacity.astype(
+                np.float32
+            )
         snapshot = ActionResolutionSnapshot(
             active=active,
             cells=cells,
@@ -1464,6 +1428,8 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             harvest_preference_q=effective_harvest_preference_q,
             raw_harvest_storage_room=raw_harvest_storage_room,
             genotype=ent.genotype,
+            resource_store=resource_store_snapshot,
+            resource_store_capacity=resource_store_capacity_snapshot,
         )
         harvest_allocator = (
             self.gpu_runtime.resolve_harvest
@@ -1556,9 +1522,18 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             effective_resource_affinity_q,
             stats,
         )
-        share = self._finalize_share_capacity(share, resolutions)
-        stats.shared_energy = self._commit_shares(share)
+        share = finalize_share_capacity(
+            cfg=self.cfg, entities=self.entities,
+            physiology_gene_start=self.policy.physiology_gene_start(self.cfg),
+            neutralize_store_allocation=self.resource_store_allocation_ablation_enabled,
+            tick=self.tick, share=share, resolutions=resolutions,
+        )
+        stats.shared_energy, stats.shared_resources = commit_shares(
+            entities=self.entities, social=self.social,
+            social_connections_enabled=self.social_connections_enabled, share=share,
+        )
         self.total_shared_energy += stats.shared_energy
+        self.total_shared_resources += stats.shared_resources
         self._record_benefit_boundary(share, stats)
         signal_plan = SignalEmissionPlan(())
         if signal_rows.size:
@@ -2221,6 +2196,25 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             )
             self.entity_device_version = self.last_entity_device_commit.next_version
             stats.device_commit_seconds = time.perf_counter() - phase_started
+        if self.group_function_diagnostics is not None:
+            metabolism_step = self.last_resource_metabolism_step
+            committed_share = share.success & share.valid_target
+            self.group_function_diagnostics.observe_step(
+                tick=self.tick,
+                stable_ids=ent.entity_id,
+                alive=ent.alive,
+                group_ids=self.social.group_id,
+                action_actor_indices=intents.carrier_index,
+                actions=intents.action,
+                harvest_actor_indices=intents.carrier_index[harvest_rows],
+                harvested=gathered,
+                conversion_actor_indices=metabolism_step.entity_indices,
+                recipe_throughput=metabolism_step.recipe_throughput_by_entity,
+                share_owner_indices=share.owner_indices[committed_share],
+                share_target_indices=share.target_indices[committed_share],
+                shared_energy=share.amounts[committed_share],
+                shared_resources=share.resource_amounts[committed_share],
+            )
         stats.group_count = int(self.last_group_summary.group_ids.size)
         stats.mean_group_size = float(
             self.last_group_summary.counts.mean() if self.last_group_summary.counts.size else 0.0
@@ -2349,6 +2343,8 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 self.subject_structure_diagnostics.close()
             if self.environment_atlas_diagnostics is not None:
                 self.environment_atlas_diagnostics.close()
+            if self.group_function_diagnostics is not None:
+                self.group_function_diagnostics.close()
             if self._trajectory_file is not None:
                 self._trajectory_file.close()
         interventions_metadata: dict[str, object] = {
@@ -2446,6 +2442,11 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             "environment_atlas_diagnostics": (
                 self.environment_atlas_diagnostics.summary()
                 if self.environment_atlas_diagnostics is not None
+                else None
+            ),
+            "group_function_diagnostics": (
+                self.group_function_diagnostics.summary()
+                if self.group_function_diagnostics is not None
                 else None
             ),
             "model_rules": {

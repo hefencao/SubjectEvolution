@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.97.0
+
+- Retires D1-Q genetic-retention execution after the reported formal panel has no passing seed; preserves only historical config/demographic reproduction and packaging steps.
+- Reorders the science program so replicated environment maturity and within-group functional dependence precede any genetic-retention study.
+- Adds `structured-province-resource-network-v4` with four separated periodic source provinces and spatially displaced processing provinces.
+- Adds `paired-complementary-recipes-v1`; every body-producing recipe consumes at least two raw channels and legacy independent conversion remains the disabled-default path.
+- Extends SHARE with bounded raw-resource transfer based only on donor surplus and receiver storage capacity, with closed ledgers, reporting, clone and checkpoint state.
+- Adds observational `group-functional-division-diagnostics-v1`, stable-core requirements and member-overlap group-lineage tracking without feedback or role assignment.
+- Adds `se-structured-environment-config`, `se-environment-structure-summary` and the D1-R declarative workflow with one parameter-debug probe and one three-seed formal structure panel.
+- Freezes exploratory seed 97011 as parameter-debug evidence: viable population, strong physical heterogeneity, real internal exchange and one persistent division-candidate lineage, below the required multiple-structured-group threshold.
+- Adds no inherited coordinate, mutation change, maintenance subsidy, reproduction change, role reward, paired experiment or selection claim.
+- Updates project version to 0.97.0.
+
+
 ## 0.96.0
 
 - Freezes and verifies the D1-P formal result: all three seeds complete tick 1200 with healthy turnover but active endpoint expansion and uneven founder-lineage breadth.

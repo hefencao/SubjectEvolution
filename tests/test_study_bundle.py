@@ -332,8 +332,12 @@ def test_stage_layout_migration_splits_runtime_and_analysis(tmp_path: Path) -> N
 
 
 def test_all_historical_studies_have_explicit_evidence_completeness() -> None:
-    study_paths = sorted((ROOT / "studies").glob("*/study.json"))
-    assert len(study_paths) == 6
+    study_paths = []
+    for study_path in sorted((ROOT / "studies").glob("*/study.json")):
+        study = json.loads(study_path.read_text(encoding="utf-8"))
+        if study.get("schema") == "se-study-bundle-v1":
+            study_paths.append(study_path)
+    assert study_paths
     for study_path in study_paths:
         report = verify_study(study_path, workspace=ROOT)
         assert report["passed"] is True, (study_path, report["failures"])

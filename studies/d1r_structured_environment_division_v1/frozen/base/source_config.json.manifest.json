@@ -1,0 +1,53 @@
+{
+  "schema": "integrated-equilibrium-resource-flux-v1",
+  "source": "studies/d1q_integrated_equilibrium_retention_v1/frozen/d1p/source_config.json",
+  "output": "studies/d1q_integrated_equilibrium_retention_v1/frozen/pilot/source_config.json",
+  "source_file_sha256": "7d4317eb9424d46afef417e9580ae3acbd3ca8ddb0e847860e980aae385afb13",
+  "output_file_sha256": "06fab839934b0428bd0dac191d5a6ec37557c91c2c70475abeb550f248b52de0",
+  "source_canonical_sha256": "e5bc02306b98f781bd366216085adcdc5ae80b0e3aaa5c8afddfeb75d809bf76",
+  "output_canonical_sha256": "a36980a1425aef4b12902c4d438a1c73d57520f09344b1a7fe5c79234b578ed3",
+  "only_changed_path": "environment.resource_regeneration",
+  "before": [
+    0.027,
+    0.027,
+    0.027,
+    0.027
+  ],
+  "after": [
+    0.00675,
+    0.00675,
+    0.00675,
+    0.00675
+  ],
+  "relative_external_renewal": 0.25,
+  "genetic_coordinates_changed": 0,
+  "gene_specific_advantage_added": false,
+  "environment_geometry_changed": false,
+  "resource_effects_changed": false,
+  "maintenance_or_reproduction_changed": false,
+  "parameter_selection_evidence": {
+    "status": "exploratory-not-qualification-evidence",
+    "candidate_seed": 96002,
+    "candidate_tick": 600,
+    "candidate_final_alive": 131,
+    "candidate_final_alive_fraction_to_initial": 1.0234375,
+    "environment_resource_effective_dimensions_final": 2.73237,
+    "environment_resource_mean_abs_correlation_final": 0.31444,
+    "excluded_candidate": {
+      "resource_regeneration": [
+        0.009,
+        0.009,
+        0.009,
+        0.009
+      ],
+      "reason": "A separate independent run remained in a strong short-window rebound and was not accepted as equilibrium evidence."
+    },
+    "note": "Exploratory seeds select only the shared physical flux candidate. Formal qualification requires a new independent seed, a health report, and a cycle-aware equilibrium report."
+  },
+  "authorization": {
+    "formal_equilibrium_source_pilot_authorized": true,
+    "gene_specific_adjustment_authorized": false,
+    "paired_experiment_authorized": false,
+    "selection_claim_authorized": false
+  }
+}

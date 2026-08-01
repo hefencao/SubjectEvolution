@@ -108,6 +108,8 @@ class ActionResolutionSnapshot:
     harvest_preference_q: np.ndarray | None = None
     raw_harvest_storage_room: np.ndarray | None = None
     genotype: np.ndarray | None = None
+    resource_store: np.ndarray | None = None
+    resource_store_capacity: np.ndarray | None = None
 
 
 @dataclass(frozen=True)
@@ -151,6 +153,7 @@ class ShareResolution:
     owner_indices: np.ndarray
     target_indices: np.ndarray
     amounts: np.ndarray
+    resource_amounts: np.ndarray
     success: np.ndarray
     valid_target: np.ndarray
     relation_updates: RelationUpdatePlan
@@ -204,6 +207,7 @@ class DeterministicActionConflictResolver:
                 owner_indices=np.empty(0, dtype=np.int32),
                 target_indices=np.empty(0, dtype=np.int32),
                 amounts=np.empty(0, dtype=np.float32),
+                resource_amounts=np.empty((0, 4), dtype=np.float32),
                 success=np.empty(0, dtype=bool),
                 valid_target=np.empty(0, dtype=bool),
                 relation_updates=empty_relation_update_plan(intents.submit_tick),
@@ -221,26 +225,107 @@ class DeterministicActionConflictResolver:
         safe_targets = safe_targets[order]
         proposed = np.where(
             valid,
-            np.minimum(self.cfg.entities.share_amount, np.maximum(snapshot.energy[owners] - 0.5, 0.0)),
+            np.minimum(
+                self.cfg.entities.share_amount,
+                np.maximum(snapshot.energy[owners] - 0.5, 0.0),
+            ),
             0.0,
         ).astype(np.float32)
         total_by_target = np.bincount(
             safe_targets, weights=proposed, minlength=snapshot.alive.size
         ).astype(np.float32)
-        capacity = np.maximum(self.cfg.entities.max_energy - snapshot.energy, 0.0)
+        capacity = np.maximum(
+            self.cfg.entities.max_energy - snapshot.energy, 0.0
+        )
         scale = np.ones(snapshot.alive.size, dtype=np.float32)
         occupied = total_by_target > 0
-        scale[occupied] = np.minimum(1.0, capacity[occupied] / total_by_target[occupied])
+        scale[occupied] = np.minimum(
+            1.0, capacity[occupied] / total_by_target[occupied]
+        )
         actual = proposed * scale[safe_targets]
-        success = actual > 1e-8
+
+        resource_amounts = np.zeros((rows.size, 4), dtype=np.float32)
+        raw_proposed = np.zeros(rows.size, dtype=np.float32)
+        raw_valid = np.zeros(rows.size, dtype=bool)
+        if (
+            self.cfg.social.share_schema
+            == "energy-and-raw-resource-need-balanced-v1"
+        ):
+            if (
+                snapshot.resource_store is None
+                or snapshot.resource_store_capacity is None
+            ):
+                raise ValueError(
+                    "raw-resource sharing requires store and capacity snapshots"
+                )
+            stores = np.asarray(snapshot.resource_store, dtype=np.float64)
+            store_capacity = np.asarray(
+                snapshot.resource_store_capacity, dtype=np.float64
+            )
+            if stores.shape != store_capacity.shape or stores.shape != (
+                snapshot.alive.size,
+                4,
+            ):
+                raise ValueError(
+                    "resource store snapshots must be shaped [entity_capacity, 4]"
+                )
+            reserve = (
+                float(self.cfg.social.resource_share_reserve_fraction)
+                * store_capacity[owners]
+            )
+            available = np.maximum(stores[owners] - reserve, 0.0)
+            room = np.maximum(
+                store_capacity[safe_targets] - stores[safe_targets], 0.0
+            )
+            candidate = np.where(valid[:, None], np.minimum(available, room), 0.0)
+            selected_channel = np.argmax(candidate, axis=1)
+            selected_candidate = candidate[
+                np.arange(rows.size, dtype=np.int32), selected_channel
+            ]
+            raw_proposed = np.minimum(
+                float(self.cfg.social.resource_share_amount), selected_candidate
+            ).astype(np.float32)
+            raw_valid = valid & (raw_proposed > 1.0e-8)
+            pair_index = safe_targets * 4 + selected_channel
+            total_by_pair = np.bincount(
+                pair_index,
+                weights=np.where(raw_valid, raw_proposed, 0.0),
+                minlength=snapshot.alive.size * 4,
+            ).astype(np.float32)
+            room_flat = np.maximum(
+                store_capacity - stores, 0.0
+            ).astype(np.float32).reshape(-1)
+            pair_scale = np.ones(snapshot.alive.size * 4, dtype=np.float32)
+            raw_occupied = total_by_pair > 0.0
+            pair_scale[raw_occupied] = np.minimum(
+                1.0,
+                room_flat[raw_occupied] / total_by_pair[raw_occupied],
+            )
+            raw_actual = raw_proposed * pair_scale[pair_index]
+            resource_amounts[
+                np.arange(rows.size, dtype=np.int32), selected_channel
+            ] = np.where(raw_valid, raw_actual, 0.0)
+
+        energy_success = actual > 1.0e-8
+        raw_success = np.any(resource_amounts > 1.0e-8, axis=1)
+        success = valid & (energy_success | raw_success)
         resolutions.success[rows] = success
         invalid = ~valid
-        insufficient_resource = valid & (proposed <= 1e-8)
-        insufficient_capacity = valid & (proposed > 1e-8) & ~success
+        no_owner_resource = valid & (proposed <= 1.0e-8) & (raw_proposed <= 1.0e-8)
+        capacity_failed = (
+            valid
+            & ~success
+            & ((proposed > 1.0e-8) | (raw_proposed > 1.0e-8))
+        )
         resolutions.failure_reason[rows[invalid]] = FailureReason.INVALID_TARGET
-        resolutions.failure_reason[rows[insufficient_resource]] = FailureReason.INSUFFICIENT_RESOURCE
-        resolutions.failure_reason[rows[insufficient_capacity]] = FailureReason.INSUFFICIENT_CAPACITY
+        resolutions.failure_reason[rows[no_owner_resource]] = (
+            FailureReason.INSUFFICIENT_RESOURCE
+        )
+        resolutions.failure_reason[rows[capacity_failed]] = (
+            FailureReason.INSUFFICIENT_CAPACITY
+        )
         resolutions.resource_delta[rows, 0] = -actual
+        resolutions.internal_resource_delta[rows] = -resource_amounts
         relation_updates = build_share_relation_update_plan(
             self.cfg,
             rows,
@@ -255,6 +340,7 @@ class DeterministicActionConflictResolver:
             owner_indices=owners.astype(np.int32, copy=False),
             target_indices=targets.astype(np.int32, copy=False),
             amounts=actual.astype(np.float32, copy=False),
+            resource_amounts=resource_amounts.astype(np.float32, copy=False),
             success=success,
             valid_target=valid,
             relation_updates=relation_updates,

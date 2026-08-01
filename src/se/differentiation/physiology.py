@@ -25,6 +25,7 @@ SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-re
 FIXED_BUDGET_RESOURCE_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v8"
 FIXED_BUDGET_RESOURCE_STORAGE_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v9"
 FIXED_BUDGET_RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v10"
+STRUCTURED_RESOURCE_NETWORK_PHYSIOLOGY_SCHEMA = "transport-metabolism-messenger-tissue-resource-v11"
 REGULATORY_PHYSIOLOGY_SCHEMA = CONSERVATIVE_REGULATORY_PHYSIOLOGY_SCHEMA
 REGULATORY_PHYSIOLOGY_SCHEMAS = frozenset(
     {
@@ -37,6 +38,7 @@ REGULATORY_PHYSIOLOGY_SCHEMAS = frozenset(
         FIXED_BUDGET_RESOURCE_PHYSIOLOGY_SCHEMA,
         FIXED_BUDGET_RESOURCE_STORAGE_PHYSIOLOGY_SCHEMA,
         FIXED_BUDGET_RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
+        STRUCTURED_RESOURCE_NETWORK_PHYSIOLOGY_SCHEMA,
     }
 )
 PHYSIOLOGY_GENE_NAMES = (
@@ -104,6 +106,7 @@ def conservative_regulatory_physiology_enabled(cfg: SimulationConfig) -> bool:
             FIXED_BUDGET_RESOURCE_PHYSIOLOGY_SCHEMA,
             FIXED_BUDGET_RESOURCE_STORAGE_PHYSIOLOGY_SCHEMA,
             FIXED_BUDGET_RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
+            STRUCTURED_RESOURCE_NETWORK_PHYSIOLOGY_SCHEMA,
         }
     )
 
@@ -119,6 +122,7 @@ def resource_metabolism_enabled(cfg: SimulationConfig) -> bool:
             FIXED_BUDGET_RESOURCE_PHYSIOLOGY_SCHEMA,
             FIXED_BUDGET_RESOURCE_STORAGE_PHYSIOLOGY_SCHEMA,
             FIXED_BUDGET_RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
+            STRUCTURED_RESOURCE_NETWORK_PHYSIOLOGY_SCHEMA,
         }
     )
 
@@ -133,6 +137,7 @@ def storage_constrained_intake_enabled(cfg: SimulationConfig) -> bool:
             FIXED_BUDGET_RESOURCE_PHYSIOLOGY_SCHEMA,
             FIXED_BUDGET_RESOURCE_STORAGE_PHYSIOLOGY_SCHEMA,
             FIXED_BUDGET_RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
+            STRUCTURED_RESOURCE_NETWORK_PHYSIOLOGY_SCHEMA,
         }
     )
 
@@ -146,6 +151,7 @@ def external_resource_recycling_enabled(cfg: SimulationConfig) -> bool:
             RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
             SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA,
             FIXED_BUDGET_RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
+            STRUCTURED_RESOURCE_NETWORK_PHYSIOLOGY_SCHEMA,
         }
     )
 
@@ -155,7 +161,10 @@ def spatial_processing_enabled(cfg: SimulationConfig) -> bool:
 
     return bool(
         cfg.physiology.enabled
-        and cfg.physiology.schema == SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA
+        and cfg.physiology.schema in {
+            SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA,
+            STRUCTURED_RESOURCE_NETWORK_PHYSIOLOGY_SCHEMA,
+        }
         and cfg.environment.resource_processing_schema
         == "phase-shifted-channel-processing-support-v1"
     )
@@ -171,6 +180,7 @@ def fixed_budget_resource_conversion_enabled(cfg: SimulationConfig) -> bool:
             FIXED_BUDGET_RESOURCE_PHYSIOLOGY_SCHEMA,
             FIXED_BUDGET_RESOURCE_STORAGE_PHYSIOLOGY_SCHEMA,
             FIXED_BUDGET_RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
+            STRUCTURED_RESOURCE_NETWORK_PHYSIOLOGY_SCHEMA,
         }
     )
 
@@ -183,6 +193,7 @@ def fixed_budget_resource_storage_enabled(cfg: SimulationConfig) -> bool:
         and cfg.physiology.schema in {
             FIXED_BUDGET_RESOURCE_STORAGE_PHYSIOLOGY_SCHEMA,
             FIXED_BUDGET_RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA,
+            STRUCTURED_RESOURCE_NETWORK_PHYSIOLOGY_SCHEMA,
         }
     )
 
@@ -440,6 +451,7 @@ __all__ = [
     "CONSERVATIVE_INTAKE_PHYSIOLOGY_SCHEMA",
     "RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA",
     "SPATIAL_PROCESSING_PHYSIOLOGY_SCHEMA",
+    "STRUCTURED_RESOURCE_NETWORK_PHYSIOLOGY_SCHEMA",
     "FIXED_BUDGET_RESOURCE_PHYSIOLOGY_SCHEMA",
     "FIXED_BUDGET_RESOURCE_STORAGE_PHYSIOLOGY_SCHEMA",
     "FIXED_BUDGET_RESOURCE_RECYCLING_PHYSIOLOGY_SCHEMA",

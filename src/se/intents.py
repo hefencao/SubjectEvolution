@@ -47,6 +47,7 @@ class ActionResolutionBatch:
     success: np.ndarray
     failure_reason: np.ndarray
     resource_delta: np.ndarray
+    internal_resource_delta: np.ndarray
     energy_cost: np.ndarray
 
 
@@ -141,6 +142,9 @@ def empty_resolutions(intents: ActionIntentBatch) -> ActionResolutionBatch:
         success=np.ones(intents.intent_id.size, dtype=bool),
         failure_reason=np.full(intents.intent_id.size, FailureReason.NONE, dtype=np.uint8),
         resource_delta=np.zeros((intents.intent_id.size, 4), dtype=np.float32),
+        internal_resource_delta=np.zeros(
+            (intents.intent_id.size, 4), dtype=np.float32
+        ),
         energy_cost=np.zeros(intents.intent_id.size, dtype=np.float32),
     )
 

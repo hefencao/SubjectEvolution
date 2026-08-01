@@ -46,6 +46,7 @@ from se.env.diversity import (
     ORTHOGONAL_ENVIRONMENT_SCHEMA,
     PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
     MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA,
+    STRUCTURED_PROVINCE_ENVIRONMENT_SCHEMA,
     configured_resource_scale_metrics,
     orthogonal_environment_enabled,
     persistent_orthogonal_renewal_enabled,
@@ -277,6 +278,7 @@ class SimulationReportingMixin:
                     ORTHOGONAL_ENVIRONMENT_SCHEMA,
                     PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
                     MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA,
+                    STRUCTURED_PROVINCE_ENVIRONMENT_SCHEMA,
                 }
             ),
             "environment_process": dict(
@@ -350,6 +352,15 @@ class SimulationReportingMixin:
                 self.environment_atlas_diagnostics.metadata()
                 if self.environment_atlas_diagnostics is not None
                 else None
+            ),
+            "group_function_diagnostics_enabled": (
+                self.group_function_diagnostics is not None
+            ),
+            "group_function_diagnostics_schema": (
+                self.cfg.run.group_function_diagnostics_schema
+            ),
+            "group_function_window_ticks": (
+                self.cfg.run.group_function_window_ticks
             ),
             "spatial_cultural_transfer_diagnostics_enabled": (
                 self.cfg.run.spatial_stress_diagnostics_schema
@@ -1184,6 +1195,10 @@ class SimulationReportingMixin:
         if self.subject_structure_diagnostics is not None:
             structure_environment_metrics.update(
                 self.subject_structure_diagnostics.latest_metrics()
+            )
+        if self.group_function_diagnostics is not None:
+            structure_environment_metrics.update(
+                self.group_function_diagnostics.latest_metrics()
             )
         if self.environment_atlas_diagnostics is not None:
             structure_environment_metrics.update(
@@ -2387,6 +2402,14 @@ class SimulationReportingMixin:
             ),
             "shared_energy_step": stats.shared_energy,
             "shared_energy_total": self.total_shared_energy,
+            **{
+                f"shared_resource_{index}_step": float(stats.shared_resources[index])
+                for index in range(4)
+            },
+            **{
+                f"shared_resource_{index}_total": float(self.total_shared_resources[index])
+                for index in range(4)
+            },
             "resource_sensing_maintenance_energy_step": stats.resource_sensing_maintenance_energy,
             "resource_sensing_use_energy_step": stats.resource_sensing_use_energy,
             "resource_sensing_development_energy_step": stats.resource_sensing_development_energy,

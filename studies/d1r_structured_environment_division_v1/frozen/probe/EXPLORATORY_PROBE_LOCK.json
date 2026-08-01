@@ -1,0 +1,54 @@
+{
+  "schema": "d1r-exploratory-environment-probe-lock-v1",
+  "seed": 97011,
+  "until_tick": 600,
+  "evidence_class": "parameter-debug-only",
+  "formal_environment_evidence": false,
+  "environment_plurality_threshold_reached": false,
+  "observed": {
+    "alive": 91,
+    "groups": 5,
+    "grouped_fraction": 0.45054945054945056,
+    "persistent_division_lineage_count": 1,
+    "max_simultaneous_division_candidate_groups": 3,
+    "internal_raw_exchange_total": 27.37948792889096
+  },
+  "authorization": {
+    "retain_candidate_environment_parameters_for_formal_panel": true,
+    "gene_audit": false,
+    "selection_claim": false
+  },
+  "files": [
+    {
+      "path": "environment_atlas_summary.json",
+      "size": 33053,
+      "sha256": "448c0ed6b1e3ccd891f066e655408270dbf1d16fb098b15512f3f84a3fcffd65"
+    },
+    {
+      "path": "group_function_summary.json",
+      "size": 15278,
+      "sha256": "c29395097baff1ef837d3f828d21cfc97a08568457291ca0ed7df60317ba62e6"
+    },
+    {
+      "path": "probe_structure.json",
+      "size": 2976,
+      "sha256": "626c63b1ee6e3b3ad4fcf4405478f4c358dead0cbf6910b4e1e343272c7fbc50"
+    },
+    {
+      "path": "source_config.json",
+      "size": 16697,
+      "sha256": "77208a82874ae48cfcf2dec7ee6e28b8ba968bb0242591d65656400602357932"
+    },
+    {
+      "path": "source_config.json.manifest.json",
+      "size": 9190,
+      "sha256": "5ff6b58ff4a4333f35c832acec12bb86958f306d1ee40c847bd24a5bbf851651"
+    },
+    {
+      "path": "summary.json",
+      "size": 43732,
+      "sha256": "4fef29c782b0ee0b5349bde6a33263c75da93d0b7816af96a69b46fd1f323c5d"
+    }
+  ],
+  "interpretation_boundary": "One exploratory seed demonstrates wiring and one persistent division-candidate group lineage only. It does not meet the multiple structured-group threshold."
+}

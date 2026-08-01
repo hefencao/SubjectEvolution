@@ -2,6 +2,26 @@
 
 Run this check once per iteration before selecting the next experiment or implementation task.
 
+## 0.0 Environment maturity precedes genetic audit
+
+A plural genome does not make an environment plural. Before any retention or
+selection analysis, the environment must repeatedly produce viable groups with
+real internal material dependence and persistent within-group functional
+differentiation. Group labels, transient action differences and a single good
+seed are insufficient. Single-seed analysis is restricted to shared environment
+parameter debugging and can never authorize a gene change.
+
+## v0.97 check
+
+- The reported D1-Q formal panel has no passing seed; D1-Q genetic-retention
+  execution is retired.
+- D1-R changes only shared source/processing geometry, complementary recipes,
+  raw exchange and observational diagnostics.
+- The frozen exploratory probe verifies wiring and one persistent candidate
+  group lineage but does not reach the multiple-structured-group threshold.
+- The next formal task is three independent structured-environment seeds, not a
+  gene audit, paired branch or threshold relaxation.
+
 ## 0. Integration-first iteration boundary
 
 Once a healthy substrate already contains multiple inherited mechanisms and matched environmental axes, the default iteration unit is the integrated system, not one gene. Run a bounded multi-generation panel, identify cross-seed thinning, disappearance, non-expression, or shared physical mismatch, and adjust only those problems. Do not automatically create one environment and one paired audit for every gene. Health gates protect sample validity; they are not a replacement candidate portfolio.

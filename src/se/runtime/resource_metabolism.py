@@ -31,6 +31,15 @@ from se.env.recycling import deposit_resource_residue, resource_recycling_runtim
 
 RESOURCE_CHANNELS = 4
 BODY_OUTCOMES = 5
+COMPLEMENTARY_RESOURCE_NETWORK_SCHEMA = "paired-complementary-recipes-v1"
+
+
+def complementary_resource_network_enabled(cfg: SimulationConfig) -> bool:
+    return bool(
+        resource_metabolism_enabled(cfg)
+        and cfg.physiology.resource_conversion_network_schema
+        == COMPLEMENTARY_RESOURCE_NETWORK_SCHEMA
+    )
 
 
 def _runtime_recycling_enabled(simulation: Any) -> bool:
@@ -43,11 +52,14 @@ def _runtime_recycling_enabled(simulation: Any) -> bool:
 
 @dataclass(frozen=True)
 class ResourceMetabolismStep:
+    entity_indices: np.ndarray
     stored: np.ndarray
     overflow: np.ndarray
     converted: np.ndarray
     decayed: np.ndarray
     body_realized: np.ndarray
+    converted_by_entity: np.ndarray
+    recipe_throughput_by_entity: np.ndarray
     decayed_by_entity: np.ndarray
     processing_requested: np.ndarray
     processing_supported: np.ndarray
@@ -62,11 +74,14 @@ class ResourceMetabolismStep:
     @classmethod
     def empty(cls) -> "ResourceMetabolismStep":
         return cls(
+            entity_indices=np.zeros(0, dtype=np.int32),
             stored=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
             overflow=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
             converted=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
             decayed=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
             body_realized=np.zeros(BODY_OUTCOMES, dtype=np.float64),
+            converted_by_entity=np.zeros((0, RESOURCE_CHANNELS), dtype=np.float64),
+            recipe_throughput_by_entity=np.zeros((0, RESOURCE_CHANNELS), dtype=np.float64),
             decayed_by_entity=np.zeros((0, RESOURCE_CHANNELS), dtype=np.float64),
             processing_requested=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
             processing_supported=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
@@ -260,11 +275,82 @@ def settle_resource_metabolism(
             raise ValueError("processing support must be shaped [N, 4]")
         if not np.all(np.isfinite(support)) or np.any(support <= 0.0):
             raise ValueError("processing support must be finite and positive")
+    else:
+        support = np.ones_like(store_before, dtype=np.float64)
+
+    available_raw = np.maximum(store_before, 0.0)
+    energy_rates = np.asarray(
+        cfg.physiology.resource_processing_energy_per_unit, dtype=np.float64
+    )
+    available_energy = np.maximum(
+        np.asarray(entities.energy[rows], dtype=np.float64), 0.0
+    )
+    recipe_throughput = np.zeros(
+        (rows.size, RESOURCE_CHANNELS), dtype=np.float64
+    )
+
+    if complementary_resource_network_enabled(cfg):
+        stoichiometry = np.asarray(
+            cfg.physiology.resource_recipe_stoichiometry, dtype=np.float64
+        )
+        recipe_rates = np.asarray(
+            cfg.physiology.resource_recipe_rate_per_tick, dtype=np.float64
+        )
+        positive = stoichiometry > 0.0
+        raw_limits = np.minimum(available_raw, conversion_capacity)
+        recipe_raw_limits = np.min(
+            np.where(
+                positive[None, :, :],
+                raw_limits[:, None, :]
+                / np.maximum(stoichiometry[None, :, :], 1.0e-30),
+                np.inf,
+            ),
+            axis=2,
+        )
+        recipe_support = np.min(
+            np.where(positive[None, :, :], support[:, None, :], np.inf),
+            axis=2,
+        )
+        requested_recipe = np.minimum(recipe_rates[None, :], recipe_raw_limits)
+        supported_recipe = np.minimum(
+            recipe_rates[None, :] * recipe_support, recipe_raw_limits
+        )
+        requested_raw = requested_recipe @ stoichiometry
+        supported_raw_unclosed = supported_recipe @ stoichiometry
+        closure_scale = np.ones(rows.size, dtype=np.float64)
+        for budget in (available_raw, conversion_capacity):
+            ratios = np.where(
+                supported_raw_unclosed > 0.0,
+                budget / np.maximum(supported_raw_unclosed, 1.0e-30),
+                np.inf,
+            )
+            closure_scale = np.minimum(closure_scale, np.min(ratios, axis=1))
+        closure_scale = np.clip(closure_scale, 0.0, 1.0)
+        supported_recipe *= closure_scale[:, None]
+        supported_raw = supported_recipe @ stoichiometry
+        requested_energy = supported_raw @ energy_rates
+        energy_scale = np.ones(rows.size, dtype=np.float64)
+        constrained = requested_energy > available_energy
+        energy_scale[constrained] = (
+            available_energy[constrained]
+            / np.maximum(requested_energy[constrained], 1.0e-30)
+        )
+        recipe_throughput = supported_recipe * energy_scale[:, None]
+        converted = recipe_throughput @ stoichiometry
+        processing_requested_by_entity = requested_raw
+        processing_supported_by_entity = supported_raw
+        processing_support_limited_by_entity = np.maximum(
+            requested_raw - supported_raw, 0.0
+        )
+        processing_support_accelerated_by_entity = np.maximum(
+            supported_raw - requested_raw, 0.0
+        )
+    else:
         processing_requested_by_entity = np.minimum(
-            np.maximum(store_before, 0.0), conversion_capacity
+            available_raw, conversion_capacity
         )
         processing_supported_by_entity = np.minimum(
-            np.maximum(store_before, 0.0), conversion_capacity * support
+            available_raw, conversion_capacity * support
         )
         processing_support_limited_by_entity = np.maximum(
             processing_requested_by_entity - processing_supported_by_entity, 0.0
@@ -272,14 +358,7 @@ def settle_resource_metabolism(
         processing_support_accelerated_by_entity = np.maximum(
             processing_supported_by_entity - processing_requested_by_entity, 0.0
         )
-        energy_rates = np.asarray(
-            cfg.physiology.resource_processing_energy_per_unit,
-            dtype=np.float64,
-        )
         requested_energy = processing_supported_by_entity @ energy_rates
-        available_energy = np.maximum(
-            np.asarray(entities.energy[rows], dtype=np.float64), 0.0
-        )
         energy_scale = np.ones(rows.size, dtype=np.float64)
         constrained = requested_energy > available_energy
         energy_scale[constrained] = (
@@ -287,18 +366,20 @@ def settle_resource_metabolism(
             / np.maximum(requested_energy[constrained], 1.0e-30)
         )
         converted = processing_supported_by_entity * energy_scale[:, None]
-        processing_energy_rejected_by_entity = np.maximum(
-            processing_supported_by_entity - converted, 0.0
-        )
-        processing_energy_cost_by_entity = converted @ energy_rates
-        entities.energy[rows] = np.maximum(
-            available_energy - processing_energy_cost_by_entity, 0.0
-        ).astype(np.float32)
+
+    processing_energy_rejected_by_entity = np.maximum(
+        processing_supported_by_entity - converted, 0.0
+    )
+    processing_energy_cost_by_entity = converted @ energy_rates
+    entities.energy[rows] = np.maximum(
+        available_energy - processing_energy_cost_by_entity, 0.0
+    ).astype(np.float32)
+    if spatial_processing_enabled(cfg):
         processing_support_weighted_sum = np.sum(
-            support * np.maximum(store_before, 0.0), axis=0, dtype=np.float64
+            support * available_raw, axis=0, dtype=np.float64
         )
         processing_support_weight = np.sum(
-            np.maximum(store_before, 0.0), axis=0, dtype=np.float64
+            available_raw, axis=0, dtype=np.float64
         )
         processing_support_absolute_deviation = np.sum(
             np.abs(support - 1.0) * processing_requested_by_entity,
@@ -306,7 +387,6 @@ def settle_resource_metabolism(
             dtype=np.float64,
         )
     else:
-        converted = np.minimum(np.maximum(store_before, 0.0), conversion_capacity)
         processing_requested_by_entity = np.zeros_like(store_before)
         processing_supported_by_entity = np.zeros_like(store_before)
         processing_support_limited_by_entity = np.zeros_like(store_before)
@@ -328,8 +408,14 @@ def settle_resource_metabolism(
     store_after = np.maximum(after_conversion - decayed, 0.0)
     entities.resource_store[rows] = store_after.astype(np.float32)
 
-    effects = np.asarray(cfg.environment.resource_effect_matrix, dtype=np.float64)
-    potential = converted @ effects
+    if complementary_resource_network_enabled(cfg):
+        effects = np.asarray(
+            cfg.physiology.resource_recipe_effect_matrix, dtype=np.float64
+        )
+        potential = recipe_throughput @ effects
+    else:
+        effects = np.asarray(cfg.environment.resource_effect_matrix, dtype=np.float64)
+        potential = converted @ effects
     body_before = np.column_stack(
         (
             np.asarray(entities.energy[rows], dtype=np.float64),
@@ -367,11 +453,14 @@ def settle_resource_metabolism(
     if not np.allclose(ledger_error, 0.0, atol=2.0e-7, rtol=0.0):
         raise RuntimeError("resource store ledger failed to close")
     return ResourceMetabolismStep(
+        entity_indices=rows.copy(),
         stored=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
         overflow=np.zeros(RESOURCE_CHANNELS, dtype=np.float64),
         converted=converted.sum(axis=0, dtype=np.float64),
         decayed=decayed.sum(axis=0, dtype=np.float64),
         body_realized=realized.sum(axis=0, dtype=np.float64),
+        converted_by_entity=converted,
+        recipe_throughput_by_entity=recipe_throughput,
         decayed_by_entity=decayed,
         processing_requested=processing_requested_by_entity.sum(
             axis=0, dtype=np.float64
@@ -524,6 +613,7 @@ def resource_metabolism_diagnostics(
 
 def initialize_resource_metabolism_state(simulation: Any) -> None:
     """Initialize cumulative D3-A ledgers without touching legacy schemas."""
+    simulation.last_resource_metabolism_step = ResourceMetabolismStep.empty()
     simulation.total_resource_stored = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
     simulation.total_resource_store_overflow = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
     simulation.total_resource_intake_capacity_rejected = np.zeros(RESOURCE_CHANNELS, dtype=np.float64)
@@ -595,6 +685,7 @@ def settle_resource_metabolism_before_step(simulation: Any, stats: Any) -> None:
             simulation.resource_conversion_allocation_ablation_enabled
         ),
     )
+    simulation.last_resource_metabolism_step = step
     stats.resource_converted = step.converted
     stats.resource_store_decay = step.decayed
     stats.resource_body_realized = step.body_realized

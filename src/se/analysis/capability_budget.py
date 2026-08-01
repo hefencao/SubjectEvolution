@@ -14,6 +14,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from ..config_identity import strip_inactive_extensions
+
 SCHEMA = "capability-affordability-budget-v1"
 EXPOSURE_SCHEMA = "checkpoint-trapezoidal-entity-exposure-v1"
 
@@ -33,13 +35,13 @@ def _canonical_sha256(payload: Any) -> str:
 
 
 def _physical_config(payload: dict[str, Any]) -> dict[str, Any]:
-    result = deepcopy(payload)
+    result = strip_inactive_extensions(payload)
     result.pop("run", None)
     return result
 
 
 def _protocol_config(payload: dict[str, Any]) -> dict[str, Any]:
-    result = deepcopy(payload)
+    result = strip_inactive_extensions(payload)
     run = result.get("run")
     if isinstance(run, dict):
         run.pop("seed", None)

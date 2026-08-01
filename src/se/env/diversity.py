@@ -23,6 +23,7 @@ from ..cfg import EnvironmentConfig, SimulationConfig, load_config
 ORTHOGONAL_ENVIRONMENT_SCHEMA = "orthogonal-four-resource-niche-v1"
 PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA = "orthogonal-four-resource-renewal-v2"
 MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA = "persistent-multiscale-four-resource-renewal-v3"
+STRUCTURED_PROVINCE_ENVIRONMENT_SCHEMA = "structured-province-resource-network-v4"
 SPATIAL_PROCESSING_SUPPORT_SCHEMA = "phase-shifted-channel-processing-support-v1"
 RESOURCE_DIVERSITY_AUDIT_SCHEMA = "resource-environment-diversity-audit-v1"
 RESOURCE_CHANNELS = 4
@@ -34,6 +35,7 @@ def orthogonal_environment_enabled(config: EnvironmentConfig | SimulationConfig)
         ORTHOGONAL_ENVIRONMENT_SCHEMA,
         PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
         MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA,
+        STRUCTURED_PROVINCE_ENVIRONMENT_SCHEMA,
     }
 
 
@@ -82,7 +84,11 @@ def orthogonal_base_pattern(
         + primary_amplitude * xp.sin(primary + offsets)
         + secondary_amplitude * xp.cos(secondary - 0.5 * offsets)
     )
-    return xp.clip(pattern, 0.05, 0.95)
+    if environment.schema == STRUCTURED_PROVINCE_ENVIRONMENT_SCHEMA:
+        pattern = pattern * resource_province_multiplier(
+            environment, xnorm, ynorm, xp=xp
+        )
+    return xp.clip(pattern, 0.02, 0.98)
 
 
 def persistent_orthogonal_renewal_enabled(
@@ -92,7 +98,60 @@ def persistent_orthogonal_renewal_enabled(
     return environment.schema in {
         PERSISTENT_ORTHOGONAL_ENVIRONMENT_SCHEMA,
         MULTISCALE_PERSISTENT_ENVIRONMENT_SCHEMA,
+        STRUCTURED_PROVINCE_ENVIRONMENT_SCHEMA,
     }
+
+
+def _periodic_distance(values: Any, centers: Any, xp: Any) -> Any:
+    delta = xp.abs(values - centers)
+    return xp.minimum(delta, 1.0 - delta)
+
+
+def resource_province_multiplier(
+    environment: EnvironmentConfig,
+    xnorm: Any,
+    ynorm: Any,
+    *,
+    xp: Any,
+    processing: bool = False,
+) -> Any:
+    """Return channel-specific periodic province multipliers with unit means.
+
+    Provinces are abiotic source/processing geometry.  The same deterministic
+    transformation is used by CPU and GPU fields and never reads entity, group,
+    lineage, policy, or historical success state.
+    """
+
+    centers = xp.asarray(environment.resource_province_centers, dtype=xp.float64)
+    if processing:
+        offsets = xp.asarray(
+            environment.resource_processing_province_offsets, dtype=xp.float64
+        )
+        centers = xp.mod(centers + offsets, 1.0)
+    radii = xp.asarray(environment.resource_province_radii, dtype=xp.float64)[:, None, None]
+    contrasts = xp.asarray(
+        environment.resource_province_contrasts, dtype=xp.float64
+    )[:, None, None]
+    cx = centers[:, 0, None, None]
+    cy = centers[:, 1, None, None]
+    dx = _periodic_distance(xnorm[None, :, :], cx, xp)
+    dy = _periodic_distance(ynorm[None, :, :], cy, xp)
+    primary = xp.exp(-(dx * dx + dy * dy) / (2.0 * radii * radii))
+
+    # A weaker antipodal province prevents each channel becoming a single
+    # point monopoly while retaining long-distance transport pressure.
+    secondary_centers = xp.mod(centers + 0.5, 1.0)
+    sx = _periodic_distance(
+        xnorm[None, :, :], secondary_centers[:, 0, None, None], xp
+    )
+    sy = _periodic_distance(
+        ynorm[None, :, :], secondary_centers[:, 1, None, None], xp
+    )
+    secondary = xp.exp(-(sx * sx + sy * sy) / (2.0 * radii * radii))
+    density = primary + 0.35 * secondary
+    raw = (1.0 - contrasts) + contrasts * density
+    means = xp.mean(raw, axis=(1, 2), keepdims=True)
+    return raw / xp.maximum(means, 1.0e-12)
 
 
 def orthogonal_renewal_target_fraction(
@@ -142,7 +201,11 @@ def orthogonal_renewal_target_fraction(
         * amplitude_modulation
         * xp.cos(secondary - 0.5 * offsets - 0.6180339887498948 * temporal)
     )
-    return xp.clip(pattern, 0.05, 0.95)
+    if environment.schema == STRUCTURED_PROVINCE_ENVIRONMENT_SCHEMA:
+        pattern = pattern * resource_province_multiplier(
+            environment, xnorm, ynorm, xp=xp
+        )
+    return xp.clip(pattern, 0.02, 0.98)
 
 
 def orthogonal_processing_support_multiplier(
@@ -166,6 +229,15 @@ def orthogonal_processing_support_multiplier(
     if environment.resource_processing_schema != SPATIAL_PROCESSING_SUPPORT_SCHEMA:
         shape = (RESOURCE_CHANNELS, *xnorm.shape)
         return xp.ones(shape, dtype=xp.float32)
+    if environment.schema == STRUCTURED_PROVINCE_ENVIRONMENT_SCHEMA:
+        province = resource_province_multiplier(
+            environment, xnorm, ynorm, xp=xp, processing=True
+        )
+        centered = province - 1.0
+        scale = xp.max(xp.abs(centered), axis=(1, 2), keepdims=True)
+        centered = centered / xp.maximum(scale, 1.0e-12)
+        amplitude = float(environment.resource_processing_support_amplitude)
+        return xp.asarray(1.0 + amplitude * centered, dtype=xp.float32)
     primary = _wave_phase(environment.resource_primary_wave_vectors, xnorm, ynorm, xp)
     secondary = _wave_phase(
         environment.resource_secondary_wave_vectors, xnorm, ynorm, xp

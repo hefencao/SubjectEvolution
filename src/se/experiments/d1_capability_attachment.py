@@ -12,6 +12,7 @@ from typing import Any
 
 from se.analysis.capability_budget import verify_budget
 from se.cfg import load_config
+from se.config_identity import strip_inactive_extensions
 
 SCHEMA = "d1-capability-source-config-v1"
 SPEC_SCHEMA = "d1-capability-attachment-v1"
@@ -36,7 +37,7 @@ def _canonical_sha256(payload: Any) -> str:
 
 
 def _physical_fingerprint(path: str | Path) -> str:
-    effective = asdict(load_config(path))
+    effective = strip_inactive_extensions(asdict(load_config(path)))
     effective.pop("run", None)
     return _canonical_sha256(effective)
 

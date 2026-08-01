@@ -1,5 +1,35 @@
 # SE architecture
 
+## D1-R structured environment and observational division boundary
+
+```text
+four periodic raw-resource source provinces
+        + spatially displaced processing provinces
+        ↓
+complementary recipes requiring >=2 raw channels
+        + bounded surplus-to-capacity raw SHARE
+        ↓
+exchange-supported relation graph and existing group detector
+        ↓
+fixed-window realized member-function records
+        ↓ stable-member-overlap group lineage matching
+replicated multi-group division threshold (analysis only)
+```
+
+The environment and metabolism layers expose physical opportunities and closed
+resource ledgers. SHARE transfers energy and/or one raw channel through the
+intent-resolution-commit boundary. The relation update is downstream of actual
+committed exchange. No group, genotype or named role receives a reward.
+
+`GroupFunctionDiagnostics` observes harvest, recipe throughput, internal raw and
+energy exchange, signalling and social movement. It does not change policy,
+group labels, reproduction, costs or world state. Stable group lineages are
+matched by member overlap because root-derived group tokens may change when a
+member dies. `se-environment-structure-summary` is the only maturity gate and
+never authorizes genetic interpretation in v0.97. Legacy configurations retain
+independent conversion and energy-only sharing by default.
+
+
 ## D1-P integrated baseline and persistence boundary
 
 ```text
@@ -106,6 +136,36 @@ establish stable ecological niches, because coexistence, removal and map-scale
 tests remain outstanding.
 
 # SE architecture
+
+## D1-R structured environment and observational division boundary
+
+```text
+four periodic raw-resource source provinces
+        + spatially displaced processing provinces
+        ↓
+complementary recipes requiring >=2 raw channels
+        + bounded surplus-to-capacity raw SHARE
+        ↓
+exchange-supported relation graph and existing group detector
+        ↓
+fixed-window realized member-function records
+        ↓ stable-member-overlap group lineage matching
+replicated multi-group division threshold (analysis only)
+```
+
+The environment and metabolism layers expose physical opportunities and closed
+resource ledgers. SHARE transfers energy and/or one raw channel through the
+intent-resolution-commit boundary. The relation update is downstream of actual
+committed exchange. No group, genotype or named role receives a reward.
+
+`GroupFunctionDiagnostics` observes harvest, recipe throughput, internal raw and
+energy exchange, signalling and social movement. It does not change policy,
+group labels, reproduction, costs or world state. Stable group lineages are
+matched by member overlap because root-derived group tokens may change when a
+member dies. `se-environment-structure-summary` is the only maturity gate and
+never authorizes genetic interpretation in v0.97. Legacy configurations retain
+independent conversion and energy-only sharing by default.
+
 
 ## D2-E confirmation-selection boundary
 

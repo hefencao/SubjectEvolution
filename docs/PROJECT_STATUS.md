@@ -1,105 +1,90 @@
 # SE project status
 
-Version: **0.96.0**
+Version: **0.97.0**
 
-## Current development direction
+## Current scientific task
 
-The project no longer advances by attaching one isolated gene and constructing a
-matching one-off environment and audit. The qualified source already contains a
-large inherited genome and plural physical environment. The active unit is the
-complete subject-environment system.
+The active task is environment maturity, not genetic retention. The environment
+must first generate replicated, viable and structured social dependence. A
+trust-connected component or `group` label alone is explicitly below the
+threshold.
 
-The current task is to establish a bounded multi-season demographic regime and
-then ask which inherited coordinates or blocks repeatedly retain, concentrate,
-thin, or disappear across independent seeds. Only repeated integrated-panel
-signals with matching expression, use, cost, or physical-opportunity evidence
-may motivate later adjustment.
+D1-Q is retired. The user-reported formal panel had no passing seed, so its pilot
+qualification does not authorize retention interpretation, coordinate changes or
+another equilibrium audit loop. Former executable genetic-retention steps were
+removed from the D1-Q workflow.
 
-## D1-P result and evidence boundary
+## D1-R environment substrate
 
-All D1-P seeds completed tick 1200 and passed minimum health, but population was
-still expanding at the endpoint:
+D1-R preserves the existing complete inherited subject and changes only shared
+physical, exchange and observational infrastructure:
 
-| seed | alive | births/initial | descendants/initial | mean generation | max generation | effective lineages | largest lineage |
-|---:|---:|---:|---:|---:|---:|---:|---:|
-| 95101 | 876 | 7.703 | 6.625 | 3.343 | 8 | 4.008 | 0.460 |
-| 95102 | 715 | 6.383 | 5.359 | 2.852 | 7 | 9.893 | 0.190 |
-| 95103 | 1025 | 8.797 | 7.734 | 2.987 | 9 | 12.387 | 0.163 |
+1. four raw resources have separated periodic source provinces;
+2. processing provinces are spatially displaced from source provinces;
+3. direct per-channel body effects are removed in the D1-R config;
+4. every body-producing recipe consumes at least two raw channels;
+5. raw material can be transferred by SHARE according only to donor surplus and
+   receiver storage room;
+6. successful exchange supports the existing uniformly decaying relation graph;
+7. group-internal functions are recorded without feeding back into action,
+   grouping, reproduction or fitness.
 
-The original absolute scan marked all 704 coordinates retained. The v0.96
-relative reclassification instead reports:
+No inherited coordinate, mutation rate, maintenance cost, reproduction rule,
+profession, group reward or protected genotype is added.
 
-- retained: 520;
-- concentrated: 112;
-- moderate thinning: 66;
-- strong thinning: 6;
-- lost: 0.
+## Exploratory probe status
 
-Because all three populations were actively expanding and one seed was strongly
-lineage concentrated, these categories are diagnostics only. They do not permit
-editing the six strongest coordinates or generating 704 paired experiments.
+Frozen exploratory seed 97011 reaches tick 600 with:
 
-## D1-Q shared-flux change
+- alive: 91 from 128 initial;
+- cumulative births per initial: 0.922;
+- living descendant fraction: 0.648;
+- detected groups: 5;
+- grouped fraction: 0.451;
+- internal raw-resource exchange: 27.379 total;
+- resource-field effective dimensions: 3.085;
+- region-signature effective dimensions: 3.747;
+- persistent division-candidate group lineages: 1;
+- maximum simultaneous division candidates in one window: 3.
 
-D1-Q preserves the complete genome, environment geometry, channel effects,
-maintenance, reproduction, costs and expression routes. It changes only:
+This is parameter-debug evidence. It verifies physical heterogeneity, exchange,
+group formation and one persistent division candidate, but fails the required
+minimum of two persistent structured groups. It is not formal environment
+qualification.
 
-```text
-environment.resource_regeneration
-[0.027, 0.027, 0.027, 0.027]
-->
-[0.00675, 0.00675, 0.00675, 0.00675]
-```
+## Formal environment threshold
 
-The change is uniform across genes, entities and resource channels. It is a
-shared material-throughput correction, not a reward or ecological role.
+D1-R formal evidence requires three independent seeds 97101--97103. Every seed
+must retain a viable multi-generation population and show:
 
-## Frozen D1-Q pilot
+- nontrivial multi-axis physical heterogeneity;
+- real group-internal raw-resource exchange;
+- at least two persistent division-candidate group lineages;
+- at least two simultaneous division candidates in a diagnostic window.
 
-Formal pilot seed 96032 completed tick 840 and passed the unchanged staged-health
-logic for this study:
+A division candidate requires a stable core of at least six members, high member
+participation, multidimensional and specialized realized activity, multiple
+active recipes, internal exchange and nontrivial dependence on exchanged raw
+material. Group continuity is matched by stable-member overlap rather than by a
+root-derived group token.
 
-- alive: 143;
-- cumulative births per initial: 1.570;
-- living descendants per initial: 0.891;
-- mean generation: 1.336;
-- max generation: 4;
-- founder fraction: 0.203;
-- effective lineages: 19.681;
-- largest lineage fraction: 0.1049.
-
-The environment's longest explicit forcing period is 431 ticks. The cycle-aware
-gate assesses tick 390--840, a 450-tick span:
-
-- alive range: 109--143;
-- alive CV: 0.0855;
-- normalized slope per 30-tick sample: 0.0148;
-- envelope relative to mean: 0.288.
-
-All registered full-cycle bounds pass. The final three 30-tick windows still show
-a positive phase slope; it remains visible as advisory evidence but is too short
-to override a gate designed for the actual environmental timescale.
-
-## Current authorization
+## Authorization
 
 Authorized:
 
-- generate the content-locked D1-Q config;
-- run three independent integrated-panel seeds 96101--96103;
-- apply health and cycle-aware equilibrium gates;
-- if all pass, run whole-genome relative retention screening.
+- short single-seed probes solely for shared environment/exchange/processing
+  parameter debugging;
+- one unchanged three-seed formal structured-environment panel;
+- observational environment-structure summary and external result packaging.
 
 Not authorized:
 
-- changing a particular flagged coordinate;
-- adding another isolated gene or dedicated environment;
-- paired experiments or candidate-ledger restart;
-- adaptation, fitness, selection-direction, ecological-niche, or subjectivity claims.
+- any single-run or formal gene-retention audit;
+- changing a gene because it is thin, rare or absent;
+- adding one gene and one matching environment per iteration;
+- paired mechanism experiments, candidate ledger or selection estimates;
+- adaptation, ecological-role, social-role, niche or subjecthood claims.
 
-## Next evidence
-
-The next result must contain all three formal panel seeds, the exact generated
-config and sidecar, health events and aggregate report, cycle-aware equilibrium
-report, raw persistence statistics, integrated relative-retention report, and a
-content manifest. A panel seed that fails health or full-cycle equilibrium blocks
-retention interpretation but remains valid failure evidence.
+Even a passing D1-R environment threshold only authorizes freezing the
+structured environment and designing a later separate multi-generation genetic
+study. It does not automatically authorize that study in v0.97.

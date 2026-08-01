@@ -73,6 +73,13 @@ class RunConfig:
     environment_atlas_diagnostics_enabled: bool = False
     environment_atlas_diagnostics_schema: str = "disabled"
     environment_atlas_scales: tuple[tuple[int, int], ...] = ()
+    # Optional observational diagnostics for within-group functional
+    # differentiation.  This records realized harvest, conversion, exchange,
+    # signalling and movement contributions without feeding any label or score
+    # back into policy, relations, groups, lifecycle or environment.
+    group_function_diagnostics_enabled: bool = False
+    group_function_diagnostics_schema: str = "disabled"
+    group_function_window_ticks: int = 120
 
 
 @dataclass(frozen=True)
@@ -133,6 +140,27 @@ class EnvironmentConfig:
     resource_diffusion_rates: tuple[float, float, float, float] = (
         0.002, 0.006, 0.012, 0.020
     )
+    # D1-R structured provinces concentrate each channel into distinct
+    # periodic source regions while preserving the channel's global mean
+    # renewal scale.  They are environment geometry, not entity or role labels.
+    resource_province_centers: tuple[
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+    ] = ((0.18, 0.18), (0.82, 0.22), (0.24, 0.80), (0.78, 0.76))
+    resource_province_radii: tuple[float, float, float, float] = (
+        0.16, 0.18, 0.20, 0.17
+    )
+    resource_province_contrasts: tuple[float, float, float, float] = (
+        0.85, 0.82, 0.80, 0.84
+    )
+    resource_processing_province_offsets: tuple[
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+    ] = ((0.28, 0.20), (-0.24, 0.26), (0.26, -0.22), (-0.28, -0.24))
     # D3-E opt-in abiotic processing support.  The field reuses the same
     # role-free four-channel wave basis as persistent renewal but is shifted by
     # a quarter cycle.  It carries no material and has no entity, lineage, or
@@ -544,6 +572,35 @@ class PhysiologyConfig:
     resource_processing_energy_per_unit: tuple[float, float, float, float] = (
         0.0, 0.0, 0.0, 0.0
     )
+    # D1-R role-neutral complementary production network.  Under the explicit
+    # schema, rows define raw-channel stoichiometry and recipe effects define
+    # the same five conserved body outcomes used by the world kernel.
+    resource_conversion_network_schema: str = "independent-channel-effects-v1"
+    resource_recipe_stoichiometry: tuple[
+        tuple[float, float, float, float],
+        tuple[float, float, float, float],
+        tuple[float, float, float, float],
+        tuple[float, float, float, float],
+    ] = (
+        (1.0, 0.0, 0.0, 0.0),
+        (0.0, 1.0, 0.0, 0.0),
+        (0.0, 0.0, 1.0, 0.0),
+        (0.0, 0.0, 0.0, 1.0),
+    )
+    resource_recipe_effect_matrix: tuple[
+        tuple[float, float, float, float, float],
+        tuple[float, float, float, float, float],
+        tuple[float, float, float, float, float],
+        tuple[float, float, float, float, float],
+    ] = (
+        (0.0, 0.0, 0.0, 0.0, 0.0),
+        (0.0, 0.0, 0.0, 0.0, 0.0),
+        (0.0, 0.0, 0.0, 0.0, 0.0),
+        (0.0, 0.0, 0.0, 0.0, 0.0),
+    )
+    resource_recipe_rate_per_tick: tuple[float, float, float, float] = (
+        0.0, 0.0, 0.0, 0.0
+    )
 
 
 @dataclass(frozen=True)
@@ -575,6 +632,12 @@ class SocialConfig:
     # Candidate-group labels are a measurement rule, not an ontological fact.
     group_label_schema: str = "trusted-directed-fixed-round-min-label-v1"
     group_label_propagation_rounds: int = 8
+    # Existing SHARE intents can optionally carry one bounded raw-resource
+    # channel in addition to energy.  Channel choice follows realized owner
+    # surplus and receiver room; no role, genotype or group label is rewarded.
+    share_schema: str = "energy-only-v1"
+    resource_share_amount: float = 0.0
+    resource_share_reserve_fraction: float = 0.25
 
 
 @dataclass(frozen=True)
@@ -721,6 +784,32 @@ def load_config(path: str | Path) -> SimulationConfig:
                 float(value)
                 for value in _require(raw, "environment").get(
                     "resource_diffusion_rates", (0.002, 0.006, 0.012, 0.020)
+                )
+            ),
+            resource_province_centers=tuple(
+                tuple(float(component) for component in center)
+                for center in _require(raw, "environment").get(
+                    "resource_province_centers",
+                    ((0.18, 0.18), (0.82, 0.22), (0.24, 0.80), (0.78, 0.76)),
+                )
+            ),
+            resource_province_radii=tuple(
+                float(value)
+                for value in _require(raw, "environment").get(
+                    "resource_province_radii", (0.16, 0.18, 0.20, 0.17)
+                )
+            ),
+            resource_province_contrasts=tuple(
+                float(value)
+                for value in _require(raw, "environment").get(
+                    "resource_province_contrasts", (0.85, 0.82, 0.80, 0.84)
+                )
+            ),
+            resource_processing_province_offsets=tuple(
+                tuple(float(component) for component in offset)
+                for offset in _require(raw, "environment").get(
+                    "resource_processing_province_offsets",
+                    ((0.28, 0.20), (-0.24, 0.26), (0.26, -0.22), (-0.28, -0.24)),
                 )
             ),
             resource_processing_schema=str(
@@ -936,6 +1025,27 @@ def load_config(path: str | Path) -> SimulationConfig:
                         (0.0, 0.0, 0.0, 0.0),
                     )
                 ),
+                "resource_recipe_stoichiometry": tuple(
+                    tuple(float(component) for component in row)
+                    for row in raw.get("physiology", {}).get(
+                        "resource_recipe_stoichiometry",
+                        ((1.0, 0.0, 0.0, 0.0), (0.0, 1.0, 0.0, 0.0),
+                         (0.0, 0.0, 1.0, 0.0), (0.0, 0.0, 0.0, 1.0)),
+                    )
+                ),
+                "resource_recipe_effect_matrix": tuple(
+                    tuple(float(component) for component in row)
+                    for row in raw.get("physiology", {}).get(
+                        "resource_recipe_effect_matrix",
+                        ((0.0, 0.0, 0.0, 0.0, 0.0),) * 4,
+                    )
+                ),
+                "resource_recipe_rate_per_tick": tuple(
+                    float(value)
+                    for value in raw.get("physiology", {}).get(
+                        "resource_recipe_rate_per_tick", (0.0, 0.0, 0.0, 0.0)
+                    )
+                ),
             }
         ),
         policy=PolicyConfig(**policy_raw),
@@ -1080,6 +1190,7 @@ def validate_config(cfg: SimulationConfig) -> None:
             "transport-metabolism-messenger-tissue-resource-v8",
             "transport-metabolism-messenger-tissue-resource-v9",
             "transport-metabolism-messenger-tissue-resource-v10",
+            "transport-metabolism-messenger-tissue-resource-v11",
         }
     ):
         raise ValueError(
@@ -1211,6 +1322,29 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError(
             "disabled environment atlas diagnostics require an empty scale list"
         )
+    if cfg.run.group_function_diagnostics_schema not in {
+        "disabled",
+        "group-functional-division-diagnostics-v1",
+    }:
+        raise ValueError(
+            "run.group_function_diagnostics_schema must be 'disabled' or "
+            "'group-functional-division-diagnostics-v1'"
+        )
+    if cfg.run.group_function_diagnostics_enabled != (
+        cfg.run.group_function_diagnostics_schema
+        == "group-functional-division-diagnostics-v1"
+    ):
+        raise ValueError(
+            "group function diagnostics enabled/schema fields must agree"
+        )
+    if (
+        not isinstance(cfg.run.group_function_window_ticks, int)
+        or isinstance(cfg.run.group_function_window_ticks, bool)
+        or cfg.run.group_function_window_ticks <= 0
+    ):
+        raise ValueError(
+            "run.group_function_window_ticks must be a positive integer"
+        )
     if not isinstance(cfg.run.full_checkpoint_enabled, bool):
         raise ValueError("run.full_checkpoint_enabled must be a boolean")
     if not isinstance(cfg.run.validation_mode, bool):
@@ -1256,6 +1390,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         "orthogonal-four-resource-niche-v1",
         "orthogonal-four-resource-renewal-v2",
         "persistent-multiscale-four-resource-renewal-v3",
+        "structured-province-resource-network-v4",
     }:
         raise ValueError(
             "environment.schema must be 'legacy-four-channel-v1', "
@@ -1303,6 +1438,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         "orthogonal-four-resource-niche-v1",
         "orthogonal-four-resource-renewal-v2",
         "persistent-multiscale-four-resource-renewal-v3",
+        "structured-province-resource-network-v4",
     }:
         if any(int(value) <= 0 for value in cfg.environment.resource_cycle_periods):
             raise ValueError("orthogonal resource cycle periods must be positive")
@@ -1343,7 +1479,10 @@ def validate_config(cfg: SimulationConfig) -> None:
             raise ValueError(
                 "orthogonal resource primary wave vectors must be four distinct non-zero modes"
             )
-        if cfg.environment.schema == "persistent-multiscale-four-resource-renewal-v3":
+        if cfg.environment.schema in {
+            "persistent-multiscale-four-resource-renewal-v3",
+            "structured-province-resource-network-v4",
+        }:
             primary_scale_keys = {
                 round(float(x) * float(x) + float(y) * float(y), 12)
                 for x, y in primary_vectors
@@ -1360,6 +1499,56 @@ def validate_config(cfg: SimulationConfig) -> None:
                 raise ValueError(
                     "multiscale resource secondary wave vectors must be non-zero"
                 )
+    for name, vectors in (
+        ("resource_province_centers", cfg.environment.resource_province_centers),
+        (
+            "resource_processing_province_offsets",
+            cfg.environment.resource_processing_province_offsets,
+        ),
+    ):
+        if len(vectors) != 4 or any(
+            len(vector) != 2
+            or any(not math.isfinite(float(component)) for component in vector)
+            for vector in vectors
+        ):
+            raise ValueError(
+                f"environment.{name} must be shaped [4, 2] with finite values"
+            )
+    for center in cfg.environment.resource_province_centers:
+        if any(float(component) < 0.0 or float(component) >= 1.0 for component in center):
+            raise ValueError(
+                "environment.resource_province_centers must use normalized [0, 1) coordinates"
+            )
+    if len(cfg.environment.resource_province_radii) != 4 or any(
+        not math.isfinite(float(value)) or not 0.02 <= float(value) <= 0.5
+        for value in cfg.environment.resource_province_radii
+    ):
+        raise ValueError(
+            "environment.resource_province_radii must contain four values in [0.02, 0.5]"
+        )
+    if len(cfg.environment.resource_province_contrasts) != 4 or any(
+        not math.isfinite(float(value)) or not 0.0 <= float(value) <= 0.95
+        for value in cfg.environment.resource_province_contrasts
+    ):
+        raise ValueError(
+            "environment.resource_province_contrasts must contain four values in [0, 0.95]"
+        )
+    if cfg.environment.schema != "structured-province-resource-network-v4":
+        defaults = EnvironmentConfig.__dataclass_fields__
+        if (
+            cfg.environment.resource_province_centers
+            != defaults["resource_province_centers"].default
+            or cfg.environment.resource_province_radii
+            != defaults["resource_province_radii"].default
+            or cfg.environment.resource_province_contrasts
+            != defaults["resource_province_contrasts"].default
+            or cfg.environment.resource_processing_province_offsets
+            != defaults["resource_processing_province_offsets"].default
+        ):
+            raise ValueError(
+                "resource province geometry is configurable only under structured-province-resource-network-v4"
+            )
+
     if cfg.environment.resource_processing_schema not in {
         "disabled",
         "phase-shifted-channel-processing-support-v1",
@@ -1384,6 +1573,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         cfg.environment.schema not in {
             "orthogonal-four-resource-renewal-v2",
             "persistent-multiscale-four-resource-renewal-v3",
+            "structured-province-resource-network-v4",
         }
         or processing_amplitude <= 0.0
     ):
@@ -1595,6 +1785,7 @@ def validate_config(cfg: SimulationConfig) -> None:
             "orthogonal-four-resource-niche-v1",
             "orthogonal-four-resource-renewal-v2",
             "persistent-multiscale-four-resource-renewal-v3",
+            "structured-province-resource-network-v4",
         }
     ):
         raise ValueError("resource affinity requires a heterogeneous environment schema")
@@ -1653,6 +1844,32 @@ def validate_config(cfg: SimulationConfig) -> None:
         )
     if cfg.social.group_label_propagation_rounds < 0:
         raise ValueError("social.group_label_propagation_rounds cannot be negative")
+    if cfg.social.share_schema not in {
+        "energy-only-v1",
+        "energy-and-raw-resource-need-balanced-v1",
+    }:
+        raise ValueError(
+            "social.share_schema must be 'energy-only-v1' or "
+            "'energy-and-raw-resource-need-balanced-v1'"
+        )
+    if (
+        not math.isfinite(float(cfg.social.resource_share_amount))
+        or cfg.social.resource_share_amount < 0.0
+    ):
+        raise ValueError("social.resource_share_amount must be finite and non-negative")
+    _probability(
+        "social.resource_share_reserve_fraction",
+        cfg.social.resource_share_reserve_fraction,
+    )
+    if cfg.social.share_schema == "energy-only-v1":
+        if cfg.social.resource_share_amount != 0.0:
+            raise ValueError(
+                "energy-only share schema requires zero resource_share_amount"
+            )
+    elif cfg.social.resource_share_amount <= 0.0:
+        raise ValueError(
+            "raw-resource share schema requires positive resource_share_amount"
+        )
     if cfg.social.group_update_min_period <= 0:
         raise ValueError("social.group_update_min_period must be positive")
     if cfg.social.group_update_max_period < 0:
@@ -2189,6 +2406,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         "transport-metabolism-messenger-tissue-resource-v8",
         "transport-metabolism-messenger-tissue-resource-v9",
         "transport-metabolism-messenger-tissue-resource-v10",
+        "transport-metabolism-messenger-tissue-resource-v11",
     }:
         raise ValueError(
             "physiology.schema must be 'disabled', 'oxygen-tissue-structure-v1', "
@@ -2205,14 +2423,22 @@ def validate_config(cfg: SimulationConfig) -> None:
     if pcfg.enabled != (pcfg.schema != "disabled"):
         raise ValueError("physiology enabled/schema fields must agree")
     physiology_values: list[float] = []
+
+    def _append_physiology_numeric(value: object) -> None:
+        if isinstance(value, tuple):
+            for item in value:
+                _append_physiology_numeric(item)
+        elif isinstance(value, (int, float)) and not isinstance(value, bool):
+            physiology_values.append(float(value))
+
     for name in PhysiologyConfig.__dataclass_fields__:
-        if name in {"enabled", "schema"}:
+        if name in {
+            "enabled",
+            "schema",
+            "resource_conversion_network_schema",
+        }:
             continue
-        raw_value = getattr(pcfg, name)
-        if isinstance(raw_value, tuple):
-            physiology_values.extend(float(value) for value in raw_value)
-        else:
-            physiology_values.append(float(raw_value))
+        _append_physiology_numeric(getattr(pcfg, name))
     if any(not math.isfinite(value) or value < 0.0 for value in physiology_values):
         raise ValueError("physiology parameters must be finite and non-negative")
     for name in (
@@ -2259,6 +2485,7 @@ def validate_config(cfg: SimulationConfig) -> None:
                 "transport-metabolism-messenger-tissue-resource-v8",
                 "transport-metabolism-messenger-tissue-resource-v9",
                 "transport-metabolism-messenger-tissue-resource-v10",
+                "transport-metabolism-messenger-tissue-resource-v11",
             }
             if fcfg.schema == resource_metabolism_schema
             else {
@@ -2320,10 +2547,14 @@ def validate_config(cfg: SimulationConfig) -> None:
                 "transport-metabolism-messenger-tissue-resource-v8",
                 "transport-metabolism-messenger-tissue-resource-v9",
                 "transport-metabolism-messenger-tissue-resource-v10",
+                "transport-metabolism-messenger-tissue-resource-v11",
             }:
                 required_positive.extend(pcfg.resource_store_base_capacity)
                 required_positive.extend(pcfg.resource_conversion_per_tick)
-                if pcfg.schema == "transport-metabolism-messenger-tissue-resource-v7":
+                if pcfg.schema in {
+        "transport-metabolism-messenger-tissue-resource-v7",
+        "transport-metabolism-messenger-tissue-resource-v11",
+    }:
                     required_positive.extend(
                         pcfg.resource_processing_energy_per_unit
                     )
@@ -2343,6 +2574,7 @@ def validate_config(cfg: SimulationConfig) -> None:
         "transport-metabolism-messenger-tissue-resource-v8",
         "transport-metabolism-messenger-tissue-resource-v9",
         "transport-metabolism-messenger-tissue-resource-v10",
+        "transport-metabolism-messenger-tissue-resource-v11",
     } and any(
         value != 0.0
         for values in (
@@ -2356,7 +2588,10 @@ def validate_config(cfg: SimulationConfig) -> None:
         raise ValueError(
             "resource storage and conversion settings require physiology resource-v4/v5/v6/v7/v8/v9/v10"
         )
-    if pcfg.schema == "transport-metabolism-messenger-tissue-resource-v7":
+    if pcfg.schema in {
+        "transport-metabolism-messenger-tissue-resource-v7",
+        "transport-metabolism-messenger-tissue-resource-v11",
+    }:
         if (
             cfg.environment.resource_processing_schema
             != "phase-shifted-channel-processing-support-v1"
@@ -2366,13 +2601,87 @@ def validate_config(cfg: SimulationConfig) -> None:
             )
     elif any(value != 0.0 for value in pcfg.resource_processing_energy_per_unit):
         raise ValueError(
-            "resource processing execution costs require physiology resource-v7"
+            "resource processing execution costs require physiology resource-v7 or v11"
         )
+    if pcfg.resource_conversion_network_schema not in {
+        "independent-channel-effects-v1",
+        "paired-complementary-recipes-v1",
+    }:
+        raise ValueError(
+            "physiology.resource_conversion_network_schema must be "
+            "'independent-channel-effects-v1' or 'paired-complementary-recipes-v1'"
+        )
+    stoichiometry = tuple(
+        tuple(float(value) for value in row)
+        for row in pcfg.resource_recipe_stoichiometry
+    )
+    recipe_effects = tuple(
+        tuple(float(value) for value in row)
+        for row in pcfg.resource_recipe_effect_matrix
+    )
+    recipe_rates = tuple(float(value) for value in pcfg.resource_recipe_rate_per_tick)
+    if len(stoichiometry) != 4 or any(len(row) != 4 for row in stoichiometry):
+        raise ValueError(
+            "physiology.resource_recipe_stoichiometry must be shaped [4, 4]"
+        )
+    if len(recipe_effects) != 4 or any(len(row) != 5 for row in recipe_effects):
+        raise ValueError(
+            "physiology.resource_recipe_effect_matrix must be shaped [4, 5]"
+        )
+    if len(recipe_rates) != 4:
+        raise ValueError(
+            "physiology.resource_recipe_rate_per_tick must contain four values"
+        )
+    if any(
+        not math.isfinite(value) or value < 0.0
+        for row in (*stoichiometry, *recipe_effects)
+        for value in row
+    ) or any(not math.isfinite(value) or value < 0.0 for value in recipe_rates):
+        raise ValueError(
+            "resource recipe parameters must be finite and non-negative"
+        )
+    if pcfg.resource_conversion_network_schema == "independent-channel-effects-v1":
+        if any(recipe_rates) or any(value for row in recipe_effects for value in row):
+            raise ValueError(
+                "independent conversion requires zero recipe rates and effects"
+            )
+    else:
+        if pcfg.schema != "transport-metabolism-messenger-tissue-resource-v11":
+            raise ValueError(
+                "paired complementary recipes require physiology resource-v11"
+            )
+        if cfg.environment.schema != "structured-province-resource-network-v4":
+            raise ValueError(
+                "paired complementary recipes require the structured province environment"
+            )
+        if any(rate <= 0.0 for rate in recipe_rates):
+            raise ValueError("paired complementary recipe rates must be positive")
+        if any(sum(value > 0.0 for value in row) < 2 for row in stoichiometry):
+            raise ValueError(
+                "each complementary recipe must require at least two raw channels"
+            )
+        if any(sum(row) <= 0.0 for row in recipe_effects):
+            raise ValueError(
+                "each complementary recipe must produce at least one body outcome"
+            )
+        if any(value != 0.0 for row in cfg.environment.resource_effect_matrix for value in row):
+            raise ValueError(
+                "complementary recipes require zero direct per-channel body effects"
+            )
+
     if fcfg.enabled:
         if cfg.entities.resource_affinity_schema != "normalized-four-resource-affinity-v1":
             raise ValueError("D2-A functional modules require inherited resource affinity")
         if cfg.entities.harvest_allocation_schema != "affinity-sampled-exclusive-harvest-v1":
             raise ValueError("D2-A functional modules require selective harvest allocation")
+
+    if (
+        cfg.social.share_schema == "energy-and-raw-resource-need-balanced-v1"
+        and pcfg.schema != "transport-metabolism-messenger-tissue-resource-v11"
+    ):
+        raise ValueError(
+            "raw-resource sharing requires physiology resource-v11"
+        )
 
     if cfg.policy.temperature <= 0:
         raise ValueError("policy.temperature must be positive")
