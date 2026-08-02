@@ -1,16 +1,16 @@
 # SE project status
 
-Version: **0.131.0**
+Version: **0.132.0**
 
 ## Current scientific task
 
-Version 0.131 implements **Subject VM Stage 3C-17: equal-similarity temporal tie-break audit**.
+Version 0.132 implements **Subject VM Stage 3C-18: bounded association candidate-allocation audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
 Stage 3B-1 remains the micro-level bridge. Executed node output and actual bandwidth-bounded edge transmission may leave short-lived local eligibility values selected by graph flags and gates. Their signs remain local computational directions, not event value.
 
-Stage 3B-2 and Stage 3C-1 remain explicit bootstrap biases: normalized continuous-token similarity chooses at most one historical event candidate, and the largest still-valid pre-activation local eligibility carrier chooses at most one target per parameter family. These mechanisms shorten early graph shaping; they are not universal attention claims.
+Stage 3B-2 and Stage 3C-1 remain explicit bootstrap biases: normalized continuous-token similarity defaults to one historical event candidate, while Stage 3C-18 permits an explicit at-most-two-candidate research override; the largest still-valid pre-activation local eligibility carrier still chooses at most one target per parameter family. These mechanisms shorten early graph shaping; they are not universal attention claims.
 
 Stage 3B-3 forms a graph-controlled six-dimensional parameter-family proposal. Stage 3C-1 binds nonzero components to exact stable node or edge targets. Stage 3C-2 revalidates those targets and forms bounded candidate deltas. Stage 3C-3 verifies exact float32 compare-and-swap, event-level all-or-none semantics and rollback in a private shadow vector. Stage 3C-4 allows an explicitly opted-in live write only inside a fixed short rollback window and records it in a bounded applied ledger. Stage 3C-5 records the same 21-dimensional score-free evidence contract for guarded-live and read-only control windows.
 
@@ -104,6 +104,8 @@ Implemented and tested:
 - Stage-3C-14 fixed-bootstrap target-family reachability comparison with pre-bootstrap identity, authorized token relocation and rejected-degeneracy recording;
 - Stage-3C-15 external six-family finite-difference audit with delayed-edge warm context, algebraic-degeneracy detection and sensitivity-versus-eligibility separation;
 - Stage-3C-16 isolated edge-forward eligibility-carrier toggle with unreachable-baseline handling, read-only control identity and carrier-on Stage-3C-7/8 evidence;
+- Stage-3C-17 equal-similarity latest/oldest temporal tie-break audit with event-reuse concentration diagnostics;
+- Stage-3C-18 top-1/top-2 bounded candidate-allocation audit with one-proposal budget, fixed-capacity secondary-reference diagnostics and trace-schema v9 compatibility;
 - v0.123 trace/checkpoint compatibility for the new bounded diagnostic fields;
 - explicit guarded-live/read-only branch identities bound to source state, branch config and final tick;
 - branch identity persistence in final checkpoint lineage;
@@ -125,7 +127,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-16 establishes one bounded edge eligibility carrier as an engineering reachability aid without authorizing retention or Epoch 1.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-18 audits bounded association allocation on the reachable edge-carrier baseline without authorizing retention or Epoch 1.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -151,13 +153,21 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-The next authorized boundary must treat the carrier-on `edge_forward_gate` arm as an engineering baseline, not as a beneficial update result. A subsequent comparison may change exactly one allocation factor, such as the fixed single-winner carrier selector versus a bounded multi-candidate allocator, only after preserving the same source panel, edge carrier, family target, 32 entities, eight-tick horizon, exposure duration 3, bounded delta, automatic rollback and score-free hierarchy. It must not simultaneously change addressing similarity, family weights, entity count, topology evolution, permanent retention, scalar value construction, a complete general-attention replacement or Epoch 1 qualification.
+The next authorized boundary must treat both Stage 3C-18 arms as engineering allocation probes, not beneficial-update results. Because top-2 adds references without adding unique historical-event coverage and all similarities remain 1.0, the next step should be an external token-geometry separability diagnostic: coordinate variance, effective rank, pairwise score spread and threshold margin on the frozen nine-source panel. It must not simultaneously change token production, similarity metric, top-k, learned weights, family target, carrier, entity count, topology evolution, permanent retention, scalar value construction, a complete general-attention replacement or Epoch 1 qualification.
 
 
-## Stage 3C-17 current result
+## Stage 3C-17 retained result
 
 Stage 3C-17 preserves the Stage-3C-16 carrier-on `edge_forward_gate` baseline and changes only exact-similarity temporal tie resolution from latest to oldest. The override is recorded in the paired plan and applied symmetrically to guarded-live and read-only-control branches. It is not part of persistent configuration or checkpoint state.
 
 Across nine independent sources, both arms assign 1008 candidates with similarity 1.0. Latest selects delay 1 exclusively and uses 112 unique historical events per source once each. Oldest produces delays 1–6 but uses only 32 unique events per source, with one event reused up to six times. Latest produces 942 modulation proposals and 129 completed windows; oldest produces 801 proposals and 105 windows. Objective divergence occurs in 3/9 versus 2/9 sources, while both arms remain 0/21 stable objective coordinates.
 
 This identifies the temporal tie-break as a material fixed-bootstrap bias. It does not establish that latest is better, that oldest is harmful, that recency or age has value, or that the credit assignment is scientifically valid. The next authorized boundary is a bounded multi-candidate allocation diagnostic with total update budget held fixed.
+
+## Stage 3C-18 current result
+
+Stage 3C-18 preserves the Stage-3C-16 carrier-on `edge_forward_gate` baseline and the Stage-3C-17 latest-on-tie rule. The only experimental factor is association candidate limit 1 versus 2. The top-2 arm forms one equal-weight historical objective-fact mean and still emits at most one modulation proposal under the original event delta budget. The override is checksum-bound in the paired plan, applied symmetrically to live/control, and is not a persistent configuration field.
+
+Across nine independent sources, both arms assign 1008 current events. Top-2 adds 864 secondary delay-2 references and raises modulation proposals from 942 to 970 and completed paired windows from 129 to 137. Guarded-live commits remain 144 in both arms. Unique selected historical events remain 112 per source; top-2 instead makes 96 events per source reusable twice. Discrete action differences change from 4 to 2, objective-event divergence incidence from 3/9 to 2/9 sources, and both arms remain 0/21 stable objective coordinates.
+
+This establishes candidate cardinality as a material fixed-bootstrap allocation factor but does not show improved historical coverage, causal credit, learning or value. The next authorized boundary is diagnostic rather than another allocator expansion: measure token-coordinate variance, effective rank and score separability while holding all runtime mechanisms fixed.

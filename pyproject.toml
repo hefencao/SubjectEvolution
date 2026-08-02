@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "se-mvp"
-version = "0.131.0"
+version = "0.132.0"
 description = "Reference implementation for nested-subject existence evolution simulation"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -83,6 +83,7 @@ se-subject-vm-stage3c14-family-reachability = "se.analysis.subject_vm_stage3c14_
 se-subject-vm-stage3c15-local-sensitivity = "se.analysis.subject_vm_stage3c15_local_sensitivity:main"
 se-subject-vm-stage3c16-edge-carrier-reachability = "se.analysis.subject_vm_stage3c16_edge_carrier_reachability:main"
 se-subject-vm-stage3c17-temporal-tie-break = "se.analysis.subject_vm_stage3c17_temporal_tie_break:main"
+se-subject-vm-stage3c18-bounded-candidate-allocation = "se.analysis.subject_vm_stage3c18_bounded_candidate_allocation:main"
 se-epoch = "se.cmd.epoch:main"
 se-source-health-gate = "se.analysis.source_health:main"
 se-turnover-substrate-config = "se.experiments.d1_turnover_substrate:main"

@@ -673,3 +673,15 @@ Stage 3C-17 固定九 source、32 实体、16 bootstrap subject、source tick 2�
 该变量通过 paired-plan runtime override 实施，不进入 config identity 或 checkpoint schema。两个 arm 的 source checkpoint state、pre-bootstrap config、stable subject selection 与 read-only objective behavior 完全一致。
 
 latest arm 的 1008 次 association 全为 delay 1；oldest arm 的 delay 为 1–6，但每 source 只使用 32 个历史事件并最大复用 6 次。两者均为 similarity 1.0，说明差异来自 tie-break 而不是 score。latest/oldest 分别产生 129/105 个完整窗口和 3/9、2/9 source 客观分化，Stage 3C-8 均为 0/21。不得把此结果解释为 recency 价值、credit 正确或学习。
+
+## v0.132：Stage 3C-18 有界候选分配审计
+
+Stage 3C-18 固定九个独立 source、每 source 32 个实体、16 个 bootstrap subject、source tick 2、branch horizon 8、exposure 3、CPU、`edge_forward_gate` carrier-on、latest-on-tie、bounded delta、自动回滚和 Stage 3C-8 聚合。唯一变量是每个当前事件最多选择一个还是两个历史候选。
+
+Top-2 仍使用相同 normalized-dot score、候选集合、threshold 和 delay bounds。两个候选的 21 维客观事实向量做等权均值，然后只形成一个 modulation proposal，并继续使用原有单事件 delta/update budget。等权不是学习出的 attention weight，也不具有价值或因果语义。
+
+正式九 source 结果中，top-1 与 top-2 都有 1008 个 assigned current events。Top-2 新增 864 个 delay=2 secondary references，使 modulation proposal 从 942 增至 970、完整窗口从 129 增至 137，但 commit 均为 144。每 source 唯一历史事件仍为 112；top-2 只是让其中 96 个事件各被引用两次。离散 action 差异从 4 降至 2，客观分化 source 从 3/9 变为 2/9，两个 arm 均为 0/21 稳定客观坐标。
+
+这说明 candidate cardinality 会实质改变连续漏斗和证据窗口，但当前 top-2 没有增加历史事件覆盖、写入次数或跨 source 稳定方向。不得据此给候选数、delay 或等权聚合赋予好坏含义，也不得继续无分析地增加候选数或引入 learned weights。
+
+Trace schema 升级到 v9，仅在 association 启用时增加五个固定容量审计数组；内存增长为 `25 × entity_capacity × trace_capacity_per_subject` bytes。旧 checkpoint 的已有 primary association 恢复为 selected count 1，secondary 字段为空。默认 candidate limit 仍为 1，旧配置 identity 不变。

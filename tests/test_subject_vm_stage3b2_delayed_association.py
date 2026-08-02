@@ -367,3 +367,25 @@ def test_equal_similarity_time_tie_break_can_select_latest_or_oldest() -> None:
     assert oldest.trace_storage.association_delay_ticks[0, oldest_slot] == 2
     assert latest.trace_storage.association_similarity[0, latest_slot] == pytest.approx(1.0)
     assert oldest.trace_storage.association_similarity[0, oldest_slot] == pytest.approx(1.0)
+
+
+def test_bounded_two_candidate_allocation_preserves_primary_and_records_secondary() -> None:
+    runtime = _runtime(_stage3b2_config())
+    _express_token_graph(runtime)
+    assert runtime.trace_storage is not None
+    runtime.trace_storage.association_candidate_limit = 2
+    _activate(runtime, tick=0, x=1.0, y=0.0)
+    _event(runtime, tick=0, event_id=940)
+    _activate(runtime, tick=1, x=1.0, y=0.0)
+    _event(runtime, tick=1, event_id=941)
+    _activate(runtime, tick=2, x=1.0, y=0.0)
+    _event(runtime, tick=2, event_id=942)
+    slot = runtime.trace_storage.latest_slot(0)
+    assert slot is not None
+    assert int(runtime.trace_storage.association_selected_count[0, slot]) == 2
+    assert int(runtime.trace_storage.associated_event_id[0, slot]) == 941
+    assert int(runtime.trace_storage.association_delay_ticks[0, slot]) == 1
+    assert int(runtime.trace_storage.secondary_associated_event_id[0, slot]) == 940
+    assert int(runtime.trace_storage.secondary_association_delay_ticks[0, slot]) == 2
+    assert float(runtime.trace_storage.association_similarity[0, slot]) == pytest.approx(1.0)
+    assert float(runtime.trace_storage.secondary_association_similarity[0, slot]) == pytest.approx(1.0)

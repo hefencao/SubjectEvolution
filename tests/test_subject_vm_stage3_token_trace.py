@@ -368,3 +368,28 @@ def test_stage3c10_trace_diagnostics_upgrade_v7_and_clear_slots() -> None:
     assert restored.binding_eligibility_age is not None
     assert not np.any(restored.association_reason)
     assert not np.any(restored.binding_eligibility_age)
+
+
+def test_stage3c18_trace_diagnostics_upgrade_v8_defaults_bounded_candidate_fields() -> None:
+    from se.subject_vm.trace import (
+        TRACE_STORAGE_SCHEMA_V8,
+        SubjectVMTraceStorage,
+    )
+
+    cfg = load_config("configs/mvp_short_subject_vm_stage3c8_paired_study.json").subject_vm
+    trace = SubjectVMTraceStorage(cfg, entity_capacity=2)
+    payload = trace.snapshot_state()
+    payload["schema"] = TRACE_STORAGE_SCHEMA_V8
+    for name in (
+        "association_selected_count",
+        "secondary_associated_event_id",
+        "secondary_associated_event_tick",
+        "secondary_association_delay_ticks",
+        "secondary_association_similarity",
+    ):
+        payload["arrays"].pop(name)
+    restored = SubjectVMTraceStorage.from_snapshot(cfg, 2, payload)
+    assert restored.association_selected_count is not None
+    assert restored.secondary_associated_event_tick is not None
+    assert not np.any(restored.association_selected_count)
+    assert np.all(restored.secondary_associated_event_tick == -1)

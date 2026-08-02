@@ -1605,3 +1605,27 @@ Persistent memory growth is zero. The intervention reuses existing fixed-capacit
 Stage 3C-17 remains in experiment orchestration and `se.analysis`. The default runtime selector remains latest-on-tie. An optional paired-plan runtime override may select oldest-on-tie and is applied equally to live and control branches after checkpoint load. The override is checksum-bound in branch identity and lineage, adds no config field, array, checkpoint schema, random stream or persistent path record.
 
 The association selector continues to use the same bounded candidate set, normalized-dot similarity, thresholds and delay limits. Only the deterministic ordering among scores equal within the existing tolerance changes. Analysis compares source checkpoint identity, stable-subject selection, read-only control behavior, exact delay allocation, historical-event reuse, funnel counts and Stage 3C-7/8 outputs.
+
+### Stage 3C-18 — bounded association candidate allocation (implemented in v0.132)
+
+Stage 3C-18 keeps the Stage-3C-16 reachable `edge_forward_gate` carrier and the Stage-3C-17 latest-on-tie ordering fixed. The default runtime remains one selected delayed association candidate. An explicitly checksum-bound paired-plan override may raise the limit to two and is applied equally to guarded-live and read-only-control branches after checkpoint load. It is not a persistent configuration field and therefore does not change legacy canonical config identity.
+
+`se.subject_vm.association` ranks the same valid normalized-dot candidates under the existing delay and similarity gates. With limit two, it returns the first two ranked references. `SubjectVMTraceStorage` forms one historical objective-fact vector by an equal-weight float64 mean before converting through the existing modulation path. It still requests at most one modulation proposal for the current event, consumes the original event delta budget, and does not add another transaction, write, ledger, evaluation window or random draw.
+
+The trace storage schema advances from v8 to v9 for bounded diagnostics. When association is enabled it adds five fixed-capacity arrays per `(entity, trace-slot)`:
+
+- selected-candidate count: `uint8`;
+- secondary event ID: `uint64`;
+- secondary event tick: `int64`;
+- secondary delay: `uint32`;
+- secondary similarity: `float32`.
+
+The exact persistent memory increase is:
+
+```text
+25 bytes × entity_capacity × trace_capacity_per_subject
+```
+
+It is zero when association tracing is disabled and is independent of graph node/edge capacity. v8 and older checkpoints recover each already-assigned primary association as selected count one; all secondary fields remain empty sentinels. No full candidate list, node/edge path, attention matrix or unbounded history is persisted.
+
+The Stage 3C-18 analyzer remains in `se.analysis`. It verifies common source/config identities, bootstrap subjects, read-only control behavior, candidate gates, target family/carrier, proposal cardinality and update budget. It reports reference cardinality, delay histograms, unique historical-event coverage and reuse concentration before consuming unchanged Stage 3C-7/8/10 evidence. Windows remain nested observations; independent source checkpoints remain the highest replicate unit.

@@ -64,6 +64,8 @@ class ShortPairedStudyParameters:
     bootstrap_target_family: str = "node_bias"
     bootstrap_edge_carrier_enabled: bool = False
     association_tie_break: str = "latest"
+    association_candidate_limit: int = 1
+    association_candidate_aggregation: str = "equal-weight-mean"
 
     def validate(self) -> None:
         if len(self.seeds) < 3:
@@ -98,6 +100,14 @@ class ShortPairedStudyParameters:
         if self.association_tie_break not in {"latest", "oldest"}:
             raise ValueError(
                 "association_tie_break must be latest or oldest"
+            )
+        if int(self.association_candidate_limit) not in {1, 2}:
+            raise ValueError(
+                "association_candidate_limit must be one or two"
+            )
+        if self.association_candidate_aggregation != "equal-weight-mean":
+            raise ValueError(
+                "association_candidate_aggregation must remain equal-weight-mean"
             )
 
 
@@ -394,6 +404,11 @@ def run_short_paired_study(
                 if parameters.association_tie_break == "latest"
                 else parameters.association_tie_break
             ),
+            association_candidate_limit_override=(
+                None
+                if int(parameters.association_candidate_limit) == 1
+                else int(parameters.association_candidate_limit)
+            ),
         )
         plan_path = seed_root / "paired_plan.json"
         _write_json(plan_path, plan)
@@ -581,6 +596,16 @@ def build_parser() -> argparse.ArgumentParser:
             "the similarity metric and candidate set remain unchanged."
         ),
     )
+    parser.add_argument(
+        "--association-candidate-limit",
+        choices=(1, 2),
+        type=int,
+        default=1,
+        help=(
+            "Experiment-only number of address candidates whose objective facts "
+            "are combined with equal weights into one modulation proposal."
+        ),
+    )
     parser.add_argument("--backend", choices=("auto", "cpu"), default="auto")
     parser.add_argument("--output", required=True)
     parser.add_argument("--overwrite", action="store_true")
@@ -601,6 +626,7 @@ def main() -> None:
             bootstrap_target_family=args.bootstrap_target_family,
             bootstrap_edge_carrier_enabled=args.bootstrap_edge_carrier_enabled,
             association_tie_break=args.association_tie_break,
+            association_candidate_limit=args.association_candidate_limit,
         ),
         output_dir=args.output,
         overwrite=args.overwrite,

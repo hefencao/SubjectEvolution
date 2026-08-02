@@ -375,3 +375,25 @@ def test_plan_records_only_authorized_association_tie_break_runtime_override(
             horizon_ticks=3,
             association_tie_break_override="random",
         )
+
+
+def test_plan_records_only_authorized_association_candidate_limit_runtime_override(
+    tmp_path: Path,
+) -> None:
+    cfg = _config(live_enabled=False)
+    source = _write_checkpoint(tmp_path / "source_limit.sechk", cfg, _runtime(cfg), tick=0)
+    baseline = build_plan(source, horizon_ticks=3)
+    top2 = build_plan(
+        source, horizon_ticks=3, association_candidate_limit_override=2
+    )
+    assert "branch_runtime_overrides" not in baseline
+    assert top2["branch_runtime_overrides"] == {
+        "subject_vm.association.candidate_limit": 2
+    }
+    assert top2["plan_sha256"] != baseline["plan_sha256"]
+    with pytest.raises(ValueError, match="one or two"):
+        build_plan(
+            source,
+            horizon_ticks=3,
+            association_candidate_limit_override=3,
+        )

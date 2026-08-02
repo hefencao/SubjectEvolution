@@ -51,7 +51,8 @@ TRACE_STORAGE_SCHEMA_V4 = "se-subject-vm-token-event-storage-v4"
 TRACE_STORAGE_SCHEMA_V5 = "se-subject-vm-token-event-storage-v5"
 TRACE_STORAGE_SCHEMA_V6 = "se-subject-vm-token-event-storage-v6"
 TRACE_STORAGE_SCHEMA_V7 = "se-subject-vm-token-event-storage-v7"
-TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v8"
+TRACE_STORAGE_SCHEMA_V8 = "se-subject-vm-token-event-storage-v8"
+TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v9"
 ACTION_PORT_WIDTH = 8
 RESOURCE_DELTA_WIDTH = 4
 OBJECTIVE_EVENT_DELTA_NAMES = (
@@ -110,6 +111,7 @@ class SubjectVMTraceAccounting:
     emitted_tokens: int = 0
     association_requests: int = 0
     association_assignments: int = 0
+    association_selected_references: int = 0
     association_unassigned_no_request: int = 0
     association_unassigned_zero_query: int = 0
     association_unassigned_no_candidate: int = 0
@@ -167,6 +169,7 @@ class SubjectVMTraceStorage:
         self.retention_ticks = int(cfg.trace.retention_ticks)
         self.token_width = int(cfg.trace.token_width)
         self.association_tie_break = "latest"
+        self.association_candidate_limit = 1
         e, c, w = self.entity_capacity, self.capacity, self.token_width
 
         self.write_cursor = np.zeros(e, dtype=np.uint32)
@@ -214,6 +217,21 @@ class SubjectVMTraceStorage:
             np.zeros((e, c), dtype=np.uint32) if cfg.association_enabled else None
         )
         self.association_similarity = (
+            np.zeros((e, c), dtype=np.float32) if cfg.association_enabled else None
+        )
+        self.association_selected_count = (
+            np.zeros((e, c), dtype=np.uint8) if cfg.association_enabled else None
+        )
+        self.secondary_associated_event_id = (
+            np.zeros((e, c), dtype=np.uint64) if cfg.association_enabled else None
+        )
+        self.secondary_associated_event_tick = (
+            np.full((e, c), -1, dtype=np.int64) if cfg.association_enabled else None
+        )
+        self.secondary_association_delay_ticks = (
+            np.zeros((e, c), dtype=np.uint32) if cfg.association_enabled else None
+        )
+        self.secondary_association_similarity = (
             np.zeros((e, c), dtype=np.float32) if cfg.association_enabled else None
         )
         self.modulation_requested = (
@@ -443,7 +461,15 @@ class SubjectVMTraceStorage:
 
     @classmethod
     def association_snapshot_array_names(cls) -> tuple[str, ...]:
-        return ("association_reason", *cls.legacy_association_snapshot_array_names())
+        return (
+            "association_reason",
+            *cls.legacy_association_snapshot_array_names(),
+            "association_selected_count",
+            "secondary_associated_event_id",
+            "secondary_associated_event_tick",
+            "secondary_association_delay_ticks",
+            "secondary_association_similarity",
+        )
 
     @staticmethod
     def modulation_snapshot_array_names() -> tuple[str, ...]:
@@ -556,7 +582,7 @@ class SubjectVMTraceStorage:
             return
         for name in self.snapshot_array_names():
             array = getattr(self, name)
-            if name in {"event_tick", "action_id", "associated_event_tick", "live_write_ledger_slot", "live_write_rollback_due_tick"}:
+            if name in {"event_tick", "action_id", "associated_event_tick", "secondary_associated_event_tick", "live_write_ledger_slot", "live_write_rollback_due_tick"}:
                 array[rows] = -1
             else:
                 array[rows] = 0
@@ -602,6 +628,11 @@ class SubjectVMTraceStorage:
             assert self.associated_event_tick is not None
             assert self.association_delay_ticks is not None
             assert self.association_similarity is not None
+            assert self.association_selected_count is not None
+            assert self.secondary_associated_event_id is not None
+            assert self.secondary_associated_event_tick is not None
+            assert self.secondary_association_delay_ticks is not None
+            assert self.secondary_association_similarity is not None
             self.association_reason[row, slot] = 0
             self.association_requested[row, slot] = False
             self.association_assigned[row, slot] = False
@@ -609,6 +640,11 @@ class SubjectVMTraceStorage:
             self.associated_event_tick[row, slot] = -1
             self.association_delay_ticks[row, slot] = 0
             self.association_similarity[row, slot] = 0.0
+            self.association_selected_count[row, slot] = 0
+            self.secondary_associated_event_id[row, slot] = 0
+            self.secondary_associated_event_tick[row, slot] = -1
+            self.secondary_association_delay_ticks[row, slot] = 0
+            self.secondary_association_similarity[row, slot] = 0.0
         if self.cfg.modulation_enabled:
             assert self.modulation_requested is not None
             assert self.modulation_proposed is not None
@@ -834,6 +870,7 @@ class SubjectVMTraceStorage:
                 association = select_delayed_association_candidate(
                     cfg=self.cfg.association,
                     tie_break=self.association_tie_break,
+                    candidate_limit=self.association_candidate_limit,
                     current_tick=int(batch.tick),
                     current_token=np.asarray(tokens.tokens[index], dtype=np.float32),
                     event_valid=self.event_valid[row],
@@ -853,6 +890,7 @@ class SubjectVMTraceStorage:
                     accounting.association_unassigned_no_request += 1
                 if association.assigned:
                     accounting.association_assignments += 1
+                    accounting.association_selected_references += int(association.selected_count)
                 elif association.reason in {"zero-query", "zero-candidate"}:
                     accounting.association_unassigned_zero_query += 1
                 elif association.reason == "no-candidate":
@@ -870,18 +908,32 @@ class SubjectVMTraceStorage:
                 )
                 historical_facts = None
                 if association.assigned:
-                    matches = np.flatnonzero(
-                        self.event_valid[row]
-                        & (self.event_id[row] == np.uint64(association.associated_event_id))
-                        & (self.event_tick[row] == int(association.associated_event_tick))
-                    )
-                    if matches.size == 1:
+                    selected_facts: list[np.ndarray] = []
+                    for historical_event_id, historical_event_tick in zip(
+                        association.selected_event_ids,
+                        association.selected_event_ticks,
+                        strict=True,
+                    ):
+                        matches = np.flatnonzero(
+                            self.event_valid[row]
+                            & (self.event_id[row] == np.uint64(historical_event_id))
+                            & (self.event_tick[row] == int(historical_event_tick))
+                        )
+                        if matches.size != 1:
+                            selected_facts = []
+                            break
                         historical_slot = int(matches[0])
-                        historical_facts = objective_fact_vector(
-                            objective_delta=self.objective_delta[row, historical_slot],
-                            resource_delta=self.resolution_resource_delta[row, historical_slot],
-                            internal_resource_delta=self.resolution_internal_resource_delta[row, historical_slot],
-                            energy_cost=float(self.resolution_energy_cost[row, historical_slot]),
+                        selected_facts.append(
+                            objective_fact_vector(
+                                objective_delta=self.objective_delta[row, historical_slot],
+                                resource_delta=self.resolution_resource_delta[row, historical_slot],
+                                internal_resource_delta=self.resolution_internal_resource_delta[row, historical_slot],
+                                energy_cost=float(self.resolution_energy_cost[row, historical_slot]),
+                            )
+                        )
+                    if selected_facts:
+                        historical_facts = np.mean(
+                            np.stack(selected_facts, axis=0), axis=0, dtype=np.float64
                         )
                 modulation = propose_modulation(
                     cfg=self.cfg.modulation,
@@ -1084,6 +1136,11 @@ class SubjectVMTraceStorage:
                 assert self.associated_event_tick is not None
                 assert self.association_delay_ticks is not None
                 assert self.association_similarity is not None
+                assert self.association_selected_count is not None
+                assert self.secondary_associated_event_id is not None
+                assert self.secondary_associated_event_tick is not None
+                assert self.secondary_association_delay_ticks is not None
+                assert self.secondary_association_similarity is not None
                 self.association_reason[row, slot] = np.uint8(ASSOCIATION_REASON_CODES[association.reason])
                 self.association_requested[row, slot] = association.requested
                 self.association_assigned[row, slot] = association.assigned
@@ -1099,6 +1156,22 @@ class SubjectVMTraceStorage:
                 self.association_similarity[row, slot] = np.float32(
                     association.similarity
                 )
+                self.association_selected_count[row, slot] = np.uint8(
+                    association.selected_count
+                )
+                if association.selected_count > 1:
+                    self.secondary_associated_event_id[row, slot] = np.uint64(
+                        association.selected_event_ids[1]
+                    )
+                    self.secondary_associated_event_tick[row, slot] = int(
+                        association.selected_event_ticks[1]
+                    )
+                    self.secondary_association_delay_ticks[row, slot] = np.uint32(
+                        association.selected_delay_ticks[1]
+                    )
+                    self.secondary_association_similarity[row, slot] = np.float32(
+                        association.selected_similarities[1]
+                    )
             if modulation is not None:
                 assert self.modulation_requested is not None
                 assert self.modulation_proposed is not None
@@ -1259,6 +1332,7 @@ class SubjectVMTraceStorage:
         schema = payload.get("schema")
         if schema not in {
             TRACE_STORAGE_SCHEMA,
+            TRACE_STORAGE_SCHEMA_V8,
             TRACE_STORAGE_SCHEMA_V7,
             TRACE_STORAGE_SCHEMA_V6,
             TRACE_STORAGE_SCHEMA_V5,
@@ -1332,7 +1406,34 @@ class SubjectVMTraceStorage:
                 names += result.transaction_snapshot_array_names()
         elif schema == TRACE_STORAGE_SCHEMA_V7:
             names = result.snapshot_array_names()
-            names = tuple(name for name in names if name not in {"binding_eligibility_age", "association_reason"})
+            names = tuple(
+                name
+                for name in names
+                if name
+                not in {
+                    "binding_eligibility_age",
+                    "association_reason",
+                    "association_selected_count",
+                    "secondary_associated_event_id",
+                    "secondary_associated_event_tick",
+                    "secondary_association_delay_ticks",
+                    "secondary_association_similarity",
+                }
+            )
+        elif schema == TRACE_STORAGE_SCHEMA_V8:
+            names = result.snapshot_array_names()
+            names = tuple(
+                name
+                for name in names
+                if name
+                not in {
+                    "association_selected_count",
+                    "secondary_associated_event_id",
+                    "secondary_associated_event_tick",
+                    "secondary_association_delay_ticks",
+                    "secondary_association_similarity",
+                }
+            )
         else:
             names = result.snapshot_array_names()
         for name in names:
@@ -1343,6 +1444,15 @@ class SubjectVMTraceStorage:
             if restored.shape != expected_array.shape:
                 raise ValueError(f"subject_vm trace checkpoint shape mismatch for {name}")
             setattr(result, name, restored.copy())
+        if (
+            schema != TRACE_STORAGE_SCHEMA
+            and result.cfg.association_enabled
+            and result.association_assigned is not None
+            and result.association_selected_count is not None
+        ):
+            # Legacy schemas recorded one primary association only. Preserve that
+            # historical fact while leaving all new secondary-candidate fields empty.
+            result.association_selected_count[result.association_assigned] = np.uint8(1)
         return result
 
     def clone(self) -> "SubjectVMTraceStorage":
@@ -1350,6 +1460,7 @@ class SubjectVMTraceStorage:
             self.cfg, self.entity_capacity, self.snapshot_state()
         )
         cloned.association_tie_break = self.association_tie_break
+        cloned.association_candidate_limit = self.association_candidate_limit
         return cloned
 
     def diagnostics(self) -> dict[str, Any]:
@@ -1362,6 +1473,7 @@ class SubjectVMTraceStorage:
             "stored_events": int(np.count_nonzero(self.event_valid)),
             "association_enabled": self.cfg.association_enabled,
             "association_tie_break": self.association_tie_break,
+            "association_candidate_limit": self.association_candidate_limit,
             "assigned_associations": (
                 0
                 if self.association_assigned is None
@@ -1442,6 +1554,7 @@ __all__ = [
     "TRACE_STORAGE_SCHEMA_V5",
     "TRACE_STORAGE_SCHEMA_V6",
     "TRACE_STORAGE_SCHEMA_V7",
+    "TRACE_STORAGE_SCHEMA_V8",
     "SubjectVMObjectiveEventBatch",
     "SubjectVMThoughtTokenBatch",
     "SubjectVMTraceAccounting",

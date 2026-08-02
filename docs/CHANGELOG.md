@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.132.0
+
+- Adds Subject VM Stage 3C-18 bounded association candidate-allocation assessment.
+- Preserves latest-on-tie addressing and compares a one-candidate baseline with an at-most-two-candidate equal-weight objective-fact aggregation under one unchanged proposal/update budget.
+- Adds fixed-capacity primary/secondary association audit facts and upgrades the trace checkpoint schema to v9 while preserving legacy primary associations and empty secondary defaults.
+- Records candidate reference count, delay distribution, unique historical-event coverage and event-reuse concentration outside the runtime learning path.
+- Finds that top-2 adds 864 secondary references, 28 proposals and 8 completed windows, but no commits, no unique-event coverage and no stable objective coordinate; objective divergence incidence changes from 3/9 to 2/9 sources.
+- Adds the Stage 3C-18 workflow, decision protocol, CLI, packaging contract and deterministic isolation/checkpoint tests.
+- Authorizes no learned attention weights, scalar objective, permanent retention, causal-credit claim, learning claim or general-attention claim.
+
 ## 0.131.0
 
 - Adds Subject VM Stage 3C-17 equal-similarity temporal tie-break assessment.

@@ -649,3 +649,21 @@ Stage 3C-16 的 carrier-off arm 有大量 modulation proposal，但因为 edge 0
 当前 fixed bootstrap 的 token 在 association 可见坐标上完全一致，导致 normalized-dot similarity 全为 1.0。默认 latest-on-tie 因而把所有候选压到 delay=1。改为 oldest-on-tie 后 delay 扩展到 1–6，但每 source 的唯一历史事件数从 112 降到 32，单事件复用上升到 6。
 
 因此“延迟分布更宽”不等于“历史证据更丰富”。latest 和 oldest 都是固定 shaping bias：一个偏向最新事件单次使用，另一个偏向少数最老可用事件反复使用。更多 proposal、窗口或离散 crossing 也不能被解释为更好。下一步若继续 addressing，只能比较有界多候选分配，并固定总更新预算与独立 source 层级。
+
+## v0.132：增加候选引用不等于增加历史证据覆盖
+
+Stage 3C-18 在 latest-on-tie 和全部更新合同不变时，把候选上限从 1 提高到 2。Top-2 为 864 个当前事件增加 delay=2 secondary reference，但每 source 的唯一历史事件数量仍为 112，没有获得新的历史事实覆盖；它只是把 96 个历史事件的复用次数从 1 提高到 2。
+
+因此 candidate reference count、delay 种类和 unique historical-event coverage 必须分别报告。更多引用不能自动解释为更多信息、更多因果证据或更一般的注意力。若新增引用高度重叠，它可能只改变同一批事实的聚合权重。
+
+## v0.132：连续漏斗增加不能替代独立 source 稳定性
+
+Top-2 使 modulation proposal 增加 28、完整窗口增加 8，但 guarded-live commit 不变，离散 action difference 减少 2，客观事件分化 source 从 3/9 降到 2/9，Stage 3C-8 仍为 0/21。不能只选择 proposal 或窗口计数宣称机制改善，也不能把离散差异减少解释为有害。
+
+主统计仍为 window → stable subject → independent source。候选和窗口是 source 内观测，不是新的独立重复。
+
+## v0.132：等权候选均值是工程基线，不是 learned attention
+
+Stage 3C-18 为隔离候选基数而使用固定等权均值，并保持一次 proposal 与原 event budget。这一聚合没有训练、竞争、价值、trust 或因果权重含义。它只回答“在同一预算下引入第二个按现有规则排序的候选会怎样”。
+
+当前所有 association similarity 仍为 1.0，说明更根本的可分辨性问题可能位于 token geometry，而不是候选上限本身。下一步应先做 token-coordinate variance、effective-rank、pairwise score spread 和 threshold-margin 的外部诊断；在证明 score 可分离前，不应继续增大 top-k、引入 learned weights 或替换为完整通用注意模型。

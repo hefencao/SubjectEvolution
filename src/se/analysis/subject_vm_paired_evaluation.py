@@ -134,33 +134,68 @@ def _plan_rollback_after_ticks_override(plan: dict[str, Any]) -> int | None:
 
 def _normalized_runtime_overrides(
     association_tie_break_override: str | None,
-) -> dict[str, str]:
-    if association_tie_break_override is None:
+    association_candidate_limit_override: int | None,
+) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    if association_tie_break_override is not None:
+        policy = str(association_tie_break_override)
+        if policy not in {"latest", "oldest"}:
+            raise ValueError(
+                "subject_vm paired association tie-break override must be latest or oldest"
+            )
+        result["subject_vm.association.tie_break"] = policy
+    if association_candidate_limit_override is not None:
+        limit = int(association_candidate_limit_override)
+        if limit not in {1, 2}:
+            raise ValueError(
+                "subject_vm paired association candidate-limit override must be one or two"
+            )
+        result["subject_vm.association.candidate_limit"] = limit
+    return result
+
+
+def _plan_branch_runtime_overrides(plan: dict[str, Any]) -> dict[str, Any]:
+    raw = plan.get("branch_runtime_overrides")
+    if raw is None:
         return {}
-    policy = str(association_tie_break_override)
-    if policy not in {"latest", "oldest"}:
+    if not isinstance(raw, dict):
+        raise ValueError("subject_vm paired branch runtime overrides must be an object")
+    allowed = {
+        "subject_vm.association.tie_break",
+        "subject_vm.association.candidate_limit",
+    }
+    if not set(raw).issubset(allowed) or not raw:
         raise ValueError(
-            "subject_vm paired association tie-break override must be latest or oldest"
+            "subject_vm paired branch runtime overrides may change only bounded association allocation"
         )
-    return {"subject_vm.association.tie_break": policy}
+    normalized: dict[str, Any] = {}
+    if "subject_vm.association.tie_break" in raw:
+        policy = str(raw["subject_vm.association.tie_break"])
+        if policy not in {"latest", "oldest"}:
+            raise ValueError(
+                "subject_vm paired association tie-break override must be latest or oldest"
+            )
+        normalized["subject_vm.association.tie_break"] = policy
+    if "subject_vm.association.candidate_limit" in raw:
+        limit = int(raw["subject_vm.association.candidate_limit"])
+        if limit not in {1, 2}:
+            raise ValueError(
+                "subject_vm paired association candidate-limit override must be one or two"
+            )
+        normalized["subject_vm.association.candidate_limit"] = limit
+    return normalized
 
 
 def _plan_association_tie_break_override(plan: dict[str, Any]) -> str | None:
-    raw = plan.get("branch_runtime_overrides")
-    if raw is None:
-        return None
-    if not isinstance(raw, dict):
-        raise ValueError("subject_vm paired branch runtime overrides must be an object")
-    if set(raw) != {"subject_vm.association.tie_break"}:
-        raise ValueError(
-            "subject_vm paired branch runtime overrides may change association tie-break only"
-        )
-    policy = str(raw["subject_vm.association.tie_break"])
-    if policy not in {"latest", "oldest"}:
-        raise ValueError(
-            "subject_vm paired association tie-break override must be latest or oldest"
-        )
-    return policy
+    raw = _plan_branch_runtime_overrides(plan)
+    value = raw.get("subject_vm.association.tie_break")
+    return None if value is None else str(value)
+
+
+def _plan_association_candidate_limit_override(plan: dict[str, Any]) -> int | None:
+    raw = _plan_branch_runtime_overrides(plan)
+    value = raw.get("subject_vm.association.candidate_limit")
+    return None if value is None else int(value)
 
 
 def _branch_contract_config(
@@ -210,6 +245,7 @@ def build_plan(
     finalize_pending_transients_at_export: bool = False,
     rollback_after_ticks_override: int | None = None,
     association_tie_break_override: str | None = None,
+    association_candidate_limit_override: int | None = None,
 ) -> dict[str, Any]:
     source_path = Path(source_checkpoint).resolve()
     metadata, state = read_checkpoint_bundle(source_path)
@@ -243,7 +279,8 @@ def build_plan(
         "checkpoint_tick": source_tick,
     }
     runtime_overrides = _normalized_runtime_overrides(
-        association_tie_break_override
+        association_tie_break_override,
+        association_candidate_limit_override,
     )
     branches = []
     for role in BRANCH_ROLES:
@@ -310,7 +347,7 @@ def _validate_plan(plan: dict[str, Any]) -> None:
     if tuple(roles) != BRANCH_ROLES:
         raise ValueError("subject_vm paired evaluation plan branch roles mismatch")
     _plan_rollback_after_ticks_override(plan)
-    _plan_association_tie_break_override(plan)
+    _plan_branch_runtime_overrides(plan)
 
 
 def _set_branch_mode(
@@ -338,20 +375,33 @@ def _set_branch_mode(
 
 
 def _set_branch_runtime_overrides(
-    simulation: Simulation, *, association_tie_break_override: str | None
+    simulation: Simulation,
+    *,
+    association_tie_break_override: str | None,
+    association_candidate_limit_override: int | None,
 ) -> None:
-    if association_tie_break_override is None:
+    if (
+        association_tie_break_override is None
+        and association_candidate_limit_override is None
+    ):
         return
     trace = simulation.subject_vm.trace_storage
     if trace is None or not simulation.subject_vm.association_enabled:
         raise ValueError(
-            "subject_vm paired association tie-break override requires association storage"
+            "subject_vm paired association override requires association storage"
         )
-    if association_tie_break_override not in {"latest", "oldest"}:
-        raise ValueError(
-            "subject_vm paired association tie-break override must be latest or oldest"
-        )
-    trace.association_tie_break = association_tie_break_override
+    if association_tie_break_override is not None:
+        if association_tie_break_override not in {"latest", "oldest"}:
+            raise ValueError(
+                "subject_vm paired association tie-break override must be latest or oldest"
+            )
+        trace.association_tie_break = association_tie_break_override
+    if association_candidate_limit_override is not None:
+        if int(association_candidate_limit_override) not in {1, 2}:
+            raise ValueError(
+                "subject_vm paired association candidate-limit override must be one or two"
+            )
+        trace.association_candidate_limit = int(association_candidate_limit_override)
 
 
 def _branch_manifest(plan: dict[str, Any], role: str) -> dict[str, Any]:
@@ -432,6 +482,9 @@ def run_plan(
     )
     rollback_after_ticks_override = _plan_rollback_after_ticks_override(plan)
     association_tie_break_override = _plan_association_tie_break_override(plan)
+    association_candidate_limit_override = (
+        _plan_association_candidate_limit_override(plan)
+    )
     _set_branch_mode(
         control,
         role="read-only-control",
@@ -448,10 +501,12 @@ def run_plan(
     _set_branch_runtime_overrides(
         control,
         association_tie_break_override=association_tie_break_override,
+        association_candidate_limit_override=association_candidate_limit_override,
     )
     _set_branch_runtime_overrides(
         live,
         association_tie_break_override=association_tie_break_override,
+        association_candidate_limit_override=association_candidate_limit_override,
     )
     for role, sim, directory in (
         ("read-only-control", control, control_dir),
@@ -594,6 +649,9 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument(
         "--association-tie-break", choices=("latest", "oldest")
     )
+    plan.add_argument(
+        "--association-candidate-limit", choices=(1, 2), type=int
+    )
     plan.add_argument("--output", required=True)
     run = sub.add_parser("run")
     run.add_argument("--plan", required=True)
@@ -616,6 +674,7 @@ def main() -> None:
             horizon_ticks=args.horizon_ticks,
             rollback_after_ticks_override=args.rollback_after_ticks,
             association_tie_break_override=args.association_tie_break,
+            association_candidate_limit_override=args.association_candidate_limit,
         )
     else:
         plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))

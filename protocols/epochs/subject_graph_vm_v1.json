@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c16-edge-carrier-reachability-implemented",
-  "project_version": "0.130.0",
+  "status": "stage-3c18-bounded-candidate-allocation-implemented",
+  "project_version": "0.132.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3C-17",
+  "current_stage": "3C-18",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -425,6 +425,24 @@
     "read_only_control_behavior_identity_required": true,
     "within_source_windows_are_independent_replicates": false,
     "value_semantics": false,
+    "permanent_write_authorized": false,
+    "scientific_qualification": false
+  },
+  "stage_3c18_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_stage3c18_bounded_candidate_allocation_v1.json",
+    "runtime_persistent_state_change": true,
+    "trace_storage_schema_change": "v8-to-v9-bounded-secondary-reference-audit-fields",
+    "single_changed_factor": "association-candidate-limit-one-to-two",
+    "candidate_aggregation": "equal-weight-objective-fact-mean",
+    "one_modulation_proposal_per_current_event": true,
+    "same_event_delta_budget": true,
+    "tie_break_fixed": "latest",
+    "target_family_fixed": "edge_forward_gate",
+    "edge_carrier_fixed": true,
+    "similarity_as_value": false,
+    "identical_source_checkpoint_state_required": true,
+    "read_only_control_behavior_identity_required": true,
+    "within_source_windows_are_independent_replicates": false,
     "permanent_write_authorized": false,
     "scientific_qualification": false
   }
