@@ -1,0 +1,56 @@
+{
+  "schema": "se-subject-vm-stage3c10-diagnostics-contract-v1",
+  "decision_id": "subject-graph-vm-stage3c10-funnel-visibility-diagnostics-v1",
+  "status": "implemented-engineering-diagnostics",
+  "purpose": "Locate where the v0.123 short paired signal becomes sparse without changing the learning mechanism, replicate hierarchy or retention policy.",
+  "runtime_facts": {
+    "association_reason_uint8_per_trace_slot": true,
+    "eligibility_age_uint16_per_family_at_binding": true,
+    "fixed_capacity": true,
+    "disableable": true,
+    "legacy_v0123_checkpoint_compatible": true,
+    "additional_bytes_formula": "13 * entity_capacity * trace_capacity_per_subject",
+    "complete_activation_path_persisted": false
+  },
+  "analysis": {
+    "subject_funnel": true,
+    "canonical_and_raw_rejection_reasons": true,
+    "update_magnitude_and_parameter_range_ratio": true,
+    "temporary_effect_exposure": true,
+    "association_and_eligibility_distributions": true,
+    "historical_event_and_target_reuse": true,
+    "live_control_divergence_timeline": true,
+    "admission_and_counted_cost_symmetry": true,
+    "exact_parameter_restoration": true,
+    "post_rollback_path_dependence": true,
+    "aggregation_sensitivity": true
+  },
+  "aggregation": {
+    "primary": "window -> stable subject -> independent source",
+    "window_as_independent_replicate": false,
+    "diagnostic_alternatives_change_primary_result": false
+  },
+  "bootstrap": {
+    "classification": "fixed-cognition-engineering-shaping-aid",
+    "evolved_topology": false,
+    "universal_attention_claim": false,
+    "replaceable": true,
+    "fixed_value_semantics": false
+  },
+  "mechanism_change": {
+    "single_variable_adjustment": false,
+    "permanent_retention": false,
+    "automatic_keep_or_revert": false,
+    "scalar_objective": false,
+    "topology_evolution": false
+  },
+  "authorized_conclusion": "The data chain is active and contract-complete, but parameter-level effects rarely cross the sampled discrete-action boundary under the current short fixed bootstrap.",
+  "forbidden_conclusions": {
+    "causal_credit": false,
+    "beneficial_update": false,
+    "stable_learning": false,
+    "attention_optimality": false,
+    "subjecthood": false,
+    "epoch_1_entry": false
+  }
+}

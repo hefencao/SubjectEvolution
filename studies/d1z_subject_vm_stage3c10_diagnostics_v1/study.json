@@ -1,0 +1,17 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c10_diagnostics_v1",
+  "title": "D1-Z Subject VM Stage 3C-10 short paired diagnostics",
+  "status": "engineering-diagnostics",
+  "scientific_stage": "stage3c10-funnel-visibility-no-mechanism-change",
+  "authorization": {
+    "reuse_v0123_fixed_bootstrap_study": true,
+    "short_cpu_paired_run": true,
+    "diagnostic_trace_fields": true,
+    "single_variable_mechanism_change": false,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "epoch_1_entry": false,
+    "subjecthood_claim": false
+  }
+}

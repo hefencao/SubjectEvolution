@@ -1507,3 +1507,12 @@ Stage 3C-9 remains an experiment boundary. `se.experiments.subject_vm_short_pair
 The live-write ledger schema v2 introduces virtual control reservations. A control reservation consumes the same pending-target, ledger and per-window admission capacity as a guarded live write, but performs no parameter write and charges no live-write cost. Both reservation types participate in overlap detection and expire through the same lifecycle owner.
 
 The paired plan can request export-boundary transient finalization. After the final semantic tick, no additional simulation step is executed. The existing exact CAS rollback owner restores pending guarded-live values and releases control reservations; incomplete evaluation windows are not promoted into evidence. Finalization metadata is persisted in checkpoint lineage.
+
+
+### Stage 3C-10 — external funnel and update-visibility diagnostics (implemented in v0.124)
+
+Stage 3C-10 remains outside the authoritative activation, update and lifecycle owners. `se.analysis.subject_vm_stage3c10_diagnostics` reads trusted source/live/control checkpoints plus the Stage-3C-8 report and emits source/subject funnel counts, raw and canonical rejection reasons, update magnitude and configured-range ratios, temporary-effect exposure, eligibility/addressing distributions, target reuse, branch divergence timelines, exact parameter restoration, non-parameter path dependence and aggregation sensitivity. The primary hierarchy remains window → stable subject → independent source; window-weighted summaries are diagnostic only.
+
+The runtime records only two additional optional fixed-capacity facts: `association_reason` is one `uint8` per token-ring slot, and `binding_eligibility_age` is six `uint16` values per slot. Added memory is `entity_capacity * trace_capacity * (1 + 6 * 2)` bytes, or 6,656 bytes for the 32-entity/16-slot short study. The arrays exist only when association/target binding are enabled, are cleared with ring lifecycle, and default to zero when loading the v0.123 trace schema. No configuration field changes, so disabled canonical identities remain unchanged. No complete node/edge path, unbounded tick history or second checkpoint/ledger owner is introduced.
+
+The study runner derives Stage-3C-10 output after Stage-3C-7/8. Diagnostics cannot mutate graph state, authorize permanent retention, scalarize objective facts or treat token similarity as causal quality. The fixed nearest-token and single-winner target selectors remain replaceable bootstrap shaping biases, not universal attention contracts.

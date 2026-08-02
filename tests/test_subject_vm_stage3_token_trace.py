@@ -341,3 +341,30 @@ def test_birth_compaction_and_death_do_not_inherit_or_leak_token_history() -> No
     moved_subject_ids[2] = 101
     runtime.release_deaths(np.array([2]), moved_entity_ids, moved_subject_ids)
     assert runtime.trace_storage.event_count[2] == 0
+
+
+def test_stage3c10_trace_diagnostics_upgrade_v7_and_clear_slots() -> None:
+    from se.subject_vm.trace import (
+        TRACE_STORAGE_SCHEMA_V7,
+        SubjectVMTraceStorage,
+    )
+
+    cfg = load_config("configs/mvp_short_subject_vm_stage3c8_paired_study.json").subject_vm
+    trace = SubjectVMTraceStorage(cfg, entity_capacity=2)
+    assert trace.association_reason is not None
+    assert trace.binding_eligibility_age is not None
+    trace.association_reason[0, 0] = 5
+    trace.binding_eligibility_age[0, 0, 0] = 7
+    trace._clear_slot(0, 0)
+    assert int(trace.association_reason[0, 0]) == 0
+    assert int(trace.binding_eligibility_age[0, 0, 0]) == 0
+
+    payload = trace.snapshot_state()
+    payload["schema"] = TRACE_STORAGE_SCHEMA_V7
+    payload["arrays"].pop("association_reason")
+    payload["arrays"].pop("binding_eligibility_age")
+    restored = SubjectVMTraceStorage.from_snapshot(cfg, 2, payload)
+    assert restored.association_reason is not None
+    assert restored.binding_eligibility_age is not None
+    assert not np.any(restored.association_reason)
+    assert not np.any(restored.binding_eligibility_age)

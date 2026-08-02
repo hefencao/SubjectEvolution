@@ -23,6 +23,7 @@ from ..analysis.subject_vm_component_reproducibility import (
 )
 from ..analysis.subject_vm_paired_evaluation import build_plan, run_plan
 from ..analysis.subject_vm_paired_evidence import assess_exports
+from ..analysis.subject_vm_stage3c10_diagnostics import assess_stage3c10_diagnostics
 from ..cfg import load_config
 from ..runtime.sim import Simulation
 from ..subject_vm import (
@@ -363,6 +364,12 @@ def run_short_paired_study(
         reproducibility = assess_component_reproducibility([integrity_path])
         _write_json(reproducibility_path, reproducibility)
 
+    diagnostics = assess_stage3c10_diagnostics(
+        seed_records, component_reproducibility=reproducibility
+    )
+    diagnostics_path = root / "stage3c10_diagnostics.json"
+    _write_json(diagnostics_path, diagnostics)
+
     aggregate = integrity["aggregate"]
     payload = {
         "schema": SHORT_PAIRED_STUDY_SCHEMA,
@@ -380,6 +387,8 @@ def run_short_paired_study(
         "component_reproducibility_sha256": (
             reproducibility["assessment_sha256"] if reproducibility is not None else None
         ),
+        "stage3c10_diagnostics": str(diagnostics_path.resolve()),
+        "stage3c10_diagnostics_sha256": diagnostics["diagnostics_sha256"],
         "engineering_summary": {
             "independent_source_pair_count": int(
                 aggregate["independent_source_pair_count"]
@@ -403,6 +412,13 @@ def run_short_paired_study(
                 integrity["adequacy_screen"]["passed"]
             ),
             "stage3c8_report_generated": reproducibility is not None,
+            "stage3c10_diagnostics_generated": True,
+            "sources_with_discrete_action_divergence": int(
+                diagnostics["aggregate"]["sources_with_discrete_action_divergence"]
+            ),
+            "sources_with_objective_event_divergence": int(
+                diagnostics["aggregate"]["sources_with_objective_event_divergence"]
+            ),
         },
         "fixed_bootstrap_is_evolved_result": False,
         "universal_attention_claim": False,

@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.123.0**
+Version: **0.124.0**
 
 ## Current scientific task
 
-Version 0.123 implements **Subject VM Stage 3C-9: short paired infrastructure data study with symmetric control admission**.
+Version 0.124 implements **Subject VM Stage 3C-10: short paired funnel, update-visibility and branch-divergence diagnostics**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -25,6 +25,10 @@ Stage 3C-8 remains outside the runtime and consumes checksum-valid Stage-3C-7 as
 Stage 3C-9 adds a reproducible short-study runner and a frozen fixed bootstrap graph so the existing Stage-3C chain can produce infrastructure data without waiting for topology evolution. The bootstrap is explicitly recorded as fixed cognition and not as an evolved result. Read-only control now reserves the same pending target, ledger and window budgets as guarded-live while remaining parameter-read-only and cost-free at the live-write layer. At the export boundary, remaining temporary writes are restored and control reservations released without executing new semantic ticks; incomplete windows are excluded from paired evidence.
 
 The default three-seed pilot produced 38 completed paired windows with full pairing coverage, zero rollback failures, zero fact clipping and matched evaluation costs. The Stage 3C-8 report found no coordinate passing its descriptive sign-and-interval stability screen: most branch differences were exactly or nearly zero, while the few nonzero differences appeared in only one of three sources. This is an engineering pipeline result only; it does not establish beneficial updates, causal credit, attention optimality, learning or subjecthood.
+
+Stage 3C-10 keeps the v0.123 study factors unchanged and adds external diagnostics plus two bounded trace facts. Across the same three sources, all fixed-bootstrap subjects emit tokens and enter the association/update chain. The dominant bottleneck is later: assigned candidates collapse to delay `1` and similarity `1.0`, all safe proposals and all 45 temporary commits target only `node_bias`, and each commit affects one subsequent semantic activation tick. Live parameters change action potentials and sampled probabilities in all three sources, but only two subject-events in one source cross the sampled discrete-action boundary. Exact parameter restoration, control reservation symmetry, counted evaluation cost matching and export-boundary clearing hold in all sources. One source retains non-parameter path dependence after rollback because the changed action already altered objective state.
+
+These diagnostics support an observability conclusion, not a learning conclusion: the data chain is active, the paired contract is intact, and the short fixed bootstrap produces parameter-level effects that are usually too narrow or too brief to become objective-event differences across independent sources. No mechanism parameter was changed in v0.124.
 
 The v0.110 single-owner rule remains unchanged. Subject VM is the sole optional action-potential residual owner when enabled; legacy knowledge/latent/working-memory routes remain fixed-cognition comparison baselines and cannot coexecute on the primary path.
 
@@ -48,6 +52,8 @@ Implemented and tested:
 - Stage-3C-7 repeated paired-export checksum verification, coverage/unpaired diagnostics and integrity assessment;
 - Stage-3C-8 hierarchical source/subject/window aggregation and coordinate-wise sign, dispersion and interval assessment;
 - Stage-3C-9 fixed-bootstrap short paired runner, symmetric control admission and export-boundary transient finalization;
+- Stage-3C-10 source/subject funnel, update magnitude and exposure, association/eligibility quality, branch divergence and aggregation-sensitivity diagnostics;
+- v0.123 trace/checkpoint compatibility for the new bounded diagnostic fields;
 - explicit guarded-live/read-only branch identities bound to source state, branch config and final tick;
 - branch identity persistence in final checkpoint lineage;
 - completed-window extraction and component-wise paired export without scalarization;
@@ -68,7 +74,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-9 is a short fixed-bootstrap engineering data study only.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-10 diagnoses the short fixed-bootstrap engineering study without authorizing retention or Epoch 1.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -94,4 +100,4 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-The next authorized boundary is to inspect the real Stage 3C-9 component report and decide whether branch divergence, coordinate sparsity or bootstrap bias require contract correction. Permanent retention, scalar value construction and Epoch 1 qualification remain unauthorized.
+The next authorized boundary is a separately versioned, single-variable short-study comparison chosen from the Stage 3C-10 evidence. The current data most directly motivates testing temporary-effect reach or fixed-bootstrap family reachability, but v0.124 changes neither. Permanent retention, scalar value construction, a complete general-attention replacement and Epoch 1 qualification remain unauthorized.

@@ -501,3 +501,20 @@ Stage 3C-8 的最高重复单位是独立 source checkpoint pair。一个主体�
 即使短程窗口已有足够完成样本，最后一个 semantic tick 仍可能产生新的 pending 写入。继续运行等待回滚会同时生成更多提案，放宽完整性门又会把临时参数带入 final checkpoint。Stage 3C-9 因此在停止语义时间后执行显式瞬态清算：使用原 CAS owner 提前恢复 pending live 值并释放 control reservation，且不把未完成窗口提升为证据。
 
 默认三 seed pilot 的完整性筛查通过，但 Stage 3C-8 没有任何坐标通过描述性符号与区间稳定筛查。少量 energy、position 和 velocity 差异只出现在一个 source，其余 source 为零，说明当前短窗 bootstrap 主要验证了数据链，并未产生可重复的方向性信号。固定 bootstrap、短 horizon 和单一内容寻址偏置都限制解释范围；数据不得用于声称因果信用、注意机制优势、稳定学习或主体性。
+
+
+## v0.124：无稳定客观坐标首先是可见性问题，不是机制判决
+
+Stage 3C-10 对同一 v0.123 三 source 短程合同进行漏斗诊断。所有 bootstrap subject 都能产生 token，关联、调制、target binding、safe update、shadow transaction 和 paired window 均真实发生；因此“完全没有激活或没有学习链数据”不符合当前事实。
+
+信号在更晚的层级变稀疏：固定 bootstrap 产生的最近 token 候选全部集中在 delay 1、similarity 1.0；提案只覆盖 `node_bias`；临时参数只影响一个后续激活 tick。参数改变会稳定地改变 action potential 和 sampled probability，但离散采样通常仍落在原 action。只有一个 source 的两个 subject-event 跨过动作边界，随后产生 energy/position/velocity 路径差异。回滚恢复参数，却不能撤销已经发生的行动和世界状态变化，这种非参数路径依赖是预期干预后果，不是自动的 ledger 错误。
+
+因此 0/21 稳定坐标不能被解释为更新无效，也不能被解释为更新有效。后续若进入单变量比较，应优先区分“临时作用时间/幅度不足”和“固定 bootstrap 参数族可达性过窄”，且仍保持三个独立 source、原主聚合层级和无永久保留。
+
+## v0.124：bootstrap 寻址退化不能被包装成通用注意力
+
+当前 normalized-dot nearest-token 在固定图和短 horizon 下给出完全相同的 delay 与 similarity，说明它在这个实验中没有形成丰富候选竞争。similarity 仍只允许作为地址判据，不能被解释为因果质量、价值、trust 或 credit strength。single-winner eligibility target 也只是一种降低早期塑形搜索成本的工程偏置。它们应保持可替换，并在未来有数据时与更一般的候选分配机制比较；当前证据不足以要求立即切换完整通用注意模型，也不足以把现有偏置固化为唯一主体认知架构。
+
+## v0.124：聚合敏感性只能诊断，不能改变重复单位
+
+Stage 3C-10 同时输出 subject-balanced mean、window-weighted mean、median、nonzero source count、非零主体比例和 source 间窗口数量不平衡。主统计仍固定为 window → stable subject → independent source。诊断视图不能把多个窗口当成独立 replicate，不能通过过滤零结果或未配对结果制造显著性，也不能因某个坐标偶然同号授权永久参数保留。

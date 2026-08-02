@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.124.0
+
+- Adds Subject VM Stage 3C-10 external funnel, update-visibility and paired-branch divergence diagnostics.
+- Records bounded association rejection reason and eligibility age-at-binding fields while preserving v0.123 checkpoint compatibility.
+- Reports source/subject funnel coverage, raw and canonical rejection classes, update magnitude/range ratios, temporary-effect exposure, addressing concentration, target reuse, branch divergence timelines and aggregation sensitivity.
+- Reproduces the v0.123 three-source study without changing its mechanism or parameters: pairing and rollback contracts remain intact, while parameter-level effects rarely cross the discrete-action boundary.
+- Keeps fixed bootstrap addressing explicitly replaceable and authorizes no permanent retention, scalar objective, causal claim, learning claim or general-attention claim.
+
 ## 0.123.0
 
 - Adds the Stage 3C-9 short fixed-bootstrap paired data-study runner and workflow.

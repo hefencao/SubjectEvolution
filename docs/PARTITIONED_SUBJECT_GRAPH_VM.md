@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
 Status: **Stage 3C-5 CPU-reference score-free objective evaluation windows implemented; no automatic keep/revert decision**
-Project version: **0.123.0**
+Project version: **0.124.0**
 
 ## 1. Decision
 
@@ -561,3 +561,14 @@ Stage 3C-9 不把固定 bootstrap 图描述成演化结果。它只用于让现�
 read-only control 现在会建立虚拟 reservation，占用与 guarded-live 相同的 pending target、ledger slot、窗口目标数和绝对 delta 预算，但不会修改参数，也不会产生 live-write 成本。该修复避免 control 因缺少占位而产生大量额外窗口。
 
 成对运行停止后可以执行 export-boundary transient finalization：不新增 tick，只通过现有 CAS 回滚所有仍 pending 的临时写入并释放 control reservation。尚未完成观察窗口不会进入证据。默认三 seed 短程 pilot 得到 38 个完整配对窗口、覆盖率 1.0、rollback failure 0、fact clipping 0 和 evaluation cost match 1.0。Stage 3C-8 中没有任何坐标通过描述性符号与区间稳定筛查；少量非零差异只出现在 3 个 source 中的 1 个，其余多为零。这些只证明工程链路可产生完整数据，并表明当前短窗 bootstrap 尚未提供稳定效果方向。
+
+
+## v0.124：Stage 3C-10 漏斗、更新可见性与分支分化诊断
+
+本阶段不改变 v0.123 的 seed、source tick、branch horizon、bootstrap subject 数、短期写入幅度、回滚期限或固定图。运行时只补两个有界原始事实：每个 token-ring 槽一个 `uint8 association_reason`，以及每个槽六个 `uint16 binding_eligibility_age`。新增内存为 `13 * entity_capacity * trace_capacity_per_subject` 字节；32 个实体、每主体 16 槽时为 6,656 字节。字段可禁用，旧 v0.123 checkpoint 缺失字段时按零恢复，不改变 disabled 配置 identity。
+
+聚合全部留在 `se.analysis.subject_vm_stage3c10_diagnostics`：按 source 和 stable subject 报告 token→association→proposal→binding→safe update→shadow transaction→live/control admission→completed window 漏斗，保留原始拒绝原因并映射到无激活、无 token、无历史候选、相似度不足、无参数族提案、无 eligibility target、delta 过小、边界/预算拒绝、target pending、窗口预算耗尽和回滚/清算问题。它同时报告 raw/bounded/projected delta、相对参数范围比例、临时生效 tick、参数族/目标类型/区域分布、eligibility value/age、delay/similarity、历史事件和 target 重复使用、首次分支差异、准入与计数成本对称、精确参数恢复及回滚后的非参数路径依赖。
+
+同一三 source 重跑显示：数据链并未停在激活或 token 层；64/64 已分配关联全部为 delay 1、similarity 1.0；121 个安全提案和 45 个实际临时写入全部落在 `node_bias`；每次写入只覆盖一个后续语义激活 tick。三个 source 都出现 action potential 和 sampled probability 差异，但只有一个 source 的两个主体事件改变离散 action，客观事实差异也只在该 source 出现。所有 source 的控制准入、窗口数量、计数成本、回滚和 export-boundary 清算保持对称，参数精确恢复。
+
+因此当前证据支持“短期参数效应在离散采样之前大量消失或未跨过动作边界”，不支持更新有效/无效、稳定学习、因果信用、注意最优性或主体性。fixed nearest-token addressing 和 single-winner binding 继续作为可替换的 `fixed-cognition engineering shaping aid`；v0.124 没有调整机制变量，也没有授权永久保留。

@@ -12,7 +12,7 @@ may later be replaced or compared with more general candidate allocators.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -75,6 +75,11 @@ class SubjectVMTargetBindingProposal:
     target_id: np.ndarray
     eligibility_value: np.ndarray
     family_proposal: np.ndarray
+    eligibility_age: np.ndarray = field(
+        default_factory=lambda: np.zeros(
+            SUBJECT_VM_MODULATION_TARGET_WIDTH, dtype=np.uint16
+        )
+    )
 
 
 def _best_candidate(
@@ -197,6 +202,7 @@ def bind_modulation_targets(
     index = np.full(width, -1, dtype=np.int32)
     target_id = np.zeros(width, dtype=np.uint32)
     eligibility = np.zeros(width, dtype=np.float32)
+    eligibility_age = np.zeros(width, dtype=np.uint16)
     family_proposal = np.zeros(width, dtype=np.float32)
     if not modulation.proposed:
         return SubjectVMTargetBindingProposal(
@@ -208,6 +214,7 @@ def bind_modulation_targets(
             target_index=index,
             target_id=target_id,
             eligibility_value=eligibility,
+            eligibility_age=np.zeros(width, dtype=np.uint16),
             family_proposal=family_proposal,
         )
 
@@ -245,6 +252,7 @@ def bind_modulation_targets(
         index[family] = np.int32(candidate_index)
         target_id[family] = np.uint32(candidate_id)
         eligibility[family] = np.float32(carrier)
+        eligibility_age[family] = np.uint16(carrier_age)
 
     return SubjectVMTargetBindingProposal(
         requested=True,
@@ -255,6 +263,7 @@ def bind_modulation_targets(
         target_index=index,
         target_id=target_id,
         eligibility_value=eligibility,
+        eligibility_age=eligibility_age,
         family_proposal=family_proposal,
     )
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from se.analysis.subject_vm_stage3c10_diagnostics import assess_stage3c10_diagnostics
 from se.cfg import load_config
 from se.experiments.subject_vm_short_paired_study import (
     BOOTSTRAP_GRAPH_PROFILE_SCHEMA,
@@ -66,9 +67,23 @@ def test_short_paired_study_generates_complete_no_retention_evidence(
     assert summary["rollback_failure_count"] == 0
     assert summary["stage3c7_engineering_screen_passed"] is True
     assert summary["stage3c8_report_generated"] is True
+    assert summary["stage3c10_diagnostics_generated"] is True
     assert report["fixed_bootstrap_is_evolved_result"] is False
     assert report["causal_effect_authorized"] is False
     assert report["permanent_parameter_retention_authorized"] is False
+    diagnostics_path = Path(report["stage3c10_diagnostics"])
+    diagnostics = json.loads(diagnostics_path.read_text(encoding="utf-8"))
+    assert diagnostics["independent_source_count"] == 3
+    assert diagnostics["diagnostic_interpretation"]["paired_contract_error_detected"] is False
+    assert diagnostics["stage3c8_aggregation_sensitivity"]["windows_treated_as_independent_replicates"] is False
+    assert all(
+        source["admission_and_counted_cost_symmetry"]["admission_count_equal"]
+        for source in diagnostics["per_source"]
+    )
+    component = json.loads(Path(report["component_reproducibility"]).read_text(encoding="utf-8"))
+    repeated = assess_stage3c10_diagnostics(report["seeds"], component_reproducibility=component)
+    assert repeated["diagnostics_sha256"] == diagnostics["diagnostics_sha256"]
+    assert repeated == diagnostics
     for seed in report["seeds"]:
         assert seed["paired_window_count"] > 0
         assert seed["unpaired_guarded_live_count"] == 0

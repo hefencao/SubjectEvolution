@@ -12,7 +12,7 @@ from typing import Any
 
 import numpy as np
 
-from .association import select_delayed_association_candidate
+from .association import ASSOCIATION_REASON_CODES, select_delayed_association_candidate
 from .binding import (
     BINDING_REASON_CODES,
     SubjectVMTargetCandidateBatch,
@@ -50,7 +50,8 @@ TRACE_STORAGE_SCHEMA_V3 = "se-subject-vm-token-event-storage-v3"
 TRACE_STORAGE_SCHEMA_V4 = "se-subject-vm-token-event-storage-v4"
 TRACE_STORAGE_SCHEMA_V5 = "se-subject-vm-token-event-storage-v5"
 TRACE_STORAGE_SCHEMA_V6 = "se-subject-vm-token-event-storage-v6"
-TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v7"
+TRACE_STORAGE_SCHEMA_V7 = "se-subject-vm-token-event-storage-v7"
+TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v8"
 ACTION_PORT_WIDTH = 8
 RESOURCE_DELTA_WIDTH = 4
 OBJECTIVE_EVENT_DELTA_NAMES = (
@@ -193,6 +194,9 @@ class SubjectVMTraceStorage:
             (e, c, RESOURCE_DELTA_WIDTH), dtype=np.float32
         )
         self.resolution_energy_cost = np.zeros((e, c), dtype=np.float32)
+        self.association_reason = (
+            np.zeros((e, c), dtype=np.uint8) if cfg.association_enabled else None
+        )
         self.association_requested = (
             np.zeros((e, c), dtype=bool) if cfg.association_enabled else None
         )
@@ -261,6 +265,11 @@ class SubjectVMTraceStorage:
         )
         self.binding_eligibility_value = (
             np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.float32)
+            if cfg.target_binding_enabled
+            else None
+        )
+        self.binding_eligibility_age = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.uint16)
             if cfg.target_binding_enabled
             else None
         )
@@ -421,7 +430,7 @@ class SubjectVMTraceStorage:
         )
 
     @staticmethod
-    def association_snapshot_array_names() -> tuple[str, ...]:
+    def legacy_association_snapshot_array_names() -> tuple[str, ...]:
         return (
             "association_requested",
             "association_assigned",
@@ -430,6 +439,10 @@ class SubjectVMTraceStorage:
             "association_delay_ticks",
             "association_similarity",
         )
+
+    @classmethod
+    def association_snapshot_array_names(cls) -> tuple[str, ...]:
+        return ("association_reason", *cls.legacy_association_snapshot_array_names())
 
     @staticmethod
     def modulation_snapshot_array_names() -> tuple[str, ...]:
@@ -442,7 +455,7 @@ class SubjectVMTraceStorage:
         )
 
     @staticmethod
-    def binding_snapshot_array_names() -> tuple[str, ...]:
+    def legacy_binding_snapshot_array_names() -> tuple[str, ...]:
         return (
             "binding_requested",
             "binding_bound_any",
@@ -454,6 +467,12 @@ class SubjectVMTraceStorage:
             "binding_eligibility_value",
             "binding_family_proposal",
         )
+
+    @classmethod
+    def binding_snapshot_array_names(cls) -> tuple[str, ...]:
+        names = list(cls.legacy_binding_snapshot_array_names())
+        names.insert(-1, "binding_eligibility_age")
+        return tuple(names)
 
     @staticmethod
     def update_snapshot_array_names() -> tuple[str, ...]:
@@ -575,12 +594,14 @@ class SubjectVMTraceStorage:
         self.resolution_internal_resource_delta[row, slot] = 0.0
         self.resolution_energy_cost[row, slot] = 0.0
         if self.cfg.association_enabled:
+            assert self.association_reason is not None
             assert self.association_requested is not None
             assert self.association_assigned is not None
             assert self.associated_event_id is not None
             assert self.associated_event_tick is not None
             assert self.association_delay_ticks is not None
             assert self.association_similarity is not None
+            self.association_reason[row, slot] = 0
             self.association_requested[row, slot] = False
             self.association_assigned[row, slot] = False
             self.associated_event_id[row, slot] = 0
@@ -607,6 +628,7 @@ class SubjectVMTraceStorage:
             assert self.binding_target_index is not None
             assert self.binding_target_id is not None
             assert self.binding_eligibility_value is not None
+            assert self.binding_eligibility_age is not None
             assert self.binding_family_proposal is not None
             self.binding_requested[row, slot] = False
             self.binding_bound_any[row, slot] = False
@@ -616,6 +638,7 @@ class SubjectVMTraceStorage:
             self.binding_target_index[row, slot] = -1
             self.binding_target_id[row, slot] = 0
             self.binding_eligibility_value[row, slot] = 0.0
+            self.binding_eligibility_age[row, slot] = 0
             self.binding_family_proposal[row, slot] = 0.0
         if self.cfg.update_safety_enabled:
             assert self.update_requested is not None
@@ -1052,12 +1075,14 @@ class SubjectVMTraceStorage:
                 batch.resolution_energy_cost[index]
             )
             if association is not None:
+                assert self.association_reason is not None
                 assert self.association_requested is not None
                 assert self.association_assigned is not None
                 assert self.associated_event_id is not None
                 assert self.associated_event_tick is not None
                 assert self.association_delay_ticks is not None
                 assert self.association_similarity is not None
+                self.association_reason[row, slot] = np.uint8(ASSOCIATION_REASON_CODES[association.reason])
                 self.association_requested[row, slot] = association.requested
                 self.association_assigned[row, slot] = association.assigned
                 self.associated_event_id[row, slot] = np.uint64(
@@ -1096,6 +1121,7 @@ class SubjectVMTraceStorage:
                 assert self.binding_target_index is not None
                 assert self.binding_target_id is not None
                 assert self.binding_eligibility_value is not None
+                assert self.binding_eligibility_age is not None
                 assert self.binding_family_proposal is not None
                 self.binding_requested[row, slot] = binding.requested
                 self.binding_bound_any[row, slot] = binding.bound_any
@@ -1105,6 +1131,7 @@ class SubjectVMTraceStorage:
                 self.binding_target_index[row, slot] = binding.target_index
                 self.binding_target_id[row, slot] = binding.target_id
                 self.binding_eligibility_value[row, slot] = binding.eligibility_value
+                self.binding_eligibility_age[row, slot] = binding.eligibility_age
                 self.binding_family_proposal[row, slot] = binding.family_proposal
             if update is not None:
                 assert self.update_requested is not None
@@ -1230,6 +1257,7 @@ class SubjectVMTraceStorage:
         schema = payload.get("schema")
         if schema not in {
             TRACE_STORAGE_SCHEMA,
+            TRACE_STORAGE_SCHEMA_V7,
             TRACE_STORAGE_SCHEMA_V6,
             TRACE_STORAGE_SCHEMA_V5,
             TRACE_STORAGE_SCHEMA_V4,
@@ -1263,43 +1291,46 @@ class SubjectVMTraceStorage:
         elif schema == TRACE_STORAGE_SCHEMA_V2:
             names = result.base_snapshot_array_names()
             if result.cfg.association_enabled:
-                names += result.association_snapshot_array_names()
+                names += result.legacy_association_snapshot_array_names()
         elif schema == TRACE_STORAGE_SCHEMA_V3:
             names = result.base_snapshot_array_names()
             if result.cfg.association_enabled:
-                names += result.association_snapshot_array_names()
+                names += result.legacy_association_snapshot_array_names()
             if result.cfg.modulation_enabled:
                 names += result.modulation_snapshot_array_names()
         elif schema == TRACE_STORAGE_SCHEMA_V4:
             names = result.base_snapshot_array_names()
             if result.cfg.association_enabled:
-                names += result.association_snapshot_array_names()
+                names += result.legacy_association_snapshot_array_names()
             if result.cfg.modulation_enabled:
                 names += result.modulation_snapshot_array_names()
             if result.cfg.target_binding_enabled:
-                names += result.binding_snapshot_array_names()
+                names += result.legacy_binding_snapshot_array_names()
         elif schema == TRACE_STORAGE_SCHEMA_V5:
             names = result.base_snapshot_array_names()
             if result.cfg.association_enabled:
-                names += result.association_snapshot_array_names()
+                names += result.legacy_association_snapshot_array_names()
             if result.cfg.modulation_enabled:
                 names += result.modulation_snapshot_array_names()
             if result.cfg.target_binding_enabled:
-                names += result.binding_snapshot_array_names()
+                names += result.legacy_binding_snapshot_array_names()
             if result.cfg.update_safety_enabled:
                 names += result.update_snapshot_array_names()
         elif schema == TRACE_STORAGE_SCHEMA_V6:
             names = result.base_snapshot_array_names()
             if result.cfg.association_enabled:
-                names += result.association_snapshot_array_names()
+                names += result.legacy_association_snapshot_array_names()
             if result.cfg.modulation_enabled:
                 names += result.modulation_snapshot_array_names()
             if result.cfg.target_binding_enabled:
-                names += result.binding_snapshot_array_names()
+                names += result.legacy_binding_snapshot_array_names()
             if result.cfg.update_safety_enabled:
                 names += result.update_snapshot_array_names()
             if result.cfg.transaction_enabled:
                 names += result.transaction_snapshot_array_names()
+        elif schema == TRACE_STORAGE_SCHEMA_V7:
+            names = result.snapshot_array_names()
+            names = tuple(name for name in names if name not in {"binding_eligibility_age", "association_reason"})
         else:
             names = result.snapshot_array_names()
         for name in names:
@@ -1405,6 +1436,7 @@ __all__ = [
     "TRACE_STORAGE_SCHEMA_V4",
     "TRACE_STORAGE_SCHEMA_V5",
     "TRACE_STORAGE_SCHEMA_V6",
+    "TRACE_STORAGE_SCHEMA_V7",
     "SubjectVMObjectiveEventBatch",
     "SubjectVMThoughtTokenBatch",
     "SubjectVMTraceAccounting",

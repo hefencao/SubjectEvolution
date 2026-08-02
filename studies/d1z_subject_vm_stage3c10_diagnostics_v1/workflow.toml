@@ -1,0 +1,57 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c10_diagnostics_v1"
+title = "D1-Z Subject VM Stage 3C-10 short paired diagnostics"
+
+[parameters.config]
+type = "path"
+default = "configs/mvp_short_subject_vm_stage3c8_paired_study.json"
+description = "Unchanged v0.123 fixed-bootstrap paired-study configuration."
+
+[parameters.seeds]
+type = "csv-int"
+default = "12301,12302,12303"
+description = "The same three independent source seeds as the v0.123 control study."
+
+[parameters.source_ticks]
+type = "int"
+default = 2
+minimum = 0
+maximum = 16
+description = "Unchanged source checkpoint tick."
+
+[parameters.horizon_ticks]
+type = "int"
+default = 5
+minimum = 3
+maximum = 16
+description = "Unchanged short paired branch horizon."
+
+[parameters.bootstrap_subjects]
+type = "int"
+default = 16
+minimum = 1
+maximum = 64
+description = "Unchanged number of fixed-bootstrap stable subjects."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c10_diagnostics_v1/pilot"
+description = "Source checkpoints, paired branches and Stage-3C-7/8/10 reports."
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c10_diagnostics_v1_results.zip"
+description = "Compact review bundle, separate from the project release archive."
+
+[steps.run-short-paired-study]
+description = "Re-run the unchanged three-source short paired contract and derive Stage-3C-10 diagnostics."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "{source_ticks}", "--horizon-ticks", "{horizon_ticks}", "--bootstrap-subjects", "{bootstrap_subjects}", "--backend", "cpu", "--output", "{analysis_root}", "--overwrite"]
+
+[steps.pack-results]
+description = "Package the study definition and score-free Stage-3C evidence for review."
+requires_json = [
+  { path = "{analysis_root}/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/study_report.json", field = "engineering_summary.stage3c10_diagnostics_generated", equals = true },
+  { path = "{analysis_root}/study_report.json", field = "permanent_parameter_retention_authorized", equals = false },
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "{analysis_root}", "--required-file", "{analysis_root}/study_report.json", "--required-file", "{analysis_root}/stage3c10_diagnostics.json", "--output", "{output}"]

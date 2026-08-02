@@ -8,6 +8,17 @@ import numpy as np
 
 from .config import SubjectVMAssociationConfig
 
+ASSOCIATION_REASON_CODES = {
+    "not-requested": 0,
+    "zero-query": 1,
+    "no-candidate": 2,
+    "zero-candidate": 3,
+    "below-threshold": 4,
+    "assigned": 5,
+}
+ASSOCIATION_REASON_NAMES = tuple(
+    name for name, _ in sorted(ASSOCIATION_REASON_CODES.items(), key=lambda item: item[1])
+)
 
 @dataclass(frozen=True)
 class SubjectVMDelayedAssociationCandidate:
@@ -148,6 +159,8 @@ def select_delayed_association_candidate(
 
 
 __all__ = [
+    "ASSOCIATION_REASON_CODES",
+    "ASSOCIATION_REASON_NAMES",
     "SubjectVMDelayedAssociationCandidate",
     "select_delayed_association_candidate",
 ]
