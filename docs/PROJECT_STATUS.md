@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.133.0**
+Version: **0.134.0**
 
 ## Current scientific task
 
-Version 0.133 implements **Subject VM Stage 3C-19: association-visible token geometry separability diagnostic**.
+Version 0.134 implements **Subject VM Stage 3C-20: association-visible graph-state readout reachability audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -106,6 +106,8 @@ Implemented and tested:
 - Stage-3C-16 isolated edge-forward eligibility-carrier toggle with unreachable-baseline handling, read-only control identity and carrier-on Stage-3C-7/8 evidence;
 - Stage-3C-17 equal-similarity latest/oldest temporal tie-break audit with event-reuse concentration diagnostics;
 - Stage-3C-18 top-1/top-2 bounded candidate-allocation audit with one-proposal budget, fixed-capacity secondary-reference diagnostics and trace-schema v9 compatibility;
+- Stage-3C-19 external association-visible token variance, rank and normalized-dot score-separability diagnostic;
+- Stage-3C-20 isolated node-0 graph-state readout comparison with pre-bootstrap identity, read-only objective-behavior identity and temporal-versus-subject geometry decomposition;
 - v0.123 trace/checkpoint compatibility for the new bounded diagnostic fields;
 - explicit guarded-live/read-only branch identities bound to source state, branch config and final tick;
 - branch identity persistence in final checkpoint lineage;
@@ -127,7 +129,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-19 diagnoses the frozen token geometry without changing runtime mechanisms or authorizing retention or Epoch 1.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-20 tests one explicit fixed-bootstrap graph-state readout without authorizing retention, learned attention or Epoch 1.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -153,7 +155,7 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-Stage 3C-19 establishes that the current association-visible subspace is exactly constant on the frozen panel. The next authorized boundary is a single role-neutral readout or operating-context reachability diagnostic for ports 29-31. It must not simultaneously change similarity, top-k, learned weights, update scale, retention, topology evolution, scalar value construction, a complete general-attention replacement or Epoch 1 qualification.
+Stage 3C-20 establishes that an existing action-producing graph state can make the association-visible subspace non-constant, but the current node-0 readout is shared by every bootstrap subject at a given tick and therefore behaves as a global temporal phase. The next authorized boundary is one existing factual or internal readout that can add subject/event-specific variance while similarity, candidate limit, update scale, exposure, retention and permanent-write policy remain fixed.
 
 
 ## Stage 3C-17 retained result
@@ -177,3 +179,14 @@ This establishes candidate cardinality as a material fixed-bootstrap allocation 
 The frozen nine-source read-only-control traces contain 1,152 association-visible tokens. Control and modulation ports 0-28 are excluded from similarity, leaving ports 29-31; every visible vector is exactly `[0, 0, 1]`. Per-source centered covariance rank and effective rank are zero, while uncentered direction rank is one. All 3,888 delay-eligible query/candidate pairs are exact vector duplicates with normalized-dot score 1.0, constant threshold margin 0.2 and zero best-versus-second spread.
 
 This explains why temporal tie-break and candidate cardinality, rather than content score, determined allocation in Stages 3C-17/18. It does not prove the general token mechanism incapable, does not validate or invalidate credit, and authorizes no runtime change, retention, learned weight, scalar objective or universal-attention claim.
+
+
+## Stage 3C-20 current result
+
+Stage 3C-20 preserves the nine-source, 32-entity, carrier-on `edge_forward_gate` top-1/latest baseline. The only experimental factor is whether action-producing node 0 also emits its current scalar state through trace gate 1.0 to association-visible token port 29. Pre-bootstrap state/config hashes, selected stable subjects and read-only objective behavior are identical across arms; thought tokens differ only on port 29.
+
+The baseline retains one visible vector and centered rank zero. The readout arm produces seven visible vectors and centered rank one in every source. Normalized-dot scores span approximately `-0.5073..1.0`, best-versus-second spreads become positive and exact score ties disappear. However, all 16 bootstrap subjects have the same port-29 value within each tick, and all nine sources share the same tick-mean trajectory. The readout is therefore a fixed shared temporal-phase coordinate, not subject or event identity.
+
+Selected associations change from 1,008 delay-1 assignments to 864 delay-2 assignments. Modulation proposals change from 942 to 535, temporary commits from 144 to 143, completed paired windows from 129 to 100, and objective-event divergence incidence from 3/9 to 2/9 sources. Both arms retain pairing coverage 1.0, zero rollback failures, zero fact clipping, matched evaluation costs and 0/21 stable objective coordinates.
+
+This establishes visible-geometry and score-separation reachability under one replaceable fixed readout. It does not establish event-specific content, causal credit, beneficial direction, learned attention, stable learning, subjecthood or permission for permanent parameter retention.

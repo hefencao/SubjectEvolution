@@ -1,3 +1,12 @@
+## 0.134.0
+
+- Adds Subject VM Stage 3C-20 fixed-bootstrap visible graph-state readout reachability assessment.
+- Adds an experiment-only, default-off node-0-state to association-visible token-port-29 readout without changing project config identity, checkpoint schema, similarity, candidate limit, update scale or permanent-retention policy.
+- Verifies identical pre-bootstrap sources, selected subjects and read-only objective behavior across baseline/readout arms; thought tokens may differ only on the authorized visible coordinate.
+- Shows centered visible rank rising from 0 to 1 and nontrivial normalized-dot score spread, while within-tick subject variance remains zero and every source shares the same temporal trajectory.
+- Records that the readout changes selected associations from delay 1 to delay 2 and reduces funnel coverage without producing any stable objective coordinate.
+- Adds the Stage 3C-20 workflow, decision protocol, CLI and deterministic tests; no runtime persistent-memory or checkpoint-schema growth is introduced.
+
 ## 0.133.0
 
 - Adds Subject VM Stage 3C-19 external association-visible token-geometry separability assessment.

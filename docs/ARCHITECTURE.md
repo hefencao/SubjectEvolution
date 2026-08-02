@@ -1638,3 +1638,13 @@ Stage 3C-19 is entirely external analysis in `se.analysis`. It reads read-only-c
 The analyzer reports coordinate variance, centered covariance eigenvalues/rank/effective rank, uncentered second-moment rank, exact token and normalized-direction duplication, all delay-eligible normalized-dot scores, best-versus-second spread and threshold margin. Tokens and query/candidate pairs remain nested observations; independent source checkpoints remain the highest replicate unit.
 
 The observed visible subspace is ports 29-31 with vector `[0,0,1]` for every event. This is a fixed-bootstrap operating-point degeneracy, not a universal theorem about continuous tokens or attention. Persistent runtime and checkpoint memory growth is exactly zero.
+
+### Stage 3C-20 — association-visible graph-state readout reachability audit (implemented in v0.134)
+
+Stage 3C-20 keeps the Stage-3C-16 reachable `edge_forward_gate` carrier, Stage-3C-17 latest-on-tie allocator and Stage-3C-18 candidate limit one fixed. The default bootstrap still leaves node 0 without a token trace. An explicit experiment-only parameter may additionally map the existing current state of action-producing node 0 to association-visible token port 29 with trace gate 1.0. The parameter is recorded in the bootstrap profile and lineage; it is not a project configuration field and does not change legacy canonical config identity.
+
+The node continues to execute the same operator, read the same input, receive the same delayed edge contribution and write the same action-potential output. The alternative adds only a graph-owned trace readout. It adds no node, edge, random draw, branch owner, ledger, persistent path, checkpoint array or unbounded history. Persistent runtime/checkpoint memory growth is exactly zero.
+
+`se.analysis.subject_vm_stage3c20_readout_reachability` requires identical pre-bootstrap state/config hashes and stable subject selection. Read-only-control action potentials, sampled probabilities, actions, resolutions and objective facts must remain identical. Thought tokens may differ only on port 29. The analyzer reports visible covariance rank, exact token/direction counts, normalized-dot score and best-second spread, selected delay, historical-event reuse, funnel counts and unchanged Stage-3C-7/8 evidence.
+
+The assessment decomposes port-29 variation into within-tick subject variance and between-tick mean variance. Under the current fixed bootstrap, node 0 creates temporal variation but every selected subject and every source follows the same trajectory. This is classified as a replaceable shared temporal-phase shaping aid. It is not event identity, learned positional encoding, value, reward, causal credit or a universal attention mechanism.

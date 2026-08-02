@@ -674,3 +674,19 @@ Stage 3C-18 为隔离候选基数而使用固定等权均值，并保持一次 p
 Stage 3C-19 证明，当前 association scorer 排除 ports 0-28 的控制坐标后只看到 ports 29-31，而九 source 的全部 1152 个 token 在该子空间都精确等于 `[0,0,1]`。centered rank 为 0；3888 个合法延迟 pair 的 normalized-dot score 全为 1.0，最佳与次佳 score spread 为 0。
 
 因此 latest/oldest 和 top-1/top-2 的差异不是内容相似度学出的竞争，而是固定 tie-break 与候选基数偏置。不得把这一 operating-point 退化推广为连续 token 或通用注意力不可能。下一步只能单独诊断一个现有、无价值语义的 readout/operating-context 如何使 ports 29-31 产生方差；不得同时改变 similarity、top-k、learned weight、delta、retention 或完整注意架构。
+
+## Stage 3C-20：非退化 token geometry 仍可能只是共享时间相位
+
+Stage 3C-19 的 rank-zero 结果说明当前 scorer 没有内容输入，但“增加一个有方差的坐标”本身仍不足以形成事件内容。Stage 3C-20 把现有 action-producing node 0 的状态映射到 visible port 29 后，centered rank 提升到 1、normalized-dot score 出现 spread、exact tie 消失，证明 score 可分离性在工程上可达。
+
+然而该状态由所有固定 bootstrap subject 共享同一动力学：同一 tick 内 subject variance 为 0，九 source 的 tick-mean trajectory 也完全相同。它更接近固定图产生的 temporal phase，而不是 subject/event-specific content。其 delay-2 选择不能解释为更正确的历史归因，proposal/window 减少也不能解释为负价值。
+
+下一步若继续，只能一次引入一个已经存在的 factual 或 internal readout，并明确区分：
+
+- within-tick subject variance；
+- between-tick temporal variance；
+- cross-source variance；
+- score spread；
+- 实际 selected-event coverage 与复用。
+
+不得同时修改 similarity、threshold、candidate limit、delta、exposure、retention、reward 或 permanent write。

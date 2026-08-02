@@ -1,0 +1,89 @@
+{
+  "schema": "se-subject-vm-stage3c20-visible-readout-reachability-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c20-visible-readout-reachability-v1",
+  "status": "accepted-engineering-fixed-bootstrap-readout-audit-only",
+  "project_version": "0.134.0",
+  "question": "Can one existing action-producing graph state create association-visible variance and normalized-dot score separation without changing similarity, candidate allocation, update scale or retention?",
+  "source_panel": {
+    "independent_source_seeds": [12301, 12302, 12303, 12304, 12305, 12306, 12307, 12308, 12309],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "target_family": "edge_forward_gate",
+    "edge_local_eligibility_carrier": true,
+    "association_tie_break": "latest",
+    "association_candidate_limit": 1,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "single_factor": {
+    "name": "fixed_bootstrap_node0_state_visible_readout",
+    "baseline": "no node-0 trace in association-visible coordinates",
+    "alternative": "node-0 current state to token port 29 with trace gate 1.0",
+    "node_execution_changed": false,
+    "action_output_changed_in_read_only_control": false,
+    "normalized_dot_similarity_changed": false,
+    "similarity_threshold_changed": false,
+    "candidate_limit_or_tie_break_changed": false,
+    "target_family_or_carrier_changed": false,
+    "delta_exposure_or_rollback_changed": false,
+    "permanent_parameter_retention_changed": false,
+    "value_semantics": null
+  },
+  "observed_panel_result": {
+    "independent_source_count": 9,
+    "baseline": {
+      "centered_visible_rank_per_source": 0,
+      "exact_unique_visible_tokens_per_source": 1,
+      "all_pairwise_scores": 1.0,
+      "assigned_associations": 1008,
+      "selected_delay_histogram": {"1": 1008},
+      "modulation_proposals": 942,
+      "guarded_live_commits": 144,
+      "completed_paired_windows": 129,
+      "discrete_action_differences": 4,
+      "sources_with_objective_event_divergence": 3,
+      "stable_objective_coordinates": 0
+    },
+    "node0_readout": {
+      "centered_visible_rank_per_source": 1,
+      "exact_unique_visible_tokens_per_source": 7,
+      "score_minimum": -0.5073238069138678,
+      "score_maximum": 1.0,
+      "best_second_spread_positive": true,
+      "within_tick_subject_variance": 0.0,
+      "same_tick_mean_trajectory_across_sources": true,
+      "assigned_associations": 864,
+      "selected_delay_histogram": {"2": 864},
+      "selected_similarity_minimum": 0.8653733134269714,
+      "modulation_proposals": 535,
+      "guarded_live_commits": 143,
+      "completed_paired_windows": 100,
+      "discrete_action_differences": 2,
+      "sources_with_objective_event_divergence": 2,
+      "stable_objective_coordinates": 0
+    },
+    "engineering_integrity": {
+      "pairing_coverage_both_arms": 1.0,
+      "rollback_failures_both_arms": 0,
+      "objective_fact_clipping_both_arms": 0,
+      "evaluation_costs_match_both_arms": true,
+      "pre_bootstrap_source_identity": true,
+      "read_only_objective_behavior_identity": true,
+      "thought_token_difference_limited_to_port29": true
+    }
+  },
+  "interpretation": {
+    "visible_geometry_reachability_established": true,
+    "normalized_dot_score_separation_established": true,
+    "subject_or_event_identity_encoding_established": false,
+    "current_readout_is_shared_temporal_phase": true,
+    "causal_credit_quality_established": false,
+    "learning_established": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "next_boundary": "Keep the node-0 visible readout as an explicit fixed-bootstrap arm and diagnose one existing factual or internal readout that adds subject/event-specific variance. Do not simultaneously change similarity, candidate limit, update scale, exposure, retention or permanent-write policy."
+}

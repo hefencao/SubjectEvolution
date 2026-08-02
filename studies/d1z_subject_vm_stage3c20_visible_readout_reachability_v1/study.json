@@ -1,0 +1,21 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c20_visible_readout_reachability_v1",
+  "title": "D1-Z Subject VM Stage 3C-20 visible graph-state readout reachability audit",
+  "status": "engineering-visible-readout-geometry-and-funnel-diagnostic",
+  "scientific_stage": "stage3c20-single-fixed-bootstrap-readout-change-no-value-or-retention-change",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_source_panel": true,
+    "single_visible_readout_change": true,
+    "node0_action_state_to_token_port29": true,
+    "edge_forward_gate_target_and_carrier_fixed": true,
+    "normalized_dot_similarity_fixed": true,
+    "candidate_limit_fixed": true,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "topology_evolution": false,
+    "universal_attention": false,
+    "subjecthood_claim": false
+  }
+}

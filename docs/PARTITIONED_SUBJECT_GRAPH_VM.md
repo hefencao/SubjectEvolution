@@ -692,3 +692,13 @@ Trace schema 升级到 v9，仅在 association 启用时增加五个固定容量
 Stage 3C-19 不修改运行时。它在冻结九 source 的 read-only-control trace 上，先排除 association request 与 modulation control ports，再分析 normalized-dot 实际可见的 token 子空间。当前 32 维 token 中只有 ports 29、30、31 可见，全部 1152 个 token 都等于 `[0,0,1]`。每 source centered covariance rank/effective rank 为 0，uncentered direction rank 为 1。
 
 全部 3888 个 delay-eligible query/candidate pair 都是精确相同向量，score 全为 1.0，best-second spread 全为 0，threshold margin 固定为 0.2。因此当前 score 没有内容区分能力，Stage 3C-17/18 的排序只能由时间 tie-break 和 candidate limit 决定。该结论只适用于当前 fixed bootstrap readout 与 operating point，不证明一般 token、学习或主体机制不可能。
+
+## v0.134：Stage 3C-20 association-visible graph-state readout 可达性审计
+
+Stage 3C-20 保持九 source、32 实体、16 bootstrap subject、source tick 2、branch horizon 8、exposure 3、CPU、`edge_forward_gate` carrier-on、latest、top-1、bounded delta、自动回滚和无永久保留不变。唯一变量是 action-producing node 0 是否额外把当前标量状态通过 trace gate 1.0 写入 association-visible token port 29。
+
+该 readout 不改变 node 0 的执行、action-potential 输出、参数、eligibility、similarity、threshold、delay bounds 或 candidate allocator。它只作为 explicit fixed-bootstrap readout shaping bias 写入 bootstrap profile/lineage，不进入项目 config identity，也不增加 checkpoint schema 或持久数组。
+
+九 source 中，baseline 的 visible centered rank 为 0；readout arm 每 source 有 7 个精确 token、centered rank 为 1，normalized-dot score 不再全部为 1.0，best-second spread 为正。但每个 tick 内 16 个 subject 的 port-29 值完全相同，九个 source 也共享同一时间轨迹。因此当前 readout 只提供 global temporal phase，不提供 subject/event-specific identity。
+
+readout arm 的 selected association 从 1008 个 delay-1 变为 864 个 delay-2，proposal、窗口与离散分化没有增加；两个 arm 均为 0/21 稳定客观坐标。不得把 score spread 解释为因果质量、价值或学习，也不得据此授权 permanent retention、learned weight、扩大 top-k 或切换完整通用注意架构。

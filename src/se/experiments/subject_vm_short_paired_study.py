@@ -63,6 +63,7 @@ class ShortPairedStudyParameters:
     rollback_after_ticks: int | None = None
     bootstrap_target_family: str = "node_bias"
     bootstrap_edge_carrier_enabled: bool = False
+    bootstrap_node0_visible_readout_enabled: bool = False
     association_tie_break: str = "latest"
     association_candidate_limit: int = 1
     association_candidate_aggregation: str = "equal-weight-mean"
@@ -97,6 +98,10 @@ class ShortPairedStudyParameters:
             raise ValueError(
                 "bootstrap_edge_carrier_enabled is only valid for edge_forward_gate"
             )
+        if not isinstance(self.bootstrap_node0_visible_readout_enabled, bool):
+            raise ValueError(
+                "bootstrap_node0_visible_readout_enabled must be boolean"
+            )
         if self.association_tie_break not in {"latest", "oldest"}:
             raise ValueError(
                 "association_tie_break must be latest or oldest"
@@ -128,6 +133,7 @@ def bootstrap_profile(
     *,
     target_family: str = "node_bias",
     edge_carrier_enabled: bool = False,
+    node0_visible_readout_enabled: bool = False,
 ) -> dict[str, Any]:
     if target_family not in _BOOTSTRAP_TARGET_FAMILY_PORTS:
         raise ValueError("unsupported fixed bootstrap target family")
@@ -151,6 +157,8 @@ def bootstrap_profile(
                 "input_gate": 0.75,
                 "output_port": 0,
                 "output_gate": 1.5,
+                "trace_port": 29 if node0_visible_readout_enabled else -1,
+                "trace_gate": 1.0 if node0_visible_readout_enabled else 0.0,
                 "local_eligibility": True,
                 "target_family": f"{target_family.replace(chr(95), chr(45))}-via-token-port-{target_port}",
             },
@@ -183,6 +191,17 @@ def bootstrap_profile(
         "eligibility_carrier_shaping": {
             "edge_0_local_carrier_enabled": bool(edge_carrier_enabled),
             "classification": "replaceable-fixed-bootstrap-reachability-bias",
+            "value_semantics": None,
+        },
+        "association_visible_readout_shaping": {
+            "node_0_state_to_port_29_enabled": bool(
+                node0_visible_readout_enabled
+            ),
+            "node_index": 0,
+            "token_port": 29,
+            "trace_gate": 1.0 if node0_visible_readout_enabled else 0.0,
+            "source": "existing-action-producing-node-state",
+            "classification": "replaceable-fixed-bootstrap-readout-bias",
             "value_semantics": None,
         },
         "objective_value_interpretation": None,
@@ -247,6 +266,7 @@ def prime_fixed_bootstrap_graph(
     bootstrap_subjects: int,
     target_family: str = "node_bias",
     edge_carrier_enabled: bool = False,
+    node0_visible_readout_enabled: bool = False,
 ) -> dict[str, Any]:
     """Install the explicit fixed bootstrap graph into a quiescent source.
 
@@ -289,6 +309,9 @@ def prime_fixed_bootstrap_graph(
         if port >= 0:
             storage.node_trace_port[rows, node] = np.int16(port)
             storage.node_trace_gate[rows, node] = np.float32(gate)
+    if node0_visible_readout_enabled:
+        storage.node_trace_port[rows, 0] = np.int16(29)
+        storage.node_trace_gate[rows, 0] = np.float32(1.0)
 
     storage.edge_expressed[rows, 0] = True
     storage.edge_source[rows, 0] = np.int32(0)
@@ -310,6 +333,7 @@ def prime_fixed_bootstrap_graph(
     profile = bootstrap_profile(
         target_family=target_family,
         edge_carrier_enabled=edge_carrier_enabled,
+        node0_visible_readout_enabled=node0_visible_readout_enabled,
     )
     record = {
         "schema": BOOTSTRAP_LINEAGE_SCHEMA,
@@ -359,6 +383,9 @@ def run_short_paired_study(
     profile = bootstrap_profile(
         target_family=parameters.bootstrap_target_family,
         edge_carrier_enabled=parameters.bootstrap_edge_carrier_enabled,
+        node0_visible_readout_enabled=(
+            parameters.bootstrap_node0_visible_readout_enabled
+        ),
     )
     _write_json(root / "bootstrap_profile.json", profile)
     resolved_backend = "cpu" if parameters.backend == "auto" else parameters.backend
@@ -386,6 +413,9 @@ def run_short_paired_study(
             bootstrap_subjects=parameters.bootstrap_subjects,
             target_family=parameters.bootstrap_target_family,
             edge_carrier_enabled=parameters.bootstrap_edge_carrier_enabled,
+            node0_visible_readout_enabled=(
+                parameters.bootstrap_node0_visible_readout_enabled
+            ),
         )
         _assert_quiescent_runtime(simulation)
         source_checkpoint = simulation.save_full_checkpoint(
@@ -597,6 +627,14 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--bootstrap-node0-visible-readout-enabled",
+        action="store_true",
+        help=(
+            "Experiment-only fixed-bootstrap readout that maps the existing "
+            "action-producing node-0 state to association-visible token port 29."
+        ),
+    )
+    parser.add_argument(
         "--association-candidate-limit",
         choices=(1, 2),
         type=int,
@@ -625,6 +663,9 @@ def main() -> None:
             rollback_after_ticks=args.rollback_after_ticks,
             bootstrap_target_family=args.bootstrap_target_family,
             bootstrap_edge_carrier_enabled=args.bootstrap_edge_carrier_enabled,
+            bootstrap_node0_visible_readout_enabled=(
+                args.bootstrap_node0_visible_readout_enabled
+            ),
             association_tie_break=args.association_tie_break,
             association_candidate_limit=args.association_candidate_limit,
         ),
