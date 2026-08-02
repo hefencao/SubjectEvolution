@@ -1,0 +1,47 @@
+{
+  "schema": "se-subject-vm-stage3c13-exposure-adequacy-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c13-exposure-adequacy-v1",
+  "status": "accepted-engineering-analysis-only",
+  "project_version": "0.127.0",
+  "question": "Does one additional tick of temporary parameter exposure increase discrete-action or cross-source objective visibility when all other study factors remain fixed?",
+  "comparison": {
+    "baseline_rollback_after_ticks": 2,
+    "extended_rollback_after_ticks": 3,
+    "control_horizon_synchronized_to_rollback": true,
+    "single_changed_factor": "temporary_parameter_exposure_duration",
+    "branch_horizon_ticks": 8,
+    "independent_source_seeds": [12301, 12302, 12303, 12304, 12305, 12306, 12307, 12308, 12309],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "integrity": {
+    "same_source_project_config_required": true,
+    "identical_source_checkpoint_state_hashes_required": true,
+    "identical_source_checkpoint_config_hashes_required": true,
+    "identical_bootstrap_lineage_required": true,
+    "branch_override_allowed_fields": [
+      "subject_vm.live_write.rollback_after_ticks",
+      "subject_vm.evaluation.control_horizon_ticks"
+    ],
+    "read_only_control_behavior_identity_required": true,
+    "stage3c7_engineering_screen_required_for_both_arms": true,
+    "stage3c8_hierarchy_unchanged": "window -> stable subject -> independent source",
+    "stage3c10_complete_trace_coverage_required": true,
+    "runtime_diagnostic_state_added": false
+  },
+  "interpretation": {
+    "continuous_parameter_visibility_is_not_discrete_action_visibility": true,
+    "non_monotonic_discrete_counts_are_not_utility_or_harm": true,
+    "absence_of_more_discrete_crossings_is_not_final_update_invalidity": true,
+    "objective_coordinate_value_interpretation": null,
+    "universal_scalar_objective": false,
+    "automatic_keep_or_revert_decision": false,
+    "permanent_write_authorized": false,
+    "learning_claim_authorized": false,
+    "subjecthood_claim_authorized": false
+  },
+  "next_boundary": "If longer exposure increases continuous visibility without increasing discrete or cross-source objective visibility, hold exposure fixed and audit one explicit fixed-bootstrap parameter-family reachability change."
+}

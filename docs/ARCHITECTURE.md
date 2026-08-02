@@ -1541,3 +1541,14 @@ The analyzer verifies the causal prefix contract before reading the longer tail.
 The comparison uses horizons 5 and 8. Eight is the largest horizon whose complete branch event range fits the existing `retention_ticks=8` contract, so no trace capacity, checkpoint field or unbounded history is added. Stage 3C-10 coverage must be complete in every source. The analyzer separately counts new tail action-potential, sampled-probability, discrete-action and objective-event differences, so continued world-state consequences of an earlier action are not misclassified as new parameter-induced action crossings.
 
 The independent replicate remains the source checkpoint. Additional windows from the longer arm are nested evidence and do not increase independent `n`. Stage 3C-12 adds no runtime state, random-number consumption, branch/checkpoint/ledger owner, parameter write authority, scalar score, automatic keep/revert decision or permanent retention.
+
+### Stage 3C-13 — temporary parameter exposure adequacy audit (implemented in v0.127)
+
+Stage 3C-13 remains in paired-study orchestration and `se.analysis`. The source checkpoint is generated once from the unchanged study configuration. `subject_vm_paired_evaluation.build_plan` may bind one common `rollback_after_ticks` override and the synchronized `control_horizon_ticks` required by the Stage-3C-5 contract. The plan rejects every other override, checksum-binds the accepted fields and applies them only after loading the source checkpoint. Within one arm, guarded-live and read-only-control branch identity still differs only by `subject_vm.live_write.enabled`.
+
+`subject_vm_stage3c13_exposure_adequacy.py` consumes two checksum-valid Stage-3C-9/10 study bundles. It requires equal ordered seeds, source checkpoint state/config hashes, bootstrap lineage, branch horizon, entity/subject counts, backend, observation window, bounded update parameters and fixed bootstrap topology. It additionally compares read-only control event arrays across arms so a source or RNG drift cannot be mistaken for an exposure effect.
+
+The assessment reports effective semantic ticks per commit, continuous action-potential/probability divergence, sampled discrete-action divergence, objective-event divergence, completed-window incidence and Stage-3C-8 stability without scalarizing coordinates. Export-boundary pending transactions and incomplete windows are reported separately: finalization restores/releases state without running semantic ticks, and incomplete windows remain excluded from paired evidence.
+
+No runtime field, checkpoint schema, ledger owner, lifecycle system, random stream, permanent parameter path, value coordinate or automatic keep/revert decision is added. The independent replicate remains the source checkpoint. The branch-only override is an experimental orchestration facility, not a second write authority and not a general mechanism for arbitrary configuration mutation.
+

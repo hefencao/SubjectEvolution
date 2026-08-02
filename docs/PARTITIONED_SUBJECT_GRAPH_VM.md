@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
 Status: **Stage 3C-5 CPU-reference score-free objective evaluation windows implemented; no automatic keep/revert decision**
-Project version: **0.126.0**
+Project version: **0.127.0**
 
 ## 1. Decision
 
@@ -598,3 +598,16 @@ Stage 3C-12 在两个 arm 的 guarded-live/control final checkpoint 中，以 st
 五 tick arm 产生 111 个完整 paired windows，八 tick arm 产生 143 个；live commits 为 141 对 144。两 arm 都只有 3 个 discrete-action difference events，分布在相同 2/9 source；稳定客观坐标均为 0/21。八 tick 尾部没有新的 action crossing，只保留一个先前已分化 action 造成的后续 objective path difference。
 
 因此当前证据缩小了“仅因停止过早而完全看不到离散差异”的解释空间，但不证明五 tick 普遍充分，也不证明更新有效或无效。branch horizon 与 temporary parameter exposure duration 是不同变量。下一阶段若继续，应保持 trace-safe horizon 和九 source panel，单独比较 exposure duration；不得同步改变 delta、实体数、bootstrap topology 或永久保留政策。
+
+## v0.127：Stage 3C-13 临时参数暴露充分性审计
+
+Stage 3C-13 保持九个 source checkpoint、每 source 32 个实体、16 个 bootstrap subject、source tick 2、branch horizon 8、CPU、bounded delta 和固定 bootstrap topology 不变，只比较 `rollback_after_ticks=2` 与 `3`。Stage 3C-5 要求 read-only control reservation horizon 与 live rollback horizon 相等，因此 `control_horizon_ticks` 同步变化；两个字段共同表示一个 exposure-duration 实验变量。
+
+为了不让 source 配置身份变化混入比较，source checkpoint 仍从同一原始配置生成。paired plan 只允许 checksum-bound 的两个同步 exposure 字段，并在加载 source checkpoint 后同时应用到 live/control branch。九个 source 的 source state/config hash 与 bootstrap lineage 必须逐 seed 相同；每个 arm 内 live/control 的唯一分支差异仍是 `subject_vm.live_write.enabled`。跨 arm 的 read-only control thought token、action potential、sampled probability、action、resolution 和 objective-event trace 也必须逐事件相等。
+
+实际结果中，平均每次 commit 的有效 semantic tick 从 1.000 增至 1.993，action-potential difference events 从 371 增至 423，sampled-probability differences 从 377 增至 426。这确认临时参数确实作用更久。离散 action difference events 没有增加，而是从 3 次、2/9 source 变为 2 次、1/9 source；两个 arm 均只有 1/9 source 的 completed-window objective vector 非零，Stage 3C-8 均为 0/21 稳定坐标。
+
+extended arm 少两个 completed windows，来自 branch 结束时仍 pending 的 transaction/window。export-boundary finalization 精确恢复或释放状态，不执行新 semantic tick；这些 incomplete windows 被显式记录但不进入配对证据。该现象不是 rollback failure，也不改变 pairing coverage。
+
+Stage 3C-13 只允许得出“连续影响更久不保证更多离散采样跨界”。它不允许把 exposure=2 或 3 写成普遍最优值，不允许把离散计数下降解释为负价值，也不授权 permanent retention、automatic keep/revert、scalar objective、causal credit、stable learning、主体性或通用注意力声明。
+

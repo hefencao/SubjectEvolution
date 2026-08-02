@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.127.0
+
+- Adds Subject VM Stage 3C-13 temporary-parameter-exposure adequacy assessment.
+- Keeps the nine-source, 32-entity, sixteen-bootstrap-subject, eight-tick CPU panel fixed and changes only synchronized live/control exposure duration from 2 to 3 ticks.
+- Adds a checksum-bound paired-plan override restricted to `rollback_after_ticks` and the required matching `control_horizon_ticks`, applied after loading the identical source checkpoint.
+- Requires equal source state/config hashes, bootstrap lineage and event-by-event read-only control behavior across exposure arms.
+- Finds mean effective semantic ticks per commit increasing from 1.000 to 1.993, action-potential differences from 371 to 423 and sampled-probability differences from 377 to 426.
+- Finds no increase in discrete-action crossings: three events in two sources become two events in one source; both arms retain 0/21 stable objective coordinates.
+- Reports export-boundary pending finalization and preserves incomplete windows without promoting them to paired evidence.
+- Authorizes no claim that longer exposure is beneficial or harmful, no permanent retention, scalar objective, automatic keep/revert, causal-credit, stable-learning, subjecthood or general-attention claim.
+
 ## 0.126.0
 
 - Adds Subject VM Stage 3C-12 trace-safe branch-horizon adequacy assessment.

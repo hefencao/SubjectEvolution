@@ -563,3 +563,28 @@ Stage 3C-12 在同一九个 source checkpoint 上只把 branch horizon 从 5 tic
 若 live 分支在五 tick 边界前已经改变一次离散 action，后续即使参数已回滚，实体位置、能量或环境状态也可以继续与 control 不同。Stage 3C-12 因此把 extended tail 中的 `action_id` 新差异与 `objective_delta` 延续差异分开统计。尾部出现客观差异但没有新 action crossing，表示既有路径依赖继续传播，不是后续临时写入再次跨过离散边界。
 
 这种区分仍不是因果信用判决。它只能描述分支轨迹的时序结构，不能把某个 objective coordinate 解释为好坏，也不能据此保留参数。
+
+## v0.127：连续参数影响增强不必单调转化为离散动作差异
+
+Stage 3C-13 在同一九 source、32 实体、8 tick 面板上，只把临时参数 exposure 从约一个后续 semantic activation tick 延长到约两个。action potential 和 sampled probability 的 live/control 差异明显增加，但离散 action crossing 从 3 次降到 2 次，分化 source 从 2/9 降到 1/9。
+
+这不是“更长 exposure 有害”的证据。离散采样取决于阈值、随机数和已经分化的状态路径；连续差异变大或持续更久，可以把某些事件推过边界，也可以改变后续候选/transaction 时序而不跨过同一边界。科学报告必须同时保留连续差异、离散差异和 source incidence，不能只挑一个计数制造单调机制叙事。
+
+## v0.127：paired branch override 必须与 source 身份隔离
+
+使用两份完整配置分别生成 source 会让 config identity、source checkpoint lineage 与实验变量一起变化，无法证明差异只来自 exposure。Stage 3C-13 因此从同一 source checkpoint 分支，并只允许 paired plan 覆盖同步的 `rollback_after_ticks` 与 `control_horizon_ticks`。任何其他字段、不同 source state/config hash、不同 bootstrap lineage 或不同 read-only control 行为都会使比较失败。
+
+这种 override 是受限实验编排合同，不是第二套配置系统或通用运行时热更新。它不能绕过 canonical disabled identity，不能改变 source checkpoint，不能新增写权限，也不能成为后续同时调整多个机制的入口。
+
+## v0.127：边界 pending 窗口必须保留但不能进入完整证据
+
+更长 rollback horizon 会使分支停止时仍有 transaction/window pending。export-boundary finalization 可以在不执行新 semantic tick 的前提下恢复 live 参数、释放 control reservation 并记录 incomplete window；它不能把未完成观察伪装成 completed evidence。Stage 3C-13 extended arm 因此少两个 completed windows，但 pairing coverage、rollback integrity 和 evaluation-cost matching 仍完整。
+
+少窗口不能被过滤掉，也不能通过延长 finalization 产生额外世界事件。未来比较必须同时报告 pending/finalized/incomplete 数量，并继续把 source checkpoint 而不是窗口作为独立重复。
+
+## v0.127：可见性变量审计后，结构可达性成为下一最小边界
+
+Stage 3C-12 表明多观察三个 tick 不产生新的离散跨界；Stage 3C-13 表明临时参数作用更久增加连续差异但不增加跨 source 离散分化。两项结果都不是更新无效判决，但削弱了“只因等待或作用时间不足”的单一解释。
+
+当前 proposal/commit 仍只覆盖 `node_bias`，nearest-token candidate 仍集中在 delay 1 / similarity 1.0。下一步若调整 fixed bootstrap parameter-family reachability，必须一次只改变一个显式、可替换、无价值语义的 shaping factor，保持九 source、32 实体、8 tick、exposure=3、delta 和永久回滚不变；不得同时实现 topology evolution、通用注意模型或永久保留。
+

@@ -53,6 +53,7 @@ class ShortPairedStudyParameters:
     horizon_ticks: int = 5
     bootstrap_subjects: int = 16
     backend: str = "auto"
+    rollback_after_ticks: int | None = None
 
     def validate(self) -> None:
         if len(self.seeds) < 3:
@@ -71,6 +72,10 @@ class ShortPairedStudyParameters:
             raise ValueError(
                 "Stage-3C short paired study currently supports auto or explicit CPU"
             )
+        if self.rollback_after_ticks is not None and int(
+            self.rollback_after_ticks
+        ) < 1:
+            raise ValueError("rollback_after_ticks must be positive when provided")
 
 
 def _canonical_sha256(payload: Any) -> str:
@@ -312,6 +317,7 @@ def run_short_paired_study(
             source_checkpoint,
             horizon_ticks=parameters.horizon_ticks,
             finalize_pending_transients_at_export=True,
+            rollback_after_ticks_override=parameters.rollback_after_ticks,
         )
         plan_path = seed_root / "paired_plan.json"
         _write_json(plan_path, plan)
@@ -384,6 +390,22 @@ def run_short_paired_study(
             "max_entities": int(base_cfg.world.max_entities),
         },
         "resolved_backend": resolved_backend,
+        "temporary_exposure_contract": {
+            "rollback_after_ticks": int(
+                parameters.rollback_after_ticks
+                if parameters.rollback_after_ticks is not None
+                else base_cfg.subject_vm.live_write.rollback_after_ticks
+            ),
+            "control_horizon_ticks": int(
+                parameters.rollback_after_ticks
+                if parameters.rollback_after_ticks is not None
+                else base_cfg.subject_vm.evaluation.control_horizon_ticks
+            ),
+            "observation_ticks": int(
+                base_cfg.subject_vm.evaluation.observation_ticks
+            ),
+            "source_checkpoint_config_unchanged": True,
+        },
         "bootstrap_profile": profile,
         "seeds": seed_records,
         "paired_evidence_assessment": str(integrity_path.resolve()),
@@ -459,6 +481,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--source-ticks", type=int, default=2)
     parser.add_argument("--horizon-ticks", type=int, default=5)
     parser.add_argument("--bootstrap-subjects", type=int, default=16)
+    parser.add_argument("--rollback-after-ticks", type=int)
     parser.add_argument("--backend", choices=("auto", "cpu"), default="auto")
     parser.add_argument("--output", required=True)
     parser.add_argument("--overwrite", action="store_true")
@@ -475,6 +498,7 @@ def main() -> None:
             horizon_ticks=args.horizon_ticks,
             bootstrap_subjects=args.bootstrap_subjects,
             backend=args.backend,
+            rollback_after_ticks=args.rollback_after_ticks,
         ),
         output_dir=args.output,
         overwrite=args.overwrite,

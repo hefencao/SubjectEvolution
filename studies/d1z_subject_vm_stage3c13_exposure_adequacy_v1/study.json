@@ -1,0 +1,22 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c13_exposure_adequacy_v1",
+  "title": "D1-Z Subject VM Stage 3C-13 temporary parameter exposure adequacy audit",
+  "status": "engineering-exposure-adequacy",
+  "scientific_stage": "stage3c13-exposure-only-no-value-or-retention-change",
+  "authorization": {
+    "reuse_v0126_nine_source_eight_tick_panel": true,
+    "compare_rollback_after_ticks_two_to_three": true,
+    "synchronize_control_horizon_by_existing_contract": true,
+    "require_identical_source_state_and_config": true,
+    "require_read_only_control_behavior_identity": true,
+    "change_entity_count": false,
+    "change_branch_horizon": false,
+    "change_delta_scale": false,
+    "change_bootstrap_topology": false,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "epoch_1_entry": false,
+    "subjecthood_claim": false
+  }
+}

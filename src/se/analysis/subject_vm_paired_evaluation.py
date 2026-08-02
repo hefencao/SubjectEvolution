@@ -17,7 +17,10 @@ import numpy as np
 
 from ..checkpointing import config_sha256, read_checkpoint_bundle
 from ..runtime.sim import Simulation
-from ..subject_vm.config import SUBJECT_VM_STAGE3C5_SCHEMA
+from ..subject_vm.config import (
+    SUBJECT_VM_STAGE3C5_SCHEMA,
+    validate_subject_vm_config,
+)
 from ..subject_vm.evaluation import (
     EVALUATION_STATUS_ACTIVE,
     EVALUATION_STATUS_OBSERVED,
@@ -93,9 +96,72 @@ def _validate_quiescent_source(state: dict[str, Any]) -> None:
         )
 
 
-def _branch_config(source_cfg: Any, *, role: str, final_tick: int) -> Any:
+def _normalized_branch_contract_overrides(
+    rollback_after_ticks_override: int | None,
+) -> dict[str, int]:
+    if rollback_after_ticks_override is None:
+        return {}
+    rollback_after_ticks = int(rollback_after_ticks_override)
+    return {
+        "subject_vm.live_write.rollback_after_ticks": rollback_after_ticks,
+        "subject_vm.evaluation.control_horizon_ticks": rollback_after_ticks,
+    }
+
+
+def _plan_rollback_after_ticks_override(plan: dict[str, Any]) -> int | None:
+    raw = plan.get("branch_contract_overrides")
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise ValueError("subject_vm paired branch contract overrides must be an object")
+    expected = {
+        "subject_vm.live_write.rollback_after_ticks",
+        "subject_vm.evaluation.control_horizon_ticks",
+    }
+    if set(raw) != expected:
+        raise ValueError(
+            "subject_vm paired branch contract overrides may change exposure duration only"
+        )
+    rollback_after_ticks = int(
+        raw["subject_vm.live_write.rollback_after_ticks"]
+    )
+    if int(raw["subject_vm.evaluation.control_horizon_ticks"]) != rollback_after_ticks:
+        raise ValueError(
+            "subject_vm paired exposure override must keep control horizon synchronized"
+        )
+    return rollback_after_ticks
+
+
+def _branch_contract_config(
+    source_cfg: Any, *, rollback_after_ticks_override: int | None
+) -> Any:
+    if rollback_after_ticks_override is None:
+        return source_cfg
+    svm = source_cfg.subject_vm
+    rollback_after_ticks = int(rollback_after_ticks_override)
+    live = replace(svm.live_write, rollback_after_ticks=rollback_after_ticks)
+    evaluation = replace(
+        svm.evaluation, control_horizon_ticks=rollback_after_ticks
+    )
+    svm = replace(svm, live_write=live, evaluation=evaluation)
+    cfg = replace(source_cfg, subject_vm=svm)
+    validate_subject_vm_config(cfg.subject_vm)
+    return cfg
+
+
+def _branch_config(
+    source_cfg: Any,
+    *,
+    role: str,
+    final_tick: int,
+    rollback_after_ticks_override: int | None = None,
+) -> Any:
     if role not in BRANCH_ROLES:
         raise ValueError("unsupported subject_vm paired branch role")
+    source_cfg = _branch_contract_config(
+        source_cfg,
+        rollback_after_ticks_override=rollback_after_ticks_override,
+    )
     svm = source_cfg.subject_vm
     live = replace(svm.live_write, enabled=(role == "guarded-live"))
     svm = replace(svm, live_write=live)
@@ -111,6 +177,7 @@ def _branch_config(source_cfg: Any, *, role: str, final_tick: int) -> Any:
 def build_plan(
     source_checkpoint: str | Path, *, horizon_ticks: int,
     finalize_pending_transients_at_export: bool = False,
+    rollback_after_ticks_override: int | None = None,
 ) -> dict[str, Any]:
     source_path = Path(source_checkpoint).resolve()
     metadata, state = read_checkpoint_bundle(source_path)
@@ -121,11 +188,16 @@ def build_plan(
     if not svm.evaluation_enabled or not svm.live_write_configured:
         raise ValueError("source checkpoint must configure evaluation and live-write contracts")
     _validate_quiescent_source(state)
+    effective_cfg = _branch_contract_config(
+        cfg,
+        rollback_after_ticks_override=rollback_after_ticks_override,
+    )
+    effective_svm = effective_cfg.subject_vm
     horizon = int(horizon_ticks)
     minimum = max(
-        int(svm.live_write.rollback_after_ticks),
-        int(svm.evaluation.control_horizon_ticks),
-        int(svm.evaluation.observation_ticks),
+        int(effective_svm.live_write.rollback_after_ticks),
+        int(effective_svm.evaluation.control_horizon_ticks),
+        int(effective_svm.evaluation.observation_ticks),
     ) + 1
     if horizon < minimum:
         raise ValueError(f"paired evaluation horizon_ticks must be at least {minimum}")
@@ -140,7 +212,12 @@ def build_plan(
     }
     branches = []
     for role in BRANCH_ROLES:
-        branch_cfg = _branch_config(cfg, role=role, final_tick=final_tick)
+        branch_cfg = _branch_config(
+            cfg,
+            role=role,
+            final_tick=final_tick,
+            rollback_after_ticks_override=rollback_after_ticks_override,
+        )
         cfg_sha = config_sha256(branch_cfg)
         branch_basis = {
             "source_checkpoint_state_sha256": source_identity["checkpoint_state_sha256"],
@@ -173,6 +250,11 @@ def build_plan(
         "automatic_keep_or_revert_decision": False,
         "causal_effect_authorized_by_plan": False,
     }
+    overrides = _normalized_branch_contract_overrides(
+        rollback_after_ticks_override
+    )
+    if overrides:
+        payload["branch_contract_overrides"] = overrides
     payload["plan_sha256"] = _canonical_sha256(payload)
     return payload
 
@@ -188,10 +270,22 @@ def _validate_plan(plan: dict[str, Any]) -> None:
     roles = [str(item.get("role")) for item in plan.get("branches", [])]
     if tuple(roles) != BRANCH_ROLES:
         raise ValueError("subject_vm paired evaluation plan branch roles mismatch")
+    _plan_rollback_after_ticks_override(plan)
 
 
-def _set_branch_mode(simulation: Simulation, *, role: str, final_tick: int) -> None:
-    cfg = _branch_config(simulation.cfg, role=role, final_tick=final_tick)
+def _set_branch_mode(
+    simulation: Simulation,
+    *,
+    role: str,
+    final_tick: int,
+    rollback_after_ticks_override: int | None = None,
+) -> None:
+    cfg = _branch_config(
+        simulation.cfg,
+        role=role,
+        final_tick=final_tick,
+        rollback_after_ticks_override=rollback_after_ticks_override,
+    )
     simulation.cfg = cfg
     simulation.entities.cfg = cfg
     simulation.subject_vm.cfg = cfg.subject_vm
@@ -279,9 +373,20 @@ def run_plan(
     control = Simulation.from_checkpoint(
         source, control_dir, backend=backend, until_tick=int(plan["final_tick"])
     )
-    _set_branch_mode(control, role="read-only-control", final_tick=int(plan["final_tick"]))
+    rollback_after_ticks_override = _plan_rollback_after_ticks_override(plan)
+    _set_branch_mode(
+        control,
+        role="read-only-control",
+        final_tick=int(plan["final_tick"]),
+        rollback_after_ticks_override=rollback_after_ticks_override,
+    )
     live = control.clone(live_dir)
-    _set_branch_mode(live, role="guarded-live", final_tick=int(plan["final_tick"]))
+    _set_branch_mode(
+        live,
+        role="guarded-live",
+        final_tick=int(plan["final_tick"]),
+        rollback_after_ticks_override=rollback_after_ticks_override,
+    )
     for role, sim, directory in (
         ("read-only-control", control, control_dir),
         ("guarded-live", live, live_dir),
@@ -418,6 +523,7 @@ def build_parser() -> argparse.ArgumentParser:
     plan = sub.add_parser("plan")
     plan.add_argument("--source-checkpoint", required=True)
     plan.add_argument("--horizon-ticks", required=True, type=int)
+    plan.add_argument("--rollback-after-ticks", type=int)
     plan.add_argument("--output", required=True)
     run = sub.add_parser("run")
     run.add_argument("--plan", required=True)
@@ -435,7 +541,11 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     args = build_parser().parse_args()
     if args.command == "plan":
-        payload = build_plan(args.source_checkpoint, horizon_ticks=args.horizon_ticks)
+        payload = build_plan(
+            args.source_checkpoint,
+            horizon_ticks=args.horizon_ticks,
+            rollback_after_ticks_override=args.rollback_after_ticks,
+        )
     else:
         plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))
         if args.command == "run":

@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.126.0**
+Version: **0.127.0**
 
 ## Current scientific task
 
-Version 0.126 implements **Subject VM Stage 3C-12: trace-safe branch-horizon adequacy audit**.
+Version 0.127 implements **Subject VM Stage 3C-13: temporary parameter exposure adequacy audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -43,6 +43,14 @@ Stage 3C-12 changes only `branch_horizon_ticks`, comparing the v0.125 five-tick 
 Before interpreting the extra tail, Stage 3C-12 compares every event-shaped Subject-VM trace array keyed by stable subject and event tick before the five-tick stopping boundary. All live and control prefixes are exactly identical across both arms. Both Stage-3C-7 screens pass with pairing coverage 1.0, zero rollback failures, zero fact clipping, matched evaluation costs and complete divergence-trace coverage.
 
 The eight-tick arm completes 143 paired windows versus 111 at five ticks, while live commits rise only from 141 to 144. Both arms contain the same three discrete-action difference events in the same two of nine sources, and both retain 0/21 stable objective coordinates. The added tail contains no new discrete-action crossing; it only records later objective-state differences continuing from an action path that had already diverged before the five-tick boundary. This makes branch horizon a weaker explanation for the sparse discrete signal under the current rollback/exposure contract, without proving that five ticks are universally sufficient.
+
+Stage 3C-13 changes only temporary exposure duration on the same nine-source, 32-entity, eight-tick CPU panel. `rollback_after_ticks` changes from 2 to 3 and the read-only `control_horizon_ticks` changes with it because Stage 3C-5 requires those horizons to match. The paired plan applies this common override after loading the same source checkpoint, so both arms retain identical source state/config hashes and bootstrap lineage; live versus control within each arm still differs only by `subject_vm.live_write.enabled`.
+
+Before comparing outcomes, Stage 3C-13 verifies that only the two synchronized exposure fields are overridden and that read-only control thought tokens, action potentials, sampled probabilities, actions, resolutions and objective events are identical across arms. Both Stage-3C-7 screens pass with nine independent source pairs, pairing coverage 1.0, zero rollback failures, zero fact clipping, matched evaluation costs and complete divergence-trace coverage.
+
+The longer exposure increases mean effective semantic ticks per commit from 1.000 to 1.993. Action-potential difference events rise from 371 to 423 and sampled-probability differences from 377 to 426, confirming that the temporary parameter change remains behaviorally visible for longer. Discrete-action differences do not rise: they change from three events in two sources to two events in one source. Both arms retain one of nine sources with a nonzero completed-window objective vector and 0/21 stable objective coordinates. Two fewer completed windows in the extended arm are incomplete boundary windows finalized without additional semantic ticks; they are preserved as finalization facts and excluded from evidence rather than treated as rollback failures.
+
+This result does not classify longer exposure as beneficial or harmful. It shows that greater continuous influence does not monotonically become more sampled discrete-action crossings under the current fixed bootstrap. With horizon and exposure visibility now separately audited, the next minimal boundary is fixed-bootstrap parameter-family reachability, because proposals and commits remain concentrated in `node_bias`; no permanent retention, scalar value or general-attention claim is authorized.
 
 The current result classifies the original three-source run as an engineering pipeline pilot, not a scientifically sufficient sample for stable direction claims. The nine-source expansion reduces uncertainty about rarity but still does not establish mechanism efficacy, delayed-effect sufficiency, entity-count adequacy, stable learning or causal credit.
 
@@ -92,7 +100,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-12 classifies the trace-safe horizon comparison as engineering evidence without authorizing retention or Epoch 1.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-13 classifies the exposure-only comparison as engineering evidence without authorizing retention or Epoch 1.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -118,4 +126,4 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-The next authorized boundary is a separately versioned, single-variable comparison of temporary parameter exposure duration while holding the nine-source panel, 32 entities, trace-safe horizon, bounded delta and fixed bootstrap topology constant. Stage 3C-12 shows that merely waiting three additional ticks completes more windows but does not produce additional discrete-action crossings. This does not authorize changing exposure and delta together, permanent retention, scalar value construction, a complete general-attention replacement or Epoch 1 qualification.
+The next authorized boundary is a separately versioned, single-variable fixed-bootstrap parameter-family reachability comparison while holding the nine-source panel, 32 entities, eight-tick horizon, `rollback_after_ticks=3`, bounded delta and permanent rollback constant. Stage 3C-13 shows that nearly doubling effective temporary exposure increases continuous action-potential/probability differences without increasing discrete-action crossings. The next adjustment must remain an explicit replaceable shaping aid with no value semantics and must not simultaneously change topology evolution, delta scale, entity count, permanent retention, scalar value construction, a complete general-attention replacement or Epoch 1 qualification.
