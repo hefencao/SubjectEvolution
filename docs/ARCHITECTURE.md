@@ -1452,3 +1452,11 @@ The trace ring stores request/proposal flags, rejection reasons, expected curren
 `subject_vm/transaction.py` is a pure read-only adapter over `SubjectVMStorage`. It receives exact Stage-3C-1 binding metadata and Stage-3C-2 bounded proposals, performs float32 bit-identity compare-and-swap checks, and treats all proposed families from one event as a single all-or-none transaction.
 
 Projected values are placed only in a local fixed-width shadow vector. The adapter then restores the captured current values and records whether rollback is exact. It has no storage writer, no lifecycle ownership and no action interface. `trace.py` persists only transaction evidence and count-only cost units. Permanent graph write authority remains false.
+
+### Stage 3C-4 — guarded live-write experiment and applied ledger (implemented in v0.118)
+
+Stage 3C-4 remains inside `src/se/subject_vm/`. `live_write.py` owns the only live parameter mutation path, fixed-capacity per-subject applied ledger, window budgets and deterministic rollback. `trace.py` records event-local commit evidence but does not implement mutation rules; `runtime.py` invokes due rollback before activation and routes lifecycle/checkpoint hooks to the ledger.
+
+A write requires an explicitly enabled Stage 3C-4 contract, a prepared and rollback-verified Stage 3C-3 transaction, a second exact float32 compare-and-swap, all-or-none target validation, no overlapping pending target and remaining per-subject budgets. Applied values are temporary until the configured rollback deadline. At or after that tick rollback is attempted before activation using exact post-value CAS. Rollback failure locks future writes for the subject.
+
+The ledger is independent of token-ring and graph capacities except for fixed configured dimensions. Birth starts with an empty ledger, death clears it, compaction moves it with stable ownership, clone/checkpoint preserve it exactly, and v0.117 checkpoints rebuild empty Stage 3C-4 metadata. Counted commit and rollback costs are diagnostic only and do not debit entity energy.

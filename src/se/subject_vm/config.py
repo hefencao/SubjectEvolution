@@ -19,6 +19,7 @@ SUBJECT_VM_STAGE3B3_SCHEMA = "partitioned-subject-graph-vm-stage3b3-modulation-p
 SUBJECT_VM_STAGE3C1_SCHEMA = "partitioned-subject-graph-vm-stage3c1-target-binding-v1"
 SUBJECT_VM_STAGE3C2_SCHEMA = "partitioned-subject-graph-vm-stage3c2-update-safety-proposal-v1"
 SUBJECT_VM_STAGE3C3_SCHEMA = "partitioned-subject-graph-vm-stage3c3-shadow-transaction-v1"
+SUBJECT_VM_STAGE3C4_SCHEMA = "partitioned-subject-graph-vm-stage3c4-guarded-live-write-v1"
 SUBJECT_VM_ACTIVATION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_ACTIVATION_SCHEMA = "bounded-phased-forward-routing-v1"
 SUBJECT_VM_INPUT_PORT_SCHEMA = "objective-entity-input-ports-v1"
@@ -38,6 +39,8 @@ SUBJECT_VM_UPDATE_SAFETY_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_UPDATE_SAFETY_SCHEMA = "bounded-compare-and-swap-delta-proposal-v1"
 SUBJECT_VM_TRANSACTION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_TRANSACTION_SCHEMA = "atomic-shadow-cas-rollback-v1"
+SUBJECT_VM_LIVE_WRITE_DISABLED_SCHEMA = "disabled"
+SUBJECT_VM_LIVE_WRITE_SCHEMA = "guarded-live-write-rollback-window-v1"
 SUBJECT_VM_MODULATION_FACT_WIDTH = 21
 SUBJECT_VM_MODULATION_TARGET_NAMES = (
     "node-bias",
@@ -211,6 +214,32 @@ class SubjectVMTransactionConfig:
 
 
 @dataclass(frozen=True)
+class SubjectVMLiveWriteConfig:
+    """Stage-3C-4 explicitly opted-in, rollback-window live-write experiment.
+
+    This is a bounded engineering bootstrap, not a claim that the proposed
+    update is causally correct. Cost values remain count-only instrumentation.
+    """
+
+    schema: str = SUBJECT_VM_LIVE_WRITE_DISABLED_SCHEMA
+    enabled: bool = False
+    ledger_capacity_per_subject: int = 0
+    rollback_after_ticks: int = 0
+    window_ticks: int = 0
+    max_pending_transactions: int = 0
+    max_applied_targets_per_window: int = 0
+    max_abs_delta_per_window: float = 0.0
+    commit_base_cost_units: int = 0
+    commit_per_target_cost_units: int = 0
+    rollback_base_cost_units: int = 0
+    rollback_per_target_cost_units: int = 0
+
+    @property
+    def trace_capacity_required(self) -> int:
+        return int(self.rollback_after_ticks) + 1
+
+
+@dataclass(frozen=True)
 class SubjectVMConfig:
     """Disabled-by-default partitioned graph capacity contract."""
 
@@ -227,6 +256,7 @@ class SubjectVMConfig:
     target_binding: SubjectVMTargetBindingConfig = SubjectVMTargetBindingConfig()
     update_safety: SubjectVMUpdateSafetyConfig = SubjectVMUpdateSafetyConfig()
     transaction: SubjectVMTransactionConfig = SubjectVMTransactionConfig()
+    live_write: SubjectVMLiveWriteConfig = SubjectVMLiveWriteConfig()
 
     @property
     def total_node_capacity(self) -> int:
@@ -247,6 +277,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3C1_SCHEMA,
             SUBJECT_VM_STAGE3C2_SCHEMA,
             SUBJECT_VM_STAGE3C3_SCHEMA,
+            SUBJECT_VM_STAGE3C4_SCHEMA,
         }
 
     @property
@@ -259,6 +290,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3C1_SCHEMA,
             SUBJECT_VM_STAGE3C2_SCHEMA,
             SUBJECT_VM_STAGE3C3_SCHEMA,
+            SUBJECT_VM_STAGE3C4_SCHEMA,
         }
 
     @property
@@ -270,6 +302,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3C1_SCHEMA,
             SUBJECT_VM_STAGE3C2_SCHEMA,
             SUBJECT_VM_STAGE3C3_SCHEMA,
+            SUBJECT_VM_STAGE3C4_SCHEMA,
         }
 
     @property
@@ -280,6 +313,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3C1_SCHEMA,
             SUBJECT_VM_STAGE3C2_SCHEMA,
             SUBJECT_VM_STAGE3C3_SCHEMA,
+            SUBJECT_VM_STAGE3C4_SCHEMA,
         }
 
     @property
@@ -289,6 +323,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3C1_SCHEMA,
             SUBJECT_VM_STAGE3C2_SCHEMA,
             SUBJECT_VM_STAGE3C3_SCHEMA,
+            SUBJECT_VM_STAGE3C4_SCHEMA,
         }
 
     @property
@@ -297,15 +332,24 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3C1_SCHEMA,
             SUBJECT_VM_STAGE3C2_SCHEMA,
             SUBJECT_VM_STAGE3C3_SCHEMA,
+            SUBJECT_VM_STAGE3C4_SCHEMA,
         }
 
     @property
     def update_safety_enabled(self) -> bool:
-        return self.schema in {SUBJECT_VM_STAGE3C2_SCHEMA, SUBJECT_VM_STAGE3C3_SCHEMA}
+        return self.schema in {SUBJECT_VM_STAGE3C2_SCHEMA, SUBJECT_VM_STAGE3C3_SCHEMA, SUBJECT_VM_STAGE3C4_SCHEMA}
 
     @property
     def transaction_enabled(self) -> bool:
-        return self.schema == SUBJECT_VM_STAGE3C3_SCHEMA
+        return self.schema in {SUBJECT_VM_STAGE3C3_SCHEMA, SUBJECT_VM_STAGE3C4_SCHEMA}
+
+    @property
+    def live_write_configured(self) -> bool:
+        return self.schema == SUBJECT_VM_STAGE3C4_SCHEMA
+
+    @property
+    def live_write_enabled(self) -> bool:
+        return self.live_write_configured and bool(self.live_write.enabled)
 
 
 def _scan_forbidden_keys(value: Any, path: str = "subject_vm") -> None:
@@ -526,6 +570,37 @@ def _load_transaction_config(raw: Any) -> SubjectVMTransactionConfig:
     )
 
 
+def _load_live_write_config(raw: Any) -> SubjectVMLiveWriteConfig:
+    if raw is None:
+        return SubjectVMLiveWriteConfig()
+    if not isinstance(raw, Mapping):
+        raise ValueError("subject_vm.live_write must be an object")
+    allowed = {
+        "schema", "enabled", "ledger_capacity_per_subject",
+        "rollback_after_ticks", "window_ticks", "max_pending_transactions",
+        "max_applied_targets_per_window", "max_abs_delta_per_window",
+        "commit_base_cost_units", "commit_per_target_cost_units",
+        "rollback_base_cost_units", "rollback_per_target_cost_units",
+    }
+    unknown = sorted(set(raw) - allowed)
+    if unknown:
+        raise ValueError(f"unknown subject_vm.live_write fields: {unknown}")
+    return SubjectVMLiveWriteConfig(
+        schema=str(raw.get("schema", SUBJECT_VM_LIVE_WRITE_DISABLED_SCHEMA)),
+        enabled=bool(raw.get("enabled", False)),
+        ledger_capacity_per_subject=int(raw.get("ledger_capacity_per_subject", 0)),
+        rollback_after_ticks=int(raw.get("rollback_after_ticks", 0)),
+        window_ticks=int(raw.get("window_ticks", 0)),
+        max_pending_transactions=int(raw.get("max_pending_transactions", 0)),
+        max_applied_targets_per_window=int(raw.get("max_applied_targets_per_window", 0)),
+        max_abs_delta_per_window=float(raw.get("max_abs_delta_per_window", 0.0)),
+        commit_base_cost_units=int(raw.get("commit_base_cost_units", 0)),
+        commit_per_target_cost_units=int(raw.get("commit_per_target_cost_units", 0)),
+        rollback_base_cost_units=int(raw.get("rollback_base_cost_units", 0)),
+        rollback_per_target_cost_units=int(raw.get("rollback_per_target_cost_units", 0)),
+    )
+
+
 def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
     """Parse an optional Subject VM section without inventing legacy fields."""
     if raw is None:
@@ -545,6 +620,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         "target_binding",
         "update_safety",
         "transaction",
+        "live_write",
     }
     unknown = sorted(set(raw) - allowed)
     if unknown:
@@ -589,6 +665,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         target_binding=_load_target_binding_config(raw.get("target_binding")),
         update_safety=_load_update_safety_config(raw.get("update_safety")),
         transaction=_load_transaction_config(raw.get("transaction")),
+        live_write=_load_live_write_config(raw.get("live_write")),
     )
     validate_subject_vm_config(cfg)
     return cfg
@@ -643,6 +720,13 @@ def _validate_disabled_transaction(cfg: SubjectVMTransactionConfig) -> None:
     if cfg != SubjectVMTransactionConfig():
         raise ValueError(
             "inactive subject_vm transaction requires exact disabled defaults"
+        )
+
+
+def _validate_disabled_live_write(cfg: SubjectVMLiveWriteConfig) -> None:
+    if cfg != SubjectVMLiveWriteConfig():
+        raise ValueError(
+            "inactive subject_vm live_write requires exact disabled defaults"
         )
 
 
@@ -856,8 +940,34 @@ def _validate_transaction(cfg: SubjectVMTransactionConfig) -> None:
         raise ValueError("subject_vm transaction counted cost exceeds uint32 capacity")
 
 
+def _validate_live_write(
+    cfg: SubjectVMLiveWriteConfig, *, trace: SubjectVMTraceConfig
+) -> None:
+    if cfg.schema != SUBJECT_VM_LIVE_WRITE_SCHEMA:
+        raise ValueError(
+            f"Stage-3C-4 subject_vm requires live-write schema {SUBJECT_VM_LIVE_WRITE_SCHEMA!r}"
+        )
+    if not 1 <= cfg.ledger_capacity_per_subject <= 64:
+        raise ValueError("subject_vm live_write ledger_capacity_per_subject must be in [1, 64]")
+    if not 1 <= cfg.rollback_after_ticks < trace.retention_ticks:
+        raise ValueError("subject_vm live_write rollback_after_ticks must be in [1, retention_ticks)")
+    if cfg.trace_capacity_required > trace.capacity_per_subject:
+        raise ValueError("subject_vm live_write rollback window exceeds trace ring capacity")
+    if not cfg.rollback_after_ticks < cfg.window_ticks <= 2**31 - 1:
+        raise ValueError("subject_vm live_write window_ticks must exceed rollback_after_ticks")
+    if not 1 <= cfg.max_pending_transactions <= cfg.ledger_capacity_per_subject:
+        raise ValueError("subject_vm live_write max_pending_transactions exceeds ledger capacity")
+    if not 1 <= cfg.max_applied_targets_per_window <= 65535:
+        raise ValueError("subject_vm live_write max_applied_targets_per_window must be in [1, 65535]")
+    if not 0.0 < cfg.max_abs_delta_per_window <= 64.0:
+        raise ValueError("subject_vm live_write max_abs_delta_per_window must be in (0, 64]")
+    costs = (cfg.commit_base_cost_units, cfg.commit_per_target_cost_units, cfg.rollback_base_cost_units, cfg.rollback_per_target_cost_units)
+    if any(not 0 <= int(value) <= 1_000_000 for value in costs):
+        raise ValueError("subject_vm live_write counted costs must be in [0, 1000000]")
+
+
 def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
-    """Validate the frozen Stage-1 through Stage-3C-3 contracts."""
+    """Validate the frozen Stage-1 through Stage-3C-4 contracts."""
     if cfg.enabled:
         if cfg.schema not in {
             SUBJECT_VM_STAGE1_SCHEMA,
@@ -869,6 +979,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             SUBJECT_VM_STAGE3C1_SCHEMA,
             SUBJECT_VM_STAGE3C2_SCHEMA,
             SUBJECT_VM_STAGE3C3_SCHEMA,
+            SUBJECT_VM_STAGE3C4_SCHEMA,
         }:
             raise ValueError("enabled subject_vm requires a supported stage schema")
         if tuple(region.name for region in cfg.regions) != SUBJECT_VM_REGION_NAMES:
@@ -904,6 +1015,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_target_binding(cfg.target_binding)
             _validate_disabled_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
+            _validate_disabled_live_write(cfg.live_write)
             return
 
         _validate_activation(cfg.activation)
@@ -915,6 +1027,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_target_binding(cfg.target_binding)
             _validate_disabled_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
+            _validate_disabled_live_write(cfg.live_write)
             return
 
         _validate_trace(cfg.trace)
@@ -925,6 +1038,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_target_binding(cfg.target_binding)
             _validate_disabled_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
+            _validate_disabled_live_write(cfg.live_write)
             return
 
         _validate_eligibility(cfg.eligibility)
@@ -934,6 +1048,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_target_binding(cfg.target_binding)
             _validate_disabled_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
+            _validate_disabled_live_write(cfg.live_write)
             return
 
         _validate_association(
@@ -946,6 +1061,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_target_binding(cfg.target_binding)
             _validate_disabled_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
+            _validate_disabled_live_write(cfg.live_write)
             return
 
         _validate_modulation(
@@ -957,18 +1073,26 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_target_binding(cfg.target_binding)
             _validate_disabled_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
+            _validate_disabled_live_write(cfg.live_write)
             return
 
         _validate_target_binding(cfg.target_binding, eligibility=cfg.eligibility)
         if cfg.schema == SUBJECT_VM_STAGE3C1_SCHEMA:
             _validate_disabled_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
+            _validate_disabled_live_write(cfg.live_write)
         elif cfg.schema == SUBJECT_VM_STAGE3C2_SCHEMA:
             _validate_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
+            _validate_disabled_live_write(cfg.live_write)
+        elif cfg.schema == SUBJECT_VM_STAGE3C3_SCHEMA:
+            _validate_update_safety(cfg.update_safety)
+            _validate_transaction(cfg.transaction)
+            _validate_disabled_live_write(cfg.live_write)
         else:
             _validate_update_safety(cfg.update_safety)
             _validate_transaction(cfg.transaction)
+            _validate_live_write(cfg.live_write, trace=cfg.trace)
         return
 
     if cfg.schema != SUBJECT_VM_DISABLED_SCHEMA:
@@ -989,6 +1113,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
     _validate_disabled_target_binding(cfg.target_binding)
     _validate_disabled_update_safety(cfg.update_safety)
     _validate_disabled_transaction(cfg.transaction)
+    _validate_disabled_live_write(cfg.live_write)
 
 
 def _disabled_activation_payload(value: Any) -> bool:
@@ -1103,6 +1228,27 @@ def _disabled_transaction_payload(value: Any) -> bool:
     )
 
 
+def _disabled_live_write_payload(value: Any) -> bool:
+    if value is None:
+        return True
+    if not isinstance(value, Mapping):
+        return False
+    return (
+        value.get("schema") == SUBJECT_VM_LIVE_WRITE_DISABLED_SCHEMA
+        and value.get("enabled") is False
+        and int(value.get("ledger_capacity_per_subject", 0)) == 0
+        and int(value.get("rollback_after_ticks", 0)) == 0
+        and int(value.get("window_ticks", 0)) == 0
+        and int(value.get("max_pending_transactions", 0)) == 0
+        and int(value.get("max_applied_targets_per_window", 0)) == 0
+        and float(value.get("max_abs_delta_per_window", 0.0)) == 0.0
+        and int(value.get("commit_base_cost_units", 0)) == 0
+        and int(value.get("commit_per_target_cost_units", 0)) == 0
+        and int(value.get("rollback_base_cost_units", 0)) == 0
+        and int(value.get("rollback_per_target_cost_units", 0)) == 0
+    )
+
+
 def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]:
     """Remove exact inert extensions without changing frozen identities."""
     section = payload.get("subject_vm")
@@ -1134,6 +1280,10 @@ def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]
         section.get("transaction")
     ):
         section.pop("transaction", None)
+    if isinstance(section, dict) and _disabled_live_write_payload(
+        section.get("live_write")
+    ):
+        section.pop("live_write", None)
     if (
         section.get("enabled") is False
         and section.get("schema") == SUBJECT_VM_DISABLED_SCHEMA
@@ -1173,12 +1323,15 @@ __all__ = [
     "SUBJECT_VM_STAGE3C1_SCHEMA",
     "SUBJECT_VM_STAGE3C2_SCHEMA",
     "SUBJECT_VM_STAGE3C3_SCHEMA",
+    "SUBJECT_VM_STAGE3C4_SCHEMA",
     "SUBJECT_VM_TARGET_BINDING_DISABLED_SCHEMA",
     "SUBJECT_VM_TARGET_BINDING_SCHEMA",
     "SUBJECT_VM_UPDATE_SAFETY_DISABLED_SCHEMA",
     "SUBJECT_VM_UPDATE_SAFETY_SCHEMA",
     "SUBJECT_VM_TRANSACTION_DISABLED_SCHEMA",
     "SUBJECT_VM_TRANSACTION_SCHEMA",
+    "SUBJECT_VM_LIVE_WRITE_DISABLED_SCHEMA",
+    "SUBJECT_VM_LIVE_WRITE_SCHEMA",
     "SUBJECT_VM_TRACE_DISABLED_SCHEMA",
     "SUBJECT_VM_TRACE_SCHEMA",
     "SubjectVMActivationConfig",
@@ -1190,6 +1343,7 @@ __all__ = [
     "SubjectVMTargetBindingConfig",
     "SubjectVMUpdateSafetyConfig",
     "SubjectVMTransactionConfig",
+    "SubjectVMLiveWriteConfig",
     "SubjectVMTraceConfig",
     "load_subject_vm_config",
     "strip_disabled_subject_vm_section",

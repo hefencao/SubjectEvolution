@@ -15,6 +15,7 @@ from .config import (
     SUBJECT_VM_STAGE3C1_SCHEMA,
     SUBJECT_VM_STAGE3C2_SCHEMA,
     SUBJECT_VM_STAGE3C3_SCHEMA,
+    SUBJECT_VM_STAGE3C4_SCHEMA,
     SubjectVMConfig,
 )
 
@@ -431,6 +432,7 @@ class SubjectVMStorage:
     SUBJECT_VM_STAGE3C1_SCHEMA,
     SUBJECT_VM_STAGE3C2_SCHEMA,
     SUBJECT_VM_STAGE3C3_SCHEMA,
+    SUBJECT_VM_STAGE3C4_SCHEMA,
         }:
             if np.any(trace_port < -1) or np.any(trace_port >= self.cfg.trace.token_width):
                 raise ValueError("subject_vm trace port is outside the approved token width")
@@ -556,6 +558,7 @@ class SubjectVMStorage:
     SUBJECT_VM_STAGE3C1_SCHEMA,
     SUBJECT_VM_STAGE3C2_SCHEMA,
     SUBJECT_VM_STAGE3C3_SCHEMA,
+    SUBJECT_VM_STAGE3C4_SCHEMA,
         } and (
             np.any(self.node_trace_port != -1) or np.any(self.node_trace_gate != 0.0)
         ):

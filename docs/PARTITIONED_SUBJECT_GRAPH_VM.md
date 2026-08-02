@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
-Status: **Stage 3C-3 CPU-reference shadow transaction implementation complete; permanent parameter writes not authorized**
-Project version: **0.117.0**
+Status: **Stage 3C-4 CPU-reference guarded live-write experiment implemented; writes are explicit opt-in and automatically rollback-bounded**
+Project version: **0.118.0**
 
 ## 1. Decision
 
@@ -505,3 +505,12 @@ Stage 3C-3 不把 v0.116 的候选 delta 写入统一主体图。每个事件的
 通过检查的 projected value 只写入固定六维私有影子向量，随后恢复为 captured pre-state 并验证回滚位级一致。影子向量不会进入节点/边存储，也不影响行动或后续 eligibility。事务保存 request、prepare、CAS、shadow apply、rollback 和 count-only cost 证据；`permanent_write_authorized` 始终为 false。
 
 这仍只是 bootstrap 学习链的工程安全验证，不证明历史关联、目标绑定或 delta 方向具有真实因果正确性。
+
+
+## v0.118：Stage 3C-4 只允许显式 opt-in 的短窗口 live write
+
+Stage 3C-4 不把影子事务直接升级为永久塑性。只有 `live_write.enabled=true`、Stage 3C-3 已 prepared 且 rollback-verified、第二次 float32 CAS 仍匹配、同一稳定目标没有 pending 写入并且窗口预算未耗尽时，事件事务才可 all-or-none 写入 live graph。
+
+写入进入固定容量 applied ledger，记录事件、稳定目标、pre/post 值、apply tick 与 rollback due tick。到期时 runtime 在激活前对 post 值执行精确 CAS，并 all-or-none 恢复 pre 值。任何回滚异常会锁定该主体未来写入。`enabled=false` 提供相同 Stage 3C-4 合同下的 trajectory-neutral control。
+
+该阶段不定义 objective event 的正负价值，不判断更新是否有益，不扣实体能量，也不授权 topology、retained state 或跨代永久参数变化。

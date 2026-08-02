@@ -1,0 +1,74 @@
+{
+  "schema": "se-subject-vm-decision-v1",
+  "decision_id": "subject-graph-vm-guarded-live-write-v1",
+  "release": "0.118.0",
+  "status": "accepted-engineering-stage-only",
+  "scope": "Permit an explicitly opted-in, extremely bounded live parameter write only after a Stage 3C-3 shadow transaction, record it in a fixed-capacity applied ledger, and automatically attempt an exact all-or-none rollback after a short window.",
+  "bootstrap_bias": {
+    "purpose": "shorten early graph-shaping search and expose real write-path failures before scientific experiments",
+    "universal_learning_rule_claim": false,
+    "causal_correctness_claim": false,
+    "permanent_architecture_commitment": false
+  },
+  "opt_in": {
+    "default_enabled": false,
+    "explicit_configuration_required": true,
+    "trajectory_neutral_control_supported": true,
+    "control_uses_same_stage_contract_with_enabled_false": true
+  },
+  "preconditions": {
+    "shadow_transaction_prepared": true,
+    "shadow_rollback_verified": true,
+    "second_exact_float32_compare_and_swap": true,
+    "stable_target_identity_revalidated": true,
+    "same_event_all_or_none": true
+  },
+  "budgets": {
+    "fixed_ledger_capacity_per_subject": true,
+    "maximum_pending_transactions": true,
+    "maximum_applied_targets_per_window": true,
+    "maximum_absolute_delta_per_window": true,
+    "overlapping_pending_target_forbidden": true,
+    "unexecuted_proposal_consumes_budget": false
+  },
+  "rollback": {
+    "policy": "deterministic-short-window-v1",
+    "runs_before_activation_at_or_after_due_tick": true,
+    "post_value_compare_and_swap_required": true,
+    "all_or_none_per_transaction": true,
+    "rollback_failure_locks_future_writes_for_subject": true,
+    "silent_partial_recovery": false
+  },
+  "ledger": {
+    "fixed_capacity": true,
+    "records": [
+      "event identity",
+      "applied and rollback-due ticks",
+      "stable target identity",
+      "pre and post float32 parameter values",
+      "pending, rolled-back or rollback-failed status",
+      "count-only commit and rollback costs"
+    ],
+    "full_activation_path": false,
+    "reward_or_valence": false
+  },
+  "cost": {
+    "count_only": true,
+    "entity_energy_debit": false,
+    "physical_plasticity_cost_experiment": false
+  },
+  "write_authority": {
+    "actual_live_parameter_write": true,
+    "write_is_permanent_on_commit": false,
+    "topology_write": false,
+    "eligibility_write_from_event": false,
+    "retained_state_write": false,
+    "gpu_execution": false
+  },
+  "scientific_boundary": {
+    "learning_claim": false,
+    "adaptation_claim": false,
+    "subjecthood_claim": false,
+    "epoch_one_qualification": false
+  }
+}

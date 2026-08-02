@@ -23,6 +23,10 @@ from .config import (
     SUBJECT_VM_MODULATION_TARGET_WIDTH,
     SubjectVMConfig,
 )
+from .live_write import (
+    LIVE_WRITE_REASON_CODES,
+    SubjectVMLiveWriteLedger,
+)
 from .modulation import (
     MODULATION_REASON_CODES,
     modulation_control_ports,
@@ -44,7 +48,8 @@ TRACE_STORAGE_SCHEMA_V2 = "se-subject-vm-token-event-storage-v2"
 TRACE_STORAGE_SCHEMA_V3 = "se-subject-vm-token-event-storage-v3"
 TRACE_STORAGE_SCHEMA_V4 = "se-subject-vm-token-event-storage-v4"
 TRACE_STORAGE_SCHEMA_V5 = "se-subject-vm-token-event-storage-v5"
-TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v6"
+TRACE_STORAGE_SCHEMA_V6 = "se-subject-vm-token-event-storage-v6"
+TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v7"
 ACTION_PORT_WIDTH = 8
 RESOURCE_DELTA_WIDTH = 4
 OBJECTIVE_EVENT_DELTA_NAMES = (
@@ -137,6 +142,12 @@ class SubjectVMTraceAccounting:
     transaction_aborts: int = 0
     transaction_rollback_failures: int = 0
     transaction_counted_cost_units: int = 0
+    live_write_requests: int = 0
+    live_write_authorized_events: int = 0
+    live_write_committed_events: int = 0
+    live_write_committed_targets: int = 0
+    live_write_rejections: int = 0
+    live_write_counted_cost_units: int = 0
     last_event_tick: int = -1
 
 
@@ -349,6 +360,39 @@ class SubjectVMTraceStorage:
         self.transaction_counted_cost_units = (
             np.zeros((e, c), dtype=np.uint32) if cfg.transaction_enabled else None
         )
+        self.live_write_requested = (
+            np.zeros((e, c), dtype=bool) if cfg.live_write_configured else None
+        )
+        self.live_write_authorized = (
+            np.zeros((e, c), dtype=bool) if cfg.live_write_configured else None
+        )
+        self.live_write_committed = (
+            np.zeros((e, c), dtype=bool) if cfg.live_write_configured else None
+        )
+        self.live_write_reason = (
+            np.zeros((e, c), dtype=np.uint8) if cfg.live_write_configured else None
+        )
+        self.live_write_family_committed = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=bool)
+            if cfg.live_write_configured else None
+        )
+        self.live_write_pre_value = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.float32)
+            if cfg.live_write_configured else None
+        )
+        self.live_write_post_value = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.float32)
+            if cfg.live_write_configured else None
+        )
+        self.live_write_ledger_slot = (
+            np.full((e, c), -1, dtype=np.int16) if cfg.live_write_configured else None
+        )
+        self.live_write_rollback_due_tick = (
+            np.full((e, c), -1, dtype=np.int64) if cfg.live_write_configured else None
+        )
+        self.live_write_counted_cost_units = (
+            np.zeros((e, c), dtype=np.uint32) if cfg.live_write_configured else None
+        )
 
     @staticmethod
     def base_snapshot_array_names() -> tuple[str, ...]:
@@ -440,6 +484,16 @@ class SubjectVMTraceStorage:
             "transaction_counted_cost_units",
         )
 
+    @staticmethod
+    def live_write_snapshot_array_names() -> tuple[str, ...]:
+        return (
+            "live_write_requested", "live_write_authorized",
+            "live_write_committed", "live_write_reason",
+            "live_write_family_committed", "live_write_pre_value",
+            "live_write_post_value", "live_write_ledger_slot",
+            "live_write_rollback_due_tick", "live_write_counted_cost_units",
+        )
+
     def snapshot_array_names(self) -> tuple[str, ...]:
         names = self.base_snapshot_array_names()
         if self.cfg.association_enabled:
@@ -452,6 +506,8 @@ class SubjectVMTraceStorage:
             names += self.update_snapshot_array_names()
         if self.cfg.transaction_enabled:
             names += self.transaction_snapshot_array_names()
+        if self.cfg.live_write_configured:
+            names += self.live_write_snapshot_array_names()
         return names
 
     def allocated_nbytes(self) -> int:
@@ -477,7 +533,7 @@ class SubjectVMTraceStorage:
             return
         for name in self.snapshot_array_names():
             array = getattr(self, name)
-            if name in {"event_tick", "action_id", "associated_event_tick"}:
+            if name in {"event_tick", "action_id", "associated_event_tick", "live_write_ledger_slot", "live_write_rollback_due_tick"}:
                 array[rows] = -1
             else:
                 array[rows] = 0
@@ -604,6 +660,27 @@ class SubjectVMTraceStorage:
             self.transaction_shadow_applied_value[row, slot] = 0.0
             self.transaction_shadow_rollback_value[row, slot] = 0.0
             self.transaction_counted_cost_units[row, slot] = 0
+        if self.cfg.live_write_configured:
+            assert self.live_write_requested is not None
+            assert self.live_write_authorized is not None
+            assert self.live_write_committed is not None
+            assert self.live_write_reason is not None
+            assert self.live_write_family_committed is not None
+            assert self.live_write_pre_value is not None
+            assert self.live_write_post_value is not None
+            assert self.live_write_ledger_slot is not None
+            assert self.live_write_rollback_due_tick is not None
+            assert self.live_write_counted_cost_units is not None
+            self.live_write_requested[row, slot] = False
+            self.live_write_authorized[row, slot] = False
+            self.live_write_committed[row, slot] = False
+            self.live_write_reason[row, slot] = 0
+            self.live_write_family_committed[row, slot] = False
+            self.live_write_pre_value[row, slot] = 0.0
+            self.live_write_post_value[row, slot] = 0.0
+            self.live_write_ledger_slot[row, slot] = -1
+            self.live_write_rollback_due_tick[row, slot] = -1
+            self.live_write_counted_cost_units[row, slot] = 0
 
     def expire(self, tick: int) -> int:
         expired = self.event_valid & (
@@ -658,6 +735,7 @@ class SubjectVMTraceStorage:
         accounting: SubjectVMTraceAccounting,
         target_candidates: SubjectVMTargetCandidateBatch | None = None,
         graph_storage: SubjectVMStorage | None = None,
+        live_write_ledger: SubjectVMLiveWriteLedger | None = None,
     ) -> None:
         count = self._validate_event_batch(batch)
         rows = self._rows(batch.rows)
@@ -694,6 +772,10 @@ class SubjectVMTraceStorage:
             raise ValueError("subject_vm update safety requires graph storage")
         if not self.cfg.update_safety_enabled and graph_storage is not None:
             raise ValueError("inactive subject_vm update safety cannot accept graph storage")
+        if self.cfg.live_write_configured and live_write_ledger is None:
+            raise ValueError("subject_vm Stage-3C-4 requires a live-write ledger")
+        if not self.cfg.live_write_configured and live_write_ledger is not None:
+            raise ValueError("inactive subject_vm live write cannot accept a ledger")
         if not np.array_equal(owner_entity_ids[rows], batch.entity_ids):
             raise ValueError("subject_vm trace entity ownership is stale")
         if not np.array_equal(owner_subject_ids[rows], batch.subject_ids):
@@ -887,6 +969,33 @@ class SubjectVMTraceStorage:
                 accounting.transaction_rollback_failures += int(
                     transaction.shadow_applied and not transaction.rollback_verified
                 )
+            live_write = None
+            if self.cfg.live_write_configured:
+                assert live_write_ledger is not None
+                assert binding is not None and update is not None and transaction is not None
+                live_write = live_write_ledger.commit(
+                    graph_storage,
+                    row=row,
+                    tick=int(batch.tick),
+                    event_id=int(batch.event_ids[index]),
+                    binding=binding,
+                    update=update,
+                    transaction=transaction,
+                )
+                if live_write.requested:
+                    accounting.live_write_requests += 1
+                if live_write.authorized:
+                    accounting.live_write_authorized_events += 1
+                if live_write.committed:
+                    accounting.live_write_committed_events += 1
+                    accounting.live_write_committed_targets += int(
+                        np.count_nonzero(live_write.family_committed)
+                    )
+                    accounting.live_write_counted_cost_units += int(
+                        live_write.counted_cost_units
+                    )
+                elif live_write.requested:
+                    accounting.live_write_rejections += 1
             if self.event_valid[row, slot]:
                 accounting.overwritten_events += 1
             self._clear_slot(row, slot)
@@ -1039,6 +1148,31 @@ class SubjectVMTraceStorage:
                 self.transaction_counted_cost_units[row, slot] = np.uint32(
                     transaction.counted_cost_units
                 )
+            if live_write is not None:
+                assert self.live_write_requested is not None
+                assert self.live_write_authorized is not None
+                assert self.live_write_committed is not None
+                assert self.live_write_reason is not None
+                assert self.live_write_family_committed is not None
+                assert self.live_write_pre_value is not None
+                assert self.live_write_post_value is not None
+                assert self.live_write_ledger_slot is not None
+                assert self.live_write_rollback_due_tick is not None
+                assert self.live_write_counted_cost_units is not None
+                self.live_write_requested[row, slot] = live_write.requested
+                self.live_write_authorized[row, slot] = live_write.authorized
+                self.live_write_committed[row, slot] = live_write.committed
+                self.live_write_reason[row, slot] = np.uint8(live_write.reason)
+                self.live_write_family_committed[row, slot] = live_write.family_committed
+                self.live_write_pre_value[row, slot] = live_write.pre_value
+                self.live_write_post_value[row, slot] = live_write.post_value
+                self.live_write_ledger_slot[row, slot] = np.int16(live_write.ledger_slot)
+                self.live_write_rollback_due_tick[row, slot] = np.int64(
+                    live_write.rollback_due_tick
+                )
+                self.live_write_counted_cost_units[row, slot] = np.uint32(
+                    live_write.counted_cost_units
+                )
             self.write_cursor[row] = np.uint32((slot + 1) % self.capacity)
             self.event_count[row] = np.uint32(np.count_nonzero(self.event_valid[row]))
             accounting.recorded_events += 1
@@ -1074,6 +1208,7 @@ class SubjectVMTraceStorage:
         schema = payload.get("schema")
         if schema not in {
             TRACE_STORAGE_SCHEMA,
+            TRACE_STORAGE_SCHEMA_V6,
             TRACE_STORAGE_SCHEMA_V5,
             TRACE_STORAGE_SCHEMA_V4,
             TRACE_STORAGE_SCHEMA_V3,
@@ -1131,6 +1266,18 @@ class SubjectVMTraceStorage:
                 names += result.binding_snapshot_array_names()
             if result.cfg.update_safety_enabled:
                 names += result.update_snapshot_array_names()
+        elif schema == TRACE_STORAGE_SCHEMA_V6:
+            names = result.base_snapshot_array_names()
+            if result.cfg.association_enabled:
+                names += result.association_snapshot_array_names()
+            if result.cfg.modulation_enabled:
+                names += result.modulation_snapshot_array_names()
+            if result.cfg.target_binding_enabled:
+                names += result.binding_snapshot_array_names()
+            if result.cfg.update_safety_enabled:
+                names += result.update_snapshot_array_names()
+            if result.cfg.transaction_enabled:
+                names += result.transaction_snapshot_array_names()
         else:
             names = result.snapshot_array_names()
         for name in names:
@@ -1207,7 +1354,20 @@ class SubjectVMTraceStorage:
                 if self.transaction_counted_cost_units is None
                 else int(np.sum(self.transaction_counted_cost_units, dtype=np.uint64))
             ),
-            "parameter_writes": 0,
+            "live_write_configured": self.cfg.live_write_configured,
+            "live_write_enabled": self.cfg.live_write_enabled,
+            "committed_live_write_events": (
+                0 if self.live_write_committed is None
+                else int(np.count_nonzero(self.live_write_committed))
+            ),
+            "counted_live_write_cost_units": (
+                0 if self.live_write_counted_cost_units is None
+                else int(np.sum(self.live_write_counted_cost_units, dtype=np.uint64))
+            ),
+            "parameter_writes": (
+                0 if self.live_write_family_committed is None
+                else int(np.count_nonzero(self.live_write_family_committed))
+            ),
         }
 
 
@@ -1222,6 +1382,7 @@ __all__ = [
     "TRACE_STORAGE_SCHEMA_V3",
     "TRACE_STORAGE_SCHEMA_V4",
     "TRACE_STORAGE_SCHEMA_V5",
+    "TRACE_STORAGE_SCHEMA_V6",
     "SubjectVMObjectiveEventBatch",
     "SubjectVMThoughtTokenBatch",
     "SubjectVMTraceAccounting",

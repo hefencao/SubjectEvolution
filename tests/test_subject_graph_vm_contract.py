@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c3-shadow-transaction-cpu-reference-implemented"
+    assert contract["status"] == "stage-3c4-guarded-live-write-cpu-reference-implemented"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,7 +24,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3C-3"
+    assert contract["current_stage"] == "3C-4"
     assert contract["stage_2_contract"]["plasticity"] is False
     assert contract["stage_3a_contract"]["persistent_node_edge_path"] is False
     assert contract["stage_3a_contract"]["plasticity"] is False
@@ -52,6 +52,21 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["stage_3c3_contract"]["all_or_none_per_event"] is True
     assert contract["stage_3c3_contract"]["rollback_verified"] is True
     assert contract["stage_3c3_contract"]["actual_parameter_write"] is False
+    assert contract["stage_3c4_contract"]["default_enabled"] is False
+    assert contract["stage_3c4_contract"]["explicit_opt_in"] is True
+    assert contract["stage_3c4_contract"]["actual_parameter_write"] is True
+    assert contract["stage_3c4_contract"]["write_permanent_after_commit"] is False
+    assert contract["stage_3c4_contract"]["rollback_failure_locks_subject_writes"] is True
+
+    guarded_write = _load(
+        "protocols/decisions/subject_graph_vm_guarded_live_write_v1.json"
+    )
+    assert guarded_write["opt_in"]["default_enabled"] is False
+    assert guarded_write["preconditions"]["shadow_rollback_verified"] is True
+    assert guarded_write["budgets"]["overlapping_pending_target_forbidden"] is True
+    assert guarded_write["rollback"]["rollback_failure_locks_future_writes_for_subject"] is True
+    assert guarded_write["cost"]["entity_energy_debit"] is False
+    assert guarded_write["scientific_boundary"]["learning_claim"] is False
 
     shadow_transaction = _load(
         "protocols/decisions/subject_graph_vm_shadow_transaction_v1.json"

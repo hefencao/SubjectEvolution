@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.118.0
+
+- Adds Subject VM Stage 3C-4 explicitly opted-in guarded live parameter writes.
+- Requires a previously prepared and rollback-verified Stage 3C-3 transaction plus a second exact float32 compare-and-swap before commit.
+- Records committed targets in a fixed-capacity per-subject applied ledger with bounded pending, target-count and absolute-delta window budgets.
+- Forbids overlapping pending writes to the same stable target and applies each event all-or-none.
+- Automatically attempts exact post-value-guarded rollback before activation when the short window expires.
+- Locks further writes for a subject after rollback failure instead of silently accepting partial recovery.
+- Supports a trajectory-neutral Stage 3C-4 control with the same contract and `enabled=false`.
+- Keeps commit and rollback costs count-only, with no energy debit, topology write, event-defined reward or Epoch-1 claim.
+- Upgrades v0.117 checkpoints to empty live-write ledger and trace metadata without fabricating applied updates.
+
 ## 0.117.0
 
 - Adds Subject VM Stage 3C-3 exact float32 compare-and-swap shadow transactions.

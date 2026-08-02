@@ -11,6 +11,7 @@ from .activation import SubjectVMActivationResult, execute_activation
 from .config import SubjectVMConfig
 from .eligibility import SubjectVMLocalEligibilityUsage
 from .lifecycle import inherit_birth_rows, release_dead_rows
+from .live_write import SubjectVMLiveWriteLedger
 from .storage import SubjectVMRegionUsage, SubjectVMStorage
 from .trace import (
     SubjectVMObjectiveEventBatch,
@@ -27,7 +28,8 @@ RUNTIME_SCHEMA_V5 = "se-subject-vm-runtime-v5"
 RUNTIME_SCHEMA_V6 = "se-subject-vm-runtime-v6"
 RUNTIME_SCHEMA_V7 = "se-subject-vm-runtime-v7"
 RUNTIME_SCHEMA_V8 = "se-subject-vm-runtime-v8"
-RUNTIME_SCHEMA = "se-subject-vm-runtime-v9"
+RUNTIME_SCHEMA_V9 = "se-subject-vm-runtime-v9"
+RUNTIME_SCHEMA = "se-subject-vm-runtime-v10"
 
 
 @dataclass(frozen=True)
@@ -137,6 +139,17 @@ STAGE3C3_DEVICE_CONTRACT = SubjectVMDeviceContract(
 )
 
 
+STAGE3C4_DEVICE_CONTRACT = SubjectVMDeviceContract(
+    schema="subject-vm-stage3c4-guarded-live-write-cpu-reference-contract-v1",
+    host_authoritative=True,
+    device_allocation=False,
+    device_sync=False,
+    consumes_random_numbers=False,
+    affects_action_or_cost=True,
+    supported_execution_backends=("cpu",),
+)
+
+
 @dataclass
 class SubjectVMActivationAccounting:
     activation_calls: int = 0
@@ -196,6 +209,7 @@ class SubjectVMRuntime:
         storage: SubjectVMStorage | None = None,
         *,
         trace_storage: SubjectVMTraceStorage | None = None,
+        live_write_ledger: SubjectVMLiveWriteLedger | None = None,
         restore_mode: str = "initialized",
         activation_accounting: SubjectVMActivationAccounting | None = None,
         trace_accounting: SubjectVMTraceAccounting | None = None,
@@ -205,6 +219,7 @@ class SubjectVMRuntime:
         self.entity_capacity = int(entity_capacity)
         self.storage = storage
         self.trace_storage = trace_storage
+        self.live_write_ledger = live_write_ledger
         self.restore_mode = str(restore_mode)
         self.activation_accounting = (
             activation_accounting or SubjectVMActivationAccounting()
@@ -219,6 +234,8 @@ class SubjectVMRuntime:
             raise ValueError("subject_vm runtime enabled/storage state disagrees")
         if cfg.trace_enabled != (trace_storage is not None):
             raise ValueError("subject_vm runtime trace configuration/storage disagrees")
+        if cfg.live_write_configured != (live_write_ledger is not None):
+            raise ValueError("subject_vm runtime live-write configuration/ledger disagrees")
 
     @classmethod
     def initialize(
@@ -240,8 +257,16 @@ class SubjectVMRuntime:
         )
         if trace_storage is not None:
             trace_storage.initialize_rows(rows)
+        live_write_ledger = (
+            SubjectVMLiveWriteLedger(cfg.live_write, entity_capacity)
+            if cfg.live_write_configured else None
+        )
+        if live_write_ledger is not None:
+            live_write_ledger.initialize_rows(rows)
         mode = (
-            "initialized-stage3c3-empty"
+            "initialized-stage3c4-empty"
+            if cfg.live_write_configured
+            else "initialized-stage3c3-empty"
             if cfg.transaction_enabled
             else "initialized-stage3c2-empty"
             if cfg.update_safety_enabled
@@ -262,6 +287,7 @@ class SubjectVMRuntime:
             entity_capacity,
             storage,
             trace_storage=trace_storage,
+            live_write_ledger=live_write_ledger,
             restore_mode=mode,
         )
 
@@ -306,7 +332,17 @@ class SubjectVMRuntime:
         return self.cfg.transaction_enabled
 
     @property
+    def live_write_configured(self) -> bool:
+        return self.cfg.live_write_configured
+
+    @property
+    def live_write_enabled(self) -> bool:
+        return self.cfg.live_write_enabled
+
+    @property
     def device_contract(self) -> SubjectVMDeviceContract:
+        if self.live_write_configured:
+            return STAGE3C4_DEVICE_CONTRACT
         if self.transaction_enabled:
             return STAGE3C3_DEVICE_CONTRACT
         if self.update_safety_enabled:
@@ -357,6 +393,10 @@ class SubjectVMRuntime:
             raise RuntimeError("subject_vm activation is not enabled")
         if self._pending_thought_tokens is not None or self._pending_target_candidates is not None:
             raise RuntimeError("subject_vm prior activation metadata was not committed")
+        if self.live_write_ledger is not None:
+            self.live_write_ledger.rollback_due(
+                self.storage, rows=np.asarray(rows, dtype=np.int32), tick=int(tick)
+            )
         result = execute_activation(
             self.storage,
             rows=rows,
@@ -391,6 +431,7 @@ class SubjectVMRuntime:
             accounting=self.trace_accounting,
             target_candidates=self._pending_target_candidates,
             graph_storage=self.storage if self.update_safety_enabled else None,
+            live_write_ledger=self.live_write_ledger,
         )
         self._pending_thought_tokens = None
         self._pending_target_candidates = None
@@ -422,6 +463,8 @@ class SubjectVMRuntime:
             )
         if self.trace_storage is not None:
             self.trace_storage.initialize_rows(np.asarray(child_rows, dtype=np.int32))
+        if self.live_write_ledger is not None:
+            self.live_write_ledger.initialize_rows(np.asarray(child_rows, dtype=np.int32))
 
     def release_deaths(
         self,
@@ -434,6 +477,8 @@ class SubjectVMRuntime:
             return
         if self.trace_storage is not None:
             self.trace_storage.clear_rows(normalized)
+        if self.live_write_ledger is not None:
+            self.live_write_ledger.clear_rows(normalized)
         release_dead_rows(
             self.storage,
             rows=normalized,
@@ -449,6 +494,8 @@ class SubjectVMRuntime:
         self.storage.move_rows(source_rows, destination_rows)
         if self.trace_storage is not None:
             self.trace_storage.move_rows(source_rows, destination_rows)
+        if self.live_write_ledger is not None:
+            self.live_write_ledger.move_rows(source_rows, destination_rows)
 
     def validate_owners(
         self,
@@ -479,6 +526,8 @@ class SubjectVMRuntime:
             payload["eligibility_accounting"] = asdict(
                 self.eligibility_accounting
             )
+        if self.live_write_ledger is not None:
+            payload["live_write_ledger"] = self.live_write_ledger.snapshot_state()
         return payload
 
     @classmethod
@@ -510,6 +559,7 @@ class SubjectVMRuntime:
         schema = payload.get("schema")
         if schema not in {
             RUNTIME_SCHEMA,
+            RUNTIME_SCHEMA_V9,
             RUNTIME_SCHEMA_V8,
             RUNTIME_SCHEMA_V7,
             RUNTIME_SCHEMA_V6,
@@ -542,6 +592,9 @@ class SubjectVMRuntime:
         compatibility_empty_transaction = (
             cfg.transaction_enabled and schema == RUNTIME_SCHEMA_V8
         )
+        compatibility_empty_live_write = (
+            cfg.live_write_configured and schema == RUNTIME_SCHEMA_V9
+        )
         if schema == RUNTIME_SCHEMA_V1:
             expected_contract = STAGE1_DEVICE_CONTRACT.schema
         elif schema == RUNTIME_SCHEMA_V2:
@@ -558,9 +611,13 @@ class SubjectVMRuntime:
             expected_contract = STAGE3C1_DEVICE_CONTRACT.schema
         elif schema == RUNTIME_SCHEMA_V8:
             expected_contract = STAGE3C2_DEVICE_CONTRACT.schema
+        elif schema == RUNTIME_SCHEMA_V9:
+            expected_contract = STAGE3C3_DEVICE_CONTRACT.schema
         else:
             expected_contract = (
-                STAGE3C3_DEVICE_CONTRACT.schema
+                STAGE3C4_DEVICE_CONTRACT.schema
+                if cfg.live_write_configured
+                else STAGE3C3_DEVICE_CONTRACT.schema
                 if cfg.transaction_enabled
                 else STAGE3C2_DEVICE_CONTRACT.schema
                 if cfg.update_safety_enabled
@@ -642,11 +699,22 @@ class SubjectVMRuntime:
             restore_mode = "compatibility-empty-update-safety-rebuild"
         if compatibility_empty_transaction:
             restore_mode = "compatibility-empty-shadow-transaction-rebuild"
+        live_write_ledger = None
+        if cfg.live_write_configured:
+            if compatibility_empty_live_write:
+                live_write_ledger = SubjectVMLiveWriteLedger(cfg.live_write, entity_capacity)
+                live_write_ledger.initialize_rows(rows)
+                restore_mode = "compatibility-empty-live-write-ledger-rebuild"
+            else:
+                live_write_ledger = SubjectVMLiveWriteLedger.from_snapshot(
+                    cfg.live_write, entity_capacity, payload["live_write_ledger"]
+                )
         return cls(
             cfg,
             entity_capacity,
             storage,
             trace_storage=trace_storage,
+            live_write_ledger=live_write_ledger,
             restore_mode=restore_mode,
             activation_accounting=activation_accounting,
             trace_accounting=trace_accounting,
@@ -667,6 +735,8 @@ class SubjectVMRuntime:
             "target_binding_enabled": self.target_binding_enabled,
             "update_safety_enabled": self.update_safety_enabled,
             "transaction_enabled": self.transaction_enabled,
+            "live_write_configured": self.live_write_configured,
+            "live_write_enabled": self.live_write_enabled,
             "restore_mode": self.restore_mode,
             "device_contract": self.device_contract.schema,
             "activation_accounting": asdict(self.activation_accounting),
@@ -674,6 +744,9 @@ class SubjectVMRuntime:
             "eligibility_accounting": asdict(self.eligibility_accounting),
             "trace_storage": (
                 None if self.trace_storage is None else self.trace_storage.diagnostics()
+            ),
+            "live_write_ledger": (
+                None if self.live_write_ledger is None else self.live_write_ledger.diagnostics()
             ),
             "regions": [asdict(value) for value in self.region_usage()],
         }
@@ -687,6 +760,9 @@ class SubjectVMRuntime:
             None if self.storage is None else self.storage.clone(),
             trace_storage=(
                 None if self.trace_storage is None else self.trace_storage.clone()
+            ),
+            live_write_ledger=(
+                None if self.live_write_ledger is None else self.live_write_ledger.clone()
             ),
             restore_mode=self.restore_mode,
             activation_accounting=SubjectVMActivationAccounting(
@@ -709,6 +785,7 @@ __all__ = [
     "RUNTIME_SCHEMA_V6",
     "RUNTIME_SCHEMA_V7",
     "RUNTIME_SCHEMA_V8",
+    "RUNTIME_SCHEMA_V9",
     "STAGE1_DEVICE_CONTRACT",
     "STAGE2_DEVICE_CONTRACT",
     "STAGE3_DEVICE_CONTRACT",
@@ -718,6 +795,7 @@ __all__ = [
     "STAGE3C1_DEVICE_CONTRACT",
     "STAGE3C2_DEVICE_CONTRACT",
     "STAGE3C3_DEVICE_CONTRACT",
+    "STAGE3C4_DEVICE_CONTRACT",
     "SubjectVMActivationAccounting",
     "SubjectVMDeviceContract",
     "SubjectVMEligibilityAccounting",

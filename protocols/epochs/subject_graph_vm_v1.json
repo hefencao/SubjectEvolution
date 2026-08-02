@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c3-shadow-transaction-cpu-reference-implemented",
-  "project_version": "0.117.0",
+  "status": "stage-3c4-guarded-live-write-cpu-reference-implemented",
+  "project_version": "0.118.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -65,7 +65,7 @@
     {
       "stage": 3,
       "name": "token-event-trace-then-delayed-plasticity",
-      "runtime_change": "Stage 3A stores compact graph tokens and objective facts; Stage 3B-1 adds short-lived local activity eligibility; Stage 3B-2 records bootstrap delayed association candidates; Stage 3B-3 records rejectable parameter-family modulation proposals; Stage 3C-1 binds proposals to pre-activation local carriers; Stage 3C-2 emits bounded candidate deltas; Stage 3C-3 validates exact all-or-none shadow transactions and rollback without live writes"
+      "runtime_change": "Stage 3A stores compact graph tokens and objective facts; Stage 3B-1 adds short-lived local activity eligibility; Stage 3B-2 records bootstrap delayed association candidates; Stage 3B-3 records rejectable parameter-family modulation proposals; Stage 3C-1 binds proposals to pre-activation local carriers; Stage 3C-2 emits bounded candidate deltas; Stage 3C-3 validates exact all-or-none shadow transactions; Stage 3C-4 permits explicitly opted-in short-window live writes with a bounded applied ledger and automatic rollback"
     },
     {
       "stage": 4,
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3C-3",
+  "current_stage": "3C-4",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -184,6 +184,25 @@
     "shadow_apply": true,
     "rollback_verified": true,
     "actual_parameter_write": false,
+    "count_only_cost_units": true,
+    "physical_cost_debit": false,
+    "backend": "cpu-reference-only",
+    "scientific_qualification": false
+  },
+  "stage_3c4_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_guarded_live_write_v1.json",
+    "representation": "fixed-capacity-applied-ledger-and-short-window-rollback",
+    "default_enabled": false,
+    "explicit_opt_in": true,
+    "second_exact_float32_compare_and_swap": true,
+    "all_or_none_per_event": true,
+    "overlapping_pending_target": false,
+    "applied_target_window_budget": true,
+    "absolute_delta_window_budget": true,
+    "actual_parameter_write": true,
+    "automatic_rollback_before_due_tick_activation": true,
+    "rollback_failure_locks_subject_writes": true,
+    "write_permanent_after_commit": false,
     "count_only_cost_units": true,
     "physical_cost_debit": false,
     "backend": "cpu-reference-only",
