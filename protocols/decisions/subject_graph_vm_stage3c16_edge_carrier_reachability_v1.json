@@ -1,0 +1,71 @@
+{
+  "schema": "se-subject-vm-stage3c16-edge-carrier-reachability-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c16-edge-carrier-reachability-v1",
+  "status": "accepted-engineering-shaping-audit-only",
+  "project_version": "0.130.0",
+  "question": "Does exposing one existing local eligibility carrier make the mechanically sensitive edge_forward_gate family reachable without changing its target route, update scale, addressing, horizon or retention contract?",
+  "source_panel": {
+    "target_family": "edge_forward_gate",
+    "target_token_port": 27,
+    "independent_source_seeds": [12301, 12302, 12303, 12304, 12305, 12306, 12307, 12308, 12309],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "single_factor": {
+    "name": "bootstrap_edge_0_local_eligibility_carrier",
+    "baseline": {
+      "local_eligibility_flag": false,
+      "eligibility_gate": 0.0
+    },
+    "alternative": {
+      "local_eligibility_flag": true,
+      "eligibility_gate": 1.0
+    },
+    "existing_fixed_capacity_storage_reused": true,
+    "runtime_state_added": false,
+    "checkpoint_schema_changed": false,
+    "topology_changed": false,
+    "target_family_changed": false,
+    "association_selector_changed": false,
+    "update_scale_changed": false,
+    "random_draw_contract_changed": false
+  },
+  "isolation": {
+    "pre_bootstrap_source_state_hashes_equal": true,
+    "pre_bootstrap_source_config_hashes_equal": true,
+    "stable_subject_selection_equal": true,
+    "read_only_control_behavior_equal": true,
+    "read_only_control_token_association_modulation_funnel_equal": true,
+    "carrier_off_arm_is_unreachable_funnel_baseline": true,
+    "carrier_off_arm_is_stage3c8_replicate": false,
+    "carrier_on_arm_requires_stage3c7_pass": true
+  },
+  "observed_panel_result": {
+    "carrier_off_target_bindings": 0,
+    "carrier_off_temporary_commits": 0,
+    "carrier_off_completed_windows": 0,
+    "carrier_on_target_bindings": 688,
+    "carrier_on_safe_updates": 646,
+    "carrier_on_temporary_commits": 144,
+    "carrier_on_completed_windows": 129,
+    "carrier_on_sources_with_discrete_action_divergence": 3,
+    "carrier_on_sources_with_objective_event_divergence": 3,
+    "carrier_on_stable_objective_coordinates": 0
+  },
+  "interpretation": {
+    "carrier_is_required_by_current_exact_target_binding": true,
+    "carrier_proves_credit_quality": false,
+    "carrier_proves_beneficial_direction": false,
+    "carrier_proves_learning": false,
+    "automatic_keep_or_revert_decision": false,
+    "permanent_write_authorized": false,
+    "subjecthood_claim_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "next_boundary": "Treat the carrier-on edge-forward arm only as a reachable engineering baseline. Any subsequent allocation comparison must change one bounded allocator factor while preserving the carrier, family route, source panel, horizon, exposure, delta, rollback and score-free hierarchy."
+}

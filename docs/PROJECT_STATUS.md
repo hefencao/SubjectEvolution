@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.129.0**
+Version: **0.130.0**
 
 ## Current scientific task
 
-Version 0.129 implements **Subject VM Stage 3C-15: fixed-bootstrap local sensitivity and algebraic-degeneracy audit**.
+Version 0.130 implements **Subject VM Stage 3C-16: fixed-bootstrap edge eligibility-carrier reachability audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -71,6 +71,12 @@ Two operating contexts are required. The first activation after bootstrap diagno
 
 The diagnostic also separates local sensitivity from eligibility reachability. `node_bias`, `node_input_gate` and `node_output_gate` are currently reachable through node-0 local eligibility. `node_trace_gate` and `edge_forward_gate` are mechanically sensitive at the inspected operating points but are not reachable through the current fixed bootstrap eligibility carriers. This is an engineering shaping fact only; it does not assign value, validate credit, authorize eligibility expansion, retention, learning or a preferred parameter family.
 
+Stage 3C-16 holds the frozen nine-source panel, 32 entities, 16 bootstrap subjects, source tick 2, eight-tick branch horizon, exposure duration 3, bounded update scale, nearest-token association and automatic rollback fixed. Both arms route the same one-hot target coordinate to `edge_forward_gate` on token port 27. The only bootstrap difference is whether edge 0 owns the existing bounded local-eligibility flag and gate.
+
+The carrier-off arm preserves token generation, delayed association and modulation proposals but produces zero exact target bindings, zero safe updates, zero commits and zero completed windows. It is therefore an intentionally unreachable funnel baseline, not a Stage-3C-8 scientific replicate. The carrier-on arm produces 688 target bindings, 646 safe updates, 144 temporary commits and 129 completed paired windows across nine independent sources. Pairing coverage is 1.0, rollback failure and fact clipping are zero, evaluation cost matches, discrete-action/objective divergence appears in 3/9 sources, and the Stage-3C-8 screen remains 0/21 stable objective coordinates.
+
+Pre-bootstrap state/config hashes, selected stable subjects, read-only control event arrays and the read-only token/association/modulation funnel are identical across arms. The result establishes that a local carrier is necessary for the current exact-target binding chain and that `edge_forward_gate` becomes mechanically writable once exposed. It does not establish credit quality, beneficial direction, learning, value or permission for permanent retention.
+
 ## Engineering status
 
 Implemented and tested:
@@ -97,6 +103,7 @@ Implemented and tested:
 - Stage-3C-13 exposure-only comparison with identical source checkpoints, synchronized control reservation and read-only behavior identity;
 - Stage-3C-14 fixed-bootstrap target-family reachability comparison with pre-bootstrap identity, authorized token relocation and rejected-degeneracy recording;
 - Stage-3C-15 external six-family finite-difference audit with delayed-edge warm context, algebraic-degeneracy detection and sensitivity-versus-eligibility separation;
+- Stage-3C-16 isolated edge-forward eligibility-carrier toggle with unreachable-baseline handling, read-only control identity and carrier-on Stage-3C-7/8 evidence;
 - v0.123 trace/checkpoint compatibility for the new bounded diagnostic fields;
 - explicit guarded-live/read-only branch identities bound to source state, branch config and final tick;
 - branch identity persistence in final checkpoint lineage;
@@ -118,7 +125,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-15 classifies local sensitivity and eligibility reachability as separate engineering facts without authorizing retention or Epoch 1.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-16 establishes one bounded edge eligibility carrier as an engineering reachability aid without authorizing retention or Epoch 1.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -144,4 +151,4 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-The next authorized boundary must use Stage 3C-15 to keep sensitivity and reachability separate. The strongest bounded candidate is a single eligibility-carrier shaping change for one currently sensitive but unreachable role, with `edge_forward_gate` preferred over `node_trace_gate` because it already affects the action channel after the delayed state becomes available. Such a comparison must hold the nine-source panel, 32 entities, eight-tick horizon, exposure duration 3, bounded delta, nearest-token selector, topology size, automatic rollback and score-free aggregation fixed. It must not simultaneously alter family weights, step scale, addressing, entity count, topology evolution, permanent retention, scalar value construction, a complete general-attention replacement or Epoch 1 qualification.
+The next authorized boundary must treat the carrier-on `edge_forward_gate` arm as an engineering baseline, not as a beneficial update result. A subsequent comparison may change exactly one allocation factor, such as the fixed single-winner carrier selector versus a bounded multi-candidate allocator, only after preserving the same source panel, edge carrier, family target, 32 entities, eight-tick horizon, exposure duration 3, bounded delta, automatic rollback and score-free hierarchy. It must not simultaneously change addressing similarity, family weights, entity count, topology evolution, permanent retention, scalar value construction, a complete general-attention replacement or Epoch 1 qualification.

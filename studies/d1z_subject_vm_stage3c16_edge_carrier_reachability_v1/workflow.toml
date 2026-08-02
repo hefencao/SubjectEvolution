@@ -1,0 +1,67 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c16_edge_carrier_reachability_v1"
+title = "D1-Z Subject VM Stage 3C-16 edge eligibility-carrier reachability audit"
+
+[parameters.config]
+type = "path"
+default = "configs/mvp_short_subject_vm_stage3c8_paired_study.json"
+description = "Unchanged fixed-bootstrap paired source configuration."
+
+[parameters.seeds]
+type = "csv-int"
+default = "12301,12302,12303,12304,12305,12306,12307,12308,12309"
+description = "The frozen nine independent-source panel."
+
+[parameters.source_ticks]
+type = "int"
+default = 2
+minimum = 0
+maximum = 16
+description = "Unchanged source checkpoint tick."
+
+[parameters.horizon_ticks]
+type = "int"
+default = 8
+minimum = 8
+maximum = 8
+description = "Unchanged trace-safe paired branch horizon."
+
+[parameters.bootstrap_subjects]
+type = "int"
+default = 16
+minimum = 1
+maximum = 64
+description = "Unchanged fixed-bootstrap stable-subject count."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c16_edge_carrier_reachability_v1/final"
+description = "Carrier-off/on edge-forward arms plus the Stage-3C-16 assessment."
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c16_edge_carrier_reachability_v1_results.zip"
+description = "Compact study result bundle, separate from the project release archive."
+
+[steps.run-carrier-off]
+description = "Route one-hot proposals to edge forward gate while leaving edge 0 locally ineligible."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "{source_ticks}", "--horizon-ticks", "{horizon_ticks}", "--bootstrap-subjects", "{bootstrap_subjects}", "--rollback-after-ticks", "3", "--bootstrap-target-family", "edge_forward_gate", "--backend", "cpu", "--output", "{analysis_root}/carrier_off", "--overwrite"]
+
+[steps.run-carrier-on]
+description = "Run the same edge-forward panel with only edge 0 local eligibility enabled."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "{source_ticks}", "--horizon-ticks", "{horizon_ticks}", "--bootstrap-subjects", "{bootstrap_subjects}", "--rollback-after-ticks", "3", "--bootstrap-target-family", "edge_forward_gate", "--bootstrap-edge-carrier-enabled", "--backend", "cpu", "--output", "{analysis_root}/carrier_on", "--overwrite"]
+
+[steps.assess-edge-carrier]
+description = "Verify source/control identity and audit the isolated carrier reachability transition."
+command = ["se-subject-vm-stage3c16-edge-carrier-reachability", "--carrier-off-study-report", "{analysis_root}/carrier_off/study_report.json", "--carrier-on-study-report", "{analysis_root}/carrier_on/study_report.json", "--output", "{analysis_root}/stage3c16_edge_carrier_reachability.json"]
+
+[steps.pack-results]
+description = "Package the unreachable baseline, reachable paired evidence and Stage-3C-16 assessment without checkpoints."
+requires_json = [
+  { path = "{analysis_root}/carrier_off/study_report.json", field = "engineering_summary.total_paired_window_count", equals = 0 },
+  { path = "{analysis_root}/carrier_on/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/stage3c16_edge_carrier_reachability.json", field = "isolation_contract.read_only_control_behavior_equal", equals = true },
+  { path = "{analysis_root}/stage3c16_edge_carrier_reachability.json", field = "diagnostic_interpretation.carrier_enabled_arm_reached_guarded_live_write", equals = true },
+  { path = "{analysis_root}/stage3c16_edge_carrier_reachability.json", field = "permanent_parameter_retention_authorized", equals = false },
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--required-file", "{analysis_root}/carrier_off/study_report.json", "--required-file", "{analysis_root}/carrier_off/bootstrap_profile.json", "--required-file", "{analysis_root}/carrier_off/paired_evidence_assessment.json", "--required-file", "{analysis_root}/carrier_off/stage3c10_diagnostics.json", "--required-file", "{analysis_root}/carrier_on/study_report.json", "--required-file", "{analysis_root}/carrier_on/bootstrap_profile.json", "--required-file", "{analysis_root}/carrier_on/paired_evidence_assessment.json", "--required-file", "{analysis_root}/carrier_on/component_reproducibility.json", "--required-file", "{analysis_root}/carrier_on/stage3c10_diagnostics.json", "--required-file", "{analysis_root}/stage3c16_edge_carrier_reachability.json", "--output", "{output}"]

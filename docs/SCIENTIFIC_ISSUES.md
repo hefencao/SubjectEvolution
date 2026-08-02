@@ -630,3 +630,15 @@ bootstrap 后第一次激活时，delay=1 的 self-edge 读取到的历史 node 
 `node_bias` 与 `node_input_gate` 的 probe 响应在 float32 误差 `5.96e-8` 内等价，因为 node 0 的输入为固定 `constant-one`。有限精度的加法顺序会造成少量非 bitwise 差异，因此 Stage 3C-15 同时报告 exact equality 和 float32 tolerance equality。
 
 后续对照必须先检查代数可辨识性和数值执行顺序。当前退化只适用于这个节点、这个输入端口和这个 bootstrap operating point，不允许推广为一般参数族理论。
+
+## v0.130：不可达基线与零效应 paired arm 必须区分
+
+Stage 3C-16 的 carrier-off arm 有大量 modulation proposal，但因为 edge 0 没有 local eligibility carrier，exact target binding 永远无法成立。因此它没有 transaction、commit 或 evaluation window。这样的 arm 不是“结果全为零的 paired scientific replicate”，而是机制链在 target-binding 前被实验性关闭的不可达基线。
+
+分析层必须保留它的 proposal、拒绝原因和零窗口事实，但不能把它送入 Stage 3C-8 层级聚合，也不能用 `pairing_coverage=0` 宣称工程合同失败。只有 carrier-on arm 进入完整 live/control 配对后，Stage 3C-7/8 才适用。
+
+## v0.130：carrier 可达只证明写入链可进入，不证明信用质量
+
+开启 edge carrier 后，九个 source 全部出现 edge-forward target binding 与 guarded-live commit，并产生 129 个完整窗口；然而稳定客观坐标仍为 0/21。carrier 是当前 single-winner exact-target selector 的必要机械条件，但非零 carrier value、非零 delta 或非零客观差异都不能自动解释为正确归因、适应方向或主体利益。
+
+下一步若比较 candidate allocation，必须保持 edge family、carrier、source panel、delta、horizon、exposure 与 rollback 不变，一次只改变 allocator 的一个有界因素。不得因为 carrier-on 已可运行就同时开放多 family、永久 retention、scalar reward 或完整通用注意模型。

@@ -49,6 +49,7 @@ _BOOTSTRAP_TARGET_FAMILY_PORTS = {
     "node_bias": 23,
     "node_input_gate": 24,
     "node_output_gate": 25,
+    "edge_forward_gate": 27,
 }
 
 
@@ -61,6 +62,7 @@ class ShortPairedStudyParameters:
     backend: str = "auto"
     rollback_after_ticks: int | None = None
     bootstrap_target_family: str = "node_bias"
+    bootstrap_edge_carrier_enabled: bool = False
 
     def validate(self) -> None:
         if len(self.seeds) < 3:
@@ -85,7 +87,12 @@ class ShortPairedStudyParameters:
             raise ValueError("rollback_after_ticks must be positive when provided")
         if self.bootstrap_target_family not in _BOOTSTRAP_TARGET_FAMILY_PORTS:
             raise ValueError(
-                "bootstrap_target_family must be node_bias, node_input_gate, or node_output_gate"
+                "bootstrap_target_family must be node_bias, node_input_gate, "
+                "node_output_gate, or edge_forward_gate"
+            )
+        if self.bootstrap_edge_carrier_enabled and self.bootstrap_target_family != "edge_forward_gate":
+            raise ValueError(
+                "bootstrap_edge_carrier_enabled is only valid for edge_forward_gate"
             )
 
 
@@ -102,9 +109,15 @@ def _sha256_file(path: str | Path) -> str:
     return digest.hexdigest()
 
 
-def bootstrap_profile(*, target_family: str = "node_bias") -> dict[str, Any]:
+def bootstrap_profile(
+    *,
+    target_family: str = "node_bias",
+    edge_carrier_enabled: bool = False,
+) -> dict[str, Any]:
     if target_family not in _BOOTSTRAP_TARGET_FAMILY_PORTS:
         raise ValueError("unsupported fixed bootstrap target family")
+    if edge_carrier_enabled and target_family != "edge_forward_gate":
+        raise ValueError("edge carrier shaping is only valid for edge_forward_gate")
     target_port = int(_BOOTSTRAP_TARGET_FAMILY_PORTS[target_family])
     payload = {
         "schema": BOOTSTRAP_GRAPH_PROFILE_SCHEMA,
@@ -142,12 +155,19 @@ def bootstrap_profile(*, target_family: str = "node_bias") -> dict[str, Any]:
                 "delay_ticks": 1,
                 "forward_gate": -1.5,
                 "bandwidth": 2.0,
+                "local_eligibility": bool(edge_carrier_enabled),
+                "eligibility_gate": 1.0 if edge_carrier_enabled else 0.0,
             }
         ],
         "target_family_shaping": {
             "family": target_family,
             "token_port": target_port,
             "classification": "replaceable-fixed-bootstrap-routing-bias",
+            "value_semantics": None,
+        },
+        "eligibility_carrier_shaping": {
+            "edge_0_local_carrier_enabled": bool(edge_carrier_enabled),
+            "classification": "replaceable-fixed-bootstrap-reachability-bias",
             "value_semantics": None,
         },
         "objective_value_interpretation": None,
@@ -207,7 +227,11 @@ def _assert_quiescent_runtime(simulation: Simulation) -> None:
 
 
 def prime_fixed_bootstrap_graph(
-    simulation: Simulation, *, bootstrap_subjects: int, target_family: str = "node_bias"
+    simulation: Simulation,
+    *,
+    bootstrap_subjects: int,
+    target_family: str = "node_bias",
+    edge_carrier_enabled: bool = False,
 ) -> dict[str, Any]:
     """Install the explicit fixed bootstrap graph into a quiescent source.
 
@@ -241,6 +265,8 @@ def prime_fixed_bootstrap_graph(
 
     if target_family not in _BOOTSTRAP_TARGET_FAMILY_PORTS:
         raise ValueError("unsupported fixed bootstrap target family")
+    if edge_carrier_enabled and target_family != "edge_forward_gate":
+        raise ValueError("edge carrier shaping is only valid for edge_forward_gate")
     trace_ports = (*_BOOTSTRAP_TRACE_PORTS[:-1], _BOOTSTRAP_TARGET_FAMILY_PORTS[target_family])
     for node, (port, gate) in enumerate(
         zip(trace_ports, _BOOTSTRAP_TRACE_GATES, strict=True)
@@ -256,6 +282,9 @@ def prime_fixed_bootstrap_graph(
     storage.edge_delay[rows, 0] = np.uint16(1)
     storage.edge_bandwidth[rows, 0] = np.float32(2.0)
     storage.edge_phase_mask[rows, 0] = np.uint8(ACTIVATION_PHASE_MASK)
+    if edge_carrier_enabled:
+        storage.plasticity_flags[rows, 0] = np.uint8(LOCAL_ELIGIBILITY_FLAG)
+        storage.edge_eligibility_gate[rows, 0] = np.float32(1.0)
     storage.validate_internal()
     runtime.validate_owners(
         simulation.entities.alive,
@@ -263,7 +292,10 @@ def prime_fixed_bootstrap_graph(
         simulation.entities.primary_subject_id,
     )
 
-    profile = bootstrap_profile(target_family=target_family)
+    profile = bootstrap_profile(
+        target_family=target_family,
+        edge_carrier_enabled=edge_carrier_enabled,
+    )
     record = {
         "schema": BOOTSTRAP_LINEAGE_SCHEMA,
         "profile_sha256": profile["profile_sha256"],
@@ -309,7 +341,10 @@ def run_short_paired_study(
         raise FileNotFoundError(config_source)
     root = Path(output_dir).expanduser().resolve()
     _prepare_output_root(root, overwrite=overwrite)
-    profile = bootstrap_profile(target_family=parameters.bootstrap_target_family)
+    profile = bootstrap_profile(
+        target_family=parameters.bootstrap_target_family,
+        edge_carrier_enabled=parameters.bootstrap_edge_carrier_enabled,
+    )
     _write_json(root / "bootstrap_profile.json", profile)
     resolved_backend = "cpu" if parameters.backend == "auto" else parameters.backend
     base_cfg = load_config(config_source)
@@ -335,6 +370,7 @@ def run_short_paired_study(
             simulation,
             bootstrap_subjects=parameters.bootstrap_subjects,
             target_family=parameters.bootstrap_target_family,
+            edge_carrier_enabled=parameters.bootstrap_edge_carrier_enabled,
         )
         _assert_quiescent_runtime(simulation)
         source_checkpoint = simulation.save_full_checkpoint(
@@ -521,6 +557,11 @@ def build_parser() -> argparse.ArgumentParser:
         choices=tuple(_BOOTSTRAP_TARGET_FAMILY_PORTS),
         default="node_bias",
     )
+    parser.add_argument(
+        "--bootstrap-edge-carrier-enabled",
+        action="store_true",
+        help="Enable the fixed local eligibility carrier on bootstrap edge 0.",
+    )
     parser.add_argument("--backend", choices=("auto", "cpu"), default="auto")
     parser.add_argument("--output", required=True)
     parser.add_argument("--overwrite", action="store_true")
@@ -539,6 +580,7 @@ def main() -> None:
             backend=args.backend,
             rollback_after_ticks=args.rollback_after_ticks,
             bootstrap_target_family=args.bootstrap_target_family,
+            bootstrap_edge_carrier_enabled=args.bootstrap_edge_carrier_enabled,
         ),
         output_dir=args.output,
         overwrite=args.overwrite,

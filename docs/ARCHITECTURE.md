@@ -1586,3 +1586,15 @@ packaged_probe_branch_growth = 0 bytes
 ```
 
 Temporary working storage is bounded by one source simulation, one warmed source clone and one one-step probe clone at a time. It is external analysis workspace and is excluded from the project release and research result bundle.
+
+### Stage 3C-16 — fixed-bootstrap edge eligibility-carrier reachability audit (implemented in v0.130)
+
+Stage 3C-16 remains in experiment orchestration and `se.analysis`. It adds no runtime array, checkpoint schema, random stream, branch owner, ledger, lifecycle system or persistent path record. The short paired study bootstrap may route its one-hot target coordinate to `edge_forward_gate` on token port 27. A separate experiment parameter may enable the existing bounded local-eligibility flag and gate on bootstrap edge 0; the parameter is rejected for every non-edge target family.
+
+The formal comparison uses two arms with the same target family, token coordinate, graph topology, edge value, delay, bandwidth, source panel, update scale, exposure duration, branch horizon, association selector, rollback and score-free evaluation. The baseline leaves edge 0 locally ineligible. The alternative enables only the existing edge-local carrier. Pre-bootstrap source state/config hashes and stable subject selection must match. Read-only control tokens, action potentials, probabilities, actions, objective events and the token/association/modulation funnel must also match exactly.
+
+The carrier-off arm is expected to produce no exact edge target binding and therefore no completed evaluation window. It is retained as an unreachable-funnel engineering baseline and is not passed to Stage 3C-8 as an independent scientific replicate. The carrier-on arm must independently pass Stage 3C-7 before its Stage-3C-8 coordinate report is used. This asymmetry is part of the experiment design, not permission to filter zero outcomes from a valid paired arm.
+
+The assessment reports the transition from modulation proposal to target binding, safe update, shadow transaction, guarded-live commit and completed window. It also preserves continuous/discrete branch divergence and source-level incidence without scalarization. Enabling a carrier establishes only mechanical reachability under the fixed bootstrap. It does not validate causal credit, assign value to the edge family, authorize automatic keep/revert, permanent retention, learning, subjecthood or a universal attention architecture.
+
+Persistent memory growth is zero. The intervention reuses existing fixed-capacity edge eligibility arrays and flags already owned by Subject VM storage. Disabled project configurations and their canonical identities are unchanged because the carrier switch exists only in the explicit study bootstrap parameter.

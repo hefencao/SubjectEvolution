@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
 Status: **Stage 3C-5 CPU-reference score-free objective evaluation windows implemented; no automatic keep/revert decision**
-Project version: **0.129.0**
+Project version: **0.130.0**
 
 ## 1. Decision
 
@@ -654,3 +654,13 @@ eligibility reachable
 ```
 
 二者都不是价值或学习结论。后续若比较 eligibility shaping，只允许一次开放一个敏感但不可达的 carrier，并保持 source panel、horizon、exposure、delta、association、topology size、rollback 和 score-free evidence 不变。
+
+## v0.130：Stage 3C-16 edge eligibility carrier 可达性审计
+
+Stage 3C-16 固定九个独立 source、每 source 32 个实体、16 个 bootstrap subject、source tick 2、branch horizon 8、`rollback_after_ticks=3`、CPU、bounded delta、nearest-token association、single-winner binding、自动回滚与 Stage 3C-8 聚合。两个 arm 都把 one-hot target weight 路由到 token port 27，即 `edge_forward_gate`。唯一变量是 edge 0 是否启用已有的 `LOCAL_ELIGIBILITY_FLAG` 和 eligibility gate 1.0。
+
+carrier-off arm 仍完整产生 token、association candidate 和 modulation proposal，但没有任何有效 edge carrier，因此产生 0 target binding、0 safe update、0 commit、0 completed window。它是“不可达漏斗基线”，不能作为 Stage 3C-8 的有效 paired replicate，也不能被过滤后假装成普通零效应窗口。
+
+carrier-on arm 在相同 source panel 上产生 688 次 target binding、646 次 safe update、144 次临时 commit 和 129 个完整 paired windows。Stage 3C-7 的 pairing coverage 为 1.0，rollback failure、objective clipping 均为 0，evaluation cost 完全匹配；离散 action 与客观事件分化出现在 3/9 source，Stage 3C-8 仍为 0/21 稳定客观坐标。
+
+两个 arm 的 pre-bootstrap state/config hash、stable subject selection、read-only control 行为以及 read-only token/association/modulation 漏斗完全一致。由此只允许得出：当前 exact-target binding 需要合法 local carrier，且 `edge_forward_gate` 在 carrier 开启后能够进入现有 guarded-live write 链。不能据此判断 carrier 正确、更新有益、形成学习、应永久保留参数或当前 fixed selector 是唯一理论结构。

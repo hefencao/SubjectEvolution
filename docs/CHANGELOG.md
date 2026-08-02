@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.130.0
+
+- Adds Subject VM Stage 3C-16 fixed-bootstrap edge eligibility-carrier reachability assessment.
+- Extends the short paired study bootstrap with an explicit `edge_forward_gate` target route and a separately audited edge-0 local-carrier switch.
+- Holds the frozen nine-source, 32-entity, eight-tick, exposure-three CPU panel fixed while changing only the existing edge eligibility flag/gate.
+- Preserves the carrier-off zero-window arm as an unreachable-funnel baseline rather than treating it as a Stage-3C-8 replicate.
+- Requires identical pre-bootstrap source state/config hashes, stable-subject selection, read-only control behavior and read-only token/association/modulation funnel across arms.
+- Finds 0 target bindings/commits/windows with the carrier off and 688 bindings, 144 temporary commits and 129 paired windows with the carrier on; the reachable arm remains 0/21 stable objective coordinates.
+- Adds a declarative Stage 3C-16 workflow, decision protocol, CLI, packaging contract and deterministic isolation tests.
+- Authorizes no value semantics, causal-credit conclusion, automatic keep/revert, permanent retention, topology evolution, learning, subjecthood or universal-attention claim.
+
 ## 0.129.0
 
 - Adds Subject VM Stage 3C-15 external six-family local-sensitivity and algebraic-degeneracy assessment.
