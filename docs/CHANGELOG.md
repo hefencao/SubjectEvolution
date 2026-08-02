@@ -1,3 +1,10 @@
+## 0.133.0
+
+- Adds Subject VM Stage 3C-19 external association-visible token-geometry separability assessment.
+- Confirms ports 29-31 are constant `[0,0,1]` across 1,152 frozen-panel tokens; centered rank is zero and all 3,888 eligible normalized-dot scores are 1.0.
+- Adds the Stage 3C-19 workflow, decision protocol, CLI and deterministic tests without runtime or checkpoint schema changes.
+- Authorizes no retention, value, learning, subjecthood or universal-attention claim.
+
 # Changelog
 
 ## 0.132.0

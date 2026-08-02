@@ -1,0 +1,19 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c19_token_geometry_v1",
+  "title": "D1-Z Subject VM Stage 3C-19 token geometry separability diagnostic",
+  "status": "engineering-token-geometry-diagnostic",
+  "scientific_stage": "stage3c19-read-only-association-visible-token-geometry-no-runtime-change",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_source_panel": true,
+    "external_read_only_geometry_analysis": true,
+    "runtime_mechanism_change": false,
+    "candidate_allocator_change": false,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "topology_evolution": false,
+    "universal_attention": false,
+    "subjecthood_claim": false
+  }
+}

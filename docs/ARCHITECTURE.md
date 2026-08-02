@@ -1629,3 +1629,12 @@ The exact persistent memory increase is:
 It is zero when association tracing is disabled and is independent of graph node/edge capacity. v8 and older checkpoints recover each already-assigned primary association as selected count one; all secondary fields remain empty sentinels. No full candidate list, node/edge path, attention matrix or unbounded history is persisted.
 
 The Stage 3C-18 analyzer remains in `se.analysis`. It verifies common source/config identities, bootstrap subjects, read-only control behavior, candidate gates, target family/carrier, proposal cardinality and update budget. It reports reference cardinality, delay histograms, unique historical-event coverage and reuse concentration before consuming unchanged Stage 3C-7/8/10 evidence. Windows remain nested observations; independent source checkpoints remain the highest replicate unit.
+
+
+### Stage 3C-19 — association-visible token geometry diagnostic (implemented in v0.133)
+
+Stage 3C-19 is entirely external analysis in `se.analysis`. It reads read-only-control checkpoints from the frozen nine-source top-1 carrier-on baseline and derives visible ports by excluding the association request coordinate and every modulation control coordinate. It adds no runtime array, checkpoint field, branch, ledger, random draw or persistent path.
+
+The analyzer reports coordinate variance, centered covariance eigenvalues/rank/effective rank, uncentered second-moment rank, exact token and normalized-direction duplication, all delay-eligible normalized-dot scores, best-versus-second spread and threshold margin. Tokens and query/candidate pairs remain nested observations; independent source checkpoints remain the highest replicate unit.
+
+The observed visible subspace is ports 29-31 with vector `[0,0,1]` for every event. This is a fixed-bootstrap operating-point degeneracy, not a universal theorem about continuous tokens or attention. Persistent runtime and checkpoint memory growth is exactly zero.

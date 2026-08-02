@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.132.0**
+Version: **0.133.0**
 
 ## Current scientific task
 
-Version 0.132 implements **Subject VM Stage 3C-18: bounded association candidate-allocation audit**.
+Version 0.133 implements **Subject VM Stage 3C-19: association-visible token geometry separability diagnostic**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -127,7 +127,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-18 audits bounded association allocation on the reachable edge-carrier baseline without authorizing retention or Epoch 1.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-19 diagnoses the frozen token geometry without changing runtime mechanisms or authorizing retention or Epoch 1.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -153,7 +153,7 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-The next authorized boundary must treat both Stage 3C-18 arms as engineering allocation probes, not beneficial-update results. Because top-2 adds references without adding unique historical-event coverage and all similarities remain 1.0, the next step should be an external token-geometry separability diagnostic: coordinate variance, effective rank, pairwise score spread and threshold margin on the frozen nine-source panel. It must not simultaneously change token production, similarity metric, top-k, learned weights, family target, carrier, entity count, topology evolution, permanent retention, scalar value construction, a complete general-attention replacement or Epoch 1 qualification.
+Stage 3C-19 establishes that the current association-visible subspace is exactly constant on the frozen panel. The next authorized boundary is a single role-neutral readout or operating-context reachability diagnostic for ports 29-31. It must not simultaneously change similarity, top-k, learned weights, update scale, retention, topology evolution, scalar value construction, a complete general-attention replacement or Epoch 1 qualification.
 
 
 ## Stage 3C-17 retained result
@@ -171,3 +171,9 @@ Stage 3C-18 preserves the Stage-3C-16 carrier-on `edge_forward_gate` baseline an
 Across nine independent sources, both arms assign 1008 current events. Top-2 adds 864 secondary delay-2 references and raises modulation proposals from 942 to 970 and completed paired windows from 129 to 137. Guarded-live commits remain 144 in both arms. Unique selected historical events remain 112 per source; top-2 instead makes 96 events per source reusable twice. Discrete action differences change from 4 to 2, objective-event divergence incidence from 3/9 to 2/9 sources, and both arms remain 0/21 stable objective coordinates.
 
 This establishes candidate cardinality as a material fixed-bootstrap allocation factor but does not show improved historical coverage, causal credit, learning or value. The next authorized boundary is diagnostic rather than another allocator expansion: measure token-coordinate variance, effective rank and score separability while holding all runtime mechanisms fixed.
+
+## Stage 3C-19 current result
+
+The frozen nine-source read-only-control traces contain 1,152 association-visible tokens. Control and modulation ports 0-28 are excluded from similarity, leaving ports 29-31; every visible vector is exactly `[0, 0, 1]`. Per-source centered covariance rank and effective rank are zero, while uncentered direction rank is one. All 3,888 delay-eligible query/candidate pairs are exact vector duplicates with normalized-dot score 1.0, constant threshold margin 0.2 and zero best-versus-second spread.
+
+This explains why temporal tie-break and candidate cardinality, rather than content score, determined allocation in Stages 3C-17/18. It does not prove the general token mechanism incapable, does not validate or invalidate credit, and authorizes no runtime change, retention, learned weight, scalar objective or universal-attention claim.

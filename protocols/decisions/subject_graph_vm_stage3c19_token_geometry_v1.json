@@ -1,0 +1,73 @@
+{
+  "schema": "se-subject-vm-stage3c19-token-geometry-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c19-token-geometry-v1",
+  "status": "accepted-engineering-read-only-geometry-diagnostic-only",
+  "project_version": "0.133.0",
+  "question": "Does the current association-visible token subspace contain any coordinate variance or normalized-dot score separation on the frozen nine-source panel?",
+  "source_panel": {
+    "independent_source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "target_family": "edge_forward_gate",
+    "edge_local_eligibility_carrier": true,
+    "association_tie_break": "latest",
+    "association_candidate_limit": 1,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "diagnostic": {
+    "runtime_state_change": false,
+    "checkpoint_schema_change": false,
+    "association_visible_coordinates_only": true,
+    "coordinate_variance": true,
+    "centered_covariance_effective_rank": true,
+    "uncentered_direction_rank": true,
+    "eligible_pairwise_normalized_dot_scores": true,
+    "best_second_score_spread": true,
+    "threshold_margin": true,
+    "highest_independent_replicate": "independent-source-checkpoint"
+  },
+  "observed_panel_result": {
+    "visible_ports": [
+      29,
+      30,
+      31
+    ],
+    "visible_token_count": 1152,
+    "visible_vector": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "all_coordinate_variances_zero": true,
+    "centered_rank_per_source": 0,
+    "uncentered_rank_per_source": 1,
+    "eligible_query_candidate_pairs": 3888,
+    "all_pairs_exactly_equal_vectors": true,
+    "all_normalized_dot_scores": 1.0,
+    "best_second_score_spread": 0.0,
+    "similarity_threshold_margin": 0.2
+  },
+  "interpretation": {
+    "current_score_has_content_discriminative_power": false,
+    "general_token_mechanism_incapable": false,
+    "learning_impossible": false,
+    "similarity_has_value_or_causal_semantics": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "next_boundary": "Diagnose one existing role-neutral graph readout or operating context that can introduce variance into the three association-visible coordinates. Do not simultaneously change similarity, top-k, learned weights, update scale, retention or the full attention architecture."
+}

@@ -685,3 +685,10 @@ Top-2 仍使用相同 normalized-dot score、候选集合、threshold 和 delay 
 这说明 candidate cardinality 会实质改变连续漏斗和证据窗口，但当前 top-2 没有增加历史事件覆盖、写入次数或跨 source 稳定方向。不得据此给候选数、delay 或等权聚合赋予好坏含义，也不得继续无分析地增加候选数或引入 learned weights。
 
 Trace schema 升级到 v9，仅在 association 启用时增加五个固定容量审计数组；内存增长为 `25 × entity_capacity × trace_capacity_per_subject` bytes。旧 checkpoint 的已有 primary association 恢复为 selected count 1，secondary 字段为空。默认 candidate limit 仍为 1，旧配置 identity 不变。
+
+
+## v0.133：Stage 3C-19 token geometry 可分辨性诊断
+
+Stage 3C-19 不修改运行时。它在冻结九 source 的 read-only-control trace 上，先排除 association request 与 modulation control ports，再分析 normalized-dot 实际可见的 token 子空间。当前 32 维 token 中只有 ports 29、30、31 可见，全部 1152 个 token 都等于 `[0,0,1]`。每 source centered covariance rank/effective rank 为 0，uncentered direction rank 为 1。
+
+全部 3888 个 delay-eligible query/candidate pair 都是精确相同向量，score 全为 1.0，best-second spread 全为 0，threshold margin 固定为 0.2。因此当前 score 没有内容区分能力，Stage 3C-17/18 的排序只能由时间 tie-break 和 candidate limit 决定。该结论只适用于当前 fixed bootstrap readout 与 operating point，不证明一般 token、学习或主体机制不可能。

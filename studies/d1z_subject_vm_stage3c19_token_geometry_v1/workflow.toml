@@ -1,0 +1,42 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c19_token_geometry_v1"
+title = "D1-Z Subject VM Stage 3C-19 token geometry separability diagnostic"
+
+[parameters.config]
+type = "path"
+default = "configs/mvp_short_subject_vm_stage3c8_paired_study.json"
+description = "Unchanged fixed-bootstrap paired source configuration."
+
+[parameters.seeds]
+type = "csv-int"
+default = "12301,12302,12303,12304,12305,12306,12307,12308,12309"
+description = "Frozen nine independent-source panel."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c19_token_geometry_v1/final"
+description = "Frozen baseline plus Stage-3C-19 geometry assessment."
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c19_token_geometry_v1_results.zip"
+description = "Compact research result bundle separate from the project archive."
+
+[steps.run-baseline]
+description = "Regenerate the frozen reachable top-1 latest-on-tie edge-carrier baseline."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "2", "--horizon-ticks", "8", "--bootstrap-subjects", "16", "--rollback-after-ticks", "3", "--bootstrap-target-family", "edge_forward_gate", "--bootstrap-edge-carrier-enabled", "--association-tie-break", "latest", "--association-candidate-limit", "1", "--backend", "cpu", "--output", "{analysis_root}/baseline", "--overwrite"]
+
+[steps.assess-token-geometry]
+description = "Measure only association-visible coordinate and score separability."
+command = ["se-subject-vm-stage3c19-token-geometry", "--study-report", "{analysis_root}/baseline/study_report.json", "--output", "{analysis_root}/stage3c19_token_geometry.json"]
+
+[steps.pack-results]
+description = "Package the frozen engineering evidence and geometry assessment without checkpoints."
+requires_json = [
+  { path = "{analysis_root}/baseline/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/stage3c19_token_geometry.json", field = "geometry_summary.all_association_visible_coordinate_variances_zero", equals = true },
+  { path = "{analysis_root}/stage3c19_token_geometry.json", field = "score_separability.all_eligible_scores_identical", equals = true },
+  { path = "{analysis_root}/stage3c19_token_geometry.json", field = "runtime_state_changed", equals = false },
+  { path = "{analysis_root}/stage3c19_token_geometry.json", field = "permanent_parameter_retention_authorized", equals = false },
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--required-file", "{analysis_root}/baseline/study_report.json", "--required-file", "{analysis_root}/baseline/bootstrap_profile.json", "--required-file", "{analysis_root}/baseline/paired_evidence_assessment.json", "--required-file", "{analysis_root}/baseline/component_reproducibility.json", "--required-file", "{analysis_root}/baseline/stage3c10_diagnostics.json", "--required-file", "{analysis_root}/stage3c19_token_geometry.json", "--output", "{output}"]

@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c18-bounded-candidate-allocation-implemented",
-  "project_version": "0.132.0",
+  "status": "stage-3c19-token-geometry-diagnostic-implemented",
+  "project_version": "0.133.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3C-18",
+  "current_stage": "3C-19",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -443,6 +443,17 @@
     "identical_source_checkpoint_state_required": true,
     "read_only_control_behavior_identity_required": true,
     "within_source_windows_are_independent_replicates": false,
+    "permanent_write_authorized": false,
+    "scientific_qualification": false
+  },
+  "stage_3c19_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_stage3c19_token_geometry_v1.json",
+    "runtime_state_change": false,
+    "checkpoint_schema_change": false,
+    "association_visible_coordinates_only": true,
+    "highest_independent_replicate": "independent-source-checkpoint",
+    "tokens_or_pairs_are_independent_replicates": false,
+    "similarity_as_value": false,
     "permanent_write_authorized": false,
     "scientific_qualification": false
   }

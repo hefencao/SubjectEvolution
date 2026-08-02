@@ -667,3 +667,10 @@ Top-2 使 modulation proposal 增加 28、完整窗口增加 8，但 guarded-liv
 Stage 3C-18 为隔离候选基数而使用固定等权均值，并保持一次 proposal 与原 event budget。这一聚合没有训练、竞争、价值、trust 或因果权重含义。它只回答“在同一预算下引入第二个按现有规则排序的候选会怎样”。
 
 当前所有 association similarity 仍为 1.0，说明更根本的可分辨性问题可能位于 token geometry，而不是候选上限本身。下一步应先做 token-coordinate variance、effective-rank、pairwise score spread 和 threshold-margin 的外部诊断；在证明 score 可分离前，不应继续增大 top-k、引入 learned weights 或替换为完整通用注意模型。
+
+
+## v0.133：相似度退化来自可见 token geometry 完全常量
+
+Stage 3C-19 证明，当前 association scorer 排除 ports 0-28 的控制坐标后只看到 ports 29-31，而九 source 的全部 1152 个 token 在该子空间都精确等于 `[0,0,1]`。centered rank 为 0；3888 个合法延迟 pair 的 normalized-dot score 全为 1.0，最佳与次佳 score spread 为 0。
+
+因此 latest/oldest 和 top-1/top-2 的差异不是内容相似度学出的竞争，而是固定 tie-break 与候选基数偏置。不得把这一 operating-point 退化推广为连续 token 或通用注意力不可能。下一步只能单独诊断一个现有、无价值语义的 readout/operating-context 如何使 ports 29-31 产生方差；不得同时改变 similarity、top-k、learned weight、delta、retention 或完整注意架构。
