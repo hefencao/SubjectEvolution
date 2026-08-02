@@ -9,6 +9,8 @@ from se.cfg import load_config
 from se.config_identity import strip_inactive_extensions
 from se.subject_vm import (
     LIVE_WRITE_REASON_CODES,
+    LIVE_WRITE_STATUS_CONTROL_PENDING,
+    LIVE_WRITE_STATUS_CONTROL_RELEASED,
     LIVE_WRITE_STATUS_PENDING,
     LIVE_WRITE_STATUS_ROLLED_BACK,
     SUBJECT_VM_ACTIVATION_SCHEMA,
@@ -272,7 +274,7 @@ def test_guarded_commit_and_due_rollback_are_exact_and_bounded() -> None:
     assert runtime.live_write_ledger.total_counted_cost_units == 11
 
 
-def test_stage3c4_control_records_rejection_without_mutation() -> None:
+def test_stage3c4_control_reserves_matching_window_without_mutation() -> None:
     runtime = _runtime(_cfg(live_enabled=False))
     assert runtime.storage is not None and runtime.trace_storage is not None
     runtime.storage.node_expressed[0, 0] = True
@@ -284,7 +286,25 @@ def test_stage3c4_control_records_rejection_without_mutation() -> None:
     assert runtime.trace_storage.live_write_requested[0, slot]
     assert not runtime.trace_storage.live_write_authorized[0, slot]
     assert not runtime.trace_storage.live_write_committed[0, slot]
-    assert runtime.trace_storage.live_write_reason[0, slot] == LIVE_WRITE_REASON_CODES["not-enabled"]
+    assert runtime.trace_storage.live_write_reason[0, slot] == LIVE_WRITE_REASON_CODES[
+        "control-reserved"
+    ]
+    ledger_slot = int(runtime.trace_storage.live_write_ledger_slot[0, slot])
+    assert ledger_slot >= 0
+    assert (
+        runtime.live_write_ledger.status[0, ledger_slot]
+        == LIVE_WRITE_STATUS_CONTROL_PENDING
+    )
+    assert runtime.storage.node_bias[0, 0] == pytest.approx(0.25)
+    usage = runtime.live_write_ledger.rollback_due(
+        runtime.storage, rows=np.array([0], dtype=np.int32), tick=4
+    )
+    assert usage.checked_transactions == 1
+    assert usage.rolled_back_transactions == 0
+    assert (
+        runtime.live_write_ledger.status[0, ledger_slot]
+        == LIVE_WRITE_STATUS_CONTROL_RELEASED
+    )
     assert runtime.storage.node_bias[0, 0] == pytest.approx(0.25)
 
 
@@ -385,3 +405,82 @@ def test_rollback_cas_failure_locks_future_subject_writes() -> None:
     )
     assert not second.committed
     assert second.reason == LIVE_WRITE_REASON_CODES["row-locked"]
+
+
+def test_control_and_live_share_pending_target_admission() -> None:
+    live = _runtime(_cfg(live_enabled=True))
+    control = _runtime(_cfg(live_enabled=False))
+    for runtime in (live, control):
+        assert runtime.storage is not None and runtime.live_write_ledger is not None
+        runtime.storage.node_expressed[0, 0] = True
+        runtime.storage.node_bias[0, 0] = np.float32(0.25)
+
+    binding = _binding()
+    results = []
+    for runtime in (live, control):
+        assert runtime.storage is not None and runtime.live_write_ledger is not None
+        update = propose_safe_parameter_deltas(
+            runtime.storage, row=0, binding=binding, cfg=runtime.cfg.update_safety
+        )
+        transaction = prepare_shadow_transaction(
+            runtime.storage,
+            row=0,
+            binding=binding,
+            update=update,
+            cfg=runtime.cfg.transaction,
+        )
+        first = runtime.live_write_ledger.commit(
+            runtime.storage,
+            row=0,
+            tick=2,
+            event_id=702,
+            binding=binding,
+            update=update,
+            transaction=transaction,
+        )
+        update_again = propose_safe_parameter_deltas(
+            runtime.storage, row=0, binding=binding, cfg=runtime.cfg.update_safety
+        )
+        transaction_again = prepare_shadow_transaction(
+            runtime.storage,
+            row=0,
+            binding=binding,
+            update=update_again,
+            cfg=runtime.cfg.transaction,
+        )
+        second = runtime.live_write_ledger.commit(
+            runtime.storage,
+            row=0,
+            tick=3,
+            event_id=703,
+            binding=binding,
+            update=update_again,
+            transaction=transaction_again,
+        )
+        results.append((first, second))
+
+    assert results[0][0].committed
+    assert results[1][0].control_reserved
+    assert results[0][1].reason == results[1][1].reason
+    assert results[0][1].reason in {
+        LIVE_WRITE_REASON_CODES["overlapping-pending-target"],
+        LIVE_WRITE_REASON_CODES["window-delta-budget"],
+        LIVE_WRITE_REASON_CODES["window-target-budget"],
+    }
+    assert live.live_write_ledger is not None and control.live_write_ledger is not None
+    assert live.live_write_ledger._pending_count(0) == 1
+    assert control.live_write_ledger._pending_count(0) == 1
+
+
+def test_v1_live_write_ledger_snapshot_defaults_control_counters() -> None:
+    runtime = _runtime(_cfg(live_enabled=False))
+    assert runtime.live_write_ledger is not None
+    payload = runtime.live_write_ledger.snapshot_state()
+    payload["schema"] = "se-subject-vm-live-write-ledger-v1"
+    payload["counters"].pop("total_control_reserved_transactions")
+    payload["counters"].pop("total_control_released_transactions")
+    restored = type(runtime.live_write_ledger).from_snapshot(
+        runtime.cfg.live_write, 1, payload
+    )
+    assert restored.total_control_reserved_transactions == 0
+    assert restored.total_control_released_transactions == 0

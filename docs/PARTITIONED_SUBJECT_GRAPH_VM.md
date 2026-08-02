@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
 Status: **Stage 3C-5 CPU-reference score-free objective evaluation windows implemented; no automatic keep/revert decision**
-Project version: **0.122.0**
+Project version: **0.123.0**
 
 ## 1. Decision
 
@@ -552,3 +552,12 @@ Stage 3C-8 继续位于 `se.analysis`，不进入激活、资格、写入、回�
 分析层级固定为：独立 source checkpoint → stable subject → paired window。窗口先在主体内平均，主体再在 source 内等权平均，最后才跨 source 计算逐坐标统计。这样一个产生大量窗口的主体不能支配 source replicate，同一 source checkpoint 的重复输入也不能伪装成独立重复。
 
 输出逐坐标保留 source replicate values、符号计数、mean、median、sample standard deviation、MAD、极值和 central quantile interval。sign-and-interval screen 只是可配置的工程描述，不表示坐标具有正向价值、更新具有真实因果性或参数应永久保留。报告没有 coordinate weighting、universal scalar objective、automatic keep/revert 或 scientific reproducibility authorization。
+
+
+## v0.123：Stage 3C-9 短程成对数据研究
+
+Stage 3C-9 不把固定 bootstrap 图描述成演化结果。它只用于让现有 token、局部资格、延迟关联、调制提案、短窗写入和回滚链在极短 CPU 运行中产生可检查数据。bootstrap profile、选中 stable subject ID 和安装 tick 都写入 checkpoint lineage。
+
+read-only control 现在会建立虚拟 reservation，占用与 guarded-live 相同的 pending target、ledger slot、窗口目标数和绝对 delta 预算，但不会修改参数，也不会产生 live-write 成本。该修复避免 control 因缺少占位而产生大量额外窗口。
+
+成对运行停止后可以执行 export-boundary transient finalization：不新增 tick，只通过现有 CAS 回滚所有仍 pending 的临时写入并释放 control reservation。尚未完成观察窗口不会进入证据。默认三 seed 短程 pilot 得到 38 个完整配对窗口、覆盖率 1.0、rollback failure 0、fact clipping 0 和 evaluation cost match 1.0。Stage 3C-8 中没有任何坐标通过描述性符号与区间稳定筛查；少量非零差异只出现在 3 个 source 中的 1 个，其余多为零。这些只证明工程链路可产生完整数据，并表明当前短窗 bootstrap 尚未提供稳定效果方向。

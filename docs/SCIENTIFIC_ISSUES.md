@@ -490,3 +490,14 @@ Stage 3C-7 可以发现重复使用同一 source checkpoint、配对覆盖不足
 Stage 3C-8 的最高重复单位是独立 source checkpoint pair。一个主体可以产生多个窗口，一个 source 也可以包含多个主体，但这些下层观测只用于估计该 source 的逐坐标结果，不能增加独立 replicate 数量。实现先在 stable subject 内平均窗口，再在 source 内等权平均主体，并保留 window-weighted 结果作为偏差诊断。
 
 逐坐标同号、离散较小或 central interval 不跨零，只能描述在当前 bootstrap 寻址、资格选择、短窗口写入和环境合同下的重复性。它不说明坐标越大越好，不说明更新具有因果正确性，也不授权永久参数保留。下一问题应由真实小规模 paired 数据决定：若配对覆盖不足、主体不平衡或 source 间离散过大，应优先修正实验合同，而不是继续增加信用链复杂度。
+
+
+## v0.123：控制臂不占用写入预算会制造伪分支差异
+
+首次真实短程原型中，guarded-live 的 pending target 会阻止同目标重叠提交，而 read-only control 原先只记录 `not-enabled`，不会占用 ledger、target 和窗口预算。结果 control 产生了远多于 live 的窗口，低配对覆盖并非机制效果，而是准入合同不对称。v0.123 使用不写参数、不收 live-write 成本的虚拟 control reservation 镜像同一准入约束。
+
+## v0.123：final tick 的新临时写入不能污染导出 checkpoint
+
+即使短程窗口已有足够完成样本，最后一个 semantic tick 仍可能产生新的 pending 写入。继续运行等待回滚会同时生成更多提案，放宽完整性门又会把临时参数带入 final checkpoint。Stage 3C-9 因此在停止语义时间后执行显式瞬态清算：使用原 CAS owner 提前恢复 pending live 值并释放 control reservation，且不把未完成窗口提升为证据。
+
+默认三 seed pilot 的完整性筛查通过，但 Stage 3C-8 没有任何坐标通过描述性符号与区间稳定筛查。少量 energy、position 和 velocity 差异只出现在一个 source，其余 source 为零，说明当前短窗 bootstrap 主要验证了数据链，并未产生可重复的方向性信号。固定 bootstrap、短 horizon 和单一内容寻址偏置都限制解释范围；数据不得用于声称因果信用、注意机制优势、稳定学习或主体性。

@@ -22,6 +22,7 @@ from .live_write import (
     LIVE_WRITE_REASON_CODES,
     LIVE_WRITE_STATUS_ROLLED_BACK,
     LIVE_WRITE_STATUS_ROLLBACK_FAILED,
+    LIVE_WRITE_STATUS_CONTROL_RELEASED,
     SubjectVMLiveWriteLedger,
     SubjectVMLiveWriteResult,
 )
@@ -173,10 +174,10 @@ class SubjectVMEvaluationLedger:
             mode = EVALUATION_MODE_GUARDED_LIVE
             rollback_due = int(live_write.rollback_due_tick)
             live_slot = int(live_write.ledger_slot)
-        elif live_write.reason == LIVE_WRITE_REASON_CODES["not-enabled"]:
+        elif live_write.control_reserved:
             mode = EVALUATION_MODE_READ_ONLY_CONTROL
-            rollback_due = int(tick) + int(self.cfg.control_horizon_ticks)
-            live_slot = -1
+            rollback_due = int(live_write.rollback_due_tick)
+            live_slot = int(live_write.ledger_slot)
         else:
             return -1
         slot = self._select_slot(int(row))
@@ -299,6 +300,21 @@ class SubjectVMEvaluationLedger:
                 mode = int(self.mode[row, slot])
                 if mode == int(EVALUATION_MODE_READ_ONLY_CONTROL):
                     if int(tick) < int(self.rollback_due_tick[row, slot]):
+                        continue
+                    control_slot = int(self.live_write_ledger_slot[row, slot])
+                    if control_slot < 0 or control_slot >= live_write_ledger.capacity:
+                        self.status[row, slot] = EVALUATION_STATUS_ROLLBACK_FAILED
+                        self.total_rollback_failures += 1
+                        continue
+                    matching_event = int(
+                        live_write_ledger.event_id[row, control_slot]
+                    ) == int(self.source_event_id[row, slot])
+                    control_status = int(live_write_ledger.status[row, control_slot])
+                    if not matching_event:
+                        self.status[row, slot] = EVALUATION_STATUS_ROLLBACK_FAILED
+                        self.total_rollback_failures += 1
+                        continue
+                    if control_status != int(LIVE_WRITE_STATUS_CONTROL_RELEASED):
                         continue
                     self.status[row, slot] = EVALUATION_STATUS_COMPLETE_CONTROL
                     self.rollback_verified[row, slot] = True

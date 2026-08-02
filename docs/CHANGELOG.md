@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.123.0
+
+- Adds the Stage 3C-9 short fixed-bootstrap paired data-study runner and workflow.
+- Mirrors guarded-live admission in read-only control through zero-write control reservations.
+- Adds explicit export-boundary transient finalization without additional semantic ticks.
+- Produces a three-source score-free paired infrastructure pilot with no permanent retention.
+
 ## 0.122.0
 
 - Adds Subject VM Stage 3C-8 component-wise reproducibility assessment outside the runtime.

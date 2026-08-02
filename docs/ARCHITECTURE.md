@@ -1498,3 +1498,12 @@ Stage 3C-8 remains in `se.analysis` and adds no Subject VM runtime or checkpoint
 The highest replicate unit is an independent source-checkpoint state hash. Within each source, paired windows are first averaged within stable subjects and subject summaries are then equally averaged into one source vector. A window-weighted source mean is retained only as a diagnostic. Identical repeated source inputs are collapsed; conflicting data under the same source hash are rejected.
 
 The module reports coordinate-wise source values, signs, dispersion and configurable central intervals for objective fact sums, objective absolute-activity differences and count differences. It cannot mutate runtime state and emits no coordinate weighting, universal scalar objective, benefit score, automatic keep/revert instruction, causal authorization or permanent-write permission.
+
+
+### Stage 3C-9 — short paired infrastructure data study (implemented in v0.123)
+
+Stage 3C-9 remains an experiment boundary. `se.experiments.subject_vm_short_paired_study` creates independent quiescent source checkpoints, installs one versioned fixed bootstrap graph into selected stable subjects, runs guarded-live and read-only-control branches, and feeds the resulting exports through the existing Stage 3C-7 and Stage 3C-8 analyzers. The bootstrap profile is hashed into checkpoint lineage and is explicitly classified as fixed cognition rather than evolved topology.
+
+The live-write ledger schema v2 introduces virtual control reservations. A control reservation consumes the same pending-target, ledger and per-window admission capacity as a guarded live write, but performs no parameter write and charges no live-write cost. Both reservation types participate in overlap detection and expire through the same lifecycle owner.
+
+The paired plan can request export-boundary transient finalization. After the final semantic tick, no additional simulation step is executed. The existing exact CAS rollback owner restores pending guarded-live values and releases control reservations; incomplete evaluation windows are not promoted into evidence. Finalization metadata is persisted in checkpoint lineage.

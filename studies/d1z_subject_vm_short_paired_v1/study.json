@@ -1,0 +1,15 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_short_paired_v1",
+  "title": "D1-Z Subject VM short paired infrastructure study",
+  "status": "engineering-data-generation",
+  "scientific_stage": "stage3c9-short-paired-no-retention",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_run": true,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "epoch_1_entry": false,
+    "subjecthood_claim": false
+  }
+}

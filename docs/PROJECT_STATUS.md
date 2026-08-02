@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.122.0**
+Version: **0.123.0**
 
 ## Current scientific task
 
-Version 0.122 implements **Subject VM Stage 3C-8: hierarchical component-wise reproducibility assessment**.
+Version 0.123 implements **Subject VM Stage 3C-9: short paired infrastructure data study with symmetric control admission**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -21,6 +21,10 @@ The exporter accepts only the planned guarded-live and read-only-control checkpo
 Stage 3C-7 remains outside the runtime and consumes one or more Stage-3C-6 exports plus their referenced final checkpoints. It verifies export/checkpoint hashes, reports independent source-state count, paired-window coverage and structured unpaired reasons, inspects rollback failures, pending writes, locked rows, fact clipping and count-only evaluation-cost matching, and records component-wise entity/environment branch divergence. Its default thresholds are explicit engineering screening parameters, not universal scientific sufficiency or subjective value.
 
 Stage 3C-8 remains outside the runtime and consumes checksum-valid Stage-3C-7 assessments that passed their engineering screen. It resolves the referenced Stage-3C-6 exports, treats independent source checkpoints as the highest replicate unit, averages windows within stable subjects, then balances subjects within each source before cross-source comparison. It reports per-coordinate sign, dispersion and central-interval stability for objective facts, absolute activity and count differences. Duplicate source states do not become additional replicates, and conflicting duplicate data are rejected.
+
+Stage 3C-9 adds a reproducible short-study runner and a frozen fixed bootstrap graph so the existing Stage-3C chain can produce infrastructure data without waiting for topology evolution. The bootstrap is explicitly recorded as fixed cognition and not as an evolved result. Read-only control now reserves the same pending target, ledger and window budgets as guarded-live while remaining parameter-read-only and cost-free at the live-write layer. At the export boundary, remaining temporary writes are restored and control reservations released without executing new semantic ticks; incomplete windows are excluded from paired evidence.
+
+The default three-seed pilot produced 38 completed paired windows with full pairing coverage, zero rollback failures, zero fact clipping and matched evaluation costs. The Stage 3C-8 report found no coordinate passing its descriptive sign-and-interval stability screen: most branch differences were exactly or nearly zero, while the few nonzero differences appeared in only one of three sources. This is an engineering pipeline result only; it does not establish beneficial updates, causal credit, attention optimality, learning or subjecthood.
 
 The v0.110 single-owner rule remains unchanged. Subject VM is the sole optional action-potential residual owner when enabled; legacy knowledge/latent/working-memory routes remain fixed-cognition comparison baselines and cannot coexecute on the primary path.
 
@@ -43,6 +47,7 @@ Implemented and tested:
 - Stage-3C-6 source-checkpoint quiescence checks and deterministic plan identity;
 - Stage-3C-7 repeated paired-export checksum verification, coverage/unpaired diagnostics and integrity assessment;
 - Stage-3C-8 hierarchical source/subject/window aggregation and coordinate-wise sign, dispersion and interval assessment;
+- Stage-3C-9 fixed-bootstrap short paired runner, symmetric control admission and export-boundary transient finalization;
 - explicit guarded-live/read-only branch identities bound to source state, branch config and final tick;
 - branch identity persistence in final checkpoint lineage;
 - completed-window extraction and component-wise paired export without scalarization;
@@ -63,7 +68,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-8 is an external descriptive reproducibility contract only.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-9 is a short fixed-bootstrap engineering data study only.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -89,4 +94,4 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-The next authorized boundary is a **small, short, no-permanent-retention Stage 3C-8 data-generation study** using independent shared checkpoints. It may test whether the new hierarchical summaries receive enough paired windows and whether coordinate dispersion is interpretable, but it must not collapse coordinates into a universal scalar value or automatically retain updates.
+The next authorized boundary is to inspect the real Stage 3C-9 component report and decide whether branch divergence, coordinate sparsity or bootstrap bias require contract correction. Permanent retention, scalar value construction and Epoch 1 qualification remain unauthorized.

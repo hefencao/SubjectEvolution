@@ -147,6 +147,7 @@ class SubjectVMTraceAccounting:
     live_write_authorized_events: int = 0
     live_write_committed_events: int = 0
     live_write_committed_targets: int = 0
+    live_write_control_reservations: int = 0
     live_write_rejections: int = 0
     live_write_counted_cost_units: int = 0
     evaluation_windows_registered: int = 0
@@ -1001,6 +1002,8 @@ class SubjectVMTraceStorage:
                     accounting.live_write_counted_cost_units += int(
                         live_write.counted_cost_units
                     )
+                elif live_write.control_reserved:
+                    accounting.live_write_control_reservations += 1
                 elif live_write.requested:
                     accounting.live_write_rejections += 1
                 if evaluation_ledger is not None:

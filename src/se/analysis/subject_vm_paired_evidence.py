@@ -34,6 +34,8 @@ from ..subject_vm.live_write import (
     LIVE_WRITE_STATUS_PENDING,
     LIVE_WRITE_STATUS_ROLLED_BACK,
     LIVE_WRITE_STATUS_ROLLBACK_FAILED,
+    LIVE_WRITE_STATUS_CONTROL_PENDING,
+    LIVE_WRITE_STATUS_CONTROL_RELEASED,
 )
 from .subject_vm_paired_evaluation import PAIRED_EVALUATION_EXPORT_SCHEMA
 
@@ -53,6 +55,8 @@ _LIVE_WRITE_STATUS_NAMES = {
     int(LIVE_WRITE_STATUS_PENDING): "pending",
     int(LIVE_WRITE_STATUS_ROLLED_BACK): "rolled-back",
     int(LIVE_WRITE_STATUS_ROLLBACK_FAILED): "rollback-failed",
+    int(LIVE_WRITE_STATUS_CONTROL_PENDING): "control-pending",
+    int(LIVE_WRITE_STATUS_CONTROL_RELEASED): "control-released",
 }
 _ENTITY_COMPONENTS = (
     "x", "y", "vx", "vy", "energy", "integrity", "fertility",
@@ -454,6 +458,10 @@ def assess_export(payload: dict[str, Any], *, export_path: str | Path | None = N
         "no_pending_live_writes": (
             int(live_integrity["live_write_status_counts"].get("pending", 0))
             + int(control_integrity["live_write_status_counts"].get("pending", 0))
+        ) == 0,
+        "no_pending_control_reservations": (
+            int(live_integrity["live_write_status_counts"].get("control-pending", 0))
+            + int(control_integrity["live_write_status_counts"].get("control-pending", 0))
         ) == 0,
         "score_free_export": evidence.get("scalar_score") is False,
         "no_automatic_keep_or_revert": evidence.get(

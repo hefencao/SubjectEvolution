@@ -1,0 +1,49 @@
+{
+  "schema": "se-subject-vm-short-paired-study-contract-v1",
+  "decision_id": "subject-graph-vm-stage3c9-short-paired-study-v1",
+  "status": "implemented-engineering-data-generation",
+  "purpose": "Generate a small, short and no-permanent-retention paired dataset from independent shared checkpoints without extending the runtime credit chain.",
+  "source": {
+    "minimum_independent_seeds": 3,
+    "quiescent_checkpoint_required": true,
+    "empty_trace_live_write_and_evaluation_ledgers": true,
+    "fixed_bootstrap_profile_hashed_in_lineage": true,
+    "bootstrap_profile_is_evolved_topology": false
+  },
+  "bootstrap": {
+    "classification": "fixed-cognition-engineering-shaping-aid",
+    "universal_attention_claim": false,
+    "topology_mutation": false,
+    "permanent_retention": false
+  },
+  "paired_admission": {
+    "control_reservation_mirrors_live_target_and_window_budget": true,
+    "control_parameter_write": false,
+    "control_live_write_cost_charge": false,
+    "overlapping_target_admission_is_symmetric": true
+  },
+  "export_boundary": {
+    "execute_additional_semantic_ticks": false,
+    "pending_live_writes_restored_by_existing_cas_owner": true,
+    "pending_control_reservations_released": true,
+    "incomplete_windows_promoted_to_evidence": false,
+    "finalization_recorded_in_branch_lineage": true
+  },
+  "study": {
+    "default_seeds": [12301, 12302, 12303],
+    "source_ticks": 2,
+    "paired_horizon_ticks": 5,
+    "cpu_only": true,
+    "stage3c7_integrity_screen_required": true,
+    "stage3c8_component_report_required_when_screen_passes": true
+  },
+  "forbidden_conclusions": {
+    "scalar_objective": false,
+    "automatic_keep_or_revert": false,
+    "causal_effect_authorized": false,
+    "permanent_parameter_retention": false,
+    "learning_claim": false,
+    "attention_optimality_claim": false,
+    "subjecthood_claim": false
+  }
+}

@@ -26,7 +26,10 @@ from ..subject_vm.evaluation_export import (
     extract_completed_windows,
     pair_completed_windows,
 )
-from ..subject_vm.live_write import LIVE_WRITE_STATUS_PENDING
+from ..subject_vm.live_write import (
+    LIVE_WRITE_STATUS_PENDING,
+    LIVE_WRITE_STATUS_CONTROL_PENDING,
+)
 
 PAIRED_EVALUATION_PLAN_SCHEMA = "se-subject-vm-paired-evaluation-plan-v1"
 PAIRED_EVALUATION_BRANCH_SCHEMA = "se-subject-vm-paired-evaluation-branch-v1"
@@ -72,8 +75,16 @@ def _validate_quiescent_source(state: dict[str, Any]) -> None:
         raise ValueError("source checkpoint has active subject_vm evaluation windows")
     live_valid = np.asarray(live_arrays.get("entry_valid"), dtype=bool)
     live_status = np.asarray(live_arrays.get("status"), dtype=np.uint8)
-    if np.any(live_valid & (live_status == LIVE_WRITE_STATUS_PENDING)):
-        raise ValueError("source checkpoint has pending subject_vm live writes")
+    if np.any(
+        live_valid
+        & (
+            (live_status == LIVE_WRITE_STATUS_PENDING)
+            | (live_status == LIVE_WRITE_STATUS_CONTROL_PENDING)
+        )
+    ):
+        raise ValueError(
+            "source checkpoint has pending subject_vm live writes or control reservations"
+        )
     if np.any(np.asarray(live_arrays.get("row_locked"), dtype=bool)):
         raise ValueError("source checkpoint has locked subject_vm live-write rows")
     if np.any(eval_valid) or np.any(live_valid):
@@ -98,7 +109,8 @@ def _branch_config(source_cfg: Any, *, role: str, final_tick: int) -> Any:
 
 
 def build_plan(
-    source_checkpoint: str | Path, *, horizon_ticks: int
+    source_checkpoint: str | Path, *, horizon_ticks: int,
+    finalize_pending_transients_at_export: bool = False,
 ) -> dict[str, Any]:
     source_path = Path(source_checkpoint).resolve()
     metadata, state = read_checkpoint_bundle(source_path)
@@ -154,6 +166,9 @@ def build_plan(
         "branches": branches,
         "paired_randomness": True,
         "shared_checkpoint_required": True,
+        "finalize_pending_transients_at_export": bool(
+            finalize_pending_transients_at_export
+        ),
         "scalar_score": False,
         "automatic_keep_or_revert_decision": False,
         "causal_effect_authorized_by_plan": False,
@@ -196,6 +211,53 @@ def _branch_manifest(plan: dict[str, Any], role: str) -> dict[str, Any]:
         "source_checkpoint_state_sha256": plan["source"]["checkpoint_state_sha256"],
         "source_checkpoint_file_sha256": plan["source"]["checkpoint_file_sha256"],
     }
+
+
+def _finalize_pending_transients_at_export(
+    simulation: Simulation, *, final_tick: int
+) -> dict[str, Any]:
+    runtime = simulation.subject_vm
+    ledger = runtime.live_write_ledger
+    storage = runtime.storage
+    if ledger is None or storage is None:
+        raise ValueError("paired transient finalization requires live-write storage")
+    pending = ledger.entry_valid & ledger._pending_status_mask(ledger.status)
+    pending_slots = np.argwhere(pending)
+    if pending_slots.size == 0:
+        return {
+            "schema": "se-subject-vm-paired-transient-finalization-v1",
+            "boundary_tick": int(final_tick),
+            "pending_before": 0,
+            "rolled_back_transactions": 0,
+            "released_control_reservations": 0,
+            "failed_transactions": 0,
+            "new_ticks_executed": 0,
+        }
+    maximum_due = int(np.max(ledger.rollback_due_tick[pending]))
+    rows = np.unique(pending_slots[:, 0]).astype(np.int32)
+    control_before = int(
+        np.count_nonzero(
+            pending & (ledger.status == LIVE_WRITE_STATUS_CONTROL_PENDING)
+        )
+    )
+    usage = ledger.rollback_due(storage, rows=rows, tick=maximum_due)
+    remaining = ledger.entry_valid & ledger._pending_status_mask(ledger.status)
+    record = {
+        "schema": "se-subject-vm-paired-transient-finalization-v1",
+        "boundary_tick": int(final_tick),
+        "maximum_recorded_due_tick": maximum_due,
+        "pending_before": int(pending_slots.shape[0]),
+        "pending_after": int(np.count_nonzero(remaining)),
+        "rolled_back_transactions": int(usage.rolled_back_transactions),
+        "released_control_reservations": control_before,
+        "failed_transactions": int(usage.failed_transactions),
+        "new_ticks_executed": 0,
+        "evidence_from_finalized_incomplete_windows": False,
+    }
+    if record["pending_after"] or record["failed_transactions"]:
+        raise ValueError("paired transient finalization failed to restore quiescence")
+    simulation.checkpoint_lineage.append(record)
+    return record
 
 
 def run_plan(
@@ -248,6 +310,16 @@ def run_plan(
         sim._write_run_manifest(sim.requested_backend)
     control.run(until_tick=int(plan["final_tick"]))
     live.run(until_tick=int(plan["final_tick"]))
+    finalization = None
+    if bool(plan.get("finalize_pending_transients_at_export", False)):
+        finalization = {
+            "read-only-control": _finalize_pending_transients_at_export(
+                control, final_tick=int(plan["final_tick"])
+            ),
+            "guarded-live": _finalize_pending_transients_at_export(
+                live, final_tick=int(plan["final_tick"])
+            ),
+        }
     control_checkpoint = control.save_full_checkpoint(control_dir / "final.sechk")
     live_checkpoint = live.save_full_checkpoint(live_dir / "final.sechk")
     export = export_pair(
@@ -263,6 +335,7 @@ def run_plan(
         "read_only_control_checkpoint": str(control_checkpoint),
         "export": str(export_path),
         "paired_window_count": export["window_evidence"]["paired_window_count"],
+        "transient_finalization": finalization,
     }
 
 

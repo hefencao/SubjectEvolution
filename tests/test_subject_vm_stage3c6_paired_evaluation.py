@@ -231,6 +231,11 @@ def test_plan_freezes_shared_checkpoint_and_only_live_write_mode(tmp_path: Path)
         for item in plan["branches"]
     )
     assert plan == build_plan(source, horizon_ticks=3)
+    finalized = build_plan(
+        source, horizon_ticks=3, finalize_pending_transients_at_export=True
+    )
+    assert finalized["finalize_pending_transients_at_export"] is True
+    assert finalized["plan_sha256"] != plan["plan_sha256"]
 
 
 def test_plan_rejects_nonempty_source_ledgers(tmp_path: Path) -> None:

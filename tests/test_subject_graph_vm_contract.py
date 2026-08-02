@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c8-component-reproducibility-implemented"
+    assert contract["status"] == "stage-3c9-short-paired-study-implemented"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,7 +24,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3C-8"
+    assert contract["current_stage"] == "3C-9"
     assert contract["stage_2_contract"]["plasticity"] is False
     assert contract["stage_3a_contract"]["persistent_node_edge_path"] is False
     assert contract["stage_3a_contract"]["plasticity"] is False
@@ -81,6 +81,11 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["stage_3c8_contract"]["universal_scalar_objective"] is False
     assert contract["stage_3c8_contract"]["automatic_keep_or_revert_decision"] is False
     assert contract["stage_3c8_contract"]["permanent_write_authorized"] is False
+    assert contract["stage_3c9_contract"]["control_admission_parity"] is True
+    assert contract["stage_3c9_contract"]["fixed_bootstrap_graph_is_evolved_result"] is False
+    assert contract["stage_3c9_contract"]["export_boundary_transient_finalization"] is True
+    assert contract["stage_3c9_contract"]["incomplete_windows_are_evidence"] is False
+    assert contract["stage_3c9_contract"]["permanent_write_authorized"] is False
 
     reproducibility = _load(
         "protocols/decisions/subject_graph_vm_component_reproducibility_v1.json"

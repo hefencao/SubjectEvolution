@@ -22,11 +22,14 @@ from .storage import SubjectVMStorage
 from .transaction import SubjectVMShadowTransaction
 from .update_safety import PARAMETER_ARRAY_BY_FAMILY, SubjectVMUpdateSafetyProposal, target_is_live
 
-LIVE_WRITE_LEDGER_SCHEMA = "se-subject-vm-live-write-ledger-v1"
+LIVE_WRITE_LEDGER_SCHEMA_V1 = "se-subject-vm-live-write-ledger-v1"
+LIVE_WRITE_LEDGER_SCHEMA = "se-subject-vm-live-write-ledger-v2"
 LIVE_WRITE_STATUS_EMPTY = np.uint8(0)
 LIVE_WRITE_STATUS_PENDING = np.uint8(1)
 LIVE_WRITE_STATUS_ROLLED_BACK = np.uint8(2)
 LIVE_WRITE_STATUS_ROLLBACK_FAILED = np.uint8(3)
+LIVE_WRITE_STATUS_CONTROL_PENDING = np.uint8(4)
+LIVE_WRITE_STATUS_CONTROL_RELEASED = np.uint8(5)
 
 LIVE_WRITE_REASON_CODES = {
     "not-enabled": 0,
@@ -41,6 +44,7 @@ LIVE_WRITE_REASON_CODES = {
     "ledger-capacity": 9,
     "commit-rollback-failed": 10,
     "committed": 11,
+    "control-reserved": 12,
 }
 LIVE_WRITE_REASON_NAMES = tuple(
     name for name, _ in sorted(LIVE_WRITE_REASON_CODES.items(), key=lambda item: item[1])
@@ -52,6 +56,7 @@ class SubjectVMLiveWriteResult:
     requested: bool
     authorized: bool
     committed: bool
+    control_reserved: bool
     reason: int
     family_committed: np.ndarray
     pre_value: np.ndarray
@@ -103,6 +108,8 @@ class SubjectVMLiveWriteLedger:
         self.total_rolled_back_targets = 0
         self.total_rollback_failures = 0
         self.total_counted_cost_units = 0
+        self.total_control_reserved_transactions = 0
+        self.total_control_released_transactions = 0
 
     @staticmethod
     def _float32_bits(value: float | np.float32) -> int:
@@ -153,6 +160,7 @@ class SubjectVMLiveWriteLedger:
             "total_committed_transactions", "total_committed_targets",
             "total_rolled_back_transactions", "total_rolled_back_targets",
             "total_rollback_failures", "total_counted_cost_units",
+            "total_control_reserved_transactions", "total_control_released_transactions",
         ):
             setattr(result, name, int(getattr(self, name)))
         return result
@@ -164,14 +172,24 @@ class SubjectVMLiveWriteLedger:
             self.window_applied_targets[row] = np.uint32(0)
             self.window_abs_delta[row] = np.float32(0.0)
 
+    @staticmethod
+    def _pending_status_mask(status: np.ndarray) -> np.ndarray:
+        return (status == LIVE_WRITE_STATUS_PENDING) | (
+            status == LIVE_WRITE_STATUS_CONTROL_PENDING
+        )
+
     def _pending_count(self, row: int) -> int:
-        return int(np.count_nonzero(self.entry_valid[row] & (self.status[row] == LIVE_WRITE_STATUS_PENDING)))
+        return int(
+            np.count_nonzero(
+                self.entry_valid[row] & self._pending_status_mask(self.status[row])
+            )
+        )
 
     def _overlaps_pending(
         self, row: int, binding: SubjectVMTargetBindingProposal, proposed: np.ndarray
     ) -> bool:
         pending = np.flatnonzero(
-            self.entry_valid[row] & (self.status[row] == LIVE_WRITE_STATUS_PENDING)
+            self.entry_valid[row] & self._pending_status_mask(self.status[row])
         )
         for family in np.flatnonzero(proposed).tolist():
             kind = int(binding.target_kind[family])
@@ -189,7 +207,7 @@ class SubjectVMLiveWriteLedger:
         start = int(self.write_cursor[row]) % max(1, self.capacity)
         for offset in range(self.capacity):
             slot = (start + offset) % self.capacity
-            if not self.entry_valid[row, slot] or self.status[row, slot] != LIVE_WRITE_STATUS_PENDING:
+            if not self.entry_valid[row, slot] or not bool(self._pending_status_mask(np.asarray(self.status[row, slot]))):
                 return slot
         return None
 
@@ -213,6 +231,7 @@ class SubjectVMLiveWriteLedger:
                 requested=requested,
                 authorized=False,
                 committed=False,
+                control_reserved=False,
                 reason=LIVE_WRITE_REASON_CODES[reason],
                 family_committed=empty_bool.copy(),
                 pre_value=empty_float.copy(),
@@ -221,8 +240,7 @@ class SubjectVMLiveWriteLedger:
                 rollback_due_tick=-1,
                 counted_cost_units=0,
             )
-        if not self.cfg.enabled:
-            return reject("not-enabled")
+        control_mode = not bool(self.cfg.enabled)
         if not transaction.prepared or not transaction.rollback_verified:
             return reject("transaction-not-prepared")
         if self.row_locked[row]:
@@ -268,6 +286,43 @@ class SubjectVMLiveWriteLedger:
         if not valid:
             return reject(reason)
 
+        due = int(tick) + int(self.cfg.rollback_after_ticks)
+        if control_mode:
+            self.entry_valid[row, slot] = True
+            self.status[row, slot] = LIVE_WRITE_STATUS_CONTROL_PENDING
+            self.event_id[row, slot] = np.uint64(event_id)
+            self.applied_tick[row, slot] = np.int64(tick)
+            self.rollback_due_tick[row, slot] = np.int64(due)
+            self.family_applied[row, slot] = proposed
+            self.target_kind[row, slot] = binding.target_kind
+            self.target_index[row, slot] = binding.target_index
+            self.target_id[row, slot] = binding.target_id
+            self.pre_value[row, slot] = pre
+            self.post_value[row, slot] = post
+            self.commit_cost_units[row, slot] = np.uint32(0)
+            self.rollback_cost_units[row, slot] = np.uint32(0)
+            self.write_cursor[row] = np.uint16((slot + 1) % self.capacity)
+            self.window_applied_targets[row] = np.uint32(
+                int(self.window_applied_targets[row]) + target_count
+            )
+            self.window_abs_delta[row] = np.float32(
+                float(self.window_abs_delta[row]) + abs_delta
+            )
+            self.total_control_reserved_transactions += 1
+            return SubjectVMLiveWriteResult(
+                requested=True,
+                authorized=False,
+                committed=False,
+                control_reserved=True,
+                reason=LIVE_WRITE_REASON_CODES["control-reserved"],
+                family_committed=proposed.copy(),
+                pre_value=pre,
+                post_value=post,
+                ledger_slot=slot,
+                rollback_due_tick=due,
+                counted_cost_units=0,
+            )
+
         written: list[int] = []
         try:
             for family in np.flatnonzero(proposed).tolist():
@@ -288,7 +343,6 @@ class SubjectVMLiveWriteLedger:
                 self.row_locked[row] = True
             return reject("commit-rollback-failed")
 
-        due = int(tick) + int(self.cfg.rollback_after_ticks)
         self.entry_valid[row, slot] = True
         self.status[row, slot] = LIVE_WRITE_STATUS_PENDING
         self.event_id[row, slot] = np.uint64(event_id)
@@ -315,6 +369,7 @@ class SubjectVMLiveWriteLedger:
             requested=True,
             authorized=True,
             committed=True,
+            control_reserved=False,
             reason=LIVE_WRITE_REASON_CODES["committed"],
             family_committed=proposed.copy(),
             pre_value=pre,
@@ -331,11 +386,15 @@ class SubjectVMLiveWriteLedger:
         for row in np.asarray(rows, dtype=np.int32).tolist():
             slots = np.flatnonzero(
                 self.entry_valid[row]
-                & (self.status[row] == LIVE_WRITE_STATUS_PENDING)
+                & self._pending_status_mask(self.status[row])
                 & (self.rollback_due_tick[row] <= int(tick))
             )
             for slot in slots.tolist():
                 checked += 1
+                if self.status[row, slot] == LIVE_WRITE_STATUS_CONTROL_PENDING:
+                    self.status[row, slot] = LIVE_WRITE_STATUS_CONTROL_RELEASED
+                    self.total_control_released_transactions += 1
+                    continue
                 families = np.flatnonzero(self.family_applied[row, slot]).tolist()
                 valid = True
                 for family in families:
@@ -400,6 +459,8 @@ class SubjectVMLiveWriteLedger:
                 "total_rolled_back_targets": self.total_rolled_back_targets,
                 "total_rollback_failures": self.total_rollback_failures,
                 "total_counted_cost_units": self.total_counted_cost_units,
+                "total_control_reserved_transactions": self.total_control_reserved_transactions,
+                "total_control_released_transactions": self.total_control_released_transactions,
             },
         }
 
@@ -407,7 +468,7 @@ class SubjectVMLiveWriteLedger:
     def from_snapshot(
         cls, cfg: SubjectVMLiveWriteConfig, entity_capacity: int, payload: dict[str, Any]
     ) -> "SubjectVMLiveWriteLedger":
-        if payload.get("schema") != LIVE_WRITE_LEDGER_SCHEMA:
+        if payload.get("schema") not in {LIVE_WRITE_LEDGER_SCHEMA_V1, LIVE_WRITE_LEDGER_SCHEMA}:
             raise ValueError("unsupported subject_vm live-write ledger schema")
         result = cls(cfg, entity_capacity)
         if int(payload.get("entity_capacity", -1)) != result.entity_capacity or int(
@@ -425,6 +486,7 @@ class SubjectVMLiveWriteLedger:
             "total_committed_transactions", "total_committed_targets",
             "total_rolled_back_transactions", "total_rolled_back_targets",
             "total_rollback_failures", "total_counted_cost_units",
+            "total_control_reserved_transactions", "total_control_released_transactions",
         ):
             setattr(result, name, int(counters.get(name, 0)))
         return result
@@ -434,6 +496,12 @@ class SubjectVMLiveWriteLedger:
             "configured": True,
             "enabled": bool(self.cfg.enabled),
             "pending_transactions": int(np.count_nonzero(self.status == LIVE_WRITE_STATUS_PENDING)),
+            "control_pending_reservations": int(
+                np.count_nonzero(self.status == LIVE_WRITE_STATUS_CONTROL_PENDING)
+            ),
+            "control_released_reservations": int(
+                np.count_nonzero(self.status == LIVE_WRITE_STATUS_CONTROL_RELEASED)
+            ),
             "rolled_back_transactions": int(np.count_nonzero(self.status == LIVE_WRITE_STATUS_ROLLED_BACK)),
             "rollback_failed_transactions": int(np.count_nonzero(self.status == LIVE_WRITE_STATUS_ROLLBACK_FAILED)),
             "locked_rows": int(np.count_nonzero(self.row_locked)),
@@ -443,12 +511,17 @@ class SubjectVMLiveWriteLedger:
             "total_rolled_back_targets": self.total_rolled_back_targets,
             "total_rollback_failures": self.total_rollback_failures,
             "total_counted_cost_units": self.total_counted_cost_units,
+            "total_control_reserved_transactions": self.total_control_reserved_transactions,
+            "total_control_released_transactions": self.total_control_released_transactions,
         }
 
 
 __all__ = [
-    "LIVE_WRITE_LEDGER_SCHEMA", "LIVE_WRITE_REASON_CODES", "LIVE_WRITE_REASON_NAMES",
-    "LIVE_WRITE_STATUS_EMPTY", "LIVE_WRITE_STATUS_PENDING", "LIVE_WRITE_STATUS_ROLLED_BACK",
-    "LIVE_WRITE_STATUS_ROLLBACK_FAILED", "SubjectVMLiveWriteLedger",
+    "LIVE_WRITE_LEDGER_SCHEMA", "LIVE_WRITE_LEDGER_SCHEMA_V1",
+    "LIVE_WRITE_REASON_CODES", "LIVE_WRITE_REASON_NAMES",
+    "LIVE_WRITE_STATUS_EMPTY", "LIVE_WRITE_STATUS_PENDING",
+    "LIVE_WRITE_STATUS_ROLLED_BACK", "LIVE_WRITE_STATUS_ROLLBACK_FAILED",
+    "LIVE_WRITE_STATUS_CONTROL_PENDING", "LIVE_WRITE_STATUS_CONTROL_RELEASED",
+    "SubjectVMLiveWriteLedger",
     "SubjectVMLiveWriteResult", "SubjectVMLiveWriteRollbackUsage",
 ]

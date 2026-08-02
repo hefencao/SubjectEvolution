@@ -1,0 +1,56 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_short_paired_v1"
+title = "D1-Z Subject VM short paired infrastructure study"
+
+[parameters.config]
+type = "path"
+default = "configs/mvp_short_subject_vm_stage3c8_paired_study.json"
+description = "Frozen Stage-3C-5 source configuration with the explicit fixed bootstrap profile."
+
+[parameters.seeds]
+type = "csv-int"
+default = "12301,12302,12303"
+description = "Three independent source seeds."
+
+[parameters.source_ticks]
+type = "int"
+default = 2
+minimum = 0
+maximum = 16
+description = "Ticks before the quiescent shared source checkpoint."
+
+[parameters.horizon_ticks]
+type = "int"
+default = 5
+minimum = 3
+maximum = 16
+description = "Short paired branch horizon before export-boundary transient finalization."
+
+[parameters.bootstrap_subjects]
+type = "int"
+default = 16
+minimum = 1
+maximum = 64
+description = "Lowest stable subject IDs receiving the explicit fixed bootstrap graph."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_short_paired_v1/pilot"
+description = "Source checkpoints, paired branches and Stage-3C-7/8 reports."
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_short_paired_v1_results.zip"
+description = "External compact review bundle."
+
+[steps.run-short-paired-study]
+description = "Generate three short paired branches with no permanent parameter retention."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "{source_ticks}", "--horizon-ticks", "{horizon_ticks}", "--bootstrap-subjects", "{bootstrap_subjects}", "--backend", "cpu", "--output", "{analysis_root}", "--overwrite"]
+
+[steps.pack-results]
+description = "Package the study definition and derived Stage-3C evidence for review."
+requires_json = [
+  { path = "{analysis_root}/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/study_report.json", field = "permanent_parameter_retention_authorized", equals = false },
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "{analysis_root}", "--required-file", "{analysis_root}/study_report.json", "--output", "{output}"]
