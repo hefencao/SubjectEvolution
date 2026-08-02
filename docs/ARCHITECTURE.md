@@ -1469,3 +1469,14 @@ Stage 3C-5 remains under `src/se/subject_vm/`. `evaluation.py` exclusively owns 
 Both guarded-live and read-only-control arms store the same fixed 21-dimensional fact sum, absolute sum and maximum-absolute vectors, observation/action-result counts, stable target metadata and rollback integrity. No scalar score, fixed weighting, reward, utility, valence, keep/revert decision or automatic counterfactual exists in this layer. A control window does not mutate parameters; a live window cannot be called complete before verified rollback.
 
 The evaluation ledger is independent of graph node/edge capacity and full execution paths. Birth starts empty, death clears rows, compaction moves stable ownership, clone/checkpoint preserve committed window state, and v0.118 runtime payloads rebuild empty Stage 3C-5 metadata. Registration and observation costs are count-only diagnostics and never debit entity energy. Future paired comparison must be implemented as a separate branch/export contract rather than hidden inside the runtime ledger.
+
+
+### Stage 3C-6 — shared-checkpoint branch identity and score-free export (implemented in v0.120)
+
+Stage 3C-6 is deliberately outside the authoritative Subject VM runtime lifecycle. `subject_vm/evaluation_export.py` is a pure snapshot-to-record adapter; `analysis/subject_vm_paired_evaluation.py` owns trusted-checkpoint validation, branch-plan identity, branch execution and portable export. Neither module owns activation, eligibility, live writes, rollback or parameter retention.
+
+A source checkpoint is eligible only when the Stage-3C-5 evaluation and Stage-3C-4 live-write ledgers are empty, with no active windows, pending writes or locked rows. The plan binds checkpoint file/state/config hashes, source tick, common final tick and two branch IDs. Branch IDs hash source state, branch role, branch configuration and final tick. The only permitted configuration difference is `subject_vm.live_write.enabled`; all other state begins from the same checkpoint and stable-ID-keyed randomness remains unchanged.
+
+Branch identity is appended to checkpoint lineage. Export revalidates plan checksum, source identity, final tick, branch configuration hash and lineage identity before reading evidence. Only completed rollback-verified guarded-live windows and completed read-only-control windows are eligible. Pair keys exclude branch mode but include stable subject, source event, window bounds, target metadata and exact candidate-update contract. Unpaired windows remain explicit.
+
+The exported difference is component-wise and descriptive. There is no objective scalar, coordinate weighting, automatic causal authorization, keep/revert instruction or permanent parameter write. Stage 3C-6 adds no runtime state schema and therefore requires no Subject VM checkpoint migration.

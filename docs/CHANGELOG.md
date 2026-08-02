@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.120.0
+
+- Adds Subject VM Stage 3C-6 shared-checkpoint paired-evaluation planning, execution and export.
+- Requires a trusted quiescent source checkpoint with empty evaluation/live-write ledgers, no pending writes and no locked rows.
+- Freezes guarded-live and read-only-control branch identities against source state hash, exact final tick and canonical branch configuration.
+- Permits only `subject_vm.live_write.enabled` to differ between the two branch contracts.
+- Persists branch identity and plan hash in final checkpoint lineage and verifies them during export.
+- Extracts only completed, rollback-verified Stage-3C-5 windows and pairs them by stable subject, source event, window and target/update contract.
+- Emits component-wise objective differences while preserving unpaired windows and explicit pairing loss.
+- Defines no scalar score, fixed value weighting, automatic keep/revert decision, permanent parameter retention or automatic causal claim.
+- Adds the `se-subject-vm-paired-evaluation` plan/run/export command.
+
 ## 0.119.0
 
 - Adds Subject VM Stage 3C-5 fixed-capacity objective evaluation windows.

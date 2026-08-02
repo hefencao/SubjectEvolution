@@ -465,3 +465,12 @@ Stage 3C-5 可以在 guarded-live 和 read-only control 两种模式下保存同
 因此本版本禁止 scalar score、固定坐标权重、reward、utility、valence 和自动 keep/revert。实时窗口必须在参数精确回滚后才完成；控制窗口在相同 horizon 完成但从不写参数。记录仅为以后共享 checkpoint、显式分支身份、环境扰动控制和成本匹配的 paired experiment 提供结构化证据。
 
 下一开放问题不是“哪个客观坐标越大越好”，而是如何导出和配对完成窗口，同时保持随机数、外部环境、主体身份和干预时间可比较。完成该实验合同之前，窗口差异不能被描述为学习效果、适应优势、主观价值或主体性。
+
+
+## v0.120：共享 checkpoint 与分支身份仍不自动产生价值或因果结论
+
+Stage 3C-6 修复了 v0.119 单臂窗口无法构造反事实的问题：guarded-live 与 read-only-control 明确从同一可信、静止 checkpoint 分支，并绑定 source state hash、branch config、role 和 final tick。导出只配对完成且 rollback-verified 的窗口，并保留未配对记录和逐坐标差异。
+
+但共享起点并不等于每个窗口都具有有效因果解释。分支可能因临时参数变化导致后续对象接触、出生死亡、事件数量和目标主体集合分化；窗口缺失、配对损失、裁剪和回滚失败本身都是证据，不能被静默过滤。逐坐标 live-minus-control 也不是主观价值函数，更不能自动决定保留参数。
+
+下一开放问题是建立有界的 paired-evidence adequacy/integrity assessment：报告配对覆盖率、未配对原因、branch divergence、rollback integrity、事实裁剪和计数成本匹配，并通过多个独立共享-checkpoint pair 检查稳定性。该评估仍不得生成通用 scalar reward 或自动 keep/revert。

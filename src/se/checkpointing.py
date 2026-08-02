@@ -110,6 +110,11 @@ def _stored_dataclass_payload(value: Any) -> Any:
     return value
 
 
+def config_sha256(config: Any) -> str:
+    """Return the canonical checkpoint-compatible configuration identity."""
+    return _config_sha256(config)
+
+
 def _stored_config_sha256(config: Any) -> str:
     stored_payload = _stored_dataclass_payload(config)
     if isinstance(stored_payload, dict):
@@ -196,6 +201,7 @@ def read_checkpoint_bundle(path: str | Path) -> tuple[dict[str, Any], dict[str, 
 __all__ = [
     "CHECKPOINT_SCHEMA",
     "CheckpointError",
+    "config_sha256",
     "read_checkpoint_bundle",
     "write_checkpoint_bundle",
 ]

@@ -79,6 +79,13 @@ from .config import (
     strip_disabled_subject_vm_section,
     validate_subject_vm_config,
 )
+from .evaluation_export import (
+    PAIRED_WINDOW_EXPORT_SCHEMA,
+    PAIRED_WINDOW_RECORD_SCHEMA,
+    extract_completed_windows,
+    pair_completed_windows,
+    window_pair_key,
+)
 from .evaluation import (
     EVALUATION_LEDGER_SCHEMA,
     EVALUATION_MODE_GUARDED_LIVE,
@@ -286,6 +293,8 @@ __all__ = [
     "TRANSACTION_REASON_CODES",
     "TRANSACTION_REASON_NAMES",
     "LIVE_WRITE_LEDGER_SCHEMA",
+    "PAIRED_WINDOW_EXPORT_SCHEMA",
+    "PAIRED_WINDOW_RECORD_SCHEMA",
     "EVALUATION_LEDGER_SCHEMA",
     "EVALUATION_MODE_GUARDED_LIVE",
     "EVALUATION_MODE_READ_ONLY_CONTROL",
@@ -311,6 +320,9 @@ __all__ = [
     "propose_modulation",
     "propose_safe_parameter_deltas",
     "prepare_shadow_transaction",
+    "extract_completed_windows",
+    "pair_completed_windows",
+    "window_pair_key",
     "load_subject_vm_config",
     "snapshot_pre_activation_target_candidates",
     "strip_disabled_subject_vm_section",

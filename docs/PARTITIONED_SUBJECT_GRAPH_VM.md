@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
 Status: **Stage 3C-5 CPU-reference score-free objective evaluation windows implemented; no automatic keep/revert decision**
-Project version: **0.119.0**
+Project version: **0.120.0**
 
 ## 1. Decision
 
@@ -523,3 +523,14 @@ Stage 3C-5 不在主体内部判断短窗口更新是否“更好”。同一准
 每个窗口只保存逐维事实累计、绝对累计、最大绝对值、观察数量、行动成功/失败数量、裁剪计数、稳定目标和 rollback integrity。它不保存完整激活路径，不生成 scalar score、reward、utility、valence、keep/revert 决策，也不在 runtime 内自动合成反事实。
 
 真实因果比较仍需以后从同一 checkpoint 建立显式 paired branch，并携带分支身份、成本和环境扰动合同。当前证据只说明两个臂可以用同一结构收集有界证据；不能说明候选更新有效、有益或应永久保留。
+
+
+## v0.120：Stage 3C-6 只在外部共享 checkpoint 合同中配对窗口
+
+Stage 3C-6 不把 paired comparison 塞回主体运行时。`subject_vm/evaluation_export.py` 只负责把已经完成的 Stage 3C-5 窗口转换为稳定记录和模式无关的 pair key；`analysis/subject_vm_paired_evaluation.py` 负责可信 checkpoint、分支身份、运行与导出。
+
+源 checkpoint 必须处于静止边界：没有 active evaluation window、pending live write、locked row，也不允许携带旧 evaluation/live-write 条目。计划记录 checkpoint 文件哈希、状态哈希、配置哈希、源 tick 和共同 final tick。guarded-live 与 read-only-control 两支只允许 `subject_vm.live_write.enabled` 不同，branch ID 同时绑定 source state、role、branch config 和 final tick，并写入最终 checkpoint lineage。
+
+导出器只接受与计划匹配的两个最终 checkpoint。guarded-live 窗口必须是 verified rollback 后的完成状态，control 窗口必须是只读完成状态。配对依据稳定 subject、source event、窗口时间、目标族、稳定 target、pre/projected value 和 bounded delta；未配对窗口不会丢弃。输出可以包含逐坐标 live-minus-control 差异，但不产生 scalar score、固定坐标权重、keep/revert 指令、永久写入授权或自动因果结论。
+
+该合同的作用是让后续工程审计能够区分“窗口数据存在”与“有效 paired evidence 存在”。它仍不证明 bootstrap 关联、目标绑定或参数方向具有因果正确性。

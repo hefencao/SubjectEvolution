@@ -1,0 +1,57 @@
+{
+  "schema": "se-subject-vm-decision-v1",
+  "decision_id": "subject-graph-vm-paired-evaluation-export-v1",
+  "release": "0.120.0",
+  "status": "accepted-engineering-stage-only",
+  "scope": "Create explicit guarded-live and read-only-control branches from one trusted quiescent checkpoint and export completed Stage-3C-5 windows without scalarization, automatic retention, or runtime-internal causal judgment.",
+  "source_checkpoint": {
+    "trusted_project_checkpoint_required": true,
+    "checkpoint_file_sha256_recorded": true,
+    "checkpoint_state_sha256_recorded": true,
+    "checkpoint_config_sha256_recorded": true,
+    "exact_source_tick_recorded": true,
+    "active_evaluation_windows_allowed": false,
+    "pending_live_writes_allowed": false,
+    "locked_live_write_rows_allowed": false,
+    "preexisting_evaluation_or_live_write_entries_allowed": false
+  },
+  "branch_identity": {
+    "roles": [
+      "guarded-live",
+      "read-only-control"
+    ],
+    "shared_checkpoint_required": true,
+    "only_authorized_config_difference": "subject_vm.live_write.enabled",
+    "same_final_tick_required": true,
+    "paired_randomness_preserved": true,
+    "branch_id_binds_source_state_role_config_and_final_tick": true,
+    "branch_identity_persisted_in_checkpoint_lineage": true
+  },
+  "export": {
+    "completed_live_status_required": "complete-live-rolled-back",
+    "completed_control_status_required": "complete-control",
+    "rollback_verification_required": true,
+    "pair_key_fields": [
+      "stable subject identity",
+      "source event identity",
+      "window ticks",
+      "target family and stable target identity",
+      "pre/projected values and bounded delta"
+    ],
+    "componentwise_fact_differences": true,
+    "unpaired_windows_preserved": true,
+    "objective_scalar_score": false,
+    "fixed_value_weights": false,
+    "automatic_keep_or_revert_decision": false,
+    "permanent_write_authorized": false
+  },
+  "scientific_boundary": {
+    "shared_checkpoint_and_branch_identity_verified": true,
+    "componentwise_difference_is_not_subjective_value": true,
+    "causal_effect_claim_automatic": false,
+    "learning_claim": false,
+    "adaptation_claim": false,
+    "subjecthood_claim": false,
+    "epoch_one_qualification": false
+  }
+}

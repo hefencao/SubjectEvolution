@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c5-objective-evaluation-window-cpu-reference-implemented"
+    assert contract["status"] == "stage-3c6-paired-evaluation-export-implemented"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -62,6 +62,12 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["stage_3c5_contract"]["automatic_keep_or_revert_decision"] is False
     assert contract["stage_3c5_contract"]["live_completion_requires_verified_rollback"] is True
     assert contract["stage_3c5_contract"]["new_parameter_write"] is False
+    assert contract["stage_3c6_contract"]["source_checkpoint_must_be_quiescent"] is True
+    assert contract["stage_3c6_contract"]["only_authorized_config_difference"] == "subject_vm.live_write.enabled"
+    assert contract["stage_3c6_contract"]["componentwise_fact_differences"] is True
+    assert contract["stage_3c6_contract"]["objective_scalar_score"] is False
+    assert contract["stage_3c6_contract"]["automatic_keep_or_revert_decision"] is False
+    assert contract["stage_3c6_contract"]["permanent_write_authorized"] is False
 
     evaluation = _load(
         "protocols/decisions/subject_graph_vm_objective_evaluation_window_v1.json"
