@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.127.0**
+Version: **0.128.0**
 
 ## Current scientific task
 
-Version 0.127 implements **Subject VM Stage 3C-13: temporary parameter exposure adequacy audit**.
+Version 0.128 implements **Subject VM Stage 3C-14: fixed-bootstrap parameter-family reachability audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -56,6 +56,15 @@ The current result classifies the original three-source run as an engineering pi
 
 The v0.110 single-owner rule remains unchanged. Subject VM is the sole optional action-potential residual owner when enabled; legacy knowledge/latent/working-memory routes remain fixed-cognition comparison baselines and cannot coexecute on the primary path.
 
+
+Stage 3C-14 changes only the fixed-bootstrap one-hot modulation target route. The baseline writes the graph-produced target coordinate to token port 23 and therefore proposes `node_bias`; the alternative writes the same activation to token port 25 and therefore proposes `node_output_gate`. Both coordinates are excluded from association similarity, both families bind the same locally eligible node, and the nine-source panel, 32 entities, 16 bootstrap subjects, source tick 2, eight-tick branch horizon, exposure duration 3, bounded delta, rollback and score-free aggregation remain fixed.
+
+The assessment anchors both arms before bootstrap. For every seed, pre-bootstrap checkpoint state/config hashes and selected stable subjects are identical. The two bootstrap profiles differ only in the authorized target-family route. Read-only control action potentials, sampled probabilities, actions, resolutions and objective facts are identical across arms; thought tokens differ only by relocating the same target weight from port 23 to port 25. The control-side token/association/eligibility funnel is also identical, so target-family role rather than source or addressing drift is isolated.
+
+The nine-source comparison reaches both families: each arm produces 722 family proposals and 144 temporary commits, 141 completed paired windows, pairing coverage 1.0, zero rollback failures, zero fact clipping, matched evaluation costs and exact parameter restoration in 9/9 sources. `node_output_gate` produces 287 action-potential and 291 probability-difference events versus 423 and 426 for `node_bias`; discrete-action differences are 1 versus 2, but both arms diverge in only 1/9 source and both remain 0/21 stable objective coordinates. Parameter role therefore changes short-term continuous visibility, but opening a second reachable family does not create cross-source objective stability.
+
+A preliminary `node_bias -> node_input_gate` comparison was rejected before becoming a scientific arm: node 0 reads the `constant-one` input port, so a bias delta and an input-gate delta are algebraically equivalent in this fixed bootstrap. This is recorded as an experiment-design diagnostic, not as evidence that the two parameter families are generally equivalent. Stage 3C-14 does not rank families by value, authorize permanent retention, validate causal credit or establish learning.
+
 ## Engineering status
 
 Implemented and tested:
@@ -79,6 +88,8 @@ Implemented and tested:
 - Stage-3C-10 source/subject funnel, update magnitude and exposure, association/eligibility quality, branch divergence, trace-retention coverage and aggregation-sensitivity diagnostics;
 - Stage-3C-11 independent-source prefix sensitivity, source-level divergence incidence and sample-adequacy assessment without pseudoreplication;
 - Stage-3C-12 horizon-only comparison with identical source states, exact semantic prefix identity and complete bounded-trace coverage;
+- Stage-3C-13 exposure-only comparison with identical source checkpoints, synchronized control reservation and read-only behavior identity;
+- Stage-3C-14 fixed-bootstrap target-family reachability comparison with pre-bootstrap identity, authorized token relocation and rejected-degeneracy recording;
 - v0.123 trace/checkpoint compatibility for the new bounded diagnostic fields;
 - explicit guarded-live/read-only branch identities bound to source state, branch config and final tick;
 - branch identity persistence in final checkpoint lineage;
@@ -100,7 +111,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-13 classifies the exposure-only comparison as engineering evidence without authorizing retention or Epoch 1.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-14 classifies the fixed-bootstrap family-route comparison as engineering evidence without authorizing retention or Epoch 1.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -126,4 +137,4 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-The next authorized boundary is a separately versioned, single-variable fixed-bootstrap parameter-family reachability comparison while holding the nine-source panel, 32 entities, eight-tick horizon, `rollback_after_ticks=3`, bounded delta and permanent rollback constant. Stage 3C-13 shows that nearly doubling effective temporary exposure increases continuous action-potential/probability differences without increasing discrete-action crossings. The next adjustment must remain an explicit replaceable shaping aid with no value semantics and must not simultaneously change topology evolution, delta scale, entity count, permanent retention, scalar value construction, a complete general-attention replacement or Epoch 1 qualification.
+The next authorized boundary must use the Stage 3C-14 result rather than assuming that family breadth alone solves sparse visibility. `node_output_gate` is reachable and mechanically active, yet it produces fewer continuous differences and no broader source incidence than `node_bias`. A later single-variable study may examine one non-degenerate fixed-bootstrap input/addressing factor or one bounded step-scale factor, but it must not combine that change with family routing, horizon, exposure, entity count, topology evolution, permanent retention, scalar value construction, a complete general-attention replacement or Epoch 1 qualification.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.128.0
+
+- Adds Subject VM Stage 3C-14 fixed-bootstrap parameter-family reachability assessment.
+- Extends the short paired study runner with an explicit, checksum-visible bootstrap target-family route and pre-bootstrap source identity records.
+- Compares isolated `node_bias` and `node_output_gate` one-hot routes on the frozen nine-source, eight-tick, exposure-three CPU panel.
+- Records and rejects the algebraically degenerate `node_bias` versus constant-one `node_input_gate` pilot before scientific interpretation.
+- Keeps permanent retention, scalar objectives, topology evolution, universal-attention claims and Epoch 1 entry disabled.
+
 ## 0.127.0
 
 - Adds Subject VM Stage 3C-13 temporary-parameter-exposure adequacy assessment.

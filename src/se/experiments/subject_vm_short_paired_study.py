@@ -26,6 +26,7 @@ from ..analysis.subject_vm_paired_evaluation import build_plan, run_plan
 from ..analysis.subject_vm_paired_evidence import assess_exports
 from ..analysis.subject_vm_stage3c10_diagnostics import assess_stage3c10_diagnostics
 from ..cfg import load_config
+from ..checkpointing import read_checkpoint_bundle
 from ..runtime.sim import Simulation
 from ..subject_vm import (
     LOCAL_ELIGIBILITY_FLAG,
@@ -44,6 +45,11 @@ BOOTSTRAP_LINEAGE_SCHEMA = "se-subject-vm-bootstrap-lineage-v1"
 # trajectories likely to contain non-zero contrasts.
 _BOOTSTRAP_TRACE_PORTS = (-1, 31, 0, 1, 2, 5, 6, 23)
 _BOOTSTRAP_TRACE_GATES = (0.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.25, 1.0)
+_BOOTSTRAP_TARGET_FAMILY_PORTS = {
+    "node_bias": 23,
+    "node_input_gate": 24,
+    "node_output_gate": 25,
+}
 
 
 @dataclass(frozen=True)
@@ -54,6 +60,7 @@ class ShortPairedStudyParameters:
     bootstrap_subjects: int = 16
     backend: str = "auto"
     rollback_after_ticks: int | None = None
+    bootstrap_target_family: str = "node_bias"
 
     def validate(self) -> None:
         if len(self.seeds) < 3:
@@ -76,6 +83,10 @@ class ShortPairedStudyParameters:
             self.rollback_after_ticks
         ) < 1:
             raise ValueError("rollback_after_ticks must be positive when provided")
+        if self.bootstrap_target_family not in _BOOTSTRAP_TARGET_FAMILY_PORTS:
+            raise ValueError(
+                "bootstrap_target_family must be node_bias, node_input_gate, or node_output_gate"
+            )
 
 
 def _canonical_sha256(payload: Any) -> str:
@@ -91,7 +102,10 @@ def _sha256_file(path: str | Path) -> str:
     return digest.hexdigest()
 
 
-def bootstrap_profile() -> dict[str, Any]:
+def bootstrap_profile(*, target_family: str = "node_bias") -> dict[str, Any]:
+    if target_family not in _BOOTSTRAP_TARGET_FAMILY_PORTS:
+        raise ValueError("unsupported fixed bootstrap target family")
+    target_port = int(_BOOTSTRAP_TARGET_FAMILY_PORTS[target_family])
     payload = {
         "schema": BOOTSTRAP_GRAPH_PROFILE_SCHEMA,
         "classification": "fixed-cognition-bootstrap-for-short-data-generation",
@@ -110,7 +124,7 @@ def bootstrap_profile() -> dict[str, Any]:
                 "output_port": 0,
                 "output_gate": 1.5,
                 "local_eligibility": True,
-                "target_family": "node-bias-via-token-port-23",
+                "target_family": f"{target_family.replace(chr(95), chr(45))}-via-token-port-{target_port}",
             },
             {"index": 1, "input_port": 0, "trace_port": 31, "trace_gate": 1.0},
             {"index": 2, "input_port": 0, "trace_port": 0, "trace_gate": 1.0},
@@ -118,7 +132,7 @@ def bootstrap_profile() -> dict[str, Any]:
             {"index": 4, "input_port": 0, "trace_port": 2, "trace_gate": 1.0},
             {"index": 5, "input_port": 0, "trace_port": 5, "trace_gate": 0.5},
             {"index": 6, "input_port": 0, "trace_port": 6, "trace_gate": 0.25},
-            {"index": 7, "input_port": 0, "trace_port": 23, "trace_gate": 1.0},
+            {"index": 7, "input_port": 0, "trace_port": target_port, "trace_gate": 1.0},
         ],
         "edges": [
             {
@@ -130,6 +144,12 @@ def bootstrap_profile() -> dict[str, Any]:
                 "bandwidth": 2.0,
             }
         ],
+        "target_family_shaping": {
+            "family": target_family,
+            "token_port": target_port,
+            "classification": "replaceable-fixed-bootstrap-routing-bias",
+            "value_semantics": None,
+        },
         "objective_value_interpretation": None,
         "reward": None,
     }
@@ -187,7 +207,7 @@ def _assert_quiescent_runtime(simulation: Simulation) -> None:
 
 
 def prime_fixed_bootstrap_graph(
-    simulation: Simulation, *, bootstrap_subjects: int
+    simulation: Simulation, *, bootstrap_subjects: int, target_family: str = "node_bias"
 ) -> dict[str, Any]:
     """Install the explicit fixed bootstrap graph into a quiescent source.
 
@@ -219,8 +239,11 @@ def prime_fixed_bootstrap_graph(
     storage.node_eligibility_gate[rows, 0] = np.float32(1.0)
     storage.node_plasticity_flags[rows, 0] = np.uint8(LOCAL_ELIGIBILITY_FLAG)
 
+    if target_family not in _BOOTSTRAP_TARGET_FAMILY_PORTS:
+        raise ValueError("unsupported fixed bootstrap target family")
+    trace_ports = (*_BOOTSTRAP_TRACE_PORTS[:-1], _BOOTSTRAP_TARGET_FAMILY_PORTS[target_family])
     for node, (port, gate) in enumerate(
-        zip(_BOOTSTRAP_TRACE_PORTS, _BOOTSTRAP_TRACE_GATES, strict=True)
+        zip(trace_ports, _BOOTSTRAP_TRACE_GATES, strict=True)
     ):
         if port >= 0:
             storage.node_trace_port[rows, node] = np.int16(port)
@@ -240,7 +263,7 @@ def prime_fixed_bootstrap_graph(
         simulation.entities.primary_subject_id,
     )
 
-    profile = bootstrap_profile()
+    profile = bootstrap_profile(target_family=target_family)
     record = {
         "schema": BOOTSTRAP_LINEAGE_SCHEMA,
         "profile_sha256": profile["profile_sha256"],
@@ -286,7 +309,7 @@ def run_short_paired_study(
         raise FileNotFoundError(config_source)
     root = Path(output_dir).expanduser().resolve()
     _prepare_output_root(root, overwrite=overwrite)
-    profile = bootstrap_profile()
+    profile = bootstrap_profile(target_family=parameters.bootstrap_target_family)
     _write_json(root / "bootstrap_profile.json", profile)
     resolved_backend = "cpu" if parameters.backend == "auto" else parameters.backend
     base_cfg = load_config(config_source)
@@ -303,8 +326,15 @@ def run_short_paired_study(
         simulation = Simulation(cfg, source_root, backend=resolved_backend)
         for _ in range(int(parameters.source_ticks)):
             simulation.step()
+        _assert_quiescent_runtime(simulation)
+        pre_bootstrap_checkpoint = simulation.save_full_checkpoint(
+            source_root / "source_pre_bootstrap.sechk"
+        )
+        pre_bootstrap_metadata, _ = read_checkpoint_bundle(pre_bootstrap_checkpoint)
         lineage = prime_fixed_bootstrap_graph(
-            simulation, bootstrap_subjects=parameters.bootstrap_subjects
+            simulation,
+            bootstrap_subjects=parameters.bootstrap_subjects,
+            target_family=parameters.bootstrap_target_family,
         )
         _assert_quiescent_runtime(simulation)
         source_checkpoint = simulation.save_full_checkpoint(
@@ -334,6 +364,10 @@ def run_short_paired_study(
         seed_records.append(
             {
                 "seed": int(seed),
+                "pre_bootstrap_checkpoint": str(pre_bootstrap_checkpoint.resolve()),
+                "pre_bootstrap_checkpoint_file_sha256": _sha256_file(pre_bootstrap_checkpoint),
+                "pre_bootstrap_checkpoint_state_sha256": str(pre_bootstrap_metadata["state_sha256"]),
+                "pre_bootstrap_checkpoint_config_sha256": str(pre_bootstrap_metadata["config_sha256"]),
                 "source_checkpoint": str(source_checkpoint.resolve()),
                 "source_checkpoint_file_sha256": _sha256_file(source_checkpoint),
                 "source_checkpoint_state_sha256": plan["source"][
@@ -482,6 +516,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--horizon-ticks", type=int, default=5)
     parser.add_argument("--bootstrap-subjects", type=int, default=16)
     parser.add_argument("--rollback-after-ticks", type=int)
+    parser.add_argument(
+        "--bootstrap-target-family",
+        choices=tuple(_BOOTSTRAP_TARGET_FAMILY_PORTS),
+        default="node_bias",
+    )
     parser.add_argument("--backend", choices=("auto", "cpu"), default="auto")
     parser.add_argument("--output", required=True)
     parser.add_argument("--overwrite", action="store_true")
@@ -499,6 +538,7 @@ def main() -> None:
             bootstrap_subjects=args.bootstrap_subjects,
             backend=args.backend,
             rollback_after_ticks=args.rollback_after_ticks,
+            bootstrap_target_family=args.bootstrap_target_family,
         ),
         output_dir=args.output,
         overwrite=args.overwrite,

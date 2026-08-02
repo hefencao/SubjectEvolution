@@ -1,0 +1,67 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c14_family_reachability_v1"
+title = "D1-Z Subject VM Stage 3C-14 fixed-bootstrap family reachability audit"
+
+[parameters.config]
+type = "path"
+default = "configs/mvp_short_subject_vm_stage3c8_paired_study.json"
+description = "Unchanged fixed-bootstrap paired source configuration."
+
+[parameters.seeds]
+type = "csv-int"
+default = "12301,12302,12303,12304,12305,12306,12307,12308,12309"
+description = "The frozen nine independent-source panel."
+
+[parameters.source_ticks]
+type = "int"
+default = 2
+minimum = 0
+maximum = 16
+description = "Unchanged source checkpoint tick."
+
+[parameters.horizon_ticks]
+type = "int"
+default = 8
+minimum = 4
+maximum = 8
+description = "Unchanged trace-safe branch horizon."
+
+[parameters.bootstrap_subjects]
+type = "int"
+default = 16
+minimum = 1
+maximum = 64
+description = "Unchanged fixed-bootstrap stable-subject count."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c14_family_reachability_v1/final"
+description = "Separate node-bias and node-output-gate arms plus the Stage-3C-14 comparison."
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c14_family_reachability_v1_results.zip"
+description = "Compact study result bundle, separate from the project release archive."
+
+[steps.run-node-bias]
+description = "Run the fixed nine-source panel with one-hot routing to node bias."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "{source_ticks}", "--horizon-ticks", "{horizon_ticks}", "--bootstrap-subjects", "{bootstrap_subjects}", "--rollback-after-ticks", "3", "--bootstrap-target-family", "node_bias", "--backend", "cpu", "--output", "{analysis_root}/node_bias", "--overwrite"]
+
+[steps.run-node-output-gate]
+description = "Run the identical panel with one-hot routing to node output gate."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "{source_ticks}", "--horizon-ticks", "{horizon_ticks}", "--bootstrap-subjects", "{bootstrap_subjects}", "--rollback-after-ticks", "3", "--bootstrap-target-family", "node_output_gate", "--backend", "cpu", "--output", "{analysis_root}/node_output_gate", "--overwrite"]
+
+[steps.assess-family-reachability]
+description = "Verify pre-bootstrap identity and compare the isolated target-family substitution."
+command = ["se-subject-vm-stage3c14-family-reachability", "--baseline-study-report", "{analysis_root}/node_bias/study_report.json", "--alternative-study-report", "{analysis_root}/node_output_gate/study_report.json", "--output", "{analysis_root}/stage3c14_family_reachability.json"]
+
+[steps.pack-results]
+description = "Package both score-free evidence arms and the Stage-3C-14 assessment without checkpoints."
+requires_json = [
+  { path = "{analysis_root}/node_bias/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/node_output_gate/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/stage3c14_family_reachability.json", field = "isolation_contract.pre_bootstrap_state_hashes_equal", equals = true },
+  { path = "{analysis_root}/stage3c14_family_reachability.json", field = "target_family_reachability.both_families_reached_and_committed", equals = true },
+  { path = "{analysis_root}/stage3c14_family_reachability.json", field = "permanent_parameter_retention_authorized", equals = false },
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "{analysis_root}", "--required-file", "{analysis_root}/node_bias/study_report.json", "--required-file", "{analysis_root}/node_bias/bootstrap_profile.json", "--required-file", "{analysis_root}/node_bias/paired_evidence_assessment.json", "--required-file", "{analysis_root}/node_bias/component_reproducibility.json", "--required-file", "{analysis_root}/node_bias/stage3c10_diagnostics.json", "--required-file", "{analysis_root}/node_output_gate/study_report.json", "--required-file", "{analysis_root}/node_output_gate/bootstrap_profile.json", "--required-file", "{analysis_root}/node_output_gate/paired_evidence_assessment.json", "--required-file", "{analysis_root}/node_output_gate/component_reproducibility.json", "--required-file", "{analysis_root}/node_output_gate/stage3c10_diagnostics.json", "--required-file", "{analysis_root}/stage3c14_family_reachability.json", "--output", "{output}"]

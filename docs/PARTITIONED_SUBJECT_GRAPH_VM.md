@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
 Status: **Stage 3C-5 CPU-reference score-free objective evaluation windows implemented; no automatic keep/revert decision**
-Project version: **0.127.0**
+Project version: **0.128.0**
 
 ## 1. Decision
 
@@ -611,3 +611,16 @@ extended arm 少两个 completed windows，来自 branch 结束时仍 pending �
 
 Stage 3C-13 只允许得出“连续影响更久不保证更多离散采样跨界”。它不允许把 exposure=2 或 3 写成普遍最优值，不允许把离散计数下降解释为负价值，也不授权 permanent retention、automatic keep/revert、scalar objective、causal credit、stable learning、主体性或通用注意力声明。
 
+
+
+## v0.128：Stage 3C-14 fixed-bootstrap 参数族可达性审计
+
+Stage 3C-14 保持九个独立 pre-bootstrap source、每 source 32 个实体、16 个 bootstrap subject、source tick 2、branch horizon 8、`rollback_after_ticks=3`、CPU、bounded delta、自动回滚和 Stage 3C-8 聚合不变。唯一正式实验变化是把固定 bootstrap 的 one-hot target-family token 从 port 23 的 `node_bias` 路由替换为 port 25 的 `node_output_gate`。两个端口都属于 modulation control coordinates，均不进入 nearest-token similarity。
+
+每个 arm 在安装 bootstrap 前保存 quiescent source identity。assessment 要求逐 seed 的 pre-bootstrap state/config hash、primed tick 和 stable subject selection 相同；两个 profile 只能在 target-family 标签和对应 trace port 上不同。跨 arm 的 read-only control action potential、sampled probability、action、resolution 和 objective facts 必须逐事件一致；thought token 只允许同一 target weight 从 port 23 搬到 port 25。
+
+九 source 正式结果中，两 arm 都产生 722 个 family proposal、144 个临时 commit 和 141 个完整 paired window，pairing coverage 为 1.0，rollback failure 与 fact clipping 均为 0，evaluation cost 匹配。`node_bias` arm 产生 423 个 action-potential difference 和 426 个 probability difference；`node_output_gate` arm 分别为 287 和 291。离散 action difference 为 2 对 1，但两个 arm 都只在 1/9 source 出现离散和客观事件分化，Stage 3C-8 均为 0/21 稳定坐标。
+
+预探针中的 `node_input_gate` 不作为正式 arm：目标节点读取恒为 1 的 input port 0，因此 bias delta 与 input-gate delta 在该节点上代数等价。该事实只说明此 bootstrap 对照不可辨识，不说明两个参数族在一般图中等价。
+
+Stage 3C-14 允许得出“参数角色影响短期连续可见性”，但不允许把更多或更少差异解释为价值、优劣或因果正确性，也不授权 permanent retention、automatic keep/revert、scalar objective、稳定学习、主体性、拓扑演化或通用注意力声明。

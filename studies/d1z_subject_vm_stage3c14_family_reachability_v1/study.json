@@ -1,0 +1,17 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c14_family_reachability_v1",
+  "title": "D1-Z Subject VM Stage 3C-14 fixed-bootstrap parameter-family reachability audit",
+  "status": "engineering-family-reachability-adequacy",
+  "scientific_stage": "stage3c14-one-hot-family-routing-no-value-or-retention-change",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_run": true,
+    "single_family_routing_substitution": true,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "topology_evolution": false,
+    "universal_attention": false,
+    "subjecthood_claim": false
+  }
+}

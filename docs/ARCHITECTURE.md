@@ -1552,3 +1552,15 @@ The assessment reports effective semantic ticks per commit, continuous action-po
 
 No runtime field, checkpoint schema, ledger owner, lifecycle system, random stream, permanent parameter path, value coordinate or automatic keep/revert decision is added. The independent replicate remains the source checkpoint. The branch-only override is an experimental orchestration facility, not a second write authority and not a general mechanism for arbitrary configuration mutation.
 
+
+### Stage 3C-14 — fixed-bootstrap parameter-family reachability audit (implemented in v0.128)
+
+Stage 3C-14 remains entirely in experiment orchestration and `se.analysis`; it adds no runtime lifecycle, checkpoint schema, ledger owner or persistent path record. `ShortPairedStudyParameters.bootstrap_target_family` selects one explicitly permitted fixed-bootstrap target coordinate. The default remains `node_bias` at token port 23. The Stage-3C-14 alternative is `node_output_gate` at token port 25. Both coordinates already belong to the modulation-control range excluded from delayed-association similarity.
+
+The short-study runner now records a quiescent pre-bootstrap checkpoint identity before installing the fixed graph. Cross-profile assessment requires equal pre-bootstrap state/config hashes, equal selected stable subjects and equal priming tick for every seed. Post-bootstrap source-state hashes are expected to differ because the profile is the intervention. Profile normalization permits only the target-family label, its token port, node-7 trace port and the corresponding descriptive node-0 target label to differ.
+
+Read-only controls are compared across profiles. Action potentials, sampled probabilities, actions, resolution arrays and objective facts must match exactly. Thought tokens may differ only by relocating the same one-hot target coordinate from port 23 to port 25; all other token coordinates must match. The control-side token, association, eligibility and target-binding funnel must also match. This isolates generic parameter role from source history, RNG, addressing and eligibility drift.
+
+The initially considered `node_input_gate` route is not a valid contrast for this bootstrap because the targeted node reads input port 0, whose frozen adapter value is constant one. In the activation equation, a delta to node bias and the same delta to that input gate are therefore algebraically identical. Stage 3C-14 records this as a rejected experiment design rather than a scientific result.
+
+Both accepted arms retain Stage-3C-7/8/10 contracts, exact rollback and score-free hierarchical aggregation. The audit may report differences in continuous and discrete visibility, but it cannot assign value to a parameter family, authorize automatic keep/revert or permanent retention, claim causal credit, learning, subjecthood or a universal attention architecture.

@@ -1,0 +1,55 @@
+{
+  "schema": "se-subject-vm-stage3c14-family-reachability-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c14-family-reachability-v1",
+  "status": "accepted-engineering-analysis-only",
+  "project_version": "0.128.0",
+  "question": "Does changing only the fixed-bootstrap one-hot target-family route from node bias to node output gate materially change short-term update visibility under the same source panel and paired contracts?",
+  "comparison": {
+    "baseline_target_family": "node_bias",
+    "baseline_target_token_port": 23,
+    "alternative_target_family": "node_output_gate",
+    "alternative_target_token_port": 25,
+    "single_changed_factor": "fixed_bootstrap_one_hot_parameter_family_route",
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "control_horizon_ticks": 3,
+    "independent_source_seeds": [12301, 12302, 12303, 12304, 12305, 12306, 12307, 12308, 12309],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "integrity": {
+    "identical_pre_bootstrap_source_state_hashes_required": true,
+    "identical_pre_bootstrap_source_config_hashes_required": true,
+    "identical_bootstrap_subject_selection_required": true,
+    "profiles_may_differ_only_in_target_family_and_target_token_port": true,
+    "association_similarity_excludes_both_target_control_ports": true,
+    "same_local_eligibility_carrier_class_required": true,
+    "read_only_action_and_objective_behavior_identity_required": true,
+    "authorized_thought_token_difference": "port-23-to-port-25-one-hot-relocation",
+    "stage3c7_engineering_screen_required_for_both_arms": true,
+    "stage3c8_hierarchy_unchanged": "window -> stable subject -> independent pre-bootstrap source",
+    "stage3c10_complete_trace_coverage_required": true,
+    "runtime_diagnostic_state_added": false
+  },
+  "rejected_pilot": {
+    "route": "node_bias_to_node_input_gate",
+    "reason": "The targeted node reads constant-one input port 0, making a bias delta and input-gate delta algebraically equivalent in this bootstrap.",
+    "scientific_arm": false
+  },
+  "interpretation": {
+    "parameter_role_visibility_is_not_parameter_value": true,
+    "more_continuous_difference_is_not_better": true,
+    "fewer_discrete_crossings_are_not_harm": true,
+    "objective_coordinate_value_interpretation": null,
+    "universal_scalar_objective": false,
+    "automatic_keep_or_revert_decision": false,
+    "permanent_write_authorized": false,
+    "learning_claim_authorized": false,
+    "subjecthood_claim_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "next_boundary": "The fixed family route is a material visibility factor, but neither tested route produces cross-source objective stability. Do not combine family routing with delta, horizon, topology evolution or retention in one comparison."
+}

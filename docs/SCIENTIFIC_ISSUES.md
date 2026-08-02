@@ -588,3 +588,21 @@ Stage 3C-12 表明多观察三个 tick 不产生新的离散跨界；Stage 3C-13
 
 当前 proposal/commit 仍只覆盖 `node_bias`，nearest-token candidate 仍集中在 delay 1 / similarity 1.0。下一步若调整 fixed bootstrap parameter-family reachability，必须一次只改变一个显式、可替换、无价值语义的 shaping factor，保持九 source、32 实体、8 tick、exposure=3、delta 和永久回滚不变；不得同时实现 topology evolution、通用注意模型或永久保留。
 
+
+## v0.128：参数族可达不等于跨 source 稳定性
+
+Stage 3C-14 将固定 bootstrap 的 one-hot proposal 从 `node_bias` 路由替换为 `node_output_gate`，并保持九 source、32 实体、8 tick、exposure=3、delta、association、eligibility、rollback 和聚合合同不变。两个 arm 都真实到达目标参数族：各有 722 次 proposal 和 144 次 commit，说明“只有 node_bias 是因为其他族根本不可写”不再是完整解释。
+
+参数角色仍显著改变连续可见性：`node_output_gate` 的 action-potential/probability 差异比 `node_bias` 少约三分之一。但两 arm 都只在 1/9 source 出现离散动作与客观事件分化，稳定客观坐标仍为 0/21。可达性扩展本身没有产生跨 source 重复方向，也不能用差异数量给参数族排序或赋值。
+
+## v0.128：实验变量必须先通过代数可辨识性检查
+
+最初考虑的 `node_bias -> node_input_gate` 对照在三 seed 探针中逐项相同。检查激活方程后确认，目标节点读取 `constant-one` input port 0，因此 `bias + gate * 1` 中同幅度 bias delta 与 input-gate delta 完全等价。继续扩大 seed 只会重复不可辨识比较。
+
+后续 fixed-bootstrap 研究必须在运行前检查候选变量是否在当前图和输入分布下代数独立。发现等价时应记录并更换对照，而不是把零差异解释为机制相同或更新无效。
+
+## v0.128：pre-bootstrap source identity 是固定图比较的最高重复锚点
+
+不同 bootstrap profile 会有意改变 post-bootstrap source checkpoint state，因此不能要求两 arm 的最终 source state hash 相同。Stage 3C-14 改为在安装 fixed graph 前冻结并比较 source state/config hash，同时要求相同 stable subject selection 和 priming tick。paired live/control 仍在各自 post-bootstrap source 内共享完全相同的 checkpoint。
+
+这一区分避免把 intended profile intervention 误报为 source drift，也不允许用 profile 差异绕过 config identity、branch identity、rollback 或 Stage 3C-8 的 source-level replicate hierarchy。
