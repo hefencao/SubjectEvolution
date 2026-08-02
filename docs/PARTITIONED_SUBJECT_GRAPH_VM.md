@@ -710,3 +710,13 @@ Stage 3C-21 在两个 arm 中都使用同一 readout-only node 8：无 action ou
 Port 11 arm 在每个 source 的每个 retained tick 都产生主体间方差，143/144 个主体具有时间变化，且不同 source 的 subject/event matrix 不同。normalized-dot score 不再完全并列，selected delay 分布扩展到 1–6。但 unique associated event coverage 降至每 source 85–94、最大复用升至 3，说明“可分辨”不等于“历史证据更丰富”。两个 arm 的 commit 都为 144，稳定坐标都为 0/21。
 
 该 readout 仍是 fixed-cognition engineering shaping aid；uncertainty 的符号和大小没有固定价值语义。结果不授权永久写入、自动 keep/revert、学习、主体性或通用注意力声明。
+
+## v0.136：Stage 3C-22 历史事件选择覆盖与复用集中度审计
+
+Stage 3C-22 不修改运行时、checkpoint schema、相似度、threshold、候选数、tie-break、更新幅度、exposure、rollback 或永久保留。分析器从 Stage 3C-21 两个 arm 的 read-only control checkpoint 中重建每个 query 的完整同主体历史候选集合，并按现有 request/modulation control-port 排除规则、delay bounds、normalized-dot threshold、latest 和 top-1 精确复算选择。存储结果与复算选择必须逐事件一致。
+
+九个 source 中，constant 与 uncertainty arm 的候选机会完全相同：每 source 112 个唯一 delay-valid/nonzero/above-threshold 历史事件、432 个 above-threshold query/candidate references，以及 112 个实际 assignment。差异只发生在排序与最终 identity 分配。
+
+constant latest-on-tie 基线使 112 个历史事件各被选择一次。uncertainty readout 只选择 85–94 个事件，18–27 个仍符合 threshold 的事件未被选择，最大复用升至 3。每 source 的 identity coverage 为约 0.759–0.839，inverse-Simpson effective coverage 为约 0.644–0.747，且 uncertainty 所选 identity 在全部 source 中都是 constant 所选集合的严格子集。
+
+该结果只证明 subject/event-specific score geometry 会改变排序并提高复用集中度，不证明更多 identity coverage 更好、重复使用更坏、credit 正确、学习形成或应该永久写入。constant 的 100% identity coverage 也是 latest 单步选择的固定工程偏置，不是理论最优。下一边界只能先做第二个无价值语义 visible coordinate 的只读筛查，并要求 rank-two、主体/事件特异 geometry；不得同时修改 addressing、top-k、delta、retention 或完整注意架构。

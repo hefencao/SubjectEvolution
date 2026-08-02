@@ -1,0 +1,21 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c22_historical_selection_v1",
+  "title": "D1-Z Subject VM Stage 3C-22 selected historical-event coverage and reuse audit",
+  "status": "engineering-read-only-selection-coverage-diagnostic",
+  "scientific_stage": "stage3c22-read-only-candidate-opportunity-selection-coverage-and-reuse",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_source_panel": true,
+    "reuse_stage3c21_constant_and_uncertainty_arms": true,
+    "reconstruct_candidate_opportunity": true,
+    "measure_selected_event_identity_coverage": true,
+    "measure_reuse_concentration": true,
+    "runtime_mechanism_change": false,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "topology_evolution": false,
+    "universal_attention": false,
+    "subjecthood_claim": false
+  }
+}

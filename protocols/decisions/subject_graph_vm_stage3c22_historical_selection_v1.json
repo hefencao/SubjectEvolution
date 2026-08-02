@@ -1,0 +1,121 @@
+{
+  "schema": "se-subject-vm-stage3c22-historical-selection-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c22-historical-selection-v1",
+  "status": "accepted-engineering-read-only-selection-coverage-audit-only",
+  "project_version": "0.136.0",
+  "question": "Does the Stage-3C-21 subject/event-specific readout enlarge the eligible or selected historical-event identity set, or does it only re-rank and repeatedly reuse the same bounded candidate opportunity?",
+  "source_panel": {
+    "independent_source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "target_family": "edge_forward_gate",
+    "edge_local_eligibility_carrier": true,
+    "association_tie_break": "latest",
+    "association_candidate_limit": 1,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "analysis_contract": {
+    "runtime_or_checkpoint_schema_change": false,
+    "reconstruct_same_subject_delay_valid_candidate_opportunity": true,
+    "exclude_request_and_modulation_control_ports": true,
+    "normalized_dot_similarity_and_threshold_unchanged": true,
+    "verify_stored_top1_latest_selection_exactly": true,
+    "highest_independent_replicate": "independent-pre-bootstrap-source-checkpoint",
+    "events_subjects_and_windows_are_independent_replicates": false
+  },
+  "observed_panel_result": {
+    "candidate_opportunity_both_arms": {
+      "unique_above_threshold_historical_events_per_source": 112,
+      "above_threshold_references_per_source": 432,
+      "assigned_current_events_per_source": 112,
+      "all_delay_valid_references_nonzero": true,
+      "all_nonzero_references_above_threshold": true
+    },
+    "constant_readout": {
+      "unique_selected_events_per_source": 112,
+      "selected_fraction_of_eligible": 1.0,
+      "maximum_reuse": 1,
+      "selection_gini": 0.0,
+      "inverse_simpson_effective_fraction_of_eligible": 1.0
+    },
+    "uncertainty_readout": {
+      "unique_selected_events_per_source": [
+        94,
+        88,
+        93,
+        91,
+        89,
+        88,
+        91,
+        85,
+        90
+      ],
+      "selected_fraction_of_eligible_minimum": 0.7589285714285714,
+      "selected_fraction_of_eligible_maximum": 0.8392857142857143,
+      "selected_fraction_of_eligible_mean": 0.8025793650793651,
+      "unused_eligible_events_per_source": [
+        18,
+        24,
+        19,
+        21,
+        23,
+        24,
+        21,
+        27,
+        22
+      ],
+      "maximum_reuse": 3,
+      "selection_gini_minimum": 0.27248086734693877,
+      "selection_gini_maximum": 0.3805803571428572,
+      "inverse_simpson_effective_fraction_minimum": 0.6436781609195402,
+      "inverse_simpson_effective_fraction_maximum": 0.7466666666666667,
+      "selected_set_is_strict_subset_of_constant_in_all_sources": true,
+      "new_selected_identity_outside_constant_coverage": false,
+      "selected_objective_fact_centered_rank_preserved_in_all_sources": true
+    },
+    "same_query_selection_fraction": {
+      "count": 9,
+      "minimum": 0.5267857142857143,
+      "q25": 0.5625,
+      "median": 0.5714285714285714,
+      "q75": 0.5982142857142857,
+      "maximum": 0.7142857142857143,
+      "mean": 0.5882936507936507
+    },
+    "engineering_integrity": {
+      "stage3c21_isolation_reused": true,
+      "candidate_opportunity_equal_in_all_sources": true,
+      "stored_selections_reconstructed_without_mismatch": true,
+      "pairing_coverage_both_arms": 1.0,
+      "rollback_failures_both_arms": 0,
+      "stable_objective_coordinates_both_arms": 0
+    }
+  },
+  "interpretation": {
+    "subject_event_geometry_changes_ranking_not_eligibility": true,
+    "selected_identity_diversity_increased": false,
+    "reuse_concentration_increased": true,
+    "objective_fact_linear_span_preserved_descriptively": true,
+    "constant_full_coverage_is_latest_one_step_baseline_artifact": true,
+    "more_unique_events_has_fixed_value_semantics": false,
+    "causal_credit_quality_established": false,
+    "learning_established": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "next_boundary": "Hold the Stage-3C-21 uncertainty readout, similarity, latest top-1, update scale, exposure and rollback fixed. Perform a read-only survey for a second role-neutral visible coordinate and require rank-two subject/event-specific geometry before any paired addressing change."
+}

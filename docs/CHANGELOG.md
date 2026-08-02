@@ -1,3 +1,11 @@
+## 0.136.0
+
+- Adds Subject VM Stage 3C-22 selected historical-event coverage and reuse assessment.
+- Reconstructs delay-valid, nonzero and above-threshold candidate opportunity from read-only control checkpoints and verifies stored latest/top-1 selections exactly.
+- Separates unique selected-event coverage from reference count, repeated selection, Gini concentration and Shannon/inverse-Simpson effective event counts.
+- Confirms the uncertainty readout changes ranking without changing candidate eligibility: 112 unique eligible events and 432 above-threshold references remain available per source, while only 85–94 identities are selected and maximum reuse rises to three.
+- Adds no runtime state, checkpoint field, addressing rule, update scale, retention policy or permanent write.
+
 ## 0.135.0
 
 - Adds Subject VM Stage 3C-21 subject/event-specific objective-input readout assessment.

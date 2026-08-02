@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c21-subject-event-readout-implemented",
-  "project_version": "0.134.0",
+  "status": "stage-3c22-historical-selection-audit-implemented",
+  "project_version": "0.136.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -65,7 +65,7 @@
     {
       "stage": 3,
       "name": "token-event-trace-then-delayed-plasticity",
-      "runtime_change": "Stage 3A stores compact graph tokens and objective facts; Stage 3B-1 adds short-lived local activity eligibility; Stage 3B-2 records bootstrap delayed association candidates; Stage 3B-3 records rejectable parameter-family modulation proposals; Stage 3C-1 binds proposals to pre-activation local carriers; Stage 3C-2 emits bounded candidate deltas; Stage 3C-3 validates exact all-or-none shadow transactions; Stage 3C-4 permits explicitly opted-in short-window live writes with a bounded applied ledger and automatic rollback; Stage 3C-5 records score-free objective evidence for guarded-live and read-only control windows; Stage 3C-6 creates explicit shared-checkpoint branch identities and exports component-wise paired evidence outside the runtime; Stage 3C-7 assesses repeated paired exports for coverage, rollback/clipping integrity, count-cost matching and component-wise branch divergence without scalarization; Stage 3C-8 hierarchically aggregates windows within subjects and subjects within independent source checkpoints, then reports coordinate-wise sign, dispersion and interval stability without scalarization; Stage 3C-9 runs a short fixed-bootstrap paired data study with symmetric control admission and export-boundary transient finalization, without permanent retention; Stage 3C-10 adds external funnel, visibility, retention-coverage and branch-divergence diagnostics; Stage 3C-11 expands only independent source replication and audits sample adequacy without changing the mechanism or retention policy; Stage 3C-12 compares trace-safe branch horizons with exact prefix identity; Stage 3C-13 compares temporary exposure duration with identical source checkpoints and read-only control behavior; Stage 3C-14 compares one isolated fixed-bootstrap parameter-family target route with pre-bootstrap identity and no value or retention semantics; Stage 3C-15 externally diagnoses six-family local sensitivity, delayed-context dependence, clamp inactivity and eligibility reachability without runtime mutation; Stage 3C-16 isolates one existing edge-local eligibility carrier for the mechanically sensitive edge-forward family, preserving source/control identity, automatic rollback and score-free evidence without value or retention semantics. Stage 3C-20 isolates one fixed-bootstrap graph-state readout into association-visible token port 29, verifying source/control identity and temporal-versus-subject geometry without changing similarity, candidate allocation, update scale or retention."
+      "runtime_change": "Stage 3A stores compact graph tokens and objective facts; Stage 3B-1 adds short-lived local activity eligibility; Stage 3B-2 records bootstrap delayed association candidates; Stage 3B-3 records rejectable parameter-family modulation proposals; Stage 3C-1 binds proposals to pre-activation local carriers; Stage 3C-2 emits bounded candidate deltas; Stage 3C-3 validates exact all-or-none shadow transactions; Stage 3C-4 permits explicitly opted-in short-window live writes with a bounded applied ledger and automatic rollback; Stage 3C-5 records score-free objective evidence for guarded-live and read-only control windows; Stage 3C-6 creates explicit shared-checkpoint branch identities and exports component-wise paired evidence outside the runtime; Stage 3C-7 assesses repeated paired exports for coverage, rollback/clipping integrity, count-cost matching and component-wise branch divergence without scalarization; Stage 3C-8 hierarchically aggregates windows within subjects and subjects within independent source checkpoints, then reports coordinate-wise sign, dispersion and interval stability without scalarization; Stage 3C-9 runs a short fixed-bootstrap paired data study with symmetric control admission and export-boundary transient finalization, without permanent retention; Stage 3C-10 adds external funnel, visibility, retention-coverage and branch-divergence diagnostics; Stage 3C-11 expands only independent source replication and audits sample adequacy without changing the mechanism or retention policy; Stage 3C-12 compares trace-safe branch horizons with exact prefix identity; Stage 3C-13 compares temporary exposure duration with identical source checkpoints and read-only control behavior; Stage 3C-14 compares one isolated fixed-bootstrap parameter-family target route with pre-bootstrap identity and no value or retention semantics; Stage 3C-15 externally diagnoses six-family local sensitivity, delayed-context dependence, clamp inactivity and eligibility reachability without runtime mutation; Stage 3C-16 isolates one existing edge-local eligibility carrier for the mechanically sensitive edge-forward family, preserving source/control identity, automatic rollback and score-free evidence without value or retention semantics. Stage 3C-20 isolates one fixed-bootstrap graph-state readout into association-visible token port 29, verifying source/control identity and temporal-versus-subject geometry without changing similarity, candidate allocation, update scale or retention. Stage 3C-21 isolates a readout-only objective-input coordinate that creates subject/event-specific association-visible geometry without action-output changes. Stage 3C-22 externally reconstructs the complete candidate opportunity and audits selected historical-event identity coverage and reuse concentration without runtime or checkpoint changes."
     },
     {
       "stage": 4,
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3C-21",
+  "current_stage": "3C-22",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -488,6 +488,20 @@
     "read_only_objective_behavior_identity_required": true,
     "within_source_tokens_subjects_or_windows_are_independent_replicates": false,
     "uncertainty_value_semantics": false,
+    "permanent_write_authorized": false,
+    "scientific_qualification": false
+  },
+  "stage_3c22_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_stage3c22_historical_selection_v1.json",
+    "runtime_state_change": false,
+    "checkpoint_schema_change": false,
+    "analysis_only_factor": "candidate-opportunity-selected-identity-coverage-and-reuse-reconstruction",
+    "stage3c21_isolation_contract_required": true,
+    "same_similarity_threshold_delay_bounds_candidate_limit_and_tie_break": true,
+    "stored_selection_exact_reconstruction_required": true,
+    "highest_independent_replicate": "independent-pre-bootstrap-source-checkpoint",
+    "within_source_events_subjects_or_windows_are_independent_replicates": false,
+    "coverage_or_reuse_has_value_semantics": false,
     "permanent_write_authorized": false,
     "scientific_qualification": false
   }

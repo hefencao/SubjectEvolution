@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.135.0**
+Version: **0.136.0**
 
 ## Current scientific task
 
-Version 0.135 implements **Subject VM Stage 3C-21: subject/event-specific objective-input readout audit**.
+Version 0.136 implements **Subject VM Stage 3C-22: selected historical-event coverage and reuse audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -129,7 +129,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-20 tests one explicit fixed-bootstrap graph-state readout without authorizing retention, learned attention or Epoch 1.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-22 audits fixed-bootstrap historical selection coverage without authorizing retention, learned attention or Epoch 1.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -155,7 +155,7 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-Stage 3C-20 establishes that an existing action-producing graph state can make the association-visible subspace non-constant, but the current node-0 readout is shared by every bootstrap subject at a given tick and therefore behaves as a global temporal phase. The next authorized boundary is one existing factual or internal readout that can add subject/event-specific variance while similarity, candidate limit, update scale, exposure, retention and permanent-write policy remain fixed.
+Stage 3C-22 establishes that the Stage 3C-21 uncertainty readout changes historical-event ranking without changing the delay-valid or above-threshold candidate opportunity set. It does not increase selected identity coverage: selection becomes more concentrated and repeatedly uses a strict subset of the constant latest-on-tie baseline. The next authorized boundary is a read-only survey for a second role-neutral visible coordinate that can produce rank-two subject/event-specific geometry before any addressing, top-k, update-scale or retention change.
 
 
 ## Stage 3C-17 retained result
@@ -199,3 +199,13 @@ Stage 3C-21 uses a common nine-node fixed bootstrap graph in both arms. Node 8 i
 The constant arm reproduces rank-zero geometry, 1,008 delay-1 assignments, 942 modulation proposals, 144 temporary commits, 129 completed windows, objective divergence in 3/9 sources and 0/21 stable coordinates. The uncertainty arm has centered rank one in every source, between-subject variance at every retained tick, temporal variation in 143/144 subjects, source-specific subject/event matrices and selected similarity range approximately `0.9445..1.0`. Its 1,008 assignments spread over delays 1–6, but unique associated events fall to 85–94 per source and maximum event reuse rises to three. It produces 846 proposals, 144 commits, 125 completed windows, objective divergence in 2/9 sources and 0/21 stable coordinates.
 
 This establishes that subject- and event-specific association-visible geometry is reachable through an existing objective input without changing action output. It does not establish that uncertainty is valuable, that historical selection is more diverse, that causal credit is correct, or that learning has formed. The next authorized boundary is a read-only audit of selected-event diversity and reuse under the fixed Stage 3C-21 readout before changing addressing, top-k, update scale or retention.
+## Stage 3C-22 current result
+
+Stage 3C-22 makes no runtime intervention. It reconstructs every current-event query and every same-subject historical event inside the frozen delay bounds from the Stage 3C-21 read-only control checkpoints. The reconstruction uses the exact excluded control ports, normalized-dot similarity, threshold, latest tie-break and top-1 selector, and verifies every stored assignment with zero mismatch.
+
+Both arms retain the same candidate opportunity in all nine sources: 112 unique delay-valid, nonzero and above-threshold historical events per source, 432 above-threshold query/candidate references and 112 assigned current events. The constant-one arm selects all 112 identities once each. The uncertainty arm selects only 85–94 identities, leaving 18–27 eligible identities unused per source and reusing some selected events up to three times. Unique identity coverage is 75.9%–83.9%; eligible-union selection Gini is approximately 0.272–0.381; inverse-Simpson effective selected-event count is 72.1–83.6, or 64.4%–74.7% of the eligible union.
+
+The uncertainty selected set is a strict subset of the constant-arm selected set in every source and introduces no new event identity outside it. Exact same-query selection remains only 52.7%–71.4%, so the readout materially changes ranking while the threshold opportunity remains fixed. The centered rank of selected objective-fact vectors remains equal to the eligible-set rank in every source, showing that reduced event-identity coverage does not imply complete factual-span collapse.
+
+This result does not rank coverage or reuse as good or bad, validate causal credit, establish learning, assign value to uncertainty, or authorize permanent retention. Constant-arm full identity coverage is itself a consequence of latest-on-tie selecting the immediately preceding event once; it is an engineering reference, not a scientific optimum.
+

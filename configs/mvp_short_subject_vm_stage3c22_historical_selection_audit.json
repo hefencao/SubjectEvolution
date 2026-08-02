@@ -1,0 +1,225 @@
+{
+  "run": {
+    "seed": 12301,
+    "ticks": 2,
+    "metrics_period": 3,
+    "checkpoint_period": 1000,
+    "gpu_harvest_conflict_planner": true,
+    "experiment_mode": "scientific",
+    "evolution_evaluation_period": 500,
+    "spatial_stress_region_schema": "normalized-fixed-count-grid-v1",
+    "checkpoint_ticks": [],
+    "full_checkpoint_enabled": false
+  },
+  "world": {
+    "width": 256.0,
+    "height": 256.0,
+    "grid_x": 64,
+    "grid_y": 64,
+    "initial_entities": 32,
+    "max_entities": 32,
+    "periodic": true
+  },
+  "environment": {
+    "resource_regeneration": [
+      0.03,
+      0.012,
+      0.008,
+      0.004
+    ],
+    "resource_capacity": [
+      10.0,
+      7.0,
+      5.0,
+      3.0
+    ],
+    "season_period": 400,
+    "season_amplitude": 0.35,
+    "signal_decay": 0.08,
+    "signal_diffusion": 0.12
+  },
+  "entities": {
+    "relation_slots": 8,
+    "maintenance_cost": 0.005,
+    "movement_cost": 0.01,
+    "signal_cost": 0.02,
+    "share_amount": 0.2,
+    "harvest_rate": 0.3,
+    "reproduction_threshold": 10.0,
+    "reproduction_cost": 1.4,
+    "initial_energy": 3.0,
+    "max_energy": 5.0,
+    "max_age": 10000,
+    "reproduction_capacity_arbitration": "stateless-random-v1"
+  },
+  "information": {
+    "channel_loss": 0.15,
+    "receiver_noise": 0.1,
+    "classification_error": 0.05,
+    "memory_decay": 0.01,
+    "max_signal_delay": 3,
+    "direct_message_capacity": 16,
+    "source_noise": 0.03,
+    "signal_flush_periods": [
+      1,
+      1,
+      1
+    ]
+  },
+  "policy": {
+    "temperature": 0.8,
+    "partner_samples": 4,
+    "mutation_std": 0.08,
+    "mutation_probability": 0.01
+  },
+  "social": {
+    "group_update_period": 50,
+    "trust_group_threshold": 0.12,
+    "group_min_members": 6,
+    "relation_decay": 0.002,
+    "trust_gain_share": 0.08,
+    "trust_loss_failed": 0.02,
+    "group_label_schema": "trusted-directed-fixed-round-min-label-v1",
+    "group_label_propagation_rounds": 8
+  },
+  "control": {
+    "heuristic_social_guidance": false,
+    "heuristic_social_guidance_weight": 0.25,
+    "autonomy_recovery_fraction": 0.25,
+    "autonomy_activation_energy_fraction": 0.35,
+    "autonomy_harvest_threshold": 0.05
+  },
+  "subject_vm": {
+    "enabled": true,
+    "schema": "partitioned-subject-graph-vm-stage3c5-objective-evaluation-window-v1",
+    "node_state_width": 3,
+    "inherit_structure_on_birth": true,
+    "regions": [
+      {
+        "name": "fast-sensorimotor",
+        "node_capacity": 2,
+        "edge_capacity": 1,
+        "update_period": 1
+      },
+      {
+        "name": "persistent-state",
+        "node_capacity": 2,
+        "edge_capacity": 1,
+        "update_period": 1
+      },
+      {
+        "name": "delayed-association",
+        "node_capacity": 2,
+        "edge_capacity": 1,
+        "update_period": 1
+      },
+      {
+        "name": "integrative-drive",
+        "node_capacity": 3,
+        "edge_capacity": 1,
+        "update_period": 1
+      }
+    ],
+    "activation": {
+      "schema": "bounded-phased-forward-routing-v1",
+      "input_port_schema": "objective-entity-input-ports-v1",
+      "output_port_schema": "action-potential-output-ports-v1",
+      "activation_clip": 8.0,
+      "output_clip": 8.0
+    },
+    "trace": {
+      "schema": "continuous-internal-token-objective-event-v1",
+      "event_schema": "objective-action-state-delta-v1",
+      "token_width": 32,
+      "token_clip": 8.0,
+      "capacity_per_subject": 16,
+      "retention_ticks": 8
+    },
+    "eligibility": {
+      "schema": "local-decaying-activity-eligibility-v1",
+      "decay": 0.5,
+      "clip": 2.0,
+      "max_age_ticks": 6
+    },
+    "association": {
+      "schema": "bounded-delayed-token-similarity-candidate-v1",
+      "request_token_port": 0,
+      "request_threshold": 0.5,
+      "similarity_threshold": 0.8,
+      "min_delay_ticks": 1,
+      "max_delay_ticks": 6
+    },
+    "modulation": {
+      "schema": "bounded-objective-contrast-modulation-proposal-v1",
+      "request_token_port": 1,
+      "request_threshold": 0.5,
+      "fact_weight_start_port": 2,
+      "target_weight_start_port": 23,
+      "proposal_clip": 1.0
+    },
+    "target_binding": {
+      "schema": "bootstrap-single-winner-local-eligibility-binding-v1",
+      "min_abs_eligibility": 0.05
+    },
+    "update_safety": {
+      "schema": "bounded-compare-and-swap-delta-proposal-v1",
+      "step_scale": 0.25,
+      "min_abs_delta": 0.005,
+      "family_delta_clip": [
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ],
+      "event_l1_budget": 0.15,
+      "parameter_lower_bounds": [
+        -2.0,
+        -2.0,
+        -2.0,
+        -2.0,
+        -2.0,
+        0.0
+      ],
+      "parameter_upper_bounds": [
+        2.0,
+        2.0,
+        2.0,
+        2.0,
+        2.0,
+        2.0
+      ]
+    },
+    "transaction": {
+      "schema": "atomic-shadow-cas-rollback-v1",
+      "max_targets_per_event": 6,
+      "base_cost_units": 3,
+      "per_target_cost_units": 2
+    },
+    "live_write": {
+      "schema": "guarded-live-write-rollback-window-v1",
+      "enabled": false,
+      "ledger_capacity_per_subject": 8,
+      "rollback_after_ticks": 2,
+      "window_ticks": 12,
+      "max_pending_transactions": 2,
+      "max_applied_targets_per_window": 1,
+      "max_abs_delta_per_window": 0.1,
+      "commit_base_cost_units": 5,
+      "commit_per_target_cost_units": 2,
+      "rollback_base_cost_units": 3,
+      "rollback_per_target_cost_units": 1
+    },
+    "evaluation": {
+      "schema": "objective-score-free-window-v1",
+      "enabled": true,
+      "capacity_per_subject": 8,
+      "observation_ticks": 1,
+      "control_horizon_ticks": 2,
+      "fact_clip": 8.0,
+      "registration_cost_units": 2,
+      "per_observation_cost_units": 1
+    }
+  }
+}
