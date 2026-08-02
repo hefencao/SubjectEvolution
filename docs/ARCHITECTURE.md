@@ -1489,3 +1489,12 @@ Stage 3C-7 remains in `se.analysis` and adds no Subject VM runtime or checkpoint
 The analysis reports independent source-state count, pairing coverage, structured unpaired causes, rollback/pending/locked-row integrity, objective-fact clipping, paired evaluation count-cost matching, and component-wise entity/environment branch divergence. It does not import runtime mutation owners and cannot write graph parameters.
 
 Screening thresholds are explicit CLI/data inputs and are labelled engineering-only. The report contains no objective-coordinate weighting, scalar objective, automatic keep/revert instruction, causal authorization or permanent-write permission. Branch divergence is descriptive evidence rather than an automatic pass/fail value judgment.
+
+
+### Stage 3C-8 — hierarchical component-wise reproducibility assessment (implemented in v0.122)
+
+Stage 3C-8 remains in `se.analysis` and adds no Subject VM runtime or checkpoint schema. `subject_vm_component_reproducibility.py` consumes Stage-3C-7 assessment documents, validates their canonical checksum and passed engineering screen, resolves the referenced Stage-3C-6 exports, and revalidates export/source identities.
+
+The highest replicate unit is an independent source-checkpoint state hash. Within each source, paired windows are first averaged within stable subjects and subject summaries are then equally averaged into one source vector. A window-weighted source mean is retained only as a diagnostic. Identical repeated source inputs are collapsed; conflicting data under the same source hash are rejected.
+
+The module reports coordinate-wise source values, signs, dispersion and configurable central intervals for objective fact sums, objective absolute-activity differences and count differences. It cannot mutate runtime state and emits no coordinate weighting, universal scalar objective, benefit score, automatic keep/revert instruction, causal authorization or permanent-write permission.

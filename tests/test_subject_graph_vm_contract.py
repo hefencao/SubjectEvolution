@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c7-paired-evidence-integrity-implemented"
+    assert contract["status"] == "stage-3c8-component-reproducibility-implemented"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,7 +24,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3C-7"
+    assert contract["current_stage"] == "3C-8"
     assert contract["stage_2_contract"]["plasticity"] is False
     assert contract["stage_3a_contract"]["persistent_node_edge_path"] is False
     assert contract["stage_3a_contract"]["plasticity"] is False
@@ -74,6 +74,23 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["stage_3c7_contract"]["objective_scalar_score"] is False
     assert contract["stage_3c7_contract"]["automatic_keep_or_revert_decision"] is False
     assert contract["stage_3c7_contract"]["permanent_write_authorized"] is False
+    assert contract["stage_3c8_contract"]["runtime_state_change"] is False
+    assert contract["stage_3c8_contract"]["independent_replicate"] == "source-checkpoint-state"
+    assert contract["stage_3c8_contract"]["within_source_subject_balancing"] is True
+    assert contract["stage_3c8_contract"]["window_pseudoreplication"] is False
+    assert contract["stage_3c8_contract"]["universal_scalar_objective"] is False
+    assert contract["stage_3c8_contract"]["automatic_keep_or_revert_decision"] is False
+    assert contract["stage_3c8_contract"]["permanent_write_authorized"] is False
+
+    reproducibility = _load(
+        "protocols/decisions/subject_graph_vm_component_reproducibility_v1.json"
+    )
+    assert reproducibility["replicate_hierarchy"]["highest_level_replicate"] == "independent-source-checkpoint"
+    assert reproducibility["replicate_hierarchy"]["windows_are_independent_replicates"] is False
+    assert reproducibility["componentwise_statistics"]["sign_counts_and_fractions"] is True
+    assert reproducibility["output"]["universal_scalar_objective"] is False
+    assert reproducibility["output"]["automatic_keep_or_revert_decision"] is False
+    assert reproducibility["scientific_boundary"]["scientific_reproducibility_conclusion_automatic"] is False
 
     paired_integrity = _load(
         "protocols/decisions/subject_graph_vm_paired_evidence_integrity_v1.json"

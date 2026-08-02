@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
 Status: **Stage 3C-5 CPU-reference score-free objective evaluation windows implemented; no automatic keep/revert decision**
-Project version: **0.121.0**
+Project version: **0.122.0**
 
 ## 1. Decision
 
@@ -543,3 +543,12 @@ Stage 3C-7 不进入主体图激活、资格、写入或回滚路径。`analysis
 评估报告保留 paired、unpaired live 和 unpaired control 的数量与覆盖率，并按稳定主体缺失、source event 分化、窗口边界分化、target/update 合同分化等结构原因分类。它同时读取最终 ledger，报告 rollback failure、pending write、locked row、事实裁剪和同窗 evaluation count-cost 是否匹配。分支分化只按实体身份、主体身份、实体状态和环境字段逐分量报告，不被自动解释为失败或收益。
 
 默认的三个独立 source pair、最低覆盖率、最大裁剪率等仅是可覆盖的工程筛查参数。筛查通过不等于科学充分性，不授权 objective coordinate 权重、scalar score、因果效应、keep/revert 或永久参数保留。下一阶段若继续，应先检查已通过完整性筛查的多个独立 pair 上逐坐标方向和离散程度是否可复现，而不是直接压缩为单一目标。
+
+
+## v0.122：Stage 3C-8 以 source checkpoint 为重复单位逐分量描述可重复性
+
+Stage 3C-8 继续位于 `se.analysis`，不进入激活、资格、写入、回滚或 checkpoint 生命周期。`subject_vm_component_reproducibility.py` 只接受 checksum 有效且通过 Stage 3C-7 工程筛查的 assessment，并重新验证其引用的 Stage 3C-6 paired export。
+
+分析层级固定为：独立 source checkpoint → stable subject → paired window。窗口先在主体内平均，主体再在 source 内等权平均，最后才跨 source 计算逐坐标统计。这样一个产生大量窗口的主体不能支配 source replicate，同一 source checkpoint 的重复输入也不能伪装成独立重复。
+
+输出逐坐标保留 source replicate values、符号计数、mean、median、sample standard deviation、MAD、极值和 central quantile interval。sign-and-interval screen 只是可配置的工程描述，不表示坐标具有正向价值、更新具有真实因果性或参数应永久保留。报告没有 coordinate weighting、universal scalar objective、automatic keep/revert 或 scientific reproducibility authorization。

@@ -1,0 +1,54 @@
+{
+  "schema": "se-subject-vm-decision-v1",
+  "decision_id": "subject-graph-vm-component-reproducibility-v1",
+  "release": "0.122.0",
+  "status": "accepted-engineering-stage-only",
+  "scope": "Assess coordinate-wise reproducibility across independent Stage-3C-7-screened source checkpoint pairs without treating windows or subjects as independent source replicates and without scalarizing objective coordinates.",
+  "inputs": {
+    "stage3c7_assessment_schema": "se-subject-vm-paired-evidence-assessment-v1",
+    "assessment_checksum_verified": true,
+    "stage3c7_screen_must_pass": true,
+    "referenced_stage3c6_exports_resolved_and_verified": true,
+    "duplicate_source_state_hashes_collapsed": true,
+    "conflicting_duplicate_source_data_rejected": true
+  },
+  "replicate_hierarchy": {
+    "highest_level_replicate": "independent-source-checkpoint",
+    "within_source_first_level": "stable-subject",
+    "within_subject_second_level": "paired-window",
+    "source_estimator": "mean-of-subject-window-means",
+    "window_weighted_mean_is_diagnostic_only": true,
+    "windows_are_independent_replicates": false,
+    "subjects_are_independent_source_replicates": false
+  },
+  "componentwise_statistics": {
+    "objective_fact_sum_coordinates": 21,
+    "objective_fact_absolute_activity_coordinates": 21,
+    "count_difference_coordinates": 3,
+    "sign_counts_and_fractions": true,
+    "mean_median_sample_standard_deviation_and_mad": true,
+    "minimum_and_maximum": true,
+    "configurable_central_quantile_interval": true,
+    "coordinate_level_sign_and_interval_screen": true,
+    "screening_parameters_are_descriptive_engineering_only": true
+  },
+  "output": {
+    "source_replicate_values_preserved": true,
+    "subject_summaries_preserved": true,
+    "coordinate_weighting": false,
+    "universal_scalar_objective": false,
+    "overall_benefit_score": false,
+    "automatic_keep_or_revert_decision": false,
+    "causal_effect_authorized": false,
+    "permanent_parameter_retention_authorized": false
+  },
+  "scientific_boundary": {
+    "coordinate_stability_is_value": false,
+    "coordinate_stability_is_causal_effect": false,
+    "scientific_reproducibility_conclusion_automatic": false,
+    "learning_claim": false,
+    "adaptation_claim": false,
+    "subjecthood_claim": false,
+    "epoch_one_qualification": false
+  }
+}

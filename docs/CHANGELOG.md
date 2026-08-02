@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.122.0
+
+- Adds Subject VM Stage 3C-8 component-wise reproducibility assessment outside the runtime.
+- Requires checksum-valid Stage-3C-7 assessments that passed their engineering screen and revalidates referenced Stage-3C-6 exports.
+- Uses independent source checkpoints as the highest replicate level, stable subjects within sources, and paired windows within subjects.
+- Computes the source replicate as a mean of per-subject window means so subjects with many windows cannot dominate the cross-source result.
+- Collapses identical repeated source inputs and rejects conflicting data for the same source-state hash.
+- Reports per-coordinate sign counts, source values, mean, median, sample dispersion, MAD, extrema and configurable central quantile intervals.
+- Adds the `se-subject-vm-component-reproducibility` command.
+- Defines no coordinate value weights, universal scalar objective, benefit score, automatic keep/revert decision, causal authorization or permanent parameter retention.
+
 ## 0.121.0
 
 - Adds Subject VM Stage 3C-7 repeated paired-evidence adequacy and integrity assessment outside the runtime.
