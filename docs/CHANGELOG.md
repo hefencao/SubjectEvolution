@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.131.0
+
+- Adds Subject VM Stage 3C-17 equal-similarity temporal tie-break assessment.
+- Preserves the nine-source, 32-entity, eight-tick, exposure-three carrier-on `edge_forward_gate` baseline and changes only latest-versus-oldest tie resolution.
+- Adds a paired-plan runtime override without changing config identity, checkpoint schema or persistent memory.
+- Finds 1008/1008 latest-arm assignments at delay 1, while the oldest arm spans delays 1–6 but reuses only 32 historical events per source with maximum reuse six.
+- Finds 942 versus 801 modulation proposals, 129 versus 105 completed windows, and 3/9 versus 2/9 sources with objective divergence; both arms remain 0/21 stable coordinates.
+- Adds workflow, decision protocol, CLI, isolation tests and checkpoint-free packaging.
+- Authorizes no value ranking, causal-credit conclusion, permanent retention, automatic keep/revert, topology evolution, learning, subjecthood or universal-attention claim.
+
 ## 0.130.0
 
 - Adds Subject VM Stage 3C-16 fixed-bootstrap edge eligibility-carrier reachability assessment.

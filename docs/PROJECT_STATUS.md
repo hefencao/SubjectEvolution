@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.130.0**
+Version: **0.131.0**
 
 ## Current scientific task
 
-Version 0.130 implements **Subject VM Stage 3C-16: fixed-bootstrap edge eligibility-carrier reachability audit**.
+Version 0.131 implements **Subject VM Stage 3C-17: equal-similarity temporal tie-break audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -152,3 +152,12 @@ No supplied checkpoint qualifies either later epoch.
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
 The next authorized boundary must treat the carrier-on `edge_forward_gate` arm as an engineering baseline, not as a beneficial update result. A subsequent comparison may change exactly one allocation factor, such as the fixed single-winner carrier selector versus a bounded multi-candidate allocator, only after preserving the same source panel, edge carrier, family target, 32 entities, eight-tick horizon, exposure duration 3, bounded delta, automatic rollback and score-free hierarchy. It must not simultaneously change addressing similarity, family weights, entity count, topology evolution, permanent retention, scalar value construction, a complete general-attention replacement or Epoch 1 qualification.
+
+
+## Stage 3C-17 current result
+
+Stage 3C-17 preserves the Stage-3C-16 carrier-on `edge_forward_gate` baseline and changes only exact-similarity temporal tie resolution from latest to oldest. The override is recorded in the paired plan and applied symmetrically to guarded-live and read-only-control branches. It is not part of persistent configuration or checkpoint state.
+
+Across nine independent sources, both arms assign 1008 candidates with similarity 1.0. Latest selects delay 1 exclusively and uses 112 unique historical events per source once each. Oldest produces delays 1–6 but uses only 32 unique events per source, with one event reused up to six times. Latest produces 942 modulation proposals and 129 completed windows; oldest produces 801 proposals and 105 windows. Objective divergence occurs in 3/9 versus 2/9 sources, while both arms remain 0/21 stable objective coordinates.
+
+This identifies the temporal tie-break as a material fixed-bootstrap bias. It does not establish that latest is better, that oldest is harmful, that recency or age has value, or that the credit assignment is scientifically valid. The next authorized boundary is a bounded multi-candidate allocation diagnostic with total update budget held fixed.

@@ -1,0 +1,46 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c17_temporal_tie_break_v1"
+title = "D1-Z Subject VM Stage 3C-17 temporal tie-break audit"
+
+[parameters.config]
+type = "path"
+default = "configs/mvp_short_subject_vm_stage3c8_paired_study.json"
+description = "Unchanged fixed-bootstrap paired source configuration."
+
+[parameters.seeds]
+type = "csv-int"
+default = "12301,12302,12303,12304,12305,12306,12307,12308,12309"
+description = "Frozen nine independent-source panel."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c17_temporal_tie_break_v1/final"
+description = "Latest/oldest arms plus Stage-3C-17 assessment."
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c17_temporal_tie_break_v1_results.zip"
+description = "Compact research result bundle separate from the project archive."
+
+[steps.run-latest]
+description = "Run the reachable edge-forward baseline with the historical latest-on-tie selector."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "2", "--horizon-ticks", "8", "--bootstrap-subjects", "16", "--rollback-after-ticks", "3", "--bootstrap-target-family", "edge_forward_gate", "--bootstrap-edge-carrier-enabled", "--association-tie-break", "latest", "--backend", "cpu", "--output", "{analysis_root}/latest", "--overwrite"]
+
+[steps.run-oldest]
+description = "Run the same panel with only equal-similarity time tie-break changed to oldest."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "2", "--horizon-ticks", "8", "--bootstrap-subjects", "16", "--rollback-after-ticks", "3", "--bootstrap-target-family", "edge_forward_gate", "--bootstrap-edge-carrier-enabled", "--association-tie-break", "oldest", "--backend", "cpu", "--output", "{analysis_root}/oldest", "--overwrite"]
+
+[steps.assess-temporal-tie-break]
+description = "Verify source identity and audit the isolated temporal allocation bias."
+command = ["se-subject-vm-stage3c17-temporal-tie-break", "--latest-study-report", "{analysis_root}/latest/study_report.json", "--oldest-study-report", "{analysis_root}/oldest/study_report.json", "--output", "{analysis_root}/stage3c17_temporal_tie_break.json"]
+
+[steps.pack-results]
+description = "Package both paired evidence arms and the Stage-3C-17 assessment without checkpoints."
+requires_json = [
+  { path = "{analysis_root}/latest/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/oldest/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/stage3c17_temporal_tie_break.json", field = "isolation_contract.only_equal_similarity_time_tie_break_changed", equals = true },
+  { path = "{analysis_root}/stage3c17_temporal_tie_break.json", field = "diagnostic_interpretation.oldest_policy_changes_temporal_allocation_without_changing_similarity", equals = true },
+  { path = "{analysis_root}/stage3c17_temporal_tie_break.json", field = "permanent_parameter_retention_authorized", equals = false },
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--required-file", "{analysis_root}/latest/study_report.json", "--required-file", "{analysis_root}/latest/bootstrap_profile.json", "--required-file", "{analysis_root}/latest/paired_evidence_assessment.json", "--required-file", "{analysis_root}/latest/component_reproducibility.json", "--required-file", "{analysis_root}/latest/stage3c10_diagnostics.json", "--required-file", "{analysis_root}/oldest/study_report.json", "--required-file", "{analysis_root}/oldest/bootstrap_profile.json", "--required-file", "{analysis_root}/oldest/paired_evidence_assessment.json", "--required-file", "{analysis_root}/oldest/component_reproducibility.json", "--required-file", "{analysis_root}/oldest/stage3c10_diagnostics.json", "--required-file", "{analysis_root}/stage3c17_temporal_tie_break.json", "--output", "{output}"]

@@ -1598,3 +1598,10 @@ The carrier-off arm is expected to produce no exact edge target binding and ther
 The assessment reports the transition from modulation proposal to target binding, safe update, shadow transaction, guarded-live commit and completed window. It also preserves continuous/discrete branch divergence and source-level incidence without scalarization. Enabling a carrier establishes only mechanical reachability under the fixed bootstrap. It does not validate causal credit, assign value to the edge family, authorize automatic keep/revert, permanent retention, learning, subjecthood or a universal attention architecture.
 
 Persistent memory growth is zero. The intervention reuses existing fixed-capacity edge eligibility arrays and flags already owned by Subject VM storage. Disabled project configurations and their canonical identities are unchanged because the carrier switch exists only in the explicit study bootstrap parameter.
+
+
+### Stage 3C-17 — equal-similarity temporal tie-break audit (implemented in v0.131)
+
+Stage 3C-17 remains in experiment orchestration and `se.analysis`. The default runtime selector remains latest-on-tie. An optional paired-plan runtime override may select oldest-on-tie and is applied equally to live and control branches after checkpoint load. The override is checksum-bound in branch identity and lineage, adds no config field, array, checkpoint schema, random stream or persistent path record.
+
+The association selector continues to use the same bounded candidate set, normalized-dot similarity, thresholds and delay limits. Only the deterministic ordering among scores equal within the existing tolerance changes. Analysis compares source checkpoint identity, stable-subject selection, read-only control behavior, exact delay allocation, historical-event reuse, funnel counts and Stage 3C-7/8 outputs.

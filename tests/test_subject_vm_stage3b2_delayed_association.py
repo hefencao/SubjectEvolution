@@ -341,3 +341,29 @@ def test_checkpoint_round_trip_and_v0112_upgrade_start_with_empty_associations()
     assert upgraded.trace_storage is not None
     assert upgraded.trace_storage.association_assigned is not None
     assert not np.any(upgraded.trace_storage.association_assigned)
+
+
+def test_equal_similarity_time_tie_break_can_select_latest_or_oldest() -> None:
+    latest = _runtime(_stage3b2_config())
+    oldest = _runtime(_stage3b2_config())
+    for runtime in (latest, oldest):
+        _express_token_graph(runtime)
+        _activate(runtime, tick=0, x=1.0, y=0.0)
+        _event(runtime, tick=0, event_id=930)
+        _activate(runtime, tick=1, x=1.0, y=0.0)
+        _event(runtime, tick=1, event_id=931)
+    assert oldest.trace_storage is not None
+    oldest.trace_storage.association_tie_break = "oldest"
+    for runtime in (latest, oldest):
+        _activate(runtime, tick=2, x=1.0, y=0.0)
+        _event(runtime, tick=2, event_id=932)
+    assert latest.trace_storage is not None
+    latest_slot = latest.trace_storage.latest_slot(0)
+    oldest_slot = oldest.trace_storage.latest_slot(0)
+    assert latest_slot is not None and oldest_slot is not None
+    assert latest.trace_storage.associated_event_id[0, latest_slot] == 931
+    assert latest.trace_storage.association_delay_ticks[0, latest_slot] == 1
+    assert oldest.trace_storage.associated_event_id[0, oldest_slot] == 930
+    assert oldest.trace_storage.association_delay_ticks[0, oldest_slot] == 2
+    assert latest.trace_storage.association_similarity[0, latest_slot] == pytest.approx(1.0)
+    assert oldest.trace_storage.association_similarity[0, oldest_slot] == pytest.approx(1.0)

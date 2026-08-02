@@ -166,6 +166,7 @@ class SubjectVMTraceStorage:
         self.capacity = int(cfg.trace.capacity_per_subject)
         self.retention_ticks = int(cfg.trace.retention_ticks)
         self.token_width = int(cfg.trace.token_width)
+        self.association_tie_break = "latest"
         e, c, w = self.entity_capacity, self.capacity, self.token_width
 
         self.write_cursor = np.zeros(e, dtype=np.uint32)
@@ -832,6 +833,7 @@ class SubjectVMTraceStorage:
             if self.cfg.association_enabled:
                 association = select_delayed_association_candidate(
                     cfg=self.cfg.association,
+                    tie_break=self.association_tie_break,
                     current_tick=int(batch.tick),
                     current_token=np.asarray(tokens.tokens[index], dtype=np.float32),
                     event_valid=self.event_valid[row],
@@ -1344,9 +1346,11 @@ class SubjectVMTraceStorage:
         return result
 
     def clone(self) -> "SubjectVMTraceStorage":
-        return type(self).from_snapshot(
+        cloned = type(self).from_snapshot(
             self.cfg, self.entity_capacity, self.snapshot_state()
         )
+        cloned.association_tie_break = self.association_tie_break
+        return cloned
 
     def diagnostics(self) -> dict[str, Any]:
         return {
@@ -1357,6 +1361,7 @@ class SubjectVMTraceStorage:
             "allocated_nbytes": self.allocated_nbytes(),
             "stored_events": int(np.count_nonzero(self.event_valid)),
             "association_enabled": self.cfg.association_enabled,
+            "association_tie_break": self.association_tie_break,
             "assigned_associations": (
                 0
                 if self.association_assigned is None

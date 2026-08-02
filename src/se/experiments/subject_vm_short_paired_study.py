@@ -63,6 +63,7 @@ class ShortPairedStudyParameters:
     rollback_after_ticks: int | None = None
     bootstrap_target_family: str = "node_bias"
     bootstrap_edge_carrier_enabled: bool = False
+    association_tie_break: str = "latest"
 
     def validate(self) -> None:
         if len(self.seeds) < 3:
@@ -93,6 +94,10 @@ class ShortPairedStudyParameters:
         if self.bootstrap_edge_carrier_enabled and self.bootstrap_target_family != "edge_forward_gate":
             raise ValueError(
                 "bootstrap_edge_carrier_enabled is only valid for edge_forward_gate"
+            )
+        if self.association_tie_break not in {"latest", "oldest"}:
+            raise ValueError(
+                "association_tie_break must be latest or oldest"
             )
 
 
@@ -384,6 +389,11 @@ def run_short_paired_study(
             horizon_ticks=parameters.horizon_ticks,
             finalize_pending_transients_at_export=True,
             rollback_after_ticks_override=parameters.rollback_after_ticks,
+            association_tie_break_override=(
+                None
+                if parameters.association_tie_break == "latest"
+                else parameters.association_tie_break
+            ),
         )
         plan_path = seed_root / "paired_plan.json"
         _write_json(plan_path, plan)
@@ -562,6 +572,15 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Enable the fixed local eligibility carrier on bootstrap edge 0.",
     )
+    parser.add_argument(
+        "--association-tie-break",
+        choices=("latest", "oldest"),
+        default="latest",
+        help=(
+            "Experiment-only tie-break among equal-similarity historical tokens; "
+            "the similarity metric and candidate set remain unchanged."
+        ),
+    )
     parser.add_argument("--backend", choices=("auto", "cpu"), default="auto")
     parser.add_argument("--output", required=True)
     parser.add_argument("--overwrite", action="store_true")
@@ -581,6 +600,7 @@ def main() -> None:
             rollback_after_ticks=args.rollback_after_ticks,
             bootstrap_target_family=args.bootstrap_target_family,
             bootstrap_edge_carrier_enabled=args.bootstrap_edge_carrier_enabled,
+            association_tie_break=args.association_tie_break,
         ),
         output_dir=args.output,
         overwrite=args.overwrite,

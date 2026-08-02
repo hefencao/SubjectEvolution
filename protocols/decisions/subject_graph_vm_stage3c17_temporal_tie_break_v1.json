@@ -1,0 +1,59 @@
+{
+  "schema": "se-subject-vm-stage3c17-temporal-tie-break-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c17-temporal-tie-break-v1",
+  "status": "accepted-engineering-addressing-bias-audit-only",
+  "project_version": "0.131.0",
+  "question": "When all normalized-dot candidate scores are exactly tied, does the fixed temporal tie-break materially determine historical-event allocation and short-window visibility?",
+  "source_panel": {
+    "independent_source_seeds": [12301, 12302, 12303, 12304, 12305, 12306, 12307, 12308, 12309],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "target_family": "edge_forward_gate",
+    "edge_local_eligibility_carrier": true,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "single_factor": {
+    "name": "equal_similarity_temporal_tie_break",
+    "baseline": "latest-eligible-event",
+    "alternative": "oldest-eligible-event",
+    "normalized_dot_similarity_changed": false,
+    "candidate_validity_changed": false,
+    "delay_bounds_changed": false,
+    "similarity_threshold_changed": false,
+    "target_family_or_carrier_changed": false,
+    "update_scale_changed": false,
+    "runtime_persistent_state_added": false,
+    "checkpoint_schema_changed": false
+  },
+  "observed_panel_result": {
+    "assigned_associations_per_arm": 1008,
+    "latest_delay_histogram": {"1": 1008},
+    "oldest_delay_histogram": {"1": 144, "2": 144, "3": 144, "4": 144, "5": 144, "6": 288},
+    "latest_unique_associated_events_per_source": 112,
+    "oldest_unique_associated_events_per_source": 32,
+    "latest_maximum_reuse_per_historical_event": 1,
+    "oldest_maximum_reuse_per_historical_event": 6,
+    "latest_modulation_proposals": 942,
+    "oldest_modulation_proposals": 801,
+    "latest_completed_windows": 129,
+    "oldest_completed_windows": 105,
+    "latest_sources_with_objective_event_divergence": 3,
+    "oldest_sources_with_objective_event_divergence": 2,
+    "stable_objective_coordinates_both_arms": 0
+  },
+  "interpretation": {
+    "temporal_tie_break_is_material_fixed_bootstrap_bias": true,
+    "oldest_policy_reduces_concentration": false,
+    "oldest_policy_moves_concentration_to_repeated_old_events": true,
+    "recency_or_age_has_value_semantics": false,
+    "credit_quality_established": false,
+    "learning_established": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "next_boundary": "Do not select latest or oldest as a value-bearing winner. Before changing the learning mechanism, compare a bounded multi-candidate allocation diagnostic that preserves candidate scores and total update budget."
+}

@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3C-16",
+  "current_stage": "3C-17",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -408,6 +408,21 @@
     "read_only_control_behavior_identity_required": true,
     "carrier_off_unreachable_baseline_is_stage3c8_replicate": false,
     "carrier_on_stage3c7_pass_required": true,
+    "within_source_windows_are_independent_replicates": false,
+    "value_semantics": false,
+    "permanent_write_authorized": false,
+    "scientific_qualification": false
+  },
+  "stage_3c17_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_stage3c17_temporal_tie_break_v1.json",
+    "runtime_persistent_state_change": false,
+    "single_changed_factor": "equal-similarity-temporal-tie-break-latest-to-oldest",
+    "target_family_fixed": "edge_forward_gate",
+    "edge_carrier_fixed": true,
+    "normalized_dot_similarity_changed": false,
+    "candidate_set_changed": false,
+    "identical_source_checkpoint_state_required": true,
+    "read_only_control_behavior_identity_required": true,
     "within_source_windows_are_independent_replicates": false,
     "value_semantics": false,
     "permanent_write_authorized": false,

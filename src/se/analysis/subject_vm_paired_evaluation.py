@@ -132,6 +132,37 @@ def _plan_rollback_after_ticks_override(plan: dict[str, Any]) -> int | None:
     return rollback_after_ticks
 
 
+def _normalized_runtime_overrides(
+    association_tie_break_override: str | None,
+) -> dict[str, str]:
+    if association_tie_break_override is None:
+        return {}
+    policy = str(association_tie_break_override)
+    if policy not in {"latest", "oldest"}:
+        raise ValueError(
+            "subject_vm paired association tie-break override must be latest or oldest"
+        )
+    return {"subject_vm.association.tie_break": policy}
+
+
+def _plan_association_tie_break_override(plan: dict[str, Any]) -> str | None:
+    raw = plan.get("branch_runtime_overrides")
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise ValueError("subject_vm paired branch runtime overrides must be an object")
+    if set(raw) != {"subject_vm.association.tie_break"}:
+        raise ValueError(
+            "subject_vm paired branch runtime overrides may change association tie-break only"
+        )
+    policy = str(raw["subject_vm.association.tie_break"])
+    if policy not in {"latest", "oldest"}:
+        raise ValueError(
+            "subject_vm paired association tie-break override must be latest or oldest"
+        )
+    return policy
+
+
 def _branch_contract_config(
     source_cfg: Any, *, rollback_after_ticks_override: int | None
 ) -> Any:
@@ -178,6 +209,7 @@ def build_plan(
     source_checkpoint: str | Path, *, horizon_ticks: int,
     finalize_pending_transients_at_export: bool = False,
     rollback_after_ticks_override: int | None = None,
+    association_tie_break_override: str | None = None,
 ) -> dict[str, Any]:
     source_path = Path(source_checkpoint).resolve()
     metadata, state = read_checkpoint_bundle(source_path)
@@ -210,6 +242,9 @@ def build_plan(
         "checkpoint_config_sha256": str(metadata["config_sha256"]),
         "checkpoint_tick": source_tick,
     }
+    runtime_overrides = _normalized_runtime_overrides(
+        association_tie_break_override
+    )
     branches = []
     for role in BRANCH_ROLES:
         branch_cfg = _branch_config(
@@ -225,6 +260,8 @@ def build_plan(
             "config_sha256": cfg_sha,
             "final_tick": final_tick,
         }
+        if runtime_overrides:
+            branch_basis["runtime_overrides"] = runtime_overrides
         branches.append(
             {
                 "schema": PAIRED_EVALUATION_BRANCH_SCHEMA,
@@ -255,6 +292,8 @@ def build_plan(
     )
     if overrides:
         payload["branch_contract_overrides"] = overrides
+    if runtime_overrides:
+        payload["branch_runtime_overrides"] = runtime_overrides
     payload["plan_sha256"] = _canonical_sha256(payload)
     return payload
 
@@ -271,6 +310,7 @@ def _validate_plan(plan: dict[str, Any]) -> None:
     if tuple(roles) != BRANCH_ROLES:
         raise ValueError("subject_vm paired evaluation plan branch roles mismatch")
     _plan_rollback_after_ticks_override(plan)
+    _plan_association_tie_break_override(plan)
 
 
 def _set_branch_mode(
@@ -295,6 +335,23 @@ def _set_branch_mode(
     if simulation.subject_vm.evaluation_ledger is None:
         raise ValueError("subject_vm paired branch lacks evaluation ledger")
     simulation.subject_vm.evaluation_ledger.cfg = cfg.subject_vm.evaluation
+
+
+def _set_branch_runtime_overrides(
+    simulation: Simulation, *, association_tie_break_override: str | None
+) -> None:
+    if association_tie_break_override is None:
+        return
+    trace = simulation.subject_vm.trace_storage
+    if trace is None or not simulation.subject_vm.association_enabled:
+        raise ValueError(
+            "subject_vm paired association tie-break override requires association storage"
+        )
+    if association_tie_break_override not in {"latest", "oldest"}:
+        raise ValueError(
+            "subject_vm paired association tie-break override must be latest or oldest"
+        )
+    trace.association_tie_break = association_tie_break_override
 
 
 def _branch_manifest(plan: dict[str, Any], role: str) -> dict[str, Any]:
@@ -374,6 +431,7 @@ def run_plan(
         source, control_dir, backend=backend, until_tick=int(plan["final_tick"])
     )
     rollback_after_ticks_override = _plan_rollback_after_ticks_override(plan)
+    association_tie_break_override = _plan_association_tie_break_override(plan)
     _set_branch_mode(
         control,
         role="read-only-control",
@@ -386,6 +444,14 @@ def run_plan(
         role="guarded-live",
         final_tick=int(plan["final_tick"]),
         rollback_after_ticks_override=rollback_after_ticks_override,
+    )
+    _set_branch_runtime_overrides(
+        control,
+        association_tie_break_override=association_tie_break_override,
+    )
+    _set_branch_runtime_overrides(
+        live,
+        association_tie_break_override=association_tie_break_override,
     )
     for role, sim, directory in (
         ("read-only-control", control, control_dir),
@@ -403,6 +469,7 @@ def run_plan(
                     "source_checkpoint_state_sha256"
                 ],
                 "paired_evaluation_plan_sha256": manifest["plan_sha256"],
+                "runtime_overrides": dict(plan.get("branch_runtime_overrides", {})),
             }
         )
         directory.mkdir(parents=True, exist_ok=True)
@@ -524,6 +591,9 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--source-checkpoint", required=True)
     plan.add_argument("--horizon-ticks", required=True, type=int)
     plan.add_argument("--rollback-after-ticks", type=int)
+    plan.add_argument(
+        "--association-tie-break", choices=("latest", "oldest")
+    )
     plan.add_argument("--output", required=True)
     run = sub.add_parser("run")
     run.add_argument("--plan", required=True)
@@ -545,6 +615,7 @@ def main() -> None:
             args.source_checkpoint,
             horizon_ticks=args.horizon_ticks,
             rollback_after_ticks_override=args.rollback_after_ticks,
+            association_tie_break_override=args.association_tie_break,
         )
     else:
         plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))

@@ -1,0 +1,18 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c17_temporal_tie_break_v1",
+  "title": "D1-Z Subject VM Stage 3C-17 equal-similarity temporal tie-break audit",
+  "status": "engineering-addressing-bias-diagnostic",
+  "scientific_stage": "stage3c17-single-temporal-tie-break-no-value-or-retention-change",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_source_panel": true,
+    "single_equal_similarity_tie_break_change": true,
+    "edge_forward_gate_target_and_carrier_fixed": true,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "topology_evolution": false,
+    "universal_attention": false,
+    "subjecthood_claim": false
+  }
+}

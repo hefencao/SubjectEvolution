@@ -51,6 +51,7 @@ def _query_without_control_coordinates(
 def select_delayed_association_candidate(
     *,
     cfg: SubjectVMAssociationConfig,
+    tie_break: str = "latest",
     current_tick: int,
     current_token: np.ndarray,
     event_valid: np.ndarray,
@@ -67,6 +68,8 @@ def select_delayed_association_candidate(
     improve its own content-address score.  Similarity remains only an address
     criterion; it is never used as value or modulation strength.
     """
+    if tie_break not in {"latest", "oldest"}:
+        raise ValueError("subject_vm association tie_break must be latest or oldest")
     token = np.asarray(current_token, dtype=np.float64)
     if np.any(~np.isfinite(token)):
         raise ValueError("subject_vm association token must be finite")
@@ -121,12 +124,15 @@ def select_delayed_association_candidate(
         score = float(np.clip(score, -1.0, 1.0))
         event_tick = int(ticks[slot])
         event_id = int(ids[slot])
+        preferred_tick = (
+            event_tick > best_tick if tie_break == "latest" else best_tick < 0 or event_tick < best_tick
+        )
         if (
             score > best_score
             or (
                 np.isclose(score, best_score, rtol=0.0, atol=1e-12)
                 and (
-                    event_tick > best_tick
+                    preferred_tick
                     or (event_tick == best_tick and event_id < best_event_id)
                 )
             )

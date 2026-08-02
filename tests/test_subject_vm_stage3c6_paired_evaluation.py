@@ -350,3 +350,28 @@ def test_run_plan_creates_shared_checkpoint_branches_and_export(tmp_path: Path) 
     assert export["window_evidence"]["paired_window_count"] == 0
     assert (tmp_path / "paired/guarded_live/branch_identity.json").is_file()
     assert (tmp_path / "paired/read_only_control/branch_identity.json").is_file()
+
+
+def test_plan_records_only_authorized_association_tie_break_runtime_override(
+    tmp_path: Path,
+) -> None:
+    cfg = _config(live_enabled=False)
+    source = _write_checkpoint(tmp_path / "source_tie.sechk", cfg, _runtime(cfg), tick=0)
+    baseline = build_plan(source, horizon_ticks=3)
+    oldest = build_plan(
+        source, horizon_ticks=3, association_tie_break_override="oldest"
+    )
+    assert "branch_runtime_overrides" not in baseline
+    assert oldest["branch_runtime_overrides"] == {
+        "subject_vm.association.tie_break": "oldest"
+    }
+    assert oldest["plan_sha256"] != baseline["plan_sha256"]
+    assert [item["branch_id"] for item in oldest["branches"]] != [
+        item["branch_id"] for item in baseline["branches"]
+    ]
+    with pytest.raises(ValueError, match="latest or oldest"):
+        build_plan(
+            source,
+            horizon_ticks=3,
+            association_tie_break_override="random",
+        )

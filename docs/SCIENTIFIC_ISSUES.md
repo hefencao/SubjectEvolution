@@ -642,3 +642,10 @@ Stage 3C-16 的 carrier-off arm 有大量 modulation proposal，但因为 edge 0
 开启 edge carrier 后，九个 source 全部出现 edge-forward target binding 与 guarded-live commit，并产生 129 个完整窗口；然而稳定客观坐标仍为 0/21。carrier 是当前 single-winner exact-target selector 的必要机械条件，但非零 carrier value、非零 delta 或非零客观差异都不能自动解释为正确归因、适应方向或主体利益。
 
 下一步若比较 candidate allocation，必须保持 edge family、carrier、source panel、delta、horizon、exposure 与 rollback 不变，一次只改变 allocator 的一个有界因素。不得因为 carrier-on 已可运行就同时开放多 family、永久 retention、scalar reward 或完整通用注意模型。
+
+
+## Stage 3C-17：并列时间规则不是中性细节
+
+当前 fixed bootstrap 的 token 在 association 可见坐标上完全一致，导致 normalized-dot similarity 全为 1.0。默认 latest-on-tie 因而把所有候选压到 delay=1。改为 oldest-on-tie 后 delay 扩展到 1–6，但每 source 的唯一历史事件数从 112 降到 32，单事件复用上升到 6。
+
+因此“延迟分布更宽”不等于“历史证据更丰富”。latest 和 oldest 都是固定 shaping bias：一个偏向最新事件单次使用，另一个偏向少数最老可用事件反复使用。更多 proposal、窗口或离散 crossing 也不能被解释为更好。下一步若继续 addressing，只能比较有界多候选分配，并固定总更新预算与独立 source 层级。

@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
 Status: **Stage 3C-5 CPU-reference score-free objective evaluation windows implemented; no automatic keep/revert decision**
-Project version: **0.130.0**
+Project version: **0.131.0**
 
 ## 1. Decision
 
@@ -664,3 +664,12 @@ carrier-off arm 仍完整产生 token、association candidate 和 modulation pro
 carrier-on arm 在相同 source panel 上产生 688 次 target binding、646 次 safe update、144 次临时 commit 和 129 个完整 paired windows。Stage 3C-7 的 pairing coverage 为 1.0，rollback failure、objective clipping 均为 0，evaluation cost 完全匹配；离散 action 与客观事件分化出现在 3/9 source，Stage 3C-8 仍为 0/21 稳定客观坐标。
 
 两个 arm 的 pre-bootstrap state/config hash、stable subject selection、read-only control 行为以及 read-only token/association/modulation 漏斗完全一致。由此只允许得出：当前 exact-target binding 需要合法 local carrier，且 `edge_forward_gate` 在 carrier 开启后能够进入现有 guarded-live write 链。不能据此判断 carrier 正确、更新有益、形成学习、应永久保留参数或当前 fixed selector 是唯一理论结构。
+
+
+## v0.131：Stage 3C-17 equal-similarity temporal tie-break 审计
+
+Stage 3C-17 固定九 source、32 实体、16 bootstrap subject、source tick 2、branch horizon 8、exposure 3、CPU、`edge_forward_gate` carrier-on、bounded delta、自动回滚和 Stage 3C-8 聚合。唯一变量是 normalized-dot score 精确并列时选择 latest 或 oldest eligible historical token。
+
+该变量通过 paired-plan runtime override 实施，不进入 config identity 或 checkpoint schema。两个 arm 的 source checkpoint state、pre-bootstrap config、stable subject selection 与 read-only objective behavior 完全一致。
+
+latest arm 的 1008 次 association 全为 delay 1；oldest arm 的 delay 为 1–6，但每 source 只使用 32 个历史事件并最大复用 6 次。两者均为 similarity 1.0，说明差异来自 tie-break 而不是 score。latest/oldest 分别产生 129/105 个完整窗口和 3/9、2/9 source 客观分化，Stage 3C-8 均为 0/21。不得把此结果解释为 recency 价值、credit 正确或学习。
