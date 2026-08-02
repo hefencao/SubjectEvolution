@@ -1,0 +1,63 @@
+{
+  "schema": "se-subject-vm-stage3c15-local-sensitivity-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c15-local-sensitivity-v1",
+  "status": "accepted-engineering-analysis-only",
+  "project_version": "0.129.0",
+  "question": "Which generic parameter families are locally visible, algebraically degenerate, delayed-context dependent, clamp inactive, or mechanically sensitive but unreachable under the current fixed bootstrap?",
+  "source_panel": {
+    "baseline_target_family": "node_bias",
+    "independent_source_seeds": [12301, 12302, 12303, 12304, 12305, 12306, 12307, 12308, 12309],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "probe_contract": {
+    "classification": "external-finite-difference-engineering-diagnostic",
+    "probe_delta": 0.05,
+    "family_delta_clip": 0.1,
+    "contexts": [
+      "first-post-bootstrap",
+      "warmed-delayed-edge"
+    ],
+    "families": [
+      "node_bias",
+      "node_input_gate",
+      "node_output_gate",
+      "node_trace_gate",
+      "edge_forward_gate",
+      "edge_bandwidth"
+    ],
+    "source_checkpoint_mutated": false,
+    "probe_branch_persisted": false,
+    "runtime_state_added": false,
+    "checkpoint_schema_changed": false,
+    "topology_changed": false,
+    "association_selector_changed": false,
+    "random_draw_contract_changed": false
+  },
+  "isolation": {
+    "same_quiescent_source_checkpoint_per_probe": true,
+    "same_selected_stable_subjects": true,
+    "same_objective_inputs_before_action_selection": true,
+    "one_parameter_family_and_one_direction_per_probe": true,
+    "action_potential_and_token_response_recorded_before_interaction_interpretation": true,
+    "objective_event_differences_are_descriptive_only": true
+  },
+  "interpretation": {
+    "local_sensitivity_is_value": false,
+    "local_sensitivity_is_causal_credit": false,
+    "zero_sensitivity_proves_family_useless": false,
+    "numerical_degeneracy_is_general_graph_equivalence": false,
+    "discrete_crossing_count_is_reward": false,
+    "automatic_keep_or_revert_decision": false,
+    "permanent_write_authorized": false,
+    "learning_claim_authorized": false,
+    "subjecthood_claim_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "next_boundary": "Keep local sensitivity and eligibility reachability separate. If a later shaping comparison is run, expose exactly one currently sensitive but unreachable carrier while holding source panel, horizon, exposure, delta, addressing, topology size and rollback fixed."
+}

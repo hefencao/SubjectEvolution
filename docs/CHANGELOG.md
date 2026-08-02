@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.129.0
+
+- Adds Subject VM Stage 3C-15 external six-family local-sensitivity and algebraic-degeneracy assessment.
+- Replays bounded `±0.05` one-step probes from the same checksum-bound quiescent source checkpoints without persisting probe mutations or adding runtime/checkpoint state.
+- Separates first-post-bootstrap and warmed-delayed-edge operating contexts so delay-dependent edge sensitivity is not misclassified as structural inactivity.
+- Reports action-potential, token and sampled-probability finite-difference responses together with descriptive discrete-action/objective discontinuities.
+- Distinguishes local mechanical sensitivity from current single-winner eligibility reachability.
+- Confirms `node_bias` and `node_input_gate` are numerically degenerate under the constant-one bootstrap input, `node_trace_gate` is token-channel sensitive, `edge_forward_gate` is delayed-context sensitive, and `edge_bandwidth` is locally inactive because the clamp is not engaged.
+- Adds a declarative Stage 3C-15 workflow, decision protocol, CLI and deterministic reproducibility tests.
+- Authorizes no value ranking, causal-credit conclusion, permanent retention, automatic keep/revert, topology evolution, learning, subjecthood or universal-attention claim.
+
 ## 0.128.0
 
 - Adds Subject VM Stage 3C-14 fixed-bootstrap parameter-family reachability assessment.

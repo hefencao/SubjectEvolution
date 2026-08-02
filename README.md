@@ -1,4 +1,4 @@
-# SubjectEvolution v0.128.0
+# SubjectEvolution v0.129.0
 
 Reference implementation for nested-subject existence and ecological evolution simulation.
 
@@ -6,11 +6,9 @@ Reference implementation for nested-subject existence and ecological evolution s
 
 The project is building a **partitioned unified subject graph** with one node/edge identity space, bounded continuous internal tokens, short-lived local eligibility, delayed association, explicitly guarded temporary parameter writes, exact rollback, and score-free paired evidence. The current fixed bootstrap graph and nearest-token/single-winner selectors are engineering shaping aids, not evolved topology or a universal attention claim.
 
-Version 0.128.0 implements **Subject VM Stage 3C-14: fixed-bootstrap parameter-family reachability audit**. It keeps the v0.127 nine-source, 32-entity, sixteen-bootstrap-subject, eight-tick, exposure-three CPU panel fixed and changes only the fixed bootstrap target-family token route from `node_bias` to `node_output_gate`.
+Version 0.129.0 implements **Subject VM Stage 3C-15: fixed-bootstrap local sensitivity and algebraic-degeneracy audit**. It keeps the v0.128 nine-source, 32-entity, sixteen-bootstrap-subject, eight-tick, exposure-three CPU panel unchanged and performs bounded external finite-difference probes over all six generic parameter families. Probe branches are transient, source checkpoints are never modified, and no live-write, eligibility, association, retention or topology contract is changed.
 
-Both arms start from identical pre-bootstrap source state/config hashes and stable-subject selections. The target control ports are excluded from association similarity, and read-only control behavior is identical apart from relocating the same one-hot target coordinate from token port 23 to port 25. Both families receive 722 proposals and 144 temporary commits. `node_output_gate` produces fewer continuous live/control differences than `node_bias`, while both remain sparse at the sampled-action layer and retain 0/21 stable objective coordinates. This is a parameter-role visibility result, not a family-value ranking, learning claim, causal-credit result or retention authorization.
-
-A preliminary `node_input_gate` arm was rejected before formal comparison because the targeted bootstrap node reads a constant-one input; in that fixed graph, an input-gate delta and bias delta are algebraically equivalent.
+The audit separates local mechanical sensitivity from current eligibility reachability. `node_bias` and `node_input_gate` are numerically degenerate in the current constant-one bootstrap; `node_trace_gate` changes the internal token but not the one-step action channel; `edge_forward_gate` becomes action-sensitive only after the delayed edge has a warmed state; and `edge_bandwidth` remains locally zero because no inspected operating point reaches its clamp. `node_trace_gate` and `edge_forward_gate` are mechanically sensitive but unavailable to the current local eligibility selector. These are engineering identifiability facts, not value rankings, learning claims, causal-credit validation or authorization to expand eligibility.
 
 ## Workspace layout
 
@@ -31,11 +29,11 @@ se-study config
 
 The pointer lives in ignored `.se-workspace.toml` and does not affect protocol identity or release artifacts.
 
-## Stage 3C-14 study
+## Stage 3C-15 study
 
-The authoritative executable steps live only in [`studies/d1z_subject_vm_stage3c14_family_reachability_v1/workflow.toml`](studies/d1z_subject_vm_stage3c14_family_reachability_v1/workflow.toml). The workflow runs both score-free evidence arms, verifies the isolation contract and packages reports without checkpoints.
+The authoritative executable steps live only in [`studies/d1z_subject_vm_stage3c15_local_sensitivity_v1/workflow.toml`](studies/d1z_subject_vm_stage3c15_local_sensitivity_v1/workflow.toml). The workflow regenerates the frozen score-free node-bias baseline, replays two bounded operating contexts from checksum-bound quiescent source checkpoints, and packages the Stage 3C-7/8/10 evidence plus Stage 3C-15 assessment without checkpoints.
 
-The comparison requires identical pre-bootstrap source state/config hashes, identical subject selection, an authorized one-hot token relocation only, complete bounded-trace coverage and identical read-only action/objective behavior. Windows remain nested observations under `window -> stable subject -> independent source`. No scalar objective, automatic keep/revert, permanent retention, topology evolution or Epoch 1 entry is authorized.
+The diagnostic requires the same nine independent sources and distinguishes first-post-bootstrap behavior from a one-tick warmed delayed-edge context. It reports action-channel sensitivity, token-channel sensitivity, clamp activity and existing eligibility reachability separately. Windows remain nested observations under `window -> stable subject -> independent source`. No scalar objective, automatic keep/revert, eligibility expansion, permanent retention, topology evolution or Epoch 1 entry is authorized.
 
 ## Validation and packaging
 
@@ -54,7 +52,7 @@ make parity
 make release-check
 ```
 
-`make package` builds from a disposable archive copy and keeps only the current v0.128 iteration note. Local history under `docs/迭代/` remains untouched.
+`make package` builds from a disposable archive copy and keeps only the current v0.129 iteration note. Local history under `docs/迭代/` remains untouched.
 
 ## Current documents
 
@@ -65,4 +63,4 @@ make release-check
 - [Architecture](docs/ARCHITECTURE.md)
 - [Partitioned Subject Graph VM](docs/PARTITIONED_SUBJECT_GRAPH_VM.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.128 D1-Z iteration](docs/迭代/v0.128_D1-Z_主体图Stage3C14参数族可达性审计.md)
+- [v0.129 D1-Z iteration](docs/迭代/v0.129_D1-Z_主体图Stage3C15局部灵敏度与退化诊断.md)

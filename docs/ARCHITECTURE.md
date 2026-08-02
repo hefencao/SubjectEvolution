@@ -1564,3 +1564,25 @@ Read-only controls are compared across profiles. Action potentials, sampled prob
 The initially considered `node_input_gate` route is not a valid contrast for this bootstrap because the targeted node reads input port 0, whose frozen adapter value is constant one. In the activation equation, a delta to node bias and the same delta to that input gate are therefore algebraically identical. Stage 3C-14 records this as a rejected experiment design rather than a scientific result.
 
 Both accepted arms retain Stage-3C-7/8/10 contracts, exact rollback and score-free hierarchical aggregation. The audit may report differences in continuous and discrete visibility, but it cannot assign value to a parameter family, authorize automatic keep/revert or permanent retention, claim causal credit, learning, subjecthood or a universal attention architecture.
+
+### Stage 3C-15 — fixed-bootstrap local sensitivity and degeneracy audit (implemented in v0.129)
+
+Stage 3C-15 is an external replay analysis under `se.analysis`; it does not add a runtime field, checkpoint schema, branch owner, ledger, lifecycle path or persistent activation trace. The analyzer consumes the existing Stage-3C-9 baseline study report and its checksum-bound quiescent source checkpoints, clones each source into transient one-step branches, changes one fixed parameter slot by a bounded finite-difference step and discards the branch after extracting its existing bounded trace event.
+
+The diagnostic inspects two operating contexts. `first-post-bootstrap` begins from the quiescent source checkpoint, where the delayed self-edge has no prior node state. `warmed-delayed-edge` begins after one unperturbed activation, so the same one-tick delayed edge can contribute. This two-context contract prevents first-tick edge zeros from being misclassified as permanent structural inactivity. It does not enlarge trace retention or store a complete node/edge path.
+
+The six probe slots are fixed engineering operating points: node 0 for bias/input/output gates, node 7 for the target-token trace gate, and edge 0 for forward gate/bandwidth. The probe changes all selected bootstrap subjects in one direction on one transient branch. Action-potential and thought-token responses are read from the pre-existing trace contract. Sampled action and objective-event differences are descriptive discontinuity observations only; they are not finite-difference derivatives, reward or causal-credit evidence.
+
+`edge_bandwidth` is already at its configured upper bound, so its audit uses an inward one-sided difference. The assessment separately reports whether the edge clamp is active. A zero bandwidth response while the raw edge contribution remains inside the clamp is classified as an operating-point fact, not a universal no-effect conclusion.
+
+Eligibility reachability is reported independently from mechanical sensitivity. A parameter role may affect action or token outputs while remaining unavailable to the current single-winner local-eligibility selector. Stage 3C-15 does not automatically add flags or gates to such a target. Any later shaping comparison must expose exactly one carrier and retain the existing source panel, addressing, delta, horizon, exposure, rollback and score-free evidence contracts.
+
+Because all replay state is transient, persistent memory growth is exactly zero:
+
+```text
+checkpoint_growth = 0 bytes
+runtime_fixed_capacity_growth = 0 bytes
+packaged_probe_branch_growth = 0 bytes
+```
+
+Temporary working storage is bounded by one source simulation, one warmed source clone and one one-step probe clone at a time. It is external analysis workspace and is excluded from the project release and research result bundle.

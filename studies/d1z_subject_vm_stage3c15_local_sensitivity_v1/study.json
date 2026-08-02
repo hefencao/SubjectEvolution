@@ -1,0 +1,18 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c15_local_sensitivity_v1",
+  "title": "D1-Z Subject VM Stage 3C-15 fixed-bootstrap local sensitivity and degeneracy audit",
+  "status": "engineering-local-sensitivity-diagnostic",
+  "scientific_stage": "stage3c15-external-finite-difference-no-value-or-retention-change",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_source_panel": true,
+    "external_finite_difference_probe": true,
+    "two_operating_contexts": true,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "topology_evolution": false,
+    "universal_attention": false,
+    "subjecthood_claim": false
+  }
+}

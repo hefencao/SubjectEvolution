@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
 Status: **Stage 3C-5 CPU-reference score-free objective evaluation windows implemented; no automatic keep/revert decision**
-Project version: **0.128.0**
+Project version: **0.129.0**
 
 ## 1. Decision
 
@@ -624,3 +624,33 @@ Stage 3C-14 保持九个独立 pre-bootstrap source、每 source 32 个实体、
 预探针中的 `node_input_gate` 不作为正式 arm：目标节点读取恒为 1 的 input port 0，因此 bias delta 与 input-gate delta 在该节点上代数等价。该事实只说明此 bootstrap 对照不可辨识，不说明两个参数族在一般图中等价。
 
 Stage 3C-14 允许得出“参数角色影响短期连续可见性”，但不允许把更多或更少差异解释为价值、优劣或因果正确性，也不授权 permanent retention、automatic keep/revert、scalar objective、稳定学习、主体性、拓扑演化或通用注意力声明。
+
+## v0.129：Stage 3C-15 fixed-bootstrap 局部灵敏度与退化诊断
+
+Stage 3C-15 保持九个独立 source、每 source 32 个实体、16 个 bootstrap subject、source tick 2、branch horizon 8、`rollback_after_ticks=3`、CPU、bounded delta、自动回滚、nearest-token association 和 Stage 3C-8 聚合不变。它不新增 live-write arm，而是在外部 analysis 层从同一 quiescent source checkpoint 创建一次性 one-step probe branch。
+
+每次 probe 只改一个固定参数槽位 `±0.05`，并使用已有 trace 读取 action potential、thought token、sampled probability、action 与客观事件。probe 结果不会写回 source checkpoint，不增加 runtime/checkpoint 字段，也不进入永久参数保留。`edge_bandwidth` 因 bootstrap 值位于上界而只做 inward one-sided probe。
+
+诊断固定两个上下文：
+
+```text
+first-post-bootstrap
+warmed-delayed-edge
+```
+
+前者检验即时节点、输出和 token 作用；后者先运行一次无干预激活，使 delay=1 的 edge 获得历史 node state。九 source 结果显示：
+
+- `node_bias` 与 `node_input_gate` 在 float32 误差 `5.96e-8` 内退化等价，因为 node 0 读取 constant-one；
+- `node_output_gate` 在两个上下文都影响 action potential；
+- `node_trace_gate` 在 one-step horizon 只影响内部 token，不直接改变 action potential；
+- `edge_forward_gate` 在首个上下文为零，但在 warmed context 明确影响 action potential；
+- `edge_bandwidth` 在两个上下文都为零，因为 raw contribution 尚未触发 clamp，warm context 最小 margin 为 0.875。
+
+Stage 3C-15 同时审计 eligibility reachability。node 0 的 bias/input/output family 具有 local eligibility carrier；node 7 的 trace gate 与 edge 0 的 forward/bandwidth family 当前没有 carrier。由此必须分别报告：
+
+```text
+mechanically sensitive
+eligibility reachable
+```
+
+二者都不是价值或学习结论。后续若比较 eligibility shaping，只允许一次开放一个敏感但不可达的 carrier，并保持 source panel、horizon、exposure、delta、association、topology size、rollback 和 score-free evidence 不变。

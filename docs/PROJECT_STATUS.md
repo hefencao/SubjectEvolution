@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.128.0**
+Version: **0.129.0**
 
 ## Current scientific task
 
-Version 0.128 implements **Subject VM Stage 3C-14: fixed-bootstrap parameter-family reachability audit**.
+Version 0.129 implements **Subject VM Stage 3C-15: fixed-bootstrap local sensitivity and algebraic-degeneracy audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -65,6 +65,12 @@ The nine-source comparison reaches both families: each arm produces 722 family p
 
 A preliminary `node_bias -> node_input_gate` comparison was rejected before becoming a scientific arm: node 0 reads the `constant-one` input port, so a bias delta and an input-gate delta are algebraically equivalent in this fixed bootstrap. This is recorded as an experiment-design diagnostic, not as evidence that the two parameter families are generally equivalent. Stage 3C-14 does not rank families by value, authorize permanent retention, validate causal credit or establish learning.
 
+Stage 3C-15 does not open another live-write target. It replays bounded external `±0.05` finite-difference probes for all six generic parameter families from the same nine quiescent source checkpoints. Probe branches are transient, are not written back to source checkpoints, consume no new runtime state and retain the Stage 3C-7/8/10 baseline as engineering context.
+
+Two operating contexts are required. The first activation after bootstrap diagnoses immediate node/output/token effects; a second context after one unperturbed activation permits the one-tick delayed edge to contribute. Across nine sources, `node_bias` and `node_input_gate` are numerically equivalent within `5.96e-8`, as expected from the constant-one input. `node_trace_gate` changes only the internal target token at the one-step probe horizon. `edge_forward_gate` is action-potential sensitive only in the warmed delayed-edge context, while `edge_bandwidth` remains locally zero because the current raw contribution never reaches the clamp boundary.
+
+The diagnostic also separates local sensitivity from eligibility reachability. `node_bias`, `node_input_gate` and `node_output_gate` are currently reachable through node-0 local eligibility. `node_trace_gate` and `edge_forward_gate` are mechanically sensitive at the inspected operating points but are not reachable through the current fixed bootstrap eligibility carriers. This is an engineering shaping fact only; it does not assign value, validate credit, authorize eligibility expansion, retention, learning or a preferred parameter family.
+
 ## Engineering status
 
 Implemented and tested:
@@ -90,6 +96,7 @@ Implemented and tested:
 - Stage-3C-12 horizon-only comparison with identical source states, exact semantic prefix identity and complete bounded-trace coverage;
 - Stage-3C-13 exposure-only comparison with identical source checkpoints, synchronized control reservation and read-only behavior identity;
 - Stage-3C-14 fixed-bootstrap target-family reachability comparison with pre-bootstrap identity, authorized token relocation and rejected-degeneracy recording;
+- Stage-3C-15 external six-family finite-difference audit with delayed-edge warm context, algebraic-degeneracy detection and sensitivity-versus-eligibility separation;
 - v0.123 trace/checkpoint compatibility for the new bounded diagnostic fields;
 - explicit guarded-live/read-only branch identities bound to source state, branch config and final tick;
 - branch identity persistence in final checkpoint lineage;
@@ -111,7 +118,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-14 classifies the fixed-bootstrap family-route comparison as engineering evidence without authorizing retention or Epoch 1.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-15 classifies local sensitivity and eligibility reachability as separate engineering facts without authorizing retention or Epoch 1.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -137,4 +144,4 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-The next authorized boundary must use the Stage 3C-14 result rather than assuming that family breadth alone solves sparse visibility. `node_output_gate` is reachable and mechanically active, yet it produces fewer continuous differences and no broader source incidence than `node_bias`. A later single-variable study may examine one non-degenerate fixed-bootstrap input/addressing factor or one bounded step-scale factor, but it must not combine that change with family routing, horizon, exposure, entity count, topology evolution, permanent retention, scalar value construction, a complete general-attention replacement or Epoch 1 qualification.
+The next authorized boundary must use Stage 3C-15 to keep sensitivity and reachability separate. The strongest bounded candidate is a single eligibility-carrier shaping change for one currently sensitive but unreachable role, with `edge_forward_gate` preferred over `node_trace_gate` because it already affects the action channel after the delayed state becomes available. Such a comparison must hold the nine-source panel, 32 entities, eight-tick horizon, exposure duration 3, bounded delta, nearest-token selector, topology size, automatic rollback and score-free aggregation fixed. It must not simultaneously alter family weights, step scale, addressing, entity count, topology evolution, permanent retention, scalar value construction, a complete general-attention replacement or Epoch 1 qualification.

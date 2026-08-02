@@ -606,3 +606,27 @@ Stage 3C-14 将固定 bootstrap 的 one-hot proposal 从 `node_bias` 路由替�
 不同 bootstrap profile 会有意改变 post-bootstrap source checkpoint state，因此不能要求两 arm 的最终 source state hash 相同。Stage 3C-14 改为在安装 fixed graph 前冻结并比较 source state/config hash，同时要求相同 stable subject selection 和 priming tick。paired live/control 仍在各自 post-bootstrap source 内共享完全相同的 checkpoint。
 
 这一区分避免把 intended profile intervention 误报为 source drift，也不允许用 profile 差异绕过 config identity、branch identity、rollback 或 Stage 3C-8 的 source-level replicate hierarchy。
+
+## v0.129：局部灵敏度与 eligibility 可达性必须分开
+
+Stage 3C-15 对六个参数族做外部有限差分诊断，而不把它们都接入 live-write 链。九 source 结果显示，`node_trace_gate` 会稳定改变内部 token，`edge_forward_gate` 在延迟状态可用后会改变 action potential，但这两个作用点都没有当前 fixed bootstrap 的 local eligibility carrier。相反，`node_bias`、`node_input_gate`、`node_output_gate` 当前可达。
+
+因此“参数族没有 proposal”至少可能有两类原因：参数在当前运行点机械上不敏感，或者它机械上敏感但根本没有 eligibility 路径。后续不得把这两类情况混成同一个“参数无效”结论，也不得仅凭非零灵敏度自动开放写权限。
+
+## v0.129：延迟结构必须在有效运行上下文中诊断
+
+bootstrap 后第一次激活时，delay=1 的 self-edge 读取到的历史 node state 为零，所以 `edge_forward_gate` 的局部响应也为零。经过一次未干预预热后，edge raw contribution 的绝对值达到 1.125，`edge_forward_gate` 出现明确 action-potential 灵敏度。
+
+这说明单一首 tick 探针会把“尚无历史状态”误判成“结构无作用”。任何 delayed operator、retained state 或历史候选机制都必须在其最小有效上下文中审计；但增加上下文不能同时改变参数、寻址和回滚合同。
+
+## v0.129：带宽零响应是 clamp operating point，不是参数族否决
+
+当前 edge bandwidth 为 2.0，warm context 的最大 raw contribution 绝对值为 1.125，至少保留 0.875 的 clamp margin。带宽 probe 因而没有改变 bounded contribution。它还处于配置上界，只能做 inward one-sided probe。
+
+该结果只允许描述“当前固定图与输入范围没有触发 bandwidth clamp”。不能据此删除带宽参数族、宣称其一般无效，或为了制造响应而同时提高 forward gate、缩小 bandwidth 和改变 delta。
+
+## v0.129：constant-one 下的数值退化不是一般图等价
+
+`node_bias` 与 `node_input_gate` 的 probe 响应在 float32 误差 `5.96e-8` 内等价，因为 node 0 的输入为固定 `constant-one`。有限精度的加法顺序会造成少量非 bitwise 差异，因此 Stage 3C-15 同时报告 exact equality 和 float32 tolerance equality。
+
+后续对照必须先检查代数可辨识性和数值执行顺序。当前退化只适用于这个节点、这个输入端口和这个 bootstrap operating point，不允许推广为一般参数族理论。

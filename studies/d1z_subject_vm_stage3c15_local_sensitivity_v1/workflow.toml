@@ -1,0 +1,69 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c15_local_sensitivity_v1"
+title = "D1-Z Subject VM Stage 3C-15 local sensitivity and degeneracy audit"
+
+[parameters.config]
+type = "path"
+default = "configs/mvp_short_subject_vm_stage3c8_paired_study.json"
+description = "Unchanged fixed-bootstrap paired source configuration."
+
+[parameters.seeds]
+type = "csv-int"
+default = "12301,12302,12303,12304,12305,12306,12307,12308,12309"
+description = "The frozen nine independent-source panel."
+
+[parameters.source_ticks]
+type = "int"
+default = 2
+minimum = 0
+maximum = 16
+description = "Unchanged source checkpoint tick."
+
+[parameters.horizon_ticks]
+type = "int"
+default = 8
+minimum = 8
+maximum = 8
+description = "Unchanged trace-safe paired branch horizon."
+
+[parameters.bootstrap_subjects]
+type = "int"
+default = 16
+minimum = 1
+maximum = 64
+description = "Unchanged fixed-bootstrap stable-subject count."
+
+[parameters.probe_delta]
+type = "float"
+default = 0.05
+minimum = 0.005
+maximum = 0.1
+description = "External finite-difference step, bounded by the existing family clip."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c15_local_sensitivity_v1/final"
+description = "Baseline paired evidence plus the external Stage-3C-15 assessment."
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c15_local_sensitivity_v1_results.zip"
+description = "Compact study result bundle, separate from the project release archive."
+
+[steps.run-baseline]
+description = "Regenerate the frozen nine-source node-bias baseline."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "{source_ticks}", "--horizon-ticks", "{horizon_ticks}", "--bootstrap-subjects", "{bootstrap_subjects}", "--rollback-after-ticks", "3", "--bootstrap-target-family", "node_bias", "--backend", "cpu", "--output", "{analysis_root}/baseline", "--overwrite"]
+
+[steps.assess-local-sensitivity]
+description = "Replay bounded six-family probes without persisting probe branches."
+command = ["se-subject-vm-stage3c15-local-sensitivity", "--study-report", "{analysis_root}/baseline/study_report.json", "--probe-delta", "{probe_delta}", "--output", "{analysis_root}/stage3c15_local_sensitivity.json"]
+
+[steps.pack-results]
+description = "Package score-free baseline evidence and the Stage-3C-15 assessment without checkpoints."
+requires_json = [
+  { path = "{analysis_root}/baseline/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/stage3c15_local_sensitivity.json", field = "probe_contract.external_finite_difference_only", equals = true },
+  { path = "{analysis_root}/stage3c15_local_sensitivity.json", field = "diagnostic_findings.node_bias_and_input_gate_degenerate_in_this_bootstrap", equals = true },
+  { path = "{analysis_root}/stage3c15_local_sensitivity.json", field = "interpretation_boundary.permanent_parameter_retention_authorized", equals = false },
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--required-file", "{analysis_root}/baseline/study_report.json", "--required-file", "{analysis_root}/baseline/bootstrap_profile.json", "--required-file", "{analysis_root}/baseline/paired_evidence_assessment.json", "--required-file", "{analysis_root}/baseline/component_reproducibility.json", "--required-file", "{analysis_root}/baseline/stage3c10_diagnostics.json", "--required-file", "{analysis_root}/stage3c15_local_sensitivity.json", "--output", "{output}"]
