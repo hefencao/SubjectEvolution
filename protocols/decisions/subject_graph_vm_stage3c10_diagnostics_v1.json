@@ -23,7 +23,10 @@
     "admission_and_counted_cost_symmetry": true,
     "exact_parameter_restoration": true,
     "post_rollback_path_dependence": true,
-    "aggregation_sensitivity": true
+    "aggregation_sensitivity": true,
+    "trace_retention_coverage": true,
+    "paired_admission_contract_scope_explicit": true,
+    "post_divergence_transaction_path_equality_required": false
   },
   "aggregation": {
     "primary": "window -> stable subject -> independent source",
@@ -44,7 +47,7 @@
     "scalar_objective": false,
     "topology_evolution": false
   },
-  "authorized_conclusion": "The data chain is active and contract-complete, but parameter-level effects rarely cross the sampled discrete-action boundary under the current short fixed bootstrap.",
+  "authorized_conclusion": "The data chain is active and the paired admission/evaluation contract is complete. Parameter-level effects rarely cross the sampled discrete-action boundary under the current short fixed bootstrap; transaction-preparation paths may diverge after the live branch changes its own future internal state, and retention-limited timelines are lower bounds.",
   "forbidden_conclusions": {
     "causal_credit": false,
     "beneficial_update": false,

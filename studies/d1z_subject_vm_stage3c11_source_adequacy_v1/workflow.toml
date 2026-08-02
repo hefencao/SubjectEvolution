@@ -1,0 +1,62 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c11_source_adequacy_v1"
+title = "D1-Z Subject VM Stage 3C-11 independent-source adequacy audit"
+
+[parameters.config]
+type = "path"
+default = "configs/mvp_short_subject_vm_stage3c8_paired_study.json"
+description = "Unchanged fixed-bootstrap short paired configuration."
+
+[parameters.seeds]
+type = "csv-int"
+default = "12301,12302,12303,12304,12305,12306,12307,12308,12309"
+description = "Predeclared nine independent source seeds; the first three are the v0.124 pilot prefix."
+
+[parameters.source_ticks]
+type = "int"
+default = 2
+minimum = 0
+maximum = 16
+description = "Unchanged source checkpoint tick."
+
+[parameters.horizon_ticks]
+type = "int"
+default = 5
+minimum = 3
+maximum = 16
+description = "Unchanged short paired branch horizon."
+
+[parameters.bootstrap_subjects]
+type = "int"
+default = 16
+minimum = 1
+maximum = 64
+description = "Unchanged fixed-bootstrap stable-subject count."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c11_source_adequacy_v1/pilot"
+description = "Nine-source paired branches and Stage-3C-7/8/10/11 reports."
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c11_source_adequacy_v1_results.zip"
+description = "Compact study result bundle, separate from the project release archive."
+
+[steps.run-expanded-source-study]
+description = "Run the unchanged five-tick paired contract on nine predeclared independent sources."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "{source_ticks}", "--horizon-ticks", "{horizon_ticks}", "--bootstrap-subjects", "{bootstrap_subjects}", "--backend", "cpu", "--output", "{analysis_root}", "--overwrite"]
+
+[steps.assess-sample-adequacy]
+description = "Compare the three-source pilot prefix with the full independent-source panel without changing the replicate hierarchy."
+command = ["se-subject-vm-stage3c11-sample-adequacy", "--study-report", "{analysis_root}/study_report.json", "--pilot-source-count", "3", "--output", "{analysis_root}/stage3c11_sample_adequacy.json"]
+
+[steps.pack-results]
+description = "Package score-free Stage-3C evidence and sample-adequacy diagnostics."
+requires_json = [
+  { path = "{analysis_root}/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/study_report.json", field = "permanent_parameter_retention_authorized", equals = false },
+  { path = "{analysis_root}/stage3c11_sample_adequacy.json", field = "adequacy_interpretation.valid_engineering_sample_for_pipeline_and_pairing", equals = true },
+  { path = "{analysis_root}/stage3c11_sample_adequacy.json", field = "adequacy_interpretation.valid_sample_for_claiming_stable_objective_direction", equals = false },
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "{analysis_root}", "--required-file", "{analysis_root}/study_report.json", "--required-file", "{analysis_root}/paired_evidence_assessment.json", "--required-file", "{analysis_root}/component_reproducibility.json", "--required-file", "{analysis_root}/stage3c10_diagnostics.json", "--required-file", "{analysis_root}/stage3c11_sample_adequacy.json", "--output", "{output}"]

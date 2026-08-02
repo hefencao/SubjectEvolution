@@ -1,0 +1,19 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c11_source_adequacy_v1",
+  "title": "D1-Z Subject VM Stage 3C-11 independent-source adequacy audit",
+  "status": "engineering-sample-adequacy",
+  "scientific_stage": "stage3c11-source-replication-no-mechanism-change",
+  "authorization": {
+    "reuse_v0124_fixed_bootstrap_contract": true,
+    "expand_independent_sources_from_three_to_nine": true,
+    "short_cpu_paired_run": true,
+    "change_entity_count": false,
+    "change_branch_horizon": false,
+    "change_update_mechanism": false,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "epoch_1_entry": false,
+    "subjecthood_claim": false
+  }
+}

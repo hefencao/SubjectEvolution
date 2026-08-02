@@ -1,20 +1,14 @@
-# SE v0.108
+# SubjectEvolution v0.125.0
 
 Reference implementation for nested-subject existence and ecological evolution simulation.
 
 ## Current direction
 
-Version 0.108 implements Stage 1 of the subject-formation substrate as an inert, disabled-by-default container without changing action or world behavior.
+The project is building a **partitioned unified subject graph** with one node/edge identity space, bounded continuous internal tokens, short-lived local eligibility, delayed association, explicitly guarded temporary parameter writes, exact rollback, and score-free paired evidence. The current fixed bootstrap graph and nearest-token/single-winner selectors are engineering shaping aids, not evolved topology or a universal attention claim.
 
-The project will use a **partitioned unified subject graph**:
+Version 0.125.0 implements **Subject VM Stage 3C-11: independent-source sample-adequacy audit**. It keeps the v0.124 runtime and five-tick branch contract unchanged and expands only the predeclared independent source panel from three to nine CPU seeds. Entities, subjects and paired windows remain nested observations; the independent source checkpoint is the highest replicate unit.
 
-- one evolvable node/edge identity space;
-- initially biased fast sensorimotor, persistent-state, delayed-association and integrative-drive regions;
-- shared activation routing and later delayed-plasticity routing on the same graph;
-- explicit structural, execution, memory, bandwidth and plasticity costs;
-- no built-in trust, benefit, friend, enemy, knowledge-value or social-role semantics.
-
-The project may preset general cognitive architecture to reduce evolutionary search time. It must not preset concrete cognition. D1-X/Y are retained as fixed-cognition comparison baselines and engineering fixtures, not extended as the primary subject model.
+The nine-source panel produces 111 fully paired windows, but only two sources show trace-level discrete-action/objective-event divergence and only one source has a nonzero completed-window objective vector. No objective coordinate passes the descriptive Stage 3C-8 stability screen. This validates a small engineering data pipeline, not stable learning, causal credit, permanent retention or scientific sample sufficiency.
 
 ## Workspace layout
 
@@ -35,32 +29,35 @@ se-study config
 
 The pointer lives in ignored `.se-workspace.toml` and does not affect protocol identity or release artifacts.
 
-## Implemented Stage 1 boundary
+## Stage 3C-11 study
 
-The repository now contains disabled-by-default Subject Graph VM configuration and inert fixed-capacity storage under `src/se/subject_vm/`, including stable ownership, birth/death, clone, checkpoint, compatibility restore and regional-branch handling. Empty enabled storage is exactly neutral. Activation routing, plasticity, graph costs and subjective reward remain absent.
+```text
+se-study show studies/d1z_subject_vm_stage3c11_source_adequacy_v1/workflow.toml
+se-study run studies/d1z_subject_vm_stage3c11_source_adequacy_v1/workflow.toml run-expanded-source-study
+se-study run studies/d1z_subject_vm_stage3c11_source_adequacy_v1/workflow.toml assess-sample-adequacy
+se-study run studies/d1z_subject_vm_stage3c11_source_adequacy_v1/workflow.toml pack-results
+```
 
-See:
-
-- [Partitioned Subject Graph VM v1](docs/PARTITIONED_SUBJECT_GRAPH_VM.md)
-- [Machine-readable architecture contract](protocols/epochs/subject_graph_vm_v1.json)
-- [Epoch 1 functional qualification v2](protocols/epochs/entity_subject_functional_qualification_v2.json)
-- [Primary-direction decision](protocols/decisions/subject_graph_vm_direction_v1.md)
-
-## Epoch bases and regional branches
-
-Long-horizon evolution may freeze a qualified full-world checkpoint as an immutable epoch base through `se-epoch`. Regional branch v1 preserves the complete environment coordinate frame and fields while pruning active entities and cross-boundary social state. It is an explicit intervention, not an unbiased miniature world.
+The workflow preserves the hierarchy `window -> stable subject -> independent source`, retains zero and nonzero outcomes, and emits Stage 3C-7 integrity, Stage 3C-8 component reproducibility, Stage 3C-10 diagnostics and Stage 3C-11 sample-adequacy evidence. It does not authorize permanent parameter retention, scalar reward, automatic keep/revert, topology evolution or Epoch 1.
 
 ## Validation and packaging
 
-Run `make conda-sync` after changing package metadata, entry points, dependencies, package structure or editable checkout location. Normal validation:
+After package metadata, entry-point, dependency or editable-checkout changes:
+
+```text
+make conda-sync
+```
+
+Normal validation:
 
 ```text
 make test
 make conda-check
-make parity-gpu
+make parity
+make release-check
 ```
 
-`make package` builds a disposable archive copy and keeps only the current v0.108 iteration note. Local history under `docs/迭代/` remains untouched.
+`make package` builds from a disposable archive copy and keeps only the current v0.125 iteration note. Local history under `docs/迭代/` remains untouched.
 
 ## Current documents
 
@@ -71,4 +68,4 @@ make parity-gpu
 - [Architecture](docs/ARCHITECTURE.md)
 - [Partitioned Subject Graph VM](docs/PARTITIONED_SUBJECT_GRAPH_VM.md)
 - [Changelog](docs/CHANGELOG.md)
-- [v0.108 D1-Z iteration](docs/迭代/v0.108_D1-Z_分区统一主体图惰性基础设施.md)
+- [v0.125 D1-Z iteration](docs/迭代/v0.125_D1-Z_主体图Stage3C11独立Source样本充分性审计.md)

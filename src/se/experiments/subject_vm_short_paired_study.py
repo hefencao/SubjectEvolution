@@ -18,6 +18,7 @@ from typing import Any, Iterable
 
 import numpy as np
 
+from .. import __version__
 from ..analysis.subject_vm_component_reproducibility import (
     assess_component_reproducibility,
 )
@@ -283,6 +284,7 @@ def run_short_paired_study(
     profile = bootstrap_profile()
     _write_json(root / "bootstrap_profile.json", profile)
     resolved_backend = "cpu" if parameters.backend == "auto" else parameters.backend
+    base_cfg = load_config(config_source)
 
     seed_records: list[dict[str, Any]] = []
     export_paths: list[Path] = []
@@ -291,7 +293,7 @@ def run_short_paired_study(
         source_root = seed_root / "source"
         pair_root = seed_root / "paired"
         cfg = _source_config(
-            load_config(config_source), seed=int(seed), source_ticks=parameters.source_ticks
+            base_cfg, seed=int(seed), source_ticks=parameters.source_ticks
         )
         simulation = Simulation(cfg, source_root, backend=resolved_backend)
         for _ in range(int(parameters.source_ticks)):
@@ -373,9 +375,14 @@ def run_short_paired_study(
     aggregate = integrity["aggregate"]
     payload = {
         "schema": SHORT_PAIRED_STUDY_SCHEMA,
+        "producer_version": __version__,
         "project_config": str(config_source),
         "project_config_file_sha256": _sha256_file(config_source),
         "parameters": asdict(parameters),
+        "population": {
+            "initial_entities": int(base_cfg.world.initial_entities),
+            "max_entities": int(base_cfg.world.max_entities),
+        },
         "resolved_backend": resolved_backend,
         "bootstrap_profile": profile,
         "seeds": seed_records,

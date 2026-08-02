@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
 Status: **Stage 3C-5 CPU-reference score-free objective evaluation windows implemented; no automatic keep/revert decision**
-Project version: **0.124.0**
+Project version: **0.125.0**
 
 ## 1. Decision
 
@@ -572,3 +572,18 @@ read-only control 现在会建立虚拟 reservation，占用与 guarded-live 相
 同一三 source 重跑显示：数据链并未停在激活或 token 层；64/64 已分配关联全部为 delay 1、similarity 1.0；121 个安全提案和 45 个实际临时写入全部落在 `node_bias`；每次写入只覆盖一个后续语义激活 tick。三个 source 都出现 action potential 和 sampled probability 差异，但只有一个 source 的两个主体事件改变离散 action，客观事实差异也只在该 source 出现。所有 source 的控制准入、窗口数量、计数成本、回滚和 export-boundary 清算保持对称，参数精确恢复。
 
 因此当前证据支持“短期参数效应在离散采样之前大量消失或未跨过动作边界”，不支持更新有效/无效、稳定学习、因果信用、注意最优性或主体性。fixed nearest-token addressing 和 single-winner binding 继续作为可替换的 `fixed-cognition engineering shaping aid`；v0.124 没有调整机制变量，也没有授权永久保留。
+
+
+## v0.125：Stage 3C-11 独立 source 样本充分性审计
+
+本阶段不改变主体图激活、fixed bootstrap、候选寻址、eligibility、参数 proposal、target binding、bounded update、shadow transaction、guarded live write、evaluation window、control reservation 或 export-boundary finalization。唯一实验变化是把预声明的独立 source checkpoint 从 seeds `12301..12303` 扩展为 `12301..12309`；32 个初始实体、16 个 bootstrap subject、source tick 2、branch horizon 5、CPU backend 和 permanent retention disabled 保持不变。
+
+`se.analysis.subject_vm_stage3c11_sample_adequacy` 验证 study、Stage 3C-8 和 Stage 3C-10 checksum，并以 source state 为最高重复单位。它报告从 3 到 9 source 的 prefix sensitivity、离散 action 分化 source 比例、trace-level objective-event 分化比例、完成窗口非零 source 比例和描述性 Wilson 区间。窗口、主体和实体都不被提升为独立 replicate；Stage 3C-8 仍按 window → stable subject → independent source 聚合。
+
+报告区分两类 identity：单次运行的 artifact checksum 继续绑定实际 checkpoint、plan 和 export 文件；另一个 semantic-result hash 使用 source checkpoint state hash、固定参数、逐分量统计和科学边界，并排除路径、checkpoint `created_utc` 与 ZIP 容器字节元数据。这样不会削弱单次证据完整性，同时允许跨重复运行判断语义结果是否一致。
+
+九 source study 得到 111 个完整配对窗口，pairing coverage 1.0、rollback failure 0、objective fact clipping 0、evaluation cost match 1.0。离散 action 与 trace 客观事件分化出现在 2/9 source，完成窗口客观向量非零仅出现在 1/9 source，稳定客观坐标仍为 0/21。该结果说明三 source pilot 只能作为工程样本，并显示当前五 tick fixed-bootstrap 效应稀疏；它不证明九 source 已具科学充分性，也不决定 32 实体或五 tick 是否代表更广分布。
+
+Stage 3C-10 同步收紧诊断合同。paired admission/evaluation symmetry 只要求 live admission 与 control reservation、窗口容量和评价 counted cost 对称；live 干预已改变未来内部路径后，后续 shadow-transaction preparation 次数不必继续相等。分化时间线还必须声明有界 trace 的 tick coverage，覆盖不完整时只报告观测下界，不能把 ring overwrite 解释成完整零差异。
+
+本阶段没有新增运行时字段、checkpoint schema、随机数消耗、第二套 branch/checkpoint/ledger owner 或长期路径记录。fixed nearest-token addressing、single-winner eligibility target 和 bootstrap graph 继续标记为 `bootstrap shaping bias`、`fixed-cognition engineering baseline`、`evolved_topology=false`、`universal_attention_claim=false`。永久参数保留、scalar reward、自动 keep/revert、因果信用正确性、稳定学习、主体性和 Epoch 1 仍未授权。

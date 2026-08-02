@@ -518,3 +518,34 @@ Stage 3C-10 对同一 v0.123 三 source 短程合同进行漏斗诊断。所有 
 ## v0.124：聚合敏感性只能诊断，不能改变重复单位
 
 Stage 3C-10 同时输出 subject-balanced mean、window-weighted mean、median、nonzero source count、非零主体比例和 source 间窗口数量不平衡。主统计仍固定为 window → stable subject → independent source。诊断视图不能把多个窗口当成独立 replicate，不能通过过滤零结果或未配对结果制造显著性，也不能因某个坐标偶然同号授权永久参数保留。
+
+
+## v0.125：32 个实体和 111 个窗口都不是 111 个独立样本
+
+Stage 3C-11 把独立 source checkpoint 从 3 个扩展到预声明的 9 个，同时保持 32 个初始实体、16 个 bootstrap subject、source tick 2、branch horizon 5 和全部更新/回滚合同不变。最高重复单位仍是 source。实体、主体和窗口只改善一个 source 内部的覆盖或估计精度，不能替代独立环境历史和随机初态。
+
+扩展后获得 111 个完整配对窗口，但 trace 层离散 action/客观事件分化仅出现在 2/9 source，完成窗口的 21 维客观向量仅 1/9 source 非零，Stage 3C-8 仍为 0/21 稳定坐标。三 source pilot 中的 1/3 非零因此不能视为已形成可重复方向；它是小样本工程线索。九 source 也不是通用统计充分性定理，只比三 source 更诚实地显示当前效应稀疏和区间宽。
+
+## v0.125：五 tick 可以验证短程链路，但尚不能证明观察窗充分
+
+五 tick 分支足以产生临时 commit、完成窗口、精确回滚和少量 live/control 分化，因此它是有效的工程与探索样本；但它不能排除更晚才出现的行为/客观效应，也不能代表生态长期分布。当前允许的结论是“在这个五 tick 合同内信号稀疏”，而不是“更新永远无效”或“五 tick 已有足够统计功效”。
+
+未来若比较 horizon 或临时作用覆盖，必须一次只改变一个因素，保留九 source 面板和原五 tick 对照，并先确保分化观测不会被有界 trace ring 覆盖。扩大实体数回答的是状态/交互覆盖问题，延长 horizon 回答的是延迟可见性问题；二者不能同时改变后再归因。
+
+## v0.125：分支分化后的内部路径不必继续逐步同形
+
+Stage 3C-10 原诊断把 paired admission/evaluation 对称与后续 shadow-transaction preparation 路径相等合并成一个判据。九 source 面板暴露出四个 source 在 live 参数已改变后续内部路径后，事务准备次数与 control 不再相同，但 9/9 source 的实际 live admission/control reservation、evaluation counted cost、窗口配对和回滚仍严格满足合同。
+
+因此必须审计的是共享起点、准入预算、目标/窗口 reservation、评价成本、完成窗口和回滚，而不是要求发生干预后的两条分支永远执行相同数量的所有内部候选步骤。后者若被强制，反而可能抹掉真实分支路径依赖。
+
+## v0.125：有界 trace 覆盖必须成为长 horizon 诊断的一部分
+
+Stage 3C-10 的分化时间线读取固定容量 ring。探索性 horizon 16 运行表明，早期 tick 可以被覆盖，从最终 checkpoint 观察到的零差异可能只是保留范围不足。v0.125 因此报告 expected/observed/missing tick、coverage fraction 和 retention-limited 状态；覆盖不完整时，事件数只能作为下界。
+
+这不要求把完整逐 tick 路径写入长期 checkpoint。后续 horizon 对照应使用固定容量、可禁用且显式预算的 horizon-safe 观察方式，或在运行期间外部流式汇总必要事实，继续避免第二套生命周期和无界历史。
+
+## v0.125：artifact 文件哈希与科学状态可重复性必须分开
+
+`.sechk` 包含 `created_utc`，ZIP 容器也具有实例级字节元数据；因此相同 seed 和状态的独立重跑可以拥有不同 checkpoint file SHA，并进一步改变绑定该文件的 plan/export artifact SHA。单次运行仍必须验证这些精确文件哈希，不能为追求相同哈希而放宽 lineage。
+
+跨运行可重复性应比较 source checkpoint state hash、固定参数和 score-free 统计。Stage 3C-11 为此新增 semantic-result hash，明确排除路径、创建时间和容器字节元数据，同时包含九个 source state identity、prefix 统计、逐坐标稀疏性和禁止结论。artifact-instance hash 不同而 semantic-result hash 相同，表示运行使用了不同文件实例但产生相同科学状态和分析结果；二者不能混为一谈。

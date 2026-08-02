@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.125.0
+
+- Adds Subject VM Stage 3C-11 independent-source sample-adequacy assessment.
+- Keeps the 32-entity, five-tick, sixteen-bootstrap-subject contract unchanged and expands only the predeclared independent source panel from three to nine seeds.
+- Reports source-level action/objective divergence incidence, completed-window nonzero-source incidence, descriptive Wilson intervals and source-prefix sensitivity without promoting entities, subjects or windows to independent replicates.
+- Corrects Stage 3C-10 contract interpretation: paired admission/evaluation symmetry is distinct from later shadow-transaction path equality after the live branch has altered its own future internal path.
+- Adds explicit trace-retention coverage so long-horizon divergence counts cannot be misreported as complete zeros after ring overwrite.
+- Separates per-run artifact integrity checksums from a deterministic Stage 3C-11 semantic-result hash based on source state identities and score-free analysis results.
+- Finds 111 fully paired windows across nine sources, but only two sources with trace-level action/objective divergence and one source with a nonzero completed-window objective vector; no objective coordinate passes the descriptive stability screen.
+- Authorizes no permanent retention, scalar objective, automatic keep/revert, causal-credit claim, stable-learning claim or general-attention claim.
+
 ## 0.124.0
 
 - Adds Subject VM Stage 3C-10 external funnel, update-visibility and paired-branch divergence diagnostics.

@@ -64,6 +64,30 @@ def _reason_counts(codes: np.ndarray, names: tuple[str, ...], mask: np.ndarray) 
     return result
 
 
+
+
+def _trace_tick_coverage(
+    *, source_tick: int, final_tick: int, observed_ticks: Iterable[int]
+) -> dict[str, Any]:
+    expected = list(range(int(source_tick), int(final_tick)))
+    observed = sorted({int(tick) for tick in observed_ticks})
+    missing = sorted(set(expected) - set(observed))
+    unexpected = sorted(set(observed) - set(expected))
+    return {
+        "expected_event_ticks": expected,
+        "observed_event_ticks": observed,
+        "missing_event_ticks": missing,
+        "unexpected_event_ticks": unexpected,
+        "coverage_fraction": (
+            float((len(expected) - len(missing)) / len(expected))
+            if expected
+            else 1.0
+        ),
+        "complete": not missing and not unexpected,
+        "retention_limited": bool(missing),
+        "observed_divergence_counts_are_lower_bounds_when_incomplete": bool(missing),
+    }
+
 def _subject_rows(state: dict[str, Any]) -> dict[int, int]:
     entities = state["simulation"]["entities"]
     return {
@@ -228,7 +252,13 @@ def _branch_subject_funnel(state: dict[str, Any], bootstrap_subject_ids: list[in
     return rows, summary
 
 
-def _update_visibility(state: dict[str, Any], counterpart_state: dict[str, Any]) -> dict[str, Any]:
+def _update_visibility(
+    state: dict[str, Any],
+    counterpart_state: dict[str, Any],
+    *,
+    source_tick: int,
+    final_tick: int,
+) -> dict[str, Any]:
     trace = _trace_arrays(state)
     valid = trace["event_valid"]
     proposed = trace["update_family_proposed"] & valid[:, :, None]
@@ -293,6 +323,9 @@ def _update_visibility(state: dict[str, Any], counterpart_state: dict[str, Any])
     divergence_timeline = []
     first_difference: dict[str, Any] | None = None
     all_ticks = sorted({tick for _, tick in event_map} | {tick for _, tick in counterpart_map})
+    trace_coverage = _trace_tick_coverage(
+        source_tick=source_tick, final_tick=final_tick, observed_ticks=all_ticks
+    )
     for tick in all_ticks:
         counts = Counter()
         common = sorted(set(event_map) & set(counterpart_map))
@@ -327,6 +360,7 @@ def _update_visibility(state: dict[str, Any], counterpart_state: dict[str, Any])
         "temporary_effective_semantic_ticks_per_commit": _stats(active_tick_counts),
         "subject_events_during_temporary_effect_per_commit": _stats(active_event_counts),
         "first_commit_tick": first_commit_tick,
+        "branch_divergence_trace_coverage": trace_coverage,
         "branch_divergence_timeline": divergence_timeline,
         "first_observed_branch_difference": first_difference,
         "first_difference_occurs_after_first_live_commit": bool(
@@ -356,19 +390,30 @@ def _admission_and_cost_symmetry(
     control_evaluation_cost = int(
         control_state["simulation"]["subject_vm"]["evaluation_ledger"]["counters"]["total_counted_cost_units"]
     )
+    admission_count_equal = live_admissions == control_reservations
+    evaluation_cost_equal = live_evaluation_cost == control_evaluation_cost
+    prepared_count_equal = live_prepared == control_prepared
+    transaction_cost_equal = live_transaction_cost == control_transaction_cost
     return {
         "live_prepared_transactions": live_prepared,
         "control_prepared_transactions": control_prepared,
-        "prepared_transaction_count_equal": live_prepared == control_prepared,
+        "prepared_transaction_count_equal": prepared_count_equal,
         "live_admissions": live_admissions,
         "control_reservations": control_reservations,
-        "admission_count_equal": live_admissions == control_reservations,
+        "admission_count_equal": admission_count_equal,
         "live_transaction_cost_units": live_transaction_cost,
         "control_transaction_cost_units": control_transaction_cost,
-        "transaction_cost_equal": live_transaction_cost == control_transaction_cost,
+        "transaction_cost_equal": transaction_cost_equal,
         "live_evaluation_cost_units": live_evaluation_cost,
         "control_evaluation_cost_units": control_evaluation_cost,
-        "evaluation_cost_equal": live_evaluation_cost == control_evaluation_cost,
+        "evaluation_cost_equal": evaluation_cost_equal,
+        "paired_admission_contract_pass": bool(
+            admission_count_equal and evaluation_cost_equal
+        ),
+        "pre_admission_transaction_path_equal": bool(
+            prepared_count_equal and transaction_cost_equal
+        ),
+        "transaction_path_equality_required_after_branch_divergence": False,
     }
 
 
@@ -503,7 +548,12 @@ def assess_stage3c10_diagnostics(
         bootstrap_subject_ids = [int(value) for value in seed_record["bootstrap_lineage"]["primed_subject_ids"]]
         live_subjects, live_funnel = _branch_subject_funnel(live_state, bootstrap_subject_ids)
         control_subjects, control_funnel = _branch_subject_funnel(control_state, bootstrap_subject_ids)
-        visibility = _update_visibility(live_state, control_state)
+        visibility = _update_visibility(
+            live_state,
+            control_state,
+            source_tick=int(source_meta["tick"]),
+            final_tick=int(live_meta["tick"]),
+        )
         live_quality = _association_quality(live_state)
         control_quality = _association_quality(control_state)
         restoration = _parameter_restoration(source_state, live_state)
@@ -550,15 +600,18 @@ def assess_stage3c10_diagnostics(
         aggregate["sources_with_objective_event_divergence"] += int(any(item["difference_counts"].get("objective_delta", 0) > 0 for item in visibility["branch_divergence_timeline"]))
         aggregate["sources_with_post_rollback_path_dependence"] += int(final_divergence["path_dependence_present_after_parameter_restoration"])
         aggregate["sources_with_exact_parameter_restoration"] += int(restoration["exact_parameter_restoration"])
-        aggregate["sources_with_admission_and_cost_symmetry"] += int(all(
-            admission_symmetry[key]
-            for key in (
-                "prepared_transaction_count_equal",
-                "admission_count_equal",
-                "transaction_cost_equal",
-                "evaluation_cost_equal",
-            )
-        ))
+        aggregate["sources_with_paired_admission_contract_pass"] += int(
+            admission_symmetry["paired_admission_contract_pass"]
+        )
+        aggregate["sources_with_equal_pre_admission_transaction_path"] += int(
+            admission_symmetry["pre_admission_transaction_path_equal"]
+        )
+        aggregate["sources_with_complete_divergence_trace"] += int(
+            visibility["branch_divergence_trace_coverage"]["complete"]
+        )
+        aggregate["sources_with_retention_limited_divergence_trace"] += int(
+            visibility["branch_divergence_trace_coverage"]["retention_limited"]
+        )
         aggregate["sources_with_pending_after_finalization"] += int(not source_record["rollback_and_finalization"]["pending_after_finalization_zero"])
         aggregate["action_potential_difference_events"] += int(sum(
             item["difference_counts"].get("action_potentials", 0)
@@ -588,8 +641,7 @@ def assess_stage3c10_diagnostics(
     contract_error = any(
         not source["initial_rng_and_state_identity"]["live_and_control_source_identity_match"]
         or not source["admission_and_counted_cost_symmetry"]["admission_count_equal"]
-        or not source["admission_and_counted_cost_symmetry"]["transaction_cost_equal"]
-        or not source["admission_and_counted_cost_symmetry"]["evaluation_cost_equal"]
+        or not source["admission_and_counted_cost_symmetry"]["paired_admission_contract_pass"]
         or not source["paired_window_symmetry"]["equal"]
         or not source["rollback_and_finalization"]["parameter_restoration"]["exact_parameter_restoration"]
         or not source["rollback_and_finalization"]["pending_after_finalization_zero"]
@@ -621,6 +673,17 @@ def assess_stage3c10_diagnostics(
                 "temporary writes alter action potentials and sampled probabilities more often than they alter sampled discrete actions",
                 "objective event differences therefore appear in fewer independent sources than parameter-level effects",
             ],
+            "paired_admission_contract_scope": (
+                "control reservations must mirror admitted live target/window capacity and "
+                "paired evaluation counted cost; equality of all later shadow-transaction "
+                "preparation events is not required after the live branch changes its own "
+                "future internal path"
+            ),
+            "divergence_trace_retention_warning": any(
+                source["update_visibility_and_divergence"]
+                ["branch_divergence_trace_coverage"]["retention_limited"]
+                for source in per_source
+            ),
             "next_authorized_path": "diagnostics-and-observability-only",
             "single_variable_mechanism_change_applied": False,
         },

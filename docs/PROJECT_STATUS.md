@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.124.0**
+Version: **0.125.0**
 
 ## Current scientific task
 
-Version 0.124 implements **Subject VM Stage 3C-10: short paired funnel, update-visibility and branch-divergence diagnostics**.
+Version 0.125 implements **Subject VM Stage 3C-11: independent-source sample-adequacy audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -30,6 +30,16 @@ Stage 3C-10 keeps the v0.123 study factors unchanged and adds external diagnosti
 
 These diagnostics support an observability conclusion, not a learning conclusion: the data chain is active, the paired contract is intact, and the short fixed bootstrap produces parameter-level effects that are usually too narrow or too brief to become objective-event differences across independent sources. No mechanism parameter was changed in v0.124.
 
+Stage 3C-11 changes only the independent source count. It preserves 32 initial entities, 16 fixed-bootstrap subjects, source tick 2, branch horizon 5, CPU execution, rollback/evaluation contracts and disabled permanent retention, while extending the predeclared source panel from seeds `12301..12303` to `12301..12309`. The first three sources remain the pilot prefix; zero and nonzero outcomes from the additional six sources are retained without filtering.
+
+The nine-source panel produced 111 completed paired windows with pairing coverage 1.0, zero rollback failures, zero fact clipping and matched evaluation costs. Discrete-action and trace-level objective-event divergence appeared in 2/9 sources; only 1/9 sources had a nonzero completed-window objective vector. No objective coordinate passed the descriptive sign-and-interval stability screen. The 32 entities, 16 subjects and 111 windows improve within-source coverage but do not become 111 independent replicates.
+
+Stage 3C-11 also corrects one diagnostic boundary exposed by the expanded seeds. Paired admission/evaluation symmetry remained valid in 9/9 sources, while later shadow-transaction preparation counts differed in four sources after live parameters had already changed those branches' future internal paths. That later path difference is not itself a paired-admission contract failure. Stage 3C-10 now also reports retained tick coverage; divergence counts from horizons longer than the trace ring are explicitly lower bounds rather than false complete zeros.
+
+Repeated runs preserve identical source checkpoint state hashes, Stage-3C-10 diagnostics and Stage-3C-11 semantic results. Exact checkpoint/plan/export file hashes remain per-run artifact identities because checkpoint metadata includes creation time; Stage 3C-11 therefore reports a separate semantic-result hash that excludes paths, creation time and ZIP-container byte metadata without weakening within-run integrity verification.
+
+The current result classifies the original three-source run as an engineering pipeline pilot, not a scientifically sufficient sample for stable direction claims. The nine-source expansion reduces uncertainty about rarity but still does not establish mechanism efficacy, delayed-effect sufficiency, entity-count adequacy, stable learning or causal credit.
+
 The v0.110 single-owner rule remains unchanged. Subject VM is the sole optional action-potential residual owner when enabled; legacy knowledge/latent/working-memory routes remain fixed-cognition comparison baselines and cannot coexecute on the primary path.
 
 ## Engineering status
@@ -52,7 +62,8 @@ Implemented and tested:
 - Stage-3C-7 repeated paired-export checksum verification, coverage/unpaired diagnostics and integrity assessment;
 - Stage-3C-8 hierarchical source/subject/window aggregation and coordinate-wise sign, dispersion and interval assessment;
 - Stage-3C-9 fixed-bootstrap short paired runner, symmetric control admission and export-boundary transient finalization;
-- Stage-3C-10 source/subject funnel, update magnitude and exposure, association/eligibility quality, branch divergence and aggregation-sensitivity diagnostics;
+- Stage-3C-10 source/subject funnel, update magnitude and exposure, association/eligibility quality, branch divergence, trace-retention coverage and aggregation-sensitivity diagnostics;
+- Stage-3C-11 independent-source prefix sensitivity, source-level divergence incidence and sample-adequacy assessment without pseudoreplication;
 - v0.123 trace/checkpoint compatibility for the new bounded diagnostic fields;
 - explicit guarded-live/read-only branch identities bound to source state, branch config and final tick;
 - branch identity persistence in final checkpoint lineage;
@@ -74,7 +85,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-10 diagnoses the short fixed-bootstrap engineering study without authorizing retention or Epoch 1.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-11 classifies the expanded short fixed-bootstrap study as engineering evidence without authorizing retention or Epoch 1.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -100,4 +111,4 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-The next authorized boundary is a separately versioned, single-variable short-study comparison chosen from the Stage 3C-10 evidence. The current data most directly motivates testing temporary-effect reach or fixed-bootstrap family reachability, but v0.124 changes neither. Permanent retention, scalar value construction, a complete general-attention replacement and Epoch 1 qualification remain unauthorized.
+The next authorized boundary is a separately versioned, single-variable short-study comparison using the nine-source panel as the sample-size control. The current evidence most directly motivates testing branch horizon or temporary-effect exposure, but only after divergence observation is horizon-safe. Entity count, horizon and mechanism were not changed in v0.125. Permanent retention, scalar value construction, a complete general-attention replacement and Epoch 1 qualification remain unauthorized.

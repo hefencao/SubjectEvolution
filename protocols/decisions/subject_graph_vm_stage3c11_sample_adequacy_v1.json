@@ -1,0 +1,50 @@
+{
+  "schema": "se-subject-vm-stage3c11-sample-adequacy-contract-v1",
+  "decision_id": "subject-graph-vm-stage3c11-independent-source-adequacy-v1",
+  "status": "implemented-engineering-sample-adequacy",
+  "purpose": "Determine whether the three-source short paired pilot is an engineering sample or a sufficient basis for cross-source direction claims, without changing the mechanism, entity count, horizon or replicate hierarchy.",
+  "single_changed_factor": {
+    "name": "independent-source-count",
+    "pilot": 3,
+    "expanded": 9,
+    "predeclared_seed_order": [12301, 12302, 12303, 12304, 12305, 12306, 12307, 12308, 12309]
+  },
+  "unchanged_contract": {
+    "initial_entities": 32,
+    "source_ticks": 2,
+    "branch_horizon_ticks": 5,
+    "bootstrap_subjects": 16,
+    "backend": "cpu",
+    "permanent_retention": false,
+    "fixed_bootstrap_profile": true
+  },
+  "replicate_hierarchy": {
+    "highest_independent_replicate": "independent-source-checkpoint",
+    "entities_are_independent_replicates": false,
+    "subjects_are_independent_source_replicates": false,
+    "windows_are_independent_replicates": false,
+    "prefix_sensitivity_is_diagnostic_only": true
+  },
+  "diagnostics": {
+    "source_level_discrete_action_incidence": true,
+    "source_level_objective_event_incidence": true,
+    "completed_window_nonzero_source_incidence": true,
+    "descriptive_wilson_intervals": true,
+    "coordinate_prefix_stability": true,
+    "paired_admission_contract_separated_from_post_divergence_transaction_path": true,
+    "trace_retention_coverage_reported": true
+  },
+  "authorized_conclusion": "The original three-source run is adequate as an engineering pipeline pilot but not as a sufficient sample for stable cross-source objective-direction claims; the nine-source expansion remains sparse and does not authorize a learning conclusion.",
+  "forbidden_conclusions": {
+    "scalar_objective": false,
+    "automatic_keep_or_revert": false,
+    "permanent_parameter_retention": false,
+    "causal_credit_correctness": false,
+    "stable_learning": false,
+    "attention_optimality": false,
+    "entity_count_generalization": false,
+    "five_tick_delayed_effect_sufficiency": false,
+    "subjecthood": false,
+    "epoch_1_entry": false
+  }
+}
