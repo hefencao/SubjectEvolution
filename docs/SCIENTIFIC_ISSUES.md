@@ -441,3 +441,10 @@ Stage 3C-2 首次把参数族提案和历史局部 eligibility 组合为具体�
 特别需要区分 proposal 与 applied update。若把尚未执行的 audit proposal 计入长期累计塑性预算，会虚构不存在的学习并抑制后续候选；因此 v0.116 不建立 applied ledger，也不扣除物理可塑性成本。下一阶段只有在原子 compare-and-swap、all-or-none、rollback 和实际 accepted/applied 计数冻结后，才可以讨论有限参数写入。
 
 当前证据只支持候选 delta 可被安全界定和精确恢复，不支持行为改善、适应、价值形成或主体性。
+
+
+## v0.117：影子事务通过不等于更新有效
+
+Stage 3C-3 证明的是候选更新可在精确 CAS、all-or-none 和 rollback 约束下被机械验证，不证明候选方向正确，也不证明参数变化能够改善实体表现。影子 apply 不进入 live graph，因此不能被描述为学习。
+
+count-only cost units 只衡量事务准备和目标数量，不是能量惩罚。未来若启用 live write，必须先建立 applied-update ledger、短窗口回滚、健康周转基底和成本补偿对照，避免新增塑性机制因收费本身破坏样本。

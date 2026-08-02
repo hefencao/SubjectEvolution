@@ -34,12 +34,17 @@ from .update_safety import (
     UPDATE_REASON_CODES,
     propose_safe_parameter_deltas,
 )
+from .transaction import (
+    TRANSACTION_REASON_CODES,
+    prepare_shadow_transaction,
+)
 
 TRACE_STORAGE_SCHEMA_V1 = "se-subject-vm-token-event-storage-v1"
 TRACE_STORAGE_SCHEMA_V2 = "se-subject-vm-token-event-storage-v2"
 TRACE_STORAGE_SCHEMA_V3 = "se-subject-vm-token-event-storage-v3"
 TRACE_STORAGE_SCHEMA_V4 = "se-subject-vm-token-event-storage-v4"
-TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v5"
+TRACE_STORAGE_SCHEMA_V5 = "se-subject-vm-token-event-storage-v5"
+TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v6"
 ACTION_PORT_WIDTH = 8
 RESOURCE_DELTA_WIDTH = 4
 OBJECTIVE_EVENT_DELTA_NAMES = (
@@ -125,6 +130,13 @@ class SubjectVMTraceAccounting:
     update_rejected_parameter_bound: int = 0
     update_family_clips: int = 0
     update_event_budget_scales: int = 0
+    transaction_requests: int = 0
+    transaction_prepared_events: int = 0
+    transaction_prepared_targets: int = 0
+    transaction_cas_rejections: int = 0
+    transaction_aborts: int = 0
+    transaction_rollback_failures: int = 0
+    transaction_counted_cost_units: int = 0
     last_event_tick: int = -1
 
 
@@ -292,6 +304,51 @@ class SubjectVMTraceStorage:
         self.update_event_budget_scale = (
             np.zeros((e, c), dtype=np.float32) if cfg.update_safety_enabled else None
         )
+        self.transaction_requested = (
+            np.zeros((e, c), dtype=bool) if cfg.transaction_enabled else None
+        )
+        self.transaction_prepared = (
+            np.zeros((e, c), dtype=bool) if cfg.transaction_enabled else None
+        )
+        self.transaction_shadow_applied = (
+            np.zeros((e, c), dtype=bool) if cfg.transaction_enabled else None
+        )
+        self.transaction_rollback_verified = (
+            np.zeros((e, c), dtype=bool) if cfg.transaction_enabled else None
+        )
+        self.transaction_family_prepared = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=bool)
+            if cfg.transaction_enabled
+            else None
+        )
+        self.transaction_reason = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.uint8)
+            if cfg.transaction_enabled
+            else None
+        )
+        self.transaction_cas_match = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=bool)
+            if cfg.transaction_enabled
+            else None
+        )
+        self.transaction_observed_parameter_value = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.float32)
+            if cfg.transaction_enabled
+            else None
+        )
+        self.transaction_shadow_applied_value = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.float32)
+            if cfg.transaction_enabled
+            else None
+        )
+        self.transaction_shadow_rollback_value = (
+            np.zeros((e, c, SUBJECT_VM_MODULATION_TARGET_WIDTH), dtype=np.float32)
+            if cfg.transaction_enabled
+            else None
+        )
+        self.transaction_counted_cost_units = (
+            np.zeros((e, c), dtype=np.uint32) if cfg.transaction_enabled else None
+        )
 
     @staticmethod
     def base_snapshot_array_names() -> tuple[str, ...]:
@@ -367,6 +424,22 @@ class SubjectVMTraceStorage:
             "update_event_budget_scale",
         )
 
+    @staticmethod
+    def transaction_snapshot_array_names() -> tuple[str, ...]:
+        return (
+            "transaction_requested",
+            "transaction_prepared",
+            "transaction_shadow_applied",
+            "transaction_rollback_verified",
+            "transaction_family_prepared",
+            "transaction_reason",
+            "transaction_cas_match",
+            "transaction_observed_parameter_value",
+            "transaction_shadow_applied_value",
+            "transaction_shadow_rollback_value",
+            "transaction_counted_cost_units",
+        )
+
     def snapshot_array_names(self) -> tuple[str, ...]:
         names = self.base_snapshot_array_names()
         if self.cfg.association_enabled:
@@ -377,6 +450,8 @@ class SubjectVMTraceStorage:
             names += self.binding_snapshot_array_names()
         if self.cfg.update_safety_enabled:
             names += self.update_snapshot_array_names()
+        if self.cfg.transaction_enabled:
+            names += self.transaction_snapshot_array_names()
         return names
 
     def allocated_nbytes(self) -> int:
@@ -506,6 +581,29 @@ class SubjectVMTraceStorage:
             self.update_family_clip_applied[row, slot] = False
             self.update_parameter_bound_applied[row, slot] = False
             self.update_event_budget_scale[row, slot] = 0.0
+        if self.cfg.transaction_enabled:
+            assert self.transaction_requested is not None
+            assert self.transaction_prepared is not None
+            assert self.transaction_shadow_applied is not None
+            assert self.transaction_rollback_verified is not None
+            assert self.transaction_family_prepared is not None
+            assert self.transaction_reason is not None
+            assert self.transaction_cas_match is not None
+            assert self.transaction_observed_parameter_value is not None
+            assert self.transaction_shadow_applied_value is not None
+            assert self.transaction_shadow_rollback_value is not None
+            assert self.transaction_counted_cost_units is not None
+            self.transaction_requested[row, slot] = False
+            self.transaction_prepared[row, slot] = False
+            self.transaction_shadow_applied[row, slot] = False
+            self.transaction_rollback_verified[row, slot] = False
+            self.transaction_family_prepared[row, slot] = False
+            self.transaction_reason[row, slot] = 0
+            self.transaction_cas_match[row, slot] = False
+            self.transaction_observed_parameter_value[row, slot] = 0.0
+            self.transaction_shadow_applied_value[row, slot] = 0.0
+            self.transaction_shadow_rollback_value[row, slot] = 0.0
+            self.transaction_counted_cost_units[row, slot] = 0
 
     def expire(self, tick: int) -> int:
         expired = self.event_valid & (
@@ -757,6 +855,38 @@ class SubjectVMTraceStorage:
                 accounting.update_event_budget_scales += int(
                     update.event_budget_scale < 1.0
                 )
+            transaction = None
+            if self.cfg.transaction_enabled:
+                assert binding is not None and update is not None and graph_storage is not None
+                transaction = prepare_shadow_transaction(
+                    graph_storage,
+                    row=row,
+                    binding=binding,
+                    update=update,
+                    cfg=self.cfg.transaction,
+                )
+                if transaction.requested:
+                    accounting.transaction_requests += 1
+                if transaction.prepared:
+                    accounting.transaction_prepared_events += 1
+                    accounting.transaction_prepared_targets += int(
+                        np.count_nonzero(transaction.family_prepared)
+                    )
+                    accounting.transaction_counted_cost_units += int(
+                        transaction.counted_cost_units
+                    )
+                accounting.transaction_cas_rejections += int(
+                    np.count_nonzero(
+                        transaction.reason
+                        == TRANSACTION_REASON_CODES["compare-and-swap-mismatch"]
+                    )
+                )
+                accounting.transaction_aborts += int(
+                    transaction.requested and not transaction.prepared
+                )
+                accounting.transaction_rollback_failures += int(
+                    transaction.shadow_applied and not transaction.rollback_verified
+                )
             if self.event_valid[row, slot]:
                 accounting.overwritten_events += 1
             self._clear_slot(row, slot)
@@ -878,6 +1008,37 @@ class SubjectVMTraceStorage:
                 self.update_event_budget_scale[row, slot] = np.float32(
                     update.event_budget_scale
                 )
+            if transaction is not None:
+                assert self.transaction_requested is not None
+                assert self.transaction_prepared is not None
+                assert self.transaction_shadow_applied is not None
+                assert self.transaction_rollback_verified is not None
+                assert self.transaction_family_prepared is not None
+                assert self.transaction_reason is not None
+                assert self.transaction_cas_match is not None
+                assert self.transaction_observed_parameter_value is not None
+                assert self.transaction_shadow_applied_value is not None
+                assert self.transaction_shadow_rollback_value is not None
+                assert self.transaction_counted_cost_units is not None
+                self.transaction_requested[row, slot] = transaction.requested
+                self.transaction_prepared[row, slot] = transaction.prepared
+                self.transaction_shadow_applied[row, slot] = transaction.shadow_applied
+                self.transaction_rollback_verified[row, slot] = transaction.rollback_verified
+                self.transaction_family_prepared[row, slot] = transaction.family_prepared
+                self.transaction_reason[row, slot] = transaction.reason
+                self.transaction_cas_match[row, slot] = transaction.cas_match
+                self.transaction_observed_parameter_value[row, slot] = (
+                    transaction.observed_parameter_value
+                )
+                self.transaction_shadow_applied_value[row, slot] = (
+                    transaction.shadow_applied_value
+                )
+                self.transaction_shadow_rollback_value[row, slot] = (
+                    transaction.shadow_rollback_value
+                )
+                self.transaction_counted_cost_units[row, slot] = np.uint32(
+                    transaction.counted_cost_units
+                )
             self.write_cursor[row] = np.uint32((slot + 1) % self.capacity)
             self.event_count[row] = np.uint32(np.count_nonzero(self.event_valid[row]))
             accounting.recorded_events += 1
@@ -913,6 +1074,7 @@ class SubjectVMTraceStorage:
         schema = payload.get("schema")
         if schema not in {
             TRACE_STORAGE_SCHEMA,
+            TRACE_STORAGE_SCHEMA_V5,
             TRACE_STORAGE_SCHEMA_V4,
             TRACE_STORAGE_SCHEMA_V3,
             TRACE_STORAGE_SCHEMA_V2,
@@ -959,6 +1121,16 @@ class SubjectVMTraceStorage:
                 names += result.modulation_snapshot_array_names()
             if result.cfg.target_binding_enabled:
                 names += result.binding_snapshot_array_names()
+        elif schema == TRACE_STORAGE_SCHEMA_V5:
+            names = result.base_snapshot_array_names()
+            if result.cfg.association_enabled:
+                names += result.association_snapshot_array_names()
+            if result.cfg.modulation_enabled:
+                names += result.modulation_snapshot_array_names()
+            if result.cfg.target_binding_enabled:
+                names += result.binding_snapshot_array_names()
+            if result.cfg.update_safety_enabled:
+                names += result.update_snapshot_array_names()
         else:
             names = result.snapshot_array_names()
         for name in names:
@@ -1019,6 +1191,22 @@ class SubjectVMTraceStorage:
                 if self.update_family_proposed is None
                 else int(np.count_nonzero(self.update_family_proposed))
             ),
+            "shadow_transaction_enabled": self.cfg.transaction_enabled,
+            "prepared_shadow_transactions": (
+                0
+                if self.transaction_prepared is None
+                else int(np.count_nonzero(self.transaction_prepared))
+            ),
+            "rollback_verified_shadow_transactions": (
+                0
+                if self.transaction_rollback_verified is None
+                else int(np.count_nonzero(self.transaction_rollback_verified))
+            ),
+            "counted_plasticity_cost_units": (
+                0
+                if self.transaction_counted_cost_units is None
+                else int(np.sum(self.transaction_counted_cost_units, dtype=np.uint64))
+            ),
             "parameter_writes": 0,
         }
 
@@ -1033,6 +1221,7 @@ __all__ = [
     "TRACE_STORAGE_SCHEMA_V2",
     "TRACE_STORAGE_SCHEMA_V3",
     "TRACE_STORAGE_SCHEMA_V4",
+    "TRACE_STORAGE_SCHEMA_V5",
     "SubjectVMObjectiveEventBatch",
     "SubjectVMThoughtTokenBatch",
     "SubjectVMTraceAccounting",

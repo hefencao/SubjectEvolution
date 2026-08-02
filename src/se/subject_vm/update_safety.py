@@ -65,7 +65,7 @@ class SubjectVMUpdateSafetyProposal:
     write_authorized: bool = False
 
 
-def _target_is_live(
+def target_is_live(
     storage: SubjectVMStorage,
     *,
     row: int,
@@ -168,7 +168,7 @@ def propose_safe_parameter_deltas(
         target_kind = int(binding.target_kind[family])
         target_index = int(binding.target_index[family])
         target_id = int(binding.target_id[family])
-        if not _target_is_live(
+        if not target_is_live(
             storage,
             row=int(row),
             family=family,

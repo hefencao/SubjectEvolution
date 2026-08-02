@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.117.0
+
+- Adds Subject VM Stage 3C-3 exact float32 compare-and-swap shadow transactions.
+- Validates all proposed targets as one all-or-none event transaction before any application is considered.
+- Applies projected values only to a private fixed-width shadow vector and verifies exact rollback to captured pre-state.
+- Rejects stale targets, changed current values, inconsistent projected values, nonfinite shadow values and over-wide transactions.
+- Persists shadow transaction evidence and count-only plasticity cost units without debiting entity energy.
+- Upgrades v0.116 checkpoints to empty shadow-transaction metadata without fabricating applied updates.
+- Keeps permanent parameter, eligibility, retained-state and topology writes unauthorized; recorded parameter writes remain zero.
+
 ## 0.116.0
 
 - Adds Subject VM Stage 3C-2 bounded update-safety proposals without graph parameter writes.

@@ -1,0 +1,55 @@
+{
+  "schema": "se-subject-vm-shadow-transaction-contract-v1",
+  "contract_id": "subject-graph-vm-shadow-transaction-v1",
+  "status": "accepted-stage-3c3-engineering-boundary",
+  "release": "0.117.0",
+  "scope": "Validate bounded update proposals as an exact compare-and-swap all-or-none shadow transaction, prove rollback, and record count-only cost without mutating the live graph.",
+  "compare_and_swap": {
+    "stable_target_identity_required": true,
+    "live_parameter_format": "float32",
+    "comparison": "bit-identical expected and observed values",
+    "projected_value_recomputed": true,
+    "changed_target_rejected": true
+  },
+  "atomicity": {
+    "unit": "all proposed parameter families from one objective event",
+    "partial_shadow_commit": false,
+    "any_failure_aborts_event": true,
+    "maximum_targets_bounded_by_config": true
+  },
+  "shadow_and_rollback": {
+    "live_storage_write": false,
+    "shadow_width": 6,
+    "shadow_apply": true,
+    "rollback_to_captured_prestate": true,
+    "rollback_comparison": "float32 bit identity",
+    "permanent_write_authorized": false
+  },
+  "cost": {
+    "measurement": "integer base plus integer per prepared target",
+    "count_only": true,
+    "entity_energy_debit": false,
+    "action_feedback": false
+  },
+  "persisted": [
+    "transaction requested, prepared, shadow-applied and rollback-verified flags",
+    "per-family prepared and role-neutral reason codes",
+    "per-family CAS result and observed current value",
+    "per-family shadow applied and rollback values",
+    "counted cost units"
+  ],
+  "compatibility": {
+    "disabled_transaction": "canonically removed from configuration identity",
+    "v0116_checkpoint": "upgrade allocates empty transaction metadata without fabricating applied writes",
+    "birth": "event and transaction history starts empty",
+    "clone_checkpoint_compaction": "committed transaction evidence is copied exactly",
+    "death": "transaction evidence is cleared with the row"
+  },
+  "forbidden": [
+    "mutating any SubjectVMStorage parameter in Stage 3C-3",
+    "partial application after one family fails",
+    "charging entity energy for count-only cost units",
+    "counting shadow application as applied plasticity",
+    "claiming transaction success as learning, adaptation or subjecthood"
+  ]
+}

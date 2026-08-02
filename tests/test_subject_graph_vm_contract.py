@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c2-update-safety-proposal-cpu-reference-implemented"
+    assert contract["status"] == "stage-3c3-shadow-transaction-cpu-reference-implemented"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,7 +24,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3C-2"
+    assert contract["current_stage"] == "3C-3"
     assert contract["stage_2_contract"]["plasticity"] is False
     assert contract["stage_3a_contract"]["persistent_node_edge_path"] is False
     assert contract["stage_3a_contract"]["plasticity"] is False
@@ -48,6 +48,18 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["stage_3c2_contract"]["per_subject_event_l1_budget"] is True
     assert contract["stage_3c2_contract"]["actual_parameter_write"] is False
     assert contract["stage_3c2_contract"]["applied_long_window_budget_ledger"] is False
+    assert contract["stage_3c3_contract"]["exact_float32_compare_and_swap"] is True
+    assert contract["stage_3c3_contract"]["all_or_none_per_event"] is True
+    assert contract["stage_3c3_contract"]["rollback_verified"] is True
+    assert contract["stage_3c3_contract"]["actual_parameter_write"] is False
+
+    shadow_transaction = _load(
+        "protocols/decisions/subject_graph_vm_shadow_transaction_v1.json"
+    )
+    assert shadow_transaction["compare_and_swap"]["comparison"] == "bit-identical expected and observed values"
+    assert shadow_transaction["atomicity"]["partial_shadow_commit"] is False
+    assert shadow_transaction["shadow_and_rollback"]["permanent_write_authorized"] is False
+    assert shadow_transaction["cost"]["entity_energy_debit"] is False
 
     update_safety = _load(
         "protocols/decisions/subject_graph_vm_update_safety_v1.json"

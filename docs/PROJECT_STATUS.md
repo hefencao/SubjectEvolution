@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.116.0**
+Version: **0.117.0**
 
 ## Current scientific task
 
-Version 0.116 implements **Subject VM Stage 3C-2: bounded update-safety proposals without parameter writes**.
+Version 0.117 implements **Subject VM Stage 3C-3: atomic shadow compare-and-swap and rollback validation without permanent parameter writes**.
 
 Stage 3A remains the authoritative long-term history boundary: the unified graph emits a fixed-width continuous token, and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -15,6 +15,8 @@ Stage 3B-2 and Stage 3C-1 continue as explicit bootstrap biases: normalized cont
 Stage 3B-3 forms a graph-controlled six-dimensional proposal over node bias, node input/output/trace gates, edge forward gate and edge bandwidth. Stage 3C-1 binds nonzero family components to exact stable node or edge targets without writing them.
 
 Stage 3C-2 now revalidates each bound target against current stable ID, slot, expression state, parameter family and required port. It combines the family proposal, historical local eligibility and a configured role-neutral step scale into a candidate delta. The candidate is constrained by per-family absolute clips, a per-subject event L1 envelope and configured parameter bounds. The current parameter value is persisted as a future compare-and-swap and rollback guard. No parameter, eligibility, retained state or topology write is authorized.
+
+Stage 3C-3 consumes those safe candidates as one event transaction. It performs exact float32 compare-and-swap checks against the live graph, rejects the entire event if any target is stale or changed, applies projected values only to a private six-family shadow vector, and verifies exact rollback to the captured pre-state. Shadow validation produces count-only cost units; it does not debit energy, consume randomness or authorize graph writes.
 
 Audit-only proposals do not consume a long-window applied-update budget. Such accounting would fabricate plasticity that did not occur. A future write stage must add an actual accepted/applied ledger, atomic compare-and-swap revalidation and independent physical cost accounting.
 
@@ -55,7 +57,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-2 is engineering infrastructure only.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-3 is engineering infrastructure only.
 - `epoch-1-entity-subject-prototype`: not started. It still requires actual delayed parameter use, intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -66,7 +68,7 @@ No supplied checkpoint qualifies either later epoch.
 - interpreting delayed token similarity as causal credit;
 - using objective event coordinates as fixed positive or negative value;
 - permanent node bias, gate, bandwidth, retained-state or topology writes;
-- atomic compare-and-swap apply, rollback execution or partial-write recovery;
+- permanent compare-and-swap commit, live rollback execution or partial-write recovery;
 - an accepted/applied long-window plasticity ledger;
 - physical plasticity cost debit or health-compensated cost experiments;
 - content-provenance references actually consumed by the graph;
@@ -78,4 +80,4 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-The next authorized boundary is a separately frozen **Stage 3C-3 atomic apply dry-run/transaction contract**. It must define exact compare-and-swap guards, all-or-none event application, rollback records, actual accepted/applied cumulative budgets and count-only physical cost measurement before any permanent write is enabled.
+The next authorized boundary is a separately frozen **Stage 3C-4 guarded live-write experiment contract**. It must keep permanent writes disabled by default, define explicit opt-in, applied-update ledgers, bounded rollback windows, count-only cost accounting and trajectory-neutral controls before any scientific use.

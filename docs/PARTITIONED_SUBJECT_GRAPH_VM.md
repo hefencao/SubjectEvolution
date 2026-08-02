@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
-Status: **Stage 3C-2 CPU-reference engineering implementation complete; permanent parameter writes not authorized**
-Project version: **0.116.0**
+Status: **Stage 3C-3 CPU-reference shadow transaction implementation complete; permanent parameter writes not authorized**
+Project version: **0.117.0**
 
 ## 1. Decision
 
@@ -496,3 +496,12 @@ Stage 3C-2 保留 v0.115 的 bootstrap 内容寻址和单赢家资格绑定。�
 每个 bound target 会在事件提交时重新验证 stable ID、slot、expressed 状态、参数族和必要端口。通过验证后，参数族提案、激活前历史 eligibility 与配置步长形成候选 delta。候选依次经过每族 clip、每事件 L1 比例缩放和参数上下界投影。当前参数值作为未来 compare-and-swap 与 rollback 守卫保存。
 
 该阶段没有 apply 接口，参数数组、eligibility、retained state 和 topology 均不改变。未执行提案也不占用实际长期更新预算。下一阶段必须先建立原子 dry-run/transaction 合同，再决定是否允许任何永久参数变化。
+
+
+## v0.117：Stage 3C-3 只在影子事务中验证 CAS 与回滚
+
+Stage 3C-3 不把 v0.116 的候选 delta 写入统一主体图。每个事件的全部候选首先重新核验 stable target identity，并对 live float32 参数执行位级 compare-and-swap。任意目标失败会中止整个事件，禁止部分影子提交。
+
+通过检查的 projected value 只写入固定六维私有影子向量，随后恢复为 captured pre-state 并验证回滚位级一致。影子向量不会进入节点/边存储，也不影响行动或后续 eligibility。事务保存 request、prepare、CAS、shadow apply、rollback 和 count-only cost 证据；`permanent_write_authorized` 始终为 false。
+
+这仍只是 bootstrap 学习链的工程安全验证，不证明历史关联、目标绑定或 delta 方向具有真实因果正确性。

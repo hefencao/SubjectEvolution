@@ -1445,3 +1445,10 @@ This is an engineering prior for reachable early shaping, not a universal learni
 Safety is layered: each family has an absolute delta clip; all surviving families share a per-subject event L1 envelope using proportional scaling; the projected value is then constrained by configured parameter bounds. Edge bandwidth remains nonnegative. Family ordering never decides which proposal receives the remaining event budget.
 
 The trace ring stores request/proposal flags, rejection reasons, expected current value, raw and bounded delta, projected value and clipping diagnostics. It stores no applied-update flag because no update occurs. Audit-only proposals do not consume a long-window applied budget. A later atomic apply contract must add actual acceptance, all-or-none writes, rollback and cumulative debit before permanent plasticity is enabled.
+
+
+### Stage 3C-3 — atomic shadow transaction and rollback validation (implemented in v0.117)
+
+`subject_vm/transaction.py` is a pure read-only adapter over `SubjectVMStorage`. It receives exact Stage-3C-1 binding metadata and Stage-3C-2 bounded proposals, performs float32 bit-identity compare-and-swap checks, and treats all proposed families from one event as a single all-or-none transaction.
+
+Projected values are placed only in a local fixed-width shadow vector. The adapter then restores the captured current values and records whether rollback is exact. It has no storage writer, no lifecycle ownership and no action interface. `trace.py` persists only transaction evidence and count-only cost units. Permanent graph write authority remains false.

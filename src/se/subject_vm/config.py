@@ -18,6 +18,7 @@ SUBJECT_VM_STAGE3B2_SCHEMA = "partitioned-subject-graph-vm-stage3b2-delayed-asso
 SUBJECT_VM_STAGE3B3_SCHEMA = "partitioned-subject-graph-vm-stage3b3-modulation-proposal-v1"
 SUBJECT_VM_STAGE3C1_SCHEMA = "partitioned-subject-graph-vm-stage3c1-target-binding-v1"
 SUBJECT_VM_STAGE3C2_SCHEMA = "partitioned-subject-graph-vm-stage3c2-update-safety-proposal-v1"
+SUBJECT_VM_STAGE3C3_SCHEMA = "partitioned-subject-graph-vm-stage3c3-shadow-transaction-v1"
 SUBJECT_VM_ACTIVATION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_ACTIVATION_SCHEMA = "bounded-phased-forward-routing-v1"
 SUBJECT_VM_INPUT_PORT_SCHEMA = "objective-entity-input-ports-v1"
@@ -35,6 +36,8 @@ SUBJECT_VM_TARGET_BINDING_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_TARGET_BINDING_SCHEMA = "bootstrap-single-winner-local-eligibility-binding-v1"
 SUBJECT_VM_UPDATE_SAFETY_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_UPDATE_SAFETY_SCHEMA = "bounded-compare-and-swap-delta-proposal-v1"
+SUBJECT_VM_TRANSACTION_DISABLED_SCHEMA = "disabled"
+SUBJECT_VM_TRANSACTION_SCHEMA = "atomic-shadow-cas-rollback-v1"
 SUBJECT_VM_MODULATION_FACT_WIDTH = 21
 SUBJECT_VM_MODULATION_TARGET_NAMES = (
     "node-bias",
@@ -194,6 +197,20 @@ class SubjectVMUpdateSafetyConfig:
 
 
 @dataclass(frozen=True)
+class SubjectVMTransactionConfig:
+    """Stage-3C-3 all-or-none shadow apply and rollback validation.
+
+    Cost units are count-only instrumentation.  They are not debited from
+    entity energy and do not authorize permanent graph writes.
+    """
+
+    schema: str = SUBJECT_VM_TRANSACTION_DISABLED_SCHEMA
+    max_targets_per_event: int = 0
+    base_cost_units: int = 0
+    per_target_cost_units: int = 0
+
+
+@dataclass(frozen=True)
 class SubjectVMConfig:
     """Disabled-by-default partitioned graph capacity contract."""
 
@@ -209,6 +226,7 @@ class SubjectVMConfig:
     modulation: SubjectVMModulationConfig = SubjectVMModulationConfig()
     target_binding: SubjectVMTargetBindingConfig = SubjectVMTargetBindingConfig()
     update_safety: SubjectVMUpdateSafetyConfig = SubjectVMUpdateSafetyConfig()
+    transaction: SubjectVMTransactionConfig = SubjectVMTransactionConfig()
 
     @property
     def total_node_capacity(self) -> int:
@@ -228,6 +246,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3B3_SCHEMA,
             SUBJECT_VM_STAGE3C1_SCHEMA,
             SUBJECT_VM_STAGE3C2_SCHEMA,
+            SUBJECT_VM_STAGE3C3_SCHEMA,
         }
 
     @property
@@ -239,6 +258,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3B3_SCHEMA,
             SUBJECT_VM_STAGE3C1_SCHEMA,
             SUBJECT_VM_STAGE3C2_SCHEMA,
+            SUBJECT_VM_STAGE3C3_SCHEMA,
         }
 
     @property
@@ -249,6 +269,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3B3_SCHEMA,
             SUBJECT_VM_STAGE3C1_SCHEMA,
             SUBJECT_VM_STAGE3C2_SCHEMA,
+            SUBJECT_VM_STAGE3C3_SCHEMA,
         }
 
     @property
@@ -258,6 +279,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3B3_SCHEMA,
             SUBJECT_VM_STAGE3C1_SCHEMA,
             SUBJECT_VM_STAGE3C2_SCHEMA,
+            SUBJECT_VM_STAGE3C3_SCHEMA,
         }
 
     @property
@@ -266,15 +288,24 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3B3_SCHEMA,
             SUBJECT_VM_STAGE3C1_SCHEMA,
             SUBJECT_VM_STAGE3C2_SCHEMA,
+            SUBJECT_VM_STAGE3C3_SCHEMA,
         }
 
     @property
     def target_binding_enabled(self) -> bool:
-        return self.schema in {SUBJECT_VM_STAGE3C1_SCHEMA, SUBJECT_VM_STAGE3C2_SCHEMA}
+        return self.schema in {
+            SUBJECT_VM_STAGE3C1_SCHEMA,
+            SUBJECT_VM_STAGE3C2_SCHEMA,
+            SUBJECT_VM_STAGE3C3_SCHEMA,
+        }
 
     @property
     def update_safety_enabled(self) -> bool:
-        return self.schema == SUBJECT_VM_STAGE3C2_SCHEMA
+        return self.schema in {SUBJECT_VM_STAGE3C2_SCHEMA, SUBJECT_VM_STAGE3C3_SCHEMA}
+
+    @property
+    def transaction_enabled(self) -> bool:
+        return self.schema == SUBJECT_VM_STAGE3C3_SCHEMA
 
 
 def _scan_forbidden_keys(value: Any, path: str = "subject_vm") -> None:
@@ -473,6 +504,28 @@ def _load_update_safety_config(raw: Any) -> SubjectVMUpdateSafetyConfig:
     )
 
 
+def _load_transaction_config(raw: Any) -> SubjectVMTransactionConfig:
+    if raw is None:
+        return SubjectVMTransactionConfig()
+    if not isinstance(raw, Mapping):
+        raise ValueError("subject_vm.transaction must be an object")
+    allowed = {
+        "schema",
+        "max_targets_per_event",
+        "base_cost_units",
+        "per_target_cost_units",
+    }
+    unknown = sorted(set(raw) - allowed)
+    if unknown:
+        raise ValueError(f"unknown subject_vm.transaction fields: {unknown}")
+    return SubjectVMTransactionConfig(
+        schema=str(raw.get("schema", SUBJECT_VM_TRANSACTION_DISABLED_SCHEMA)),
+        max_targets_per_event=int(raw.get("max_targets_per_event", 0)),
+        base_cost_units=int(raw.get("base_cost_units", 0)),
+        per_target_cost_units=int(raw.get("per_target_cost_units", 0)),
+    )
+
+
 def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
     """Parse an optional Subject VM section without inventing legacy fields."""
     if raw is None:
@@ -491,6 +544,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         "modulation",
         "target_binding",
         "update_safety",
+        "transaction",
     }
     unknown = sorted(set(raw) - allowed)
     if unknown:
@@ -534,6 +588,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         modulation=_load_modulation_config(raw.get("modulation")),
         target_binding=_load_target_binding_config(raw.get("target_binding")),
         update_safety=_load_update_safety_config(raw.get("update_safety")),
+        transaction=_load_transaction_config(raw.get("transaction")),
     )
     validate_subject_vm_config(cfg)
     return cfg
@@ -581,6 +636,13 @@ def _validate_disabled_update_safety(cfg: SubjectVMUpdateSafetyConfig) -> None:
     if cfg != SubjectVMUpdateSafetyConfig():
         raise ValueError(
             "inactive subject_vm update_safety requires exact disabled defaults"
+        )
+
+
+def _validate_disabled_transaction(cfg: SubjectVMTransactionConfig) -> None:
+    if cfg != SubjectVMTransactionConfig():
+        raise ValueError(
+            "inactive subject_vm transaction requires exact disabled defaults"
         )
 
 
@@ -772,8 +834,30 @@ def _validate_update_safety(cfg: SubjectVMUpdateSafetyConfig) -> None:
         raise ValueError("subject_vm edge bandwidth lower bound cannot be negative")
 
 
+def _validate_transaction(cfg: SubjectVMTransactionConfig) -> None:
+    if cfg.schema != SUBJECT_VM_TRANSACTION_SCHEMA:
+        raise ValueError(
+            f"Stage-3C-3 subject_vm requires transaction schema {SUBJECT_VM_TRANSACTION_SCHEMA!r}"
+        )
+    if not 1 <= int(cfg.max_targets_per_event) <= SUBJECT_VM_MODULATION_TARGET_WIDTH:
+        raise ValueError(
+            "subject_vm transaction max_targets_per_event must be in [1, target width]"
+        )
+    if not 0 <= int(cfg.base_cost_units) <= 1_000_000:
+        raise ValueError("subject_vm transaction base_cost_units must be in [0, 1000000]")
+    if not 0 <= int(cfg.per_target_cost_units) <= 1_000_000:
+        raise ValueError(
+            "subject_vm transaction per_target_cost_units must be in [0, 1000000]"
+        )
+    maximum = int(cfg.base_cost_units) + int(cfg.max_targets_per_event) * int(
+        cfg.per_target_cost_units
+    )
+    if maximum > 2**32 - 1:
+        raise ValueError("subject_vm transaction counted cost exceeds uint32 capacity")
+
+
 def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
-    """Validate the frozen Stage-1 through Stage-3C-2 contracts."""
+    """Validate the frozen Stage-1 through Stage-3C-3 contracts."""
     if cfg.enabled:
         if cfg.schema not in {
             SUBJECT_VM_STAGE1_SCHEMA,
@@ -784,6 +868,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             SUBJECT_VM_STAGE3B3_SCHEMA,
             SUBJECT_VM_STAGE3C1_SCHEMA,
             SUBJECT_VM_STAGE3C2_SCHEMA,
+            SUBJECT_VM_STAGE3C3_SCHEMA,
         }:
             raise ValueError("enabled subject_vm requires a supported stage schema")
         if tuple(region.name for region in cfg.regions) != SUBJECT_VM_REGION_NAMES:
@@ -818,6 +903,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_modulation(cfg.modulation)
             _validate_disabled_target_binding(cfg.target_binding)
             _validate_disabled_update_safety(cfg.update_safety)
+            _validate_disabled_transaction(cfg.transaction)
             return
 
         _validate_activation(cfg.activation)
@@ -828,6 +914,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_modulation(cfg.modulation)
             _validate_disabled_target_binding(cfg.target_binding)
             _validate_disabled_update_safety(cfg.update_safety)
+            _validate_disabled_transaction(cfg.transaction)
             return
 
         _validate_trace(cfg.trace)
@@ -837,6 +924,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_modulation(cfg.modulation)
             _validate_disabled_target_binding(cfg.target_binding)
             _validate_disabled_update_safety(cfg.update_safety)
+            _validate_disabled_transaction(cfg.transaction)
             return
 
         _validate_eligibility(cfg.eligibility)
@@ -845,6 +933,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_modulation(cfg.modulation)
             _validate_disabled_target_binding(cfg.target_binding)
             _validate_disabled_update_safety(cfg.update_safety)
+            _validate_disabled_transaction(cfg.transaction)
             return
 
         _validate_association(
@@ -856,6 +945,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_modulation(cfg.modulation)
             _validate_disabled_target_binding(cfg.target_binding)
             _validate_disabled_update_safety(cfg.update_safety)
+            _validate_disabled_transaction(cfg.transaction)
             return
 
         _validate_modulation(
@@ -866,15 +956,19 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
         if cfg.schema == SUBJECT_VM_STAGE3B3_SCHEMA:
             _validate_disabled_target_binding(cfg.target_binding)
             _validate_disabled_update_safety(cfg.update_safety)
+            _validate_disabled_transaction(cfg.transaction)
             return
 
-        _validate_target_binding(
-            cfg.target_binding, eligibility=cfg.eligibility
-        )
+        _validate_target_binding(cfg.target_binding, eligibility=cfg.eligibility)
         if cfg.schema == SUBJECT_VM_STAGE3C1_SCHEMA:
             _validate_disabled_update_safety(cfg.update_safety)
+            _validate_disabled_transaction(cfg.transaction)
+        elif cfg.schema == SUBJECT_VM_STAGE3C2_SCHEMA:
+            _validate_update_safety(cfg.update_safety)
+            _validate_disabled_transaction(cfg.transaction)
         else:
             _validate_update_safety(cfg.update_safety)
+            _validate_transaction(cfg.transaction)
         return
 
     if cfg.schema != SUBJECT_VM_DISABLED_SCHEMA:
@@ -894,6 +988,8 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
     _validate_disabled_modulation(cfg.modulation)
     _validate_disabled_target_binding(cfg.target_binding)
     _validate_disabled_update_safety(cfg.update_safety)
+    _validate_disabled_transaction(cfg.transaction)
+
 
 def _disabled_activation_payload(value: Any) -> bool:
     if value is None:
@@ -994,6 +1090,19 @@ def _disabled_update_safety_payload(value: Any) -> bool:
     )
 
 
+def _disabled_transaction_payload(value: Any) -> bool:
+    if value is None:
+        return True
+    if not isinstance(value, Mapping):
+        return False
+    return (
+        value.get("schema") == SUBJECT_VM_TRANSACTION_DISABLED_SCHEMA
+        and int(value.get("max_targets_per_event", 0)) == 0
+        and int(value.get("base_cost_units", 0)) == 0
+        and int(value.get("per_target_cost_units", 0)) == 0
+    )
+
+
 def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]:
     """Remove exact inert extensions without changing frozen identities."""
     section = payload.get("subject_vm")
@@ -1021,6 +1130,10 @@ def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]
         section.get("update_safety")
     ):
         section.pop("update_safety", None)
+    if isinstance(section, dict) and _disabled_transaction_payload(
+        section.get("transaction")
+    ):
+        section.pop("transaction", None)
     if (
         section.get("enabled") is False
         and section.get("schema") == SUBJECT_VM_DISABLED_SCHEMA
@@ -1059,10 +1172,13 @@ __all__ = [
     "SUBJECT_VM_STAGE3B3_SCHEMA",
     "SUBJECT_VM_STAGE3C1_SCHEMA",
     "SUBJECT_VM_STAGE3C2_SCHEMA",
+    "SUBJECT_VM_STAGE3C3_SCHEMA",
     "SUBJECT_VM_TARGET_BINDING_DISABLED_SCHEMA",
     "SUBJECT_VM_TARGET_BINDING_SCHEMA",
     "SUBJECT_VM_UPDATE_SAFETY_DISABLED_SCHEMA",
     "SUBJECT_VM_UPDATE_SAFETY_SCHEMA",
+    "SUBJECT_VM_TRANSACTION_DISABLED_SCHEMA",
+    "SUBJECT_VM_TRANSACTION_SCHEMA",
     "SUBJECT_VM_TRACE_DISABLED_SCHEMA",
     "SUBJECT_VM_TRACE_SCHEMA",
     "SubjectVMActivationConfig",
@@ -1073,6 +1189,7 @@ __all__ = [
     "SubjectVMRegionConfig",
     "SubjectVMTargetBindingConfig",
     "SubjectVMUpdateSafetyConfig",
+    "SubjectVMTransactionConfig",
     "SubjectVMTraceConfig",
     "load_subject_vm_config",
     "strip_disabled_subject_vm_section",

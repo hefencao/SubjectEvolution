@@ -26,7 +26,8 @@ RUNTIME_SCHEMA_V4 = "se-subject-vm-runtime-v4"
 RUNTIME_SCHEMA_V5 = "se-subject-vm-runtime-v5"
 RUNTIME_SCHEMA_V6 = "se-subject-vm-runtime-v6"
 RUNTIME_SCHEMA_V7 = "se-subject-vm-runtime-v7"
-RUNTIME_SCHEMA = "se-subject-vm-runtime-v8"
+RUNTIME_SCHEMA_V8 = "se-subject-vm-runtime-v8"
+RUNTIME_SCHEMA = "se-subject-vm-runtime-v9"
 
 
 @dataclass(frozen=True)
@@ -117,6 +118,16 @@ STAGE3C1_DEVICE_CONTRACT = SubjectVMDeviceContract(
 
 STAGE3C2_DEVICE_CONTRACT = SubjectVMDeviceContract(
     schema="subject-vm-stage3c2-update-safety-proposal-cpu-reference-contract-v1",
+    host_authoritative=True,
+    device_allocation=False,
+    device_sync=False,
+    consumes_random_numbers=False,
+    affects_action_or_cost=True,
+    supported_execution_backends=("cpu",),
+)
+
+STAGE3C3_DEVICE_CONTRACT = SubjectVMDeviceContract(
+    schema="subject-vm-stage3c3-shadow-transaction-cpu-reference-contract-v1",
     host_authoritative=True,
     device_allocation=False,
     device_sync=False,
@@ -230,7 +241,9 @@ class SubjectVMRuntime:
         if trace_storage is not None:
             trace_storage.initialize_rows(rows)
         mode = (
-            "initialized-stage3c2-empty"
+            "initialized-stage3c3-empty"
+            if cfg.transaction_enabled
+            else "initialized-stage3c2-empty"
             if cfg.update_safety_enabled
             else "initialized-stage3c1-empty"
             if cfg.target_binding_enabled
@@ -289,7 +302,13 @@ class SubjectVMRuntime:
         return self.cfg.update_safety_enabled
 
     @property
+    def transaction_enabled(self) -> bool:
+        return self.cfg.transaction_enabled
+
+    @property
     def device_contract(self) -> SubjectVMDeviceContract:
+        if self.transaction_enabled:
+            return STAGE3C3_DEVICE_CONTRACT
         if self.update_safety_enabled:
             return STAGE3C2_DEVICE_CONTRACT
         if self.target_binding_enabled:
@@ -491,6 +510,7 @@ class SubjectVMRuntime:
         schema = payload.get("schema")
         if schema not in {
             RUNTIME_SCHEMA,
+            RUNTIME_SCHEMA_V8,
             RUNTIME_SCHEMA_V7,
             RUNTIME_SCHEMA_V6,
             RUNTIME_SCHEMA_V5,
@@ -519,6 +539,9 @@ class SubjectVMRuntime:
         compatibility_empty_update_safety = (
             cfg.update_safety_enabled and schema == RUNTIME_SCHEMA_V7
         )
+        compatibility_empty_transaction = (
+            cfg.transaction_enabled and schema == RUNTIME_SCHEMA_V8
+        )
         if schema == RUNTIME_SCHEMA_V1:
             expected_contract = STAGE1_DEVICE_CONTRACT.schema
         elif schema == RUNTIME_SCHEMA_V2:
@@ -533,9 +556,13 @@ class SubjectVMRuntime:
             expected_contract = STAGE3B3_DEVICE_CONTRACT.schema
         elif schema == RUNTIME_SCHEMA_V7:
             expected_contract = STAGE3C1_DEVICE_CONTRACT.schema
+        elif schema == RUNTIME_SCHEMA_V8:
+            expected_contract = STAGE3C2_DEVICE_CONTRACT.schema
         else:
             expected_contract = (
-                STAGE3C2_DEVICE_CONTRACT.schema
+                STAGE3C3_DEVICE_CONTRACT.schema
+                if cfg.transaction_enabled
+                else STAGE3C2_DEVICE_CONTRACT.schema
                 if cfg.update_safety_enabled
                 else STAGE3C1_DEVICE_CONTRACT.schema
                 if cfg.target_binding_enabled
@@ -613,6 +640,8 @@ class SubjectVMRuntime:
             restore_mode = "compatibility-empty-target-binding-rebuild"
         if compatibility_empty_update_safety:
             restore_mode = "compatibility-empty-update-safety-rebuild"
+        if compatibility_empty_transaction:
+            restore_mode = "compatibility-empty-shadow-transaction-rebuild"
         return cls(
             cfg,
             entity_capacity,
@@ -637,6 +666,7 @@ class SubjectVMRuntime:
             "modulation_enabled": self.modulation_enabled,
             "target_binding_enabled": self.target_binding_enabled,
             "update_safety_enabled": self.update_safety_enabled,
+            "transaction_enabled": self.transaction_enabled,
             "restore_mode": self.restore_mode,
             "device_contract": self.device_contract.schema,
             "activation_accounting": asdict(self.activation_accounting),
@@ -678,6 +708,7 @@ __all__ = [
     "RUNTIME_SCHEMA_V5",
     "RUNTIME_SCHEMA_V6",
     "RUNTIME_SCHEMA_V7",
+    "RUNTIME_SCHEMA_V8",
     "STAGE1_DEVICE_CONTRACT",
     "STAGE2_DEVICE_CONTRACT",
     "STAGE3_DEVICE_CONTRACT",
@@ -686,6 +717,7 @@ __all__ = [
     "STAGE3B3_DEVICE_CONTRACT",
     "STAGE3C1_DEVICE_CONTRACT",
     "STAGE3C2_DEVICE_CONTRACT",
+    "STAGE3C3_DEVICE_CONTRACT",
     "SubjectVMActivationAccounting",
     "SubjectVMDeviceContract",
     "SubjectVMEligibilityAccounting",
