@@ -549,3 +549,17 @@ Stage 3C-10 的分化时间线读取固定容量 ring。探索性 horizon 16 运
 `.sechk` 包含 `created_utc`，ZIP 容器也具有实例级字节元数据；因此相同 seed 和状态的独立重跑可以拥有不同 checkpoint file SHA，并进一步改变绑定该文件的 plan/export artifact SHA。单次运行仍必须验证这些精确文件哈希，不能为追求相同哈希而放宽 lineage。
 
 跨运行可重复性应比较 source checkpoint state hash、固定参数和 score-free 统计。Stage 3C-11 为此新增 semantic-result hash，明确排除路径、创建时间和容器字节元数据，同时包含九个 source state identity、prefix 统计、逐坐标稀疏性和禁止结论。artifact-instance hash 不同而 semantic-result hash 相同，表示运行使用了不同文件实例但产生相同科学状态和分析结果；二者不能混为一谈。
+
+## v0.126：延长观察 horizon 不等于延长单次参数作用
+
+Stage 3C-12 在同一九个 source checkpoint 上只把 branch horizon 从 5 tick 延长到 8 tick。两条 arm 的 source state hash、bootstrap lineage、32 个实体、16 个 bootstrap subject、source tick 2、delta、rollback、evaluation 和固定图均相同；五 tick 边界之前所有 event-shaped trace 数组也逐事件完全一致。
+
+8 tick arm 的完整配对窗口从 111 增至 143，但实际 live commit 仅从 141 增至 144，离散 action 差异仍为同样的 3 次、仍只出现在同样的 2/9 source，Stage 3C-8 仍为 0/21 稳定坐标。延长后的尾部没有新的离散 action crossing，只观察到一个既有分化路径继续产生客观状态差异。因此，在当前 `rollback_after_ticks=2`、每次写入只覆盖一个后续激活 tick 的合同下，单纯增加等待时间不是稀疏离散分化的主要解释。
+
+这不证明 5 tick 对所有机制或延迟都充分。branch horizon 控制“观察多久”，rollback duration 控制“参数实际作用多久”，两者不能混为一谈。下一次允许的单变量比较应保持九 source、32 实体、8 tick trace-safe horizon、delta 和 bootstrap 图不变，只调整临时作用持续时间；仍不能同时放大 delta、改变实体数或开放永久保留。
+
+## v0.126：路径延续必须与新的干预跨界分开
+
+若 live 分支在五 tick 边界前已经改变一次离散 action，后续即使参数已回滚，实体位置、能量或环境状态也可以继续与 control 不同。Stage 3C-12 因此把 extended tail 中的 `action_id` 新差异与 `objective_delta` 延续差异分开统计。尾部出现客观差异但没有新 action crossing，表示既有路径依赖继续传播，不是后续临时写入再次跨过离散边界。
+
+这种区分仍不是因果信用判决。它只能描述分支轨迹的时序结构，不能把某个 objective coordinate 解释为好坏，也不能据此保留参数。

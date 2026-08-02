@@ -1,0 +1,21 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c12_horizon_adequacy_v1",
+  "title": "D1-Z Subject VM Stage 3C-12 trace-safe branch-horizon adequacy audit",
+  "status": "engineering-horizon-adequacy",
+  "scientific_stage": "stage3c12-horizon-only-no-mechanism-change",
+  "authorization": {
+    "reuse_v0125_nine_source_panel": true,
+    "compare_branch_horizon_five_to_eight": true,
+    "require_exact_prefix_identity": true,
+    "require_complete_trace_coverage": true,
+    "change_entity_count": false,
+    "change_update_mechanism": false,
+    "change_delta_scale": false,
+    "change_bootstrap_topology": false,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "epoch_1_entry": false,
+    "subjecthood_claim": false
+  }
+}

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.126.0
+
+- Adds Subject VM Stage 3C-12 trace-safe branch-horizon adequacy assessment.
+- Compares branch horizons 5 and 8 on the identical nine-source, 32-entity, sixteen-bootstrap-subject CPU panel while changing no update, rollback, delta, topology or retention parameter.
+- Verifies identical source checkpoint state hashes, identical bootstrap lineage and exact equality of all event-shaped trace arrays before the five-tick stop boundary.
+- Keeps both horizons within complete bounded-trace coverage without enlarging runtime trace state or persisting full execution paths.
+- Finds 111 versus 143 completed paired windows, but the same three discrete-action difference events in the same two sources and 0/21 stable objective coordinates in both arms.
+- Separates new tail action-boundary crossings from delayed continuation of an already-diverged objective path.
+- Authorizes no permanent retention, scalar objective, automatic keep/revert, causal-credit claim, stable-learning claim or general-attention claim.
+
 ## 0.125.0
 
 - Adds Subject VM Stage 3C-11 independent-source sample-adequacy assessment.

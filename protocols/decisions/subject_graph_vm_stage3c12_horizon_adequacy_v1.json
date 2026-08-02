@@ -1,0 +1,45 @@
+{
+  "schema": "se-subject-vm-stage3c12-horizon-adequacy-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c12-horizon-adequacy-v1",
+  "status": "accepted-engineering-analysis-only",
+  "project_version": "0.126.0",
+  "question": "Does extending the paired branch horizon, without changing source states or the update mechanism, reveal additional discrete-action or objective-event divergence?",
+  "comparison": {
+    "baseline_horizon_ticks": 5,
+    "extended_horizon_ticks": 8,
+    "single_changed_factor": "branch_horizon_ticks",
+    "independent_source_seeds": [12301, 12302, 12303, 12304, 12305, 12306, 12307, 12308, 12309],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "integrity": {
+    "identical_source_checkpoint_state_hashes_required": true,
+    "identical_bootstrap_lineage_required": true,
+    "all_event_shaped_trace_arrays_must_match_before_baseline_stop": true,
+    "stage3c7_engineering_screen_required_for_both_arms": true,
+    "stage3c8_hierarchy_unchanged": "window -> stable subject -> independent source",
+    "stage3c10_complete_trace_coverage_required": true,
+    "trace_capacity_or_retention_changed": false,
+    "runtime_diagnostic_state_added": false
+  },
+  "interpretation": {
+    "more_completed_windows_do_not_create_more_independent_replicates": true,
+    "tail_objective_divergence_may_continue_an_earlier_action_path": true,
+    "absence_of_new_tail_action_divergence_is_not_universal_horizon_sufficiency": true,
+    "objective_coordinate_value_interpretation": null,
+    "universal_scalar_objective": false,
+    "automatic_keep_or_revert_decision": false,
+    "permanent_parameter_retention_authorized": false,
+    "causal_credit_claim_authorized": false,
+    "learning_claim_authorized": false,
+    "subjecthood_claim_authorized": false
+  },
+  "bootstrap_bias": {
+    "classification": "fixed-cognition engineering baseline",
+    "evolved_topology": false,
+    "universal_attention_claim": false
+  }
+}

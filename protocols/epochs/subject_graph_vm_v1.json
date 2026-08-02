@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c11-source-adequacy-implemented",
-  "project_version": "0.125.0",
+  "status": "stage-3c12-horizon-adequacy-implemented",
+  "project_version": "0.126.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3C-11",
+  "current_stage": "3C-12",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -325,6 +325,21 @@
     "branch_horizon_ticks": 5,
     "within_source_windows_are_independent_replicates": false,
     "prefix_sensitivity_diagnostic_only": true,
+    "universal_scalar_objective": false,
+    "automatic_keep_or_revert_decision": false,
+    "permanent_write_authorized": false,
+    "scientific_qualification": false
+  },
+  "stage_3c12_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_stage3c12_horizon_adequacy_v1.json",
+    "representation": "trace-safe-horizon-only-prefix-identity-and-delayed-visibility-audit",
+    "runtime_state_change": false,
+    "single_changed_factor": "branch-horizon-ticks-5-to-8",
+    "independent_source_count": 9,
+    "identical_source_state_panel_required": true,
+    "exact_semantic_prefix_identity_required": true,
+    "complete_bounded_trace_coverage_required": true,
+    "within_source_windows_are_independent_replicates": false,
     "universal_scalar_objective": false,
     "automatic_keep_or_revert_decision": false,
     "permanent_write_authorized": false,

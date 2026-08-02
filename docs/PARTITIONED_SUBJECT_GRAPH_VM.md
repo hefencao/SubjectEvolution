@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
 Status: **Stage 3C-5 CPU-reference score-free objective evaluation windows implemented; no automatic keep/revert decision**
-Project version: **0.125.0**
+Project version: **0.126.0**
 
 ## 1. Decision
 
@@ -587,3 +587,14 @@ read-only control 现在会建立虚拟 reservation，占用与 guarded-live 相
 Stage 3C-10 同步收紧诊断合同。paired admission/evaluation symmetry 只要求 live admission 与 control reservation、窗口容量和评价 counted cost 对称；live 干预已改变未来内部路径后，后续 shadow-transaction preparation 次数不必继续相等。分化时间线还必须声明有界 trace 的 tick coverage，覆盖不完整时只报告观测下界，不能把 ring overwrite 解释成完整零差异。
 
 本阶段没有新增运行时字段、checkpoint schema、随机数消耗、第二套 branch/checkpoint/ledger owner 或长期路径记录。fixed nearest-token addressing、single-winner eligibility target 和 bootstrap graph 继续标记为 `bootstrap shaping bias`、`fixed-cognition engineering baseline`、`evolved_topology=false`、`universal_attention_claim=false`。永久参数保留、scalar reward、自动 keep/revert、因果信用正确性、稳定学习、主体性和 Epoch 1 仍未授权。
+
+
+## v0.126：Stage 3C-12 trace-safe branch horizon 充分性审计
+
+本阶段使用同一九 source panel 对比 branch horizon 5 与 8。除 horizon 外，32 个实体、16 个 fixed-bootstrap subject、source tick 2、CPU backend、association、eligibility、proposal、target binding、update safety、shadow transaction、rollback、evaluation 和 export contracts 全部不变。source checkpoint state hash 与 bootstrap lineage 必须逐 seed 相同。
+
+Stage 3C-12 在两个 arm 的 guarded-live/control final checkpoint 中，以 stable subject 和 event tick 为键，比较五 tick 停止边界之前全部 event-shaped trace 数组。九个 source 的两个 branch prefix 均完全一致；两 arm 的 bounded trace coverage 均完整。该检查防止把不同起点、不同随机路径或 trace overwrite 误写成 horizon 效应。
+
+五 tick arm 产生 111 个完整 paired windows，八 tick arm 产生 143 个；live commits 为 141 对 144。两 arm 都只有 3 个 discrete-action difference events，分布在相同 2/9 source；稳定客观坐标均为 0/21。八 tick 尾部没有新的 action crossing，只保留一个先前已分化 action 造成的后续 objective path difference。
+
+因此当前证据缩小了“仅因停止过早而完全看不到离散差异”的解释空间，但不证明五 tick 普遍充分，也不证明更新有效或无效。branch horizon 与 temporary parameter exposure duration 是不同变量。下一阶段若继续，应保持 trace-safe horizon 和九 source panel，单独比较 exposure duration；不得同步改变 delta、实体数、bootstrap topology 或永久保留政策。

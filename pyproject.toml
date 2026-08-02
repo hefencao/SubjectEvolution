@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "se-mvp"
-version = "0.125.0"
+version = "0.126.0"
 description = "Reference implementation for nested-subject existence evolution simulation"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -77,6 +77,7 @@ se-subject-vm-component-reproducibility = "se.analysis.subject_vm_component_repr
 se-subject-vm-short-paired-study = "se.experiments.subject_vm_short_paired_study:main"
 se-subject-vm-stage3c10-diagnostics = "se.analysis.subject_vm_stage3c10_diagnostics:main"
 se-subject-vm-stage3c11-sample-adequacy = "se.analysis.subject_vm_stage3c11_sample_adequacy:main"
+se-subject-vm-stage3c12-horizon-adequacy = "se.analysis.subject_vm_stage3c12_horizon_adequacy:main"
 se-epoch = "se.cmd.epoch:main"
 se-source-health-gate = "se.analysis.source_health:main"
 se-turnover-substrate-config = "se.experiments.d1_turnover_substrate:main"

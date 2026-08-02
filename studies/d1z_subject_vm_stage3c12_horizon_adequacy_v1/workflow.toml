@@ -1,0 +1,59 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c12_horizon_adequacy_v1"
+title = "D1-Z Subject VM Stage 3C-12 trace-safe branch-horizon adequacy audit"
+
+[parameters.config]
+type = "path"
+default = "configs/mvp_short_subject_vm_stage3c8_paired_study.json"
+description = "Unchanged fixed-bootstrap paired configuration."
+
+[parameters.seeds]
+type = "csv-int"
+default = "12301,12302,12303,12304,12305,12306,12307,12308,12309"
+description = "The v0.125 nine-source panel."
+
+[parameters.source_ticks]
+type = "int"
+default = 2
+minimum = 0
+maximum = 16
+description = "Unchanged source checkpoint tick."
+
+[parameters.bootstrap_subjects]
+type = "int"
+default = 16
+minimum = 1
+maximum = 64
+description = "Unchanged fixed-bootstrap stable-subject count."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c12_horizon_adequacy_v1/pilot"
+description = "Separate five- and eight-tick arms plus Stage-3C-12 comparison."
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c12_horizon_adequacy_v1_results.zip"
+description = "Compact study result bundle, separate from the project release archive."
+
+[steps.run-baseline-five-tick]
+description = "Reproduce the v0.125 five-tick control arm on the frozen nine-source panel."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "{source_ticks}", "--horizon-ticks", "5", "--bootstrap-subjects", "{bootstrap_subjects}", "--backend", "cpu", "--output", "{analysis_root}/horizon_5", "--overwrite"]
+
+[steps.run-extended-eight-tick]
+description = "Run the maximum trace-safe eight-tick arm without changing runtime trace retention."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "{source_ticks}", "--horizon-ticks", "8", "--bootstrap-subjects", "{bootstrap_subjects}", "--backend", "cpu", "--output", "{analysis_root}/horizon_8", "--overwrite"]
+
+[steps.assess-horizon-adequacy]
+description = "Verify identical source states and exact semantic prefix identity before comparing delayed visibility."
+command = ["se-subject-vm-stage3c12-horizon-adequacy", "--baseline-study-report", "{analysis_root}/horizon_5/study_report.json", "--extended-study-report", "{analysis_root}/horizon_8/study_report.json", "--output", "{analysis_root}/stage3c12_horizon_adequacy.json"]
+
+[steps.pack-results]
+description = "Package both score-free evidence arms and the Stage-3C-12 assessment."
+requires_json = [
+  { path = "{analysis_root}/horizon_5/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/horizon_8/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/stage3c12_horizon_adequacy.json", field = "trace_and_prefix_integrity.all_sources_have_exact_semantic_prefix_identity", equals = true },
+  { path = "{analysis_root}/stage3c12_horizon_adequacy.json", field = "permanent_parameter_retention_authorized", equals = false },
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "{analysis_root}", "--required-file", "{analysis_root}/horizon_5/study_report.json", "--required-file", "{analysis_root}/horizon_5/paired_evidence_assessment.json", "--required-file", "{analysis_root}/horizon_5/component_reproducibility.json", "--required-file", "{analysis_root}/horizon_5/stage3c10_diagnostics.json", "--required-file", "{analysis_root}/horizon_8/study_report.json", "--required-file", "{analysis_root}/horizon_8/paired_evidence_assessment.json", "--required-file", "{analysis_root}/horizon_8/component_reproducibility.json", "--required-file", "{analysis_root}/horizon_8/stage3c10_diagnostics.json", "--required-file", "{analysis_root}/stage3c12_horizon_adequacy.json", "--output", "{output}"]

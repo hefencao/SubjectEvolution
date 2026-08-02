@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.125.0**
+Version: **0.126.0**
 
 ## Current scientific task
 
-Version 0.125 implements **Subject VM Stage 3C-11: independent-source sample-adequacy audit**.
+Version 0.126 implements **Subject VM Stage 3C-12: trace-safe branch-horizon adequacy audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -38,6 +38,12 @@ Stage 3C-11 also corrects one diagnostic boundary exposed by the expanded seeds.
 
 Repeated runs preserve identical source checkpoint state hashes, Stage-3C-10 diagnostics and Stage-3C-11 semantic results. Exact checkpoint/plan/export file hashes remain per-run artifact identities because checkpoint metadata includes creation time; Stage 3C-11 therefore reports a separate semantic-result hash that excludes paths, creation time and ZIP-container byte metadata without weakening within-run integrity verification.
 
+Stage 3C-12 changes only `branch_horizon_ticks`, comparing the v0.125 five-tick arm with an eight-tick arm on the identical nine source-state hashes and bootstrap lineage. Eight is the maximum horizon that remains completely visible under the existing bounded trace retention. The comparison adds no runtime field, trace capacity, checkpoint schema, random stream, branch owner or persistent path record.
+
+Before interpreting the extra tail, Stage 3C-12 compares every event-shaped Subject-VM trace array keyed by stable subject and event tick before the five-tick stopping boundary. All live and control prefixes are exactly identical across both arms. Both Stage-3C-7 screens pass with pairing coverage 1.0, zero rollback failures, zero fact clipping, matched evaluation costs and complete divergence-trace coverage.
+
+The eight-tick arm completes 143 paired windows versus 111 at five ticks, while live commits rise only from 141 to 144. Both arms contain the same three discrete-action difference events in the same two of nine sources, and both retain 0/21 stable objective coordinates. The added tail contains no new discrete-action crossing; it only records later objective-state differences continuing from an action path that had already diverged before the five-tick boundary. This makes branch horizon a weaker explanation for the sparse discrete signal under the current rollback/exposure contract, without proving that five ticks are universally sufficient.
+
 The current result classifies the original three-source run as an engineering pipeline pilot, not a scientifically sufficient sample for stable direction claims. The nine-source expansion reduces uncertainty about rarity but still does not establish mechanism efficacy, delayed-effect sufficiency, entity-count adequacy, stable learning or causal credit.
 
 The v0.110 single-owner rule remains unchanged. Subject VM is the sole optional action-potential residual owner when enabled; legacy knowledge/latent/working-memory routes remain fixed-cognition comparison baselines and cannot coexecute on the primary path.
@@ -64,6 +70,7 @@ Implemented and tested:
 - Stage-3C-9 fixed-bootstrap short paired runner, symmetric control admission and export-boundary transient finalization;
 - Stage-3C-10 source/subject funnel, update magnitude and exposure, association/eligibility quality, branch divergence, trace-retention coverage and aggregation-sensitivity diagnostics;
 - Stage-3C-11 independent-source prefix sensitivity, source-level divergence incidence and sample-adequacy assessment without pseudoreplication;
+- Stage-3C-12 horizon-only comparison with identical source states, exact semantic prefix identity and complete bounded-trace coverage;
 - v0.123 trace/checkpoint compatibility for the new bounded diagnostic fields;
 - explicit guarded-live/read-only branch identities bound to source state, branch config and final tick;
 - branch identity persistence in final checkpoint lineage;
@@ -85,7 +92,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-11 classifies the expanded short fixed-bootstrap study as engineering evidence without authorizing retention or Epoch 1.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-12 classifies the trace-safe horizon comparison as engineering evidence without authorizing retention or Epoch 1.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -111,4 +118,4 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-The next authorized boundary is a separately versioned, single-variable short-study comparison using the nine-source panel as the sample-size control. The current evidence most directly motivates testing branch horizon or temporary-effect exposure, but only after divergence observation is horizon-safe. Entity count, horizon and mechanism were not changed in v0.125. Permanent retention, scalar value construction, a complete general-attention replacement and Epoch 1 qualification remain unauthorized.
+The next authorized boundary is a separately versioned, single-variable comparison of temporary parameter exposure duration while holding the nine-source panel, 32 entities, trace-safe horizon, bounded delta and fixed bootstrap topology constant. Stage 3C-12 shows that merely waiting three additional ticks completes more windows but does not produce additional discrete-action crossings. This does not authorize changing exposure and delta together, permanent retention, scalar value construction, a complete general-attention replacement or Epoch 1 qualification.
