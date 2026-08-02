@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.120.0**
+Version: **0.121.0**
 
 ## Current scientific task
 
-Version 0.120 implements **Subject VM Stage 3C-6: shared-checkpoint paired-evaluation planning, branch identity and score-free export**.
+Version 0.121 implements **Subject VM Stage 3C-7: repeated paired-evidence adequacy and integrity assessment**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -17,6 +17,8 @@ Stage 3B-3 forms a graph-controlled six-dimensional parameter-family proposal. S
 Stage 3C-6 remains outside the runtime learning path. A plan binds one trusted quiescent checkpoint, its file/state/config hashes, exact source tick, common final tick and two explicit branch identities. The only authorized branch configuration difference is `subject_vm.live_write.enabled`. The branch runner preserves shared checkpoint state and stable-ID keyed randomness, persists branch identity in checkpoint lineage, and writes separate final checkpoints.
 
 The exporter accepts only the planned guarded-live and read-only-control checkpoints, verifies their branch identities and final configuration hashes, extracts completed rollback-verified windows, and pairs them by stable subject, source event, window and exact target/update contract. It emits component-wise objective differences and preserves all unpaired windows. It does not produce a scalar score, fixed value weights, automatic keep/revert decision, permanent write authorization or automatic causal conclusion.
+
+Stage 3C-7 remains outside the runtime and consumes one or more Stage-3C-6 exports plus their referenced final checkpoints. It verifies export/checkpoint hashes, reports independent source-state count, paired-window coverage and structured unpaired reasons, inspects rollback failures, pending writes, locked rows, fact clipping and count-only evaluation-cost matching, and records component-wise entity/environment branch divergence. Its default thresholds are explicit engineering screening parameters, not universal scientific sufficiency or subjective value.
 
 The v0.110 single-owner rule remains unchanged. Subject VM is the sole optional action-potential residual owner when enabled; legacy knowledge/latent/working-memory routes remain fixed-cognition comparison baselines and cannot coexecute on the primary path.
 
@@ -37,6 +39,7 @@ Implemented and tested:
 - Stage-3C-4 explicit opt-in guarded live commits, bounded applied ledger and deterministic pre-activation rollback;
 - Stage-3C-5 guarded-live/read-only objective evaluation windows with identical evidence shape;
 - Stage-3C-6 source-checkpoint quiescence checks and deterministic plan identity;
+- Stage-3C-7 repeated paired-export checksum verification, coverage/unpaired diagnostics and integrity assessment;
 - explicit guarded-live/read-only branch identities bound to source state, branch config and final tick;
 - branch identity persistence in final checkpoint lineage;
 - completed-window extraction and component-wise paired export without scalarization;
@@ -57,7 +60,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-6 is an engineering branch/export contract only.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-7 is an external engineering evidence-screening contract only.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -83,4 +86,4 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-The next authorized boundary is a **bounded Stage 3C-7 paired-evidence adequacy and integrity assessment contract**. It may report coverage, pairing loss, rollback failures, clipping, branch divergence and cost matching across independently repeated shared-checkpoint pairs, but must not convert objective coordinates into a universal scalar value or automatically retain updates.
+The next authorized boundary is a **bounded Stage 3C-8 component-wise reproducibility assessment**. It may report per-coordinate sign, dispersion and interval stability across independent paired exports that passed Stage 3C-7 integrity screening, but must not collapse coordinates into a universal scalar value or automatically retain updates.

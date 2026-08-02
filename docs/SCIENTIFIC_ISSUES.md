@@ -474,3 +474,12 @@ Stage 3C-6 修复了 v0.119 单臂窗口无法构造反事实的问题：guarded
 但共享起点并不等于每个窗口都具有有效因果解释。分支可能因临时参数变化导致后续对象接触、出生死亡、事件数量和目标主体集合分化；窗口缺失、配对损失、裁剪和回滚失败本身都是证据，不能被静默过滤。逐坐标 live-minus-control 也不是主观价值函数，更不能自动决定保留参数。
 
 下一开放问题是建立有界的 paired-evidence adequacy/integrity assessment：报告配对覆盖率、未配对原因、branch divergence、rollback integrity、事实裁剪和计数成本匹配，并通过多个独立共享-checkpoint pair 检查稳定性。该评估仍不得生成通用 scalar reward 或自动 keep/revert。
+
+
+## v0.121：完整性筛查通过仍不等于更新有效
+
+Stage 3C-7 可以发现重复使用同一 source checkpoint、配对覆盖不足、unpaired target/window 分化、rollback failure、locked row、事实裁剪和 evaluation count-cost 不匹配。它也可以逐分量描述两个最终分支的实体身份、主体身份、实体状态和环境字段分化。
+
+这些诊断只回答“证据链是否完整到值得继续分析”，不回答“哪一个客观坐标更好”或“候选更新是否应保留”。默认至少三个独立 source pair 是探索期工程筛查基线，不是普适统计充分性定理。分支分化既可能是干预影响，也可能削弱后续窗口可配对性，不能被自动归为成功或失败。
+
+下一开放问题是 component-wise reproducibility：在通过 Stage 3C-7 完整性筛查的独立 pairs 上，逐坐标报告符号、离散程度和区间稳定性，并保留主体/窗口层级，避免把窗口伪装成独立 replicate。该分析仍不得生成通用 scalar reward 或自动 keep/revert。

@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c6-paired-evaluation-export-implemented",
-  "project_version": "0.120.0",
+  "status": "stage-3c7-paired-evidence-integrity-implemented",
+  "project_version": "0.121.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -65,7 +65,7 @@
     {
       "stage": 3,
       "name": "token-event-trace-then-delayed-plasticity",
-      "runtime_change": "Stage 3A stores compact graph tokens and objective facts; Stage 3B-1 adds short-lived local activity eligibility; Stage 3B-2 records bootstrap delayed association candidates; Stage 3B-3 records rejectable parameter-family modulation proposals; Stage 3C-1 binds proposals to pre-activation local carriers; Stage 3C-2 emits bounded candidate deltas; Stage 3C-3 validates exact all-or-none shadow transactions; Stage 3C-4 permits explicitly opted-in short-window live writes with a bounded applied ledger and automatic rollback; Stage 3C-5 records score-free objective evidence for guarded-live and read-only control windows; Stage 3C-6 creates explicit shared-checkpoint branch identities and exports component-wise paired evidence outside the runtime"
+      "runtime_change": "Stage 3A stores compact graph tokens and objective facts; Stage 3B-1 adds short-lived local activity eligibility; Stage 3B-2 records bootstrap delayed association candidates; Stage 3B-3 records rejectable parameter-family modulation proposals; Stage 3C-1 binds proposals to pre-activation local carriers; Stage 3C-2 emits bounded candidate deltas; Stage 3C-3 validates exact all-or-none shadow transactions; Stage 3C-4 permits explicitly opted-in short-window live writes with a bounded applied ledger and automatic rollback; Stage 3C-5 records score-free objective evidence for guarded-live and read-only control windows; Stage 3C-6 creates explicit shared-checkpoint branch identities and exports component-wise paired evidence outside the runtime; Stage 3C-7 assesses repeated paired exports for coverage, rollback/clipping integrity, count-cost matching and component-wise branch divergence without scalarization"
     },
     {
       "stage": 4,
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3C-5",
+  "current_stage": "3C-7",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -248,6 +248,24 @@
     "permanent_write_authorized": false,
     "runtime_state_change": false,
     "backend": "cpu-reference-branch-runner",
+    "scientific_qualification": false
+  },
+  "stage_3c7_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_paired_evidence_integrity_v1.json",
+    "representation": "repeated-paired-export-adequacy-and-integrity-assessment",
+    "runtime_state_change": false,
+    "referenced_checkpoint_verification": true,
+    "independent_source_state_count_reported": true,
+    "pairing_coverage_and_unpaired_reasons_reported": true,
+    "rollback_and_locked_row_integrity_reported": true,
+    "fact_clipping_reported": true,
+    "paired_evaluation_count_cost_matching_reported": true,
+    "branch_divergence_componentwise": true,
+    "screening_thresholds_are_engineering_only": true,
+    "objective_scalar_score": false,
+    "automatic_keep_or_revert_decision": false,
+    "permanent_write_authorized": false,
+    "backend": "external-cpu-checkpoint-analysis",
     "scientific_qualification": false
   }
 }

@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
 Status: **Stage 3C-5 CPU-reference score-free objective evaluation windows implemented; no automatic keep/revert decision**
-Project version: **0.120.0**
+Project version: **0.121.0**
 
 ## 1. Decision
 
@@ -534,3 +534,12 @@ Stage 3C-6 不把 paired comparison 塞回主体运行时。`subject_vm/evaluati
 导出器只接受与计划匹配的两个最终 checkpoint。guarded-live 窗口必须是 verified rollback 后的完成状态，control 窗口必须是只读完成状态。配对依据稳定 subject、source event、窗口时间、目标族、稳定 target、pre/projected value 和 bounded delta；未配对窗口不会丢弃。输出可以包含逐坐标 live-minus-control 差异，但不产生 scalar score、固定坐标权重、keep/revert 指令、永久写入授权或自动因果结论。
 
 该合同的作用是让后续工程审计能够区分“窗口数据存在”与“有效 paired evidence 存在”。它仍不证明 bootstrap 关联、目标绑定或参数方向具有因果正确性。
+
+
+## v0.121：Stage 3C-7 只评估 paired evidence 的充分性与完整性
+
+Stage 3C-7 不进入主体图激活、资格、写入或回滚路径。`analysis/subject_vm_paired_evidence.py` 读取一个或多个 Stage-3C-6 导出，并重新验证导出 checksum、分支 checkpoint 文件哈希和状态哈希。重复使用同一个 source state 的导出会被显式计数，不能伪装成独立重复。
+
+评估报告保留 paired、unpaired live 和 unpaired control 的数量与覆盖率，并按稳定主体缺失、source event 分化、窗口边界分化、target/update 合同分化等结构原因分类。它同时读取最终 ledger，报告 rollback failure、pending write、locked row、事实裁剪和同窗 evaluation count-cost 是否匹配。分支分化只按实体身份、主体身份、实体状态和环境字段逐分量报告，不被自动解释为失败或收益。
+
+默认的三个独立 source pair、最低覆盖率、最大裁剪率等仅是可覆盖的工程筛查参数。筛查通过不等于科学充分性，不授权 objective coordinate 权重、scalar score、因果效应、keep/revert 或永久参数保留。下一阶段若继续，应先检查已通过完整性筛查的多个独立 pair 上逐坐标方向和离散程度是否可复现，而不是直接压缩为单一目标。

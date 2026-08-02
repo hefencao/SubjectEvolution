@@ -1480,3 +1480,12 @@ A source checkpoint is eligible only when the Stage-3C-5 evaluation and Stage-3C
 Branch identity is appended to checkpoint lineage. Export revalidates plan checksum, source identity, final tick, branch configuration hash and lineage identity before reading evidence. Only completed rollback-verified guarded-live windows and completed read-only-control windows are eligible. Pair keys exclude branch mode but include stable subject, source event, window bounds, target metadata and exact candidate-update contract. Unpaired windows remain explicit.
 
 The exported difference is component-wise and descriptive. There is no objective scalar, coordinate weighting, automatic causal authorization, keep/revert instruction or permanent parameter write. Stage 3C-6 adds no runtime state schema and therefore requires no Subject VM checkpoint migration.
+
+
+### Stage 3C-7 — repeated paired-evidence adequacy and integrity assessment (implemented in v0.121)
+
+Stage 3C-7 remains in `se.analysis` and adds no Subject VM runtime or checkpoint schema. `subject_vm_paired_evidence.py` consumes Stage-3C-6 export documents and their referenced trusted checkpoints. It revalidates export/checkpoint identities before reading fixed evaluation and live-write ledgers.
+
+The analysis reports independent source-state count, pairing coverage, structured unpaired causes, rollback/pending/locked-row integrity, objective-fact clipping, paired evaluation count-cost matching, and component-wise entity/environment branch divergence. It does not import runtime mutation owners and cannot write graph parameters.
+
+Screening thresholds are explicit CLI/data inputs and are labelled engineering-only. The report contains no objective-coordinate weighting, scalar objective, automatic keep/revert instruction, causal authorization or permanent-write permission. Branch divergence is descriptive evidence rather than an automatic pass/fail value judgment.

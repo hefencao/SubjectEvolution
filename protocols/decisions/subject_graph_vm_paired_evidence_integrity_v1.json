@@ -1,0 +1,61 @@
+{
+  "schema": "se-subject-vm-decision-v1",
+  "decision_id": "subject-graph-vm-paired-evidence-integrity-v1",
+  "release": "0.121.0",
+  "status": "accepted-engineering-stage-only",
+  "scope": "Assess repeated Stage-3C-6 shared-checkpoint exports for evidence coverage and structural integrity without scalarizing objective coordinates or authorizing parameter retention.",
+  "inputs": {
+    "paired_export_schema": "se-subject-vm-paired-evaluation-export-v1",
+    "referenced_final_checkpoints_required": true,
+    "export_checksum_verified": true,
+    "checkpoint_file_and_state_checksums_verified": true,
+    "shared_checkpoint_and_branch_identity_required": true,
+    "multiple_independent_source_checkpoints_supported": true,
+    "duplicate_source_state_hashes_reported": true
+  },
+  "pairing_adequacy": {
+    "paired_window_count_reported": true,
+    "guarded_live_and_control_window_counts_reported": true,
+    "pairing_coverage_reported": true,
+    "unpaired_windows_preserved": true,
+    "unpaired_reason_classes": [
+      "stable-subject-absent",
+      "source-event-divergence",
+      "window-boundary-divergence",
+      "target-or-update-contract-divergence",
+      "counterpart-missing-after-identical-contract"
+    ],
+    "minimum_replicates_are_explicit_screening_parameters": true,
+    "screening_thresholds_are_universal_scientific_thresholds": false
+  },
+  "integrity": {
+    "rollback_failure_count_reported": true,
+    "pending_write_and_locked_row_count_reported": true,
+    "fact_clip_count_and_fraction_reported": true,
+    "paired_evaluation_count_cost_matching_reported": true,
+    "intervention_specific_live_write_cost_expected_to_match_control": false,
+    "branch_final_tick_match_required": true,
+    "alive_entity_and_primary_subject_overlap_reported": true,
+    "entity_and_environment_componentwise_divergence_reported": true,
+    "branch_divergence_is_automatic_invalidity": false
+  },
+  "output": {
+    "per_export_integrity_record": true,
+    "aggregate_across_independent_sources": true,
+    "componentwise_only": true,
+    "objective_coordinate_weighting": false,
+    "scalar_score": false,
+    "automatic_keep_or_revert_decision": false,
+    "causal_effect_authorized": false,
+    "permanent_parameter_retention_authorized": false
+  },
+  "scientific_boundary": {
+    "engineering_adequacy_screen_may_pass": true,
+    "scientific_sufficiency_automatic": false,
+    "update_benefit_claim": false,
+    "learning_claim": false,
+    "adaptation_claim": false,
+    "subjecthood_claim": false,
+    "epoch_one_qualification": false
+  }
+}

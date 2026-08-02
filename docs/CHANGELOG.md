@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.121.0
+
+- Adds Subject VM Stage 3C-7 repeated paired-evidence adequacy and integrity assessment outside the runtime.
+- Verifies Stage-3C-6 export checksums and referenced final checkpoint file/state identities before assessment.
+- Reports independent source-state count, duplicate source use, paired-window coverage and explicit unpaired reason classes.
+- Audits rollback failures, pending writes, locked rows, objective-fact clipping and paired evaluation count-cost matching.
+- Reports component-wise alive-entity, primary-subject, entity-state and environment-field branch divergence without treating divergence as automatic invalidity.
+- Provides explicit configurable engineering screening thresholds, defaulting to three independent shared-checkpoint pairs, while denying universal scientific sufficiency.
+- Adds the `se-subject-vm-paired-evidence` command.
+- Defines no objective-coordinate weights, scalar score, automatic keep/revert decision, permanent parameter retention or causal authorization.
+
 ## 0.120.0
 
 - Adds Subject VM Stage 3C-6 shared-checkpoint paired-evaluation planning, execution and export.
