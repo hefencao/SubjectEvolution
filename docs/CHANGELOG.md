@@ -1,3 +1,14 @@
+## 0.135.0
+
+- Adds Subject VM Stage 3C-21 subject/event-specific objective-input readout assessment.
+- Adds an experiment-only readout-only node 8 with no action output, no local eligibility and one association-visible trace to token port 29.
+- Compares the same node fed by `constant-one` input port 0 or `uncertainty-mean` input port 11 while similarity, candidate limit, target family, carrier, update scale, exposure, rollback and retention remain fixed.
+- Verifies identical pre-bootstrap sources, selected subjects and read-only objective behavior; thought tokens differ only on the authorized port-29 readout.
+- Finds within-tick subject variance in all nine sources and within-subject temporal variation in 143/144 subjects; selected delays spread across 1–6 instead of collapsing to delay 1.
+- Finds no additional commits or stable objective coordinates: both arms commit 144 times and remain 0/21, while completed windows change 129 to 125 and objective-divergent sources 3/9 to 2/9.
+- Adds a common nine-node study config, workflow, decision protocol, CLI and deterministic tests without checkpoint-schema or persistent-memory growth.
+- Authorizes no uncertainty value semantics, causal-credit conclusion, permanent retention, learning, subjecthood or universal-attention claim.
+
 ## 0.134.0
 
 - Adds Subject VM Stage 3C-20 fixed-bootstrap visible graph-state readout reachability assessment.

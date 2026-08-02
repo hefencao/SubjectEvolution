@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.134.0**
+Version: **0.135.0**
 
 ## Current scientific task
 
-Version 0.134 implements **Subject VM Stage 3C-20: association-visible graph-state readout reachability audit**.
+Version 0.135 implements **Subject VM Stage 3C-21: subject/event-specific objective-input readout audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -190,3 +190,12 @@ The baseline retains one visible vector and centered rank zero. The readout arm 
 Selected associations change from 1,008 delay-1 assignments to 864 delay-2 assignments. Modulation proposals change from 942 to 535, temporary commits from 144 to 143, completed paired windows from 129 to 100, and objective-event divergence incidence from 3/9 to 2/9 sources. Both arms retain pairing coverage 1.0, zero rollback failures, zero fact clipping, matched evaluation costs and 0/21 stable objective coordinates.
 
 This establishes visible-geometry and score-separation reachability under one replaceable fixed readout. It does not establish event-specific content, causal credit, beneficial direction, learned attention, stable learning, subjecthood or permission for permanent parameter retention.
+
+
+## Stage 3C-21 current result
+
+Stage 3C-21 uses a common nine-node fixed bootstrap graph in both arms. Node 8 is a readout-only linear node with no action output, no local eligibility and trace port 29. The only experimental factor is its objective input port: constant-one port 0 versus uncertainty-mean port 11. The additional node capacity is common support in both arms and does not change the contrast.
+
+The constant arm reproduces rank-zero geometry, 1,008 delay-1 assignments, 942 modulation proposals, 144 temporary commits, 129 completed windows, objective divergence in 3/9 sources and 0/21 stable coordinates. The uncertainty arm has centered rank one in every source, between-subject variance at every retained tick, temporal variation in 143/144 subjects, source-specific subject/event matrices and selected similarity range approximately `0.9445..1.0`. Its 1,008 assignments spread over delays 1–6, but unique associated events fall to 85–94 per source and maximum event reuse rises to three. It produces 846 proposals, 144 commits, 125 completed windows, objective divergence in 2/9 sources and 0/21 stable coordinates.
+
+This establishes that subject- and event-specific association-visible geometry is reachable through an existing objective input without changing action output. It does not establish that uncertainty is valuable, that historical selection is more diverse, that causal credit is correct, or that learning has formed. The next authorized boundary is a read-only audit of selected-event diversity and reuse under the fixed Stage 3C-21 readout before changing addressing, top-k, update scale or retention.

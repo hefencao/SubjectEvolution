@@ -1,7 +1,7 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c20-visible-readout-reachability-implemented",
+  "status": "stage-3c21-subject-event-readout-implemented",
   "project_version": "0.134.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3C-20",
+  "current_stage": "3C-21",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -470,6 +470,24 @@
     "read_only_objective_behavior_identity_required": true,
     "within_source_tokens_subjects_or_windows_are_independent_replicates": false,
     "value_semantics": false,
+    "permanent_write_authorized": false,
+    "scientific_qualification": false
+  },
+  "stage_3c21_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_stage3c21_subject_event_readout_v1.json",
+    "runtime_persistent_state_change": false,
+    "checkpoint_schema_change": false,
+    "single_changed_factor": "readout-only-node8-input-port-constant-one-0-to-uncertainty-mean-11",
+    "common_readout_only_node_index": 8,
+    "association_visible_port": 29,
+    "readout_changes_action_output": false,
+    "same_similarity_threshold_delay_bounds_candidate_limit_and_tie_break": true,
+    "target_family_fixed": "edge_forward_gate",
+    "edge_carrier_fixed": true,
+    "identical_pre_bootstrap_source_state_and_config_required": true,
+    "read_only_objective_behavior_identity_required": true,
+    "within_source_tokens_subjects_or_windows_are_independent_replicates": false,
+    "uncertainty_value_semantics": false,
     "permanent_write_authorized": false,
     "scientific_qualification": false
   }

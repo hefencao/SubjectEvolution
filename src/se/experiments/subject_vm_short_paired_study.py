@@ -64,6 +64,7 @@ class ShortPairedStudyParameters:
     bootstrap_target_family: str = "node_bias"
     bootstrap_edge_carrier_enabled: bool = False
     bootstrap_node0_visible_readout_enabled: bool = False
+    bootstrap_readout_input_port: int | None = None
     association_tie_break: str = "latest"
     association_candidate_limit: int = 1
     association_candidate_aggregation: str = "equal-weight-mean"
@@ -102,6 +103,16 @@ class ShortPairedStudyParameters:
             raise ValueError(
                 "bootstrap_node0_visible_readout_enabled must be boolean"
             )
+        if self.bootstrap_readout_input_port is not None:
+            port = int(self.bootstrap_readout_input_port)
+            if not 0 <= port < 16:
+                raise ValueError(
+                    "bootstrap_readout_input_port must be an objective input port 0..15"
+                )
+            if self.bootstrap_node0_visible_readout_enabled:
+                raise ValueError(
+                    "bootstrap readout-only node and node-0 visible readout are mutually exclusive"
+                )
         if self.association_tie_break not in {"latest", "oldest"}:
             raise ValueError(
                 "association_tie_break must be latest or oldest"
@@ -134,11 +145,20 @@ def bootstrap_profile(
     target_family: str = "node_bias",
     edge_carrier_enabled: bool = False,
     node0_visible_readout_enabled: bool = False,
+    readout_input_port: int | None = None,
 ) -> dict[str, Any]:
     if target_family not in _BOOTSTRAP_TARGET_FAMILY_PORTS:
         raise ValueError("unsupported fixed bootstrap target family")
     if edge_carrier_enabled and target_family != "edge_forward_gate":
         raise ValueError("edge carrier shaping is only valid for edge_forward_gate")
+    if readout_input_port is not None:
+        readout_input_port = int(readout_input_port)
+        if not 0 <= readout_input_port < 16:
+            raise ValueError("readout_input_port must be an objective input port 0..15")
+        if node0_visible_readout_enabled:
+            raise ValueError(
+                "readout-only node and node-0 visible readout are mutually exclusive"
+            )
     target_port = int(_BOOTSTRAP_TARGET_FAMILY_PORTS[target_family])
     payload = {
         "schema": BOOTSTRAP_GRAPH_PROFILE_SCHEMA,
@@ -146,7 +166,7 @@ def bootstrap_profile(
         "evolved_topology": False,
         "universal_attention_claim": False,
         "permanent_retention_authorized": False,
-        "node_count": 8,
+        "node_count": 9 if readout_input_port is not None else 8,
         "edge_count": 1,
         "selection": "lowest-stable-subject-id-among-alive",
         "nodes": [
@@ -207,6 +227,31 @@ def bootstrap_profile(
         "objective_value_interpretation": None,
         "reward": None,
     }
+    if readout_input_port is not None:
+        payload["nodes"].append(
+            {
+                "index": 8,
+                "operator": "linear",
+                "input_port": readout_input_port,
+                "input_gate": 1.0,
+                "output_port": -1,
+                "output_gate": 0.0,
+                "trace_port": 29,
+                "trace_gate": 1.0,
+                "local_eligibility": False,
+                "target_family": None,
+            }
+        )
+        payload["association_visible_readout_shaping"]["readout_only_node"] = {
+            "enabled": True,
+            "node_index": 8,
+            "input_port": readout_input_port,
+            "token_port": 29,
+            "trace_gate": 1.0,
+            "changes_action_output": False,
+            "classification": "replaceable-fixed-bootstrap-objective-input-readout-bias",
+            "value_semantics": None,
+        }
     payload["profile_sha256"] = _canonical_sha256(payload)
     return payload
 
@@ -267,6 +312,7 @@ def prime_fixed_bootstrap_graph(
     target_family: str = "node_bias",
     edge_carrier_enabled: bool = False,
     node0_visible_readout_enabled: bool = False,
+    readout_input_port: int | None = None,
 ) -> dict[str, Any]:
     """Install the explicit fixed bootstrap graph into a quiescent source.
 
@@ -277,6 +323,10 @@ def prime_fixed_bootstrap_graph(
     storage = runtime.storage
     if storage is None:
         raise ValueError("short paired study requires allocated Subject VM storage")
+    if readout_input_port is not None and storage.node_capacity < 9:
+        raise ValueError(
+            "fixed readout-only bootstrap requires at least nine node slots"
+        )
     _assert_quiescent_runtime(simulation)
     alive_rows = np.flatnonzero(simulation.entities.alive).astype(np.int32)
     if alive_rows.size == 0:
@@ -312,6 +362,24 @@ def prime_fixed_bootstrap_graph(
     if node0_visible_readout_enabled:
         storage.node_trace_port[rows, 0] = np.int16(29)
         storage.node_trace_gate[rows, 0] = np.float32(1.0)
+    if readout_input_port is not None:
+        port = int(readout_input_port)
+        if not 0 <= port < 16:
+            raise ValueError("readout_input_port must be an objective input port 0..15")
+        if node0_visible_readout_enabled:
+            raise ValueError(
+                "readout-only node and node-0 visible readout are mutually exclusive"
+            )
+        storage.node_expressed[rows, 8] = True
+        storage.node_operator_id[rows, 8] = np.uint16(OP_LINEAR)
+        storage.node_activation_phase[rows, 8] = np.uint16(0)
+        storage.node_input_port[rows, 8] = np.int16(port)
+        storage.node_input_gate[rows, 8] = np.float32(1.0)
+        storage.node_bias[rows, 8] = np.float32(0.0)
+        storage.node_output_port[rows, 8] = np.int16(-1)
+        storage.node_output_gate[rows, 8] = np.float32(0.0)
+        storage.node_trace_port[rows, 8] = np.int16(29)
+        storage.node_trace_gate[rows, 8] = np.float32(1.0)
 
     storage.edge_expressed[rows, 0] = True
     storage.edge_source[rows, 0] = np.int32(0)
@@ -334,6 +402,7 @@ def prime_fixed_bootstrap_graph(
         target_family=target_family,
         edge_carrier_enabled=edge_carrier_enabled,
         node0_visible_readout_enabled=node0_visible_readout_enabled,
+        readout_input_port=readout_input_port,
     )
     record = {
         "schema": BOOTSTRAP_LINEAGE_SCHEMA,
@@ -386,6 +455,7 @@ def run_short_paired_study(
         node0_visible_readout_enabled=(
             parameters.bootstrap_node0_visible_readout_enabled
         ),
+        readout_input_port=parameters.bootstrap_readout_input_port,
     )
     _write_json(root / "bootstrap_profile.json", profile)
     resolved_backend = "cpu" if parameters.backend == "auto" else parameters.backend
@@ -416,6 +486,7 @@ def run_short_paired_study(
             node0_visible_readout_enabled=(
                 parameters.bootstrap_node0_visible_readout_enabled
             ),
+            readout_input_port=parameters.bootstrap_readout_input_port,
         )
         _assert_quiescent_runtime(simulation)
         source_checkpoint = simulation.save_full_checkpoint(
@@ -635,6 +706,15 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--bootstrap-readout-input-port",
+        type=int,
+        choices=tuple(range(16)),
+        help=(
+            "Experiment-only readout-only node 8 that emits one existing objective "
+            "input port to association-visible token port 29 without action output."
+        ),
+    )
+    parser.add_argument(
         "--association-candidate-limit",
         choices=(1, 2),
         type=int,
@@ -666,6 +746,7 @@ def main() -> None:
             bootstrap_node0_visible_readout_enabled=(
                 args.bootstrap_node0_visible_readout_enabled
             ),
+            bootstrap_readout_input_port=args.bootstrap_readout_input_port,
             association_tie_break=args.association_tie_break,
             association_candidate_limit=args.association_candidate_limit,
         ),

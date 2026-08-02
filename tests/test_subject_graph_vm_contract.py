@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c20-visible-readout-reachability-implemented"
+    assert contract["status"] == "stage-3c21-subject-event-readout-implemented"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,7 +24,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3C-20"
+    assert contract["current_stage"] == "3C-21"
     assert contract["stage_2_contract"]["plasticity"] is False
     assert contract["stage_3a_contract"]["persistent_node_edge_path"] is False
     assert contract["stage_3a_contract"]["plasticity"] is False
@@ -173,6 +173,21 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
         "within_source_tokens_subjects_or_windows_are_independent_replicates"
     ] is False
     assert contract["stage_3c20_contract"]["permanent_write_authorized"] is False
+    assert contract["stage_3c21_contract"]["runtime_persistent_state_change"] is False
+    assert contract["stage_3c21_contract"]["checkpoint_schema_change"] is False
+    assert contract["stage_3c21_contract"]["single_changed_factor"] == (
+        "readout-only-node8-input-port-constant-one-0-to-uncertainty-mean-11"
+    )
+    assert contract["stage_3c21_contract"]["common_readout_only_node_index"] == 8
+    assert contract["stage_3c21_contract"]["readout_changes_action_output"] is False
+    assert contract["stage_3c21_contract"][
+        "read_only_objective_behavior_identity_required"
+    ] is True
+    assert contract["stage_3c21_contract"][
+        "within_source_tokens_subjects_or_windows_are_independent_replicates"
+    ] is False
+    assert contract["stage_3c21_contract"]["uncertainty_value_semantics"] is False
+    assert contract["stage_3c21_contract"]["permanent_write_authorized"] is False
 
     reproducibility = _load(
         "protocols/decisions/subject_graph_vm_component_reproducibility_v1.json"

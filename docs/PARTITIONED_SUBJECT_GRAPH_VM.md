@@ -702,3 +702,11 @@ Stage 3C-20 保持九 source、32 实体、16 bootstrap subject、source tick 2�
 九 source 中，baseline 的 visible centered rank 为 0；readout arm 每 source 有 7 个精确 token、centered rank 为 1，normalized-dot score 不再全部为 1.0，best-second spread 为正。但每个 tick 内 16 个 subject 的 port-29 值完全相同，九个 source 也共享同一时间轨迹。因此当前 readout 只提供 global temporal phase，不提供 subject/event-specific identity。
 
 readout arm 的 selected association 从 1008 个 delay-1 变为 864 个 delay-2，proposal、窗口与离散分化没有增加；两个 arm 均为 0/21 稳定客观坐标。不得把 score spread 解释为因果质量、价值或学习，也不得据此授权 permanent retention、learned weight、扩大 top-k 或切换完整通用注意架构。
+
+## v0.135：Stage 3C-21 主体/事件特异 Objective-Input Readout 审计
+
+Stage 3C-21 在两个 arm 中都使用同一 readout-only node 8：无 action output、无 local eligibility、trace port 29、trace gate 1.0。唯一变量是 objective input port 0（constant-one）或 port 11（uncertainty-mean）。九 source 的 pre-bootstrap state/config、主体选择和 read-only objective behavior 完全一致，token 差异仅限 port 29。
+
+Port 11 arm 在每个 source 的每个 retained tick 都产生主体间方差，143/144 个主体具有时间变化，且不同 source 的 subject/event matrix 不同。normalized-dot score 不再完全并列，selected delay 分布扩展到 1–6。但 unique associated event coverage 降至每 source 85–94、最大复用升至 3，说明“可分辨”不等于“历史证据更丰富”。两个 arm 的 commit 都为 144，稳定坐标都为 0/21。
+
+该 readout 仍是 fixed-cognition engineering shaping aid；uncertainty 的符号和大小没有固定价值语义。结果不授权永久写入、自动 keep/revert、学习、主体性或通用注意力声明。

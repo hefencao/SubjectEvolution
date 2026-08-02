@@ -1,0 +1,47 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c21_subject_event_readout_v1"
+title = "D1-Z Subject VM Stage 3C-21 subject/event-specific objective-input readout audit"
+
+[parameters.config]
+type = "path"
+default = "configs/mvp_short_subject_vm_stage3c21_subject_event_readout_study.json"
+description = "Common nine-node fixed-bootstrap source configuration."
+
+[parameters.seeds]
+type = "csv-int"
+default = "12301,12302,12303,12304,12305,12306,12307,12308,12309"
+description = "Frozen nine independent-source panel."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c21_subject_event_readout_v1/final"
+description = "Constant/uncertainty readout arms and Stage-3C-21 assessment."
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c21_subject_event_readout_v1_results.zip"
+description = "Compact research result bundle separate from the project archive."
+
+[steps.run-constant]
+description = "Run common readout-only node 8 from constant-one objective input port 0."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "2", "--horizon-ticks", "8", "--bootstrap-subjects", "16", "--rollback-after-ticks", "3", "--bootstrap-target-family", "edge_forward_gate", "--bootstrap-edge-carrier-enabled", "--bootstrap-readout-input-port", "0", "--association-tie-break", "latest", "--association-candidate-limit", "1", "--backend", "cpu", "--output", "{analysis_root}/constant", "--overwrite"]
+
+[steps.run-uncertainty]
+description = "Run the same readout-only node from uncertainty-mean objective input port 11."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "2", "--horizon-ticks", "8", "--bootstrap-subjects", "16", "--rollback-after-ticks", "3", "--bootstrap-target-family", "edge_forward_gate", "--bootstrap-edge-carrier-enabled", "--bootstrap-readout-input-port", "11", "--association-tie-break", "latest", "--association-candidate-limit", "1", "--backend", "cpu", "--output", "{analysis_root}/uncertainty", "--overwrite"]
+
+[steps.assess-readout]
+description = "Verify isolation and audit subject/event-specific visible geometry and paired evidence."
+command = ["se-subject-vm-stage3c21-subject-event-readout", "--constant-study-report", "{analysis_root}/constant/study_report.json", "--constant-component", "{analysis_root}/constant/component_reproducibility.json", "--constant-diagnostics", "{analysis_root}/constant/stage3c10_diagnostics.json", "--uncertainty-study-report", "{analysis_root}/uncertainty/study_report.json", "--uncertainty-component", "{analysis_root}/uncertainty/component_reproducibility.json", "--uncertainty-diagnostics", "{analysis_root}/uncertainty/stage3c10_diagnostics.json", "--output", "{analysis_root}/stage3c21_subject_event_readout.json"]
+
+[steps.pack-results]
+description = "Package both evidence arms and the Stage-3C-21 assessment without checkpoints."
+requires_json = [
+  { path = "{analysis_root}/constant/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/uncertainty/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/stage3c21_subject_event_readout.json", field = "isolation_contract.bootstrap_profiles_differ_only_in_readout_input_port", equals = true },
+  { path = "{analysis_root}/stage3c21_subject_event_readout.json", field = "diagnostic_interpretation.objective_input_readout_creates_subject_specific_geometry", equals = true },
+  { path = "{analysis_root}/stage3c21_subject_event_readout.json", field = "diagnostic_interpretation.objective_input_readout_creates_within_subject_event_time_variation", equals = true },
+  { path = "{analysis_root}/stage3c21_subject_event_readout.json", field = "permanent_parameter_retention_authorized", equals = false }
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--required-file", "{analysis_root}/constant/study_report.json", "--required-file", "{analysis_root}/constant/bootstrap_profile.json", "--required-file", "{analysis_root}/constant/paired_evidence_assessment.json", "--required-file", "{analysis_root}/constant/component_reproducibility.json", "--required-file", "{analysis_root}/constant/stage3c10_diagnostics.json", "--required-file", "{analysis_root}/uncertainty/study_report.json", "--required-file", "{analysis_root}/uncertainty/bootstrap_profile.json", "--required-file", "{analysis_root}/uncertainty/paired_evidence_assessment.json", "--required-file", "{analysis_root}/uncertainty/component_reproducibility.json", "--required-file", "{analysis_root}/uncertainty/stage3c10_diagnostics.json", "--required-file", "{analysis_root}/stage3c21_subject_event_readout.json", "--output", "{output}"]

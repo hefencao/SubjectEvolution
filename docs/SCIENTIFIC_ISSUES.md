@@ -690,3 +690,9 @@ Stage 3C-19 的 rank-zero 结果说明当前 scorer 没有内容输入，但“�
 - 实际 selected-event coverage 与复用。
 
 不得同时修改 similarity、threshold、candidate limit、delta、exposure、retention、reward 或 permanent write。
+
+## Stage 3C-21：主体/事件特异 geometry 不等于历史证据多样性
+
+Stage 3C-20 已证明共享时间相位可以打破 score 并列，但不能编码主体或事件。Stage 3C-21 把同一 readout-only node 的输入从 constant-one 改为 uncertainty-mean 后，在所有 source 中获得主体间方差，并在 143/144 个主体中获得时间变化，说明主体/事件特异 geometry 在当前固定图中可达。
+
+然而，selected historical event 的唯一覆盖从每 source 112 降到 85–94，最大复用从 1 升到 3；proposal 和窗口减少，commit 不变，稳定坐标仍为 0/21。因此 score 可分辨性、主体特异性和历史证据多样性必须分别审计。下一步不能直接把该 readout 固化为更优 attention，也不能据此调整 threshold、top-k、delta 或永久保留。
