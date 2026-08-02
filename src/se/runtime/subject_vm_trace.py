@@ -52,8 +52,11 @@ def _state(simulation: "Simulation", rows: np.ndarray) -> np.ndarray:
 def capture_subject_vm_objective_snapshot(
     simulation: "Simulation", intents: ActionIntentBatch
 ) -> SubjectVMObjectiveSnapshot | None:
-    """Capture pre-commit facts only when the graph emitted a token."""
-    if not simulation.subject_vm.has_pending_thought_tokens:
+    """Capture facts for a new token event or an active evaluation window."""
+    if not (
+        simulation.subject_vm.has_pending_thought_tokens
+        or simulation.subject_vm.has_active_evaluation_windows
+    ):
         return None
     rows = np.asarray(intents.carrier_index, dtype=np.int32)
     targets = np.asarray(intents.target_index, dtype=np.int32)
@@ -97,7 +100,7 @@ def commit_subject_vm_objective_events(
     snapshot: SubjectVMObjectiveSnapshot | None,
     resolutions: ActionResolutionBatch,
 ) -> None:
-    """Pair a graph token with post-commit facts without interpreting either."""
+    """Record token events and/or score-free evaluation-window facts."""
     if snapshot is None:
         return
     if int(snapshot.tick) != int(simulation.tick):

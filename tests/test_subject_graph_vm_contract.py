@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c4-guarded-live-write-cpu-reference-implemented"
+    assert contract["status"] == "stage-3c5-objective-evaluation-window-cpu-reference-implemented"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,7 +24,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3C-4"
+    assert contract["current_stage"] == "3C-5"
     assert contract["stage_2_contract"]["plasticity"] is False
     assert contract["stage_3a_contract"]["persistent_node_edge_path"] is False
     assert contract["stage_3a_contract"]["plasticity"] is False
@@ -57,6 +57,21 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["stage_3c4_contract"]["actual_parameter_write"] is True
     assert contract["stage_3c4_contract"]["write_permanent_after_commit"] is False
     assert contract["stage_3c4_contract"]["rollback_failure_locks_subject_writes"] is True
+    assert contract["stage_3c5_contract"]["automatic_runtime_counterfactual"] is False
+    assert contract["stage_3c5_contract"]["objective_scalar_score"] is False
+    assert contract["stage_3c5_contract"]["automatic_keep_or_revert_decision"] is False
+    assert contract["stage_3c5_contract"]["live_completion_requires_verified_rollback"] is True
+    assert contract["stage_3c5_contract"]["new_parameter_write"] is False
+
+    evaluation = _load(
+        "protocols/decisions/subject_graph_vm_objective_evaluation_window_v1.json"
+    )
+    assert evaluation["comparison_arms"]["automatic_within_runtime_counterfactual"] is False
+    assert evaluation["objective_evidence"]["objective_scalar_score"] is False
+    assert evaluation["objective_evidence"]["keep_or_revert_decision"] is False
+    assert evaluation["window"]["live_completion_requires_verified_rollback"] is True
+    assert evaluation["write_authority"]["new_parameter_write"] is False
+    assert evaluation["scientific_boundary"]["causal_effect_claim"] is False
 
     guarded_write = _load(
         "protocols/decisions/subject_graph_vm_guarded_live_write_v1.json"

@@ -1,0 +1,66 @@
+{
+  "schema": "se-subject-vm-decision-v1",
+  "decision_id": "subject-graph-vm-objective-evaluation-window-v1",
+  "release": "0.119.0",
+  "status": "accepted-engineering-stage-only",
+  "scope": "Record bounded, score-free objective evidence for guarded-live and read-only control windows without making an internal keep, revert, reward or permanent-write decision.",
+  "comparison_arms": {
+    "guarded_live": "Stage 3C-4 short-window parameter write followed by exact rollback",
+    "read_only_control": "the same prepared transaction contract with live_write.enabled=false",
+    "automatic_within_runtime_counterfactual": false,
+    "paired_branch_comparison_remains_external": true
+  },
+  "window": {
+    "starts_after_source_event": true,
+    "observes_only_future_events": true,
+    "fixed_observation_ticks": true,
+    "observation_ticks_less_than_rollback_horizon": true,
+    "live_completion_requires_verified_rollback": true,
+    "control_completion_uses_the_same_horizon": true
+  },
+  "objective_evidence": {
+    "fact_width": 21,
+    "records": [
+      "component-wise objective fact sum",
+      "component-wise absolute fact sum",
+      "component-wise maximum absolute fact",
+      "observed event count",
+      "action success and failure counts",
+      "fact clipping count",
+      "stable target and candidate delta metadata",
+      "rollback integrity and post-window write lock state"
+    ],
+    "objective_scalar_score": false,
+    "fixed_value_weights": false,
+    "reward_or_valence": false,
+    "keep_or_revert_decision": false
+  },
+  "storage": {
+    "fixed_capacity_per_subject": true,
+    "independent_of_graph_node_edge_capacity": true,
+    "full_activation_path": false,
+    "checkpointed": true,
+    "birth_inherits_window_history": false,
+    "clone_preserves_committed_window_history": true,
+    "death_clears_windows": true,
+    "compaction_moves_stable_owner_windows": true
+  },
+  "cost": {
+    "count_only": true,
+    "entity_energy_debit": false,
+    "registration_and_observation_units_recorded": true
+  },
+  "write_authority": {
+    "new_parameter_write": false,
+    "permanent_write_authorized": false,
+    "rollback_policy_changed": false,
+    "topology_write": false
+  },
+  "scientific_boundary": {
+    "causal_effect_claim": false,
+    "learning_claim": false,
+    "adaptation_claim": false,
+    "subjecthood_claim": false,
+    "epoch_one_qualification": false
+  }
+}

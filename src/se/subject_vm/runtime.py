@@ -10,6 +10,7 @@ from .binding import SubjectVMTargetCandidateBatch
 from .activation import SubjectVMActivationResult, execute_activation
 from .config import SubjectVMConfig
 from .eligibility import SubjectVMLocalEligibilityUsage
+from .evaluation import SubjectVMEvaluationLedger
 from .lifecycle import inherit_birth_rows, release_dead_rows
 from .live_write import SubjectVMLiveWriteLedger
 from .storage import SubjectVMRegionUsage, SubjectVMStorage
@@ -29,7 +30,8 @@ RUNTIME_SCHEMA_V6 = "se-subject-vm-runtime-v6"
 RUNTIME_SCHEMA_V7 = "se-subject-vm-runtime-v7"
 RUNTIME_SCHEMA_V8 = "se-subject-vm-runtime-v8"
 RUNTIME_SCHEMA_V9 = "se-subject-vm-runtime-v9"
-RUNTIME_SCHEMA = "se-subject-vm-runtime-v10"
+RUNTIME_SCHEMA_V10 = "se-subject-vm-runtime-v10"
+RUNTIME_SCHEMA = "se-subject-vm-runtime-v11"
 
 
 @dataclass(frozen=True)
@@ -150,6 +152,17 @@ STAGE3C4_DEVICE_CONTRACT = SubjectVMDeviceContract(
 )
 
 
+STAGE3C5_DEVICE_CONTRACT = SubjectVMDeviceContract(
+    schema="subject-vm-stage3c5-objective-evaluation-cpu-reference-contract-v1",
+    host_authoritative=True,
+    device_allocation=False,
+    device_sync=False,
+    consumes_random_numbers=False,
+    affects_action_or_cost=True,
+    supported_execution_backends=("cpu",),
+)
+
+
 @dataclass
 class SubjectVMActivationAccounting:
     activation_calls: int = 0
@@ -210,6 +223,7 @@ class SubjectVMRuntime:
         *,
         trace_storage: SubjectVMTraceStorage | None = None,
         live_write_ledger: SubjectVMLiveWriteLedger | None = None,
+        evaluation_ledger: SubjectVMEvaluationLedger | None = None,
         restore_mode: str = "initialized",
         activation_accounting: SubjectVMActivationAccounting | None = None,
         trace_accounting: SubjectVMTraceAccounting | None = None,
@@ -220,6 +234,7 @@ class SubjectVMRuntime:
         self.storage = storage
         self.trace_storage = trace_storage
         self.live_write_ledger = live_write_ledger
+        self.evaluation_ledger = evaluation_ledger
         self.restore_mode = str(restore_mode)
         self.activation_accounting = (
             activation_accounting or SubjectVMActivationAccounting()
@@ -236,6 +251,8 @@ class SubjectVMRuntime:
             raise ValueError("subject_vm runtime trace configuration/storage disagrees")
         if cfg.live_write_configured != (live_write_ledger is not None):
             raise ValueError("subject_vm runtime live-write configuration/ledger disagrees")
+        if cfg.evaluation_enabled != (evaluation_ledger is not None):
+            raise ValueError("subject_vm runtime evaluation configuration/ledger disagrees")
 
     @classmethod
     def initialize(
@@ -263,8 +280,16 @@ class SubjectVMRuntime:
         )
         if live_write_ledger is not None:
             live_write_ledger.initialize_rows(rows)
+        evaluation_ledger = (
+            SubjectVMEvaluationLedger(cfg.evaluation, entity_capacity)
+            if cfg.evaluation_enabled else None
+        )
+        if evaluation_ledger is not None:
+            evaluation_ledger.initialize_rows(rows)
         mode = (
-            "initialized-stage3c4-empty"
+            "initialized-stage3c5-empty"
+            if cfg.evaluation_enabled
+            else "initialized-stage3c4-empty"
             if cfg.live_write_configured
             else "initialized-stage3c3-empty"
             if cfg.transaction_enabled
@@ -288,6 +313,7 @@ class SubjectVMRuntime:
             storage,
             trace_storage=trace_storage,
             live_write_ledger=live_write_ledger,
+            evaluation_ledger=evaluation_ledger,
             restore_mode=mode,
         )
 
@@ -340,7 +366,20 @@ class SubjectVMRuntime:
         return self.cfg.live_write_enabled
 
     @property
+    def evaluation_enabled(self) -> bool:
+        return self.cfg.evaluation_enabled
+
+    @property
+    def has_active_evaluation_windows(self) -> bool:
+        return bool(
+            self.evaluation_ledger is not None
+            and self.evaluation_ledger.has_active_windows()
+        )
+
+    @property
     def device_contract(self) -> SubjectVMDeviceContract:
+        if self.evaluation_enabled:
+            return STAGE3C5_DEVICE_CONTRACT
         if self.live_write_configured:
             return STAGE3C4_DEVICE_CONTRACT
         if self.transaction_enabled:
@@ -394,9 +433,16 @@ class SubjectVMRuntime:
         if self._pending_thought_tokens is not None or self._pending_target_candidates is not None:
             raise RuntimeError("subject_vm prior activation metadata was not committed")
         if self.live_write_ledger is not None:
+            normalized_rows = np.asarray(rows, dtype=np.int32)
             self.live_write_ledger.rollback_due(
-                self.storage, rows=np.asarray(rows, dtype=np.int32), tick=int(tick)
+                self.storage, rows=normalized_rows, tick=int(tick)
             )
+            if self.evaluation_ledger is not None:
+                self.evaluation_ledger.finalize(
+                    rows=normalized_rows,
+                    tick=int(tick),
+                    live_write_ledger=self.live_write_ledger,
+                )
         result = execute_activation(
             self.storage,
             rows=rows,
@@ -421,8 +467,12 @@ class SubjectVMRuntime:
     def commit_objective_events(self, batch: SubjectVMObjectiveEventBatch) -> None:
         if not self.trace_enabled or self.trace_storage is None or self.storage is None:
             raise RuntimeError("subject_vm token/event trace is not enabled")
+        if self.evaluation_ledger is not None:
+            self.evaluation_ledger.observe(batch)
         if self._pending_thought_tokens is None:
-            raise RuntimeError("subject_vm objective event has no pending thought token")
+            if self.evaluation_ledger is None:
+                raise RuntimeError("subject_vm objective event has no pending thought token")
+            return
         self.trace_storage.append(
             batch,
             self._pending_thought_tokens,
@@ -432,6 +482,7 @@ class SubjectVMRuntime:
             target_candidates=self._pending_target_candidates,
             graph_storage=self.storage if self.update_safety_enabled else None,
             live_write_ledger=self.live_write_ledger,
+            evaluation_ledger=self.evaluation_ledger,
         )
         self._pending_thought_tokens = None
         self._pending_target_candidates = None
@@ -465,6 +516,8 @@ class SubjectVMRuntime:
             self.trace_storage.initialize_rows(np.asarray(child_rows, dtype=np.int32))
         if self.live_write_ledger is not None:
             self.live_write_ledger.initialize_rows(np.asarray(child_rows, dtype=np.int32))
+        if self.evaluation_ledger is not None:
+            self.evaluation_ledger.initialize_rows(np.asarray(child_rows, dtype=np.int32))
 
     def release_deaths(
         self,
@@ -479,6 +532,8 @@ class SubjectVMRuntime:
             self.trace_storage.clear_rows(normalized)
         if self.live_write_ledger is not None:
             self.live_write_ledger.clear_rows(normalized)
+        if self.evaluation_ledger is not None:
+            self.evaluation_ledger.clear_rows(normalized)
         release_dead_rows(
             self.storage,
             rows=normalized,
@@ -496,6 +551,8 @@ class SubjectVMRuntime:
             self.trace_storage.move_rows(source_rows, destination_rows)
         if self.live_write_ledger is not None:
             self.live_write_ledger.move_rows(source_rows, destination_rows)
+        if self.evaluation_ledger is not None:
+            self.evaluation_ledger.move_rows(source_rows, destination_rows)
 
     def validate_owners(
         self,
@@ -528,6 +585,8 @@ class SubjectVMRuntime:
             )
         if self.live_write_ledger is not None:
             payload["live_write_ledger"] = self.live_write_ledger.snapshot_state()
+        if self.evaluation_ledger is not None:
+            payload["evaluation_ledger"] = self.evaluation_ledger.snapshot_state()
         return payload
 
     @classmethod
@@ -559,6 +618,7 @@ class SubjectVMRuntime:
         schema = payload.get("schema")
         if schema not in {
             RUNTIME_SCHEMA,
+            RUNTIME_SCHEMA_V10,
             RUNTIME_SCHEMA_V9,
             RUNTIME_SCHEMA_V8,
             RUNTIME_SCHEMA_V7,
@@ -595,6 +655,9 @@ class SubjectVMRuntime:
         compatibility_empty_live_write = (
             cfg.live_write_configured and schema == RUNTIME_SCHEMA_V9
         )
+        compatibility_empty_evaluation = (
+            cfg.evaluation_enabled and schema == RUNTIME_SCHEMA_V10
+        )
         if schema == RUNTIME_SCHEMA_V1:
             expected_contract = STAGE1_DEVICE_CONTRACT.schema
         elif schema == RUNTIME_SCHEMA_V2:
@@ -613,9 +676,13 @@ class SubjectVMRuntime:
             expected_contract = STAGE3C2_DEVICE_CONTRACT.schema
         elif schema == RUNTIME_SCHEMA_V9:
             expected_contract = STAGE3C3_DEVICE_CONTRACT.schema
+        elif schema == RUNTIME_SCHEMA_V10:
+            expected_contract = STAGE3C4_DEVICE_CONTRACT.schema
         else:
             expected_contract = (
-                STAGE3C4_DEVICE_CONTRACT.schema
+                STAGE3C5_DEVICE_CONTRACT.schema
+                if cfg.evaluation_enabled
+                else STAGE3C4_DEVICE_CONTRACT.schema
                 if cfg.live_write_configured
                 else STAGE3C3_DEVICE_CONTRACT.schema
                 if cfg.transaction_enabled
@@ -709,12 +776,25 @@ class SubjectVMRuntime:
                 live_write_ledger = SubjectVMLiveWriteLedger.from_snapshot(
                     cfg.live_write, entity_capacity, payload["live_write_ledger"]
                 )
+        evaluation_ledger = None
+        if cfg.evaluation_enabled:
+            if compatibility_empty_evaluation:
+                evaluation_ledger = SubjectVMEvaluationLedger(
+                    cfg.evaluation, entity_capacity
+                )
+                evaluation_ledger.initialize_rows(rows)
+                restore_mode = "compatibility-empty-evaluation-ledger-rebuild"
+            else:
+                evaluation_ledger = SubjectVMEvaluationLedger.from_snapshot(
+                    cfg.evaluation, entity_capacity, payload["evaluation_ledger"]
+                )
         return cls(
             cfg,
             entity_capacity,
             storage,
             trace_storage=trace_storage,
             live_write_ledger=live_write_ledger,
+            evaluation_ledger=evaluation_ledger,
             restore_mode=restore_mode,
             activation_accounting=activation_accounting,
             trace_accounting=trace_accounting,
@@ -737,6 +817,7 @@ class SubjectVMRuntime:
             "transaction_enabled": self.transaction_enabled,
             "live_write_configured": self.live_write_configured,
             "live_write_enabled": self.live_write_enabled,
+            "evaluation_enabled": self.evaluation_enabled,
             "restore_mode": self.restore_mode,
             "device_contract": self.device_contract.schema,
             "activation_accounting": asdict(self.activation_accounting),
@@ -747,6 +828,9 @@ class SubjectVMRuntime:
             ),
             "live_write_ledger": (
                 None if self.live_write_ledger is None else self.live_write_ledger.diagnostics()
+            ),
+            "evaluation_ledger": (
+                None if self.evaluation_ledger is None else self.evaluation_ledger.diagnostics()
             ),
             "regions": [asdict(value) for value in self.region_usage()],
         }
@@ -763,6 +847,9 @@ class SubjectVMRuntime:
             ),
             live_write_ledger=(
                 None if self.live_write_ledger is None else self.live_write_ledger.clone()
+            ),
+            evaluation_ledger=(
+                None if self.evaluation_ledger is None else self.evaluation_ledger.clone()
             ),
             restore_mode=self.restore_mode,
             activation_accounting=SubjectVMActivationAccounting(
@@ -786,6 +873,7 @@ __all__ = [
     "RUNTIME_SCHEMA_V7",
     "RUNTIME_SCHEMA_V8",
     "RUNTIME_SCHEMA_V9",
+    "RUNTIME_SCHEMA_V10",
     "STAGE1_DEVICE_CONTRACT",
     "STAGE2_DEVICE_CONTRACT",
     "STAGE3_DEVICE_CONTRACT",
@@ -796,6 +884,7 @@ __all__ = [
     "STAGE3C2_DEVICE_CONTRACT",
     "STAGE3C3_DEVICE_CONTRACT",
     "STAGE3C4_DEVICE_CONTRACT",
+    "STAGE3C5_DEVICE_CONTRACT",
     "SubjectVMActivationAccounting",
     "SubjectVMDeviceContract",
     "SubjectVMEligibilityAccounting",

@@ -20,6 +20,7 @@ SUBJECT_VM_STAGE3C1_SCHEMA = "partitioned-subject-graph-vm-stage3c1-target-bindi
 SUBJECT_VM_STAGE3C2_SCHEMA = "partitioned-subject-graph-vm-stage3c2-update-safety-proposal-v1"
 SUBJECT_VM_STAGE3C3_SCHEMA = "partitioned-subject-graph-vm-stage3c3-shadow-transaction-v1"
 SUBJECT_VM_STAGE3C4_SCHEMA = "partitioned-subject-graph-vm-stage3c4-guarded-live-write-v1"
+SUBJECT_VM_STAGE3C5_SCHEMA = "partitioned-subject-graph-vm-stage3c5-objective-evaluation-window-v1"
 SUBJECT_VM_ACTIVATION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_ACTIVATION_SCHEMA = "bounded-phased-forward-routing-v1"
 SUBJECT_VM_INPUT_PORT_SCHEMA = "objective-entity-input-ports-v1"
@@ -41,6 +42,8 @@ SUBJECT_VM_TRANSACTION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_TRANSACTION_SCHEMA = "atomic-shadow-cas-rollback-v1"
 SUBJECT_VM_LIVE_WRITE_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_LIVE_WRITE_SCHEMA = "guarded-live-write-rollback-window-v1"
+SUBJECT_VM_EVALUATION_DISABLED_SCHEMA = "disabled"
+SUBJECT_VM_EVALUATION_SCHEMA = "objective-score-free-window-v1"
 SUBJECT_VM_MODULATION_FACT_WIDTH = 21
 SUBJECT_VM_MODULATION_TARGET_NAMES = (
     "node-bias",
@@ -240,6 +243,20 @@ class SubjectVMLiveWriteConfig:
 
 
 @dataclass(frozen=True)
+class SubjectVMEvaluationConfig:
+    """Stage-3C-5 objective evidence window without keep/revert decisions."""
+
+    schema: str = SUBJECT_VM_EVALUATION_DISABLED_SCHEMA
+    enabled: bool = False
+    capacity_per_subject: int = 0
+    observation_ticks: int = 0
+    control_horizon_ticks: int = 0
+    fact_clip: float = 0.0
+    registration_cost_units: int = 0
+    per_observation_cost_units: int = 0
+
+
+@dataclass(frozen=True)
 class SubjectVMConfig:
     """Disabled-by-default partitioned graph capacity contract."""
 
@@ -257,6 +274,7 @@ class SubjectVMConfig:
     update_safety: SubjectVMUpdateSafetyConfig = SubjectVMUpdateSafetyConfig()
     transaction: SubjectVMTransactionConfig = SubjectVMTransactionConfig()
     live_write: SubjectVMLiveWriteConfig = SubjectVMLiveWriteConfig()
+    evaluation: SubjectVMEvaluationConfig = SubjectVMEvaluationConfig()
 
     @property
     def total_node_capacity(self) -> int:
@@ -278,6 +296,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3C2_SCHEMA,
             SUBJECT_VM_STAGE3C3_SCHEMA,
             SUBJECT_VM_STAGE3C4_SCHEMA,
+            SUBJECT_VM_STAGE3C5_SCHEMA,
         }
 
     @property
@@ -291,6 +310,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3C2_SCHEMA,
             SUBJECT_VM_STAGE3C3_SCHEMA,
             SUBJECT_VM_STAGE3C4_SCHEMA,
+            SUBJECT_VM_STAGE3C5_SCHEMA,
         }
 
     @property
@@ -303,6 +323,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3C2_SCHEMA,
             SUBJECT_VM_STAGE3C3_SCHEMA,
             SUBJECT_VM_STAGE3C4_SCHEMA,
+            SUBJECT_VM_STAGE3C5_SCHEMA,
         }
 
     @property
@@ -314,6 +335,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3C2_SCHEMA,
             SUBJECT_VM_STAGE3C3_SCHEMA,
             SUBJECT_VM_STAGE3C4_SCHEMA,
+            SUBJECT_VM_STAGE3C5_SCHEMA,
         }
 
     @property
@@ -324,6 +346,7 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3C2_SCHEMA,
             SUBJECT_VM_STAGE3C3_SCHEMA,
             SUBJECT_VM_STAGE3C4_SCHEMA,
+            SUBJECT_VM_STAGE3C5_SCHEMA,
         }
 
     @property
@@ -333,23 +356,28 @@ class SubjectVMConfig:
             SUBJECT_VM_STAGE3C2_SCHEMA,
             SUBJECT_VM_STAGE3C3_SCHEMA,
             SUBJECT_VM_STAGE3C4_SCHEMA,
+            SUBJECT_VM_STAGE3C5_SCHEMA,
         }
 
     @property
     def update_safety_enabled(self) -> bool:
-        return self.schema in {SUBJECT_VM_STAGE3C2_SCHEMA, SUBJECT_VM_STAGE3C3_SCHEMA, SUBJECT_VM_STAGE3C4_SCHEMA}
+        return self.schema in {SUBJECT_VM_STAGE3C2_SCHEMA, SUBJECT_VM_STAGE3C3_SCHEMA, SUBJECT_VM_STAGE3C4_SCHEMA, SUBJECT_VM_STAGE3C5_SCHEMA}
 
     @property
     def transaction_enabled(self) -> bool:
-        return self.schema in {SUBJECT_VM_STAGE3C3_SCHEMA, SUBJECT_VM_STAGE3C4_SCHEMA}
+        return self.schema in {SUBJECT_VM_STAGE3C3_SCHEMA, SUBJECT_VM_STAGE3C4_SCHEMA, SUBJECT_VM_STAGE3C5_SCHEMA}
 
     @property
     def live_write_configured(self) -> bool:
-        return self.schema == SUBJECT_VM_STAGE3C4_SCHEMA
+        return self.schema in {SUBJECT_VM_STAGE3C4_SCHEMA, SUBJECT_VM_STAGE3C5_SCHEMA}
 
     @property
     def live_write_enabled(self) -> bool:
         return self.live_write_configured and bool(self.live_write.enabled)
+
+    @property
+    def evaluation_enabled(self) -> bool:
+        return self.schema == SUBJECT_VM_STAGE3C5_SCHEMA and bool(self.evaluation.enabled)
 
 
 def _scan_forbidden_keys(value: Any, path: str = "subject_vm") -> None:
@@ -601,6 +629,31 @@ def _load_live_write_config(raw: Any) -> SubjectVMLiveWriteConfig:
     )
 
 
+def _load_evaluation_config(raw: Any) -> SubjectVMEvaluationConfig:
+    if raw is None:
+        return SubjectVMEvaluationConfig()
+    if not isinstance(raw, Mapping):
+        raise ValueError("subject_vm.evaluation must be an object")
+    allowed = {
+        "schema", "enabled", "capacity_per_subject", "observation_ticks",
+        "control_horizon_ticks", "fact_clip", "registration_cost_units",
+        "per_observation_cost_units",
+    }
+    unknown = sorted(set(raw) - allowed)
+    if unknown:
+        raise ValueError(f"unknown subject_vm.evaluation fields: {unknown}")
+    return SubjectVMEvaluationConfig(
+        schema=str(raw.get("schema", SUBJECT_VM_EVALUATION_DISABLED_SCHEMA)),
+        enabled=bool(raw.get("enabled", False)),
+        capacity_per_subject=int(raw.get("capacity_per_subject", 0)),
+        observation_ticks=int(raw.get("observation_ticks", 0)),
+        control_horizon_ticks=int(raw.get("control_horizon_ticks", 0)),
+        fact_clip=float(raw.get("fact_clip", 0.0)),
+        registration_cost_units=int(raw.get("registration_cost_units", 0)),
+        per_observation_cost_units=int(raw.get("per_observation_cost_units", 0)),
+    )
+
+
 def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
     """Parse an optional Subject VM section without inventing legacy fields."""
     if raw is None:
@@ -621,6 +674,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         "update_safety",
         "transaction",
         "live_write",
+        "evaluation",
     }
     unknown = sorted(set(raw) - allowed)
     if unknown:
@@ -666,6 +720,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         update_safety=_load_update_safety_config(raw.get("update_safety")),
         transaction=_load_transaction_config(raw.get("transaction")),
         live_write=_load_live_write_config(raw.get("live_write")),
+        evaluation=_load_evaluation_config(raw.get("evaluation")),
     )
     validate_subject_vm_config(cfg)
     return cfg
@@ -727,6 +782,13 @@ def _validate_disabled_live_write(cfg: SubjectVMLiveWriteConfig) -> None:
     if cfg != SubjectVMLiveWriteConfig():
         raise ValueError(
             "inactive subject_vm live_write requires exact disabled defaults"
+        )
+
+
+def _validate_disabled_evaluation(cfg: SubjectVMEvaluationConfig) -> None:
+    if cfg != SubjectVMEvaluationConfig():
+        raise ValueError(
+            "inactive subject_vm evaluation requires exact disabled defaults"
         )
 
 
@@ -966,8 +1028,32 @@ def _validate_live_write(
         raise ValueError("subject_vm live_write counted costs must be in [0, 1000000]")
 
 
+def _validate_evaluation(
+    cfg: SubjectVMEvaluationConfig, *, live_write: SubjectVMLiveWriteConfig
+) -> None:
+    if cfg.schema != SUBJECT_VM_EVALUATION_SCHEMA or not cfg.enabled:
+        raise ValueError(
+            f"Stage-3C-5 subject_vm requires enabled evaluation schema {SUBJECT_VM_EVALUATION_SCHEMA!r}"
+        )
+    if not 1 <= cfg.capacity_per_subject <= 64:
+        raise ValueError("subject_vm evaluation capacity_per_subject must be in [1, 64]")
+    if not 1 <= cfg.observation_ticks < live_write.rollback_after_ticks:
+        raise ValueError(
+            "subject_vm evaluation observation_ticks must be in [1, rollback_after_ticks)"
+        )
+    if cfg.control_horizon_ticks != live_write.rollback_after_ticks:
+        raise ValueError(
+            "subject_vm evaluation control_horizon_ticks must equal rollback_after_ticks"
+        )
+    if not 0.0 < cfg.fact_clip <= 1_000_000.0:
+        raise ValueError("subject_vm evaluation fact_clip must be in (0, 1000000]")
+    costs = (cfg.registration_cost_units, cfg.per_observation_cost_units)
+    if any(not 0 <= int(value) <= 1_000_000 for value in costs):
+        raise ValueError("subject_vm evaluation counted costs must be in [0, 1000000]")
+
+
 def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
-    """Validate the frozen Stage-1 through Stage-3C-4 contracts."""
+    """Validate the frozen Stage-1 through Stage-3C-5 contracts."""
     if cfg.enabled:
         if cfg.schema not in {
             SUBJECT_VM_STAGE1_SCHEMA,
@@ -980,6 +1066,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             SUBJECT_VM_STAGE3C2_SCHEMA,
             SUBJECT_VM_STAGE3C3_SCHEMA,
             SUBJECT_VM_STAGE3C4_SCHEMA,
+            SUBJECT_VM_STAGE3C5_SCHEMA,
         }:
             raise ValueError("enabled subject_vm requires a supported stage schema")
         if tuple(region.name for region in cfg.regions) != SUBJECT_VM_REGION_NAMES:
@@ -1016,6 +1103,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
             _validate_disabled_live_write(cfg.live_write)
+            _validate_disabled_evaluation(cfg.evaluation)
             return
 
         _validate_activation(cfg.activation)
@@ -1028,6 +1116,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
             _validate_disabled_live_write(cfg.live_write)
+            _validate_disabled_evaluation(cfg.evaluation)
             return
 
         _validate_trace(cfg.trace)
@@ -1039,6 +1128,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
             _validate_disabled_live_write(cfg.live_write)
+            _validate_disabled_evaluation(cfg.evaluation)
             return
 
         _validate_eligibility(cfg.eligibility)
@@ -1049,6 +1139,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
             _validate_disabled_live_write(cfg.live_write)
+            _validate_disabled_evaluation(cfg.evaluation)
             return
 
         _validate_association(
@@ -1062,6 +1153,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
             _validate_disabled_live_write(cfg.live_write)
+            _validate_disabled_evaluation(cfg.evaluation)
             return
 
         _validate_modulation(
@@ -1074,6 +1166,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
             _validate_disabled_live_write(cfg.live_write)
+            _validate_disabled_evaluation(cfg.evaluation)
             return
 
         _validate_target_binding(cfg.target_binding, eligibility=cfg.eligibility)
@@ -1081,18 +1174,27 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
             _validate_disabled_live_write(cfg.live_write)
+            _validate_disabled_evaluation(cfg.evaluation)
         elif cfg.schema == SUBJECT_VM_STAGE3C2_SCHEMA:
             _validate_update_safety(cfg.update_safety)
             _validate_disabled_transaction(cfg.transaction)
             _validate_disabled_live_write(cfg.live_write)
+            _validate_disabled_evaluation(cfg.evaluation)
         elif cfg.schema == SUBJECT_VM_STAGE3C3_SCHEMA:
             _validate_update_safety(cfg.update_safety)
             _validate_transaction(cfg.transaction)
             _validate_disabled_live_write(cfg.live_write)
+            _validate_disabled_evaluation(cfg.evaluation)
+        elif cfg.schema == SUBJECT_VM_STAGE3C4_SCHEMA:
+            _validate_update_safety(cfg.update_safety)
+            _validate_transaction(cfg.transaction)
+            _validate_live_write(cfg.live_write, trace=cfg.trace)
+            _validate_disabled_evaluation(cfg.evaluation)
         else:
             _validate_update_safety(cfg.update_safety)
             _validate_transaction(cfg.transaction)
             _validate_live_write(cfg.live_write, trace=cfg.trace)
+            _validate_evaluation(cfg.evaluation, live_write=cfg.live_write)
         return
 
     if cfg.schema != SUBJECT_VM_DISABLED_SCHEMA:
@@ -1114,6 +1216,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
     _validate_disabled_update_safety(cfg.update_safety)
     _validate_disabled_transaction(cfg.transaction)
     _validate_disabled_live_write(cfg.live_write)
+    _validate_disabled_evaluation(cfg.evaluation)
 
 
 def _disabled_activation_payload(value: Any) -> bool:
@@ -1249,6 +1352,23 @@ def _disabled_live_write_payload(value: Any) -> bool:
     )
 
 
+def _disabled_evaluation_payload(value: Any) -> bool:
+    if value is None:
+        return True
+    if not isinstance(value, Mapping):
+        return False
+    return (
+        value.get("schema") == SUBJECT_VM_EVALUATION_DISABLED_SCHEMA
+        and value.get("enabled") is False
+        and int(value.get("capacity_per_subject", 0)) == 0
+        and int(value.get("observation_ticks", 0)) == 0
+        and int(value.get("control_horizon_ticks", 0)) == 0
+        and float(value.get("fact_clip", 0.0)) == 0.0
+        and int(value.get("registration_cost_units", 0)) == 0
+        and int(value.get("per_observation_cost_units", 0)) == 0
+    )
+
+
 def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]:
     """Remove exact inert extensions without changing frozen identities."""
     section = payload.get("subject_vm")
@@ -1284,6 +1404,10 @@ def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]
         section.get("live_write")
     ):
         section.pop("live_write", None)
+    if isinstance(section, dict) and _disabled_evaluation_payload(
+        section.get("evaluation")
+    ):
+        section.pop("evaluation", None)
     if (
         section.get("enabled") is False
         and section.get("schema") == SUBJECT_VM_DISABLED_SCHEMA
@@ -1324,6 +1448,7 @@ __all__ = [
     "SUBJECT_VM_STAGE3C2_SCHEMA",
     "SUBJECT_VM_STAGE3C3_SCHEMA",
     "SUBJECT_VM_STAGE3C4_SCHEMA",
+    "SUBJECT_VM_STAGE3C5_SCHEMA",
     "SUBJECT_VM_TARGET_BINDING_DISABLED_SCHEMA",
     "SUBJECT_VM_TARGET_BINDING_SCHEMA",
     "SUBJECT_VM_UPDATE_SAFETY_DISABLED_SCHEMA",
@@ -1332,6 +1457,8 @@ __all__ = [
     "SUBJECT_VM_TRANSACTION_SCHEMA",
     "SUBJECT_VM_LIVE_WRITE_DISABLED_SCHEMA",
     "SUBJECT_VM_LIVE_WRITE_SCHEMA",
+    "SUBJECT_VM_EVALUATION_DISABLED_SCHEMA",
+    "SUBJECT_VM_EVALUATION_SCHEMA",
     "SUBJECT_VM_TRACE_DISABLED_SCHEMA",
     "SUBJECT_VM_TRACE_SCHEMA",
     "SubjectVMActivationConfig",
@@ -1344,6 +1471,7 @@ __all__ = [
     "SubjectVMUpdateSafetyConfig",
     "SubjectVMTransactionConfig",
     "SubjectVMLiveWriteConfig",
+    "SubjectVMEvaluationConfig",
     "SubjectVMTraceConfig",
     "load_subject_vm_config",
     "strip_disabled_subject_vm_section",

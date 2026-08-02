@@ -1,7 +1,7 @@
 # Partitioned Subject Graph VM v1
 
-Status: **Stage 3C-4 CPU-reference guarded live-write experiment implemented; writes are explicit opt-in and automatically rollback-bounded**
-Project version: **0.118.0**
+Status: **Stage 3C-5 CPU-reference score-free objective evaluation windows implemented; no automatic keep/revert decision**
+Project version: **0.119.0**
 
 ## 1. Decision
 
@@ -514,3 +514,12 @@ Stage 3C-4 不把影子事务直接升级为永久塑性。只有 `live_write.en
 写入进入固定容量 applied ledger，记录事件、稳定目标、pre/post 值、apply tick 与 rollback due tick。到期时 runtime 在激活前对 post 值执行精确 CAS，并 all-or-none 恢复 pre 值。任何回滚异常会锁定该主体未来写入。`enabled=false` 提供相同 Stage 3C-4 合同下的 trajectory-neutral control。
 
 该阶段不定义 objective event 的正负价值，不判断更新是否有益，不扣实体能量，也不授权 topology、retained state 或跨代永久参数变化。
+
+
+## v0.119：Stage 3C-5 只记录无分数的客观评估窗口
+
+Stage 3C-5 不在主体内部判断短窗口更新是否“更好”。同一准备完成的事务在 `live_write.enabled=true` 时进入 guarded-live 臂，在 `enabled=false` 时进入 read-only control 臂。两臂使用完全相同的固定容量 ledger 和 21 维客观事实合同；实时臂只有在 Stage 3C-4 精确回滚后才能完成，控制臂在相同 horizon 完成且从不修改参数。
+
+每个窗口只保存逐维事实累计、绝对累计、最大绝对值、观察数量、行动成功/失败数量、裁剪计数、稳定目标和 rollback integrity。它不保存完整激活路径，不生成 scalar score、reward、utility、valence、keep/revert 决策，也不在 runtime 内自动合成反事实。
+
+真实因果比较仍需以后从同一 checkpoint 建立显式 paired branch，并携带分支身份、成本和环境扰动合同。当前证据只说明两个臂可以用同一结构收集有界证据；不能说明候选更新有效、有益或应永久保留。

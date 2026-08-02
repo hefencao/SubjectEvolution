@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.119.0
+
+- Adds Subject VM Stage 3C-5 fixed-capacity objective evaluation windows.
+- Uses one evidence schema for guarded-live windows and read-only controls under the same prepared transaction contract.
+- Records 21-dimensional objective fact sums, absolute sums and maximum absolute values together with observation and action-result counts.
+- Observes only future events and marks guarded-live windows complete only after exact Stage 3C-4 rollback.
+- Keeps control windows parameter-read-only and completes them at the same configured horizon.
+- Stores target, candidate-delta and rollback-integrity metadata without full activation paths or eligibility snapshots.
+- Defines no scalar score, fixed value weights, reward, utility, valence, runtime counterfactual or automatic keep/revert decision.
+- Keeps registration and observation costs count-only with no entity-energy debit or additional parameter write.
+- Upgrades v0.118 checkpoints to an empty evaluation ledger without fabricating evidence.
+
 ## 0.118.0
 
 - Adds Subject VM Stage 3C-4 explicitly opted-in guarded live parameter writes.

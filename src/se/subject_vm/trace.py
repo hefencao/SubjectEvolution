@@ -23,6 +23,7 @@ from .config import (
     SUBJECT_VM_MODULATION_TARGET_WIDTH,
     SubjectVMConfig,
 )
+from .evaluation import SubjectVMEvaluationLedger
 from .live_write import (
     LIVE_WRITE_REASON_CODES,
     SubjectVMLiveWriteLedger,
@@ -148,6 +149,7 @@ class SubjectVMTraceAccounting:
     live_write_committed_targets: int = 0
     live_write_rejections: int = 0
     live_write_counted_cost_units: int = 0
+    evaluation_windows_registered: int = 0
     last_event_tick: int = -1
 
 
@@ -736,6 +738,7 @@ class SubjectVMTraceStorage:
         target_candidates: SubjectVMTargetCandidateBatch | None = None,
         graph_storage: SubjectVMStorage | None = None,
         live_write_ledger: SubjectVMLiveWriteLedger | None = None,
+        evaluation_ledger: SubjectVMEvaluationLedger | None = None,
     ) -> None:
         count = self._validate_event_batch(batch)
         rows = self._rows(batch.rows)
@@ -776,6 +779,10 @@ class SubjectVMTraceStorage:
             raise ValueError("subject_vm Stage-3C-4 requires a live-write ledger")
         if not self.cfg.live_write_configured and live_write_ledger is not None:
             raise ValueError("inactive subject_vm live write cannot accept a ledger")
+        if self.cfg.evaluation_enabled and evaluation_ledger is None:
+            raise ValueError("subject_vm Stage-3C-5 requires an evaluation ledger")
+        if not self.cfg.evaluation_enabled and evaluation_ledger is not None:
+            raise ValueError("inactive subject_vm evaluation cannot accept a ledger")
         if not np.array_equal(owner_entity_ids[rows], batch.entity_ids):
             raise ValueError("subject_vm trace entity ownership is stale")
         if not np.array_equal(owner_subject_ids[rows], batch.subject_ids):
@@ -996,6 +1003,18 @@ class SubjectVMTraceStorage:
                     )
                 elif live_write.requested:
                     accounting.live_write_rejections += 1
+                if evaluation_ledger is not None:
+                    evaluation_slot = evaluation_ledger.register(
+                        row=row,
+                        tick=int(batch.tick),
+                        event_id=int(batch.event_ids[index]),
+                        binding=binding,
+                        update=update,
+                        transaction=transaction,
+                        live_write=live_write,
+                    )
+                    if evaluation_slot >= 0:
+                        accounting.evaluation_windows_registered += 1
             if self.event_valid[row, slot]:
                 accounting.overwritten_events += 1
             self._clear_slot(row, slot)
