@@ -1,0 +1,73 @@
+{
+  "schema": "se-subject-vm-stage3c27-token-kinematics-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c27-token-kinematics-v1",
+  "status": "accepted-engineering-read-only-token-kinematics-audit-only",
+  "project_version": "0.141.0",
+  "question": "After Stage 3C-26 shows a persistent age-one basin, how much of age-one selection is caused by source-boundary single-candidate support, exact latest-on-tie behavior, or strict local visible-token geometry?",
+  "source_panel": {
+    "independent_source_seeds": [12301, 12302, 12303, 12304, 12305, 12306, 12307, 12308, 12309],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "rank_two_visible_coordinates": [11, 7],
+    "target_family": "edge_forward_gate",
+    "edge_local_eligibility_carrier": true,
+    "association_similarity": "normalized-dot",
+    "association_threshold": 0.8,
+    "association_tie_break": "latest",
+    "association_candidate_limit": 1,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "analysis_factor": {
+    "runtime_change": false,
+    "arm_analyzed": "Stage-3C-23 frozen rank-two read-only control",
+    "reconstructed_measures": [
+      "source-boundary single-candidate assignments",
+      "strict age-one score wins versus the best older candidate",
+      "exact age-one versus older score ties",
+      "local normalized-token step and turn",
+      "first-readout-coordinate persistence and recurrence",
+      "selected age by query phase"
+    ]
+  },
+  "observed_panel_result": {
+    "requested_queries_per_source": 128,
+    "no_candidate_queries_per_source": 16,
+    "assigned_queries_per_source": 112,
+    "forced_single_candidate_queries_per_source": 16,
+    "multi_candidate_queries_per_source": 96,
+    "multi_candidate_queries_total": 864,
+    "multi_candidate_age_one_selections_total": 387,
+    "strict_geometry_age_one_selections_total": 386,
+    "latest_tie_break_age_one_selections_total": 1,
+    "strict_geometry_fraction_of_multi_candidate_age_one_selections": 0.9974160206718347,
+    "source_balanced_strict_age_one_local_step_l2_median": 0.0003781699565971123,
+    "source_balanced_older_geometry_local_step_l2_median": 0.07571295258074816,
+    "source_balanced_older_to_age_one_step_ratio_median": 201.52306637921268,
+    "age_one_given_unchanged_first_readout_coordinate_fraction_range": [0.9024390243902439, 0.9655172413793104],
+    "older_given_changed_first_readout_coordinate_fraction_range": [0.8409090909090909, 0.9285714285714286],
+    "selected_age_matches_nearest_same_first_coordinate_fraction_range": [0.8666666666666667, 0.9512195121951219],
+    "stable_objective_coordinates": 0
+  },
+  "interpretation": {
+    "source_boundary_forcing_contributes_to_total_age_one_selection": true,
+    "latest_tie_break_is_primary_multi_candidate_age_one_driver": false,
+    "strict_local_geometry_is_primary_multi_candidate_age_one_driver": true,
+    "first_readout_state_persistence_and_recurrence_contribute_to_selected_age": true,
+    "local_speed_or_curvature_has_fixed_value_semantics": false,
+    "causal_credit_quality_proven": false,
+    "learning_claim_authorized": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "runtime_and_storage": {
+    "runtime_or_checkpoint_schema_changed": false,
+    "runtime_memory_growth_bytes": 0,
+    "default_bootstrap_path_changed": false,
+    "old_config_identity_changed": false
+  },
+  "next_boundary": "Hold the rank-two readout, normalized-dot similarity, threshold, latest top-1, target/carrier, delta, exposure and rollback fixed. Read-only audit whether first-coordinate state transitions and the slowly moving second coordinate form shared discrete sampling phases or recurrent geometric basins before any age penalty, opportunity normalization, randomized tie-break, learned weight or permanent retention change."
+}

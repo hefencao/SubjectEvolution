@@ -1,0 +1,24 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c27_token_kinematics_v1",
+  "title": "D1-Z Subject VM Stage 3C-27 token-trajectory kinematics audit",
+  "status": "engineering-read-only-token-kinematics-diagnostic",
+  "scientific_stage": "stage3c27-read-only-token-trajectory-geometry-and-tie-break-separation",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_source_panel": true,
+    "reuse_stage3c23_rank_two_arm": true,
+    "reconstruct_candidate_scores": true,
+    "separate_source_boundary_forcing": true,
+    "separate_latest_tie_break": true,
+    "measure_local_token_speed_and_turn": true,
+    "measure_readout_state_recurrence": true,
+    "runtime_mechanism_change": false,
+    "checkpoint_schema_change": false,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "topology_evolution": false,
+    "universal_attention": false,
+    "subjecthood_claim": false
+  }
+}

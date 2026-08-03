@@ -1700,3 +1700,10 @@ No values are written back into Subject VM state. No new trace array, checkpoint
 Stage 3C-26 is external analysis only. It consumes the frozen Stage 3C-23 rank-two read-only control checkpoints and checksum-bound Stage 3C-25 assessment. For every request it reconstructs the complete eligible candidate set, verifies the stored latest/top-1 winner, and reports source-boundary single-candidate assignments, age-conditioned selection, query-phase winner age, historical-event birth phase and selection rate conditional on eligibility.
 
 No runtime array, checkpoint field, config identity, branch, ledger or lifecycle changes. Persistent-memory growth is zero. Queries, events, subjects and windows remain nested observations; independent source checkpoints remain the highest replicate.
+
+
+### Stage 3C-27 — visible-token trajectory kinematics audit (implemented in v0.141)
+
+Stage 3C-27 is external analysis only. It consumes the frozen Stage 3C-23 rank-two read-only control checkpoints and checksum-bound Stage 3C-26 assessment. For each request it reconstructs the authoritative normalized-dot/latest/top-1 candidate order and separates source-boundary one-candidate assignments, exact age-one versus older score ties and strict age-one geometry wins.
+
+The analyzer measures normalized local token step, angular distance, second difference, adjacent-step turn cosine, first-readout-coordinate persistence and nearest prior recurrence. It writes no value back into Subject VM state and adds no trace array, checkpoint field, configuration key, branch owner, ledger or lifecycle system. Persistent runtime memory growth is zero; the independent replicate remains the pre-bootstrap source checkpoint.

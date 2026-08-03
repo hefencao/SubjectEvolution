@@ -1,10 +1,14 @@
-# SubjectEvolution v0.140.0
+# SubjectEvolution v0.141.0
 
 SubjectEvolution is a deterministic CPU/GPU ecological evolution simulator with a partitioned unified Subject Graph VM research track.
 
-Version 0.140.0 implements **Subject VM Stage 3C-26: historical-age and query-phase opportunity audit**. It keeps the frozen Stage 3C-23 rank-two readout and reconstructs every eligible candidate from read-only control checkpoints, separating source-boundary forced assignments, historical age, query phase, raw opportunity and selection rate conditional on eligibility.
+Version 0.141.0 implements **Subject VM Stage 3C-27: visible-token trajectory kinematics audit**. It keeps the frozen Stage 3C-23 rank-two readout and separates source-boundary single-candidate forcing, exact latest-on-tie selection and strict local normalized-dot geometry without changing the runtime.
 
-Across nine independent sources, 16 of 112 assignments per source are structurally forced because only one historical candidate exists. After those assignments are removed, age-one candidates still have the highest or tied opportunity-normalized selection rate in every source. Reused winners occur earlier than single-use and unselected events, but their conditional selection rate also remains at least as high as single-use winners, so raw opportunity alone is insufficient. This does not validate causal credit, learning, value or universal attention, and permanent retention remains disabled.
+Across nine independent sources, 386 of 387 multi-candidate age-one selections are strict score wins and only one query requires latest tie-break. Strict age-one queries have about 200-fold smaller local normalized-token steps than older-winner queries; selected age also tracks persistence and recurrence of the first visible readout coordinate. This diagnoses fixed-bootstrap sampling geometry only. It does not validate causal credit, learning, value or universal attention, and permanent retention remains disabled.
+
+## Stage 3C-27 study
+
+The authoritative executable steps live only in [`studies/d1z_subject_vm_stage3c27_token_kinematics_v1/workflow.toml`](studies/d1z_subject_vm_stage3c27_token_kinematics_v1/workflow.toml). The workflow reruns the frozen rank-one/rank-two panel, re-establishes Stage 3C-23/24/25/26 lineage, performs the read-only Stage 3C-27 audit, and packages only declared evidence files without checkpoints.
 
 ## Stage 3C-26 study
 

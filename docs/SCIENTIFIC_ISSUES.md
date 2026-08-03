@@ -762,3 +762,12 @@ Stage 3C-24 证明 rank-two readout 消除了 exact best-score tie，却降低�
 排除这些强制 query 后，age-one 候选的机会归一化胜率仍在 9/9 source 中最高或并列最高，8/9 source 严格最高。reused winner 的出生 phase 中位数为 0–1，single-use 为 3–4，unselected 为 4–5；但 reused winner 的 selection/opportunity 中位数仍在全部 source 中不低于 single-use。
 
 因此 raw opportunity 解释了部分复用，却不能完全解释近因 winner basin。历史年龄和 query phase 不具有固定价值语义，也不能据此宣称因果信用、学习或保留资格。
+
+
+## Stage 3C-27：Age-one basin 主要来自局部几何，而不是 latest tie-break
+
+Stage 3C-26 证明排除 source-boundary 单候选 query 后仍存在近因偏置。Stage 3C-27 进一步重建 age-one candidate 与 best older candidate 的 score：九 source 共 387 次多候选 age-one 选择，其中 386 次为严格 score 胜出，仅 1 次需要 latest 并列规则。
+
+严格 age-one query 的局部 normalized-token step 中位数约为 older-winner query 的 1/200。第一 readout 坐标相邻 tick 保持时，age one 在每个 source 中以至少 90% 的比例胜出；该坐标变化时，older candidate 以至少 80% 的比例胜出，winner 常匹配最近一次同坐标状态。
+
+因此不得把近因 basin 简化为 tie-break bug，也不得直接加入年龄惩罚、机会补偿或随机选择。当前更准确的问题是 fixed-bootstrap visible coordinates 是否形成跨主体共享的离散采样相位和 recurrent geometry。该几何没有固定价值语义，也不证明 causal credit、学习或永久写入资格。

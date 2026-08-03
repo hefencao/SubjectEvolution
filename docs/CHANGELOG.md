@@ -1,3 +1,11 @@
+## 0.141.0
+
+- Adds Subject VM Stage 3C-27 read-only visible-token trajectory kinematics assessment.
+- Separates source-boundary single-candidate forcing, exact latest-on-tie selection and strict age-one normalized-dot geometry.
+- Finds 386 of 387 multi-candidate age-one selections are strict geometry wins; only one query requires latest tie-break.
+- Finds strict age-one queries have roughly 200-fold smaller local normalized-token steps than older-winner queries, with selected age strongly tracking first-readout state persistence and recurrence.
+- Adds a reproducible CLI, workflow, decision protocol and regression tests without runtime or checkpoint changes; permanent retention and learning claims remain unauthorized.
+
 ## 0.140.0
 
 - Adds Subject VM Stage 3C-26 read-only historical-age and query-phase opportunity assessment.

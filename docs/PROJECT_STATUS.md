@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.140.0**
+Version: **0.141.0**
 
 ## Current scientific task
 
-Version 0.140 implements **Subject VM Stage 3C-26: historical-age and query-phase opportunity audit**.
+Version 0.141 implements **Subject VM Stage 3C-27: visible-token trajectory kinematics audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -129,7 +129,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-26 separates source-boundary forced assignment, historical age, query phase and opportunity-normalized winner occupancy without changing addressing or authorizing retention, learned attention or Epoch 1.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-27 separates source-boundary forcing, exact latest-on-tie behavior and strict local token geometry without changing addressing or authorizing retention, learned attention or Epoch 1.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -155,7 +155,7 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-Stage 3C-26 establishes that 16 source-boundary assignments per source are forced by a one-candidate history, while age-one occupancy remains highest or tied after those queries are removed. Reused winners are earlier than single-use and unselected events, yet their selection rate conditional on eligibility remains at least as high as single-use winners, so raw opportunity alone does not explain reuse. The next authorized boundary remains read-only diagnosis of age-one score geometry versus latest tie-break and branch-boundary support before any normalization or retention change.
+Stage 3C-27 establishes that source-boundary forcing contributes to total age-one coverage, but 386 of 387 multi-candidate age-one selections are strict normalized-dot geometry wins and only one requires latest tie-break. Strict age-one queries have about 200-fold smaller local visible-token steps than older-winner queries, and selected age tracks first-readout state persistence and recurrence. The next authorized boundary remains read-only diagnosis of shared sampling phase and recurrent geometry before any normalization, addressing or retention change.
 
 
 ## Stage 3C-17 retained result
@@ -251,3 +251,12 @@ Each source has 128 association requests: 16 have no historical candidate, 112 a
 After removing the forced queries, age-one selection rate is 0.375–0.5625 and is highest or tied in all nine sources, strictly highest in eight. Reused winners have historical-phase median 0–1, single-use winners 3–4, and unselected eligible events 4–5. Opportunity-normalized reused-winner selection-rate median is at least the single-use median in all sources and strictly higher in eight.
 
 The evidence therefore separates boundary forcing, raw opportunity and persistent near-age basin occupancy. It does not assign value to recency or age, validate causal credit, establish learning, or authorize permanent retention.
+
+
+## Stage 3C-27 current result
+
+Stage 3C-27 makes no runtime intervention. It reuses the frozen Stage 3C-23 rank-two read-only control checkpoints and checksum-bound Stage 3C-26 assessment, reconstructs every candidate under the unchanged normalized-dot/threshold/latest/top-1 contract, and verifies stored winners exactly.
+
+Across nine independent source checkpoints, 864 multi-candidate queries contain 387 age-one selections. Of these, 386 are strict score wins and one is an exact tie resolved by latest. The source-balanced median local normalized-token step is about `3.78e-4` for strict age-one queries and `7.57e-2` for older-winner queries. First-readout-coordinate persistence predicts age-one selection at 0.902–0.966 per source; coordinate changes predict older selection at 0.841–0.929.
+
+The engineering baseline remains pairing coverage 1.0, zero rollback failure, zero fact clipping, matched evaluation cost and 0/21 stable objective coordinates. The result diagnoses fixed-bootstrap trajectory geometry only and authorizes no value assignment, causal-credit claim, learning claim, automatic keep/revert or permanent retention.
