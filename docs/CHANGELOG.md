@@ -1,3 +1,11 @@
+## 0.137.0
+
+- Adds Subject VM Stage 3C-23 dual-readout rank reachability assessment.
+- Extends the experiment-only fixed bootstrap with an optional second readout-only node on token port 30; old defaults, config identity and checkpoint schema remain unchanged.
+- Screens existing objective input coordinates without value semantics and selects port 7 by a frozen geometry-only rule on the nine-source panel.
+- Compares duplicated uncertainty rank-one geometry against uncertainty plus local-resource-ratio-3 rank-two geometry while similarity, latest top-1, target/carrier, delta, exposure and rollback remain fixed.
+- Finds rank two in 9/9 sources but no increase in temporary commits or stable objective coordinates; permanent retention and learning claims remain unauthorized.
+
 ## 0.136.0
 
 - Adds Subject VM Stage 3C-22 selected historical-event coverage and reuse assessment.

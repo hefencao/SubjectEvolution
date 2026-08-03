@@ -710,3 +710,11 @@ constant latest 基线把每个可成为历史的事件恰好选择一次。unce
 - independent source incidence。
 
 identity coverage 下降并不等于 objective-fact 线性 span 完全坍缩；本轮 selected fact centered rank 在所有 source 中仍与 eligible set 相同。反过来，span 保留也不证明 causal credit 正确。下一步不能直接加入 novelty bonus、coverage reward、learned weight 或更大 top-k；只能先筛查一个第二 role-neutral visible coordinate 是否形成 rank-two、主体/事件特异 geometry。
+
+## Stage 3C-23：Rank 2 可达不等于 credit 改善
+
+Stage 3C-23 在所有九个 source 中把 association-visible centered rank 从 1 提升到 2，并使每个 source 的唯一可见 token 数达到 128。该变化来自第二个 readout-only node 对既有 objective port 7 的读出；它不改变 action output，也不对资源通道赋予价值。
+
+更高 rank 没有增加 temporary commit，完成窗口略减，离散 action difference 与 objective-divergent source 也未增加，Stage 3C-8 仍为 0/21。因此“token geometry 更高维”只能说明内容可分离性可达，不能直接推断 credit 更正确、更新更有效或已经形成学习。
+
+下一问题不是继续增加维度，而是在固定 rank-two geometry 下检查 threshold margin、实际选择覆盖和复用集中度，区分“更多几何自由度”与“更均衡或更独立的历史证据使用”。

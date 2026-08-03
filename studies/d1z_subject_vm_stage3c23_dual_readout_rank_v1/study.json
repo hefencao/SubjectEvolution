@@ -1,0 +1,22 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c23_dual_readout_rank_v1",
+  "title": "D1-Z Subject VM Stage 3C-23 dual-readout rank reachability audit",
+  "status": "engineering-fixed-bootstrap-rank-two-readout-diagnostic",
+  "scientific_stage": "stage3c23-data-screened-second-visible-coordinate-rank-two-reachability",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_source_panel": true,
+    "common_ten_node_readout_support": true,
+    "primary_uncertainty_readout_port29": true,
+    "data_screen_existing_objective_ports": true,
+    "second_readout_port30": true,
+    "runtime_learning_mechanism_change": false,
+    "checkpoint_schema_change": false,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "topology_evolution": false,
+    "universal_attention": false,
+    "subjecthood_claim": false
+  }
+}

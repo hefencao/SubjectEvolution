@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.136.0**
+Version: **0.137.0**
 
 ## Current scientific task
 
-Version 0.136 implements **Subject VM Stage 3C-22: selected historical-event coverage and reuse audit**.
+Version 0.137 implements **Subject VM Stage 3C-23: dual-readout rank reachability audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -129,7 +129,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-22 audits fixed-bootstrap historical selection coverage without authorizing retention, learned attention or Epoch 1.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-23 audits a data-screened second visible coordinate and rank-two geometry without authorizing retention, learned attention or Epoch 1.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -155,7 +155,7 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-Stage 3C-22 establishes that the Stage 3C-21 uncertainty readout changes historical-event ranking without changing the delay-valid or above-threshold candidate opportunity set. It does not increase selected identity coverage: selection becomes more concentrated and repeatedly uses a strict subset of the constant latest-on-tie baseline. The next authorized boundary is a read-only survey for a second role-neutral visible coordinate that can produce rank-two subject/event-specific geometry before any addressing, top-k, update-scale or retention change.
+Stage 3C-23 establishes that a second existing objective readout can raise association-visible centered rank from one to two while action behavior and all addressing/update contracts remain fixed. It does not increase temporary commits, objective-divergent sources or stable objective coordinates. The next authorized boundary is a read-only coverage and score-margin audit under the fixed rank-two readout before any addressing, top-k, update-scale or retention change.
 
 
 ## Stage 3C-17 retained result
@@ -209,3 +209,14 @@ The uncertainty selected set is a strict subset of the constant-arm selected set
 
 This result does not rank coverage or reuse as good or bad, validate causal credit, establish learning, assign value to uncertainty, or authorize permanent retention. Constant-arm full identity coverage is itself a consequence of latest-on-tie selecting the immediately preceding event once; it is an engineering reference, not a scientific optimum.
 
+
+
+## Stage 3C-23 current result
+
+Stage 3C-23 uses a common ten-node fixed bootstrap in both arms. Node 8 keeps uncertainty-mean on association-visible port 29. Node 9 is readout-only, has no action output or local eligibility, and writes port 30. The only arm difference is node 9 input: duplicated uncertainty-mean port 11 versus data-screened local-resource-ratio-3 port 7.
+
+The screen examines all approved objective inputs except constant-one and the primary uncertainty coordinate. A candidate must reach centered rank two in every source, show subject variance at every tick and temporal variance for every subject, and preserve at least one threshold-eligible historical candidate for every query. Port 7 maximizes the cross-source minimum residual variance after regression on uncertainty among qualifying ports. This geometry-only rule assigns no value to the resource channel.
+
+The duplicate-coordinate arm remains rank one with 3–7 unique visible vectors per source. The selected-coordinate arm reaches rank two in 9/9 sources and has 128 unique vectors per source. Both assign 1,008 associations and execute 144 temporary commits. Proposals change from 846 to 833, completed windows from 125 to 121, objective-divergent sources from 2/9 to 1/9, and both remain 0/21 stable objective coordinates.
+
+This establishes mechanical rank-two reachability only. It does not validate causal credit, rank token spaces by value, establish learning, authorize permanent retention or convert normalized-dot addressing into a universal attention claim.

@@ -1664,3 +1664,11 @@ The reconstruction applies the exact association request exclusion, every modula
 Per source, the analyzer reports delay-valid/nonzero/above-threshold reference counts and unique event unions; selected identity coverage; per-subject and per-historical-tick coverage; zero/one/two/three-use distributions; maximum reuse; Gini concentration; Shannon and inverse-Simpson effective selected-event counts; and selected versus eligible objective-fact rank. Events, subjects and windows remain nested observations. Independent pre-bootstrap source checkpoints remain the highest replicate unit.
 
 The current constant and uncertainty arms have identical candidate opportunity but different selected allocation. This is an addressing diagnostic only. Coverage, reuse and fact rank receive no engine-defined value and cannot authorize keep/revert, permanent retention, causal credit, learning, subjecthood or universal attention claims. Persistent runtime and checkpoint memory growth is zero.
+
+### Stage 3C-23 — dual-readout rank reachability audit (implemented in v0.137)
+
+Stage 3C-23 adds no runtime subsystem or checkpoint field. The short-study bootstrap accepts an optional second readout-only node 9 when the explicit study configuration provides ten node slots. Node 9 is linear, has no action output, no local eligibility and traces only to association-visible token port 30. Existing configurations omit it and retain identical canonical identity and default behavior.
+
+Both formal arms use the same ten-node capacity, primary uncertainty readout on port 29, `edge_forward_gate` target/carrier, normalized-dot latest top-1 addressing, update budget, exposure and rollback. Only node 9 input changes from uncertainty port 11 to screened objective port 7. The common extra storage is one node slot per entity: `63 * max_entities + 3` bytes for the host-authoritative fixed graph arrays and templates, or 2019 bytes at 32 entities. No trace array, branch, ledger or lifecycle owner is added.
+
+Candidate screening is external analysis. It replays trusted source checkpoints on CPU and captures the already-approved objective input adapter without persisting those arrays. Selection is based only on cross-source rank, subject/time variance, threshold-candidate preservation and residual geometric variance; no sign or magnitude receives value semantics.

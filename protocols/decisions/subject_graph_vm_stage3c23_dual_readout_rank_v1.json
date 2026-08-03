@@ -1,0 +1,91 @@
+{
+  "schema": "se-subject-vm-stage3c23-dual-readout-rank-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c23-dual-readout-rank-v1",
+  "status": "accepted-engineering-fixed-bootstrap-rank-two-readout-audit-only",
+  "project_version": "0.137.0",
+  "question": "Can a second existing objective readout create rank-two subject/event-specific association-visible geometry while action output, addressing, target/carrier, update scale, exposure and rollback remain fixed?",
+  "source_panel": {
+    "independent_source_seeds": [12301,12302,12303,12304,12305,12306,12307,12308,12309],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "target_family": "edge_forward_gate",
+    "edge_local_eligibility_carrier": true,
+    "association_tie_break": "latest",
+    "association_candidate_limit": 1,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "single_factor": {
+    "common_primary_readout": "uncertainty-mean port 11 -> token port 29",
+    "rank_one_control": "node 9 duplicates uncertainty-mean port 11 -> token port 30",
+    "rank_two_alternative": "node 9 reads local-resource-ratio-3 port 7 -> token port 30",
+    "changed_field": "readout-only node 9 input port 11 to 7",
+    "action_output_changed": false,
+    "value_semantics": null
+  },
+  "candidate_screen": {
+    "scope": "all approved objective ports except constant-one and the primary uncertainty coordinate",
+    "qualification": "rank at least two in every source, subject variance at every tick, temporal variance for every subject, and no query losing all threshold-eligible history",
+    "selection": "maximize cross-source minimum residual variance after linear regression on uncertainty; tie by port index",
+    "selected_port": 7,
+    "selected_name": "local-resource-ratio-3",
+    "minimum_residual_variance_after_uncertainty": 0.02307362884349373,
+    "minimum_eligible_reference_count_per_source": 432,
+    "maximum_queries_without_eligible_history": 0,
+    "selection_has_value_semantics": false
+  },
+  "observed_panel_result": {
+    "rank_one_control": {
+      "centered_rank_per_source": [1,1,1,1,1,1,1,1,1],
+      "unique_visible_tokens_per_source": [3,3,5,3,3,5,5,7,6],
+      "assigned_associations": 1008,
+      "modulation_proposals": 846,
+      "temporary_commits": 144,
+      "completed_paired_windows": 125,
+      "discrete_action_difference_events": 2,
+      "objective_divergent_sources": 2,
+      "stable_objective_coordinates": 0
+    },
+    "rank_two_alternative": {
+      "centered_rank_per_source": [2,2,2,2,2,2,2,2,2],
+      "unique_visible_tokens_per_source": [128,128,128,128,128,128,128,128,128],
+      "assigned_associations": 1008,
+      "modulation_proposals": 833,
+      "temporary_commits": 144,
+      "completed_paired_windows": 121,
+      "discrete_action_difference_events": 1,
+      "objective_divergent_sources": 1,
+      "stable_objective_coordinates": 0
+    },
+    "engineering_integrity": {
+      "pre_bootstrap_state_and_config_equal": true,
+      "bootstrap_subject_selection_equal": true,
+      "read_only_objective_behavior_equal": true,
+      "tokens_differ_only_on_authorized_port30": true,
+      "pairing_coverage_both_arms": 1.0,
+      "rollback_failures_both_arms": 0,
+      "objective_fact_clipping_both_arms": 0,
+      "evaluation_cost_match_both_arms": 1.0
+    }
+  },
+  "interpretation": {
+    "second_subject_event_specific_coordinate_is_reachable": true,
+    "rank_two_geometry_improves_credit_assignment": false,
+    "rank_two_geometry_establishes_learning": false,
+    "resource_channel_has_fixed_value_semantics": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "runtime_and_storage": {
+    "runtime_or_checkpoint_schema_changed": false,
+    "common_study_node_capacity_increase": 1,
+    "fixed_storage_growth_formula_bytes": "63 * max_entities + 3",
+    "fixed_storage_growth_bytes_at_32_entities": 2019,
+    "default_bootstrap_path_changed": false,
+    "old_config_identity_changed": false
+  },
+  "next_boundary": "Hold the rank-two readout, normalized-dot similarity, latest top-1, target/carrier, delta, exposure and rollback fixed. Audit threshold margin, candidate identity coverage and reuse concentration before any addressing or retention change."
+}

@@ -65,6 +65,7 @@ class ShortPairedStudyParameters:
     bootstrap_edge_carrier_enabled: bool = False
     bootstrap_node0_visible_readout_enabled: bool = False
     bootstrap_readout_input_port: int | None = None
+    bootstrap_second_readout_input_port: int | None = None
     association_tie_break: str = "latest"
     association_candidate_limit: int = 1
     association_candidate_aggregation: str = "equal-weight-mean"
@@ -113,6 +114,20 @@ class ShortPairedStudyParameters:
                 raise ValueError(
                     "bootstrap readout-only node and node-0 visible readout are mutually exclusive"
                 )
+        if self.bootstrap_second_readout_input_port is not None:
+            port = int(self.bootstrap_second_readout_input_port)
+            if self.bootstrap_readout_input_port is None:
+                raise ValueError(
+                    "bootstrap_second_readout_input_port requires the primary readout-only node"
+                )
+            if not 0 <= port < 16:
+                raise ValueError(
+                    "bootstrap_second_readout_input_port must be an objective input port 0..15"
+                )
+            if self.bootstrap_node0_visible_readout_enabled:
+                raise ValueError(
+                    "bootstrap second readout-only node and node-0 visible readout are mutually exclusive"
+                )
         if self.association_tie_break not in {"latest", "oldest"}:
             raise ValueError(
                 "association_tie_break must be latest or oldest"
@@ -146,11 +161,14 @@ def bootstrap_profile(
     edge_carrier_enabled: bool = False,
     node0_visible_readout_enabled: bool = False,
     readout_input_port: int | None = None,
+    second_readout_input_port: int | None = None,
 ) -> dict[str, Any]:
     if target_family not in _BOOTSTRAP_TARGET_FAMILY_PORTS:
         raise ValueError("unsupported fixed bootstrap target family")
     if edge_carrier_enabled and target_family != "edge_forward_gate":
         raise ValueError("edge carrier shaping is only valid for edge_forward_gate")
+    if second_readout_input_port is not None and readout_input_port is None:
+        raise ValueError("second readout requires the primary readout-only node")
     if readout_input_port is not None:
         readout_input_port = int(readout_input_port)
         if not 0 <= readout_input_port < 16:
@@ -166,7 +184,13 @@ def bootstrap_profile(
         "evolved_topology": False,
         "universal_attention_claim": False,
         "permanent_retention_authorized": False,
-        "node_count": 9 if readout_input_port is not None else 8,
+        "node_count": (
+            10
+            if second_readout_input_port is not None
+            else 9
+            if readout_input_port is not None
+            else 8
+        ),
         "edge_count": 1,
         "selection": "lowest-stable-subject-id-among-alive",
         "nodes": [
@@ -252,6 +276,38 @@ def bootstrap_profile(
             "classification": "replaceable-fixed-bootstrap-objective-input-readout-bias",
             "value_semantics": None,
         }
+    if second_readout_input_port is not None:
+        second_readout_input_port = int(second_readout_input_port)
+        if not 0 <= second_readout_input_port < 16:
+            raise ValueError(
+                "second_readout_input_port must be an objective input port 0..15"
+            )
+        payload["nodes"].append(
+            {
+                "index": 9,
+                "operator": "linear",
+                "input_port": second_readout_input_port,
+                "input_gate": 1.0,
+                "output_port": -1,
+                "output_gate": 0.0,
+                "trace_port": 30,
+                "trace_gate": 1.0,
+                "local_eligibility": False,
+                "target_family": None,
+            }
+        )
+        payload["association_visible_readout_shaping"][
+            "second_readout_only_node"
+        ] = {
+            "enabled": True,
+            "node_index": 9,
+            "input_port": second_readout_input_port,
+            "token_port": 30,
+            "trace_gate": 1.0,
+            "changes_action_output": False,
+            "classification": "replaceable-fixed-bootstrap-objective-input-readout-bias",
+            "value_semantics": None,
+        }
     payload["profile_sha256"] = _canonical_sha256(payload)
     return payload
 
@@ -313,6 +369,7 @@ def prime_fixed_bootstrap_graph(
     edge_carrier_enabled: bool = False,
     node0_visible_readout_enabled: bool = False,
     readout_input_port: int | None = None,
+    second_readout_input_port: int | None = None,
 ) -> dict[str, Any]:
     """Install the explicit fixed bootstrap graph into a quiescent source.
 
@@ -323,9 +380,13 @@ def prime_fixed_bootstrap_graph(
     storage = runtime.storage
     if storage is None:
         raise ValueError("short paired study requires allocated Subject VM storage")
-    if readout_input_port is not None and storage.node_capacity < 9:
+    if second_readout_input_port is not None and readout_input_port is None:
+        raise ValueError("second readout requires the primary readout-only node")
+    required_nodes = 10 if second_readout_input_port is not None else 9
+    if readout_input_port is not None and storage.node_capacity < required_nodes:
+        capacity_label = "nine" if required_nodes == 9 else str(required_nodes)
         raise ValueError(
-            "fixed readout-only bootstrap requires at least nine node slots"
+            f"fixed readout-only bootstrap requires at least {capacity_label} node slots"
         )
     _assert_quiescent_runtime(simulation)
     alive_rows = np.flatnonzero(simulation.entities.alive).astype(np.int32)
@@ -380,6 +441,22 @@ def prime_fixed_bootstrap_graph(
         storage.node_output_gate[rows, 8] = np.float32(0.0)
         storage.node_trace_port[rows, 8] = np.int16(29)
         storage.node_trace_gate[rows, 8] = np.float32(1.0)
+    if second_readout_input_port is not None:
+        port = int(second_readout_input_port)
+        if not 0 <= port < 16:
+            raise ValueError(
+                "second_readout_input_port must be an objective input port 0..15"
+            )
+        storage.node_expressed[rows, 9] = True
+        storage.node_operator_id[rows, 9] = np.uint16(OP_LINEAR)
+        storage.node_activation_phase[rows, 9] = np.uint16(0)
+        storage.node_input_port[rows, 9] = np.int16(port)
+        storage.node_input_gate[rows, 9] = np.float32(1.0)
+        storage.node_bias[rows, 9] = np.float32(0.0)
+        storage.node_output_port[rows, 9] = np.int16(-1)
+        storage.node_output_gate[rows, 9] = np.float32(0.0)
+        storage.node_trace_port[rows, 9] = np.int16(30)
+        storage.node_trace_gate[rows, 9] = np.float32(1.0)
 
     storage.edge_expressed[rows, 0] = True
     storage.edge_source[rows, 0] = np.int32(0)
@@ -403,6 +480,7 @@ def prime_fixed_bootstrap_graph(
         edge_carrier_enabled=edge_carrier_enabled,
         node0_visible_readout_enabled=node0_visible_readout_enabled,
         readout_input_port=readout_input_port,
+        second_readout_input_port=second_readout_input_port,
     )
     record = {
         "schema": BOOTSTRAP_LINEAGE_SCHEMA,
@@ -456,6 +534,7 @@ def run_short_paired_study(
             parameters.bootstrap_node0_visible_readout_enabled
         ),
         readout_input_port=parameters.bootstrap_readout_input_port,
+        second_readout_input_port=parameters.bootstrap_second_readout_input_port,
     )
     _write_json(root / "bootstrap_profile.json", profile)
     resolved_backend = "cpu" if parameters.backend == "auto" else parameters.backend
@@ -487,6 +566,7 @@ def run_short_paired_study(
                 parameters.bootstrap_node0_visible_readout_enabled
             ),
             readout_input_port=parameters.bootstrap_readout_input_port,
+            second_readout_input_port=parameters.bootstrap_second_readout_input_port,
         )
         _assert_quiescent_runtime(simulation)
         source_checkpoint = simulation.save_full_checkpoint(
@@ -715,6 +795,16 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--bootstrap-second-readout-input-port",
+        type=int,
+        choices=tuple(range(16)),
+        help=(
+            "Experiment-only readout-only node 9 that emits one existing objective "
+            "input port to association-visible token port 30 without action output; "
+            "requires --bootstrap-readout-input-port."
+        ),
+    )
+    parser.add_argument(
         "--association-candidate-limit",
         choices=(1, 2),
         type=int,
@@ -747,6 +837,9 @@ def main() -> None:
                 args.bootstrap_node0_visible_readout_enabled
             ),
             bootstrap_readout_input_port=args.bootstrap_readout_input_port,
+            bootstrap_second_readout_input_port=(
+                args.bootstrap_second_readout_input_port
+            ),
             association_tie_break=args.association_tie_break,
             association_candidate_limit=args.association_candidate_limit,
         ),

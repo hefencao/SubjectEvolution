@@ -720,3 +720,11 @@ Stage 3C-22 不修改运行时、checkpoint schema、相似度、threshold、候
 constant latest-on-tie 基线使 112 个历史事件各被选择一次。uncertainty readout 只选择 85–94 个事件，18–27 个仍符合 threshold 的事件未被选择，最大复用升至 3。每 source 的 identity coverage 为约 0.759–0.839，inverse-Simpson effective coverage 为约 0.644–0.747，且 uncertainty 所选 identity 在全部 source 中都是 constant 所选集合的严格子集。
 
 该结果只证明 subject/event-specific score geometry 会改变排序并提高复用集中度，不证明更多 identity coverage 更好、重复使用更坏、credit 正确、学习形成或应该永久写入。constant 的 100% identity coverage 也是 latest 单步选择的固定工程偏置，不是理论最优。下一边界只能先做第二个无价值语义 visible coordinate 的只读筛查，并要求 rank-two、主体/事件特异 geometry；不得同时修改 addressing、top-k、delta、retention 或完整注意架构。
+
+## v0.137：Stage 3C-23 双 Readout Rank-2 可达性审计
+
+Stage 3C-23 在 experiment-only fixed bootstrap 中增加一个可选 readout-only node 9。node 8 固定把 uncertainty-mean 写入 token port 29；node 9 写入 port 30，且无 action output、无 local eligibility。正式对照只把 node 9 input 从 port 11 的重复 uncertainty 坐标切换为数据筛选出的 port 7。旧配置、默认 bootstrap、checkpoint schema 和永久保留状态不变。
+
+候选筛选要求九个 source 全部达到 centered rank≥2、每 tick 有主体间方差、每主体有时间方差，并且不让任何 query 丢失全部 threshold 以上历史候选。port 7 按跨 source 最小残差方差最大规则被选择；该规则不解释其符号或大小的价值。
+
+正式结果在 9/9 source 中达到 rank 2，但 commits 仍为 144，稳定客观坐标仍为 0/21。该结果只说明第二个主体/事件特异可见坐标机械可达，不授权 learned attention、因果 credit、永久写入或主体性结论。
