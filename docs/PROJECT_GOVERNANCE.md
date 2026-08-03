@@ -427,6 +427,15 @@ runtime contracts are unchanged. Documentation governance is itself testable: ac
 documents must reject per-version append-only headings and the status file must
 retain all mandatory progress-type branches.
 
+### Git command handoff
+
+Every delivered iteration must provide concrete commands for a dedicated typed branch,
+patch application with staging, the exact typed commit title, return to the main branch,
+fast-forward merge, and annotated version tag. Root `AGENTS.md` owns the branch-prefix
+mapping and exact command requirements. The handoff must use the actual delivered patch
+name and may not assume a remote, destructive reset, or forced checkout. Missing commands
+from a prior delivered iteration must be supplied in the next response when identified.
+
 ## v0.148 documentation-governance check
 
 - Data versus expectation: no new scientific data were produced; the task changed

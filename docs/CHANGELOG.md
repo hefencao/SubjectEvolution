@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.149.0
+
+- Adds the Stage 3C-34 read-only event-level audit over the frozen Stage 3C-33 eight-arm trajectories.
+- Requires identical 144-event support across all conditions, alignment modes, and live/control roles and exactly reproduces each Stage 3C-33 source-balanced fact vector.
+- Finds exposure-dependent Subject-VM action-potential divergence in all nine sources, any sampled-action crossing in seeds 12305, 12307, and 12308, and alignment-specific action crossings only in 12305 and 12308.
+- Localizes four alignment-specific sampled-action crossings followed by twelve differential Objective-Fact events, eight of them delayed after the crossing event; these two sources exactly match the two nonzero Stage 3C-33 effects.
+- Shows seed 12307 has an alignment-common action transition removed by the cross-mode contrast and finds no differential Objective-Fact crossing later cancelled only by source balancing.
+- Records that exact numeric action-boundary distance is not observable from the frozen trace because full masked policy logits and the categorical draw are not persisted.
+- Extends repository governance so every delivered iteration includes concrete branch, patch, commit, merge, and annotated-tag Git commands.
+
 ## 0.148.0
 
 - Reorganizes the active documentation contract without changing scientific evidence, runtime behavior, configuration, or checkpoint schema.

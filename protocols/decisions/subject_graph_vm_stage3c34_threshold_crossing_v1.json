@@ -1,0 +1,110 @@
+{
+  "schema": "se-subject-vm-stage3c34-threshold-crossing-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c34-threshold-crossing-v1",
+  "status": "frozen-crossing-localization-two-differential-sources",
+  "project_version": "0.149.0",
+  "git_title": "[MAIN-EXP] D1-Z: audit action and objective-event threshold crossings",
+  "question": "Where does the frozen Stage-3C-33 exposure-only alignment contrast stop: continuous Subject-VM decision divergence, sampled-action crossing, objective-event crossing, or later aggregation?",
+  "input_identity": {
+    "stage3c33_study_sha256": "fa15c83e6f7015137a89c8cc6e1704c0c1b4f5ca54dfe80501ec153226816a86",
+    "stage3c33_assessment_sha256": "a23b1823ca2d74a58f71a70c6c37491b278cd16c3aaa08e1676b9c502297d3a9",
+    "source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "conditions": [
+      "horizon-control-3-tick-exposure-11-tick-horizon",
+      "extended-exposure-6-tick-exposure-11-tick-horizon"
+    ],
+    "arms_per_condition": [
+      "aligned/read-only-control",
+      "aligned/guarded-live",
+      "alignment-ablated/read-only-control",
+      "alignment-ablated/guarded-live"
+    ],
+    "events_per_source_arm": 144,
+    "event_tick_range": [
+      4,
+      12
+    ]
+  },
+  "analysis_contract": {
+    "runtime_rerun": false,
+    "selected_seed_rerun": false,
+    "new_threshold": false,
+    "new_scalar_objective": false,
+    "event_support_equal_across_all_eight_arms_required": true,
+    "stage3c33_source_balanced_fact_sum_reproduction_required": true,
+    "continuous_decision_measure": "exposure-by-alignment difference-in-differences of guarded-live-minus-control Subject-VM action potentials",
+    "sampled_action_crossing_measure": "guarded-live action transition from horizon-control to extended-exposure, separated into alignment-common and alignment-differential transitions",
+    "objective_event_crossing_measure": "component-wise exposure-by-alignment difference-in-differences of objective-event facts",
+    "aggregation_check": "sum event contrasts within stable subject, then balance subjects exactly as Stage 3C-33",
+    "highest_independent_replicate": "independent-pre-bootstrap-source-checkpoint",
+    "events_are_independent_replicates": false
+  },
+  "observed_result": {
+    "sources_with_subject_vm_potential_divergence": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "sources_with_any_exposure_action_crossing": [
+      12305,
+      12307,
+      12308
+    ],
+    "sources_with_alignment_differential_action_crossing": [
+      12305,
+      12308
+    ],
+    "sources_with_alignment_common_action_crossing": [
+      12307
+    ],
+    "sources_with_alignment_differential_objective_fact_crossing": [
+      12305,
+      12308
+    ],
+    "sources_with_surviving_subject_balanced_fact_effect": [
+      12305,
+      12308
+    ],
+    "sources_with_differential_objective_crossing_cancelled_by_later_aggregation": [],
+    "alignment_differential_action_crossing_event_count": 4,
+    "alignment_differential_objective_fact_crossing_event_count": 12,
+    "delayed_objective_fact_crossing_event_count": 8,
+    "stage3c33_nonzero_source_identity_reproduced": true,
+    "assessment_sha256": "189e645420ea86e73eb60e0cec0bf1827c7c351463977ae7417348304c282be4"
+  },
+  "frozen_interpretation": {
+    "six_sources_stop_below_realized_sampled_action_boundary": true,
+    "one_source_has_alignment_common_action_crossing_removed_by_cross_mode_contrast": true,
+    "two_sources_have_alignment_specific_action_crossings_followed_by_objective_event_cascades": true,
+    "later_aggregation_explains_zero_effect_sources": false,
+    "continuous_divergence_event_count_alone_predicts_crossing": false,
+    "full_numeric_distance_to_categorical_boundary_is_observable": false,
+    "exact_margin_observability_limit": "full masked policy logits and the counter-based categorical draw are not persisted in the frozen trace"
+  },
+  "interpretation_boundary": {
+    "objective_coordinate_direction_has_value_semantics": false,
+    "causal_credit_quality_proven": false,
+    "automatic_keep_or_revert_authorized": false,
+    "learned_weight_authorized": false,
+    "permanent_parameter_retention_authorized": false,
+    "universal_attention_claim_authorized": false,
+    "subjecthood_claim_authorized": false
+  },
+  "next_boundary": "A disjoint-source Stage 3C-35 replication may preregister the prediction that alignment-differential sampled-action crossings identify all nonzero exposure-only fact sources. It may not select responsive seeds, change exposure, add a value function, or add retention. Exact numeric threshold-margin analysis is blocked until a separately typed export-instrumentation change persists full masked policy logits and the categorical draw without changing sampling semantics."
+}

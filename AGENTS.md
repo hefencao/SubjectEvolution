@@ -55,6 +55,39 @@ Examples:
 additional branch and may not silently redefine a frozen mainline protocol.
 Environment or subject-capability code must never be labelled only as an experiment.
 
+### 2.1 Git command delivery contract
+
+Every delivered iteration, including `[MAIN-EXP]`, `[ENGINEERING]`, and `[DOC-GOV]`,
+must use or present a dedicated iteration branch. The final chat response must include
+one executable Git command block covering all of the following transitions:
+
+1. switch to the baseline main branch;
+2. create or switch to the typed iteration branch;
+3. apply and stage the delivered patch;
+4. commit with the exact declared Git title;
+5. switch back to the main branch;
+6. fast-forward merge the iteration branch;
+7. create the annotated release tag.
+
+Use these branch prefixes:
+
+| Type | Branch prefix |
+|---|---|
+| `[MAIN-EXP]` | `main-exp/` |
+| `[BRANCH-EXP]` | `branch-exp/` |
+| `[PARAM-EXP]` | `param-exp/` |
+| `[EVOLVE-ENV]` | `evolve-env/` |
+| `[EVOLVE-SUBJECT]` | `evolve-subject/` |
+| `[ENGINEERING]` | `engineering/` |
+| `[DOC-GOV]` | `docs/` |
+| `[RELEASE]` | `release/` |
+
+The command block must name the actual baseline-to-current patch, branch, commit title,
+and version tag. Do not substitute a generic template. When the user identifies a
+missing prior-round command block, provide that prior block together with the current
+iteration commands. Do not include destructive reset, forced checkout, or an assumed
+remote pull in the default handoff.
+
 ## 3. Typed progress tree
 
 `docs/PROJECT_STATUS.md` must always contain separate branches for:

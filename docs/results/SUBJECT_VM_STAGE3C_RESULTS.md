@@ -19,7 +19,7 @@ The labels in the **type** column are task/progress types, not scientific outcom
 | 3C-10–3C-13 | `[MAIN-EXP]` diagnostic chain | Update visibility, independent-source adequacy, branch-horizon coverage, and temporary-exposure adequacy were separated. Sparse downstream facts were not converted into learning claims. |
 | 3C-14–3C-16 | `[MAIN-EXP]` reachability chain | Parameter-family, local-sensitivity, and eligibility-carrier reachability were audited without treating reachability as causal-credit quality. |
 
-## Stage 3C-17 through 3C-33
+## Stage 3C-17 through 3C-34
 
 | Stage | Type | Controlled change | Frozen finding | Not authorized |
 |---|---|---|---|---|
@@ -40,6 +40,7 @@ The labels in the **type** column are task/progress types, not scientific outcom
 | 3C-31 | `[MAIN-EXP]` read-only ablation | Preserve coordinate marginal while breaking subject-time binding. | Winner identity changes in 39.53%–74.51% of same-state queries; nine fact coordinates become consistently less locally matched, but the full vector has mixed direction. | Scalar value or correct-credit claim. |
 | 3C-32 | `[MAIN-EXP]` four-arm runtime intervention | Aligned/ablated × guarded-live/read-only-control. | Alignment changes selector identity and temporary update routing in every source; stable downstream facts do not follow at three-tick exposure. | Replacing internal-route causality with downstream-value evidence. |
 | 3C-33 | `[MAIN-EXP]` matched-horizon intervention | `3/8`, `3/11`, and `6/11` exposure/horizon conditions. | Ledger dose doubles exactly. Fixed-support trajectory effects change in seeds 12305 and 12308, but no signed or absolute fact coordinate is stable across nine sources. | Adaptive exposure extension, retention, reward, or learned weighting. |
+| 3C-34 | `[MAIN-EXP]` read-only crossing audit | Reuse all eight matched-horizon arms and localize exposure-by-alignment divergence at action potentials, sampled actions, Objective-Fact events, and aggregation. | All nine sources contain continuous Subject-VM decision divergence; only 12305 and 12308 have alignment-specific sampled-action crossings, followed by 12 differential Objective-Fact events, and these exactly reproduce the two nonzero Stage 3C-33 sources. Seed 12307 has an alignment-common action crossing removed by the cross-mode contrast. | Exact numeric threshold margin, value, correct credit, keep/revert, learning, or retention. |
 
 ## Current frozen chain
 
@@ -50,15 +51,23 @@ rank-two geometry
   → subject-time alignment ablation
   → runtime selector/update-route intervention
   → matched-horizon exposure propagation
+  → event-level sampled-action and Objective-Fact crossing localization
 ```
 
-The chain establishes causal influence through temporary update routing and sparse,
-source-dependent downstream trajectory propagation. It does not establish stable
-causal credit, value, learning, subjecthood, or permanent retention.
+The chain now shows that the sparse Stage 3C-33 source effects are not caused by later
+aggregation cancellation. Continuous decision divergence occurs in every source, but
+only alignment-specific sampled-action crossings in seeds 12305 and 12308 propagate
+into the nonzero source-balanced fact effects. This remains evidence about a fixed
+bootstrap mechanism, not stable value, correct credit, learning, subjecthood, or
+permanent retention.
 
 ## Next authorized evidence boundary
 
-Stage 3C-34 may only perform a read-only discrete action and objective-event
-threshold/crossing audit over the frozen Stage 3C-33 trajectories. Any new runtime
-mechanism, exposure extension, parameter panel, or seed selection requires a
-separate typed task and protocol.
+Stage 3C-35 may test the frozen crossing taxonomy on a disjoint source checkpoint
+panel. It must preregister alignment-differential sampled-action crossing as the
+predictor and nonzero source-balanced exposure-only Objective-Fact effect as the
+outcome. It may not select responsive seeds, change exposure, alter addressing or
+weights, scalarize coordinates, or authorize retention. Exact numerical distance to
+the categorical boundary remains blocked until a separately typed export-only
+instrumentation task records full masked policy logits and the categorical draw
+without changing sampling semantics.

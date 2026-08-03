@@ -1,20 +1,19 @@
 # SE project status
 
-Version: **0.148.0**
+Version: **0.149.0**
 
 ## Current iteration identity
 
-- Progress type: **`[DOC-GOV]` documentation governance**
-- Git title: **`[DOC-GOV] reorganize active docs and add typed progress governance`**
-- Scientific evidence change: **none**
+- Progress type: **`[MAIN-EXP]` mainline experiment**
+- Git title: **`[MAIN-EXP] D1-Z: audit action and objective-event threshold crossings`**
+- Git branch: **`main-exp/stage3c34-threshold-crossing`**
 - Runtime/config/checkpoint change: **none**
-- Frozen scientific frontier: **Stage 3C-33**
-- Next authorized mainline experiment: **Stage 3C-34 read-only threshold/crossing audit**
+- Frozen scientific frontier: **Stage 3C-34**
+- Next authorized mainline experiment: **Stage 3C-35 disjoint-source crossing-taxonomy replication**
 
-Version 0.148 reorganizes documentation only. Stage 3C-33 remains the latest frozen
-experiment: realized temporary exposure doubled under fixed support, downstream
-trajectory differences appeared in two of nine source checkpoints, and no signed or
-absolute Objective-Fact coordinate was stable across all sources.
+Stage 3C-34 is a read-only audit over the frozen Stage 3C-33 eight-arm trajectories.
+It localizes the exposure-only alignment contrast at continuous Subject-VM action
+potentials, sampled actions, Objective-Fact events, and source-balanced aggregation.
 
 ## Typed task progress tree
 
@@ -22,77 +21,83 @@ absolute Objective-Fact coordinate was stable across all sources.
 SubjectEvolution
 ├── [MAIN-EXP] Mainline experiment
 │   └── D1-Z unified Subject Graph VM
-│       ├── [FROZEN] Stage 3C-33 exposure propagation
-│       ├── [NEXT]   Stage 3C-34 read-only action/objective crossing audit
+│       ├── [FROZEN] Stage 3C-33 matched-horizon exposure propagation
+│       ├── [FROZEN] Stage 3C-34 action/objective-event crossing audit
+│       ├── [NEXT]   Stage 3C-35 disjoint-source crossing-taxonomy replication
 │       └── [BLOCKED] retention, learned weights, topology evolution
 │
 ├── [BRANCH-EXP] Branch experiment
 │   └── none active
-│       └── required when an alternative mechanism competes with the mainline
 │
 ├── [PARAM-EXP] Code-parameter exploration
 │   └── none active
-│       └── normally uses a separate Git branch and cannot silently redefine
-│           a frozen mainline protocol
 │
 ├── [EVOLVE-ENV] Evolution code — environment/substrate
-│   └── parked: persistent multi-pressure environment and source-health work
+│   └── [PARKED] persistent multi-pressure environment and source-health work
 │
 ├── [EVOLVE-SUBJECT] Evolution code — subject capability
-│   └── blocked: topology/readout/addressing evolution lacks an authorized
-│       mutation, cost, development, and neutralization contract
+│   └── [BLOCKED] topology/readout/addressing evolution lacks an authorized
+│       mutation, cost, development, inheritance, and neutralization contract
 │
 ├── [ENGINEERING] Runtime, tooling, tests, packaging
-│   ├── source-freshness excludes only top-level src/gui/
-│   └── no active product-code defect in this iteration
+│   └── [PARKED] optional full-policy-logit and categorical-draw trace export
+│       for exact numeric action-margin measurement
 │
 └── [DOC-GOV] Documentation governance
-    ├── [DONE] ARCHITECTURE.md reduced to current structural contracts
-    ├── [DONE] SCIENTIFIC_ISSUES.md reduced to active unresolved questions
-    ├── [DONE] PROJECT_STATUS.md converted to this typed tree
-    ├── [DONE] frozen Stage 3C chronology moved to docs/results/
-    └── [DONE] AGENTS.md adds mandatory placement and Git-title rules
+    ├── [DONE] active-document authority boundaries
+    ├── [DONE] typed Git title and branch prefixes
+    └── [DONE] concrete Git command handoff required for every delivery
 ```
 
 ## Current mainline decision
 
-Stage 3C-34 is the only authorized next scientific step. It must reuse the frozen
-Stage 3C-33 trajectories and remain read-only. Its purpose is to locate whether
-exposure-dependent internal divergence:
+Stage 3C-34 resolves the current nine-source crossing location:
 
-- never forms;
-- remains below action sampling thresholds;
-- changes sampled action without changing an objective event;
-- crosses an objective-event boundary;
-- or is later cancelled or hidden by aggregation.
+- all nine sources contain exposure-dependent, alignment-dependent Subject-VM
+  action-potential divergence;
+- six sources do not cross the realized sampled-action boundary;
+- seed 12307 crosses the sampled-action boundary in both alignment modes in the same
+  way, so the alignment difference-in-differences removes it;
+- seeds 12305 and 12308 contain alignment-specific action crossings and are exactly
+  the two sources with nonzero Stage 3C-33 source-balanced Objective-Fact effects;
+- no source contains a differential Objective-Fact crossing that is later cancelled
+  only by source balancing.
 
-It may not add a new addressing rule, change exposure duration, select only
-responsive seeds, introduce reward or value weights, or authorize retention.
+The next authorized mainline step is an out-of-sample replication using a disjoint
+source checkpoint panel and the unchanged Stage 3C-33/34 protocol. It must preregister
+the prediction that alignment-differential sampled-action crossings identify every
+nonzero exposure-only fact source. It may not select seeds, alter exposure, add a
+value function, or authorize retention.
 
-## Frozen evidence summary
+## Frozen evidence boundary
 
-- Subject-time alignment changes runtime historical-event identity in every source.
-- It changes temporary target/family/delta routing in every source.
-- Realized target-tick exposure can be doubled while preserving update identity.
-- Extended exposure changes fixed-support downstream trajectories in two of nine
-  independent sources.
-- No Objective-Fact coordinate has a stable signed or absolute direction across all
-  nine source checkpoints.
+Stage 3C-34 establishes a narrow causal localization for this panel:
 
-Detailed stage chronology and numerical findings are maintained in
-`docs/results/SUBJECT_VM_STAGE3C_RESULTS.md`, not in this status file.
+```text
+continuous Subject-VM decision divergence in 9/9 sources
+  → any sampled-action crossing in 3/9 sources
+  → alignment-specific sampled-action crossing in 2/9 sources
+  → differential Objective-Fact crossing in the same 2/9 sources
+  → surviving source-balanced effect in the same 2/9 sources
+```
+
+Four alignment-specific sampled-action crossing events lead to twelve differential
+Objective-Fact events, including eight delayed events after the original crossing.
+This does not establish value, correct causal credit, learning, keep/revert, or
+permanent retention.
+
+The exact numeric distance to the categorical action boundary remains unobservable
+because the frozen trace contains Subject-VM residual potentials and selected-action
+probability, but not the complete masked policy logits or categorical draw.
 
 ## Not implemented or authorized
 
 - scalar reward or fixed value weights;
 - automatic keep/revert or permanent graph-parameter retention;
 - learned association weights or a general attention allocator;
-- Subject VM topology mutation, developmental expression, or region-capacity
-  evolution;
-- GPU packed Stage 2/3 execution as a scientific prerequisite;
-- relation/group replacement by Subject VM;
-- Epoch 1 subjecthood score or claim;
-- post-hoc exposure extension or seed filtering.
+- Subject VM topology mutation or developmental expression;
+- selected-seed reruns or adaptive exposure extension;
+- Epoch 1 subjecthood score or claim.
 
 ## Documentation and evidence map
 
@@ -100,9 +105,8 @@ Detailed stage chronology and numerical findings are maintained in
 |---|---|
 | Current system structure | `docs/ARCHITECTURE.md` |
 | Current task and queue | `docs/PROJECT_STATUS.md` |
-| Active unresolved questions | `docs/SCIENTIFIC_ISSUES.md` |
-| Subject VM stage results | `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` |
-| Detailed mechanism contract | `docs/PARTITIONED_SUBJECT_GRAPH_VM.md` |
-| Durable process rules | `docs/PROJECT_GOVERNANCE.md` and `AGENTS.md` |
-| Current iteration record | `docs/迭代/v0.148_文档治理与类型化任务树.md` |
-| Delivered changes | `docs/CHANGELOG.md` |
+| Active unresolved scientific questions | `docs/SCIENTIFIC_ISSUES.md` |
+| Frozen Stage 3C results | `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` |
+| Current iteration record | `docs/迭代/v0.149_D1-Z_主体图Stage3C34_动作与客观事件跨界审计.md` |
+| Executable decision contract | `protocols/decisions/subject_graph_vm_stage3c34_threshold_crossing_v1.json` |
+| Repository execution rules | `AGENTS.md` |

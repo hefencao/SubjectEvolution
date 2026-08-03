@@ -23,7 +23,7 @@ def test_scientific_issues_is_active_registry_not_append_only_history() -> None:
     text = _text("docs/SCIENTIFIC_ISSUES.md")
     assert not re.search(r"^##\s+(?:v0\.\d+|Stage 3C-\d+)", text, re.MULTILINE)
     assert "## 2. Active issue registry" in text
-    assert "SG-01" in text and "ENV-01" in text
+    assert "SG-02" in text and "ENV-01" in text
     assert len(text.splitlines()) < 350
 
 
@@ -58,13 +58,19 @@ def test_agents_enforces_git_title_branch_and_document_placement() -> None:
     assert "[BRANCH-EXP]` must use an additional Git branch" in text
     assert "Do not write provisional" in text
     assert "Deliver only three top-level artifacts" in text
+    assert "### 2.1 Git command delivery contract" in text
+    assert "git apply --index" not in text  # exact commands belong to each handoff
+    assert "fast-forward merge" in text
+    assert "annotated release tag" in text
+    assert "main-exp/" in text and "docs/" in text
 
 
 def test_frozen_stage_results_live_in_dedicated_ledger() -> None:
     text = _text("docs/results/SUBJECT_VM_STAGE3C_RESULTS.md")
     assert "| 3C-17 |" in text
     assert "| 3C-33 |" in text
-    assert "Stage 3C-34" in text
+    assert "| 3C-34 |" in text
+    assert "Stage 3C-35 may test" in text
 
 
 def test_previous_active_docs_are_explicitly_non_normative_snapshots() -> None:

@@ -1,0 +1,38 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c34_threshold_crossing_v1"
+title = "D1-Z Subject VM Stage 3C-34 action and objective-event crossing audit"
+
+[parameters.stage3c33_study_report]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c33_exposure_propagation_v1/final/stage3c33/study_report.json"
+description = "Frozen Stage-3C-33 three-condition study report whose common-horizon checkpoints remain available."
+
+[parameters.stage3c33_assessment]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c33_exposure_propagation_v1/final/stage3c33_exposure_propagation.json"
+description = "Checksum-bound Stage-3C-33 fixed-support trajectory assessment."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c34_threshold_crossing_v1/final"
+description = "Read-only event-level threshold/crossing assessment outputs."
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c34_threshold_crossing_v1_results.zip"
+description = "Compact research and validation evidence bundle."
+
+[steps.assess-stage3c34]
+description = "Reproduce the frozen Stage-3C-33 source vectors and localize continuous, sampled-action and Objective-Fact crossings."
+command = ["se-subject-vm-stage3c34-threshold-crossing", "--stage3c33-study-report", "{stage3c33_study_report}", "--stage3c33-assessment", "{stage3c33_assessment}", "--output", "{analysis_root}/stage3c34_threshold_crossing.json", "--summary-output", "{analysis_root}/stage3c34_study_summary.json", "--diagnostic-report", "{analysis_root}/stage3c34_diagnostic_report.md"]
+
+[steps.package-results]
+description = "Package the frozen input identities, event-level assessment, summary and diagnostic report without duplicating checkpoint bytes."
+depends_on = ["assess-stage3c34"]
+required_checks = [
+  { path = "{analysis_root}/stage3c34_threshold_crossing.json", field = "cross_source_findings.all_eight_arm_event_support_matches", equals = true },
+  { path = "{analysis_root}/stage3c34_threshold_crossing.json", field = "cross_source_findings.stage3c33_nonzero_source_identity_reproduced", equals = true },
+  { path = "{analysis_root}/stage3c34_threshold_crossing.json", field = "diagnostic_interpretation.full_numeric_distance_to_the_categorical_action_boundary_is_observable", equals = false },
+  { path = "{analysis_root}/stage3c34_threshold_crossing.json", field = "permanent_parameter_retention_authorized", equals = false }
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--required-file", "{stage3c33_assessment}", "--required-file", "{analysis_root}/stage3c34_threshold_crossing.json", "--required-file", "{analysis_root}/stage3c34_study_summary.json", "--required-file", "{analysis_root}/stage3c34_diagnostic_report.md", "--required-file", "protocols/decisions/subject_graph_vm_stage3c34_threshold_crossing_v1.json", "--output", "{output}"]

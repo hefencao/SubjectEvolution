@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c33-exposure-propagation-intervention-frozen",
-  "project_version": "0.146.0",
+  "status": "stage-3c34-threshold-crossing-audit-frozen",
+  "project_version": "0.149.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3C-33",
+  "current_stage": "3C-34",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -702,5 +702,51 @@
     "paired_rollback_complete_window_role": "auxiliary-diagnostic-only-when-support-or-observation-differs",
     "fixed_common_horizon_event_identity_support_required": true,
     "evaluation_observation_coverage_audit_required": true
+  },
+  "stage_3c34_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_stage3c34_threshold_crossing_v1.json",
+    "runtime_or_checkpoint_schema_change": false,
+    "experimental_factor": "read-only-event-level-localization-of-frozen-stage3c33-exposure-only-alignment-contrast",
+    "stage3c33_checksum_and_lineage_required": true,
+    "same_eight_arm_event_identity_support_required": true,
+    "runtime_rerun_authorized": false,
+    "selected_seed_rerun_authorized": false,
+    "subject_vm_action_potential_ddd_reported": true,
+    "sampled_action_crossing_separated_into_alignment_common_and_differential": true,
+    "objective_fact_crossing_reported_componentwise": true,
+    "stage3c33_subject_balanced_fact_sum_reproduction_required": true,
+    "full_numeric_action_threshold_margin_observable": false,
+    "highest_independent_replicate": "independent-pre-bootstrap-source-checkpoint",
+    "within_source_events_are_independent_replicates": false,
+    "frozen_result": {
+      "source_count": 9,
+      "potential_divergence_source_count": 9,
+      "any_action_crossing_source_seeds": [
+        12305,
+        12307,
+        12308
+      ],
+      "alignment_differential_action_crossing_source_seeds": [
+        12305,
+        12308
+      ],
+      "alignment_common_action_crossing_source_seeds": [
+        12307
+      ],
+      "alignment_differential_objective_crossing_source_seeds": [
+        12305,
+        12308
+      ],
+      "differential_action_crossing_event_count": 4,
+      "differential_objective_crossing_event_count": 12,
+      "delayed_objective_crossing_event_count": 8,
+      "later_aggregation_cancellation_source_count": 0,
+      "stage3c33_nonzero_source_identity_reproduced": true
+    },
+    "automatic_keep_or_revert_authorized": false,
+    "learned_weight_authorized": false,
+    "permanent_write_authorized": false,
+    "scientific_qualification": false,
+    "next_authorized_boundary": "disjoint-source-crossing-taxonomy-replication-with-frozen-protocol"
   }
 }
