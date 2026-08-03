@@ -810,3 +810,14 @@ Stage 3C-31 只读消融表明主体—时间对齐影响 winner identity，但�
 2. 不能把单一 source 的非零事实差或混合坐标合成为价值/信用分数。
 
 当前未决问题是 exposure propagation，而不是 selector manipulation。后续只能通过预声明、共享 source、单因素 exposure-length 对照解决；不得自适应延长到出现正结果，也不得从内部因果性直接授权永久 retention。
+
+
+## Stage 3C-33：剂量、观察覆盖与完整轨迹必须分开
+
+Stage 3C-32 已证明 alignment 会在所有 source 中改变 selector identity 和 temporary update route。Stage 3C-33 把“观察更久”和“写入保持更久”分开：3/8 对 3/11 是 horizon-only，3/11 对 6/11 是 exposure-only。Live ledger 证明 exposure 操纵真实成立：18 个 source×mode 比较的 transaction/update identity 完全相同，每组 16 个写入的持续时间从 3 精确增加到 6，target-tick exposure 从 48 增加到 96。
+
+但 exposure propagation 不能只看 rollback-complete window。当前 window 的 observation_ticks=1，而且延长 rollback 会减少 export 前完成的 window，使 3/11 与 6/11 的纳入集合不同。用它们直接相减会把 exposure 与 evaluation-support selection 混在一起。由此形成新的治理约束：暴露研究必须分别证明 ledger dose、fixed common trajectory support 和 observation coverage；支持集合变化时，paired windows 只能作为辅助诊断。
+
+在共同 11-tick horizon 的完整 trace 上，每个 source/mode/role 有相同的 144 个 event identity。固定支持分析发现 exposure-only 轨迹差异只在 seeds 12305 与 12308 非零，且 extended exposure 新增一个非零 source 12305；但 0/21 signed 或 absolute 坐标具有九 source 稳定方向。
+
+因此当前结果既不是“完全没有传播”，也不是“已建立可复现事实效应”。更准确的冻结结论是：更长暴露能在少数 source history 中改变下游事件轨迹，但效应稀疏、路径依赖且没有稳定组件方向。下一阶段应只读审计 action sampling 和 objective-event crossing，比较响应 source 与零 source；不得继续加长 exposure 直到出现正结果，也不得引入 reward、权重、寻址或 retention。

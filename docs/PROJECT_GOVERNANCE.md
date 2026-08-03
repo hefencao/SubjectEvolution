@@ -383,3 +383,11 @@ A Stage-3B-2 change is governance-compliant only when all of the following remai
 ### Bootstrap cognitive biases
 
 The project may retain bounded, replaceable fixed mechanisms when they materially shorten shaping and make failures diagnosable. Such mechanisms must be labelled as bootstrap baselines, must not carry concrete cognitive or social semantics, and must not be described as universal or emergent. Normalized-dot delayed association and single-winner local-eligibility target selection currently have this status. A later general allocator may replace or compare against them without invalidating their engineering-baseline value.
+
+## D1-Z exposure-propagation evidence boundary
+
+- Declaring a longer rollback or exposure duration is not sufficient dose evidence. The live ledger must prove unchanged transaction/update identity and the realized target-tick exposure.
+- Exposure propagation must be evaluated on fixed common trajectory support. Event identity, subject support, tick range and branch horizon must match across compared conditions.
+- Evaluation observation coverage is a separate contract. A rollback-complete window cannot be the primary exposure estimator when its observation interval is shorter than the intervention or when changing exposure changes which windows complete before export.
+- In that case, rollback-complete windows remain auxiliary diagnostics and the primary estimator must use a preregistered fixed-support trajectory aggregation.
+- Sparse nonzero source effects without a stable component-wise direction cannot be converted into scalar value, credit quality, automatic keep/revert or retention authority.

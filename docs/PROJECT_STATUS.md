@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.146.0**
+Version: **0.147.0**
 
 ## Current scientific task
 
-Version 0.146 implements **Subject VM Stage 3C-32: shared-checkpoint four-arm runtime subject-time alignment intervention**.
+Version 0.147 freezes **Subject VM Stage 3C-33: predeclared exposure-length propagation intervention with a matched-horizon control**. The declared 2× live-ledger dose is realized exactly; fixed-support full trajectories show sparse exposure-dependent changes in 2/9 sources but no stable component-wise direction.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -313,3 +313,14 @@ Across nine sources, alignment ablation changes association identity in 32.03%�
 The downstream evidence remains sparse. The aligned mode yields 121 completed paired windows and the alignment-ablated mode 125. Only one of nine sources has any nonzero component-wise cross-mode live-minus-control effect; no fact-sum or absolute-fact-sum coordinate has a stable direction across sources. The current three-tick temporary exposure therefore does not establish source-replicated Objective-Fact causality, beneficial direction, credit quality, learning or a retention decision.
 
 The next authorized boundary is a separately declared exposure-length intervention using the same checkpoints, four arms, alignment manipulation, matched compute/storage, forced rollback and component-wise source-balanced evaluation. It may not adaptively extend the current run or introduce scalar value.
+
+
+## Stage 3C-33 current result
+
+Stage 3C-33 reuses the frozen nine-source Stage-3C-32 panel and runs 3-tick/8-tick, 3-tick/11-tick and 6-tick/11-tick exposure/horizon conditions. The common-horizon comparison isolates exposure duration; no condition is selected or extended after data inspection.
+
+The live-ledger dose audit passes in all 18 source×alignment-mode comparisons: transaction/update identity is unchanged and target-tick exposure increases from 48 to 96. A governance correction was required at the evaluation boundary. Rollback-complete paired windows observe only one subsequent tick, and their completion support changes from 144/144 at 3/11 to 121 aligned and 125 alignment-ablated at 6/11. They are therefore auxiliary diagnostics, not the primary exposure estimator.
+
+The corrected estimator uses identical full-trace event support at the shared 11-tick horizon: 144 event identities, 16 stable subjects and event ticks 4–12 for every source, alignment mode and branch role. Under this fixed support, the 3-tick condition has nonzero cross-mode trajectory effects in seeds 12301, 12303 and 12308; the 6-tick condition adds seed 12305. The exposure-only trajectory contrast is nonzero in seeds 12305 and 12308, but no signed or absolute Objective-Fact coordinate has a stable direction across all nine sources.
+
+The frozen conclusion is therefore sparse, source-dependent trajectory propagation without a stable component-wise result. Subject-time alignment and temporary exposure can alter downstream event trajectories, but current evidence does not establish value, beneficial direction, correct causal credit, source-replicated propagation, automatic keep/revert, learned weighting or permanent retention. The next authorized boundary is a read-only action/objective-event threshold and crossing audit over the already frozen full trajectories.

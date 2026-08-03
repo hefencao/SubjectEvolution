@@ -1,7 +1,7 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c32-four-arm-runtime-alignment-intervention-implemented",
+  "status": "stage-3c33-exposure-propagation-intervention-frozen",
   "project_version": "0.146.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3C-32",
+  "current_stage": "3C-33",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -659,5 +659,48 @@
     "learned_weight_authorized": false,
     "permanent_write_authorized": false,
     "scientific_qualification": false
+  },
+  "stage_3c33_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_stage3c33_exposure_propagation_v1.json",
+    "runtime_or_checkpoint_schema_change": false,
+    "experimental_factor": "temporary-exposure-ticks-3-to-6-at-common-eleven-tick-horizon",
+    "frozen_stage3c32_baseline_reproduced": true,
+    "horizon_only_control_required": true,
+    "common_horizon_read_only_control_behavior_identity_required": true,
+    "same_rank_two_source_checkpoint_panel_required": true,
+    "same_four_arm_alignment_intervention_required": true,
+    "candidate_evaluation_and_runtime_storage_contract_matched": true,
+    "forced_rollback_required": true,
+    "objective_fact_evaluation_componentwise_difference_in_difference_in_differences": true,
+    "adaptive_exposure_extension_authorized": false,
+    "highest_independent_replicate": "independent-pre-bootstrap-source-checkpoint",
+    "within_source_events_subjects_or_windows_are_independent_replicates": false,
+    "automatic_keep_or_revert_authorized": false,
+    "permanent_write_authorized": false,
+    "scientific_qualification": false,
+    "exposure_dose_ledger_integrity_required": true,
+    "frozen_result": {
+      "source_count": 9,
+      "dose_ratio": 2.0,
+      "paired_window_observation_ticks": 1,
+      "paired_window_completion_support_matches": false,
+      "fixed_horizon_trajectory_support_matches": true,
+      "horizon_control_nonzero_trajectory_source_count": 3,
+      "extended_exposure_nonzero_trajectory_source_count": 4,
+      "extended_exposure_adds_new_nonzero_sources": 1,
+      "exposure_only_nonzero_source_count": 2,
+      "exposure_only_nonzero_source_seeds": [
+        12305,
+        12308
+      ],
+      "stable_objective_fact_coordinates": 0,
+      "source_replicated_propagation_supported": false,
+      "adaptive_extension_authorized": false
+    },
+    "next_authorized_boundary": "read-only-discrete-action-and-objective-event-threshold-crossing-audit-over-fixed-trajectories",
+    "primary_exposure_estimator": "fixed-common-horizon-full-event-trajectory",
+    "paired_rollback_complete_window_role": "auxiliary-diagnostic-only-when-support-or-observation-differs",
+    "fixed_common_horizon_event_identity_support_required": true,
+    "evaluation_observation_coverage_audit_required": true
   }
 }

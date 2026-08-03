@@ -1,0 +1,53 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c33_exposure_propagation_v1",
+  "title": "D1-Z Subject VM Stage 3C-33 exposure-length propagation intervention",
+  "status": "frozen-sparse-trajectory-propagation-no-stable-coordinate",
+  "scientific_stage": "stage3c33-sparse-fixed-trajectory-propagation-frozen-next-threshold-crossing-audit",
+  "authorization": {
+    "reuse_stage3c23_rank_two_nine_source_panel": true,
+    "reproduce_stage3c32_three_tick_eight_tick_baseline": true,
+    "add_three_tick_eleven_tick_horizon_control": true,
+    "add_six_tick_eleven_tick_exposure_intervention": true,
+    "require_common_horizon_control_behavior_identity": true,
+    "require_same_alignment_manipulation": true,
+    "require_same_candidate_compute_storage_contract": true,
+    "require_forced_rollback": true,
+    "adaptive_exposure_extension": false,
+    "scalar_objective": false,
+    "automatic_keep_or_revert": false,
+    "permanent_parameter_retention": false,
+    "learning_claim": false,
+    "subjecthood_claim": false,
+    "require_live_ledger_dose_integrity": true,
+    "require_fixed_common_horizon_event_identity_support": true,
+    "audit_paired_window_observation_coverage": true,
+    "paired_windows_primary_if_completion_support_differs": false
+  },
+  "frozen_result": {
+    "declared_exposure_ratio": 2.0,
+    "dose_integrity_passed": true,
+    "paired_window_observation_ticks": 1,
+    "paired_window_completion_support_matches": false,
+    "fixed_horizon_event_support_matches": true,
+    "horizon_control_nonzero_trajectory_sources": [
+      12301,
+      12303,
+      12308
+    ],
+    "extended_exposure_nonzero_trajectory_sources": [
+      12301,
+      12303,
+      12305,
+      12308
+    ],
+    "exposure_only_nonzero_sources": [
+      12305,
+      12308
+    ],
+    "extended_exposure_adds_new_nonzero_sources": 1,
+    "stable_objective_fact_coordinates": 0,
+    "source_replicated_propagation_supported": false,
+    "adaptive_exposure_extension": false
+  }
+}

@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c32-four-arm-runtime-alignment-intervention-implemented"
+    assert contract["status"] == "stage-3c33-exposure-propagation-intervention-frozen"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,7 +24,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3C-32"
+    assert contract["current_stage"] == "3C-33"
     assert contract["stage_2_contract"]["plasticity"] is False
     assert contract["stage_3a_contract"]["persistent_node_edge_path"] is False
     assert contract["stage_3a_contract"]["plasticity"] is False
@@ -256,6 +256,37 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["stage_3c32_contract"]["objective_fact_evaluation_componentwise_difference_in_differences"] is True
     assert contract["stage_3c32_contract"]["learned_weight_authorized"] is False
     assert contract["stage_3c32_contract"]["permanent_write_authorized"] is False
+    assert contract["stage_3c33_contract"]["runtime_or_checkpoint_schema_change"] is False
+    assert contract["stage_3c33_contract"]["frozen_stage3c32_baseline_reproduced"] is True
+    assert contract["stage_3c33_contract"]["horizon_only_control_required"] is True
+    assert contract["stage_3c33_contract"]["common_horizon_read_only_control_behavior_identity_required"] is True
+    assert contract["stage_3c33_contract"]["same_rank_two_source_checkpoint_panel_required"] is True
+    assert contract["stage_3c33_contract"]["same_four_arm_alignment_intervention_required"] is True
+    assert contract["stage_3c33_contract"]["forced_rollback_required"] is True
+    assert contract["stage_3c33_contract"]["exposure_dose_ledger_integrity_required"] is True
+    assert contract["stage_3c33_contract"]["frozen_result"]["dose_ratio"] == 2.0
+    assert contract["stage_3c33_contract"][
+        "fixed_common_horizon_event_identity_support_required"
+    ] is True
+    assert contract["stage_3c33_contract"][
+        "evaluation_observation_coverage_audit_required"
+    ] is True
+    assert contract["stage_3c33_contract"]["frozen_result"][
+        "paired_window_completion_support_matches"
+    ] is False
+    assert contract["stage_3c33_contract"]["frozen_result"][
+        "fixed_horizon_trajectory_support_matches"
+    ] is True
+    assert contract["stage_3c33_contract"]["frozen_result"][
+        "extended_exposure_adds_new_nonzero_sources"
+    ] == 1
+    assert contract["stage_3c33_contract"]["frozen_result"][
+        "exposure_only_nonzero_source_seeds"
+    ] == [12305, 12308]
+    assert contract["stage_3c33_contract"]["frozen_result"]["source_replicated_propagation_supported"] is False
+    assert contract["stage_3c33_contract"]["adaptive_exposure_extension_authorized"] is False
+    assert contract["stage_3c33_contract"]["automatic_keep_or_revert_authorized"] is False
+    assert contract["stage_3c33_contract"]["permanent_write_authorized"] is False
     assert contract["stage_3c21_contract"]["common_readout_only_node_index"] == 8
     assert contract["stage_3c21_contract"]["readout_changes_action_output"] is False
     assert contract["stage_3c21_contract"][

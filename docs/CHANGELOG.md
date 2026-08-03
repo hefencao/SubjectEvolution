@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.147.0
+
+- Adds Subject VM Stage 3C-33 three-condition exposure-length propagation intervention.
+- Separates observation-horizon effects from temporary-exposure effects with 3/8, 3/11 and 6/11 exposure/horizon conditions over the same four-arm source panel.
+- Adds live-ledger dose-integrity assessment proving identical transaction/update identity and an exact target-tick exposure increase from 48 to 96 in all 18 source×mode comparisons.
+- Audits evaluation support and rejects rollback-complete one-tick windows as the primary exposure estimator because their completion set changes with rollback duration.
+- Adds a fixed-common-horizon full-trajectory estimator using identical 144-event support per source, mode and role.
+- Freezes sparse exposure-dependent trajectory effects in seeds 12305 and 12308, with no stable signed or absolute Objective-Fact coordinate across nine sources.
+- Persists the governance rule that exposure studies must separately verify ledger dose, common trajectory support and observation coverage.
+
 ## 0.146.0
 
 - Adds Subject VM Stage 3C-32 four-arm runtime subject-time alignment intervention from shared frozen rank-two source checkpoints.

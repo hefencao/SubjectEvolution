@@ -1,0 +1,129 @@
+{
+  "schema": "se-subject-vm-stage3c33-exposure-propagation-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c33-exposure-propagation-v1",
+  "status": "frozen-sparse-trajectory-propagation-no-stable-coordinate",
+  "project_version": "0.147.0",
+  "question": "Does extending temporary parameter exposure from three to six ticks, at an identical eleven-tick branch horizon, propagate the Stage-3C-32 selector/update-route intervention into source-replicated component-wise Objective-Fact differences?",
+  "source_panel": {
+    "independent_source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "rank_two_visible_coordinates": [
+      11,
+      7
+    ],
+    "alignment_coordinate_port": 30,
+    "target_family": "edge_forward_gate",
+    "association_similarity": "normalized-dot",
+    "association_threshold": 0.8,
+    "association_tie_break": "latest",
+    "association_candidate_limit": 1,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "predeclared_conditions": {
+    "frozen_baseline": {
+      "exposure_ticks": 3,
+      "horizon_ticks": 8
+    },
+    "horizon_control": {
+      "exposure_ticks": 3,
+      "horizon_ticks": 11
+    },
+    "extended_exposure": {
+      "exposure_ticks": 6,
+      "horizon_ticks": 11
+    },
+    "adaptive_extension_after_observing_results": false
+  },
+  "factor_isolation": {
+    "frozen_baseline_to_horizon_control": "observation-horizon-only",
+    "horizon_control_to_extended_exposure": "temporary-exposure-only",
+    "common_horizon_read_only_control_behavior_identity_required": true,
+    "same_source_checkpoint_across_all_twelve_arms": true,
+    "same_alignment_runtime_path": true,
+    "candidate_compute_storage_contract_matched": true,
+    "forced_rollback": true,
+    "fixed_common_horizon_event_support_required": true,
+    "evaluation_observation_coverage_audited_separately": true
+  },
+  "evaluation": {
+    "four_arms_per_condition": [
+      "aligned/read-only-control",
+      "aligned/guarded-live",
+      "alignment-ablated/read-only-control",
+      "alignment-ablated/guarded-live"
+    ],
+    "objective_fact_coordinate_count": 21,
+    "componentwise_difference_in_differences": true,
+    "exposure_only_difference_in_difference_in_differences": true,
+    "scalar_objective": false,
+    "highest_independent_replicate": "independent-pre-bootstrap-source-checkpoint",
+    "within_source_windows_are_independent_replicates": false,
+    "primary_exposure_propagation_estimator": "fixed-common-horizon-full-event-trajectory",
+    "trajectory_aggregation": "event-live-minus-control-summed-within-stable-subject-then-source-balanced",
+    "rollback_complete_paired_windows": "auxiliary-only",
+    "paired_window_observation_ticks": 1,
+    "paired_window_completion_support_must_match_for_primary_use": true,
+    "fixed_trajectory_event_identity_support_required": true
+  },
+  "interpretation_boundary": {
+    "objective_coordinate_direction_has_value_semantics": false,
+    "causal_credit_quality_proven": false,
+    "automatic_keep_or_revert_authorized": false,
+    "learning_claim_authorized": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false,
+    "subjecthood_claim_authorized": false
+  },
+  "observed_panel_result": {
+    "independent_source_count": 9,
+    "source_mode_dose_comparison_count": 18,
+    "same_transaction_and_update_identity_with_declared_duration_change": true,
+    "baseline_target_tick_exposure": 48,
+    "extended_target_tick_exposure": 96,
+    "dose_ratio": 2.0,
+    "paired_window_observation_ticks": 1,
+    "paired_window_completion_support_matches_between_common_horizon_conditions": false,
+    "paired_window_primary_inference_authorized": false,
+    "fixed_horizon_event_count_per_source_mode_role": 144,
+    "fixed_horizon_stable_subject_count": 16,
+    "fixed_horizon_event_tick_range": [
+      4,
+      12
+    ],
+    "fixed_horizon_trajectory_support_matches_in_all_sources_modes_and_roles": true,
+    "horizon_control_trajectory_nonzero_source_seeds": [
+      12301,
+      12303,
+      12308
+    ],
+    "extended_exposure_trajectory_nonzero_source_seeds": [
+      12301,
+      12303,
+      12305,
+      12308
+    ],
+    "extended_exposure_adds_new_trajectory_nonzero_sources": 1,
+    "exposure_only_nonzero_source_seeds": [
+      12305,
+      12308
+    ],
+    "exposure_only_stable_fact_sum_coordinate_count": 0,
+    "exposure_only_stable_fact_abs_sum_coordinate_count": 0,
+    "sparse_trajectory_propagation_without_stable_coordinate": true,
+    "source_replicated_exposure_propagation_supported": false
+  },
+  "next_boundary": "Freeze Stage 3C-33 as sparse, source-dependent trajectory propagation without a stable coordinate. Stage 3C-34 may only perform a read-only discrete-action and objective-event threshold/crossing audit over the fixed full trajectories, contrasting responsive seeds 12305/12308 with zero-contrast sources. No adaptive exposure extension, reward, learned weight, automatic keep/revert or permanent retention is authorized."
+}

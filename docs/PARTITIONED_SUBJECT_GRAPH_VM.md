@@ -802,3 +802,14 @@ Stage 3C-32 将 Stage 3C-31 的只读重打分推进到真实 runtime，但只�
 每个 rank-two source checkpoint 同时派生 aligned/control、aligned/live、ablated/control、ablated/live 四臂。checkpoint identity、horizon、随机流、候选机会、candidate evaluation、runtime array bytes、reservation、rollback 与 21 维 Objective-Fact 合同必须匹配。任何模式都不得保留参数。
 
 九 source 中，对齐消融改变 32.03%–50.78% 的 association identity，并改变 9.38%–17.97% 的 update route；这建立了当前 fixed bootstrap 下的运行时 selector 和临时写入路由因果性。但只有 1/9 source 出现非零 Objective-Fact difference-in-differences，0/21 坐标具有稳定方向。因此本阶段不能宣称对齐更“好”、credit 正确、发生学习或应当 retention。
+
+
+## v0.147：Stage 3C-33 匹配 Horizon 的暴露长度传播干预
+
+Stage 3C-33 不新增 VM 字段、checkpoint schema 或永久状态。它从同一九 source rank-two checkpoint 面板运行三个预声明条件：3-tick exposure/8-tick horizon、3/11 horizon-only control 和 6/11 exposure intervention。每个条件都保留 aligned/ablated × live/control 四臂。
+
+正式 live-ledger 审计覆盖 18 个 source×alignment-mode 比较。每组都使用完全相同的 16 个有效 transaction、target/family/delta、pre/post value；baseline 持续时间严格为 3，extended 严格为 6，target-tick exposure 从 48 精确增加到 96。操纵没有失败。
+
+评估边界审计发现，rollback-complete paired window 只观察后续 1 tick，并且延长 rollback 会改变 export 前完成的 window 集合：3/11 为 144/144，6/11 为 aligned 121、ablated 125。因此该窗口对照不能作为 exposure propagation 的主要估计器。主要估计器改为共同 11-tick horizon 的完整 trace；每个 source、mode、role 都有完全相同的 144 个 event identity、16 个稳定主体和 tick 4–12 支持。
+
+固定支持的轨迹结果显示，3-tick 条件在 seeds 12301、12303、12308 非零，6-tick 条件在 12301、12303、12305、12308 非零；exposure-only 差异出现在 12305 与 12308。21 个 signed 与 absolute Objective-Fact 坐标均无跨九 source 稳定方向。Stage 3C-33 因此冻结为“少数 source 中存在下游轨迹传播，但没有稳定、可复现的组件方向”，并继续禁止 reward、learned weight、自动 keep/revert、adaptive exposure 与 retention。
