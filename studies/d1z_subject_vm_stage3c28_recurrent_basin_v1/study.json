@@ -1,0 +1,24 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c28_recurrent_basin_v1",
+  "title": "D1-Z Subject VM Stage 3C-28 discrete-state and subject-anchored recurrent-basin audit",
+  "status": "engineering-read-only-recurrent-basin-diagnostic",
+  "scientific_stage": "stage3c28-read-only-shared-codebook-synchrony-and-subject-anchor-separation",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_source_panel": true,
+    "reuse_stage3c23_rank_two_arm": true,
+    "reconstruct_candidate_scores": true,
+    "measure_discrete_first_coordinate_codebook": true,
+    "measure_cross_subject_transition_synchrony": true,
+    "measure_subject_anchored_second_coordinate": true,
+    "measure_within_subject_recurrent_basin": true,
+    "runtime_mechanism_change": false,
+    "checkpoint_schema_change": false,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "topology_evolution": false,
+    "universal_attention": false,
+    "subjecthood_claim": false
+  }
+}

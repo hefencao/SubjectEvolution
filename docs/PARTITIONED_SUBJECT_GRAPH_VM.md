@@ -768,3 +768,8 @@ Stage 3C-27 固定 Stage 3C-23 rank-two readout、normalized-dot、threshold 0.8
 九 source 的 864 个多候选 query 中，387 次选择 age one；386 次是严格 score geometry 胜出，只有 1 次依赖 exact latest tie-break。strict age-one query 的局部 normalized-token step 中位数约比 older-winner query 小 200 倍。第一 readout 坐标保持时 age one 几乎总被选择，发生变化时 winner 通常回到更早的同坐标状态。
 
 该结果只定位 fixed-bootstrap readout 的采样几何和 recurrent basin，不给近因、速度、曲率或坐标状态赋值，不授权 reward、learned weights、permanent retention、learning、subjecthood 或 universal attention claim。
+
+
+## v0.142：Stage 3C-28 离散状态码本与主体锚定 Basin 审计
+
+Stage 3C-28 固定 Stage 3C-23 rank-two readout、normalized-dot、threshold 0.8、latest/top-1、target/carrier、delta、exposure 与 rollback，只读重建 Rank-2 control trace。它区分共享第一坐标码本、跨主体 transition synchrony、第二坐标主体锚定程度、同状态 winner enrichment 和完整 token 精确复现。结果显示共享码本并未形成一致全局 phase；winner 复用主要表现为主体内离散状态与慢第二坐标共同形成的 recurrent geometric basin。该结果不授权年龄惩罚、随机化、learned weights、永久写入或学习声明。

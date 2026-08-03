@@ -1,0 +1,100 @@
+{
+  "schema": "se-subject-vm-stage3c28-recurrent-basin-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c28-recurrent-basin-v1",
+  "status": "accepted-engineering-read-only-recurrent-basin-audit-only",
+  "project_version": "0.142.0",
+  "question": "Does the Stage-3C-27 near-history basin reflect a globally synchronised sampling phase, exact token recurrence, or a within-subject basin formed by a shared discrete first coordinate and a slow subject-specific second coordinate?",
+  "source_panel": {
+    "independent_source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "rank_two_visible_coordinates": [
+      11,
+      7
+    ],
+    "target_family": "edge_forward_gate",
+    "edge_local_eligibility_carrier": true,
+    "association_similarity": "normalized-dot",
+    "association_threshold": 0.8,
+    "association_tie_break": "latest",
+    "association_candidate_limit": 1,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "analysis_factor": {
+    "runtime_change": false,
+    "arm_analyzed": "Stage-3C-23 frozen rank-two read-only control",
+    "reconstructed_measures": [
+      "first-coordinate codebook and transition agreement",
+      "between-subject versus within-subject second-coordinate variance",
+      "same-state candidate availability and winner enrichment",
+      "nearest second-coordinate winner inside a discrete state",
+      "exact full-visible-token recurrence"
+    ]
+  },
+  "observed_panel_result": {
+    "common_first_coordinate_values": [
+      0.477777809,
+      0.588888884,
+      0.699999988
+    ],
+    "same_minus_cross_phase_transition_agreement_range": [
+      -0.0244047619047619,
+      0.02857142857142861
+    ],
+    "second_coordinate_intraclass_correlation_range": [
+      0.9965664001030456,
+      0.9987687000290213
+    ],
+    "same_first_candidate_fraction_range": [
+      0.3472222222222222,
+      0.4444444444444444
+    ],
+    "winner_same_first_fraction_range": [
+      0.6785714285714286,
+      0.8035714285714286
+    ],
+    "winner_same_first_enrichment_range": [
+      1.7999999999999998,
+      2.076923076923077
+    ],
+    "different_first_candidate_query_fraction_range": [
+      0.8660714285714286,
+      0.9642857142857143
+    ],
+    "same_state_winner_nearest_second_fraction": 1.0,
+    "exact_full_visible_winner_repeat_count": 0,
+    "stable_objective_coordinates": 0
+  },
+  "interpretation": {
+    "shared_discrete_codebook_is_global_sampling_phase": false,
+    "cross_subject_phase_synchrony_supported": false,
+    "second_coordinate_is_slow_subject_specific_anchor": true,
+    "within_subject_recurrent_geometric_basin_supported": true,
+    "exact_token_duplication_explains_reuse": false,
+    "causal_credit_quality_proven": false,
+    "learning_claim_authorized": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "runtime_and_storage": {
+    "runtime_or_checkpoint_schema_changed": false,
+    "runtime_memory_growth_bytes": 0,
+    "default_bootstrap_path_changed": false,
+    "old_config_identity_changed": false
+  },
+  "next_boundary": "Hold the rank-two readout, normalized-dot similarity, threshold, latest top-1, target/carrier, delta, exposure and rollback fixed. Read-only audit whether first-state transition classes and subject-anchored second-coordinate drift predict basin occupancy after conditioning on candidate opportunity before any age penalty, randomization, learned weight or permanent retention change."
+}

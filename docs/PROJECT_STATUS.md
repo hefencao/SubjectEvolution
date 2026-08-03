@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.141.0**
+Version: **0.142.0**
 
 ## Current scientific task
 
-Version 0.141 implements **Subject VM Stage 3C-27: visible-token trajectory kinematics audit**.
+Version 0.142 implements **Subject VM Stage 3C-28: discrete-state and subject-anchored recurrent-basin audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -260,3 +260,8 @@ Stage 3C-27 makes no runtime intervention. It reuses the frozen Stage 3C-23 rank
 Across nine independent source checkpoints, 864 multi-candidate queries contain 387 age-one selections. Of these, 386 are strict score wins and one is an exact tie resolved by latest. The source-balanced median local normalized-token step is about `3.78e-4` for strict age-one queries and `7.57e-2` for older-winner queries. First-readout-coordinate persistence predicts age-one selection at 0.902–0.966 per source; coordinate changes predict older selection at 0.841–0.929.
 
 The engineering baseline remains pairing coverage 1.0, zero rollback failure, zero fact clipping, matched evaluation cost and 0/21 stable objective coordinates. The result diagnoses fixed-bootstrap trajectory geometry only and authorizes no value assignment, causal-credit claim, learning claim, automatic keep/revert or permanent retention.
+
+
+## Stage 3C-28 current result
+
+Stage 3C-28 is external analysis only. It reuses the frozen Stage 3C-23 rank-two read-only control checkpoints and checksum-bound Stage 3C-27 assessment. All nine sources share the first-coordinate values 0.477777809, 0.588888884 and 0.699999988, but same-phase transition agreement differs from cross-phase agreement by only -0.0244 to 0.0286, so a globally synchronized sampling phase is not supported. The second coordinate is overwhelmingly subject anchored (intraclass correlation 0.9966–0.9988) while continuing to move every tick. Same-first-coordinate candidates are only 34.7%–44.4% of eligible candidates, yet 67.9%–80.4% of winners use the same first-coordinate state, an enrichment of 1.80–2.08×. Different-state alternatives remain available for 86.6%–96.4% of queries, every same-state winner is the nearest second-coordinate candidate inside that state, and no selected winner is an exact full-visible-token repeat. The evidence therefore supports a within-subject recurrent geometric basin, not exact token duplication or a cross-subject global phase. Stable objective coordinates remain 0/21 and no retention or learning claim is authorized.

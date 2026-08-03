@@ -771,3 +771,8 @@ Stage 3C-26 证明排除 source-boundary 单候选 query 后仍存在近因偏�
 严格 age-one query 的局部 normalized-token step 中位数约为 older-winner query 的 1/200。第一 readout 坐标相邻 tick 保持时，age one 在每个 source 中以至少 90% 的比例胜出；该坐标变化时，older candidate 以至少 80% 的比例胜出，winner 常匹配最近一次同坐标状态。
 
 因此不得把近因 basin 简化为 tie-break bug，也不得直接加入年龄惩罚、机会补偿或随机选择。当前更准确的问题是 fixed-bootstrap visible coordinates 是否形成跨主体共享的离散采样相位和 recurrent geometry。该几何没有固定价值语义，也不证明 causal credit、学习或永久写入资格。
+
+
+## Stage 3C-28：共享离散码本不等于全局采样相位
+
+九个独立 source 都共享第一可见坐标的三个主要离散值，但同一 phase 的主体间 transition agreement 相对跨 phase 基线没有一致的大幅提升。第二坐标的方差几乎全部来自主体间差异，ICC 为 0.9966–0.9988，同时每 tick 仍有非零缓慢移动。候选中同第一状态只占 34.7%–44.4%，winner 却有 67.9%–80.4% 落在同状态，并且同状态 winner 始终是该状态内第二坐标最近者。不同状态候选在绝大多数 query 中仍可用，且没有 winner 是完整 visible token 的精确重复。因此当前证据更符合“共享离散码本 + 主体特异慢锚点形成的主体内 recurrent geometric basin”，不支持全局同步采样 phase、精确 token 复现或因果信用正确性结论。

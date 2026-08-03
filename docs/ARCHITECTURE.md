@@ -1707,3 +1707,8 @@ No runtime array, checkpoint field, config identity, branch, ledger or lifecycle
 Stage 3C-27 is external analysis only. It consumes the frozen Stage 3C-23 rank-two read-only control checkpoints and checksum-bound Stage 3C-26 assessment. For each request it reconstructs the authoritative normalized-dot/latest/top-1 candidate order and separates source-boundary one-candidate assignments, exact age-one versus older score ties and strict age-one geometry wins.
 
 The analyzer measures normalized local token step, angular distance, second difference, adjacent-step turn cosine, first-readout-coordinate persistence and nearest prior recurrence. It writes no value back into Subject VM state and adds no trace array, checkpoint field, configuration key, branch owner, ledger or lifecycle system. Persistent runtime memory growth is zero; the independent replicate remains the pre-bootstrap source checkpoint.
+
+
+### Stage 3C-28 — discrete-state and subject-anchored recurrent-basin audit (implemented in v0.142)
+
+Stage 3C-28 lives entirely in `src/se/analysis/subject_vm_stage3c28_recurrent_basin.py`. It consumes the frozen Stage 3C-23 rank-two read-only control checkpoints and the checksum-bound Stage 3C-27 assessment. It reconstructs the authoritative normalized-dot/latest/top-1 candidate order and reports shared first-coordinate values, cross-subject transition agreement, second-coordinate between/within-subject variance, same-state candidate availability, winner enrichment and exact-repeat checks. No runtime field, checkpoint schema, addressing rule, update ledger or lifecycle owner is added. Persistent memory growth is zero.

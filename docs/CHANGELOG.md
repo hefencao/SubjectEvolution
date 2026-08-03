@@ -1,3 +1,10 @@
+## 0.142.0
+
+- Adds Subject VM Stage 3C-28 read-only discrete-state and subject-anchored recurrent-basin assessment.
+- Shows that three first-coordinate states are shared across all nine sources but same-phase transition agreement has no consistent excess over cross-phase agreement.
+- Shows that the second visible coordinate is overwhelmingly subject anchored (ICC 0.9966–0.9988) and that same-state winners are enriched 1.80–2.08× over candidate availability without exact token repetition.
+- Adds a reproducible nine-source study workflow, decision protocol, CLI and tests without runtime or checkpoint schema changes.
+
 ## 0.141.0
 
 - Adds Subject VM Stage 3C-27 read-only visible-token trajectory kinematics assessment.
