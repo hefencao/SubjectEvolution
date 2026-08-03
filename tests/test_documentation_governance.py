@@ -23,7 +23,7 @@ def test_scientific_issues_is_active_registry_not_append_only_history() -> None:
     text = _text("docs/SCIENTIFIC_ISSUES.md")
     assert not re.search(r"^##\s+(?:v0\.\d+|Stage 3C-\d+)", text, re.MULTILINE)
     assert "## 2. Active issue registry" in text
-    assert "SG-02" in text and "ENV-01" in text
+    assert "SG-08" in text and "ENV-01" in text
     assert len(text.splitlines()) < 350
 
 
@@ -89,7 +89,8 @@ def test_frozen_stage_results_live_in_dedicated_ledger() -> None:
     assert "| 3C-34 |" in text
     assert "| 3C-35 |" in text
     assert "| 3C-36 |" in text
-    assert "Stage 3C-37 may inspect" in text
+    assert "| 3C-37 |" in text
+    assert "Stage 3C-38 may execute" in text
 
 
 def test_previous_active_docs_are_explicitly_non_normative_snapshots() -> None:

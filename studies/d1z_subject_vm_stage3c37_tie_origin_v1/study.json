@@ -1,0 +1,51 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c37_tie_origin_v1",
+  "title": "D1-Z Subject VM Stage 3C-37 near-exact tie origin audit",
+  "status": "frozen-selector-consistent-qualification-correction",
+  "scientific_stage": "stage3c37-near-exact-tie-origin-frozen",
+  "git_title": "[MAIN-EXP] D1-Z: resolve near-exact tie origin against runtime semantics",
+  "authorization": {
+    "reference_source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "replication_source_seeds": [
+      12401,
+      12402,
+      12403,
+      12404,
+      12405,
+      12406,
+      12407,
+      12408,
+      12409
+    ],
+    "source_panels_are_disjoint": true,
+    "deterministic_rank2_checkpoint_replay": true,
+    "source_state_hash_identity_required": true,
+    "runtime_selection_change": false,
+    "stage3c27_tolerance_change": false,
+    "source_replacement": false,
+    "crossing_replication_in_same_stage": false,
+    "automatic_keep_or_revert": false,
+    "permanent_parameter_retention": false
+  },
+  "project_version": "0.153.0",
+  "frozen_result": {
+    "stage3c27_diagnostic_near_tie_count": 7,
+    "runtime_comparator_tie_count": 0,
+    "latest_tie_break_changed_winner_count": 0,
+    "selector_consistent_stage3c28_prerequisite_passed_in_both_panels": true,
+    "crossing_prediction_tested": false,
+    "assessment_sha256": "661c4dba00bf1dc73a204bcf60fe564f677b80a25a15947f58f57b911a09722a",
+    "retention_authorized": false
+  }
+}

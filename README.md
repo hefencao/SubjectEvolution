@@ -1,13 +1,14 @@
-# SubjectEvolution v0.152.0
+# SubjectEvolution v0.153.0
 
 SubjectEvolution is an experimental simulation project for evolving subject-like
 internal organization without preassigned reward or human social semantics.
 
-Version 0.152.0 freezes the Stage 3C-36 read-only decomposition of the first
-disjoint-panel geometry qualification failure. Candidate support and the roughly
-200-fold strict-versus-older local-step separation transport. The pooled age-one
-loss is primarily explained by a shift in first-state recurrence composition,
-while five additional near-exact ties directly trip the formal Stage-3C-28 gate.
+Version 0.153.0 freezes the Stage 3C-37 query-level resolution of the seven
+Stage-3C-27 near-exact score cases across the original and first disjoint source
+panels. All seven are strict positive float64 geometry margins under the actual
+runtime comparator; none invokes latest-on-tie or duplicates a stored normalized
+direction. The prior disjoint-panel qualification stop is therefore a diagnostic
+classification mismatch, not a runtime tie-break effect.
 
 ## Documentation map
 
@@ -21,10 +22,10 @@ while five additional near-exact ties directly trip the formal Stage-3C-28 gate.
 
 ## Current scientific frontier
 
-Stage 3C-37 may inspect the same frozen rank-two query records to distinguish
-normalized-direction duplication, float32 quantization and the 1e-8 diagnostic
-tie tolerance. It may not alter selection semantics or resume crossing replication
-until the existing qualification gate is understood.
+Stage 3C-38 may resume the preregistered disjoint-panel crossing replication through
+an explicit Stage-3C-37 selector-consistent qualification overlay. It may not rewrite
+the historical Stage-3C-27 artifact, change the runtime comparator, select sources,
+or alter exposure, addressing or crossing definitions.
 
 ## Workspace configuration
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.153.0
+
+- Adds Subject VM Stage 3C-37 query-level near-exact tie origin audit over deterministic replays of both frozen rank-two source panels.
+- Reproduces all 1,728 multi-candidate queries, frozen Stage-3C-27 counts and stored winner identities while requiring exact source-state hash identity.
+- Resolves all seven Stage-3C-27 `1e-8` near-tie cases as strict positive float64 age-one margins under the actual runtime `1e-12` comparator; latest-on-tie changes no winner.
+- Shows the candidate directions and stored second coordinates are distinct, with 1,715–2,140 float32 ULP separation; direct-float32 score instability is explicitly counterfactual because runtime scoring is float64.
+- Freezes a selector-consistent qualification overlay without rewriting historical artifacts and authorizes the disjoint-panel crossing replication as the next separate stage.
+
 ## 0.152.0
 
 - Adds the Stage 3C-36 checksum-bound read-only cross-panel geometry transport decomposition.

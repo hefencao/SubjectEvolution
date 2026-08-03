@@ -1,16 +1,16 @@
 # SE project status
 
-Version: **0.152.0**
+Version: **0.153.0**
 
 ## Current iteration identity
 
 - Progress type: **`[MAIN-EXP]` read-only mainline experiment**
-- Git title: **`[MAIN-EXP] D1-Z: decompose bootstrap geometry transport failure`**
-- Git branch: **`main-exp/stage3c36-geometry-transport`**
+- Git title: **`[MAIN-EXP] D1-Z: resolve near-exact tie origin against runtime semantics`**
+- Git branch: **`main-exp/stage3c37-tie-origin-audit`**
 - Workflow profile: **`SCIENTIFIC-FREEZE` + versioned `RELEASE-HANDOFF`**
 - Runtime/config/checkpoint change: **none**
-- Frozen scientific frontier: **Stage 3C-36**
-- Next authorized mainline experiment: **Stage 3C-37 query-level exact-tie origin audit**
+- Frozen scientific frontier: **Stage 3C-37**
+- Next authorized mainline experiment: **Stage 3C-38 disjoint-panel crossing replication through the selector-consistent qualification overlay**
 
 ## Typed task progress tree
 
@@ -20,10 +20,11 @@ SubjectEvolution
 │   └── D1-Z unified Subject Graph VM
 │       ├── [FROZEN] Stage 3C-33 matched-horizon exposure propagation
 │       ├── [FROZEN] Stage 3C-34 action/objective-event crossing audit
-│       ├── [FROZEN] Stage 3C-35 disjoint-source prerequisite failure
+│       ├── [FROZEN] Stage 3C-35 disjoint-panel stop under the historical diagnostic gate
 │       ├── [FROZEN] Stage 3C-36 bootstrap-geometry transport decomposition
-│       ├── [NEXT]   Stage 3C-37 query-level exact-tie origin audit
-│       └── [BLOCKED] crossing replication, retention, learned weights, topology evolution
+│       ├── [FROZEN] Stage 3C-37 selector-consistent near-tie origin audit
+│       ├── [NEXT]   Stage 3C-38 disjoint-panel crossing replication
+│       └── [BLOCKED] retention, learned weights and topology evolution
 │
 ├── [BRANCH-EXP] Branch experiment
 │   └── none active
@@ -36,7 +37,7 @@ SubjectEvolution
 │
 ├── [EVOLVE-SUBJECT] Evolution code — subject capability
 │   └── [BLOCKED] topology/readout/addressing evolution lacks an authorized
-│       mutation, cost, development, inheritance, and neutralization contract
+│       mutation, cost, development, inheritance and neutralization contract
 │
 ├── [ENGINEERING] Runtime, tooling, tests, packaging
 │   ├── [DONE] `se-workspace` owns external result and patch directory configuration
@@ -49,27 +50,29 @@ SubjectEvolution
 
 ## Current mainline decision
 
-The candidate-support contract transports exactly: all 18 sources retain 128 requested,
-112 assigned, 16 no-candidate, 16 forced and 96 multi-candidate queries with the same
-candidate-count histogram. Median winner reuse is also unchanged at 0.4643.
+Stage 3C-37 deterministically reproduced the original and disjoint rank-two source
+states, all 1,728 multi-candidate queries and the frozen Stage-3C-27 aggregate counts.
+The seven cases placed in the Stage-3C-27 `1e-8` near-tie bin have strict positive
+float64 age-one score margins of `4.42e-9`–`7.37e-9`. The runtime comparator uses
+`1e-12`, so none is a runtime tie and latest-on-tie changes no winner.
 
-The pooled age-one loss is instead localized to first-state recurrence composition.
-Same-first-state queries decline from 344 to 320. Applying the original panel's
-conditional selection rates to the new recurrence composition predicts 367.65 age-one
-selections, within 1.35 of the observed 369. Holding the original composition while
-using the new conditional rates predicts 387.38, essentially the original 387.
+The candidate directions are not duplicates. Their stored second coordinates differ by
+1,715–2,140 float32 ULPs, and their float64 normalized directions remain distinct.
+Direct float32 score recomputation is unstable for these nearly collinear vectors, but
+runtime scoring explicitly converts stored float32 coordinates to float64 first.
 
-The large local-step separation transports (200.2× versus 191.2×). The formal Stage
-3C-28 gate is nevertheless tripped because diagnostic ties rise from 1 to 6, lowering
-strict age-one wins from 386/387 to 363/369. The aggregate frozen assessments cannot
-resolve whether those five additional near-exact ties come from duplicated normalized
-directions, float32 quantization or the 1e-8 diagnostic tolerance.
+Under selector-consistent classification, strict geometry accounts for 100% of
+multi-candidate age-one selections in both panels. Stage 3C-35 therefore remains an
+untested crossing prediction stopped by a diagnostic classification mismatch, not a
+runtime tie-break mechanism.
 
 ## Frozen evidence boundary
 
-Stage 3C-36 does not authorize Stage 3C-28 or the crossing replication on the failed
-panel. It narrows the unresolved transport problem to query-level tie origin; no source,
-threshold, addressing, exposure or retention change is authorized.
+Stage 3C-37 does not rewrite the checksum-bound Stage-3C-27 or Stage-3C-35 artifacts and
+does not itself execute Stage 3C-28 or crossing replication. It authorizes a separate
+Stage 3C-38 workflow that applies the explicit selector-consistent qualification overlay
+while preserving the same disjoint panel, runtime comparator, addressing, exposure and
+crossing definition.
 
 ## Documentation and evidence map
 
@@ -79,6 +82,6 @@ threshold, addressing, exposure or retention change is authorized.
 | Current task and queue | `docs/PROJECT_STATUS.md` |
 | Active scientific issues | `docs/SCIENTIFIC_ISSUES.md` |
 | Frozen Stage 3C results | `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` |
-| Current iteration record | `docs/迭代/v0.152_D1-Z_主体图Stage3C36_几何迁移根因分解.md` |
-| Executable decision contract | `protocols/decisions/subject_graph_vm_stage3c36_geometry_transport_v1.json` |
+| Current iteration record | `docs/迭代/v0.153_D1-Z_主体图Stage3C37_近似并列来源审计.md` |
+| Executable decision contract | `protocols/decisions/subject_graph_vm_stage3c37_tie_origin_v1.json` |
 | Repository execution rules | `AGENTS.md` |

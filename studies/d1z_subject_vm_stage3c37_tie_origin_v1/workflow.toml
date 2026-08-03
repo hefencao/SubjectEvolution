@@ -1,0 +1,51 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c37_tie_origin_v1"
+title = "D1-Z Subject VM Stage 3C-37 near-exact tie origin audit"
+
+[parameters.config]
+type = "path"
+default = "configs/mvp_short_subject_vm_stage3c25_winner_basin_audit.json"
+description = "Frozen ten-node Stage-3C-23 source configuration."
+
+[parameters.reference_seeds]
+type = "csv-int"
+default = "12301,12302,12303,12304,12305,12306,12307,12308,12309"
+description = "Frozen original source panel."
+
+[parameters.replication_seeds]
+type = "csv-int"
+default = "12401,12402,12403,12404,12405,12406,12407,12408,12409"
+description = "Frozen disjoint source panel."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c37_tie_origin_v1/final"
+description = "Materialized frozen inputs, deterministic checkpoint replays and Stage-3C-37 outputs."
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c37_tie_origin_v1_results.zip"
+description = "Checkpoint-capable Stage-3C-37 result and evidence bundle."
+
+[steps.replay-reference-rank2]
+description = "Reconstruct original-panel rank-two checkpoints and require frozen source-state hashes during assessment."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{reference_seeds}", "--source-ticks", "2", "--horizon-ticks", "8", "--bootstrap-subjects", "16", "--rollback-after-ticks", "3", "--bootstrap-target-family", "edge_forward_gate", "--bootstrap-edge-carrier-enabled", "--bootstrap-readout-input-port", "11", "--bootstrap-second-readout-input-port", "7", "--association-tie-break", "latest", "--association-candidate-limit", "1", "--backend", "cpu", "--output", "{analysis_root}/replay/reference_rank2", "--overwrite"]
+
+[steps.replay-replication-rank2]
+description = "Reconstruct disjoint-panel rank-two checkpoints under the identical frozen contract."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{replication_seeds}", "--source-ticks", "2", "--horizon-ticks", "8", "--bootstrap-subjects", "16", "--rollback-after-ticks", "3", "--bootstrap-target-family", "edge_forward_gate", "--bootstrap-edge-carrier-enabled", "--bootstrap-readout-input-port", "11", "--bootstrap-second-readout-input-port", "7", "--association-tie-break", "latest", "--association-candidate-limit", "1", "--backend", "cpu", "--output", "{analysis_root}/replay/replication_rank2", "--overwrite"]
+
+[steps.assess-stage3c37]
+description = "Resolve every Stage-3C-27 near tie against the actual runtime comparator and stored coordinates."
+command = ["se-subject-vm-stage3c37-tie-origin", "--reference-frozen-study-report", "{analysis_root}/inputs/reference/frozen_rank2_study_report.json", "--reference-replay-study-report", "{analysis_root}/replay/reference_rank2/study_report.json", "--reference-stage3c27", "{analysis_root}/inputs/reference/stage3c27_token_kinematics.json", "--replication-frozen-study-report", "{analysis_root}/inputs/replication/frozen_rank2_study_report.json", "--replication-replay-study-report", "{analysis_root}/replay/replication_rank2/study_report.json", "--replication-stage3c27", "{analysis_root}/inputs/replication/stage3c27_token_kinematics.json", "--stage3c36", "{analysis_root}/inputs/stage3c36_geometry_transport.json", "--output", "{analysis_root}/stage3c37_tie_origin.json", "--summary-output", "{analysis_root}/stage3c37_study_summary.json", "--diagnostic-report", "{analysis_root}/stage3c37_diagnostic_report.md"]
+
+[steps.pack-results]
+description = "Package frozen inputs, exact replay checkpoints and the checksum-bound tie-origin resolution."
+requires_json = [
+  { path = "{analysis_root}/stage3c37_tie_origin.json", field = "replay_identity.stage3c27_aggregate_counts_exactly_reproduced", equals = true },
+  { path = "{analysis_root}/stage3c37_tie_origin.json", field = "cross_panel_resolution.runtime_comparator_tie_count", equals = 0 },
+  { path = "{analysis_root}/stage3c37_tie_origin.json", field = "cross_panel_resolution.latest_tie_break_changed_winner_count", equals = 0 },
+  { path = "{analysis_root}/stage3c37_tie_origin.json", field = "cross_panel_resolution.selector_consistent_stage3c28_prerequisite_passed_in_both_panels", equals = true },
+  { path = "{analysis_root}/stage3c37_tie_origin.json", field = "permanent_parameter_retention_authorized", equals = false }
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--analysis-root", "{analysis_root}", "--runtime-root", "{analysis_root}/replay/reference_rank2", "--runtime-root", "{analysis_root}/replay/replication_rank2", "--include-checkpoints", "--required-file", "protocols/decisions/subject_graph_vm_stage3c37_tie_origin_v1.json", "--output", "{output}"]

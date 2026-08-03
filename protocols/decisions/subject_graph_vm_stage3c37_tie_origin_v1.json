@@ -1,0 +1,62 @@
+{
+  "schema": "se-subject-vm-stage3c37-tie-origin-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c37-tie-origin-v1",
+  "status": "frozen-read-only-selector-consistent-qualification-correction",
+  "project_version": "0.153.0",
+  "git_title": "[MAIN-EXP] D1-Z: resolve near-exact tie origin against runtime semantics",
+  "question": "Do the seven Stage-3C-27 1e-8 near-tie cases reflect actual runtime latest-on-tie selection, duplicated normalized directions, stored-coordinate quantization collapse, or only a wider analysis tolerance?",
+  "input_identity": {
+    "reference_source_seeds": [12301, 12302, 12303, 12304, 12305, 12306, 12307, 12308, 12309],
+    "replication_source_seeds": [12401, 12402, 12403, 12404, 12405, 12406, 12407, 12408, 12409],
+    "panels_are_disjoint": true,
+    "frozen_stage3c27_assessments_required": true,
+    "frozen_stage3c36_lineage_required": true,
+    "deterministic_rank2_checkpoint_replay_required": true,
+    "source_state_hash_identity_required": true
+  },
+  "fixed_contract": {
+    "stored_thought_token_dtype": "float32",
+    "runtime_score_arithmetic": "float64 over stored float32 coordinates",
+    "runtime_score_tie_atol": 1e-12,
+    "historical_stage3c27_diagnostic_atol": 1e-8,
+    "runtime_tie_break": "latest",
+    "runtime_selection_change": false,
+    "diagnostic_tolerance_change": false,
+    "source_replacement": false,
+    "crossing_replication_in_same_stage": false,
+    "historical_artifact_rewrite": false
+  },
+  "observed_result": {
+    "multi_candidate_query_count_across_both_panels": 1728,
+    "stage3c27_diagnostic_near_tie_count": 7,
+    "runtime_comparator_tie_count": 0,
+    "latest_tie_break_changed_winner_count": 0,
+    "stored_normalized_direction_duplicate_count": 0,
+    "diagnostic_tolerance_only_count": 7,
+    "minimum_positive_float64_age_one_margin": 4.423416188892304e-9,
+    "maximum_positive_float64_age_one_margin": 7.370758559055446e-9,
+    "minimum_second_coordinate_delta_ulp_count": 1715,
+    "maximum_second_coordinate_delta_ulp_count": 2140,
+    "reference_selector_consistent_strict_fraction": 1.0,
+    "replication_selector_consistent_strict_fraction": 1.0,
+    "selector_consistent_stage3c28_prerequisite_passed_in_both_panels": true,
+    "assessment_sha256": "661c4dba00bf1dc73a204bcf60fe564f677b80a25a15947f58f57b911a09722a"
+  },
+  "frozen_interpretation": {
+    "stage3c35_stop_was_caused_by_runtime_tie_break": false,
+    "stage3c35_stop_was_caused_by_duplicate_normalized_directions": false,
+    "stage3c35_stop_was_caused_by_stage3c27_diagnostic_classification_mismatch": true,
+    "stage3c35_crossing_prediction_tested": false,
+    "stage3c35_crossing_prediction_refuted": false,
+    "corrected_disjoint_panel_replication_authorized_next": true,
+    "next_boundary": "Execute the frozen disjoint-panel Stage-3C-28 through crossing-replication chain through the checksum-bound Stage-3C-37 selector-consistent qualification overlay without changing sources, addressing, exposure, horizon, runtime comparison or crossing definitions."
+  },
+  "interpretation_boundary": {
+    "value_semantics": false,
+    "causal_credit_quality_proven": false,
+    "automatic_keep_or_revert_authorized": false,
+    "learned_weight_authorized": false,
+    "permanent_parameter_retention_authorized": false,
+    "subjecthood_claim_authorized": false
+  }
+}

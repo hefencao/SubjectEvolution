@@ -19,7 +19,7 @@ The labels in the **type** column are task/progress types, not scientific outcom
 | 3C-10–3C-13 | `[MAIN-EXP]` diagnostic chain | Update visibility, independent-source adequacy, branch-horizon coverage, and temporary-exposure adequacy were separated. Sparse downstream facts were not converted into learning claims. |
 | 3C-14–3C-16 | `[MAIN-EXP]` reachability chain | Parameter-family, local-sensitivity, and eligibility-carrier reachability were audited without treating reachability as causal-credit quality. |
 
-## Stage 3C-17 through 3C-34
+## Stage 3C-17 through 3C-37
 
 | Stage | Type | Controlled change | Frozen finding | Not authorized |
 |---|---|---|---|---|
@@ -33,7 +33,7 @@ The labels in the **type** column are task/progress types, not scientific outcom
 | 3C-24 | `[MAIN-EXP]` read-only | Reconstruct rank-two opportunity, winner, and margin. | Exact ties are removed, but historical identity coverage remains bounded and winner margins can be small. | Equating non-tied scores with better evidence. |
 | 3C-25 | `[MAIN-EXP]` read-only | Winner reuse versus normalized margin and opportunity. | Reused winners are not explained solely by the smallest margins and occur across distinct query vectors. | Treating reuse as persistence value. |
 | 3C-26 | `[MAIN-EXP]` read-only | Remove forced source-boundary assignments and normalize age opportunity. | Age-one occupancy persists beyond boundary forcing; raw opportunity count does not fully explain reuse. | Age penalty or randomized allocation. |
-| 3C-27 | `[MAIN-EXP]` read-only | Visible-token trajectory kinematics. | 386/387 multi-candidate age-one selections are strict geometry wins; latest tie-break is nearly irrelevant. | Recency-value interpretation. |
+| 3C-27 | `[MAIN-EXP]` read-only | Visible-token trajectory kinematics. | Under its frozen `1e-8` diagnostic bin, 386/387 multi-candidate age-one selections are strict and one is near-tied; Stage 3C-37 later resolves that binned case as a strict runtime margin. | Recency-value interpretation. |
 | 3C-28 | `[MAIN-EXP]` read-only | Discrete-state and recurrent-basin audit. | First-coordinate states are shared, second coordinate is strongly subject anchored, and same-state winners are enriched without exact token replay. | Global phase or exact-memory claim. |
 | 3C-29 | `[MAIN-EXP]` read-only | Condition transition occupancy on current-state opportunity. | Apparent transition-match enrichment mostly disappears; nearest same-state second-coordinate candidate wins every available comparison. | Transition replay claim. |
 | 3C-30 | `[PARAM-EXP]` read-only scale panel | Second-coordinate weight `0, 0.1…10`. | Zero weight changes winner identity without changing state basin; all positive weights preserve nearest-second-coordinate ordering. | Fine-tuned optimum or learned weight claim. |
@@ -43,17 +43,25 @@ The labels in the **type** column are task/progress types, not scientific outcom
 | 3C-34 | `[MAIN-EXP]` read-only crossing audit | Reuse all eight matched-horizon arms and localize exposure-by-alignment divergence at action potentials, sampled actions, Objective-Fact events, and aggregation. | All nine sources contain continuous Subject-VM decision divergence; only 12305 and 12308 have alignment-specific sampled-action crossings, followed by 12 differential Objective-Fact events, and these exactly reproduce the two nonzero Stage 3C-33 sources. Seed 12307 has an alignment-common action crossing removed by the cross-mode contrast. | Exact numeric threshold margin, value, correct credit, keep/revert, learning, or retention. |
 | 3C-35 | `[MAIN-EXP]` disjoint-source qualification | Rebuild the frozen rank-two chain on seeds 12401–12409 before testing the preregistered crossing classifier. | The panel fails the Stage 3C-27 geometry prerequisite: strict age-one geometry falls from 386/387 to 363/369 and latest-tie use rises from 1/864 to 6/864. Stage 3C-28 and later are not run; the crossing prediction remains untested. | Seed replacement, gate relaxation, crossing claims, value, learning, or retention. |
 | 3C-36 | `[MAIN-EXP]` read-only transport decomposition | Compare frozen Stage 3C-25–27 outputs across the original and disjoint panels. | Candidate support and winner reuse transport exactly; the age-one occupancy loss is predicted by first-state recurrence composition, while five extra near-exact ties directly trip the formal gate. Local-step scale separation remains about 200×. | Treating aggregate tie counts as resolved mechanism, changing tolerance, or resuming crossing replication. |
+| 3C-37 | `[MAIN-EXP]` read-only selector audit | Replay both frozen rank-two panels and resolve every Stage-3C-27 near-tie query against stored coordinates and actual runtime ordering. | All seven `1e-8` diagnostic cases have strict positive float64 age-one margins (`4.42e-9`–`7.37e-9`), distinct normalized directions and second-coordinate differences of 1,715–2,140 float32 ULPs. The runtime `1e-12` comparator sees zero ties across 1,728 multi-candidate queries, and latest-on-tie changes no winner. Both panels have selector-consistent strict fraction 1.0. | Rewriting historical artifacts, changing runtime tie semantics, or treating qualification correction as crossing replication. |
 
 ## Current frozen chain
 
-The original Stage 3C-23→34 chain remains valid only for its qualified source panel.
-Stage 3C-35 shows that the Stage 3C-27 geometry prerequisite does not automatically
-transport to a disjoint panel, so the later crossing taxonomy cannot yet be treated as
-a general source-level classifier.
+The original Stage 3C-23→34 result remains frozen for seeds 12301–12309. Stage 3C-35
+stopped the disjoint panel because the historical Stage-3C-27 analysis grouped seven
+small positive margins into a `1e-8` near-tie category and then described that category
+as latest-tie use. Stage 3C-37 proves that none is a runtime tie: the actual selector
+uses float64 scores and a `1e-12` comparator, and latest-on-tie changes no winner.
+
+The Stage-3C-34 crossing prediction therefore remains untested rather than refuted or
+qualified. The disjoint panel may proceed only through the explicit Stage-3C-37
+selector-consistent qualification overlay; historical checksum-bound artifacts remain
+unchanged.
 
 ## Next authorized evidence boundary
 
-Stage 3C-37 may inspect query-level raw score margins and visible-token directions from
-the same frozen rank-two panel to resolve the five additional near-exact ties. It may
-not change the diagnostic tolerance or selection semantics before measuring them, and
-may not resume Stage 3C-28 or crossing replication on the failed panel.
+Stage 3C-38 may execute the preregistered Stage-3C-28 through crossing-replication chain
+on seeds 12401–12409 using the frozen runtime and the Stage-3C-37 qualification overlay.
+It may not select sources, change exposure, addressing, horizon, crossing definitions or
+runtime score comparison, and may not interpret a zero-positive panel as non-empty
+replication support.
