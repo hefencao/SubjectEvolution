@@ -97,16 +97,18 @@ Do not write provisional or expected results into durable active documents.
 
 | Content | Required location |
 |---|---|
+| Project mission and interpretation limits | `docs/PROJECT_CHARTER.md` |
+| Durable process and inference rules | `docs/PROJECT_GOVERNANCE.md` and this file |
 | Current structural contract | `docs/ARCHITECTURE.md` |
+| Current Subject Graph VM mechanism contract | `docs/PARTITIONED_SUBJECT_GRAPH_VM.md` and `protocols/decisions/` |
 | Current typed task tree | `docs/PROJECT_STATUS.md` |
 | Active unresolved scientific question | `docs/SCIENTIFIC_ISSUES.md` |
 | Frozen validated result | `docs/results/` |
 | Current iteration design and work log | `docs/迭代/` |
-| Durable process/inference rule | `docs/PROJECT_GOVERNANCE.md` and this file |
 | Versioned delivered change | `docs/CHANGELOG.md` |
 | Executable experiment identity | `protocols/decisions/` and `studies/*/workflow.toml` |
 
-`ARCHITECTURE.md` is not a version diary. `SCIENTIFIC_ISSUES.md` contains unresolved
+`PROJECT_CHARTER.md`, `PROJECT_GOVERNANCE.md`, `ARCHITECTURE.md`, and `PARTITIONED_SUBJECT_GRAPH_VM.md` are not version diaries. `SCIENTIFIC_ISSUES.md` contains unresolved
 questions only. `PROJECT_STATUS.md` is current state only. Frozen results are summarized
 once in `docs/results/` rather than copied into several active documents.
 

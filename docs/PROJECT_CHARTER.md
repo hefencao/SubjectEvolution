@@ -1,704 +1,326 @@
-# 嵌套主体存在、生态分化与社会演化模拟项目总规范
+# SubjectEvolution project charter
 
-版本：v0.4
-性质：理论、科学实验与工程总设计
-状态：更新后的立项基线
+Revision: **2**
+Normative review: **v0.154**
+Role: long-lived scientific mission, scope, and non-negotiable evidence boundaries.
 
----
+This charter is intentionally independent of the current experiment number. Current work,
+open questions, frozen results, and implementation details belong in the documents listed in
+Section 12.
 
-## 1. 项目定位
+## 1. Mission
 
-本项目构建一个大规模、可演化、可干预、可复现的主体存在模拟系统，用于研究物理承载体、遗传结构、生态型、社会结构、制度与信息结构如何在存在约束下形成、竞争、嵌套、整合和偏移。
+SubjectEvolution builds a large-scale, evolvable, intervenable, and reproducible simulation
+for studying how physical carriers, heritable structures, ecological differentiation, social
+organization, institutions, information structures, and nested candidate subjects may arise,
+compete, persist, merge, split, and shift under existence constraints.
 
-项目不预先认定圆球、基因、生态型、群体或制度必然是主体。圆球是基础物理承载体；遗传谱系、身体连续性、功能模块、生态位结构、社会关系、稳定群体、公共设施、文化和制度均作为候选结构，由长期轨迹与反事实干预评估其持续性、因果控制和利益边界。
+The project does not assume that an entity row, body, lineage, ecological type, group,
+institution, or information template is automatically a subject. Each is only a candidate
+structure. Persistence, causal control, continuation boundaries, and counterfactual effects
+must be established from trajectories and interventions.
 
-本项目的主问题更新为：
+The durable research questions are:
 
-1. 多维环境约束能否选择出稳定且可遗传的生物性状分化；
-2. 分化后的实体能否占据不同生态位，并形成互补、竞争、依赖、寄生或共生关系；
-3. 生态关系和信息限制能否进一步推动社会结构形成；
-4. 社会结构是否能形成高于成员简单叠加的持续状态与因果控制；
-5. 主体的延续中心、控制中心和利益维护中心是否会在身体、谱系、社会、制度和信息结构之间迁移；
-6. 观察、采样、容量限制、代谢成本和实现架构如何影响上述结论。
+1. Can multidimensional physical constraints select stable and heritable differentiation?
+2. Can differentiated carriers occupy distinct niches and create competition, complementarity,
+   dependence, parasitism, or symbiosis?
+3. Can ecological and informational constraints generate persistent social organization?
+4. Can higher-level structures preserve state and exert causal control beyond a simple sum of
+   members?
+5. Can continuation, control, and maintenance boundaries move among bodies, lineages, groups,
+   institutions, and information structures?
+6. How do observation, finite capacity, metabolism, implementation choices, and experimental
+   design limit those conclusions?
 
----
+## 2. Primary causal programme
 
-## 2. 更新后的总体因果链与优先级
-
-项目采用以下主因果链：
+The main programme follows this ordering:
 
 ```text
-多维环境与时空变化
-→ 可遗传变异、表达与容量分配
-→ 生物性状分化
-→ 生态位形成与生态关系
-→ 信息需求、互补收益和依赖
-→ 社会关系与候选社会主体
-→ 多层控制与主体偏移
+multidimensional environment and temporal forcing
+→ heritable variation, expression, and capacity allocation
+→ embodied trait differentiation
+→ niche formation and ecological relations
+→ information demand, complementarity, and dependence
+→ social organization and higher-level candidate subjects
+→ nested control and subject-boundary shift
 ```
 
-环境和生态位不是社会系统之后的附属背景，而是社会形成前的主要选择条件。因此，开发优先级调整为：
+Environment and ecological differentiation are prerequisites, not decorative context. Until
+those layers have qualified evidence, complex social controllers, general recursive subject
+structures, and agent-level reinforcement learning are not the default mainline.
 
-1. **有效环境多元性；**
-2. **实体性状、功能和容量分化；**
-3. **生态位与生态相互作用；**
-4. **候选主体身份和持续结构；**
-5. **社会公共状态与有限高层控制；**
-6. **主体偏移、制度、信息寄生与任意嵌套。**
+## 3. Ontology and evidence layers
 
-在前四项没有得到可重复证据之前，不把更复杂社会控制器、Hero 强化学习或任意递归主体图作为主线。
+### 3.1 Physical structures and candidate subjects are distinct
 
-### 2.1 多回路环境与瓶颈边界
+The project maintains separate concepts for:
 
-环境多元性不能只由资源维度或 group 数量定义。一个能够承载结构化主体的环境，至少需要多个可独立到达但仍存在互补依赖的物质回路，使多个群体有机会在同一世界中形成、维持和分化。增加回路时应优先重新分配共享物理机会，并保持总通量、角色中立和基因中立，而不是给特定群体、谱系或能力补贴。
+- physical entities, bodies, resources, terrain, links, and facilities;
+- candidate subjects, membership, lineage, control, dependence, replication, overlap, and
+  nesting.
 
-社会结构证据还必须通过人口瓶颈与谱系广度检查。少数 founder 谱系在深瓶颈后扩张，即使产生 group 标签、交换或短暂分工，也不能自动视为可复制的多元社会结构。正式环境资格必须使用独立 seeds，并要求每个 seed 同时通过人口存续、谱系广度、物理异质、真实内部依赖和多个持续分工群体门。单 seed 只允许用于共享环境参数调试。
+Physical row ID, entity ID, group label, ecological label, lineage label, and subject ID must
+not be treated as interchangeable.
 
----
+### 3.2 Objective facts are not value
 
-## 3. 核心理论命题
+The world records objective processes and consequences. It does not label resource receipt,
+prediction accuracy, protection, reproduction, injury, cooperation, or conflict as internally
+positive or negative.
 
-### 3.1 存在约束
-
-世界只规定客观过程：
-
-- 资源产生、转化、耗散和空间迁移；
-- 温度、湿度、通行成本、遮蔽和信号条件；
-- 结构损伤、修复、维护和退化；
-- 信息传播、失真、记忆和遗忘；
-- 模块表达、容量分配、复制、继承和失传；
-- 连接建立、维持与断裂；
-- 出生、死亡、解体、重组和环境改造。
-
-世界不直接告诉任何候选主体“什么有利于你”，也不按设计者命名的角色发放奖励。
-
-### 3.2 利益的操作性定义
-
-对外部科学评价而言，结构 \(X\) 的利益定义为某一变化对其未来延续概率的实际影响：
+External scientific analyses may estimate continuation effects, for example by paired
+intervention:
 
 \[
 I_X(a,H)=P(P_X(t+H)>0\mid do(a))-P(P_X(t+H)>0\mid do(a_{baseline}))
 \]
 
-这是观察者用于审计功能、适应和主体边界的操作性定义，不是注入实体内部的奖励、效用或主观价值函数。实体内部哪些状态形成吸引、排斥和行动倾向，应由可演化结构在真实物理后果下形成。
+This is an observer-side operational quantity. It is not permission to inject reward, utility,
+trust, loyalty, hostility, knowledge value, or a scalar subjecthood score into the runtime.
 
-适应度、功能收益、社会收益和主体性结论必须通过长期结果、配对分支或其他可审计因果设计获得，不能由模块名称、策略输出、人工价值通道或单次相关性直接宣称。
+### 3.3 Five causal stages remain separate
 
-### 3.3 分化的操作性定义
+Every claim must distinguish:
 
-“分化”不是简单的基因方差、参数差异或人为类型标签，而是同时满足若干条件的持续差异：
+1. objective world state;
+2. information available to a candidate structure;
+3. control or action proposal;
+4. executed physical action and settlement;
+5. later evaluation of ecological, continuation, or control effects.
 
-- 差异可遗传或能跨时间稳定保持；
-- 差异进入实际表型、容量、代谢或世界交互；
-- 差异导致可测的环境使用、行为或生态后果；
-- 差异具有成本、机会成本或物理约束；
-- 差异在多个谱系或重复实验中可识别；
-- 通过表型中和、模块消融或环境反转能够验证其因果作用。
+A later consequence cannot validate its own initiating action in the same causal phase.
 
-### 3.4 生态位的操作性定义
+## 4. Fixed world kernel and evolvable structures
 
-生态位不是预设职业，而是某类可持续结构在环境状态、资源组合、空间尺度、时间相位和生态关系上的实际占用与作用分布。
+The world kernel defines versioned physical interfaces, conservation rules, observation ports,
+actuator ports, conflict settlement, and generic operators. Runtime code generation and
+per-entity custom kernels are outside the main design.
 
-生态位分化至少应表现为：
+Within that kernel, evolution may alter heritable parameters, expression, routing, capacity,
+module copy number, development, topology where authorized, and lifecycle state.
 
-- 不同表型在不同环境状态下具有不同延续结果；
-- 不同表型使用或改变环境的方式不同；
-- 存在不能由单一总体资源轴解释的权衡；
-- 环境反转后，不同表型的相对优势发生可重复变化；
-- 生态关联不能仅由亲缘聚集、空间邻近或测量分区解释。
+A fixed kernel is an explicit modelling prior. It must be documented, ablated when relevant,
+and reflected in the scope of every conclusion.
 
-### 3.5 功能新颖性的层级
+## 5. Environment and ecological qualification
 
-必须区分：
+### 5.1 Effective environmental diversity
 
-1. **参数分化**：同一通路强度、阈值或权重发生变化；
-2. **组合功能分化**：固定输入、变换和输出原语被重新组合，产生祖先中未表达的功能通路；
-3. **具身功能分化**：新的组合改变传感范围、储存、信号、转化、连接、移动或其他物理交互；
-4. **新世界能力**：增加此前不存在的物理作用类型。
+Environmental diversity is not the number of resource fields. Qualified diversity requires
+constraints that cannot all be solved by one scalar strategy. Useful axes may differ in:
 
-通用张量算子主要支持第 1–3 层。第 4 层仍需要世界内核提供新的守恒关系和交互语义，不能由路由权重自行创造。
+- spatial generation and correlation length;
+- temporal cycle, phase, diffusion, and dissipation;
+- storage versus immediate use;
+- movement, exposure, repair, and defence trade-offs;
+- observation and communication media;
+- conversion chains, by-products, and local infrastructure;
+- non-substitutable materials or opportunities.
 
----
+Independent fields may be positively correlated, negatively correlated, or nearly independent
+in a particular configuration. No universal terrain, danger, or signal scalar is assumed.
 
-## 4. 总体架构原则
+### 5.2 Environment gate before ecological or social claims
 
-### 4.1 双图分离
+Before interpreting differentiation, niches, or social function, the environment must show:
 
-必须维护：
+- persistent nontrivial variation on relevant spatial and temporal scales;
+- viable turnover and replacement rather than a temporary founder rebound;
+- real material, informational, or processing constraints;
+- opportunity for more than one sustainable strategy without diversity subsidies;
+- robustness across independent source histories appropriate to the claim.
 
-- **物理实体图**：位置、身体、模块、资源、地形、连接和设施；
-- **候选主体图**：承载、成员、谱系、控制、依赖、复制、嵌套和重叠关系。
+A single source may debug shared physical parameters. It cannot by itself authorize a frozen
+selection, ecological, social, or subjecthood conclusion.
 
-物理实体 ID、群组 label、生态型 label 和主体 ID 不得直接等同。
+### 5.3 Physical value chain before role claims
 
-### 4.2 五阶段分离
+A repeated action or analyst-assigned label is not a function. A role-like claim requires a
+role-neutral chain:
 
-必须区分：
+```text
+physical pressure or trade-off
+→ observable signal
+→ transmission or persistence path
+→ actionable receiver interface
+→ measurable downstream consequence
+```
 
-1. 客观世界状态；
-2. 可获得观察；
-3. 控制提案；
-4. 实际执行；
-5. 对候选结构延续和生态后果的事后评价。
+Each link must exist without role reward, group privilege, or genotype-specific subsidy.
 
-### 4.3 固定内核、可演化结构
+## 6. Evolvable carriers, modules, and capacity
 
-禁止使用 `eval`、运行时动态代码生成或每个实体独立内核。世界交互、守恒关系、传感器端口、执行器端口和通用算子集合由版本化 schema 定义；实体通过遗传参数、表达门控、路由、容量分配、模块复制和发育状态在该固定内核中演化。
+### 6.1 Embodied differentiation
 
-这不等于“完全没有预设”。固定世界接口与算子基底是模型约束，必须显式记录、消融并与结论范围绑定。
+A heritable difference counts as scientific differentiation only when it:
 
-### 4.4 认知架构与具体认知分离
+- is expressed or otherwise persists;
+- changes physical capacity, behaviour, or world interaction;
+- incurs cost or opportunity cost;
+- produces reproducible ecological consequences;
+- survives appropriate neutralization, ablation, or environment reversal tests.
 
-项目可以预设通用认知架构，以降低从完全混沌图中演化出有效跨时程计算的搜索成本。允许的预设包括计算区域、更新周期、持续状态容量、延迟资格痕迹、通用算子、因果相位和显式成本。
+Unused genes, inert module slots, parameter variance, and designer labels are not sufficient.
 
-项目不得预设具体认知内容，包括固定利益维度、主观正负价值、trust 增减、朋友或敌人分类、知识价值、社会角色和 group 身份规则。
+### 6.2 Modular structure
 
-主体形成主线采用分区统一主体图：底层共享节点、边和路由身份；区域只作为早期塑形偏置，允许后续跨区连接、容量变化、节点迁移和功能重叠。知识、归因、利益和决策是同一图可能形成的功能角色，而不是必须互相调用的固定社会语义服务。
+The implementation may provide bounded module slots containing generic inputs, operators,
+routing, expression gates, outputs, capacity budgets, provenance, development, damage, and
+repair state. Module names must remain role-neutral.
 
-利益结构与决策结构可以高度重叠。必须分离的是因果时间：当前行动不能被其尚未发生的后果在同一阶段自我确认；真实后果只能通过受限资格痕迹影响未来状态和未来行动。
+Generic operators cannot bypass feasibility masks, conservation, resource accounting, signal
+propagation, arbitration, ownership, or physical settlement.
 
-### 4.5 结构、表达、使用和成本分离
+### 6.3 Structure, expression, use, and cost are separate
 
-每个可演化模块至少区分：
+For every evolvable capability, distinguish:
 
-- 遗传结构或模块拷贝；
-- 当前表达强度；
-- 当前物理容量；
-- 实际调用和使用量；
-- 结构维护成本；
-- 使用成本；
-- 发育与复制成本；
-- 占用质量、空间或其他资源的机会成本。
+- inherited structure;
+- developmental construction;
+- current expression;
+- active capacity;
+- actual use;
+- structural maintenance cost;
+- execution cost;
+- development and reproduction cost;
+- material, mass, space, or opportunity cost.
 
-不得仅用一个未校准的标量“脑税”代表所有成本。
+A single uncalibrated complexity tax must not stand in for all of these.
 
-### 4.6 确定性边界
+### 6.4 Healthy turnover and capability affordability
+
+A new capability must not charge random founders the full cost of a mature multi-gene
+combination before the combination can function. Capability studies require a qualified
+carrier substrate, an explicit maturation window, separate cost accounts, and a failure mode
+that stops before causal or evolutionary interpretation when the carrier collapses.
 
-固定形状张量计算有利于 GPU 批处理，但不能自动保证 CPU/GPU bitwise exact。严格确定性需要：
+The observation window for long-term qualification must cover the longest relevant external
+forcing period. A short phase-specific decline or rebound cannot by itself establish or reject
+steady behaviour.
 
-- 量化整数或明确舍入规则；
-- 固定归约顺序；
-- 明确溢出、饱和和截断语义；
-- 统一无状态随机键；
-- CPU reference 与设备语义验证；
-- 不把数学等价误写成位级等价。
+## 7. Cognitive and Subject Graph architecture policy
 
----
+The project may prescribe a general cognitive substrate because discovering every possible
+cognitive architecture is not the research target. Allowed priors include bounded regions,
+state retention, causal update phases, generic operators, routing costs, eligibility traces,
+and developmental accessibility.
+
+It must not prescribe concrete cognition such as fixed interests, semantic benefit channels,
+friend/enemy classes, trust rules, knowledge value, social roles, or group obedience.
 
-## 5. 多元环境与生态位基础
-
-### 5.1 有效环境多元性
-
-丰富环境不是简单增加更多同构资源，而是增加不能由同一策略同时解决的独立约束轴。
-
-优先环境轴包括：
-
-- 能量、材料、繁殖材料和信息机会的不可完全替代性；
-- 当前消耗与长期储存；
-- 移动效率与防御/结构质量；
-- 传感精度与暴露风险；
-- 信号距离与发送成本；
-- 温度或湿度耐受；
-- 地形通行、遮蔽和信号传播条件；
-- 不同资源的空间中心、扩散尺度和时间相位；
-- 资源转化链和副产物；
-- 局部环境改造与公共设施。
-
-### 5.2 环境生成原则
-
-不同环境维度应尽量具有不同的：
-
-- 空间生成核；
-- 相关长度；
-- 时间周期与相位；
-- 扩散和耗散率；
-- 局部容量；
-- 使用和转化规则。
-
-避免所有资源同步涨落或共享同一空间模板，否则多资源会退化成单一“总体充足度”轴。
-
-### 5.3 环境验收
-
-环境阶段的最低验收不是资源字段数量，而是：
-
-- 环境 signature 不再近似一维；
-- 至少两个独立环境成分具有稳定、非平凡方差；
-- 不同环境轴对不同表型产生可重复的相反或条件性选择；
-- 多个生态型可长期共存，而不是由人为多样性保护维持；
-- 结论在不同空间分区和地图尺度下仍可解释。
-
-具体数值阈值应在预实验后预注册。
-
----
-
-### 5.4 结构化环境与社会形成前置门
-
-在讨论遗传存续、生态位或社会演化前，环境必须先证明它能产生结构化依赖。
-资源字段数量、group label、单次协作或动作差异均不构成通过。最低门槛包括：
-
-- 原料供给、加工位置、时间相位或转化链形成不可由单体原地同时解决的约束；
-- 多个独立 seed 中保持可存续、多代替换的群体；
-- 群体内部真实发生物质、信息或加工依赖；
-- 至少两个群体在同一 seed 中持续表现成员功能分化；
-- 分化由实际物理流和成员连续性识别，不由职业标签、奖励或 group ID 命名。
-
-环境门通过前，单 seed 分析只能用于调试共享环境参数，不得触发基因修改、
-候选 ledger、paired 实验或选择解释。环境门通过本身也只允许冻结环境并设计
-下一阶段研究，不自动证明生态位、角色、适应或主体性。
-
-## 6. 可分化物理承载体
-
-实体具有固定最大容量的 SoA 存储，但有效表型由遗传、发育和当前状态共同决定。
-
-可分化维度包括：
-
-- 传感范围、精度、方向性和通道预算；
-- 运动功率、速度、转向和通行能力；
-- 外壳、修复、温度耐受和伤害权衡；
-- 多资源储存容量及其质量/空间成本；
-- 信息广播、接收、验证和干扰能力；
-- 连接、资源分享、资源转化和公共设施交互；
-- 繁殖投资、后代质量和发育延迟；
-- 工作记忆、长期知识、关系槽位和注意力容量。
-
-所有维度都必须进入实际世界语义，或明确标记为诊断性/中性占位。不得用无作用基因制造虚假分化。
-
----
-
-## 7. 模块化遗传、表达与通用算子
-
-### 7.1 模块化张量基因组
-
-每个实体拥有固定最大数量的遗传模块槽。模块可包含：
-
-- 表达门控；
-- 输入混合或稀疏选择；
-- 定点/量化局部变换；
-- 输出路由；
-- 容量和资源预算；
-- 模块拷贝来源与同源关系；
-- 发育、损伤和修复状态。
-
-模块名称不使用“采集者”“通讯员”“捕食者”等角色标签。角色必须由实际输入、输出、成本和环境后果事后识别。
-
-### 7.2 通用算子边界
-
-通用算子可以重新组合已有观察与执行器，但不能绕过：
-
-- 行动可行性掩码；
-- 物理守恒；
-- 资源扣除；
-- 信号传播；
-- 冲突解决；
-- 模块损伤与维护；
-- 执行器所有权和多主体仲裁。
-
-通用算子优先作为可遗传控制通路或具身模块的控制层，而不是在现有策略 residual 之外再叠加一个功能重复的第二策略网络。
-
-### 7.3 表达门控
-
-表达门控应允许真正关闭模块。若使用连续门控，必须同时定义：
-
-- 量化或阈值语义；
-- 关闭后是否跳过计算；
-- 关闭后仍支付哪些结构成本；
-- 开启/关闭的发育延迟；
-- 生命周期内可塑表达与遗传表达的区别。
-
-随机遗传翻转应称为表达或门控突变；只有与遗传序列分离、可受环境调节并具有一定跨代继承的状态，才称为表观遗传状态。
-
----
-
-## 8. 动态容量演化
-
-### 8.1 容量层次
-
-容量至少分为：
-
-1. 遗传最大容量；
-2. 发育期实际建成容量；
-3. 当前激活容量；
-4. 当前实际占用和访问量。
-
-工作记忆、长期知识、传感通道、关系槽位和模块数量可以分别演化，避免单一总容量基因把所有认知能力压成一个轴。
-
-### 8.2 成本层次
-
-容量成本至少包括：
-
-- 固定结构维护成本；
-- 实际读写、路由和推理成本；
-- 发育与复制成本；
-- 质量、体积或材料占用；
-- 更大结构导致的移动、修复或繁殖机会成本。
-
-成本可包含非线性项，但其尺度必须与世界资源和真实调用量校准。不得预设“大容量必然更聪明”，也不得保证复杂环境一定选择大容量。
-
-### 8.3 GPU 语义
-
-高层运行默认应在可用设备上执行真实 GPU 路径；没有可用设备时可以显式记录原因后回退 CPU。不得把请求了 `gpu`、验证了设备或运行了 CPU strict-reference 描述成 GPU 加速。
-
-CPU/GPU 科学语义校验由独立 parity 测试承担，而不是通过生产运行永久回退 CPU。parity 必须覆盖所有 checkpoint 权威状态、持久设备镜像、离散决策和当前已实现的语义族；新增权威状态应默认进入比较，除非明确证明其仅为后端缓存。
-
-固定最大槽位加有效掩码是允许的，但必须同时报告：
-
-- 物理显存容量；
-- 表型有效容量；
-- 实际使用容量；
-- 计算是否对关闭槽位真正跳过；
-- 是否按容量或模块桶进行批处理；
-- 代谢成本与实际计算成本是否一致。
-
----
-
-## 9. 结构突变与新功能化
-
-允许的结构突变包括：
-
-- 模块复制；
-- 模块删除或失活；
-- 表达门控改变；
-- 输入路由重联；
-- 输出路由重联；
-- 变换参数突变；
-- 容量重新分配；
-- 模块融合或拆分的后续扩展。
-
-模块复制必须记录同源来源和复制事件。复制不是免费保护机制：
-
-- 复制可产生剂量效应；
-- 复制增加基因组、发育或结构成本；
-- 复制槽位有限；
-- 重复模块可能竞争相同输入、执行器或资源；
-- “复制后自动提高突变率”不是默认规律，若采用必须作为显式、可消融机制。
-
-新功能化的证据至少包括：
-
-- 复制来源可追踪；
-- 后代模块在表达、路由或作用上与祖先分离；
-- 差异跨多个世代保持；
-- 对应模块消融后功能消失或显著减弱；
-- 功能在特定环境或生态关系下产生可重复后果。
-
----
-
-## 10. 生态关系与社会形成
-
-社会形成研究在分化与生态位阶段之后启动。社会候选结构的前置条件包括：
-
-- 实体间存在可持续的互补、依赖、竞争或共享风险；
-- 个体能力和容量并非近乎同质；
-- 单体不能低成本同时完成全部关键功能；
-- 信息和资源流具有局部限制；
-- 关系具有维护成本和退出可能；
-- 社会结构不是仅由空间邻近或亲缘标签定义。
-
-社会候选主体仍需满足：
-
-- 持续状态；
-- 成员边界；
-- 内部信息与协调；
-- 公共资源或公共记忆；
-- 对成员行动的独立控制贡献；
-- 合作剩余高于协调成本；
-- 删除公共状态或控制后出现可重复差异。
-
-生态型、关系群组和候选社会主体必须分开记录。生态位相似不等于社会主体，群组 label 也不等于主体身份。
-
----
-
-## 11. 候选主体与主体偏移
-
-候选主体继续采用物理图与主体图分离，并允许：
-
-- 身体连续性；
-- 遗传谱系；
-- 模块或可传播遗传结构；
-- 生态关系结构；
-- 社会群体；
-- 公共设施；
-- 制度和信息模板。
-
-只有具备独立持续状态、控制贡献、可干预边界或跨承载体延续的结构，才晋升为活跃候选主体。
-
-主体偏移研究必须晚于：
-
-1. 可重复的性状与生态位分化；
-2. 稳定候选主体 episode；
-3. 高层公共状态；
-4. 高层控制提案；
-5. 低层自主能力和高层依赖的可测变化。
-
----
-
-## 12. 主要诊断与指标
-
-### 12.1 环境
-
-- signature 有效维度；
-- 主成分方差；
-- 空间距离和时间周转；
-- 跨尺度一致性；
-- 资源和非生物轴的相关矩阵；
-- 环境状态可预测性。
-
-### 12.2 分化
-
-- 有效表型维度；
-- 模块表达和容量分布；
-- 模块同源谱系；
-- 复制、删除和失活率；
-- 表型—环境条件交互；
-- 跨世代保持；
-- 生态型有效数量；
-- 生态型间资源、空间和行为差异；
-- trade-off 曲线和环境反转结果。
-
-### 12.3 功能
-
-- 模块对行动和世界结果的实际贡献；
-- 使用成本、结构成本和净后果；
-- 模块消融效应；
-- 路由稀疏性和表达稳定性；
-- 祖先未表达组合的出现和持续。
-
-### 12.4 社会与主体结构
-
-- 群组 succession、成员继承和 split/merge；
-- 公共状态持续；
-- 高层控制贡献；
-- 删除公共状态或控制后的配对差异；
-- 生态互补与社会连接之间的关系；
-- 主体边界对算法、阈值和空间分区的稳健性。
-
----
-
-## 13. 实验阶段
-
-### D0：环境独立轴校准
-
-目标：使环境从近一维资源充足度升级为多轴约束。
-
-对照：
-
-- 同构资源；
-- 空间核分离；
-- 时间相位分离；
-- 不可替代用途；
-- 非生物条件加入；
-- 资源转化链。
-
-停止条件：环境仍近似单轴，或增加的轴只提高噪声而不产生条件性选择。
-
-### D1：容量分化
-
-目标：工作记忆、知识、关系、传感和储存容量在成本下演化。
-
-对照：
-
-- 固定容量；
-- 可遗传最大容量；
-- 可塑激活容量；
-- 线性与非线性成本；
-- 结构成本与使用成本分离。
-
-验收：容量差异进入实际使用和延续结果，不只是保留未使用槽位。
-
-当前实现状态：D1-A 已实现工作记忆维度、知识字节、关系槽位和知识注意力四类独立遗传容量，并区分结构维护、出生建成和既有机制使用成本。D1-D 已实现可遗传的离散资源梯度感知尺度，并区分维护、使用和发育成本，且提供保持基因与成本不变的半径一表型中和；该能力尚待多 seed 校准与后续生态设计。身体储存与生命周期内可塑容量仍未实现；在多 seed 长程和共享 checkpoint 中和证据完成前，D1 不视为经验验收。
-
-### D2：通用模块表达与路由
-
-目标：在固定世界接口中产生可遗传的组合功能分化。
-
-对照：
-
-- 无模块复制；
-- 仅参数突变；
-- 表达门控；
-- 输入重联；
-- 输出重联；
-- 完整组合。
-
-验收：至少出现可追踪、可消融、跨代保持的功能组合差异。
-
-### D3：复制、删除与新功能化
-
-目标：检验复制是否提高新功能产生率，而不是只增加冗余和成本。
-
-必须比较：
-
-- 无复制；
-- 复制但无额外突变率；
-- 复制加删除；
-- 复制加结构成本；
-- 不同槽位上限。
-
-### D4：生态位形成
-
-目标：确认多个生态型在多维环境中形成条件性优势和稳定共存。
-
-对照：
-
-- 环境轴反转；
-- 空间模板交换；
-- 资源用途交换；
-- 迁移成本改变；
-- 移除一种生态型；
-- 打乱表型—环境匹配。
-
-### D5：社会形成
-
-目标：检验分化与生态互补是否推动社会连接、公共状态和高层控制。
-
-必须包含同质实体对照、无互补环境对照、关系随机化、公共状态删除和高层控制关闭。
-
-### D6：主体偏移与嵌套
-
-只有在 D0–D5 通过后，才推进社会依赖、自主模块退化、制度、信息寄生、任意嵌套和 Hero。
-
----
-
-## 14. 科学验收标准
-
-主要结论必须包含：
-
-- 探索阶段至少 10 个随机种子，核心条件至少 30 个；
-- 配对随机性和可信 checkpoint；
-- 环境、容量、模块、复制和社会机制的独立消融；
-- 参数灵敏度和地图尺度检查；
-- 环境反转；
-- 表型中和和模块删除；
-- 失败比例、置信区间和重尾分位数；
-- 预注册主要指标；
-- 明确区分观察性关联、结构 provenance 和因果结论。
-
-不得把以下现象单独解释为分化或主体形成：
-
-- 基因方差；
-- 模块数量增加；
-- 高容量个体存活；
-- 单次聚类；
-- 群组 label 持续；
-- 环境—谱系相关；
-- 一个有趣的行为轨迹；
-- 设计者命名的“眼睛”“腺体”“育幼器官”等角色。
-
----
-
-## 15. 当前项目状态对立项方向的约束
-
-当前三 seed、1500 tick 结果显示：
-
-- 世界长期存续且文化传播稳定；
-- 候选群组具有部分成员继承，但仍频繁重组；
-- 多尺度 atlas 能检测空间差异；
-- 环境 signature 有效维度仍接近 1；
-- 社会—环境和谱系—环境存在关联，但不能识别因果或独立生态位；
-- 当前 environment process 与 danger evidence 关闭。
-
-因此，下一阶段的首要科学债务不是增加更多社会相关指标，而是：
-
-1. 提高环境有效维度；
-2. 使更多身体和认知容量成为有成本、可遗传、可消融的表型；
-3. 建立模块同源、表达、使用和功能贡献审计；
-4. 证明生态型和生态位，而后再研究社会主体。
-
----
-
-## 16. 非目标与解释边界
-
-当前阶段不追求：
-
-- 动态生成 Python/CUDA 代码；
-- 无边界的任意新物理功能；
-- 直接模拟意识；
-- 为角色、群体、谱系或复杂度提供奖励；
-- 自动保护多样性；
-- 用一个主体性总分替代分项证据；
-- 立即启用普通实体在线深度强化学习；
-- 在生态分化尚未建立时扩大社会控制权。
-
-项目追求的是：在固定、透明、可审计的物理和算子基底中，让遗传结构、表达、容量、功能组合、生态位和高层主体逐步成为可检验的演化结果。
-
-## 18. 健康周转基底与能力成本预算
-
-任何新遗传能力进入正式实验前，必须先在不包含该新能力的配置中证明承载生态具有健康的
-代际周转。最低前置证据包括绝对与相对存活规模、累计出生、存活后代、平均/最大世代、
-founder 替换以及相邻检查点之间不过快的持续衰退。
-
-健康检查必须区分三个层级：阶段性目标偏离只作为 advisory 记录；只有越过预注册的灾难性
-下限才能提前 hard stop；只有预注册的 required final 检查点能够授权下一阶段。不得把某个
-理想轨迹阈值同时当成即时终止阈值，否则早期过冲后的可恢复回落会被错误裁剪。正式阈值和
-物理底座参数必须在独立正式 seed 执行前冻结，内部校准 seed 不进入结论。
-
-能力的结构、使用、发育和组合成熟成本必须相对于已验证的单位主体能量通量给出预算。
-若正向收益依赖多个基因组合或若干代形成，效应窗口必须位于显式成熟期之后，不能在初始
-随机群体上立即收费并据此淘汰。快速下降仅可作为预先声明的快速筛选模式；该模式失败后
-直接停止，不进入配对、长程或演化解释。
-
-能力接入协议还必须显式区分单基因独立作用与组合依赖。随机初始群体的平均能力负担不得
-高于已资格化底座；组合未成熟状态只能支付低成本结构或渐进表达成本，不能提前支付完整
-成熟功能成本。预算必须分别约束结构维护、空闲使用、实际调用、发育、复制和事件性资源
-转移。能力 source 重新通过健康门后，只授权直接机制层的共享 checkpoint 消融；正式演化
-结论仍需独立 seed 和位于成熟窗口之后的观测期。
-
-## 19. 整合优先与定向调整原则
-
-当健康底座已经同时包含多个遗传机制和配套环境轴时，默认推进单位是完整主体—环境系统，而不是单个基因。应先运行有界多代 panel，观察哪些遗传坐标或功能块跨 seed 稀薄、集中、失去表达、失去使用或消失，再针对共享物理接口、成本成熟关系或环境机会缺失进行调整。不得自动为每个基因创建独立环境、逐项 paired 实验或候选审计。健康门只保证样本资格，不承担候选筛选职能。
-
-## 20. 环境时间尺度与稳态资格
-
-稳态或长期趋势的审计窗口必须由系统中已经配置的最长外部环境周期决定，不能固定使用少数最近窗口。若环境存在周期、准周期或慢速强迫，资格区间至少覆盖一个最长显式周期，并报告采样间隔、覆盖长度、人口均值、变异系数、归一化趋势和峰谷包络。短于环境周期的局部上升或下降必须保留为相位性 advisory，不能单独否决或授权长期稳态。
-
-该规则只修正观察尺度与物理时间尺度的匹配，不允许在看到结果后放宽既有健康、周转、谱系或多样性阈值。探索 seed 只能选择共享物理候选；正式资格必须使用新的独立 seed。通过单 seed source pilot 只授权新的独立整合 panel，不授权选择结论、逐基因修改或 paired 实验。
-
-## Physical value chain before social-function claims
-
-A repeated action or an analyst-assigned label is not a social function. Before
-claiming scout-like, guard-like, carrier-like or other differentiated function,
-the world must contain a complete role-neutral physical chain: a pressure or
-trade-off, an observable signal, a transmission path, an actionable receiver
-interface and a measurable downstream response. Each link must exist without a
-role reward or genotype-specific subsidy. Single-seed co-occurrence may debug
-that chain but cannot establish a stable role, causal value, selection or
-adaptation.
-
-## 5.8 资源竞争与信号介质边界
-
-资源被实际采集后造成的可用量下降本身就是竞争结果，不得在没有显式推挤、攻击、破坏或抢夺物理过程时，再把邻近采集重叠自动转换为身体伤害。竞争诊断应优先对应资源剩余量、耗竭率和可达性。信号传播必须受其物理介质约束；地形可以角色中性地改变扩散和衰减，但不得按预设消息价值、群体、基因或职业提供特权。
-
-同 seed、同配置在 CPU 与加速后端上不要求混沌轨迹相同，但若机制接线是否存在取决于后端，则该机制不得进入正式科学资格。
-
-
-
-## 5.9 独立环境物理轴
-
-移动阻力、海拔或视野、遮挡、声学或其他通信介质不得默认压缩成一个符号固定的 terrain 标量。环境字段只有在存在明确物理合同和证据时才能耦合；默认应允许正相关、负相关或近似独立。某地难以穿越但通信开放，或易于穿越但通信受阻，均必须可表达。特定地图中的相关性是配置事实，不是普遍规律，也不能直接作为信息价值、生态位或社会分工证据。
-
-直接冲突不能由邻近资源采集自动推导为身体伤害。若加入冲突，必须使用显式、版本化、默认禁用的执行器，并分别定义目标、范围、发起成本、失败、阻挡、结果、资源账本、关系更新、信号证据和后端语义。第一阶段优先低致死干扰，不以攻击奖励或群体身份加成制造角色。
-
-## 12. 分纪元主体形成与基线 checkpoint
-
-长期涌现与短期机制开发必须分离。项目采用版本化纪元：前一纪元只有在预注册进入合同通过后，才能冻结完整世界 checkpoint 作为下一纪元起点。纪元名称是证据边界，不是奖励、身份标签、控制器或政策提示。
-
-当前里程碑：
-
-1. **Epoch 0：生态承载体。** 允许研究结构化环境、交换、信息、关系和观测 group，但不推断主体性。
-2. **Epoch 1：实体主体雏形。** 关系必须来自延迟的实际成本、收益、回馈和后果学习，而不是固定 SHARE 成功增益；网络需跨世代、跨 seed 持续，并通过共享 checkpoint 中和。
-3. **Epoch 2：group 主体雏形。** group 自有规章必须能持续约束成员行动、跨成员更替保存，并在规章中和后改变 group 级延续或控制结果。
-
-合格大规模 checkpoint 可以作为后续小规模分支的共同基线。任何区域裁剪都必须声明边界干预、丢失的外部依赖和允许结论；不得把局部支系当作完整世界的无偏缩小版。
-
-## 13. 利益反馈关系与主体纪元
-
-关系不得由动作名称、成功标志、group 标签或设计者指定角色直接获得固定价值。关系更新必须来自实体自身实际承担的成本、获得的收益、遭受的损害和收到的回馈，并保留时间延迟、方向性与证据来源。不同后果通道应先分账观测，不能过早压缩成不可审计的总效用。
-
-物质回馈关系网络只是 Epoch 1 的必要前置，不是充分条件。实体主体雏形还要求网络跨多代和独立 seed 持续，控制空间邻近、亲缘和接触频率后仍能预测后续行动，并在共享 checkpoint 中和反馈时改变关系结构和延续结果。
-
-## 23. 多通道、多时程利益原则
-
-利益反馈网络是进入实体主体纪元的前置物理结构，不是进入 Epoch 1 后才补充的高级机制。因此即使仍处于 Epoch 0，也必须实现主体可实际经历的物质、信息、保护、冲突协助、机会成本和延迟生存后果，而不能用一个短窗口物质回馈率代替完整利益。
-
-各利益通道必须保持可分解、可审计和各自的时间尺度。短期物质交换、较长期知识验证、延迟保护效果和跨事件机会成本不得在事件发生时被压缩成一个不可解释总分。允许关系状态在结算时吸收多个通道，但原始证据、归因延迟、置信度和通道贡献必须保留，并能够分别中和。
-
-非物质利益不得由设计者直接赋值为奖励。知识价值至少需要经过后续实际结果验证；保护或协助价值至少需要对应原本可能发生的损失变化；长期收益必须有明确归因窗口和历史主体身份。验证信息准确并不自动证明信息被使用或提高了存活、繁殖或行动质量，这些更强结论必须通过共享 checkpoint 下的使用中和与后果对照建立。
+The current direction is a unified Subject Graph VM with shared node and edge identity and
+initially biased regions. Region labels are engineering priors, not evidence that a region
+contains memory, attribution, interest, policy, language, leadership, or any other named
+cognitive function.
+
+Detailed current semantics are owned by `docs/PARTITIONED_SUBJECT_GRAPH_VM.md` and the
+machine-readable decision protocols.
+
+## 8. Candidate subjects and epoch boundaries
+
+Candidate subjects may include bodies, lineages, module lineages, persistent ecological
+relations, groups, shared facilities, institutions, and information templates. Advancement to
+an active candidate requires evidence such as persistent state, boundary continuity, control
+contribution, intervention sensitivity, or continuation across carrier replacement.
+
+The programme uses evidence epochs rather than reward stages:
+
+- **Epoch 0 — ecological carriers:** physical, ecological, informational, and relational
+  structures may be studied without subjecthood claims.
+- **Epoch 1 — entity-subject candidates:** delayed consequences and persistent internal
+  organization may influence future action across replacement and independent sources.
+- **Epoch 2 — group-subject candidates:** group-owned state or rules persist across member
+  turnover and causally constrain group-level continuation or control.
+
+An epoch name is an evidence boundary. It is not a runtime identity, policy hint, reward, or
+controller.
+
+## 9. Scientific inference standards
+
+### 9.1 Replication unit and sample adequacy
+
+The ordinary replicate unit is the independently generated source checkpoint or another
+predeclared independent world history. Entities, events, windows, coordinates, and ticks within
+one source are dependent observations, not extra independent replicates.
+
+The charter does not prescribe one universal seed count. Exploratory, calibration, mechanism,
+and frozen inference studies have different support needs. Each frozen protocol must justify
+its panel size, rejection gates, paired structure, and the strength of conclusion it permits.
+
+### 9.2 Required causal controls
+
+A mechanism-level claim normally requires:
+
+- explicit manipulation and neutralization;
+- cost accounting where the mechanism is costly;
+- shared-checkpoint paired controls where applicable;
+- branch, configuration, and lineage identity verification;
+- support and exposure checks;
+- component-wise reporting without undeclared scalarization;
+- failure rates and source-balanced summaries;
+- a distinction among manipulation failure, prerequisite failure, export/identity error,
+  path-dependent effect, and replicated effect.
+
+Thresholds, source panels, horizons, exposure, and interpretation gates cannot be relaxed after
+observing results unless a separately typed protocol is declared.
+
+### 9.3 No automatic promotion from correlation
+
+The following are never sufficient on their own:
+
+- gene or parameter variance;
+- more modules or capacity;
+- survival of high-capacity entities;
+- one cluster or one interesting trajectory;
+- group-label persistence;
+- environment-lineage correlation;
+- score margin, attention rank, association identity, or internal update route;
+- analyst names such as scout, guard, leader, organ, institution, or memory.
+
+## 10. Programme stages
+
+The durable programme stages are:
+
+- **D0 — environmental axis qualification**;
+- **D1 — capacity, carrier, and Subject Graph substrate differentiation**;
+- **D2 — generic module expression and routing**;
+- **D3 — duplication, deletion, and functional novelty**;
+- **D4 — niche formation and ecological coexistence**;
+- **D5 — social organization and higher-level control**;
+- **D6 — subject-boundary shift and nesting**.
+
+These are scientific programme categories, not an append-only implementation timeline. Current
+subtasks and their status belong in `docs/PROJECT_STATUS.md`.
+
+## 11. Non-goals
+
+The current programme does not seek to:
+
+- simulate consciousness directly;
+- create unbounded new physics through runtime code generation;
+- reward complexity, diversity, roles, groups, or subjecthood;
+- protect multiple strategies by design;
+- collapse component evidence into one subjecthood score;
+- treat backend-specific wiring as a scientific mechanism;
+- grant permanent retention from a temporary or mixed-direction effect;
+- expand social control before ecological and lower-level causal prerequisites exist.
+
+## 12. Document authority
+
+| Question | Authority |
+|---|---|
+| Why the project exists and what it may claim | `PROJECT_CHARTER.md` |
+| Cross-version evidence and process rules | `PROJECT_GOVERNANCE.md` and `AGENTS.md` |
+| Current system structure | `ARCHITECTURE.md` |
+| Current Subject Graph VM mechanism semantics | `PARTITIONED_SUBJECT_GRAPH_VM.md` and `protocols/decisions/` |
+| Current typed work tree | `PROJECT_STATUS.md` |
+| Active unresolved scientific questions | `SCIENTIFIC_ISSUES.md` |
+| Frozen validated results | `docs/results/` |
+| Version history | `CHANGELOG.md` |
+| Current iteration work record | `docs/迭代/` |
+
+When these documents conflict, the more specific executable protocol controls the experiment;
+the charter controls allowed project-level interpretation. A current status entry or iteration
+note cannot silently amend this charter.

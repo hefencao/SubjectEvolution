@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.154.0
+
+- Rewrote `PROJECT_CHARTER.md` as the durable project mission and interpretation boundary, removing current-stage state, duplicate numbering, and universal fixed seed counts.
+- Rewrote `PROJECT_GOVERNANCE.md` as a cross-version governance contract rather than an append-only version check log.
+- Rewrote `PARTITIONED_SUBJECT_GRAPH_VM.md` as the current VM mechanism and safety contract; Stage 3C chronology remains in `docs/results/`.
+- Preserved the prior texts under `docs/history/v0.153/` as non-normative audit snapshots.
+- Added documentation-governance tests for charter, governance, and Subject VM authority boundaries.
+
 ## 0.153.0
 
 - Adds Subject VM Stage 3C-37 query-level near-exact tie origin audit over deterministic replays of both frozen rank-two source panels.

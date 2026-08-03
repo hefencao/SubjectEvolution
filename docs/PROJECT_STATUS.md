@@ -1,13 +1,13 @@
 # SE project status
 
-Version: **0.153.0**
+Version: **0.154.0**
 
 ## Current iteration identity
 
-- Progress type: **`[MAIN-EXP]` read-only mainline experiment**
-- Git title: **`[MAIN-EXP] D1-Z: resolve near-exact tie origin against runtime semantics`**
-- Git branch: **`main-exp/stage3c37-tie-origin-audit`**
-- Workflow profile: **`SCIENTIFIC-FREEZE` + versioned `RELEASE-HANDOFF`**
+- Progress type: **`[DOC-GOV]` documentation contract cleanup**
+- Git title: **`[DOC-GOV] docs: separate charter, governance, and Subject VM authority`**
+- Git branch: **`docs/v0.154-core-contract-cleanup`**
+- Workflow profile: **`SCOPED-FIX` + versioned `RELEASE-HANDOFF`**
 - Runtime/config/checkpoint change: **none**
 - Frozen scientific frontier: **Stage 3C-37**
 - Next authorized mainline experiment: **Stage 3C-38 disjoint-panel crossing replication through the selector-consistent qualification overlay**
@@ -45,43 +45,31 @@ SubjectEvolution
 │   └── [PARKED] optional full-policy-logit and categorical-draw trace export
 │
 └── [DOC-GOV] Documentation governance
-    └── [DONE] active-document authority, typed task tree and Git handoff contract
+    ├── [DONE] active architecture, issues, status, and result-ledger separation
+    └── [DONE] charter, governance, and Subject VM current-contract cleanup
 ```
 
 ## Current mainline decision
 
-Stage 3C-37 deterministically reproduced the original and disjoint rank-two source
-states, all 1,728 multi-candidate queries and the frozen Stage-3C-27 aggregate counts.
-The seven cases placed in the Stage-3C-27 `1e-8` near-tie bin have strict positive
-float64 age-one score margins of `4.42e-9`–`7.37e-9`. The runtime comparator uses
-`1e-12`, so none is a runtime tie and latest-on-tie changes no winner.
+Stage 3C-37 remains the latest frozen scientific result. It established that all seven
+Stage-3C-27 near-tie cases were analysis-bin classifications rather than runtime comparator
+ties. Under selector-consistent classification, both source panels retain strict bootstrap
+geometry, so the Stage 3C-34 crossing prediction remains untested on the disjoint panel.
 
-The candidate directions are not duplicates. Their stored second coordinates differ by
-1,715–2,140 float32 ULPs, and their float64 normalized directions remain distinct.
-Direct float32 score recomputation is unstable for these nearly collinear vectors, but
-runtime scoring explicitly converts stored float32 coordinates to float64 first.
-
-Under selector-consistent classification, strict geometry accounts for 100% of
-multi-candidate age-one selections in both panels. Stage 3C-35 therefore remains an
-untested crossing prediction stopped by a diagnostic classification mismatch, not a
-runtime tie-break mechanism.
-
-## Frozen evidence boundary
-
-Stage 3C-37 does not rewrite the checksum-bound Stage-3C-27 or Stage-3C-35 artifacts and
-does not itself execute Stage 3C-28 or crossing replication. It authorizes a separate
-Stage 3C-38 workflow that applies the explicit selector-consistent qualification overlay
-while preserving the same disjoint panel, runtime comparator, addressing, exposure and
-crossing definition.
+This documentation iteration does not alter that evidence, its checksums, or the authorization
+for Stage 3C-38.
 
 ## Documentation and evidence map
 
 | Need | Authoritative location |
 |---|---|
+| Project mission and interpretation limits | `docs/PROJECT_CHARTER.md` |
+| Durable governance and workflow rules | `docs/PROJECT_GOVERNANCE.md`, `AGENTS.md` |
 | Current system structure | `docs/ARCHITECTURE.md` |
+| Current Subject Graph VM semantics | `docs/PARTITIONED_SUBJECT_GRAPH_VM.md` |
 | Current task and queue | `docs/PROJECT_STATUS.md` |
 | Active scientific issues | `docs/SCIENTIFIC_ISSUES.md` |
 | Frozen Stage 3C results | `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` |
-| Current iteration record | `docs/迭代/v0.153_D1-Z_主体图Stage3C37_近似并列来源审计.md` |
-| Executable decision contract | `protocols/decisions/subject_graph_vm_stage3c37_tie_origin_v1.json` |
+| Current iteration record | `docs/迭代/v0.154_文档治理_总规范与主体图VM整理.md` |
+| Executable decision contracts | `protocols/decisions/` |
 | Repository execution rules | `AGENTS.md` |

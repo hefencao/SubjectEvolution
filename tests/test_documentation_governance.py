@@ -57,6 +57,8 @@ def test_agents_enforces_git_title_branch_and_document_placement() -> None:
         assert tag in text
     assert "[BRANCH-EXP]` must use an additional Git branch" in text
     assert "Do not write provisional" in text
+    assert "Project mission and interpretation limits" in text
+    assert "Current Subject Graph VM mechanism contract" in text
     assert "docs/WORKFLOW_PROFILES.md" in text
     assert "does not mandate a full release workflow" in text
     assert "se-workspace path patch" in text
@@ -93,6 +95,47 @@ def test_frozen_stage_results_live_in_dedicated_ledger() -> None:
     assert "Stage 3C-38 may execute" in text
 
 
+
+def test_project_charter_is_durable_and_not_current_status() -> None:
+    text = _text("docs/PROJECT_CHARTER.md")
+    assert "## 1. Mission" in text
+    assert "## 12. Document authority" in text
+    assert "当前项目状态" not in text
+    assert "探索阶段至少 10 个" not in text
+    assert "核心条件至少 30 个" not in text
+    assert not re.search(r"^##\s+(?:v0\.\d+|Stage 3C-\d+)", text, re.MULTILINE)
+    assert len(text.splitlines()) < 500
+
+
+def test_project_governance_is_cross_version_contract_not_version_diary() -> None:
+    text = _text("docs/PROJECT_GOVERNANCE.md")
+    assert "## 1. Governance cycle" in text
+    assert "## 11. Documentation authority" in text
+    assert not re.search(r"^##\s+v0\.\d+", text, re.MULTILINE)
+    assert "Frozen validated scientific results" in text
+    assert len(text.splitlines()) < 400
+
+
+def test_subject_vm_document_is_current_contract_not_stage_diary() -> None:
+    text = _text("docs/PARTITIONED_SUBJECT_GRAPH_VM.md")
+    assert "## 1. Architectural decision" in text
+    assert "## 13. Current capability boundary" in text
+    assert not re.search(r"^##\s+(?:v0\.\d+|Stage 3C-\d+)", text, re.MULTILINE)
+    assert "docs/results/SUBJECT_VM_STAGE3C_RESULTS.md" in text
+    assert "runtime score comparator is authoritative" in text
+    assert len(text.splitlines()) < 500
+
+
+def test_v0153_core_contract_snapshots_are_non_normative() -> None:
+    for name in (
+        "PROJECT_CHARTER.md",
+        "PROJECT_GOVERNANCE.md",
+        "PARTITIONED_SUBJECT_GRAPH_VM.md",
+    ):
+        text = _text(f"docs/history/v0.153/{name}")
+        assert text.startswith("# Historical v0.153 snapshot — non-normative")
+        assert "Do not update or cite it as the current project contract" in text
+
 def test_previous_active_docs_are_explicitly_non_normative_snapshots() -> None:
     for name in ("ARCHITECTURE.md", "SCIENTIFIC_ISSUES.md", "PROJECT_STATUS.md"):
         text = _text(f"docs/history/v0.147/{name}")
@@ -101,6 +144,6 @@ def test_previous_active_docs_are_explicitly_non_normative_snapshots() -> None:
 
 def test_durable_governance_uses_non_overlapping_document_authority() -> None:
     text = _text("docs/PROJECT_GOVERNANCE.md")
-    assert "## Documentation authority and typed-progress governance" in text
+    assert "## 11. Documentation authority" in text
     assert "durable cross-version conclusions belong" not in text
-    assert re.search(r"Frozen validated scientific\s+results belong in `docs/results/`", text)
+    assert "| Frozen validated scientific results | `docs/results/` |" in text

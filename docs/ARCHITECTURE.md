@@ -277,12 +277,14 @@ validate transferability; they do not change scientific conclusions.
 
 | Document | Contains | Must not contain |
 |---|---|---|
+| `PROJECT_CHARTER.md` | long-lived mission, scope, and interpretation limits | current task status, per-version results |
+| `PROJECT_GOVERNANCE.md` | durable process and inference rules | raw experiment narrative, version diary |
 | `ARCHITECTURE.md` | current structural contracts | per-version results, task queue, provisional claims |
+| `PARTITIONED_SUBJECT_GRAPH_VM.md` | current VM mechanism and safety contract | Stage-by-Stage result chronology |
 | `PROJECT_STATUS.md` | current typed task tree and frozen headline state | stage-by-stage history, test reports |
 | `SCIENTIFIC_ISSUES.md` | active unresolved scientific questions | release notes, resolved chronology, engineering defects |
 | `docs/results/` | frozen, validated result ledgers | provisional interpretation |
 | `docs/迭代/` | current iteration design, work log, and final frozen note | cross-version authority |
-| `PROJECT_GOVERNANCE.md` | durable process and inference rules | raw experiment narrative |
 | `CHANGELOG.md` | versioned delivered changes | scientific backlog |
 
 Detailed Subject VM protocol and mechanism semantics remain in
