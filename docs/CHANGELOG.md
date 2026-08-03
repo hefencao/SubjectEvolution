@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.152.0
+
+- Adds the Stage 3C-36 checksum-bound read-only cross-panel geometry transport decomposition.
+- Finds candidate support is identical across all 18 sources and median winner reuse remains 0.4643.
+- Localizes the 387 to 369 age-one occupancy change primarily to same-first-state query composition (344 to 320), not conditional selection rates.
+- Finds strict-versus-older local-step separation remains about 200-fold, while five additional near-exact ties directly trip the formal Stage-3C-28 qualification gate.
+- Leaves exact tie origin unresolved and blocks gate relaxation, source replacement and crossing replication.
+
 ## 0.151.0
 
 - Moves operator workspace configuration from `se-study` to the dedicated `se-workspace` command while preserving the existing `.se-workspace.toml` schema and settings.

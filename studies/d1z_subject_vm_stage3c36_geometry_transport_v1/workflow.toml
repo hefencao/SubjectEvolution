@@ -1,0 +1,37 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c36_geometry_transport_v1"
+title = "D1-Z Subject VM Stage 3C-36 bootstrap-geometry transport decomposition"
+
+[parameters.reference_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c33_exposure_propagation_v1/final"
+description = "Frozen qualified original-panel Stage-3C-25 through Stage-3C-27 assessments."
+
+[parameters.replication_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c35_crossing_replication_v1/final"
+description = "Frozen disjoint-panel Stage-3C-25 through Stage-3C-27 assessments."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c36_geometry_transport_v1/final"
+description = "Read-only transport decomposition outputs."
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c36_geometry_transport_v1_results.zip"
+description = "Frozen analysis and its six checksum-bound inputs."
+
+[steps.assess-stage3c36]
+description = "Decompose candidate support, first-state recurrence, local geometry and exact ties across the two frozen panels."
+command = ["se-subject-vm-stage3c36-geometry-transport", "--reference-stage3c25", "{reference_root}/stage3c25_winner_basin.json", "--reference-stage3c26", "{reference_root}/stage3c26_age_phase_opportunity.json", "--reference-stage3c27", "{reference_root}/stage3c27_token_kinematics.json", "--replication-stage3c25", "{replication_root}/stage3c25_winner_basin.json", "--replication-stage3c26", "{replication_root}/stage3c26_age_phase_opportunity.json", "--replication-stage3c27", "{replication_root}/stage3c27_token_kinematics.json", "--output", "{analysis_root}/stage3c36_geometry_transport.json", "--summary-output", "{analysis_root}/stage3c36_study_summary.json", "--diagnostic-report", "{analysis_root}/stage3c36_diagnostic_report.md"]
+
+[steps.pack-results]
+description = "Package the frozen cross-panel inputs, decision and Stage-3C-36 decomposition."
+requires_json = [
+  { path = "{analysis_root}/stage3c36_geometry_transport.json", field = "source_panels_are_disjoint", equals = true },
+  { path = "{analysis_root}/stage3c36_geometry_transport.json", field = "candidate_support_transport.candidate_support_signature_identical_across_all_18_sources", equals = true },
+  { path = "{analysis_root}/stage3c36_geometry_transport.json", field = "frozen_interpretation.crossing_replication_authorized", equals = false },
+  { path = "{analysis_root}/stage3c36_geometry_transport.json", field = "permanent_parameter_retention_authorized", equals = false }
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--required-file", "{reference_root}/stage3c25_winner_basin.json", "--required-file", "{reference_root}/stage3c26_age_phase_opportunity.json", "--required-file", "{reference_root}/stage3c27_token_kinematics.json", "--required-file", "{replication_root}/stage3c25_winner_basin.json", "--required-file", "{replication_root}/stage3c26_age_phase_opportunity.json", "--required-file", "{replication_root}/stage3c27_token_kinematics.json", "--required-file", "{analysis_root}/stage3c36_geometry_transport.json", "--required-file", "{analysis_root}/stage3c36_study_summary.json", "--required-file", "{analysis_root}/stage3c36_diagnostic_report.md", "--required-file", "protocols/decisions/subject_graph_vm_stage3c36_geometry_transport_v1.json", "--output", "{output}"]

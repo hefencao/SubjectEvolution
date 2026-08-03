@@ -11,7 +11,7 @@ Status values are `OPEN`, `BLOCKED`, and `PARKED`.
 
 | ID | Type | Status | Question | Current evidence boundary |
 |---|---|---|---|---|
-| SG-02 | Bootstrap transport | OPEN | Why does the Stage 3C-27 fixed-bootstrap geometry qualification fail on the first disjoint source panel? | Stage 3C-35 stops before Stage 3C-28; the crossing classifier remains untested out of sample. |
+| SG-02 | Bootstrap transport | OPEN | What produces the five additional near-exact age-one/older ties that trip the Stage 3C-28 gate on the first disjoint source panel? | Stage 3C-36 shows candidate support and local-step scale transport; first-state recurrence composition explains pooled occupancy loss, but aggregate outputs cannot resolve tie origin. |
 | SG-03 | Evidence semantics | OPEN | Can component-wise objective facts support any retention decision without importing a fixed value function? | No retention study is authorized until a non-scalar decision contract exists. |
 | SG-04 | Bootstrap generality | PARKED | Which results depend on normalized-dot/latest/top-1 bootstrap addressing? | Compare only after the current crossing result is independently replicated. |
 | SG-05 | Persistence | BLOCKED | Can a temporary graph-parameter effect persist under an independently justified decision rule? | Requires replicated downstream evidence and a separate keep/revert contract. |
@@ -21,18 +21,19 @@ Status values are `OPEN`, `BLOCKED`, and `PARKED`.
 | ENV-02 | Demography | OPEN | Are source checkpoints healthy enough for evolutionary interpretation rather than short-run mechanism diagnosis? | Require population, descendant, generation-depth, founder-replacement, and checkpoint-stability gates. |
 | SOC-01 | Identity | BLOCKED | How should delayed partner evidence survive entity death without attaching to recycled rows? | Requires historical subject identity with retention, inheritance, eviction, and regional-branch semantics. |
 
-## 3. SG-02 — bootstrap-geometry transport failure
+## 3. SG-02 — near-exact tie origin
 
-Stage 3C-35 used disjoint source seeds 12401–12409. The original panel has 386/387
-strict-geometry age-one selections; the replication panel has 363/369. Exact
-latest-tie use rises from 1/864 to 6/864. The frozen Stage 3C-28 prerequisite therefore
-fails, and only sources 12402 and 12408 satisfy all three per-source diagnostics.
+Stage 3C-36 shows that candidate opportunity is identical across all 18 sources and
+that strict-versus-older local-step separation remains roughly 200-fold. The pooled
+age-one loss is almost entirely predicted by the change from 344 to 320 same-first-state
+queries. The formal Stage-3C-28 gate is instead tripped by diagnostic ties rising from
+1 to 6.
 
-The active question is which already-recorded factor explains the transport loss:
-candidate opportunity composition, first-state recurrence, local second-coordinate
-step geometry, or their interaction. The next audit must be read-only over the two
-frozen panels. It may not replace seeds, relax the gate, change addressing, or run the
-Stage 3C-33 intervention.
+The remaining question is query-level: whether those five additional ties reflect
+identical normalized directions, float32 coordinate quantization, or score gaps falling
+inside the frozen 1e-8 diagnostic tolerance. The audit must preserve the current
+selection implementation and may not change the tolerance before measuring the raw
+margins.
 
 ## 4. SG-03 — objective facts are not value
 

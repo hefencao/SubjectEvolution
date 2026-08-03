@@ -1,0 +1,80 @@
+{
+  "schema": "se-subject-vm-stage3c36-geometry-transport-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c36-geometry-transport-v1",
+  "status": "frozen-read-only-cross-panel-decomposition",
+  "project_version": "0.152.0",
+  "git_title": "[MAIN-EXP] D1-Z: decompose bootstrap geometry transport failure",
+  "question": "Which already-recorded factor explains why the frozen Stage-3C-27 qualification does not transport from source seeds 12301-12309 to disjoint seeds 12401-12409?",
+  "input_identity": {
+    "reference_source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "replication_source_seeds": [
+      12401,
+      12402,
+      12403,
+      12404,
+      12405,
+      12406,
+      12407,
+      12408,
+      12409
+    ],
+    "panels_are_disjoint": true,
+    "required_frozen_assessments": [
+      "stage3c25",
+      "stage3c26",
+      "stage3c27"
+    ]
+  },
+  "fixed_contract": {
+    "runtime_rerun": false,
+    "source_replacement": false,
+    "qualification_threshold_change": false,
+    "addressing_change": false,
+    "exposure_change": false,
+    "stage3c28_or_later_on_failed_panel": false,
+    "componentwise_read_only_analysis": true
+  },
+  "observed_result": {
+    "candidate_support_signature_identical_across_all_18_sources": true,
+    "winner_reuse_fraction_median_reference": 0.4642857142857143,
+    "winner_reuse_fraction_median_replication": 0.4642857142857143,
+    "same_first_state_query_count_reference": 344,
+    "same_first_state_query_count_replication": 320,
+    "observed_age_one_selection_delta": -18.0,
+    "composition_only_age_one_delta": -19.34919499105547,
+    "conditional_only_age_one_delta": 0.3838235294117567,
+    "strict_to_older_local_step_separation_reference": 200.20879834568618,
+    "strict_to_older_local_step_separation_replication": 191.15916474251154,
+    "exact_tie_count_reference": 1,
+    "exact_tie_count_replication": 6,
+    "crossing_replication_authorized": false,
+    "exact_tie_origin_resolved": false,
+    "assessment_sha256": "8f195ac92827b9a635b599da5831a1e86a268223ce65dd2ec77bc71fefc13f38"
+  },
+  "frozen_interpretation": {
+    "candidate_opportunity_structure_transports": true,
+    "large_local_step_scale_separation_transports": true,
+    "pooled_age_one_occupancy_loss_is_primarily_first_state_recurrence_composition": true,
+    "formal_stage3c28_gate_is_tripped_by_five_additional_near_exact_ties": true,
+    "aggregate_stage3c25_to_stage3c27_outputs_can_resolve_tie_origin": false,
+    "next_boundary": "Read-only query-level tie-origin audit over the same frozen rank-two panel, distinguishing raw score margin, normalized-direction duplication, float32 quantization and the 1e-8 diagnostic tie tolerance without changing selection semantics."
+  },
+  "interpretation_boundary": {
+    "value_semantics": false,
+    "causal_credit_quality_proven": false,
+    "automatic_keep_or_revert_authorized": false,
+    "learned_weight_authorized": false,
+    "permanent_parameter_retention_authorized": false,
+    "subjecthood_claim_authorized": false
+  }
+}

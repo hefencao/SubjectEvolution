@@ -1,12 +1,13 @@
-# SubjectEvolution v0.151.0
+# SubjectEvolution v0.152.0
 
 SubjectEvolution is an experimental simulation project for evolving subject-like
 internal organization without preassigned reward or human social semantics.
 
-Version 0.151.0 preserves the Stage 3C-35 preregistered disjoint-source
-qualification failure while separating workspace configuration and validation workflow ownership. The new source panel does not reproduce the Stage 3C-27
-geometry prerequisite required before Stage 3C-28; the Stage 3C-33/34 crossing
-classifier is therefore not tested, refuted, or supported on this panel.
+Version 0.152.0 freezes the Stage 3C-36 read-only decomposition of the first
+disjoint-panel geometry qualification failure. Candidate support and the roughly
+200-fold strict-versus-older local-step separation transport. The pooled age-one
+loss is primarily explained by a shift in first-state recurrence composition,
+while five additional near-exact ties directly trip the formal Stage-3C-28 gate.
 
 ## Documentation map
 
@@ -20,30 +21,12 @@ classifier is therefore not tested, refuted, or supported on this panel.
 
 ## Current scientific frontier
 
-The original panel has 386/387 strict-geometry age-one selections; the disjoint
-panel has 363/369. Exact latest-tie use rises from 1/864 to 6/864. Only seeds
-12402 and 12408 satisfy all three per-source diagnostic thresholds. Stage 3C-28
-correctly blocks the later chain, so no responsive-seed replacement or gate
-relaxation is authorized.
-
-The next mainline step is a read-only cross-panel decomposition of candidate
-opportunity, first-state recurrence, and strict-geometry loss. It must not run a
-new panel, alter addressing, or resume Stage 3C-33 until the transport failure is
-understood.
-
+Stage 3C-37 may inspect the same frozen rank-two query records to distinguish
+normalized-direction duplication, float32 quantization and the 1e-8 diagnostic
+tie tolerance. It may not alter selection semantics or resume crossing replication
+until the existing qualification gate is understood.
 
 ## Workspace configuration
 
 Operator-specific external directories are stored in the ignored `.se-workspace.toml`
-and are owned by the dedicated workspace command:
-
-```bash
-se-workspace show
-se-workspace config --set-result-dir <external-results-directory>
-se-workspace config --set-patch-dir <external-patch-directory>
-se-workspace path result
-se-workspace path patch
-```
-
-`se-study` only renders and runs declarative study workflows; it no longer configures
-operator workspace paths.
+and are owned by `se-workspace`.

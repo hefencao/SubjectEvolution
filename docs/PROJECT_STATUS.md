@@ -1,20 +1,16 @@
 # SE project status
 
-Version: **0.151.0**
+Version: **0.152.0**
 
 ## Current iteration identity
 
-- Progress type: **`[ENGINEERING]` tooling and governance**
-- Git title: **`[ENGINEERING] workspace: separate configuration ownership and workflow profiles`**
-- Git branch: **`engineering/workspace-cli-workflow-profiles`**
-- Workflow profile: **`STANDARD-CODE` + versioned `RELEASE-HANDOFF`**
-- Runtime/config/checkpoint scientific change: **none**
-- Frozen scientific frontier: **Stage 3C-35**
-- Next authorized mainline experiment: **Stage 3C-36 read-only bootstrap-geometry transport decomposition**
-
-This iteration moves operator workspace configuration out of the study runner and removes
-the unconditional full-release procedure from `AGENTS.md`. Scientific evidence and the
-Stage 3C task frontier are unchanged.
+- Progress type: **`[MAIN-EXP]` read-only mainline experiment**
+- Git title: **`[MAIN-EXP] D1-Z: decompose bootstrap geometry transport failure`**
+- Git branch: **`main-exp/stage3c36-geometry-transport`**
+- Workflow profile: **`SCIENTIFIC-FREEZE` + versioned `RELEASE-HANDOFF`**
+- Runtime/config/checkpoint change: **none**
+- Frozen scientific frontier: **Stage 3C-36**
+- Next authorized mainline experiment: **Stage 3C-37 query-level exact-tie origin audit**
 
 ## Typed task progress tree
 
@@ -25,7 +21,8 @@ SubjectEvolution
 │       ├── [FROZEN] Stage 3C-33 matched-horizon exposure propagation
 │       ├── [FROZEN] Stage 3C-34 action/objective-event crossing audit
 │       ├── [FROZEN] Stage 3C-35 disjoint-source prerequisite failure
-│       ├── [NEXT]   Stage 3C-36 read-only bootstrap-geometry transport decomposition
+│       ├── [FROZEN] Stage 3C-36 bootstrap-geometry transport decomposition
+│       ├── [NEXT]   Stage 3C-37 query-level exact-tie origin audit
 │       └── [BLOCKED] crossing replication, retention, learned weights, topology evolution
 │
 ├── [BRANCH-EXP] Branch experiment
@@ -43,42 +40,36 @@ SubjectEvolution
 │
 ├── [ENGINEERING] Runtime, tooling, tests, packaging
 │   ├── [DONE] `se-workspace` owns external result and patch directory configuration
-│   ├── [DONE] scoped, standard-code, scientific-freeze and release-handoff profiles
 │   ├── [PARKED] automatic inference of local-only versus artifact-handoff intent
 │   └── [PARKED] optional full-policy-logit and categorical-draw trace export
-│       for exact numeric action-margin measurement
 │
 └── [DOC-GOV] Documentation governance
-    ├── [DONE] active-document authority boundaries
-    ├── [DONE] typed Git title and branch prefixes
-    ├── [DONE] Git commands remain persistent across chats
-    └── [DONE] complete validation/release procedures moved out of `AGENTS.md`
+    └── [DONE] active-document authority, typed task tree and Git handoff contract
 ```
 
 ## Current mainline decision
 
-Stage 3C-35 does not test the crossing classifier. The disjoint panel lowers pooled
-strict-geometry age-one selection from 386/387 (0.9974) to 363/369 (0.9837), below
-the frozen Stage 3C-28 gate. Exact latest-tie use rises from 1/864 to 6/864, and only
-12402 and 12408 pass all three per-source diagnostic thresholds. Stage 3C-28 and all
-later stages were not executed. The next step is a read-only cross-panel decomposition;
-seed replacement, gate relaxation and a new runtime intervention are blocked.
+The candidate-support contract transports exactly: all 18 sources retain 128 requested,
+112 assigned, 16 no-candidate, 16 forced and 96 multi-candidate queries with the same
+candidate-count histogram. Median winner reuse is also unchanged at 0.4643.
+
+The pooled age-one loss is instead localized to first-state recurrence composition.
+Same-first-state queries decline from 344 to 320. Applying the original panel's
+conditional selection rates to the new recurrence composition predicts 367.65 age-one
+selections, within 1.35 of the observed 369. Holding the original composition while
+using the new conditional rates predicts 387.38, essentially the original 387.
+
+The large local-step separation transports (200.2× versus 191.2×). The formal Stage
+3C-28 gate is nevertheless tripped because diagnostic ties rise from 1 to 6, lowering
+strict age-one wins from 386/387 to 363/369. The aggregate frozen assessments cannot
+resolve whether those five additional near-exact ties come from duplicated normalized
+directions, float32 quantization or the 1e-8 diagnostic tolerance.
 
 ## Frozen evidence boundary
 
-Stage 3C-35 establishes that the fixed-bootstrap geometry qualification is not yet
-transportable across the first disjoint nine-source panel. This is a scientific
-prerequisite failure, not a runtime, export, checksum, or packaging error. The
-preregistered Stage 3C-34 source classifier remains untested out of sample.
-
-## Not implemented or authorized
-
-- scalar reward or fixed value weights;
-- automatic keep/revert or permanent graph-parameter retention;
-- learned association weights or a general attention allocator;
-- Subject VM topology mutation or developmental expression;
-- selected-seed reruns or adaptive exposure extension;
-- Epoch 1 subjecthood score or claim.
+Stage 3C-36 does not authorize Stage 3C-28 or the crossing replication on the failed
+panel. It narrows the unresolved transport problem to query-level tie origin; no source,
+threshold, addressing, exposure or retention change is authorized.
 
 ## Documentation and evidence map
 
@@ -86,8 +77,8 @@ preregistered Stage 3C-34 source classifier remains untested out of sample.
 |---|---|
 | Current system structure | `docs/ARCHITECTURE.md` |
 | Current task and queue | `docs/PROJECT_STATUS.md` |
-| Active unresolved scientific questions | `docs/SCIENTIFIC_ISSUES.md` |
+| Active scientific issues | `docs/SCIENTIFIC_ISSUES.md` |
 | Frozen Stage 3C results | `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` |
-| Current iteration record | `docs/迭代/v0.151_工作区命令与工作流分级.md` |
-| Executable decision contract | `protocols/decisions/subject_graph_vm_stage3c35_crossing_replication_v1.json` |
+| Current iteration record | `docs/迭代/v0.152_D1-Z_主体图Stage3C36_几何迁移根因分解.md` |
+| Executable decision contract | `protocols/decisions/subject_graph_vm_stage3c36_geometry_transport_v1.json` |
 | Repository execution rules | `AGENTS.md` |

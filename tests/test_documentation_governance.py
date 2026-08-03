@@ -88,7 +88,8 @@ def test_frozen_stage_results_live_in_dedicated_ledger() -> None:
     assert "| 3C-33 |" in text
     assert "| 3C-34 |" in text
     assert "| 3C-35 |" in text
-    assert "Stage 3C-36 may compare" in text
+    assert "| 3C-36 |" in text
+    assert "Stage 3C-37 may inspect" in text
 
 
 def test_previous_active_docs_are_explicitly_non_normative_snapshots() -> None:

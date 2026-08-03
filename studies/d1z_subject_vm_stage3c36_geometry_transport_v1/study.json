@@ -1,0 +1,11 @@
+{
+  "schema": "se-study-v1",
+  "study_id": "d1z_subject_vm_stage3c36_geometry_transport_v1",
+  "title": "D1-Z Subject VM Stage 3C-36 bootstrap-geometry transport decomposition",
+  "project_version": "0.152.0",
+  "scientific_stage": "stage3c36-geometry-transport-frozen",
+  "task_type": "MAIN-EXP",
+  "runtime_change": false,
+  "checkpoint_change": false,
+  "source_rerun": false
+}

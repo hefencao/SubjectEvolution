@@ -42,6 +42,7 @@ The labels in the **type** column are task/progress types, not scientific outcom
 | 3C-33 | `[MAIN-EXP]` matched-horizon intervention | `3/8`, `3/11`, and `6/11` exposure/horizon conditions. | Ledger dose doubles exactly. Fixed-support trajectory effects change in seeds 12305 and 12308, but no signed or absolute fact coordinate is stable across nine sources. | Adaptive exposure extension, retention, reward, or learned weighting. |
 | 3C-34 | `[MAIN-EXP]` read-only crossing audit | Reuse all eight matched-horizon arms and localize exposure-by-alignment divergence at action potentials, sampled actions, Objective-Fact events, and aggregation. | All nine sources contain continuous Subject-VM decision divergence; only 12305 and 12308 have alignment-specific sampled-action crossings, followed by 12 differential Objective-Fact events, and these exactly reproduce the two nonzero Stage 3C-33 sources. Seed 12307 has an alignment-common action crossing removed by the cross-mode contrast. | Exact numeric threshold margin, value, correct credit, keep/revert, learning, or retention. |
 | 3C-35 | `[MAIN-EXP]` disjoint-source qualification | Rebuild the frozen rank-two chain on seeds 12401–12409 before testing the preregistered crossing classifier. | The panel fails the Stage 3C-27 geometry prerequisite: strict age-one geometry falls from 386/387 to 363/369 and latest-tie use rises from 1/864 to 6/864. Stage 3C-28 and later are not run; the crossing prediction remains untested. | Seed replacement, gate relaxation, crossing claims, value, learning, or retention. |
+| 3C-36 | `[MAIN-EXP]` read-only transport decomposition | Compare frozen Stage 3C-25–27 outputs across the original and disjoint panels. | Candidate support and winner reuse transport exactly; the age-one occupancy loss is predicted by first-state recurrence composition, while five extra near-exact ties directly trip the formal gate. Local-step scale separation remains about 200×. | Treating aggregate tie counts as resolved mechanism, changing tolerance, or resuming crossing replication. |
 
 ## Current frozen chain
 
@@ -52,7 +53,7 @@ a general source-level classifier.
 
 ## Next authorized evidence boundary
 
-Stage 3C-36 may compare the frozen original and disjoint Stage 3C-25–27 assessments
-read-only to localize the geometry transport failure. It may not replace sources,
-relax qualification thresholds, alter addressing or exposure, or run Stage 3C-28 and
-later on the failed panel.
+Stage 3C-37 may inspect query-level raw score margins and visible-token directions from
+the same frozen rank-two panel to resolve the five additional near-exact ties. It may
+not change the diagnostic tolerance or selection semantics before measuring them, and
+may not resume Stage 3C-28 or crossing replication on the failed panel.
