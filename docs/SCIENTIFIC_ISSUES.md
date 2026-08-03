@@ -753,3 +753,12 @@ Stage 3C-24 证明 rank-two readout 消除了 exact best-score tie，却降低�
 因此当前复用不能归因于 exact query duplication，也不能仅归因于 near-zero margin。更准确的描述是：在 bounded delay window 和 deterministic nearest-neighbor 规则下，一些历史事件拥有更多候选机会，并形成可覆盖多个不同 query 的 deterministic candidate basin。
 
 这仍不说明 basin 更好、复用有价值或 credit 正确。下一步应先只读审计 opportunity-normalized basin occupancy 与 historical age/query phase 的关系，再决定是否需要 addressing normalization。不得直接引入 reward、learned weights、永久保留或通用注意力声明。
+
+
+## Stage 3C-26：边界强制分配与近因 basin 需要分开
+
+冻结 rank-two 面板中，每 source 有 16 个请求没有历史候选，随后 16 个已分配 query 只有一个候选。这些分配必然选择 phase-zero 事件，并为早期事件制造最低一次选择和更长机会窗口。它们占全部 112 次分配的 1/7。
+
+排除这些强制 query 后，age-one 候选的机会归一化胜率仍在 9/9 source 中最高或并列最高，8/9 source 严格最高。reused winner 的出生 phase 中位数为 0–1，single-use 为 3–4，unselected 为 4–5；但 reused winner 的 selection/opportunity 中位数仍在全部 source 中不低于 single-use。
+
+因此 raw opportunity 解释了部分复用，却不能完全解释近因 winner basin。历史年龄和 query phase 不具有固定价值语义，也不能据此宣称因果信用、学习或保留资格。

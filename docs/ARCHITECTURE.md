@@ -1693,3 +1693,10 @@ The analysis separates:
 - same-winner versus different-winner query-pair cosine diagnostics.
 
 No values are written back into Subject VM state. No new trace array, checkpoint field, configuration key, random stream, branch owner, ledger or lifecycle system is introduced. Persistent runtime memory growth is zero. Events, queries, subjects and windows remain nested observations; the independent replicate remains the pre-bootstrap source checkpoint.
+
+
+### Stage 3C-26 — historical-age and query-phase opportunity audit (implemented in v0.140)
+
+Stage 3C-26 is external analysis only. It consumes the frozen Stage 3C-23 rank-two read-only control checkpoints and checksum-bound Stage 3C-25 assessment. For every request it reconstructs the complete eligible candidate set, verifies the stored latest/top-1 winner, and reports source-boundary single-candidate assignments, age-conditioned selection, query-phase winner age, historical-event birth phase and selection rate conditional on eligibility.
+
+No runtime array, checkpoint field, config identity, branch, ledger or lifecycle changes. Persistent-memory growth is zero. Queries, events, subjects and windows remain nested observations; independent source checkpoints remain the highest replicate.

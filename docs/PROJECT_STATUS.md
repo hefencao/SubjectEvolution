@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.139.0**
+Version: **0.140.0**
 
 ## Current scientific task
 
-Version 0.139 implements **Subject VM Stage 3C-25: deterministic winner-basin reuse audit**.
+Version 0.140 implements **Subject VM Stage 3C-26: historical-age and query-phase opportunity audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -129,7 +129,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-25 separates numerical winner margins, candidate opportunity and deterministic winner-basin reuse without changing addressing or authorizing retention, learned attention or Epoch 1.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-26 separates source-boundary forced assignment, historical age, query phase and opportunity-normalized winner occupancy without changing addressing or authorizing retention, learned attention or Epoch 1.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -155,7 +155,7 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-Stage 3C-25 establishes that small absolute margins are common in the fixed rank-two panel, but reused winners are not concentrated in the smallest score-spread-normalized margins and are not caused by exact duplicate query vectors. Reused winners receive more eligibility opportunities and occupy deterministic candidate basins across distinct queries. The next authorized boundary remains read-only diagnosis of opportunity-normalized basin occupancy by historical age and query phase before any addressing normalization or retention change.
+Stage 3C-26 establishes that 16 source-boundary assignments per source are forced by a one-candidate history, while age-one occupancy remains highest or tied after those queries are removed. Reused winners are earlier than single-use and unselected events, yet their selection rate conditional on eligibility remains at least as high as single-use winners, so raw opportunity alone does not explain reuse. The next authorized boundary remains read-only diagnosis of age-one score geometry versus latest tie-break and branch-boundary support before any normalization or retention change.
 
 
 ## Stage 3C-17 retained result
@@ -240,3 +240,14 @@ However, winner reuse is not concentrated in the weakest normalized margins. In 
 Every reused winner is selected by distinct query events and distinct exact visible query vectors. Reused winners have a median of six eligibility opportunities in every source, compared with three to four for single-use winners, and span one to five query ticks. Query pairs selecting the same winner are not more mutually similar by median cosine than same-subject query pairs selecting different winners.
 
 The supported interpretation is therefore opportunity-conditioned deterministic candidate-basin reuse, not exact query duplication and not reuse driven solely by the smallest margins. This does not validate causal credit, assign value to reuse or margin, establish learning, authorize permanent retention, or convert the fixed bootstrap into universal attention.
+
+
+## Stage 3C-26 current result
+
+Stage 3C-26 makes no runtime intervention. It reuses the frozen Stage 3C-23 rank-two read-only control checkpoints and reconstructs every candidate under the unchanged normalized-dot, threshold 0.8, latest/top-1 contract. Stored winner event IDs and similarities match exactly.
+
+Each source has 128 association requests: 16 have no historical candidate, 112 are assigned, and the first 16 assigned queries have exactly one eligible candidate. These forced assignments account for 1/7 of all assignments and guarantee that all phase-zero events are selected once.
+
+After removing the forced queries, age-one selection rate is 0.375–0.5625 and is highest or tied in all nine sources, strictly highest in eight. Reused winners have historical-phase median 0–1, single-use winners 3–4, and unselected eligible events 4–5. Opportunity-normalized reused-winner selection-rate median is at least the single-use median in all sources and strictly higher in eight.
+
+The evidence therefore separates boundary forcing, raw opportunity and persistent near-age basin occupancy. It does not assign value to recency or age, validate causal credit, establish learning, or authorize permanent retention.

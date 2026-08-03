@@ -1,0 +1,24 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c26_age_phase_opportunity_v1",
+  "title": "D1-Z Subject VM Stage 3C-26 historical-age and query-phase opportunity audit",
+  "status": "engineering-read-only-age-phase-opportunity-diagnostic",
+  "scientific_stage": "stage3c26-read-only-age-phase-and-opportunity-normalized-basin-occupancy",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_source_panel": true,
+    "reuse_stage3c23_rank_two_arm": true,
+    "reconstruct_candidate_opportunity": true,
+    "measure_source_boundary_forcing": true,
+    "measure_historical_age_selection_rate": true,
+    "measure_query_phase_winner_age": true,
+    "measure_opportunity_normalized_basin_occupancy": true,
+    "runtime_mechanism_change": false,
+    "checkpoint_schema_change": false,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "topology_evolution": false,
+    "universal_attention": false,
+    "subjecthood_claim": false
+  }
+}

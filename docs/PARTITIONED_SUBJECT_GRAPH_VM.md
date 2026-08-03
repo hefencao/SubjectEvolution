@@ -750,3 +750,12 @@ Stage 3C-25 不修改 VM。它固定 Stage 3C-23 rank-two readout 和 Stage 3C-2
 九 source 中 small absolute margin 普遍存在，但 reused winner 的 normalized margin 中位数在所有 source 都高于 single-use winner。Reused winner 也不是 exact query token 重复造成：每次复用都来自不同 query event 和不同 exact visible token。它们拥有更多 eligible opportunities，并形成跨多个 query tick 的 deterministic candidate basin。
 
 该结果只定位 fixed-bootstrap addressing 的机会条件与 basin 结构。它不授权将较大 margin、更多 opportunity 或更高 reuse 解释为价值、因果正确性、学习、主体性或永久参数保留。
+
+
+## v0.140：Stage 3C-26 Historical Age / Query Phase Opportunity 审计
+
+Stage 3C-26 固定 Stage 3C-23 rank-two readout、normalized-dot、threshold 0.8、latest/top-1、target/carrier、delta、exposure 与 rollback，仅从 read-only control checkpoint 重建候选机会和 winner。
+
+每 source 的 128 个 request 中，16 个无候选，112 个完成 assignment；首批 16 个 assignment 只有一个候选，因此强制选择 source-boundary phase-zero event。移除这些 query 后，age-one 机会归一化 selection rate 仍在所有 source 中最高或并列最高。reused winner 更早，但其 selection/opportunity 也仍不低于 single-use winner，说明 raw opportunity 不是完整解释。
+
+该结果仅定位 fixed-bootstrap addressing 的边界与近因偏置，不给历史年龄赋值，不授权 reward、learned weights、permanent retention、learning、subjecthood 或 universal attention claim。

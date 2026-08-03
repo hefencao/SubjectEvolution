@@ -1,3 +1,11 @@
+## 0.140.0
+
+- Adds Subject VM Stage 3C-26 read-only historical-age and query-phase opportunity assessment.
+- Separates 16 source-boundary assignments with only one eligible candidate from the remaining 96 multi-candidate queries per source.
+- Finds age-one candidate occupancy remains highest or tied after forced assignments are removed, while reused winners arise earlier than single-use and unselected events.
+- Confirms raw opportunity count does not fully explain reuse: opportunity-normalized reused-winner selection rate is at least the single-use rate in all nine sources.
+- Adds a reproducible CLI, workflow, protocol and regression tests without runtime or checkpoint changes; permanent retention and learning claims remain unauthorized.
+
 ## 0.139.0
 
 - Adds Subject VM Stage 3C-25 read-only deterministic winner-basin reuse assessment.

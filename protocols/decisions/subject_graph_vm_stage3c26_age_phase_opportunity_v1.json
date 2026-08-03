@@ -1,0 +1,71 @@
+{
+  "schema": "se-subject-vm-stage3c26-age-phase-opportunity-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c26-age-phase-opportunity-v1",
+  "status": "accepted-engineering-read-only-age-phase-opportunity-audit-only",
+  "project_version": "0.140.0",
+  "question": "After Stage 3C-25 identifies opportunity-conditioned deterministic winner basins, how much reuse is attributable to source-boundary forced assignments, historical age, query phase and raw opportunity count?",
+  "source_panel": {
+    "independent_source_seeds": [12301, 12302, 12303, 12304, 12305, 12306, 12307, 12308, 12309],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "rank_two_visible_coordinates": [11, 7],
+    "target_family": "edge_forward_gate",
+    "edge_local_eligibility_carrier": true,
+    "association_similarity": "normalized-dot",
+    "association_threshold": 0.8,
+    "association_tie_break": "latest",
+    "association_candidate_limit": 1,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "analysis_factor": {
+    "runtime_change": false,
+    "arm_analyzed": "Stage-3C-23 frozen rank-two read-only control",
+    "reconstructed_measures": [
+      "single-candidate source-boundary assignments",
+      "selection rate by historical age after forced queries are removed",
+      "winner age by query phase",
+      "historical-event birth phase",
+      "raw eligibility opportunities",
+      "selection rate conditional on eligibility"
+    ]
+  },
+  "observed_panel_result": {
+    "requested_queries_per_source": 128,
+    "no_candidate_queries_per_source": 16,
+    "assigned_queries_per_source": 112,
+    "forced_single_candidate_queries_per_source": 16,
+    "forced_assignment_fraction": 0.14285714285714285,
+    "multi_candidate_queries_per_source": 96,
+    "age_one_multi_candidate_selection_rate_range": [0.375, 0.5625],
+    "age_two_multi_candidate_selection_rate_range": [0.15625, 0.375],
+    "age_one_highest_or_tied_in_all_sources": true,
+    "age_one_strictly_highest_source_count": 8,
+    "reused_winner_historical_phase_median_range": [0, 1],
+    "single_use_winner_historical_phase_median_range": [3, 4],
+    "unselected_event_historical_phase_median_range": [4, 5],
+    "reused_opportunity_normalized_rate_at_least_single_use_in_all_sources": true,
+    "reused_opportunity_normalized_rate_strictly_higher_source_count": 8,
+    "stable_objective_coordinates": 0
+  },
+  "interpretation": {
+    "source_boundary_forcing_contributes_to_phase_zero_coverage_and_reuse": true,
+    "recency_preference_persists_after_forced_queries_are_removed": true,
+    "raw_opportunity_count_fully_explains_reuse": false,
+    "historical_age_or_phase_has_fixed_value_semantics": false,
+    "causal_credit_quality_proven": false,
+    "learning_claim_authorized": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "runtime_and_storage": {
+    "runtime_or_checkpoint_schema_changed": false,
+    "runtime_memory_growth_bytes": 0,
+    "default_bootstrap_path_changed": false,
+    "old_config_identity_changed": false
+  },
+  "next_boundary": "Hold the rank-two readout, normalized-dot similarity, threshold, latest top-1, target/carrier, delta, exposure and rollback fixed. Audit whether the age-one basin is explained by score geometry versus latest tie-break and branch-boundary support before any opportunity or age normalization."
+}
