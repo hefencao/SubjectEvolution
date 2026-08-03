@@ -43,6 +43,8 @@ class SubjectVMDelayedAssociationCandidate:
     selected_event_ticks: tuple[int, ...] = ()
     selected_delay_ticks: tuple[int, ...] = ()
     selected_similarities: tuple[float, ...] = ()
+    evaluated_candidate_count: int = 0
+    above_threshold_candidate_count: int = 0
 
     @property
     def selected_count(self) -> int:
@@ -167,21 +169,29 @@ def select_delayed_association_candidate(
 
     if not scored:
         return SubjectVMDelayedAssociationCandidate(
-            requested=True, assigned=False, reason="zero-candidate"
+            requested=True,
+            assigned=False,
+            reason="zero-candidate",
+            evaluated_candidate_count=0,
+            above_threshold_candidate_count=0,
         )
     scored.sort(key=_candidate_order(tie_break))
     best_score = float(scored[0][0])
+    eligible = [
+        item for item in scored if float(item[0]) >= float(cfg.similarity_threshold)
+    ]
+    evaluated_count = int(len(scored))
+    above_threshold_count = int(len(eligible))
     if best_score < float(cfg.similarity_threshold):
         return SubjectVMDelayedAssociationCandidate(
             requested=True,
             assigned=False,
             similarity=best_score,
             reason="below-threshold",
+            evaluated_candidate_count=evaluated_count,
+            above_threshold_candidate_count=above_threshold_count,
         )
 
-    eligible = [
-        item for item in scored if float(item[0]) >= float(cfg.similarity_threshold)
-    ]
     selected = eligible[: int(candidate_limit)]
     primary_score, primary_tick, primary_event_id, _ = selected[0]
     selected_event_ids = tuple(int(item[2]) for item in selected)
@@ -200,6 +210,8 @@ def select_delayed_association_candidate(
         selected_event_ticks=selected_event_ticks,
         selected_delay_ticks=selected_delays,
         selected_similarities=selected_similarities,
+        evaluated_candidate_count=evaluated_count,
+        above_threshold_candidate_count=above_threshold_count,
     )
 
 

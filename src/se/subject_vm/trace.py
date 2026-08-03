@@ -52,7 +52,17 @@ TRACE_STORAGE_SCHEMA_V5 = "se-subject-vm-token-event-storage-v5"
 TRACE_STORAGE_SCHEMA_V6 = "se-subject-vm-token-event-storage-v6"
 TRACE_STORAGE_SCHEMA_V7 = "se-subject-vm-token-event-storage-v7"
 TRACE_STORAGE_SCHEMA_V8 = "se-subject-vm-token-event-storage-v8"
-TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v9"
+TRACE_STORAGE_SCHEMA_V9 = "se-subject-vm-token-event-storage-v9"
+TRACE_STORAGE_SCHEMA = "se-subject-vm-token-event-storage-v10"
+
+ASSOCIATION_ALIGNMENT_NATIVE = "native"
+ASSOCIATION_ALIGNMENT_IDENTITY = "tickwise-subject-identity-v1"
+ASSOCIATION_ALIGNMENT_CYCLIC_DONOR = "tickwise-cyclic-subject-donor-v1"
+ASSOCIATION_ALIGNMENT_MODES = (
+    ASSOCIATION_ALIGNMENT_NATIVE,
+    ASSOCIATION_ALIGNMENT_IDENTITY,
+    ASSOCIATION_ALIGNMENT_CYCLIC_DONOR,
+)
 ACTION_PORT_WIDTH = 8
 RESOURCE_DELTA_WIDTH = 4
 OBJECTIVE_EVENT_DELTA_NAMES = (
@@ -112,6 +122,12 @@ class SubjectVMTraceAccounting:
     association_requests: int = 0
     association_assignments: int = 0
     association_selected_references: int = 0
+    association_evaluated_candidates: int = 0
+    association_above_threshold_candidates: int = 0
+    association_alignment_batches: int = 0
+    association_alignment_assignments: int = 0
+    association_alignment_self_donor_assignments: int = 0
+    association_alignment_marginal_mismatches: int = 0
     association_unassigned_no_request: int = 0
     association_unassigned_zero_query: int = 0
     association_unassigned_no_candidate: int = 0
@@ -170,6 +186,9 @@ class SubjectVMTraceStorage:
         self.token_width = int(cfg.trace.token_width)
         self.association_tie_break = "latest"
         self.association_candidate_limit = 1
+        self.association_coordinate_alignment_mode = ASSOCIATION_ALIGNMENT_NATIVE
+        self.association_coordinate_alignment_port = -1
+        self.association_coordinate_alignment_origin_tick = 0
         e, c, w = self.entity_capacity, self.capacity, self.token_width
 
         self.write_cursor = np.zeros(e, dtype=np.uint32)
@@ -788,6 +807,96 @@ class SubjectVMTraceStorage:
                 raise ValueError("subject_vm resource delta has an invalid shape")
         return count
 
+    def _association_address_tokens(
+        self,
+        *,
+        batch: SubjectVMObjectiveEventBatch,
+        tokens: SubjectVMThoughtTokenBatch,
+        emitted: np.ndarray,
+        accounting: SubjectVMTraceAccounting,
+    ) -> np.ndarray:
+        """Return the token batch consumed and stored by association addressing.
+
+        ``native`` preserves the historical path.  The two explicit Stage-3C-32
+        modes execute the same deterministic sorting/copy loop: identity keeps
+        each subject's coordinate, while cyclic-donor shifts that coordinate to
+        another subject at the same tick.  Both modes retain the exact float32
+        marginal and allocate no branch-specific persistent array.
+        """
+
+        mode = str(self.association_coordinate_alignment_mode)
+        source = np.asarray(tokens.tokens, dtype=np.float32)
+        if mode == ASSOCIATION_ALIGNMENT_NATIVE:
+            return source
+        if mode not in {
+            ASSOCIATION_ALIGNMENT_IDENTITY,
+            ASSOCIATION_ALIGNMENT_CYCLIC_DONOR,
+        }:
+            raise ValueError("unsupported subject_vm association coordinate alignment mode")
+        port = int(self.association_coordinate_alignment_port)
+        if not 0 <= port < self.token_width:
+            raise ValueError("subject_vm association coordinate alignment port is invalid")
+        active = np.flatnonzero(np.asarray(emitted, dtype=bool)).tolist()
+        if len(active) < 2:
+            raise ValueError(
+                "subject_vm association coordinate alignment requires at least two emitted subjects"
+            )
+        ordered = sorted(
+            active,
+            key=lambda index: (
+                int(batch.subject_ids[index]),
+                int(batch.entity_ids[index]),
+                int(batch.rows[index]),
+            ),
+        )
+        ordered_subjects = [int(batch.subject_ids[index]) for index in ordered]
+        if len(set(ordered_subjects)) != len(ordered_subjects):
+            raise ValueError(
+                "subject_vm association coordinate alignment requires unique stable subjects"
+            )
+        if mode == ASSOCIATION_ALIGNMENT_IDENTITY:
+            shift = 0
+        else:
+            origin = int(self.association_coordinate_alignment_origin_tick)
+            tick_offset = int(batch.tick) - origin
+            if tick_offset < 0:
+                raise ValueError(
+                    "subject_vm association coordinate alignment tick precedes its origin"
+                )
+            shift = 1 + (tick_offset % (len(ordered) - 1))
+
+        transformed = source.copy()
+        original_values = np.asarray(
+            [source[index, port] for index in ordered], dtype=np.float32
+        )
+        assigned_values: list[np.float32] = []
+        self_donor_count = 0
+        for position, receiver_index in enumerate(ordered):
+            donor_index = ordered[(position + shift) % len(ordered)]
+            transformed[receiver_index, port] = source[donor_index, port]
+            assigned_values.append(np.float32(source[donor_index, port]))
+            self_donor_count += int(donor_index == receiver_index)
+
+        marginal_preserved = bool(
+            np.array_equal(
+                np.sort(original_values),
+                np.sort(np.asarray(assigned_values, dtype=np.float32)),
+            )
+        )
+        accounting.association_alignment_batches += 1
+        accounting.association_alignment_assignments += len(ordered)
+        accounting.association_alignment_self_donor_assignments += self_donor_count
+        if not marginal_preserved:
+            accounting.association_alignment_marginal_mismatches += 1
+            raise ValueError(
+                "subject_vm association coordinate alignment changed the tickwise marginal"
+            )
+        if mode == ASSOCIATION_ALIGNMENT_CYCLIC_DONOR and self_donor_count:
+            raise ValueError(
+                "subject_vm cyclic association coordinate alignment assigned a self donor"
+            )
+        return transformed
+
     def append(
         self,
         batch: SubjectVMObjectiveEventBatch,
@@ -862,6 +971,9 @@ class SubjectVMTraceStorage:
 
         accounting.expired_events += self.expire(batch.tick)
         emitted = np.asarray(tokens.emitted, dtype=bool)
+        association_tokens = self._association_address_tokens(
+            batch=batch, tokens=tokens, emitted=emitted, accounting=accounting
+        )
         for index in np.flatnonzero(emitted).tolist():
             row = int(rows[index])
             slot = int(self.write_cursor[row] % self.capacity)
@@ -872,7 +984,7 @@ class SubjectVMTraceStorage:
                     tie_break=self.association_tie_break,
                     candidate_limit=self.association_candidate_limit,
                     current_tick=int(batch.tick),
-                    current_token=np.asarray(tokens.tokens[index], dtype=np.float32),
+                    current_token=np.asarray(association_tokens[index], dtype=np.float32),
                     event_valid=self.event_valid[row],
                     event_ids=self.event_id[row],
                     event_ticks=self.event_tick[row],
@@ -883,6 +995,12 @@ class SubjectVMTraceStorage:
                         if self.cfg.modulation_enabled
                         else ()
                     ),
+                )
+                accounting.association_evaluated_candidates += int(
+                    association.evaluated_candidate_count
+                )
+                accounting.association_above_threshold_candidates += int(
+                    association.above_threshold_candidate_count
                 )
                 if association.requested:
                     accounting.association_requests += 1
@@ -1111,7 +1229,7 @@ class SubjectVMTraceStorage:
                 batch.sampled_probability[index]
             )
             self.thought_token[row, slot] = np.asarray(
-                tokens.tokens[index], dtype=np.float32
+                association_tokens[index], dtype=np.float32
             )
             self.action_potentials[row, slot] = np.asarray(
                 tokens.action_potentials[index], dtype=np.float32
@@ -1320,6 +1438,19 @@ class SubjectVMTraceStorage:
             "retention_ticks": self.retention_ticks,
             "token_width": self.token_width,
             "objective_delta_names": list(OBJECTIVE_EVENT_DELTA_NAMES),
+            "runtime_policies": {
+                "association_tie_break": self.association_tie_break,
+                "association_candidate_limit": self.association_candidate_limit,
+                "association_coordinate_alignment_mode": (
+                    self.association_coordinate_alignment_mode
+                ),
+                "association_coordinate_alignment_port": (
+                    self.association_coordinate_alignment_port
+                ),
+                "association_coordinate_alignment_origin_tick": (
+                    self.association_coordinate_alignment_origin_tick
+                ),
+            },
             "arrays": {
                 name: getattr(self, name).copy() for name in self.snapshot_array_names()
             },
@@ -1332,6 +1463,7 @@ class SubjectVMTraceStorage:
         schema = payload.get("schema")
         if schema not in {
             TRACE_STORAGE_SCHEMA,
+            TRACE_STORAGE_SCHEMA_V9,
             TRACE_STORAGE_SCHEMA_V8,
             TRACE_STORAGE_SCHEMA_V7,
             TRACE_STORAGE_SCHEMA_V6,
@@ -1359,6 +1491,40 @@ class SubjectVMTraceStorage:
             raise ValueError("subject_vm trace checkpoint capacity mismatch")
         if tuple(payload.get("objective_delta_names", ())) != OBJECTIVE_EVENT_DELTA_NAMES:
             raise ValueError("subject_vm trace objective delta schema mismatch")
+        policies = payload.get("runtime_policies", {})
+        if policies is None:
+            policies = {}
+        if not isinstance(policies, dict):
+            raise ValueError("subject_vm trace runtime policies must be an object")
+        result.association_tie_break = str(
+            policies.get("association_tie_break", "latest")
+        )
+        if result.association_tie_break not in {"latest", "oldest"}:
+            raise ValueError("subject_vm trace checkpoint tie-break policy is invalid")
+        result.association_candidate_limit = int(
+            policies.get("association_candidate_limit", 1)
+        )
+        if result.association_candidate_limit not in {1, 2}:
+            raise ValueError("subject_vm trace checkpoint candidate limit is invalid")
+        result.association_coordinate_alignment_mode = str(
+            policies.get(
+                "association_coordinate_alignment_mode", ASSOCIATION_ALIGNMENT_NATIVE
+            )
+        )
+        if result.association_coordinate_alignment_mode not in ASSOCIATION_ALIGNMENT_MODES:
+            raise ValueError("subject_vm trace checkpoint alignment mode is invalid")
+        result.association_coordinate_alignment_port = int(
+            policies.get("association_coordinate_alignment_port", -1)
+        )
+        result.association_coordinate_alignment_origin_tick = int(
+            policies.get("association_coordinate_alignment_origin_tick", 0)
+        )
+        if (
+            result.association_coordinate_alignment_mode != ASSOCIATION_ALIGNMENT_NATIVE
+            and not 0 <= result.association_coordinate_alignment_port < result.token_width
+        ):
+            raise ValueError("subject_vm trace checkpoint alignment port is invalid")
+
         arrays = payload.get("arrays")
         if not isinstance(arrays, dict):
             raise ValueError("subject_vm trace checkpoint arrays are missing")
@@ -1445,7 +1611,7 @@ class SubjectVMTraceStorage:
                 raise ValueError(f"subject_vm trace checkpoint shape mismatch for {name}")
             setattr(result, name, restored.copy())
         if (
-            schema != TRACE_STORAGE_SCHEMA
+            schema not in {TRACE_STORAGE_SCHEMA, TRACE_STORAGE_SCHEMA_V9}
             and result.cfg.association_enabled
             and result.association_assigned is not None
             and result.association_selected_count is not None
@@ -1461,6 +1627,15 @@ class SubjectVMTraceStorage:
         )
         cloned.association_tie_break = self.association_tie_break
         cloned.association_candidate_limit = self.association_candidate_limit
+        cloned.association_coordinate_alignment_mode = (
+            self.association_coordinate_alignment_mode
+        )
+        cloned.association_coordinate_alignment_port = (
+            self.association_coordinate_alignment_port
+        )
+        cloned.association_coordinate_alignment_origin_tick = (
+            self.association_coordinate_alignment_origin_tick
+        )
         return cloned
 
     def diagnostics(self) -> dict[str, Any]:
@@ -1474,6 +1649,15 @@ class SubjectVMTraceStorage:
             "association_enabled": self.cfg.association_enabled,
             "association_tie_break": self.association_tie_break,
             "association_candidate_limit": self.association_candidate_limit,
+            "association_coordinate_alignment_mode": (
+                self.association_coordinate_alignment_mode
+            ),
+            "association_coordinate_alignment_port": (
+                self.association_coordinate_alignment_port
+            ),
+            "association_coordinate_alignment_origin_tick": (
+                self.association_coordinate_alignment_origin_tick
+            ),
             "assigned_associations": (
                 0
                 if self.association_assigned is None
@@ -1547,6 +1731,11 @@ __all__ = [
     "OBJECTIVE_EVENT_DELTA_WIDTH",
     "RESOURCE_DELTA_WIDTH",
     "TRACE_STORAGE_SCHEMA",
+    "TRACE_STORAGE_SCHEMA_V9",
+    "ASSOCIATION_ALIGNMENT_NATIVE",
+    "ASSOCIATION_ALIGNMENT_IDENTITY",
+    "ASSOCIATION_ALIGNMENT_CYCLIC_DONOR",
+    "ASSOCIATION_ALIGNMENT_MODES",
     "TRACE_STORAGE_SCHEMA_V1",
     "TRACE_STORAGE_SCHEMA_V2",
     "TRACE_STORAGE_SCHEMA_V3",

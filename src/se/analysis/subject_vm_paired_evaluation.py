@@ -33,6 +33,10 @@ from ..subject_vm.live_write import (
     LIVE_WRITE_STATUS_PENDING,
     LIVE_WRITE_STATUS_CONTROL_PENDING,
 )
+from ..subject_vm.trace import (
+    ASSOCIATION_ALIGNMENT_CYCLIC_DONOR,
+    ASSOCIATION_ALIGNMENT_IDENTITY,
+)
 
 PAIRED_EVALUATION_PLAN_SCHEMA = "se-subject-vm-paired-evaluation-plan-v1"
 PAIRED_EVALUATION_BRANCH_SCHEMA = "se-subject-vm-paired-evaluation-branch-v1"
@@ -135,6 +139,9 @@ def _plan_rollback_after_ticks_override(plan: dict[str, Any]) -> int | None:
 def _normalized_runtime_overrides(
     association_tie_break_override: str | None,
     association_candidate_limit_override: int | None,
+    association_coordinate_alignment_mode_override: str | None,
+    association_coordinate_alignment_port_override: int | None,
+    association_coordinate_alignment_origin_tick_override: int | None,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {}
     if association_tie_break_override is not None:
@@ -151,6 +158,42 @@ def _normalized_runtime_overrides(
                 "subject_vm paired association candidate-limit override must be one or two"
             )
         result["subject_vm.association.candidate_limit"] = limit
+
+    alignment_values = (
+        association_coordinate_alignment_mode_override,
+        association_coordinate_alignment_port_override,
+        association_coordinate_alignment_origin_tick_override,
+    )
+    if any(value is not None for value in alignment_values):
+        if any(value is None for value in alignment_values):
+            raise ValueError(
+                "subject_vm paired association alignment override requires mode, port, and origin tick"
+            )
+        mode = str(association_coordinate_alignment_mode_override)
+        if mode not in {
+            ASSOCIATION_ALIGNMENT_IDENTITY,
+            ASSOCIATION_ALIGNMENT_CYCLIC_DONOR,
+        }:
+            raise ValueError(
+                "subject_vm paired association alignment mode must be identity or cyclic donor"
+            )
+        port = int(association_coordinate_alignment_port_override)
+        origin_tick = int(association_coordinate_alignment_origin_tick_override)
+        if port < 0:
+            raise ValueError(
+                "subject_vm paired association alignment port must be non-negative"
+            )
+        if origin_tick < 0:
+            raise ValueError(
+                "subject_vm paired association alignment origin tick must be non-negative"
+            )
+        result.update(
+            {
+                "subject_vm.association.coordinate_alignment_mode": mode,
+                "subject_vm.association.coordinate_alignment_port": port,
+                "subject_vm.association.coordinate_alignment_origin_tick": origin_tick,
+            }
+        )
     return result
 
 
@@ -163,27 +206,21 @@ def _plan_branch_runtime_overrides(plan: dict[str, Any]) -> dict[str, Any]:
     allowed = {
         "subject_vm.association.tie_break",
         "subject_vm.association.candidate_limit",
+        "subject_vm.association.coordinate_alignment_mode",
+        "subject_vm.association.coordinate_alignment_port",
+        "subject_vm.association.coordinate_alignment_origin_tick",
     }
     if not set(raw).issubset(allowed) or not raw:
         raise ValueError(
             "subject_vm paired branch runtime overrides may change only bounded association allocation"
         )
-    normalized: dict[str, Any] = {}
-    if "subject_vm.association.tie_break" in raw:
-        policy = str(raw["subject_vm.association.tie_break"])
-        if policy not in {"latest", "oldest"}:
-            raise ValueError(
-                "subject_vm paired association tie-break override must be latest or oldest"
-            )
-        normalized["subject_vm.association.tie_break"] = policy
-    if "subject_vm.association.candidate_limit" in raw:
-        limit = int(raw["subject_vm.association.candidate_limit"])
-        if limit not in {1, 2}:
-            raise ValueError(
-                "subject_vm paired association candidate-limit override must be one or two"
-            )
-        normalized["subject_vm.association.candidate_limit"] = limit
-    return normalized
+    return _normalized_runtime_overrides(
+        raw.get("subject_vm.association.tie_break"),
+        raw.get("subject_vm.association.candidate_limit"),
+        raw.get("subject_vm.association.coordinate_alignment_mode"),
+        raw.get("subject_vm.association.coordinate_alignment_port"),
+        raw.get("subject_vm.association.coordinate_alignment_origin_tick"),
+    )
 
 
 def _plan_association_tie_break_override(plan: dict[str, Any]) -> str | None:
@@ -196,6 +233,18 @@ def _plan_association_candidate_limit_override(plan: dict[str, Any]) -> int | No
     raw = _plan_branch_runtime_overrides(plan)
     value = raw.get("subject_vm.association.candidate_limit")
     return None if value is None else int(value)
+
+
+def _plan_association_coordinate_alignment_override(
+    plan: dict[str, Any],
+) -> tuple[str | None, int | None, int | None]:
+    raw = _plan_branch_runtime_overrides(plan)
+    mode = raw.get("subject_vm.association.coordinate_alignment_mode")
+    port = raw.get("subject_vm.association.coordinate_alignment_port")
+    origin = raw.get("subject_vm.association.coordinate_alignment_origin_tick")
+    if mode is None:
+        return None, None, None
+    return str(mode), int(port), int(origin)
 
 
 def _branch_contract_config(
@@ -246,6 +295,9 @@ def build_plan(
     rollback_after_ticks_override: int | None = None,
     association_tie_break_override: str | None = None,
     association_candidate_limit_override: int | None = None,
+    association_coordinate_alignment_mode_override: str | None = None,
+    association_coordinate_alignment_port_override: int | None = None,
+    association_coordinate_alignment_origin_tick_override: int | None = None,
 ) -> dict[str, Any]:
     source_path = Path(source_checkpoint).resolve()
     metadata, state = read_checkpoint_bundle(source_path)
@@ -281,7 +333,36 @@ def build_plan(
     runtime_overrides = _normalized_runtime_overrides(
         association_tie_break_override,
         association_candidate_limit_override,
+        association_coordinate_alignment_mode_override,
+        association_coordinate_alignment_port_override,
+        association_coordinate_alignment_origin_tick_override,
     )
+    if runtime_overrides.get(
+        "subject_vm.association.coordinate_alignment_origin_tick"
+    ) not in {None, source_tick}:
+        raise ValueError(
+            "subject_vm paired association alignment origin tick must equal the source checkpoint tick"
+        )
+    alignment_port = runtime_overrides.get(
+        "subject_vm.association.coordinate_alignment_port"
+    )
+    if alignment_port is not None:
+        port = int(alignment_port)
+        if not 0 <= port < int(effective_svm.trace.token_width):
+            raise ValueError(
+                "subject_vm paired association alignment port is outside token width"
+            )
+        excluded = {
+            int(effective_svm.association.request_token_port),
+        }
+        if effective_svm.modulation_enabled:
+            from ..subject_vm.modulation import modulation_control_ports
+
+            excluded.update(modulation_control_ports(effective_svm.modulation))
+        if port in excluded:
+            raise ValueError(
+                "subject_vm paired association alignment port must remain visible to association"
+            )
     branches = []
     for role in BRANCH_ROLES:
         branch_cfg = _branch_config(
@@ -379,10 +460,14 @@ def _set_branch_runtime_overrides(
     *,
     association_tie_break_override: str | None,
     association_candidate_limit_override: int | None,
+    association_coordinate_alignment_mode_override: str | None,
+    association_coordinate_alignment_port_override: int | None,
+    association_coordinate_alignment_origin_tick_override: int | None,
 ) -> None:
     if (
         association_tie_break_override is None
         and association_candidate_limit_override is None
+        and association_coordinate_alignment_mode_override is None
     ):
         return
     trace = simulation.subject_vm.trace_storage
@@ -402,6 +487,23 @@ def _set_branch_runtime_overrides(
                 "subject_vm paired association candidate-limit override must be one or two"
             )
         trace.association_candidate_limit = int(association_candidate_limit_override)
+    if association_coordinate_alignment_mode_override is not None:
+        if (
+            association_coordinate_alignment_port_override is None
+            or association_coordinate_alignment_origin_tick_override is None
+        ):
+            raise ValueError(
+                "subject_vm paired association alignment override is incomplete"
+            )
+        trace.association_coordinate_alignment_mode = str(
+            association_coordinate_alignment_mode_override
+        )
+        trace.association_coordinate_alignment_port = int(
+            association_coordinate_alignment_port_override
+        )
+        trace.association_coordinate_alignment_origin_tick = int(
+            association_coordinate_alignment_origin_tick_override
+        )
 
 
 def _branch_manifest(plan: dict[str, Any], role: str) -> dict[str, Any]:
@@ -485,6 +587,11 @@ def run_plan(
     association_candidate_limit_override = (
         _plan_association_candidate_limit_override(plan)
     )
+    (
+        association_coordinate_alignment_mode_override,
+        association_coordinate_alignment_port_override,
+        association_coordinate_alignment_origin_tick_override,
+    ) = _plan_association_coordinate_alignment_override(plan)
     _set_branch_mode(
         control,
         role="read-only-control",
@@ -502,11 +609,29 @@ def run_plan(
         control,
         association_tie_break_override=association_tie_break_override,
         association_candidate_limit_override=association_candidate_limit_override,
+        association_coordinate_alignment_mode_override=(
+            association_coordinate_alignment_mode_override
+        ),
+        association_coordinate_alignment_port_override=(
+            association_coordinate_alignment_port_override
+        ),
+        association_coordinate_alignment_origin_tick_override=(
+            association_coordinate_alignment_origin_tick_override
+        ),
     )
     _set_branch_runtime_overrides(
         live,
         association_tie_break_override=association_tie_break_override,
         association_candidate_limit_override=association_candidate_limit_override,
+        association_coordinate_alignment_mode_override=(
+            association_coordinate_alignment_mode_override
+        ),
+        association_coordinate_alignment_port_override=(
+            association_coordinate_alignment_port_override
+        ),
+        association_coordinate_alignment_origin_tick_override=(
+            association_coordinate_alignment_origin_tick_override
+        ),
     )
     for role, sim, directory in (
         ("read-only-control", control, control_dir),
@@ -652,6 +777,12 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument(
         "--association-candidate-limit", choices=(1, 2), type=int
     )
+    plan.add_argument(
+        "--association-coordinate-alignment-mode",
+        choices=(ASSOCIATION_ALIGNMENT_IDENTITY, ASSOCIATION_ALIGNMENT_CYCLIC_DONOR),
+    )
+    plan.add_argument("--association-coordinate-alignment-port", type=int)
+    plan.add_argument("--association-coordinate-alignment-origin-tick", type=int)
     plan.add_argument("--output", required=True)
     run = sub.add_parser("run")
     run.add_argument("--plan", required=True)
@@ -675,6 +806,15 @@ def main() -> None:
             rollback_after_ticks_override=args.rollback_after_ticks,
             association_tie_break_override=args.association_tie_break,
             association_candidate_limit_override=args.association_candidate_limit,
+            association_coordinate_alignment_mode_override=(
+                args.association_coordinate_alignment_mode
+            ),
+            association_coordinate_alignment_port_override=(
+                args.association_coordinate_alignment_port
+            ),
+            association_coordinate_alignment_origin_tick_override=(
+                args.association_coordinate_alignment_origin_tick
+            ),
         )
     else:
         plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))

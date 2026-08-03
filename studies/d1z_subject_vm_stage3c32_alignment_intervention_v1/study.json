@@ -1,0 +1,32 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c32_alignment_intervention_v1",
+  "title": "D1-Z Subject VM Stage 3C-32 shared-checkpoint runtime alignment intervention",
+  "status": "planned-and-reproducible",
+  "scientific_stage": "stage3c32-four-arm-runtime-subject-time-alignment-intervention",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_source_panel": true,
+    "reuse_stage3c23_rank_two_source_checkpoints": true,
+    "reuse_stage3c31_checksum_bound_assessment": true,
+    "four_arm_shared_checkpoint_design": true,
+    "same_alignment_runtime_code_path": true,
+    "tickwise_second_coordinate_marginal_preserved": true,
+    "matched_candidate_evaluation_count": true,
+    "matched_runtime_storage": true,
+    "forced_rollback": true,
+    "objective_facts_evaluated_componentwise": true,
+    "runtime_mechanism_change": true,
+    "checkpoint_schema_change": true,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "automatic_keep_or_revert": false,
+    "learned_weight": false,
+    "universal_attention": false,
+    "subjecthood_claim": false
+  },
+  "question": "Does subject-time alignment of the second association coordinate causally change selector identity, temporary update routing and component-wise live-minus-control effects under one fixed bootstrap?",
+  "analysis_outputs": [
+    "analyses/d1z_subject_vm_stage3c32_alignment_intervention_v1/final/stage3c32_alignment_intervention.json"
+  ]
+}

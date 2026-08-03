@@ -794,3 +794,11 @@ Stage 3C-31 固定 Stage 3C-23 rank-two readout、raw-threshold candidate opport
 所选历史事件的 21 维 objective fact 保持原样并逐坐标报告 current-versus-history 的绝对对比。坐标方向不被压缩为价值、reward 或自动 keep/revert。该阶段不改变 runtime、checkpoint、random stream 或永久参数状态。
 
 正式九 source 共 460 个同状态竞争 query。alignment 消融改变 39.53%–74.51% winner，并把 source-balanced age-one 中位数从 51.85% 降至 22.92%；所有边际保持、无 self donor 与计算成本匹配检查通过。九个 objective-fact 坐标在所有 source 中均表现为消融后绝对差异增大，但完整 21 维方向混合。因此 VM 合同只确认 subject-time binding 对当前地址排序有机械作用，不将其解释为 value、credit 或永久保留资格。
+
+## v0.146：Stage 3C-32 四臂运行时主体—时间对齐干预
+
+Stage 3C-32 将 Stage 3C-31 的只读重打分推进到真实 runtime，但只开放一个实验覆盖项：association-visible port 30 的主体—时间对齐模式。默认仍为 `native`。显式 identity 与 cyclic-donor 模式共享同一 stable sort/copy 路径；cyclic 模式只把同 tick 其他主体的 port 30 值循环分配给当前主体，并精确保留 float32 边际多重集合。
+
+每个 rank-two source checkpoint 同时派生 aligned/control、aligned/live、ablated/control、ablated/live 四臂。checkpoint identity、horizon、随机流、候选机会、candidate evaluation、runtime array bytes、reservation、rollback 与 21 维 Objective-Fact 合同必须匹配。任何模式都不得保留参数。
+
+九 source 中，对齐消融改变 32.03%–50.78% 的 association identity，并改变 9.38%–17.97% 的 update route；这建立了当前 fixed bootstrap 下的运行时 selector 和临时写入路由因果性。但只有 1/9 source 出现非零 Objective-Fact difference-in-differences，0/21 坐标具有稳定方向。因此本阶段不能宣称对齐更“好”、credit 正确、发生学习或应当 retention。

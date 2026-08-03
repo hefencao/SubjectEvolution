@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c31-alignment-ablation-audit-implemented"
+    assert contract["status"] == "stage-3c32-four-arm-runtime-alignment-intervention-implemented"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,7 +24,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3C-31"
+    assert contract["current_stage"] == "3C-32"
     assert contract["stage_2_contract"]["plasticity"] is False
     assert contract["stage_3a_contract"]["persistent_node_edge_path"] is False
     assert contract["stage_3a_contract"]["plasticity"] is False
@@ -243,6 +243,19 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["stage_3c31_contract"]["objective_fact_vectors_unchanged_and_reported_componentwise"] is True
     assert contract["stage_3c31_contract"]["learned_weight_authorized"] is False
     assert contract["stage_3c31_contract"]["permanent_write_authorized"] is False
+    assert contract["stage_3c32_contract"]["runtime_or_checkpoint_schema_change"] is True
+    assert contract["stage_3c32_contract"]["rank_two_source_checkpoint_fixed"] is True
+    assert contract["stage_3c32_contract"]["stage3c31_checksum_and_lineage_required"] is True
+    assert contract["stage_3c32_contract"]["four_arm_shared_checkpoint_design"] is True
+    assert contract["stage_3c32_contract"]["same_alignment_sort_copy_code_path"] is True
+    assert contract["stage_3c32_contract"]["per_tick_second_coordinate_marginal_preserved"] is True
+    assert contract["stage_3c32_contract"]["cyclic_self_donor_forbidden"] is True
+    assert contract["stage_3c32_contract"]["candidate_evaluation_count_matched"] is True
+    assert contract["stage_3c32_contract"]["runtime_storage_bytes_matched"] is True
+    assert contract["stage_3c32_contract"]["forced_rollback_required"] is True
+    assert contract["stage_3c32_contract"]["objective_fact_evaluation_componentwise_difference_in_differences"] is True
+    assert contract["stage_3c32_contract"]["learned_weight_authorized"] is False
+    assert contract["stage_3c32_contract"]["permanent_write_authorized"] is False
     assert contract["stage_3c21_contract"]["common_readout_only_node_index"] == 8
     assert contract["stage_3c21_contract"]["readout_changes_action_output"] is False
     assert contract["stage_3c21_contract"][

@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.145.0**
+Version: **0.146.0**
 
 ## Current scientific task
 
-Version 0.145 implements **Subject VM Stage 3C-31: subject-time alignment ablation and component-wise objective-fact contrast audit**.
+Version 0.146 implements **Subject VM Stage 3C-32: shared-checkpoint four-arm runtime subject-time alignment intervention**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -302,3 +302,14 @@ The authoritative raw-threshold candidate opportunity, first and constant coordi
 The declared nine-source workflow produced 460 same-state competitions, 43–58 per independent source. Breaking only subject-time alignment changed the winner in 39.53%–74.51% of queries, with a source-balanced median of 60.34%. The age-one winner fraction fell from a baseline median of 51.85% to an alignment-ablated median of 22.92%, while the exact per-tick second-coordinate multiset, no-self-donor contract and candidate-evaluation count remained valid in all sources. This establishes that the subject-history binding, rather than the coordinate marginal alone, is mechanically relevant to within-state ordering.
 
 The objective-fact result is component-wise rather than uniform. Every source contains both positive and negative mean paired deltas. Nine coordinates—energy, integrity, fertility, position_y, information_store and all four resolution-resource deltas—have positive ablation-minus-baseline mean absolute contrast in all nine sources, while no coordinate is stably negative in all sources. Thus aligned selection is consistently closer on those coordinates under this fixed bootstrap, but the mixed 21-coordinate result supplies no scalar value or universal credit ordering. It cannot establish value, causal-credit correctness, learning, subjecthood or a universal attention mechanism, and it does not authorize learned weights or permanent retention.
+
+
+## Stage 3C-32 current result
+
+Stage 3C-32 converts the Stage-3C-31 read-only alignment diagnosis into a runtime intervention. Every one of the nine frozen Stage-3C-23 rank-two source checkpoints produces four branches: aligned/read-only-control, aligned/guarded-live, cyclic-donor/read-only-control and cyclic-donor/guarded-live. Both alignment modes use the same stable sort/copy path and preserve the exact per-tick float32 port-30 multiset. Candidate evaluation counts, runtime array bytes, horizon, random stream, reservations and rollback remain matched.
+
+Across nine sources, alignment ablation changes association identity in 32.03%–50.78% of 128 comparable events per source (median 46.09%) and changes temporary update routing in 9.38%–17.97% (median 14.06%). It changes 23–30 bounded deltas per source. These effects appear in every independent source, so subject-time alignment is runtime-causal for selector identity and temporary update routing under this fixed bootstrap.
+
+The downstream evidence remains sparse. The aligned mode yields 121 completed paired windows and the alignment-ablated mode 125. Only one of nine sources has any nonzero component-wise cross-mode live-minus-control effect; no fact-sum or absolute-fact-sum coordinate has a stable direction across sources. The current three-tick temporary exposure therefore does not establish source-replicated Objective-Fact causality, beneficial direction, credit quality, learning or a retention decision.
+
+The next authorized boundary is a separately declared exposure-length intervention using the same checkpoints, four arms, alignment manipulation, matched compute/storage, forced rollback and component-wise source-balanced evaluation. It may not adaptively extend the current run or introduce scalar value.

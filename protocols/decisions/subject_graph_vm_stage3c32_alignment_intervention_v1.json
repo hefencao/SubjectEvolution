@@ -1,0 +1,108 @@
+{
+  "schema": "se-subject-vm-stage3c32-alignment-intervention-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c32-alignment-intervention-v1",
+  "status": "accepted-engineering-four-arm-runtime-intervention-frozen",
+  "project_version": "0.146.0",
+  "question": "Does preserving versus cyclically reassigning the association-visible subject-time coordinate causally alter selector identity, temporary update routing and component-wise objective facts under matched shared-checkpoint branches?",
+  "source_panel": {
+    "independent_source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "rank_two_visible_coordinates": [
+      11,
+      7
+    ],
+    "alignment_coordinate_port": 30,
+    "target_family": "edge_forward_gate",
+    "association_similarity": "normalized-dot",
+    "association_threshold": 0.8,
+    "association_tie_break": "latest",
+    "association_candidate_limit": 1,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "runtime_factor": {
+    "aligned_mode": "tickwise-subject-identity-v1",
+    "alignment_ablated_mode": "tickwise-cyclic-subject-donor-v1",
+    "same_sort_copy_code_path": true,
+    "per_tick_float32_coordinate_multiset_preserved": true,
+    "cyclic_self_donor_allowed": false,
+    "shared_source_checkpoint_across_all_four_arms": true,
+    "four_arms": [
+      "aligned/read-only-control",
+      "aligned/guarded-live",
+      "alignment-ablated/read-only-control",
+      "alignment-ablated/guarded-live"
+    ]
+  },
+  "cost_and_safety": {
+    "candidate_evaluation_count_must_match": true,
+    "runtime_array_bytes_must_match": true,
+    "random_draw_added": false,
+    "forced_rollback": true,
+    "componentwise_score_free_evaluation": true,
+    "automatic_keep_or_revert": false,
+    "permanent_parameter_retention": false
+  },
+  "interpretation_boundary": {
+    "selector_identity_causality_may_be_tested": true,
+    "temporary_update_route_causality_may_be_tested": true,
+    "coordinate_value_semantics": false,
+    "causal_credit_quality_proven": false,
+    "learning_claim_authorized": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false,
+    "subjecthood_claim_authorized": false
+  },
+  "observed_panel_result": {
+    "independent_source_count": 9,
+    "aligned_paired_window_count": 121,
+    "alignment_ablated_paired_window_count": 125,
+    "selector_identity_change_fraction_range": [
+      0.3203125,
+      0.5078125
+    ],
+    "selector_identity_change_fraction_median": 0.4609375,
+    "update_route_change_fraction_range": [
+      0.09375,
+      0.1796875
+    ],
+    "update_route_change_fraction_median": 0.140625,
+    "changed_bounded_delta_count_range": [
+      23,
+      30
+    ],
+    "changed_bounded_delta_count_median": 27,
+    "sources_with_nonzero_componentwise_live_control_effect": 1,
+    "stable_fact_sum_coordinate_count": 0,
+    "stable_fact_abs_sum_coordinate_count": 0,
+    "manipulation_integrity_all_sources": true,
+    "compute_and_storage_matched_all_sources": true,
+    "forced_rollback_restored_all_sources": true,
+    "assessment_sha256": "914af5d6aaa8e977f65802a43f7a9482428cc55d1d9d6f3fbb3c1238f9347abb"
+  },
+  "next_boundary": "A separately declared exposure-length intervention may extend rollback exposure while preserving the same nine shared source checkpoints, four arms, runtime alignment manipulation, compute/storage match, component-wise evaluation and forced rollback. No retention or scalarization is authorized.",
+  "interpretation": {
+    "alignment_is_runtime_causal_for_selector_identity_under_fixed_bootstrap": true,
+    "alignment_is_runtime_causal_for_temporary_update_routing_under_fixed_bootstrap": true,
+    "current_exposure_supports_source_replicated_objective_fact_causality": false,
+    "objective_fact_effect_is_uniform": false,
+    "objective_coordinates_have_value_semantics": false,
+    "causal_credit_quality_proven": false,
+    "learning_claim_authorized": false,
+    "permanent_write_authorized": false
+  }
+}

@@ -1,25 +1,19 @@
-# SubjectEvolution v0.145.0
+# SubjectEvolution v0.146.0
 
-SubjectEvolution is a deterministic CPU/GPU ecological evolution simulator with a partitioned unified Subject Graph VM research track.
+SubjectEvolution is an experimental simulation project for evolving subject-like internal organization without preassigned reward or human social semantics.
 
-Version 0.145.0 implements **Subject VM Stage 3C-31: subject-time alignment ablation and component-wise objective-fact contrast audit**. It keeps the frozen Stage 3C-23 rank-two readout and the full Stage 3C-23→30 lineage. Within baseline same-first-state competitions, it deterministically permutes only the second visible coordinate across subjects at each tick. This preserves the exact tick-wise marginal distribution and candidate-evaluation cost while breaking the coordinate's binding to each subject's own history.
+Version 0.146.0 implements **Subject VM Stage 3C-32: shared-checkpoint four-arm runtime subject-time alignment intervention**. It reuses the frozen Stage-3C-23 rank-two source panel and compares aligned versus cyclic-donor association coordinates, each with guarded-live and read-only-control branches. The intervention preserves the tick-wise coordinate marginal, candidate opportunity, compute/storage cost and forced rollback.
 
-The selected historical events are then compared through their unchanged 21 objective-fact coordinates. Those directions are descriptive facts, not values or rewards. Runtime state, checkpoint schema, addressing admission, update scale, rollback and permanent-retention policy remain unchanged.
+The nine-source result establishes that subject-time alignment causally changes selector identity and temporary update routing under the fixed bootstrap. It does not produce a source-replicated Objective-Fact effect at the current three-tick exposure: only one source is nonzero and no coordinate is stable. No learned weighting, reward, automatic keep/revert or permanent retention is authorized.
 
-Across nine independent sources, the alignment ablation changes 39.53%–74.51% of within-state winners and reduces the source-balanced median age-one fraction from 51.85% to 22.92%. Nine objective-fact coordinates show larger absolute current-versus-selected-history contrast after ablation in all nine sources; no coordinate is stably negative across all sources. The result therefore supports a mechanically relevant subject-history binding with mixed component-wise fact consequences, not a scalar objective, learned credit rule or retention authorization.
+## Stage 3C-32 study
 
-## Stage 3C-31 study
+The executable workflow is [`studies/d1z_subject_vm_stage3c32_alignment_intervention_v1/workflow.toml`](studies/d1z_subject_vm_stage3c32_alignment_intervention_v1/workflow.toml). It regenerates the frozen nine-source rank-one/rank-two lineage, runs the four-arm intervention, verifies manipulation/cost/rollback, performs source-balanced component-wise difference-in-differences and packages declared evidence separately from the clean project archive.
 
-The authoritative executable steps live only in [`studies/d1z_subject_vm_stage3c31_alignment_ablation_v1/workflow.toml`](studies/d1z_subject_vm_stage3c31_alignment_ablation_v1/workflow.toml). The workflow reruns the frozen rank-one/rank-two panel, re-establishes Stage 3C-23 through Stage 3C-30 lineage, performs the read-only Stage 3C-31 audit, and packages only declared evidence files without checkpoints.
 
-## Stage 3C-26 study
+## Prior addressing studies
 
-The authoritative executable steps live only in [`studies/d1z_subject_vm_stage3c26_age_phase_opportunity_v1/workflow.toml`](studies/d1z_subject_vm_stage3c26_age_phase_opportunity_v1/workflow.toml). The workflow reruns the frozen rank-one/rank-two panel, re-establishes Stage 3C-23/24/25 lineage, performs the read-only Stage 3C-26 audit, and packages only declared evidence files without checkpoints.
-
-## Stage 3C-25 study
-
-The authoritative executable steps live only in [`studies/d1z_subject_vm_stage3c25_winner_basin_v1/workflow.toml`](studies/d1z_subject_vm_stage3c25_winner_basin_v1/workflow.toml). The workflow reruns the frozen rank-one/rank-two panel, re-establishes Stage 3C-23/24 lineage, performs the read-only Stage 3C-25 audit, and packages only declared evidence files without checkpoints.
-
-## Stage 3C-24 study
-
-The prior candidate-opportunity and score-margin audit remains available at [`studies/d1z_subject_vm_stage3c24_rank2_selection_v1/workflow.toml`](studies/d1z_subject_vm_stage3c24_rank2_selection_v1/workflow.toml).
+- Stage 3C-31 alignment ablation: [`studies/d1z_subject_vm_stage3c31_alignment_ablation_v1/workflow.toml`](studies/d1z_subject_vm_stage3c31_alignment_ablation_v1/workflow.toml)
+- Stage 3C-30 weight robustness: [`studies/d1z_subject_vm_stage3c30_weight_robustness_v1/workflow.toml`](studies/d1z_subject_vm_stage3c30_weight_robustness_v1/workflow.toml)
+- Stage 3C-29 opportunity-conditioned occupancy: [`studies/d1z_subject_vm_stage3c29_transition_occupancy_v1/workflow.toml`](studies/d1z_subject_vm_stage3c29_transition_occupancy_v1/workflow.toml)
+- Stage 3C-23 rank-two source boundary: [`studies/d1z_subject_vm_stage3c23_dual_readout_rank_v1/workflow.toml`](studies/d1z_subject_vm_stage3c23_dual_readout_rank_v1/workflow.toml)

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.146.0
+
+- Adds Subject VM Stage 3C-32 four-arm runtime subject-time alignment intervention from shared frozen rank-two source checkpoints.
+- Adds identity and cyclic-donor association-coordinate policies through one deterministic sort/copy path while preserving exact per-tick float32 marginals.
+- Advances trace checkpoint storage to v10 to persist explicit alignment policy; v9 and older checkpoints retain native behavior.
+- Binds alignment mode, port and source-tick origin into paired branch identity and rejects incomplete or mismatched lineage.
+- Adds source-balanced 21-coordinate difference-in-differences with manipulation, compute/storage and forced-rollback integrity screens.
+- Freezes the nine-source result: selector identity and update routing change in all sources, while nonzero Objective-Fact cross-mode evidence appears in only one source and no coordinate is stable.
+
 ## 0.145.0
 
 - Adds Subject VM Stage 3C-31 read-only subject-time alignment ablation over frozen Stage 3C-23 rank-two checkpoints.

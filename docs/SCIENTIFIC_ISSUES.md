@@ -799,3 +799,14 @@ Stage 3C-30 证明非零第二坐标在宽权重范围内稳定参与同状态�
 选择 identity 的变化只能证明该绑定对当前 fixed-bootstrap selector 有机械作用。即使 objective-fact 某些坐标的 current-versus-history 对比随消融稳定增大或减小，也不能为方向赋予价值，不能证明 causal credit 正确，更不能授权 learned weight、永久保留或通用注意力。下一步必须根据完整九 source 的逐坐标结果决定，不能预设“更接近”或“更远”就是更好。
 
 正式结果表明打断 subject-time alignment 会在每个 source 中改变 winner（39.53%–74.51%），因此“只要第二坐标边际分布相同就足够”的解释被拒绝。与此同时，21 个 objective-fact 坐标在每个 source 内都呈混合方向；只有九个坐标在 9/9 source 中稳定表现为消融后绝对差异增大，没有坐标稳定表现为消融后差异减小。当前可冻结的结论是：alignment 是 selector 的机械组成部分，且在若干事实坐标上保持更近历史；不能进一步标量化为统一信用质量。
+
+## Stage 3C-32：内部路由因果性不能替代下游事实复现
+
+Stage 3C-31 只读消融表明主体—时间对齐影响 winner identity，但离线选择变化可能不进入真实 update chain。Stage 3C-32 通过四臂共享-checkpoint runtime intervention 解决这一点，并要求同路径 manipulation、候选/存储成本匹配、forced rollback 与 component-wise difference-in-differences。
+
+正式结果显示，对齐在 9/9 source 中因果改变 association identity 和 temporary update route，但只有 1/9 source 产生非零 Objective-Fact cross-mode effect。该分层阻止两个常见错误：
+
+1. 不能因为内部 selector/route 可操纵，就声称它具有稳定外部功能；
+2. 不能把单一 source 的非零事实差或混合坐标合成为价值/信用分数。
+
+当前未决问题是 exposure propagation，而不是 selector manipulation。后续只能通过预声明、共享 source、单因素 exposure-length 对照解决；不得自适应延长到出现正结果，也不得从内部因果性直接授权永久 retention。
