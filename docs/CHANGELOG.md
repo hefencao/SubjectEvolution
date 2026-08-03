@@ -1,3 +1,21 @@
+# Changelog
+
+## 0.145.0
+
+- Adds Subject VM Stage 3C-31 read-only subject-time alignment ablation over frozen Stage 3C-23 rank-two checkpoints.
+- Preserves the exact per-tick second-coordinate marginal multiset, authoritative raw-threshold candidate opportunity and candidate-evaluation count while breaking each coordinate value's binding to its own subject history.
+- Restricts the primary comparison to within-first-state competitions and reports all 21 selected-history objective-fact contrasts component-wise without scalar value or automatic keep/revert.
+- Adds a checksum-bound CLI, decision protocol, declarative nine-source workflow and regression tests without runtime or checkpoint changes.
+- Freezes 460 same-state competitions across nine sources: alignment ablation changes 39.53%–74.51% of winners and lowers the median age-one fraction from 51.85% to 22.92%.
+- Finds nine objective-fact coordinates with larger absolute contrast after ablation in all nine sources, but no stable negative coordinate and no uniform 21-coordinate direction; retains all value, learning and retention authorizations as false.
+
+## 0.144.0
+
+- Adds Subject VM Stage 3C-30 zero-weight rank-collapse and bounded positive second-coordinate weight robustness audit.
+- Finds rank collapse changes 6.25%–17.71% of multi-candidate winners while preserving first-state occupancy exactly; positive weights `0.1–10` preserve nearest-second-coordinate within-state ordering in all sources.
+- Excludes the independent top-level native `src/gui/` workspace from release-freshness hashing while retaining `src/se/gui/` and all Python product code in the test boundary.
+- Adds no learned weight, reward, runtime write or permanent retention.
+
 ## 0.143.0
 
 - Adds Subject VM Stage 3C-29 read-only transition-class and opportunity-conditioned basin assessment.
@@ -87,8 +105,6 @@
 - Confirms ports 29-31 are constant `[0,0,1]` across 1,152 frozen-panel tokens; centered rank is zero and all 3,888 eligible normalized-dot scores are 1.0.
 - Adds the Stage 3C-19 workflow, decision protocol, CLI and deterministic tests without runtime or checkpoint schema changes.
 - Authorizes no retention, value, learning, subjecthood or universal-attention claim.
-
-# Changelog
 
 ## 0.132.0
 

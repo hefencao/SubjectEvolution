@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.144.0**
+Version: **0.145.0**
 
 ## Current scientific task
 
-Version 0.144 implements **Subject VM Stage 3C-30: second-coordinate weight robustness and rank-collapse audit**.
+Version 0.145 implements **Subject VM Stage 3C-31: subject-time alignment ablation and component-wise objective-fact contrast audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -291,3 +291,14 @@ The complete frozen chain still has 0/21 stable objective coordinates. It establ
 ### Test and release-freshness boundary
 
 `make test` excludes only the independent top-level native GUI workspace `src/gui/` from its source-tree freshness fingerprint. That workspace may contain C/C++ sources, vendored dependencies and compiler outputs and is built by its own toolchain. The Python GUI integration layer `src/se/gui/`, all Python source, tests, scripts and configurations remain inside test discovery and the release-freshness hash. The exclusion is exact and covered by regression tests; it does not hide changes elsewhere under `src/`.
+
+
+## Stage 3C-31 current result
+
+Stage 3C-31 remains external analysis only. It reuses the frozen Stage 3C-23 rank-two read-only-control checkpoints and verifies the checksum and lineage of Stage 3C-30. The primary screen is restricted to queries whose baseline winner is in the current first-coordinate state and for which at least two same-state candidates exist. The only analysis factor is a deterministic tick-wise cyclic donor permutation of token port 30 across subjects. The donor offset changes by tick, no subject receives its own value, and the exact per-tick second-coordinate multiset is preserved.
+
+The authoritative raw-threshold candidate opportunity, first and constant coordinates, delay bounds, threshold, latest/top-1 ordering, target/carrier, update, rollback and retention remain fixed. Baseline and alignment-ablated arms evaluate the same number of same-state candidates. The unchanged 21-dimensional objective-fact vectors of the selected historical events are compared coordinate by coordinate; no scalar value or automatic keep/revert result is formed.
+
+The declared nine-source workflow produced 460 same-state competitions, 43–58 per independent source. Breaking only subject-time alignment changed the winner in 39.53%–74.51% of queries, with a source-balanced median of 60.34%. The age-one winner fraction fell from a baseline median of 51.85% to an alignment-ablated median of 22.92%, while the exact per-tick second-coordinate multiset, no-self-donor contract and candidate-evaluation count remained valid in all sources. This establishes that the subject-history binding, rather than the coordinate marginal alone, is mechanically relevant to within-state ordering.
+
+The objective-fact result is component-wise rather than uniform. Every source contains both positive and negative mean paired deltas. Nine coordinates—energy, integrity, fertility, position_y, information_store and all four resolution-resource deltas—have positive ablation-minus-baseline mean absolute contrast in all nine sources, while no coordinate is stably negative in all sources. Thus aligned selection is consistently closer on those coordinates under this fixed bootstrap, but the mixed 21-coordinate result supplies no scalar value or universal credit ordering. It cannot establish value, causal-credit correctness, learning, subjecthood or a universal attention mechanism, and it does not authorize learned weights or permanent retention.

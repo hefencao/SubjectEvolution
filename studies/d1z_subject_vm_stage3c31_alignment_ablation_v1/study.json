@@ -1,0 +1,30 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c31_alignment_ablation_v1",
+  "title": "D1-Z Subject VM Stage 3C-31 subject-time alignment and objective-fact contrast audit",
+  "status": "planned-and-reproducible",
+  "scientific_stage": "stage3c31-read-only-subject-time-alignment-ablation-and-objective-fact-contrast",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_source_panel": true,
+    "reuse_stage3c23_rank_two_arm": true,
+    "reuse_stage3c30_checksum_bound_assessment": true,
+    "exclude_forced_single_candidate_queries": true,
+    "within_first_state_competitions_only": true,
+    "preserve_authoritative_raw_candidate_opportunity": true,
+    "tickwise_second_coordinate_marginal_preserved": true,
+    "objective_facts_evaluated_componentwise": true,
+    "runtime_mechanism_change": false,
+    "checkpoint_schema_change": false,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "topology_evolution": false,
+    "learned_weight": false,
+    "universal_attention": false,
+    "subjecthood_claim": false
+  },
+  "question": "Does the robust non-zero second-coordinate ordering depend on its subject-time alignment, and how does breaking that alignment change the component-wise objective-fact contrasts of selected histories?",
+  "analysis_outputs": [
+    "analyses/d1z_subject_vm_stage3c31_alignment_ablation_v1/final/stage3c31_alignment_ablation.json"
+  ]
+}

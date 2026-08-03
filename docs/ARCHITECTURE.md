@@ -1726,3 +1726,14 @@ Stage 3C-30 lives entirely in `src/se/analysis/subject_vm_stage3c30_weight_robus
 The zero-weight ablation changes winner identity without changing same-first-state basin occupancy, while every positive factor preserves nearest-second-coordinate same-state ordering across all nine sources. This separates the first coordinate's state-basin role from the second coordinate's within-state identity-ordering role. It does not identify a beneficial scale, learned weight, reward, value, causal credit or retention rule. No runtime field, trace array, checkpoint schema, configuration identity, branch owner, ledger, lifecycle owner or persistent memory is added.
 
 The independent top-level `src/gui/` native workspace is outside the Python release-freshness fingerprint used by `make test`; `src/se/gui/` remains inside that boundary. This is an exact build-domain boundary, not a general exclusion of GUI-facing Python code or other `src/` content.
+
+
+### Stage 3C-31 — subject-time alignment ablation and objective-fact contrast audit (implemented in v0.145)
+
+Stage 3C-31 lives entirely in `src/se/analysis/subject_vm_stage3c31_alignment_ablation.py`. It consumes the frozen Stage 3C-23 rank-two read-only-control checkpoints and a checksum-valid Stage 3C-30 assessment. The analyzer first reconstructs the authoritative raw-threshold selector and then restricts the primary test to baseline same-first-state competitions with at least two candidates.
+
+The sole counterfactual is a deterministic tick-wise cyclic permutation of visible token port 30 across stable subjects. The donor offset changes at every tick; no subject keeps its own value, while the float32 multiset at each tick is exactly unchanged. The first coordinate, constant coordinate, candidate identities, delay and threshold admission, latest/top-1 ordering and candidate-evaluation count remain fixed. This is an alignment ablation, not a new runtime allocator or learned weight.
+
+For each baseline and counterfactual winner, the analyzer reconstructs the unchanged 21-dimensional objective-fact vector used by modulation and reports paired absolute contrast separately for every coordinate. It does not combine coordinates into a score, value, reward or keep/revert decision. Runtime/checkpoint growth is zero and permanent retention remains disabled.
+
+The formal panel contains 460 same-state competitions. The permutation changes 39.53%–74.51% of winners and lowers the source-balanced median age-one winner fraction from 51.85% to 22.92%, while all marginal-preservation and cost-matching checks pass. Nine objective-fact coordinates have larger mean absolute contrast after ablation in every source, but the full 21-coordinate direction is mixed. Architecture therefore records subject-time binding as mechanically relevant to the fixed rank-two address, not as a value function or retention criterion.

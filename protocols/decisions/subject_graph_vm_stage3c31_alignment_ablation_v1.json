@@ -1,0 +1,123 @@
+{
+  "schema": "se-subject-vm-stage3c31-alignment-ablation-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c31-alignment-ablation-v1",
+  "status": "accepted-engineering-read-only-subject-time-alignment-ablation-only",
+  "project_version": "0.145.0",
+  "question": "Does robust within-state ordering depend on the second coordinate being aligned with each subject history, and how does breaking only that alignment change the unchanged component-wise objective-fact contrasts of selected histories?",
+  "source_panel": {
+    "independent_source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "rank_two_visible_coordinates": [
+      11,
+      7
+    ],
+    "target_family": "edge_forward_gate",
+    "edge_local_eligibility_carrier": true,
+    "association_similarity": "normalized-dot",
+    "association_threshold": 0.8,
+    "association_tie_break": "latest",
+    "association_candidate_limit": 1,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "analysis_factor": {
+    "runtime_change": false,
+    "arm_analyzed": "Stage-3C-23 frozen rank-two read-only control",
+    "query_scope": "baseline winner is in current first state and at least two same-state candidates exist",
+    "permutation": "tickwise cyclic subject donor with tick-varying nonzero offset",
+    "per_tick_second_coordinate_multiset_preserved": true,
+    "subject_time_alignment_preserved": false,
+    "authoritative_raw_threshold_candidate_set_reused": true,
+    "objective_fact_vectors_changed": false,
+    "objective_fact_analysis": "21 coordinates reported component-wise without scalar value"
+  },
+  "cost_and_ablation": {
+    "candidate_evaluation_count_matched": true,
+    "runtime_memory_growth_bytes": 0,
+    "checkpoint_growth_bytes": 0,
+    "runtime_mechanism_added": false,
+    "random_draw_added": false,
+    "subject_time_alignment_ablation_present": true
+  },
+  "interpretation_boundary": {
+    "coordinate_distribution_has_value_semantics": false,
+    "objective_fact_direction_has_value_semantics": false,
+    "causal_credit_quality_proven": false,
+    "learning_claim_authorized": false,
+    "learned_weight_authorized": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "observed_panel_result": {
+    "independent_source_count": 9,
+    "same_state_competition_query_count_total": 460,
+    "same_state_competition_query_count_range": [
+      43,
+      58
+    ],
+    "changed_winner_fraction_range": [
+      0.3953488372093023,
+      0.7450980392156863
+    ],
+    "changed_winner_fraction_median": 0.603448275862069,
+    "baseline_age_one_fraction_range": [
+      0.4375,
+      0.627906976744186
+    ],
+    "baseline_age_one_fraction_median": 0.5185185185185185,
+    "alignment_ablated_age_one_fraction_range": [
+      0.17647058823529413,
+      0.4418604651162791
+    ],
+    "alignment_ablated_age_one_fraction_median": 0.22916666666666666,
+    "stable_positive_mean_paired_delta_coordinate_names": [
+      "objective_delta.energy",
+      "objective_delta.fertility",
+      "objective_delta.information_store",
+      "objective_delta.integrity",
+      "objective_delta.position_y",
+      "resolution_resource_delta.0",
+      "resolution_resource_delta.1",
+      "resolution_resource_delta.2",
+      "resolution_resource_delta.3"
+    ],
+    "stable_negative_mean_paired_delta_coordinate_names": [],
+    "positive_coordinate_count_per_source_range": [
+      10,
+      12
+    ],
+    "negative_coordinate_count_per_source_range": [
+      1,
+      3
+    ],
+    "per_tick_second_coordinate_marginal_preserved_all_sources": true,
+    "no_self_donor_all_sources": true,
+    "candidate_evaluation_count_matched_all_sources": true,
+    "assessment_sha256": "7aaf365dc29c27d77ddea9b9e244e1c23b4198c57231b49703030df4fc403628"
+  },
+  "next_boundary": "Freeze the component-wise result before any runtime intervention. A later intervention must use shared source checkpoints, exact alignment ablation, matched compute/storage cost, forced rollback and score-free objective-fact evaluation; selector agreement alone cannot authorize retention or learned weighting.",
+  "interpretation": {
+    "subject_time_alignment_is_mechanically_relevant_to_within_state_selection": true,
+    "aligned_selection_has_lower_absolute_contrast_on_nine_coordinates_in_all_sources": true,
+    "objective_fact_result_is_uniform_across_all_coordinates": false,
+    "coordinate_direction_has_value_semantics": false,
+    "causal_credit_quality_proven": false,
+    "learning_claim_authorized": false,
+    "learned_weight_authorized": false,
+    "permanent_write_authorized": false
+  }
+}

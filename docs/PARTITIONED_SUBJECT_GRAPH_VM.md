@@ -783,3 +783,14 @@ Stage 3C-29 固定 Stage 3C-23 rank-two readout 与完整 addressing/runtime 合
 Stage 3C-30 不修改 VM、checkpoint、候选 admission、threshold、delay、latest/top-1、target/carrier、rollback 或 retention。它在固定 raw-threshold candidate set 上把第二 visible coordinate 外部缩放为 `0, 0.1, 0.25, 0.5, 1, 2, 4, 10`。
 
 weight 0 在所有 source 中保留完全相同的 same-first-state basin，却改变 6.25%–17.71% winner identity，并一致提高 age-one winner fraction。任意正 weight 都保持同状态内最近第二坐标候选为唯一 winner，positive-panel 最低 baseline agreement 为 94.79%–98.96%。这说明第一坐标负责当前状态 basin，非零第二坐标鲁棒地负责同状态排序；它不证明精确权重最优，不授权 learned weight、reward、causal-credit、permanent retention、learning、subjecthood 或 universal attention claim。
+
+
+## v0.145：Stage 3C-31 主体—时间对齐消融与 Objective-Fact 对照审计
+
+Stage 3C-31 固定 Stage 3C-23 rank-two readout、raw-threshold candidate opportunity、normalized-dot、threshold 0.8、latest/top-1、target/carrier、delta、exposure 与 rollback。主筛查只包含 baseline winner 位于当前第一状态且至少存在两个同状态候选的 query。
+
+唯一分析因子是在每个 tick 内按稳定 subject ID 排序，对第二 visible coordinate 做随 tick 改变偏移量的循环 donor 置换。每个 tick 的 float32 边际多重集合完全不变，且没有 subject 获得自身值，但该坐标不再与其自身历史对齐。baseline 与消融评估完全相同的候选数。
+
+所选历史事件的 21 维 objective fact 保持原样并逐坐标报告 current-versus-history 的绝对对比。坐标方向不被压缩为价值、reward 或自动 keep/revert。该阶段不改变 runtime、checkpoint、random stream 或永久参数状态。
+
+正式九 source 共 460 个同状态竞争 query。alignment 消融改变 39.53%–74.51% winner，并把 source-balanced age-one 中位数从 51.85% 降至 22.92%；所有边际保持、无 self donor 与计算成本匹配检查通过。九个 objective-fact 坐标在所有 source 中均表现为消融后绝对差异增大，但完整 21 维方向混合。因此 VM 合同只确认 subject-time binding 对当前地址排序有机械作用，不将其解释为 value、credit 或永久保留资格。

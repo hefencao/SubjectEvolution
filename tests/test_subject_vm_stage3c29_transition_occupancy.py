@@ -34,6 +34,10 @@ from se.analysis.subject_vm_stage3c30_weight_robustness import (
     STAGE3C30_WEIGHT_ROBUSTNESS_SCHEMA,
     assess_stage3c30_weight_robustness,
 )
+from se.analysis.subject_vm_stage3c31_alignment_ablation import (
+    STAGE3C31_ALIGNMENT_ABLATION_SCHEMA,
+    assess_stage3c31_alignment_ablation,
+)
 from se.experiments.subject_vm_short_paired_study import (
     ShortPairedStudyParameters,
     run_short_paired_study,
@@ -232,3 +236,81 @@ def test_stage3c30_rejects_stage3c29_lineage_mismatch(stage3c29_inputs) -> None:
     broken["assessment_sha256"] = _canonical_sha256(broken)
     with pytest.raises(ValueError, match="lineage mismatch"):
         assess_stage3c30_weight_robustness(*rank2, broken)
+
+
+def test_stage3c31_breaks_subject_time_alignment_with_matched_opportunity(
+    stage3c29_inputs,
+) -> None:
+    rank2, _stage3c28, stage3c29 = stage3c29_inputs
+    stage3c30 = assess_stage3c30_weight_robustness(*rank2, stage3c29)
+    result = assess_stage3c31_alignment_ablation(*rank2, stage3c30)
+
+    assert result["schema"] == STAGE3C31_ALIGNMENT_ABLATION_SCHEMA
+    findings = result["cross_source_findings"]
+    assert findings[
+        "tickwise_second_coordinate_marginal_is_preserved_in_all_sources"
+    ]
+    assert findings[
+        "permutation_assigns_no_subject_its_own_second_coordinate_in_all_sources"
+    ]
+    assert findings["candidate_evaluation_count_is_matched_in_all_sources"]
+    assert findings[
+        "subject_time_alignment_ablation_changes_within_state_winner_identity_in_all_sources"
+    ]
+    assert findings[
+        "objective_fact_contrast_changes_in_at_least_one_coordinate_in_all_sources"
+    ]
+
+    for row in result["per_source"]:
+        assert row["requested_query_count"] == 128
+        assert row["assigned_query_count"] == 112
+        assert row["forced_single_candidate_query_count"] == 16
+        assert row["multi_candidate_query_count"] == 96
+        assert row["same_state_competition_query_count"] > 0
+        assert row["reconstructed_score_selection_mismatch_count"] == 0
+        assert row["permutation"][
+            "per_tick_second_coordinate_multiset_preserved_exactly"
+        ]
+        assert row["permutation"]["self_donor_assignment_count"] == 0
+        assert row["candidate_evaluation"]["counts_match"]
+        assert row["selection"]["changed_winner_count"] > 0
+        evidence = row["objective_fact_contrast"]
+        assert evidence["coordinate_count"] == 21
+        for coordinate in evidence["coordinates"]:
+            total = (
+                coordinate["ablation_higher_fraction"]
+                + coordinate["ablation_lower_fraction"]
+                + coordinate["equal_fraction"]
+            )
+            assert total == pytest.approx(1.0)
+
+    interpretation = result["diagnostic_interpretation"]
+    assert interpretation[
+        "nonzero_second_coordinate_ordering_depends_on_subject_time_alignment"
+    ]
+    assert interpretation["selector_agreement_alone_is_sufficient_credit_evidence"] is False
+    assert interpretation["alignment_ablation_proves_causal_credit_quality"] is False
+    assert result["runtime_or_checkpoint_schema_changed"] is False
+    assert result["permanent_parameter_retention_authorized"] is False
+    assert result["learning_claim_authorized"] is False
+    json.dumps(result, ensure_ascii=False, allow_nan=False)
+
+
+def test_stage3c31_rejects_tampered_stage3c30_checksum(stage3c29_inputs) -> None:
+    rank2, _stage3c28, stage3c29 = stage3c29_inputs
+    broken = assess_stage3c30_weight_robustness(*rank2, stage3c29)
+    broken["diagnostic_interpretation"][
+        "second_coordinate_is_required_to_resolve_within_state_winner_identity"
+    ] = False
+    with pytest.raises(ValueError, match="checksum mismatch"):
+        assess_stage3c31_alignment_ablation(*rank2, broken)
+
+
+def test_stage3c31_rejects_stage3c30_lineage_mismatch(stage3c29_inputs) -> None:
+    rank2, _stage3c28, stage3c29 = stage3c29_inputs
+    broken = assess_stage3c30_weight_robustness(*rank2, stage3c29)
+    broken["rank2_study_sha256"] = "0" * 64
+    broken.pop("assessment_sha256")
+    broken["assessment_sha256"] = _canonical_sha256(broken)
+    with pytest.raises(ValueError, match="lineage mismatch"):
+        assess_stage3c31_alignment_ablation(*rank2, broken)

@@ -790,3 +790,12 @@ Stage 3C-30 在不改变 raw-threshold candidate opportunity 的前提下，只�
 任意正因子 `0.1–10` 都在 9/9 source 中保持“同状态内第二坐标最近候选必胜”，对原始 weight 1 winner 的最低一致率仍为 94.79%–98.96%。这排除了“只有精确 weight 1 才能产生当前局部 basin”的解释，但不能把宽容区间解释为权重最优、价值、因果信用或学习证据。
 
 下一步若要从诊断走向干预，必须重新建立有明确成本、共享 checkpoint、客观事实消融和永久保留关闭的独立合同；不得直接把该结果转成 learned weighting、reward、自动 keep/revert 或通用注意力机制。
+
+
+## Stage 3C-31：坐标边际分布与主体历史绑定必须分开审计
+
+Stage 3C-30 证明非零第二坐标在宽权重范围内稳定参与同状态排序，但这仍可能只反映边际分布，而不是该坐标与具体主体历史的绑定。Stage 3C-31 因此保持每个 tick 的第二坐标多重集合、候选机会和计算成本不变，只打断 subject-time alignment。
+
+选择 identity 的变化只能证明该绑定对当前 fixed-bootstrap selector 有机械作用。即使 objective-fact 某些坐标的 current-versus-history 对比随消融稳定增大或减小，也不能为方向赋予价值，不能证明 causal credit 正确，更不能授权 learned weight、永久保留或通用注意力。下一步必须根据完整九 source 的逐坐标结果决定，不能预设“更接近”或“更远”就是更好。
+
+正式结果表明打断 subject-time alignment 会在每个 source 中改变 winner（39.53%–74.51%），因此“只要第二坐标边际分布相同就足够”的解释被拒绝。与此同时，21 个 objective-fact 坐标在每个 source 内都呈混合方向；只有九个坐标在 9/9 source 中稳定表现为消融后绝对差异增大，没有坐标稳定表现为消融后差异减小。当前可冻结的结论是：alignment 是 selector 的机械组成部分，且在若干事实坐标上保持更近历史；不能进一步标量化为统一信用质量。
