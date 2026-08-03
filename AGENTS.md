@@ -1,27 +1,14 @@
 # AGENTS.md
 
 These rules apply to every automated or human-assisted change in this repository.
-They are mandatory project contracts, not suggestions.
+They define repository invariants; task-specific validation and delivery steps live in
+`docs/WORKFLOW_PROFILES.md`.
 
-## 1. Baseline and execution
+## 1. Baseline and task identity
 
-1. Use the explicitly supplied project archive as the only code baseline.
-2. Do not replay old patches, reuse an earlier worktree, or reconstruct missing code
-   from memory.
-3. Perform actual source/document changes and validation; do not return only a plan.
-4. Use the activated Conda editable environment. Run `make conda-sync` only after
-   changing console entries, dependencies, package structure, or `pyproject.toml`.
-5. Routine validation is `make test` and `make conda-check`. The independent native
-   `src/gui/` workspace is outside Python freshness scanning; `src/se/gui/` is not.
-6. In chat, report validation only when an actual non-GPU error remains. Keep complete
-   validation reports inside the delivered evidence bundle.
-7. Deliver only three top-level artifacts unless the user explicitly requests more:
-   complete project archive, baseline-to-current patch, and research/evidence bundle.
-
-## 2. Task type must be declared first
-
-Before editing code or durable project documents, classify the iteration and write
-one Git title using this exact form:
+1. Use the explicitly supplied project archive or checkout as the only code baseline.
+2. Do not replay old patches, reuse earlier worktrees, or reconstruct missing code from memory.
+3. Before editing, declare exactly one Git title:
 
 ```text
 [TYPE] scope: imperative summary
@@ -29,47 +16,42 @@ one Git title using this exact form:
 
 Allowed types:
 
-- `[MAIN-EXP]` — the currently authorized mainline scientific experiment;
-- `[BRANCH-EXP]` — an alternative or competing experimental mechanism;
+- `[MAIN-EXP]` — authorized mainline scientific experiment;
+- `[BRANCH-EXP]` — competing or alternative experiment;
 - `[PARAM-EXP]` — code-parameter exploration or sweep;
-- `[EVOLVE-ENV]` — evolution code that changes environment, substrate, ecology, or
-  persistent selection opportunity;
-- `[EVOLVE-SUBJECT]` — evolution code that changes subject capability, graph,
-  genetics, development, inheritance, or costs;
+- `[EVOLVE-ENV]` — environment, substrate, ecology, or persistent pressure code;
+- `[EVOLVE-SUBJECT]` — subject capability, graph, genetics, development, inheritance, or cost code;
 - `[ENGINEERING]` — runtime, performance, tests, packaging, tooling, or refactor;
 - `[DOC-GOV]` — documentation structure, governance, or task-tree maintenance;
 - `[RELEASE]` — release assembly only.
-
-Examples:
-
-```text
-[MAIN-EXP] D1-Z: audit action and objective-event threshold crossings
-[BRANCH-EXP] D1-Z: compare bounded allocator alternative
-[PARAM-EXP] subject-vm: scan fixed delay bounds on a separate branch
-[EVOLVE-ENV] substrate: add persistent orthogonal resource pressure
-[EVOLVE-SUBJECT] graph: add costed topology mutation contract
-[DOC-GOV] docs: reorganize active docs and typed task tree
-```
 
 `[BRANCH-EXP]` must use an additional Git branch. `[PARAM-EXP]` normally uses an
 additional branch and may not silently redefine a frozen mainline protocol.
 Environment or subject-capability code must never be labelled only as an experiment.
 
-### 2.1 Git command delivery contract
+## 2. Workflow profile selection
 
-Every delivered iteration, including `[MAIN-EXP]`, `[ENGINEERING]`, and `[DOC-GOV]`,
-must use or present a dedicated iteration branch. The final chat response must include
-one executable Git command block covering all of the following transitions:
+Select one profile from `docs/WORKFLOW_PROFILES.md` before running validation or
+preparing artifacts. `AGENTS.md` does not mandate a full release workflow for every
+change.
 
-1. switch to the baseline main branch;
-2. create or switch to the typed iteration branch;
-3. apply and stage the delivered patch;
-4. commit with the exact declared Git title;
-5. switch back to the main branch;
-6. fast-forward merge the iteration branch;
-7. create the annotated release tag.
+- A small documentation or code fix may use a scoped profile.
+- A frozen scientific result requires the scientific-freeze profile.
+- Patch replay, clean archives, manifests, and release tags belong to the release-handoff profile.
+- Do not silently upgrade a small fix into a full scientific/release cycle.
+- Automatic inference of whether the user is working locally without needing artifacts is
+  currently unresolved; do not encode a guessed rule as project policy.
 
-Use these branch prefixes:
+Changing console entries, dependencies, package structure, or `pyproject.toml` still
+requires the environment synchronization step defined by the selected workflow profile.
+
+## 3. Git handoff contract
+
+Every final chat response must include concrete Git commands appropriate to the selected
+workflow profile. A branch and exact commit title are always required. Merge and tag
+commands are included only when the iteration is delivered as a versioned handoff.
+
+Branch prefixes:
 
 | Type | Branch prefix |
 |---|---|
@@ -82,42 +64,21 @@ Use these branch prefixes:
 | `[DOC-GOV]` | `docs/` |
 | `[RELEASE]` | `release/` |
 
-The command block must name the actual baseline-to-current patch, branch, commit title,
-and version tag. Do not substitute a generic template. Patch application must never
-use a bare filename. Every handoff first defines one project-external `PATCH_DIR` and
-prefixes the actual patch filename with it. The directory is persisted with
-`se-study config --set-patch-dir <directory>` whenever that command exists in the
-baseline.
-
-The iteration that first introduces `--set-patch-dir` is a bootstrap exception: its
-baseline cannot call the new option before applying the patch. That handoff must define
-`PATCH_DIR`, apply the prefixed patch, and then persist the setting immediately through
-the patched source with `PYTHONPATH=src python -m se.cmd.study config --set-patch-dir`.
-Subsequent iterations configure or confirm the directory before patch application.
-When no operator-specific path is known, use these executable shapes:
+When a patch is delivered, never use a bare patch filename. The configured directory is
+owned by `se-workspace`, not `se-study`. From versions that contain the command, use:
 
 ```bash
-# Bootstrap iteration that introduces --set-patch-dir
-PATCH_DIR="../SubjectEvolution-patches"
-git apply --index "$PATCH_DIR/<actual-baseline-to-current.patch>"
-PYTHONPATH=src python -m se.cmd.study config --set-patch-dir "$PATCH_DIR"
-
-# Later iterations
-PATCH_DIR="../SubjectEvolution-patches"
-se-study config --set-patch-dir "$PATCH_DIR"
-git apply --index "$PATCH_DIR/<actual-baseline-to-current.patch>"
+git apply --index "$(se-workspace path patch)/<actual-patch-name>"
 ```
 
-The final handoff replaces the placeholder with the actual delivered patch name. When
-the user identifies a missing prior-round command block, provide that prior block
-together with the current iteration commands. Do not include destructive reset,
-forced checkout, or an assumed remote pull in the default handoff. This section is the
-persistent cross-chat command-format authority; new sessions must read `AGENTS.md`
-before preparing a handoff.
+Do not print a new `PATCH_DIR=...` assignment when the operator has already configured
+the directory. Do not include destructive reset, forced checkout, or an assumed remote pull.
 
-## 3. Typed progress tree
+This section is the persistent cross-chat authority for Git command formatting.
 
-`docs/PROJECT_STATUS.md` must always contain separate branches for:
+## 4. Typed progress tree
+
+`docs/PROJECT_STATUS.md` must keep separate branches for:
 
 - `[MAIN-EXP]`;
 - `[BRANCH-EXP]`;
@@ -127,14 +88,12 @@ before preparing a handoff.
 - `[ENGINEERING]`;
 - `[DOC-GOV]`.
 
-Each active item must be marked `NEXT`, `ACTIVE`, `BLOCKED`, `PARKED`, `FROZEN`, or
-`DONE`. Do not mix test/release details into the scientific branch. Do not append one
-section per historical Stage 3C iteration.
+Each active item uses `NEXT`, `ACTIVE`, `BLOCKED`, `PARKED`, `FROZEN`, or `DONE`.
+Do not mix test, packaging, or workspace tooling into the scientific branch.
 
-## 4. Documentation placement
+## 5. Documentation placement
 
-Do not write provisional or merely expected results into durable active documents.
-Use this placement matrix:
+Do not write provisional or expected results into durable active documents.
 
 | Content | Required location |
 |---|---|
@@ -147,27 +106,16 @@ Use this placement matrix:
 | Versioned delivered change | `docs/CHANGELOG.md` |
 | Executable experiment identity | `protocols/decisions/` and `studies/*/workflow.toml` |
 
-Additional rules:
+`ARCHITECTURE.md` is not a version diary. `SCIENTIFIC_ISSUES.md` contains unresolved
+questions only. `PROJECT_STATUS.md` is current state only. Frozen results are summarized
+once in `docs/results/` rather than copied into several active documents.
 
-1. `ARCHITECTURE.md` may describe a mechanism only after implementation and contract
-   validation. It must not contain per-version result narratives or next-step claims.
-2. `SCIENTIFIC_ISSUES.md` contains only unresolved questions. Remove resolved
-   chronology instead of appending another version heading.
-3. `PROJECT_STATUS.md` is current state only. Historical stage results belong in a
-   result ledger.
-4. During execution, provisional interpretation stays in analysis artifacts or the
-   current iteration note. Update durable documents only after the result is frozen.
-5. When a result is frozen, summarize the complete run chain in one result ledger
-   entry rather than copying the same narrative into architecture, issues, and status.
-6. New long-term principles must be written into governance before delivery; they may
-   not remain chat-only.
-
-## 5. Experiment governance
+## 6. Scientific governance
 
 - Do not preassign reward or fixed value to objective coordinates.
 - A mechanism requires explicit cost, ablation, and shared-checkpoint control.
-- Independent source checkpoint is the primary replicate; entities/windows/events are
-  not additional independent samples.
+- Independent source checkpoint is the primary replicate; entities, windows, events,
+  and coordinates are not additional independent samples.
 - Distinguish manipulation failure, support failure, identity/export failure, and a
   genuine small or path-dependent effect.
 - Do not loosen thresholds, extend exposure, select seeds, or change horizon after
@@ -175,14 +123,8 @@ Additional rules:
 - No automatic keep/revert, learned weight, permanent retention, or subjecthood claim
   is authorized without a separate contract.
 
-## 6. Release gate
+## 7. Chat and artifact reporting
 
-Before delivery:
-
-1. run full tests, configuration validation, editable/Conda verification, patch replay,
-   and clean archive validation;
-2. ensure the patch includes new and binary files;
-3. compare the replayed tree with the target tree file by file;
-4. verify archive and manifest hashes;
-5. place detailed validation output in the evidence bundle;
-6. report only remaining actual errors in chat.
+Report validation in chat only when an actual non-GPU error remains. Detailed logs belong
+in the selected workflow's evidence output. Keep the user-facing discussion centered on
+project code or experiment results rather than routine passing checks.

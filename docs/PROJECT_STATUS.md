@@ -1,17 +1,20 @@
 # SE project status
 
-Version: **0.150.0**
+Version: **0.151.0**
 
 ## Current iteration identity
 
-- Progress type: **`[MAIN-EXP]` mainline experiment**
-- Git title: **`[MAIN-EXP] D1-Z: replicate crossing taxonomy on disjoint sources`**
-- Git branch: **`main-exp/stage3c35-disjoint-crossing-replication`**
-- Runtime/config/checkpoint change: **none**
+- Progress type: **`[ENGINEERING]` tooling and governance**
+- Git title: **`[ENGINEERING] workspace: separate configuration ownership and workflow profiles`**
+- Git branch: **`engineering/workspace-cli-workflow-profiles`**
+- Workflow profile: **`STANDARD-CODE` + versioned `RELEASE-HANDOFF`**
+- Runtime/config/checkpoint scientific change: **none**
 - Frozen scientific frontier: **Stage 3C-35**
 - Next authorized mainline experiment: **Stage 3C-36 read-only bootstrap-geometry transport decomposition**
 
-Stage 3C-35 stopped at its preregistered Stage 3C-27 qualification gate. The disjoint panel does not reproduce the geometry prerequisite required by Stage 3C-28, so the later crossing classifier was not run.
+This iteration moves operator workspace configuration out of the study runner and removes
+the unconditional full-release procedure from `AGENTS.md`. Scientific evidence and the
+Stage 3C task frontier are unchanged.
 
 ## Typed task progress tree
 
@@ -39,14 +42,17 @@ SubjectEvolution
 │       mutation, cost, development, inheritance, and neutralization contract
 │
 ├── [ENGINEERING] Runtime, tooling, tests, packaging
-│   ├── [DONE] project-external patch directory configuration and directory-prefixed Git handoff
+│   ├── [DONE] `se-workspace` owns external result and patch directory configuration
+│   ├── [DONE] scoped, standard-code, scientific-freeze and release-handoff profiles
+│   ├── [PARKED] automatic inference of local-only versus artifact-handoff intent
 │   └── [PARKED] optional full-policy-logit and categorical-draw trace export
 │       for exact numeric action-margin measurement
 │
 └── [DOC-GOV] Documentation governance
     ├── [DONE] active-document authority boundaries
     ├── [DONE] typed Git title and branch prefixes
-    └── [DONE] concrete Git command handoff required for every delivery
+    ├── [DONE] Git commands remain persistent across chats
+    └── [DONE] complete validation/release procedures moved out of `AGENTS.md`
 ```
 
 ## Current mainline decision
@@ -82,6 +88,6 @@ preregistered Stage 3C-34 source classifier remains untested out of sample.
 | Current task and queue | `docs/PROJECT_STATUS.md` |
 | Active unresolved scientific questions | `docs/SCIENTIFIC_ISSUES.md` |
 | Frozen Stage 3C results | `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` |
-| Current iteration record | `docs/迭代/v0.150_D1-Z_主体图Stage3C35_独立面板前置资格失败.md` |
+| Current iteration record | `docs/迭代/v0.151_工作区命令与工作流分级.md` |
 | Executable decision contract | `protocols/decisions/subject_graph_vm_stage3c35_crossing_replication_v1.json` |
 | Repository execution rules | `AGENTS.md` |

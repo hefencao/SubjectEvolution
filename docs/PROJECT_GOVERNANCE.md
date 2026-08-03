@@ -427,20 +427,22 @@ runtime contracts are unchanged. Documentation governance is itself testable: ac
 documents must reject per-version append-only headings and the status file must
 retain all mandatory progress-type branches.
 
-### Git command handoff
+### Workflow profiles and Git handoff
 
-Every delivered iteration must provide concrete commands for a dedicated typed branch,
-patch application with staging, the exact typed commit title, return to the main branch,
-fast-forward merge, and annotated version tag. Root `AGENTS.md` owns the branch-prefix
-mapping and exact command requirements. The handoff must use the actual delivered patch name and a project-external patch
-directory; a bare patch filename is not an executable handoff. Normally the directory
-is persisted before application with `se-study config --set-patch-dir`. The bootstrap
-iteration that introduces this option must apply the directory-prefixed patch first and
-then persist it immediately through the patched source. Root `AGENTS.md` is the
-persistent cross-chat authority for the command block, bootstrap ordering, and
-directory-prefix format. The handoff may not assume a remote,
-destructive reset, or forced checkout. Missing commands from a prior delivered iteration
-must be supplied in the next response when identified.
+Validation, scientific freezing, packaging and release depth are selected from
+`docs/WORKFLOW_PROFILES.md`. A scoped fix is not required to run the scientific or
+release-handoff profiles. Public CLI and package-entry changes require the standard-code
+profile. The unresolved question of automatically inferring local-only operator intent
+remains parked rather than encoded as a guessed rule.
+
+Every final chat response still provides concrete Git commands appropriate to the
+selected profile. Branch creation and the exact typed commit title are always included.
+Fast-forward merge and annotated tag commands are included only for a versioned handoff.
+When a patch is delivered, its path is resolved from the project-external workspace
+setting owned by `se-workspace`; `se-study` does not configure operator workspace paths.
+A bare patch filename is not an executable handoff, and an already configured directory
+must not be restated as a new `PATCH_DIR=...` assignment. Root `AGENTS.md` remains the
+persistent cross-chat command-format authority.
 
 ## v0.148 documentation-governance check
 

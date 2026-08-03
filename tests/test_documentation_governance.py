@@ -57,16 +57,29 @@ def test_agents_enforces_git_title_branch_and_document_placement() -> None:
         assert tag in text
     assert "[BRANCH-EXP]` must use an additional Git branch" in text
     assert "Do not write provisional" in text
-    assert "Deliver only three top-level artifacts" in text
-    assert "### 2.1 Git command delivery contract" in text
-    assert "se-study config --set-patch-dir" in text
-    assert 'git apply --index "$PATCH_DIR/<actual-baseline-to-current.patch>"' in text
-    assert "Bootstrap iteration that introduces --set-patch-dir" in text
-    assert "PYTHONPATH=src python -m se.cmd.study config --set-patch-dir" in text
-    assert "persistent cross-chat command-format authority" in text
-    assert "fast-forward merge" in text
-    assert "annotated release tag" in text
+    assert "docs/WORKFLOW_PROFILES.md" in text
+    assert "does not mandate a full release workflow" in text
+    assert "se-workspace path patch" in text
+    assert "se-study config --set-patch-dir" not in text
+    assert "\nPATCH_DIR=" not in text
+    assert "persistent cross-chat authority" in text
     assert "main-exp/" in text and "docs/" in text
+    assert "## 6. Release gate" not in text
+
+
+def test_workflow_profiles_separate_small_fixes_from_release_handoffs() -> None:
+    text = _text("docs/WORKFLOW_PROFILES.md")
+    for profile in (
+        "SCOPED-FIX",
+        "STANDARD-CODE",
+        "SCIENTIFIC-FREEZE",
+        "RELEASE-HANDOFF",
+    ):
+        assert profile in text
+    assert "Not automatically required" in text
+    assert "full test sharding" in text
+    assert "patch replay" in text
+    assert "does not currently infer" in text
 
 
 def test_frozen_stage_results_live_in_dedicated_ledger() -> None:

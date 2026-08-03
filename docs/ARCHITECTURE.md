@@ -259,10 +259,16 @@ Studies are declared in `workflow.toml`. Every parameter has a type, default, an
 description. `se-study show` renders exact argv and `se-study run` invokes without a
 shell. Result packaging is an explicit workflow step.
 
-Local development uses an activated Conda environment with one editable install of
-the current checkout. `make conda-sync` is required only when console entries,
-dependencies, package structure, or `pyproject.toml` change. Routine validation uses
-`make test` and `make conda-check`.
+Project-external operator paths are owned by `se-workspace`, which reads and writes the
+ignored `.se-workspace.toml`. `se-workspace config` sets result and patch directories;
+`se-workspace path result|patch` prints one configured path for scripts and Git handoff.
+The study runner consumes result-directory settings but does not own workspace
+configuration.
+
+Validation and artifact depth are selected through `docs/WORKFLOW_PROFILES.md`.
+Small fixes do not automatically run a release workflow. Public CLI, package, or shared
+runtime changes use the standard-code profile, scientific freezes use the scientific
+profile, and patch/archive checks run only for a release handoff.
 
 Release packaging, patch replay, archive governance, and isolated wheel/sdist checks
 validate transferability; they do not change scientific conclusions.

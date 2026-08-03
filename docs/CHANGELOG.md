@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.151.0
+
+- Moves operator workspace configuration from `se-study` to the dedicated `se-workspace` command while preserving the existing `.se-workspace.toml` schema and settings.
+- Adds `se-workspace path result|patch` for scripts and Git handoff without re-declaring an already configured directory.
+- Replaces the unconditional full process in `AGENTS.md` with explicit scoped-fix, standard-code, scientific-freeze and release-handoff profiles in `docs/WORKFLOW_PROFILES.md`.
+- Keeps branch and commit commands mandatory while making merge, tag, archive and full release checks conditional on a versioned handoff.
+- Leaves Stage 3C-35 evidence and the Stage 3C-36 scientific frontier unchanged.
+
 ## 0.150.0
 
 - Adds project-external `patch_dir` workspace configuration and requires directory-prefixed patch paths in Git handoff commands.
