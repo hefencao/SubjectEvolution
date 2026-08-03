@@ -776,3 +776,9 @@ Stage 3C-26 证明排除 source-boundary 单候选 query 后仍存在近因偏�
 ## Stage 3C-28：共享离散码本不等于全局采样相位
 
 九个独立 source 都共享第一可见坐标的三个主要离散值，但同一 phase 的主体间 transition agreement 相对跨 phase 基线没有一致的大幅提升。第二坐标的方差几乎全部来自主体间差异，ICC 为 0.9966–0.9988，同时每 tick 仍有非零缓慢移动。候选中同第一状态只占 34.7%–44.4%，winner 却有 67.9%–80.4% 落在同状态，并且同状态 winner 始终是该状态内第二坐标最近者。不同状态候选在绝大多数 query 中仍可用，且没有 winner 是完整 visible token 的精确重复。因此当前证据更符合“共享离散码本 + 主体特异慢锚点形成的主体内 recurrent geometric basin”，不支持全局同步采样 phase、精确 token 复现或因果信用正确性结论。
+
+## Stage 3C-29：transition match 的表面富集主要来自当前状态机会
+
+未控制当前第一状态时，九个 source 的 exact transition-class match 都出现 1.032–1.825× 的 winner 富集；但这把“相同 transition 终点”与“相同当前状态”混在一起。仅在同当前状态候选内部比较后，富集缩小到 0.908–1.165×，中位数 1.014，并有 2/9 source 低于 1。最高机会条件化胜率的 transition class 也不统一。因此不能把 raw transition enrichment 解释为稳定 transition replay、规则学习或离散状态机信用。
+
+相对地，同状态内第二坐标最近候选在 9/9 source 中占据全部可选 winner，非最近同状态候选选择率为零；selected candidate 的局部第二坐标 step mismatch 中位数始终只有 unselected 的 42.5%–53.3%。这说明当前 fixed-bootstrap normalized-dot addressing 主要重放主体锚定的局部几何邻域。该结果仍是机制诊断，不是 value、causal credit、learning 或 permanent retention 证据。

@@ -1,0 +1,23 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c29_transition_occupancy_v1",
+  "title": "D1-Z Subject VM Stage 3C-29 transition-class and opportunity-conditioned basin audit",
+  "status": "engineering-read-only-transition-occupancy-diagnostic",
+  "scientific_stage": "stage3c29-read-only-transition-class-and-opportunity-conditioned-basin-separation",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_source_panel": true,
+    "reuse_stage3c23_rank_two_arm": true,
+    "reuse_stage3c28_checksum_bound_assessment": true,
+    "exclude_forced_single_candidate_queries": true,
+    "measure_transition_class_opportunity": true,
+    "measure_same_state_second_coordinate_locality": true,
+    "runtime_mechanism_change": false,
+    "checkpoint_schema_change": false,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "topology_evolution": false,
+    "universal_attention": false,
+    "subjecthood_claim": false
+  }
+}

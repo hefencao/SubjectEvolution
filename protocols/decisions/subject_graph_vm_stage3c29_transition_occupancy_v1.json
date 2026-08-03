@@ -1,0 +1,109 @@
+{
+  "schema": "se-subject-vm-stage3c29-transition-occupancy-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c29-transition-occupancy-v1",
+  "status": "accepted-engineering-read-only-transition-occupancy-audit-only",
+  "project_version": "0.143.0",
+  "question": "After excluding forced single-candidate assignments and conditioning on candidate opportunity, does recurrent basin occupancy reflect replay of the same first-state transition class or subject-anchored second-coordinate locality?",
+  "source_panel": {
+    "independent_source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "rank_two_visible_coordinates": [
+      11,
+      7
+    ],
+    "target_family": "edge_forward_gate",
+    "edge_local_eligibility_carrier": true,
+    "association_similarity": "normalized-dot",
+    "association_threshold": 0.8,
+    "association_tie_break": "latest",
+    "association_candidate_limit": 1,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "analysis_factor": {
+    "runtime_change": false,
+    "arm_analyzed": "Stage-3C-23 frozen rank-two read-only control",
+    "forced_single_candidate_queries_excluded": true,
+    "reconstructed_measures": [
+      "query and historical-event first-state transition classes",
+      "exact transition-class match opportunity and winner occupancy",
+      "transition-class selection rate conditional on candidate opportunity",
+      "nearest versus non-nearest second-coordinate selection within current state",
+      "selected versus unselected local second-coordinate step mismatch"
+    ]
+  },
+  "interpretation_boundary": {
+    "transition_class_has_fixed_value_semantics": false,
+    "second_coordinate_locality_has_fixed_value_semantics": false,
+    "causal_credit_quality_proven": false,
+    "learning_claim_authorized": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "runtime_and_storage": {
+    "runtime_or_checkpoint_schema_changed": false,
+    "runtime_memory_growth_bytes": 0,
+    "default_bootstrap_path_changed": false,
+    "old_config_identity_changed": false
+  },
+  "next_boundary": "Freeze and summarize the complete Stage-3C-23 through Stage-3C-29 addressing diagnosis before considering another mechanism. Do not infer value, causal credit, learning or permanent retention from opportunity-conditioned geometric locality.",
+  "observed_panel_result": {
+    "requested_queries_per_source": 128,
+    "assigned_queries_per_source": 112,
+    "forced_single_candidate_queries_per_source": 16,
+    "multi_candidate_queries_per_source": 96,
+    "raw_exact_transition_match_enrichment_range": [
+      1.031578947368421,
+      1.8252052148720423
+    ],
+    "raw_exact_transition_match_enriched_source_count": 9,
+    "same_state_exact_transition_match_enrichment_range": [
+      0.9077691958200818,
+      1.1651305683563749
+    ],
+    "same_state_exact_transition_match_enrichment_median": 1.0142731664470794,
+    "same_state_transition_match_above_one_source_count": 7,
+    "same_state_transition_match_below_one_source_count": 2,
+    "highest_opportunity_conditioned_transition_class_counts": {
+      "stay": 3,
+      "up": 6,
+      "down": 0,
+      "boundary": 0
+    },
+    "same_state_winner_fraction_range": [
+      0.7708333333333334,
+      0.8541666666666666
+    ],
+    "nearest_same_state_selection_rate": 1.0,
+    "non_nearest_same_state_selection_rate": 0.0,
+    "selected_to_unselected_second_step_mismatch_median_ratio_range": [
+      0.4246575342465753,
+      0.5333333333333333
+    ],
+    "stable_objective_coordinates": 0
+  },
+  "interpretation": {
+    "raw_transition_match_enrichment_is_confounded_by_current_state_opportunity": true,
+    "exact_transition_class_replay_adds_stable_within_state_enrichment": false,
+    "subject_anchored_second_coordinate_locality_remains_after_opportunity_conditioning": true,
+    "transition_class_or_locality_has_fixed_value_semantics": false,
+    "causal_credit_quality_proven": false,
+    "learning_claim_authorized": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false
+  }
+}

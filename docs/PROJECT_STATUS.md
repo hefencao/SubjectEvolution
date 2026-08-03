@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.142.0**
+Version: **0.143.0**
 
 ## Current scientific task
 
-Version 0.142 implements **Subject VM Stage 3C-28: discrete-state and subject-anchored recurrent-basin audit**.
+Version 0.143 implements **Subject VM Stage 3C-29: transition-class and opportunity-conditioned basin-occupancy audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -265,3 +265,17 @@ The engineering baseline remains pairing coverage 1.0, zero rollback failure, ze
 ## Stage 3C-28 current result
 
 Stage 3C-28 is external analysis only. It reuses the frozen Stage 3C-23 rank-two read-only control checkpoints and checksum-bound Stage 3C-27 assessment. All nine sources share the first-coordinate values 0.477777809, 0.588888884 and 0.699999988, but same-phase transition agreement differs from cross-phase agreement by only -0.0244 to 0.0286, so a globally synchronized sampling phase is not supported. The second coordinate is overwhelmingly subject anchored (intraclass correlation 0.9966–0.9988) while continuing to move every tick. Same-first-coordinate candidates are only 34.7%–44.4% of eligible candidates, yet 67.9%–80.4% of winners use the same first-coordinate state, an enrichment of 1.80–2.08×. Different-state alternatives remain available for 86.6%–96.4% of queries, every same-state winner is the nearest second-coordinate candidate inside that state, and no selected winner is an exact full-visible-token repeat. The evidence therefore supports a within-subject recurrent geometric basin, not exact token duplication or a cross-subject global phase. Stable objective coordinates remain 0/21 and no retention or learning claim is authorized.
+
+## Stage 3C-29 current result
+
+Stage 3C-29 is external analysis only. It reuses the frozen Stage 3C-23 rank-two read-only control checkpoints and verifies the checksum and lineage of the Stage 3C-28 assessment before reconstructing stored winners. Every source again has 128 requests, 112 assignments, 16 forced single-candidate assignments and 96 multi-candidate queries. The conditioned analysis excludes those forced assignments.
+
+Before controlling the current first-coordinate state, exact query/candidate transition-class matching is enriched in all nine sources (1.032–1.825×). After restricting candidate opportunities to the same current first-coordinate state, the enrichment collapses to 0.908–1.165× with a median of 1.014; seven sources are above one and two below. The transition class with the highest opportunity-conditioned selection rate is not universal (`up` in six sources and `stay` in three). Exact transition replay therefore adds no stable source-wide explanation beyond current-state opportunity.
+
+The subject-anchor result is much stronger and invariant. Same-state winners account for 77.1%–85.4% of multi-candidate queries. Whenever a same-state candidate is selected, the winner is the nearest second-coordinate candidate in 9/9 sources: nearest opportunities have selection rate 1.0 and non-nearest same-state opportunities have rate 0.0. The selected candidate's local second-coordinate step mismatch median is only 0.425–0.533 of the unselected median in every source.
+
+### Frozen Stage 3C-23→29 run-chain summary
+
+The chain first established rank-two visible geometry without changing action output (3C-23), reconstructed opportunity and selected identity (3C-24), separated small margins from deterministic winner reuse (3C-25), removed source-boundary forcing and normalized by age opportunity (3C-26), showed that strict local score geometry rather than latest tie-break drives the age-one basin (3C-27), rejected global phase synchrony and exact-token recurrence in favor of a subject-anchored recurrent basin (3C-28), and finally showed that current-state opportunity plus second-coordinate locality, not stable exact transition replay, accounts for occupancy (3C-29).
+
+The complete frozen chain still has 0/21 stable objective coordinates. It establishes an addressing-geometry diagnosis only. It does not validate causal credit, assign value, establish learning or subjecthood, justify age penalties or randomized allocation, authorize learned weights, or permit permanent retention.

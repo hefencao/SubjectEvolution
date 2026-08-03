@@ -1,3 +1,11 @@
+## 0.143.0
+
+- Adds Subject VM Stage 3C-29 read-only transition-class and opportunity-conditioned basin assessment.
+- Excludes the 16 forced single-candidate assignments per source and verifies the checksum-bound Stage 3C-28 lineage before analysis.
+- Finds raw exact-transition enrichment in 9/9 sources but only 0.908–1.165× enrichment after conditioning on current state, with no universal dominant transition class.
+- Finds nearest same-state second-coordinate opportunities selected at rate 1.0 and non-nearest opportunities at 0.0 in all nine sources; selected local-step mismatch medians are 0.425–0.533 of unselected medians.
+- Freezes and summarizes the complete Stage 3C-23→29 addressing chain without runtime/checkpoint changes or authorization of learning, value, causal credit or permanent retention.
+
 ## 0.142.0
 
 - Adds Subject VM Stage 3C-28 read-only discrete-state and subject-anchored recurrent-basin assessment.
