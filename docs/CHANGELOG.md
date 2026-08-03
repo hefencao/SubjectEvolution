@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.148.0
+
+- Reorganizes the active documentation contract without changing scientific evidence, runtime behavior, configuration, or checkpoint schema.
+- Rewrites `ARCHITECTURE.md` as a current structural contract rather than a per-version experiment diary.
+- Rewrites `SCIENTIFIC_ISSUES.md` as an active issue registry with explicit status and next evidence boundary.
+- Replaces append-only Stage 3C status sections with a typed task progress tree separating mainline experiments, branch experiments, parameter exploration, evolution code, engineering, and documentation governance.
+- Adds `AGENTS.md` with mandatory Git-title types, branch policy, document placement, experiment governance, validation reporting, and three-artifact delivery rules.
+- Adds a frozen Subject VM Stage 3C result ledger and regression tests preventing renewed document-boundary drift.
+
 ## 0.147.0
 
 - Adds Subject VM Stage 3C-33 three-condition exposure-length propagation intervention.

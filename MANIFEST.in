@@ -1,3 +1,4 @@
+include AGENTS.md
 include Makefile
 include run_gpu.sh
 include run_gpu.ps1

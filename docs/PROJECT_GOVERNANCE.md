@@ -183,9 +183,12 @@ be supplied rather than reconstructed.
 Iteration notes live under `docs/迭代/`. A local checkout may retain all prior
 notes. Version consistency and `conda-sync` do not inspect, reject, or delete
 that history. Complete project archives are built from a disposable copy and
-keep only the current major/minor iteration note; durable cross-version
-conclusions belong in `PROJECT_STATUS`, `ARCHITECTURE`, `SCIENTIFIC_ISSUES`,
-`PROJECT_GOVERNANCE`, or `CHANGELOG`.
+keep only the current major/minor iteration note. Frozen validated scientific
+results belong in `docs/results/`; current structural contracts belong in
+`ARCHITECTURE.md`; active unresolved questions belong in
+`SCIENTIFIC_ISSUES.md`; and the current typed task tree belongs in
+`PROJECT_STATUS.md`. These active documents must not be used as append-only
+cross-version result diaries.
 
 Every active study must provide a `pack-results` workflow step. The step declares
 its output path and checkpoint-inclusion parameter explicitly. Compact bundles
@@ -391,3 +394,46 @@ The project may retain bounded, replaceable fixed mechanisms when they materiall
 - Evaluation observation coverage is a separate contract. A rollback-complete window cannot be the primary exposure estimator when its observation interval is shorter than the intervention or when changing exposure changes which windows complete before export.
 - In that case, rollback-complete windows remain auxiliary diagnostics and the primary estimator must use a preregistered fixed-support trajectory aggregation.
 - Sparse nonzero source effects without a stable component-wise direction cannot be converted into scalar value, credit quality, automatic keep/revert or retention authority.
+
+## Documentation authority and typed-progress governance
+
+Every iteration must declare one Git title in the form `[TYPE] scope: imperative
+summary`. The allowed types and branch policy are defined in root `AGENTS.md`.
+`PROJECT_STATUS.md` must keep scientific mainline, branch experiments, parameter
+exploration, evolution code, engineering, and documentation governance as separate
+tree branches.
+
+Durable documents have non-overlapping authority:
+
+- `ARCHITECTURE.md` records only current structural contracts;
+- `SCIENTIFIC_ISSUES.md` records only active unresolved scientific questions;
+- `PROJECT_STATUS.md` records only the current typed task tree and headline state;
+- `docs/results/` records frozen validated results;
+- `docs/迭代/` records the current iteration design and work log;
+- `CHANGELOG.md` records delivered version changes.
+
+Provisional observations and expected results may not be written into architecture,
+scientific issues, or project status. They remain in analysis artifacts or the
+current iteration note until validation is complete. Once frozen, one concise result
+ledger entry summarizes the run chain; the same narrative must not be copied into
+multiple active documents.
+
+Engineering defects, GPU availability, test discovery, source-fingerprint rules,
+packaging, patch replay, and archive details are not scientific issues. They belong
+under the engineering branch of the current task tree or in validation evidence.
+
+A documentation-only iteration must explicitly state that scientific evidence and
+runtime contracts are unchanged. Documentation governance is itself testable: active
+documents must reject per-version append-only headings and the status file must
+retain all mandatory progress-type branches.
+
+## v0.148 documentation-governance check
+
+- Data versus expectation: no new scientific data were produced; the task changed
+  because the documentation structure itself was invalidating project continuity.
+- Long-term principle: task type, Git title, branch policy, and document placement are
+  now durable repository rules.
+- Chat-only principle: none; the user's correction is recorded in `AGENTS.md`, this
+  governance file, the typed status tree, and regression tests.
+- Mainline continuity: Stage 3C-33 remains frozen and Stage 3C-34 remains the only
+  authorized next mainline experiment.

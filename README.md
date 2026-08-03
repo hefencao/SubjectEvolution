@@ -1,19 +1,31 @@
-# SubjectEvolution v0.146.0
+# SubjectEvolution v0.148.0
 
-SubjectEvolution is an experimental simulation project for evolving subject-like internal organization without preassigned reward or human social semantics.
+SubjectEvolution is an experimental simulation project for evolving subject-like
+internal organization without preassigned reward or human social semantics.
 
-Version 0.146.0 implements **Subject VM Stage 3C-32: shared-checkpoint four-arm runtime subject-time alignment intervention**. It reuses the frozen Stage-3C-23 rank-two source panel and compares aligned versus cyclic-donor association coordinates, each with guarded-live and read-only-control branches. The intervention preserves the tick-wise coordinate marginal, candidate opportunity, compute/storage cost and forced rollback.
+Version 0.148.0 is a documentation-governance release. It does not change runtime,
+configuration, checkpoints, or frozen scientific evidence. Stage 3C-33 remains the
+latest experiment; Stage 3C-34 is the next authorized read-only threshold/crossing
+audit.
 
-The nine-source result establishes that subject-time alignment causally changes selector identity and temporary update routing under the fixed bootstrap. It does not produce a source-replicated Objective-Fact effect at the current three-tick exposure: only one source is nonzero and no coordinate is stable. No learned weighting, reward, automatic keep/revert or permanent retention is authorized.
+## Documentation map
 
-## Stage 3C-32 study
+- Current architecture: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- Typed task tree: [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md)
+- Active scientific issues: [`docs/SCIENTIFIC_ISSUES.md`](docs/SCIENTIFIC_ISSUES.md)
+- Frozen Stage 3C results: [`docs/results/SUBJECT_VM_STAGE3C_RESULTS.md`](docs/results/SUBJECT_VM_STAGE3C_RESULTS.md)
+- Subject Graph VM contract: [`docs/PARTITIONED_SUBJECT_GRAPH_VM.md`](docs/PARTITIONED_SUBJECT_GRAPH_VM.md)
+- Repository agent rules: [`AGENTS.md`](AGENTS.md)
 
-The executable workflow is [`studies/d1z_subject_vm_stage3c32_alignment_intervention_v1/workflow.toml`](studies/d1z_subject_vm_stage3c32_alignment_intervention_v1/workflow.toml). It regenerates the frozen nine-source rank-one/rank-two lineage, runs the four-arm intervention, verifies manipulation/cost/rollback, performs source-balanced component-wise difference-in-differences and packages declared evidence separately from the clean project archive.
+## Current scientific frontier
 
+The Stage 3C chain has established that subject-time alignment causally changes
+historical-event selection and temporary update routing. Doubling realized temporary
+exposure changes fixed-support downstream trajectories in two of nine independent
+source checkpoints, but no Objective-Fact coordinate has a stable signed or absolute
+direction across all sources.
 
-## Prior addressing studies
-
-- Stage 3C-31 alignment ablation: [`studies/d1z_subject_vm_stage3c31_alignment_ablation_v1/workflow.toml`](studies/d1z_subject_vm_stage3c31_alignment_ablation_v1/workflow.toml)
-- Stage 3C-30 weight robustness: [`studies/d1z_subject_vm_stage3c30_weight_robustness_v1/workflow.toml`](studies/d1z_subject_vm_stage3c30_weight_robustness_v1/workflow.toml)
-- Stage 3C-29 opportunity-conditioned occupancy: [`studies/d1z_subject_vm_stage3c29_transition_occupancy_v1/workflow.toml`](studies/d1z_subject_vm_stage3c29_transition_occupancy_v1/workflow.toml)
-- Stage 3C-23 rank-two source boundary: [`studies/d1z_subject_vm_stage3c23_dual_readout_rank_v1/workflow.toml`](studies/d1z_subject_vm_stage3c23_dual_readout_rank_v1/workflow.toml)
+The next authorized experiment is a read-only audit locating whether internal
+trajectory divergence crosses action-sampling or objective-event boundaries. No new
+addressing mechanism, reward, learned weight, automatic keep/revert, or permanent
+retention is authorized.
