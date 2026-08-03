@@ -736,3 +736,17 @@ Stage 3C-24 不修改 VM。它复用 Stage 3C-23 的十节点 rank-one/rank-two 
 两个 arm 每 source 都有 112 个唯一 eligible 历史事件和 432 个 eligible references。Rank-one 仍有大量 exact best-score ties；rank-two 在九个 source 中全部消除 exact ties，但 selected identity coverage 从 0.759–0.839 下降到 0.714–0.786，maximum reuse 从 3 提高到 4，effective identity coverage 下降。Rank-two 没有选择任何 rank-one 未覆盖的新 identity。
 
 该结果说明第二坐标改变了 score ordering 与 winner determinacy，但没有扩大证据身份覆盖。不得把更高 rank、更大 margin 或更确定的 winner 解释为价值、因果质量、学习或永久写入授权。runtime/checkpoint schema 与默认 bootstrap 均不变。
+
+## v0.139：Stage 3C-25 Winner Basin Margin 与 Opportunity 审计
+
+Stage 3C-25 不修改 VM。它固定 Stage 3C-23 rank-two readout 和 Stage 3C-24 的 normalized-dot、threshold 0.8、latest/top-1 addressing，从 read-only control checkpoint 中逐 query 重建全部 eligible candidates，并精确复核 stored winner 与 similarity。
+
+诊断把三个层次分开：
+
+1. best-versus-second 的 absolute margin；
+2. absolute margin 相对于该 query 全 eligible score spread 的 normalized margin；
+3. 一个历史事件在 bounded delay window 中实际拥有的 eligibility opportunities，以及它跨不同 query 被重复选中的次数。
+
+九 source 中 small absolute margin 普遍存在，但 reused winner 的 normalized margin 中位数在所有 source 都高于 single-use winner。Reused winner 也不是 exact query token 重复造成：每次复用都来自不同 query event 和不同 exact visible token。它们拥有更多 eligible opportunities，并形成跨多个 query tick 的 deterministic candidate basin。
+
+该结果只定位 fixed-bootstrap addressing 的机会条件与 basin 结构。它不授权将较大 margin、更多 opportunity 或更高 reuse 解释为价值、因果正确性、学习、主体性或永久参数保留。

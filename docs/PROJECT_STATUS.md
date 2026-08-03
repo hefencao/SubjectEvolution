@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.138.0**
+Version: **0.139.0**
 
 ## Current scientific task
 
-Version 0.138 implements **Subject VM Stage 3C-24: rank-two selection coverage and score-margin audit**.
+Version 0.139 implements **Subject VM Stage 3C-25: deterministic winner-basin reuse audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -129,7 +129,7 @@ They retain engineering and comparison value but own neither Subject VM state no
 
 ## Epoch milestones
 
-- `epoch-0-ecological-carriers`: current era. Stage 3C-24 audits rank-two winner margins, selected identity coverage and reuse concentration without changing addressing or authorizing retention, learned attention or Epoch 1.
+- `epoch-0-ecological-carriers`: current era. Stage 3C-25 separates numerical winner margins, candidate opportunity and deterministic winner-basin reuse without changing addressing or authorizing retention, learned attention or Epoch 1.
 - `epoch-1-entity-subject-prototype`: not started. It still requires delayed parameter use, controlled intervention, baseline exceedance, cost compensation and independent replication.
 - `epoch-2-group-subject-prototype`: not started. Candidate/group graphs remain observational and own no rules or Subject VM state.
 
@@ -155,7 +155,7 @@ No supplied checkpoint qualifies either later epoch.
 - GPU packed Stage-2/3 execution;
 - Epoch 1 panel, paired selection, gene persistence, candidate ledger or subjecthood score.
 
-Stage 3C-24 establishes that the fixed rank-two readout eliminates exact best-score ties without changing the eligible candidate opportunity. It selects a strict subset of rank-one event identities in every source and increases reuse concentration. The next authorized boundary remains read-only diagnosis of near-zero margins and repeated local geometry before any addressing, top-k, update-scale or retention change.
+Stage 3C-25 establishes that small absolute margins are common in the fixed rank-two panel, but reused winners are not concentrated in the smallest score-spread-normalized margins and are not caused by exact duplicate query vectors. Reused winners receive more eligibility opportunities and occupy deterministic candidate basins across distinct queries. The next authorized boundary remains read-only diagnosis of opportunity-normalized basin occupancy by historical age and query phase before any addressing normalization or retention change.
 
 
 ## Stage 3C-17 retained result
@@ -228,3 +228,15 @@ Stage 3C-24 reruns the frozen Stage 3C-23 rank-one duplicate-coordinate and rank
 Both arms retain 112 unique eligible historical events and 432 above-threshold references per source. Rank one selects 85–94 unique identities per source and still contains exact best-score ties. Rank two selects 80–88 identities, eliminates exact ties in all nine sources, and increases Gini concentration while reducing inverse-Simpson effective coverage. Every rank-two selected set is a strict subset of the corresponding rank-one set; no new event identity is introduced.
 
 This result distinguishes score-order determinacy from evidence diversity. Higher geometric rank and positive winner margins do not establish better causal credit, beneficial updates, learning, value or subjecthood. Runtime and checkpoint schemas are unchanged and permanent retention remains disabled.
+
+## Stage 3C-25 current result
+
+Stage 3C-25 makes no runtime intervention. It reuses the frozen Stage 3C-23 rank-two read-only control checkpoints and reconstructs every above-threshold candidate under the unchanged normalized-dot, threshold 0.8, latest/top-1 contract. Stored winner event IDs and similarities match the reconstruction exactly.
+
+Each source contains 112 assigned queries, of which 96 have more than one eligible candidate. The rank-two arm selects 80–88 unique winners per source; 21–27 winners are selected more than once, accounting for 41.1%–52.7% of assignments. A majority of multi-candidate queries have absolute best-versus-second margin at or below `1e-3`, so small numerical margins remain common.
+
+However, winner reuse is not concentrated in the weakest normalized margins. In all nine sources, the median best-versus-second margin normalized by the full eligible score spread is larger for assignments to reused winners than for assignments to single-use winners. The reused-winner median ranges from approximately 0.059 to 0.798, while the single-use median ranges from approximately 0.000395 to 0.0191. The fraction at or below absolute margin `1e-6` is also lower for reused-winner assignments in every source.
+
+Every reused winner is selected by distinct query events and distinct exact visible query vectors. Reused winners have a median of six eligibility opportunities in every source, compared with three to four for single-use winners, and span one to five query ticks. Query pairs selecting the same winner are not more mutually similar by median cosine than same-subject query pairs selecting different winners.
+
+The supported interpretation is therefore opportunity-conditioned deterministic candidate-basin reuse, not exact query duplication and not reuse driven solely by the smallest margins. This does not validate causal credit, assign value to reuse or margin, establish learning, authorize permanent retention, or convert the fixed bootstrap into universal attention.

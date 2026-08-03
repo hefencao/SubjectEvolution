@@ -1,0 +1,23 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c25_winner_basin_v1",
+  "title": "D1-Z Subject VM Stage 3C-25 deterministic winner-basin reuse audit",
+  "status": "engineering-read-only-winner-basin-diagnostic",
+  "scientific_stage": "stage3c25-read-only-margin-opportunity-and-winner-basin-reuse",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_source_panel": true,
+    "reuse_stage3c23_rank_two_arm": true,
+    "reconstruct_candidate_opportunity": true,
+    "measure_best_second_margin": true,
+    "measure_opportunity_conditioning": true,
+    "measure_distinct_query_winner_reuse": true,
+    "runtime_mechanism_change": false,
+    "checkpoint_schema_change": false,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "topology_evolution": false,
+    "universal_attention": false,
+    "subjecthood_claim": false
+  }
+}

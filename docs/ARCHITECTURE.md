@@ -1678,3 +1678,18 @@ Candidate screening is external analysis. It replays trusted source checkpoints 
 Stage 3C-24 is external analysis only. It consumes the frozen Stage 3C-23 rank-one and rank-two read-only control checkpoints, reconstructs the complete bounded candidate opportunity with the authoritative normalized-dot/latest/top-1 comparator, and verifies the stored associated event ID and similarity for every request.
 
 The analyzer reports candidate eligibility separately from selected identity coverage, reuse concentration, threshold margin, best-versus-second margin and exact best-score tie frequency. It treats the independent pre-bootstrap source checkpoint as the highest replicate unit. No Subject VM activation, addressing, checkpoint, branch, ledger, lifecycle or retention subsystem is added or changed; persistent runtime memory growth is zero.
+
+### Stage 3C-25 — deterministic winner-basin reuse audit (implemented in v0.139)
+
+Stage 3C-25 is external analysis only. It consumes the frozen Stage 3C-23 rank-two read-only control checkpoints and the checksum-bound Stage 3C-24 assessment. For every requested association it reconstructs the complete delay-valid, nonzero, above-threshold candidate set with the authoritative normalized-dot/latest/top-1 ordering and verifies the stored winner event ID and similarity.
+
+The analysis separates:
+
+- absolute best-versus-second score margin;
+- margin normalized by the complete eligible score spread;
+- historical-event eligibility opportunity count;
+- selection rate conditional on eligibility;
+- repeated winner occupancy across distinct query events and exact visible query vectors;
+- same-winner versus different-winner query-pair cosine diagnostics.
+
+No values are written back into Subject VM state. No new trace array, checkpoint field, configuration key, random stream, branch owner, ledger or lifecycle system is introduced. Persistent runtime memory growth is zero. Events, queries, subjects and windows remain nested observations; the independent replicate remains the pre-bootstrap source checkpoint.

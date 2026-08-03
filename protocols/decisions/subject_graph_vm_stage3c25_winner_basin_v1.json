@@ -1,0 +1,94 @@
+{
+  "schema": "se-subject-vm-stage3c25-winner-basin-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c25-winner-basin-v1",
+  "status": "accepted-engineering-read-only-margin-opportunity-basin-audit-only",
+  "project_version": "0.139.0",
+  "question": "After rank-two geometry removes exact winner ties but concentrates historical-event reuse, is repeated winner selection primarily associated with the smallest score margins, exact repeated query vectors, or opportunity-conditioned deterministic candidate basins?",
+  "source_panel": {
+    "independent_source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "rank_two_visible_coordinates": [11, 7],
+    "target_family": "edge_forward_gate",
+    "edge_local_eligibility_carrier": true,
+    "association_similarity": "normalized-dot",
+    "association_threshold": 0.8,
+    "association_tie_break": "latest",
+    "association_candidate_limit": 1,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "analysis_factor": {
+    "runtime_change": false,
+    "arm_analyzed": "Stage-3C-23 frozen rank-two read-only control",
+    "reconstructed_measures": [
+      "absolute best-versus-second margin",
+      "best-versus-second margin normalized by eligible score spread",
+      "historical-event eligibility opportunity count",
+      "winner selection rate conditional on eligibility",
+      "winner reuse across distinct query events and exact visible query vectors",
+      "same-winner and different-winner query-pair cosine"
+    ]
+  },
+  "observed_panel_result": {
+    "assigned_queries_per_source": 112,
+    "multi_candidate_queries_per_source": 96,
+    "unique_selected_winner_count_range": [80, 88],
+    "reused_winner_count_range": [21, 27],
+    "fraction_of_assignments_to_reused_winners_range": [
+      0.4107142857142857,
+      0.5267857142857143
+    ],
+    "absolute_margin_at_or_below_1e3_fraction_range": [
+      0.59375,
+      0.7604166666666666
+    ],
+    "reused_winner_normalized_margin_median_range": [
+      0.059049700292505676,
+      0.7979627944115877
+    ],
+    "single_use_winner_normalized_margin_median_range": [
+      0.00039496964448277304,
+      0.019135859879428552
+    ],
+    "reused_winner_median_eligibility_opportunities": 6,
+    "single_use_winner_median_eligibility_opportunity_range": [3, 4],
+    "reused_winner_query_tick_span_range": [1, 5],
+    "all_reused_winners_use_distinct_exact_query_vectors": true,
+    "reused_normalized_margin_median_exceeds_single_use_in_all_sources": true,
+    "reused_fraction_at_or_below_1e6_is_lower_in_all_sources": true,
+    "same_winner_query_pair_median_cosine_not_higher_in_all_sources": true,
+    "stable_objective_coordinates": 0
+  },
+  "interpretation": {
+    "small_absolute_margins_are_common": true,
+    "winner_reuse_is_concentrated_in_smallest_normalized_margins": false,
+    "winner_reuse_is_caused_by_exact_duplicate_query_vectors": false,
+    "winner_reuse_is_consistent_with_opportunity_conditioned_deterministic_candidate_basins": true,
+    "candidate_basin_reuse_proves_causal_credit": false,
+    "reuse_or_margin_has_fixed_value_semantics": false,
+    "learning_claim_authorized": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "runtime_and_storage": {
+    "runtime_or_checkpoint_schema_changed": false,
+    "runtime_memory_growth_bytes": 0,
+    "default_bootstrap_path_changed": false,
+    "old_config_identity_changed": false
+  },
+  "next_boundary": "Hold the rank-two readout, normalized-dot similarity, threshold, latest top-1, target/carrier, delta, exposure and rollback fixed. Audit opportunity-normalized candidate-basin occupancy by historical age and query phase before any addressing normalization; do not add reward, learned weights or permanent retention."
+}

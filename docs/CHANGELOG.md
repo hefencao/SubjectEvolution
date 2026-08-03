@@ -1,3 +1,11 @@
+## 0.139.0
+
+- Adds Subject VM Stage 3C-25 read-only deterministic winner-basin reuse assessment.
+- Separates absolute and score-spread-normalized best-versus-second margins from historical-event eligibility opportunity and repeated winner occupancy.
+- Confirms across nine independent sources that reused winners are not concentrated in the smallest normalized margins and are selected across distinct exact query vectors.
+- Adds a reproducible CLI, declarative study workflow, decision protocol and regression tests without changing runtime or checkpoint schemas.
+- Keeps permanent retention, automatic keep/revert, scalar reward, topology evolution and universal-attention claims unauthorized.
+
 ## 0.138.0
 
 - Adds Subject VM Stage 3C-24 read-only rank-two selection coverage and score-margin assessment.

@@ -735,3 +735,21 @@ Rank two 在 9/9 source 消除了 exact best-score ties，但实际只选择 80�
 - repeated local winner reuse。
 
 更大 rank 或正 margin 不具有固定价值，也不证明 causal credit、学习或更新收益。下一步只能继续只读诊断近零 margin 与重复 geometry 的来源，不能直接扩大 top-k、加入 novelty/coverage reward 或 learned weights。
+
+## Stage 3C-25：小 margin 普遍存在，但不能单独解释 winner 复用
+
+Stage 3C-24 证明 rank-two readout 消除了 exact best-score tie，却降低了 selected identity coverage。Stage 3C-25 继续保持 rank-two geometry、normalized-dot、threshold 0.8、latest/top-1、target/carrier、delta、exposure 和 rollback 不变，只从 read-only control checkpoint 重建 winner margin、候选机会和跨 query 复用。
+
+九个独立 source 中，每 source 有 112 个 assigned queries，其中 96 个具有至少两个 eligible candidates。多数 multi-candidate queries 的 absolute best-second margin 不超过 `1e-3`，说明 score ordering 的数值间隔整体偏小。
+
+但重复 winner 并不集中在最弱的相对 margin：
+
+- reused-winner assignment 的 score-spread-normalized margin 中位数在 9/9 source 中高于 single-use winner；
+- absolute margin 不超过 `1e-6` 的比例在 9/9 source 中反而更低；
+- 每个 reused winner 都对应不同 query event 和不同 exact visible query vector；
+- reused winner 的 eligibility opportunity 中位数固定为 6，single-use winner 为 3–4；
+- reused winner 可跨越 1–5 个 query tick。
+
+因此当前复用不能归因于 exact query duplication，也不能仅归因于 near-zero margin。更准确的描述是：在 bounded delay window 和 deterministic nearest-neighbor 规则下，一些历史事件拥有更多候选机会，并形成可覆盖多个不同 query 的 deterministic candidate basin。
+
+这仍不说明 basin 更好、复用有价值或 credit 正确。下一步应先只读审计 opportunity-normalized basin occupancy 与 historical age/query phase 的关系，再决定是否需要 addressing normalization。不得直接引入 reward、learned weights、永久保留或通用注意力声明。
