@@ -16,13 +16,13 @@ def test_active_architecture_is_current_contract_not_version_diary() -> None:
     assert "implemented in v0." not in text
     assert not re.search(r"^#{2,4}\s+(?:v0\.\d+|Stage 3C-\d+)", text, re.MULTILINE)
     assert len(text.splitlines()) < 500
-    assert "## 10. Documentation boundaries" in text
+    assert "## 10. 文档边界" in text
 
 
 def test_scientific_issues_is_active_registry_not_append_only_history() -> None:
     text = _text("docs/SCIENTIFIC_ISSUES.md")
     assert not re.search(r"^##\s+(?:v0\.\d+|Stage 3C-\d+)", text, re.MULTILINE)
-    assert "## 2. Active issue registry" in text
+    assert "## 2. 活动问题注册表" in text
     assert "SG-08" in text and "ENV-01" in text
     assert len(text.splitlines()) < 350
 
@@ -55,16 +55,16 @@ def test_agents_enforces_git_title_branch_and_document_placement() -> None:
         "[DOC-GOV]",
     ):
         assert tag in text
-    assert "[BRANCH-EXP]` must use an additional Git branch" in text
-    assert "Do not write provisional" in text
-    assert "Project mission and interpretation limits" in text
-    assert "Current Subject Graph VM mechanism contract" in text
+    assert "`[BRANCH-EXP]` 必须使用额外 Git 分支" in text
+    assert "不得把暂定结果" in text
+    assert "项目使命与解释边界" in text
+    assert "当前 Subject Graph VM 机制合同" in text
     assert "docs/WORKFLOW_PROFILES.md" in text
-    assert "does not mandate a full release workflow" in text
+    assert "不要求每次修改都执行完整发布流程" in text
     assert "se-workspace path patch" in text
     assert "se-study config --set-patch-dir" not in text
     assert "\nPATCH_DIR=" not in text
-    assert "persistent cross-chat authority" in text
+    assert "新聊天中 Git 命令格式的长期权威规则" in text
     assert "main-exp/" in text and "docs/" in text
     assert "## 6. Release gate" not in text
 
@@ -78,10 +78,10 @@ def test_workflow_profiles_separate_small_fixes_from_release_handoffs() -> None:
         "RELEASE-HANDOFF",
     ):
         assert profile in text
-    assert "Not automatically required" in text
-    assert "full test sharding" in text
-    assert "patch replay" in text
-    assert "does not currently infer" in text
+    assert "默认不要求" in text
+    assert "全量测试分片" in text
+    assert "补丁重放" in text
+    assert "不会自动判断" in text
 
 
 def test_frozen_stage_results_live_in_dedicated_ledger() -> None:
@@ -92,14 +92,13 @@ def test_frozen_stage_results_live_in_dedicated_ledger() -> None:
     assert "| 3C-35 |" in text
     assert "| 3C-36 |" in text
     assert "| 3C-37 |" in text
-    assert "Stage 3C-38 may execute" in text
-
+    assert "Stage 3C-38 可以" in text
 
 
 def test_project_charter_is_durable_and_not_current_status() -> None:
     text = _text("docs/PROJECT_CHARTER.md")
-    assert "## 1. Mission" in text
-    assert "## 12. Document authority" in text
+    assert "## 1. 项目使命" in text
+    assert "## 12. 文档权威" in text
     assert "当前项目状态" not in text
     assert "探索阶段至少 10 个" not in text
     assert "核心条件至少 30 个" not in text
@@ -109,21 +108,39 @@ def test_project_charter_is_durable_and_not_current_status() -> None:
 
 def test_project_governance_is_cross_version_contract_not_version_diary() -> None:
     text = _text("docs/PROJECT_GOVERNANCE.md")
-    assert "## 1. Governance cycle" in text
-    assert "## 11. Documentation authority" in text
+    assert "## 1. 每轮治理检查" in text
+    assert "## 11. 文档权威" in text
     assert not re.search(r"^##\s+v0\.\d+", text, re.MULTILINE)
-    assert "Frozen validated scientific results" in text
+    assert "已冻结且验证的科学结果" in text
     assert len(text.splitlines()) < 400
 
 
 def test_subject_vm_document_is_current_contract_not_stage_diary() -> None:
     text = _text("docs/PARTITIONED_SUBJECT_GRAPH_VM.md")
-    assert "## 1. Architectural decision" in text
-    assert "## 13. Current capability boundary" in text
+    assert "## 1. 架构决策" in text
+    assert "## 13. 当前能力边界" in text
     assert not re.search(r"^##\s+(?:v0\.\d+|Stage 3C-\d+)", text, re.MULTILINE)
     assert "docs/results/SUBJECT_VM_STAGE3C_RESULTS.md" in text
-    assert "runtime score comparator is authoritative" in text
+    assert "runtime score comparator 是 selection semantics 的唯一权威" in text
     assert len(text.splitlines()) < 500
+
+
+def test_active_normative_documents_are_chinese_authoritative() -> None:
+    required_markers = {
+        "AGENTS.md": ("本文档适用于", "中文是活动规范文档的权威解释语言"),
+        "docs/PROJECT_CHARTER.md": ("项目宪章", "项目使命"),
+        "docs/PROJECT_GOVERNANCE.md": ("项目治理规则", "每轮治理检查"),
+        "docs/ARCHITECTURE.md": ("当前架构", "职责与权威"),
+        "docs/PARTITIONED_SUBJECT_GRAPH_VM.md": ("分区式 Subject Graph VM", "当前机制合同"),
+        "docs/PROJECT_STATUS.md": ("当前项目状态", "类型化任务进度树"),
+        "docs/SCIENTIFIC_ISSUES.md": ("当前科学问题", "活动问题注册表"),
+        "docs/WORKFLOW_PROFILES.md": ("工作流档位", "档位选择"),
+        "docs/results/SUBJECT_VM_STAGE3C_RESULTS.md": ("冻结结果台账", "当前冻结链"),
+    }
+    for relative, markers in required_markers.items():
+        text = _text(relative)
+        for marker in markers:
+            assert marker in text, (relative, marker)
 
 
 def test_v0153_core_contract_snapshots_are_non_normative() -> None:
@@ -136,14 +153,16 @@ def test_v0153_core_contract_snapshots_are_non_normative() -> None:
         assert text.startswith("# Historical v0.153 snapshot — non-normative")
         assert "Do not update or cite it as the current project contract" in text
 
+
 def test_previous_active_docs_are_explicitly_non_normative_snapshots() -> None:
     for name in ("ARCHITECTURE.md", "SCIENTIFIC_ISSUES.md", "PROJECT_STATUS.md"):
         text = _text(f"docs/history/v0.147/{name}")
         assert text.startswith("# Historical v0.147 snapshot — non-normative")
         assert "Do not update or cite it as the current project contract" in text
 
+
 def test_durable_governance_uses_non_overlapping_document_authority() -> None:
     text = _text("docs/PROJECT_GOVERNANCE.md")
-    assert "## 11. Documentation authority" in text
+    assert "## 11. 文档权威" in text
     assert "durable cross-version conclusions belong" not in text
-    assert "| Frozen validated scientific results | `docs/results/` |" in text
+    assert "| 已冻结且验证的科学结果 | `docs/results/` |" in text

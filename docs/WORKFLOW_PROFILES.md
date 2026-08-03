@@ -1,90 +1,76 @@
-# Workflow profiles
+# 工作流档位
 
-This document owns validation, packaging, and handoff depth. `AGENTS.md` owns repository
-invariants and requires choosing one profile, but it intentionally does not force the
-largest profile on every change.
+本文档规定验证、打包和交付的深度。`AGENTS.md` 规定仓库级不变量，并要求先选择档位；但它不会强制所有修改都执行最大档位。
 
-## 1. Profile selection
+## 1. 档位选择
 
-| Profile | Use when | Required outputs |
+| 档位 | 适用情形 | 必要输出 |
 |---|---|---|
-| `SCOPED-FIX` | Small documentation, test, or localized code correction with no frozen scientific claim | changed-scope checks and a concise change record |
-| `STANDARD-CODE` | Product/runtime/tooling change spanning a module or public CLI | targeted tests, impacted integration tests, configuration/import checks |
-| `SCIENTIFIC-FREEZE` | A preregistered experiment is run and a result is frozen | complete study chain, evidence integrity, reproducibility, frozen result ledger |
-| `RELEASE-HANDOFF` | A versioned project archive and patch are delivered | release validation, patch replay, clean archive, hashes and handoff commands |
+| `SCOPED-FIX` | 不冻结科学结论的小型文档、测试或局部代码修复 | 变更范围检查和简明变更记录 |
+| `STANDARD-CODE` | 跨模块或公共 CLI 的产品、运行时或工具修改 | 定向测试、受影响集成测试、配置与导入检查 |
+| `SCIENTIFIC-FREEZE` | 执行预注册实验并冻结结果 | 完整研究链、证据完整性、可复现性、冻结结果台账 |
+| `RELEASE-HANDOFF` | 交付版本化项目包和补丁 | 发布验证、补丁重放、干净归档、哈希和 Git 交接命令 |
 
-Profiles compose. A scientific release normally uses both `SCIENTIFIC-FREEZE` and
-`RELEASE-HANDOFF`. A small local fix may use only `SCOPED-FIX`.
+档位可以组合。正式科学版本通常同时使用 `SCIENTIFIC-FREEZE` 与 `RELEASE-HANDOFF`；小型本地修复可以只使用 `SCOPED-FIX`。
 
-The project does not currently infer whether the operator intends to handle packaging
-locally. Until that policy is explicitly decided, record the chosen profile instead of
-inventing a local-only or release requirement.
+项目目前不会自动判断操作员是否准备在本地自行完成打包。在该规则明确前，应记录本轮选择的档位，不得凭猜测强制或取消交付。
 
-## 2. `SCOPED-FIX`
+## 2. 局部修复（`SCOPED-FIX`）
 
-Required:
+必须执行：
 
-1. declare the typed Git title and branch;
-2. inspect the direct callers, tests, and documentation contract affected by the change;
-3. run focused tests or static checks covering the changed boundary;
-4. update active documentation only when its current contract changed;
-5. provide branch and commit commands.
+1. 声明类型化 Git 标题和分支；
+2. 检查变更直接影响的调用者、测试和文档合同；
+3. 执行覆盖该边界的定向测试或静态检查；
+4. 只有当前合同确实变化时才更新活动文档；
+5. 提供分支和提交命令。
 
-Not automatically required:
+默认不要求：
 
-- full test sharding;
-- Conda editable verification;
-- parity;
-- patch replay;
-- clean archive generation;
-- release tag.
+- 全量测试分片；
+- Conda editable 验证；
+- parity；
+- 补丁重放；
+- 干净归档；
+- release tag。
 
-Escalate to `STANDARD-CODE` when the change alters a public command, package entry point,
-configuration schema, checkpoint format, or shared runtime behavior.
+若修改公共命令、package entry point、配置 schema、checkpoint 格式或共享运行时行为，应升级为 `STANDARD-CODE`。
 
-## 3. `STANDARD-CODE`
+## 3. 标准代码变更（`STANDARD-CODE`）
 
-Includes all `SCOPED-FIX` steps plus:
+包含 `SCOPED-FIX` 的全部步骤，并增加：
 
-1. run `make conda-sync` when console entries, dependencies, package structure, or
-   `pyproject.toml` changed;
-2. run the targeted module tests and all directly impacted integration/contract tests;
-3. validate configuration and import/entry-point ownership affected by the change;
-4. run `make test` or the relevant complete shard set when the change touches shared
-   infrastructure used broadly across the repository;
-5. record any remaining actual error.
+1. console entry、依赖、包结构或 `pyproject.toml` 变化时执行 `make conda-sync`；
+2. 执行目标模块测试及所有直接受影响的集成/合同测试；
+3. 验证受影响的配置、导入和 entry-point 所有权；
+4. 若变更涉及仓库广泛依赖的共享基础设施，执行 `make test` 或相关完整分片；
+5. 记录仍然存在的真实错误。
 
-A standard code change still does not require scientific study reruns unless it changes
-an executable scientific contract or invalidates frozen evidence.
+标准代码变更无需自动重跑科学研究；只有可执行科学合同变化或冻结证据失效时才需要重跑。
 
-## 4. `SCIENTIFIC-FREEZE`
+## 4. 科学结果冻结（`SCIENTIFIC-FREEZE`）
 
-Required:
+必须执行：
 
-1. preregister the manipulation, controls, costs, lineage and rejection gates;
-2. execute the complete declared source panel without adaptive seed, threshold, horizon,
-   or exposure changes;
-3. run evidence-integrity and component-reproducibility assessments;
-4. distinguish prerequisite failure from hypothesis failure;
-5. summarize the full run chain once in `docs/results/`;
-6. update the current status tree and active scientific issues without copying the full
-   result narrative into architecture;
-7. use the complete scientific validation commands defined by the study workflow.
+1. 预注册操纵、对照、成本、lineage 和拒绝门；
+2. 完整执行声明的 source panel，不得自适应修改 seed、阈值、horizon 或 exposure；
+3. 执行证据完整性和组件可复现性评估；
+4. 区分前置资格失败与下游假设失败；
+5. 在 `docs/results/` 中仅汇总一次完整运行链；
+6. 更新当前状态树和活动科学问题，但不得把完整结果叙事复制到 Architecture；
+7. 执行 study workflow 定义的完整科学验证命令。
 
-## 5. `RELEASE-HANDOFF`
+## 5. 版本交付（`RELEASE-HANDOFF`）
 
-Required only for a versioned artifact handoff:
+仅在版本化交付时要求：
 
-1. run the selected underlying code/science profile first;
-2. run release-freshness and isolated distribution checks;
-3. generate a patch that includes new and binary files;
-4. replay the patch on the exact baseline and compare the resulting tree file by file;
-5. create a clean archive excluding ignored workspace settings and generated outputs;
-6. verify archive, manifest and artifact hashes;
-7. provide the actual branch, patch application, commit, fast-forward merge and annotated
-   tag commands;
-8. deliver the project archive, baseline-to-current patch and one evidence/result bundle
-   unless a different artifact set was requested.
+1. 先完成所选代码或科学档位；
+2. 执行 release-freshness 和隔离 distribution 检查；
+3. 生成包含新增文件与二进制文件的完整补丁；
+4. 在精确基线上重放补丁，并逐文件比较结果树；
+5. 创建排除工作区设置和生成产物的干净归档；
+6. 验证归档、清单和交付物哈希；
+7. 提供实际分支、补丁应用、提交、fast-forward 合并和 annotated tag 命令；
+8. 默认只交付项目包、基线到当前版本的补丁以及一个证据/结果包，除非用户明确要求其他集合。
 
-Passing validation is retained in files rather than expanded in chat. Only actual
-remaining non-GPU errors are reported directly.
+例行通过项保留在文件中，不在聊天中展开。聊天只报告仍然存在的真实非 GPU 错误。

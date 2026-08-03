@@ -1,67 +1,55 @@
-# Subject VM Stage 3C frozen results ledger
+# Subject VM Stage 3C 冻结结果台账
 
-## Scope
+## 范围
 
-This ledger contains concise, validated Stage 3C findings. It is historical evidence,
-not current architecture and not an active task queue. Detailed protocols remain in
-`protocols/decisions/`; executable workflows remain in `studies/`; current work is
-listed in `docs/PROJECT_STATUS.md`.
+本文档只保存简明且已验证的 Stage 3C 结论。它是历史证据，不是当前架构，也不是活动任务队列。详细 protocol 位于 `protocols/decisions/`；可执行 workflow 位于 `studies/`；当前工作位于 `docs/PROJECT_STATUS.md`。
 
-The labels in the **type** column are task/progress types, not scientific outcomes.
+表格中的**类型**是任务/进度类型，不是科学结果等级。
 
-## Stage 3C-1 through 3C-16 — infrastructure chain
+## Stage 3C-1 至 3C-16：基础设施链
 
-| Range | Type | Frozen boundary |
+| 范围 | 类型 | 冻结边界 |
 |---|---|---|
-| 3C-1–3C-3 | `[MAIN-EXP]` engineering experiment | Exact target binding, bounded safe deltas, atomic shadow transaction, compare-and-swap, and rollback were made explicit before live writes. |
-| 3C-4–3C-6 | `[MAIN-EXP]` paired experiment | Guarded temporary live writes, score-free 21-coordinate evidence, shared-checkpoint branch identity, and paired export were established. |
-| 3C-7–3C-9 | `[MAIN-EXP]` evidence infrastructure | Integrity screening, source-balanced component reproducibility, fixed-bootstrap short-study runner, symmetric control reservation, and export-boundary finalization were established. |
-| 3C-10–3C-13 | `[MAIN-EXP]` diagnostic chain | Update visibility, independent-source adequacy, branch-horizon coverage, and temporary-exposure adequacy were separated. Sparse downstream facts were not converted into learning claims. |
-| 3C-14–3C-16 | `[MAIN-EXP]` reachability chain | Parameter-family, local-sensitivity, and eligibility-carrier reachability were audited without treating reachability as causal-credit quality. |
+| 3C-1–3C-3 | `[MAIN-EXP]` 工程实验 | 在 live write 前明确 exact target binding、bounded safe delta、atomic shadow transaction、compare-and-swap 与 rollback。 |
+| 3C-4–3C-6 | `[MAIN-EXP]` 配对实验 | 建立 guarded temporary live write、无 score 的 21 坐标证据、共享 checkpoint branch identity 与 paired export。 |
+| 3C-7–3C-9 | `[MAIN-EXP]` 证据基础设施 | 建立 integrity screen、source-balanced component reproducibility、fixed-bootstrap 短程 runner、对称 control reservation 与 export-boundary finalization。 |
+| 3C-10–3C-13 | `[MAIN-EXP]` 诊断链 | 分开 update visibility、独立 source 充分性、branch-horizon coverage 与 temporary-exposure adequacy；稀疏下游事实没有被升级为 learning 结论。 |
+| 3C-14–3C-16 | `[MAIN-EXP]` 可达性链 | 审计 parameter-family、local-sensitivity 与 eligibility-carrier reachability，但不把可达性解释为 causal-credit 质量。 |
 
-## Stage 3C-17 through 3C-37
+## Stage 3C-17 至 3C-37
 
-| Stage | Type | Controlled change | Frozen finding | Not authorized |
+| Stage | 类型 | 受控变化 | 冻结结论 | 未授权解释 |
 |---|---|---|---|---|
-| 3C-17 | `[BRANCH-EXP]` | Latest versus oldest exact-similarity tie-break. | Tie-break materially changes delay, historical reuse, proposal count, and completed windows; neither arm produces stable objective coordinates. | Claiming recency value or choosing a winner as scientifically better. |
-| 3C-18 | `[BRANCH-EXP]` | Candidate limit one versus two with fixed update budget. | Top-2 changes reuse and funnel counts but does not expand unique historical identity coverage or stable downstream facts. | Treating more references as better credit. |
-| 3C-19 | `[MAIN-EXP]` read-only | Visible-token geometry reconstruction. | The active visible vector is exactly constant `[0,0,1]`; content score cannot distinguish candidates. | General failure claim about continuous tokens. |
-| 3C-20 | `[BRANCH-EXP]` | Add one shared action-state readout. | Geometry becomes rank one and ties disappear, but the coordinate is a shared temporal phase rather than subject/event identity. | Calling phase separation historical understanding. |
-| 3C-21 | `[BRANCH-EXP]` | Constant-one versus uncertainty-mean objective readout on common support. | Subject/event-specific geometry is reachable, but selected historical identity coverage falls and downstream facts remain unstable. | Assigning value to uncertainty. |
-| 3C-22 | `[MAIN-EXP]` read-only | Reconstruct complete eligible and selected event sets. | Candidate opportunity is unchanged; the new geometry changes ranking and reuses a strict subset of eligible identities. | Ranking coverage or reuse as good or bad. |
-| 3C-23 | `[BRANCH-EXP]` | Add a second readout coordinate on common graph support. | Rank-two visible geometry is reachable without changing action output; no stable objective coordinate appears. | Credit-improvement claim. |
-| 3C-24 | `[MAIN-EXP]` read-only | Reconstruct rank-two opportunity, winner, and margin. | Exact ties are removed, but historical identity coverage remains bounded and winner margins can be small. | Equating non-tied scores with better evidence. |
-| 3C-25 | `[MAIN-EXP]` read-only | Winner reuse versus normalized margin and opportunity. | Reused winners are not explained solely by the smallest margins and occur across distinct query vectors. | Treating reuse as persistence value. |
-| 3C-26 | `[MAIN-EXP]` read-only | Remove forced source-boundary assignments and normalize age opportunity. | Age-one occupancy persists beyond boundary forcing; raw opportunity count does not fully explain reuse. | Age penalty or randomized allocation. |
-| 3C-27 | `[MAIN-EXP]` read-only | Visible-token trajectory kinematics. | Under its frozen `1e-8` diagnostic bin, 386/387 multi-candidate age-one selections are strict and one is near-tied; Stage 3C-37 later resolves that binned case as a strict runtime margin. | Recency-value interpretation. |
-| 3C-28 | `[MAIN-EXP]` read-only | Discrete-state and recurrent-basin audit. | First-coordinate states are shared, second coordinate is strongly subject anchored, and same-state winners are enriched without exact token replay. | Global phase or exact-memory claim. |
-| 3C-29 | `[MAIN-EXP]` read-only | Condition transition occupancy on current-state opportunity. | Apparent transition-match enrichment mostly disappears; nearest same-state second-coordinate candidate wins every available comparison. | Transition replay claim. |
-| 3C-30 | `[PARAM-EXP]` read-only scale panel | Second-coordinate weight `0, 0.1…10`. | Zero weight changes winner identity without changing state basin; all positive weights preserve nearest-second-coordinate ordering. | Fine-tuned optimum or learned weight claim. |
-| 3C-31 | `[MAIN-EXP]` read-only ablation | Preserve coordinate marginal while breaking subject-time binding. | Winner identity changes in 39.53%–74.51% of same-state queries; nine fact coordinates become consistently less locally matched, but the full vector has mixed direction. | Scalar value or correct-credit claim. |
-| 3C-32 | `[MAIN-EXP]` four-arm runtime intervention | Aligned/ablated × guarded-live/read-only-control. | Alignment changes selector identity and temporary update routing in every source; stable downstream facts do not follow at three-tick exposure. | Replacing internal-route causality with downstream-value evidence. |
-| 3C-33 | `[MAIN-EXP]` matched-horizon intervention | `3/8`, `3/11`, and `6/11` exposure/horizon conditions. | Ledger dose doubles exactly. Fixed-support trajectory effects change in seeds 12305 and 12308, but no signed or absolute fact coordinate is stable across nine sources. | Adaptive exposure extension, retention, reward, or learned weighting. |
-| 3C-34 | `[MAIN-EXP]` read-only crossing audit | Reuse all eight matched-horizon arms and localize exposure-by-alignment divergence at action potentials, sampled actions, Objective-Fact events, and aggregation. | All nine sources contain continuous Subject-VM decision divergence; only 12305 and 12308 have alignment-specific sampled-action crossings, followed by 12 differential Objective-Fact events, and these exactly reproduce the two nonzero Stage 3C-33 sources. Seed 12307 has an alignment-common action crossing removed by the cross-mode contrast. | Exact numeric threshold margin, value, correct credit, keep/revert, learning, or retention. |
-| 3C-35 | `[MAIN-EXP]` disjoint-source qualification | Rebuild the frozen rank-two chain on seeds 12401–12409 before testing the preregistered crossing classifier. | The panel fails the Stage 3C-27 geometry prerequisite: strict age-one geometry falls from 386/387 to 363/369 and latest-tie use rises from 1/864 to 6/864. Stage 3C-28 and later are not run; the crossing prediction remains untested. | Seed replacement, gate relaxation, crossing claims, value, learning, or retention. |
-| 3C-36 | `[MAIN-EXP]` read-only transport decomposition | Compare frozen Stage 3C-25–27 outputs across the original and disjoint panels. | Candidate support and winner reuse transport exactly; the age-one occupancy loss is predicted by first-state recurrence composition, while five extra near-exact ties directly trip the formal gate. Local-step scale separation remains about 200×. | Treating aggregate tie counts as resolved mechanism, changing tolerance, or resuming crossing replication. |
-| 3C-37 | `[MAIN-EXP]` read-only selector audit | Replay both frozen rank-two panels and resolve every Stage-3C-27 near-tie query against stored coordinates and actual runtime ordering. | All seven `1e-8` diagnostic cases have strict positive float64 age-one margins (`4.42e-9`–`7.37e-9`), distinct normalized directions and second-coordinate differences of 1,715–2,140 float32 ULPs. The runtime `1e-12` comparator sees zero ties across 1,728 multi-candidate queries, and latest-on-tie changes no winner. Both panels have selector-consistent strict fraction 1.0. | Rewriting historical artifacts, changing runtime tie semantics, or treating qualification correction as crossing replication. |
+| 3C-17 | `[BRANCH-EXP]` | exact-similarity tie 时比较 latest 与 oldest。 | tie-break 显著改变 delay、历史复用、proposal 数和完成窗口；两臂都没有产生稳定 Objective-Fact 坐标。 | 声称 recency 有价值，或把某一臂选为科学上更优。 |
+| 3C-18 | `[BRANCH-EXP]` | 固定 update budget，candidate limit 比较 1 与 2。 | Top-2 改变复用和漏斗计数，但没有扩大 unique historical identity coverage，也没有形成稳定下游事实。 | 把更多引用解释为更好的 credit。 |
+| 3C-19 | `[MAIN-EXP]` 只读 | 重建 visible-token geometry。 | 活动可见向量严格恒为 `[0,0,1]`，content score 无法区分 candidate。 | 推广为 continuous token 普遍失败。 |
+| 3C-20 | `[BRANCH-EXP]` | 增加一个共享 action-state readout。 | geometry 变为 rank one 且 tie 消失，但该坐标是共享时间相位，不是 subject/event identity。 | 把相位分离解释为历史理解。 |
+| 3C-21 | `[BRANCH-EXP]` | 在共同支持上比较 constant-one 与 uncertainty-mean objective readout。 | subject/event-specific geometry 可达，但 selected historical identity coverage 下降，且下游事实仍不稳定。 | 给 uncertainty 赋价值。 |
+| 3C-22 | `[MAIN-EXP]` 只读 | 重建完整 eligible 与 selected event set。 | candidate opportunity 不变；新 geometry 改变排序，并严格复用 eligible identity 的一个子集。 | 把 ranking coverage 或 reuse 解释为好坏。 |
+| 3C-23 | `[BRANCH-EXP]` | 在共同 graph support 上增加第二 readout coordinate。 | 不改变 action output 时可得到 rank-two visible geometry；没有出现稳定 Objective-Fact 坐标。 | 声称 credit 得到改善。 |
+| 3C-24 | `[MAIN-EXP]` 只读 | 重建 rank-two opportunity、winner 与 margin。 | exact tie 被移除，但 historical identity coverage 仍有界，winner margin 可能很小。 | 把非 tie score 等同于更强证据。 |
+| 3C-25 | `[MAIN-EXP]` 只读 | 比较 winner reuse、normalized margin 与 opportunity。 | reused winner 不能仅由最小 margin 解释，并出现在不同 query vector 中。 | 把 reuse 解释为持续价值。 |
+| 3C-26 | `[MAIN-EXP]` 只读 | 去除 source-boundary forced assignment，并按 age opportunity 归一化。 | age-one occupancy 在去除边界强制后仍存在；raw opportunity count 不能完全解释 reuse。 | 增加 age penalty 或随机分配。 |
+| 3C-27 | `[MAIN-EXP]` 只读 | visible-token trajectory kinematics。 | 在冻结的 `1e-8` 诊断 bin 下，387 个 multi-candidate age-one selection 中 386 个 strict、1 个 near-tie；Stage 3C-37 后续证明该分箱案例在 runtime 语义下仍有严格正 margin。 | 把结果解释为 recency value。 |
+| 3C-28 | `[MAIN-EXP]` 只读 | 离散状态与 recurrent-basin 审计。 | 第一坐标状态跨主体共享，第二坐标具有强 subject anchor；same-state winner 富集，但不存在 exact token replay。 | 声称 global phase 或 exact memory。 |
+| 3C-29 | `[MAIN-EXP]` 只读 | 在 current-state opportunity 条件下分析 transition occupancy。 | 表面 transition-match enrichment 基本消失；在所有可比较情况下，same-state candidate 中第二坐标最近者获胜。 | 声称 transition replay。 |
+| 3C-30 | `[PARAM-EXP]` 只读 scale panel | 第二坐标权重 `0, 0.1…10`。 | 权重为 0 会改变 winner identity，但不改变 state basin；所有正权重都保持最近第二坐标排序。 | 声称精调最优点或 learned weight。 |
+| 3C-31 | `[MAIN-EXP]` 只读消融 | 保持坐标边际分布，同时打断 subject-time binding。 | same-state query 中 39.53%–74.51% 的 winner identity 改变；9 个 fact 坐标的局部匹配一致变差，但完整向量方向混合。 | 声称 scalar value 或正确 credit。 |
+| 3C-32 | `[MAIN-EXP]` 四臂 runtime intervention | aligned/ablated × guarded-live/read-only-control。 | alignment 在每个 source 中都改变 selector identity 和 temporary update route；3-tick exposure 下没有形成稳定下游事实。 | 用内部路由因果性替代下游价值证据。 |
+| 3C-33 | `[MAIN-EXP]` 匹配 horizon 干预 | 比较 `3/8`、`3/11`、`6/11` exposure/horizon。 | ledger dose 精确翻倍。固定支持轨迹效应只在 seed 12305 与 12308 变化；9 个 source 中没有稳定 signed 或 absolute fact coordinate。 | 自适应延长 exposure，或授权 retention、reward、learned weighting。 |
+| 3C-34 | `[MAIN-EXP]` 只读 crossing audit | 复用 8 个 matched-horizon arm，将 exposure×alignment 差异定位到 action potential、sampled action、Objective-Fact event 与 aggregation。 | 9/9 source 都存在连续 Subject VM 决策差异；只有 12305、12308 出现 alignment-specific sampled-action crossing，随后产生 12 个 differential Objective-Fact event，且恰好复现 Stage 3C-33 的两个非零 source。12307 出现 alignment-common crossing，被 cross-mode contrast 消去。 | 声称精确数值 threshold margin、value、correct credit、keep/revert、learning 或 retention。 |
+| 3C-35 | `[MAIN-EXP]` 独立 source 资格 | 在测试预注册 crossing classifier 前，用 seed 12401–12409 重建冻结 rank-two 链。 | panel 未通过历史 Stage 3C-27 geometry prerequisite：strict age-one geometry 从 386/387 降至 363/369，记录的 latest-tie use 从 1/864 升至 6/864。未运行 Stage 3C-28 及以后阶段；crossing 预测仍未测试。 | 替换 seed、放宽 gate、提出 crossing/value/learning/retention 结论。 |
+| 3C-36 | `[MAIN-EXP]` 只读 transport decomposition | 比较原 panel 与独立 panel 的冻结 Stage 3C-25–27 输出。 | candidate support 和 winner reuse 精确迁移；age-one occupancy 下降由 first-state recurrence composition 预测；5 个额外 near-exact tie 直接触发形式 gate。local-step scale separation 仍约 200×。 | 把聚合 tie 计数当作机制已解析，修改 tolerance 或恢复 crossing replication。 |
+| 3C-37 | `[MAIN-EXP]` 只读 selector audit | 重放两个冻结 rank-two panel，按存储坐标与真实 runtime ordering 解析所有 Stage 3C-27 near-tie query。 | 7 个 `1e-8` 诊断案例都有严格正的 float64 age-one margin（`4.42e-9`–`7.37e-9`），normalized direction 不同，第二坐标相差 1715–2140 个 float32 ULP。runtime `1e-12` comparator 在 1728 个 multi-candidate query 中判定 0 个 tie，latest-on-tie 未改变任何 winner。两个 panel 的 selector-consistent strict fraction 都为 1.0。 | 改写历史产物、修改 runtime tie 语义，或把资格修正当作 crossing replication。 |
 
-## Current frozen chain
+## 当前冻结链
 
-The original Stage 3C-23→34 result remains frozen for seeds 12301–12309. Stage 3C-35
-stopped the disjoint panel because the historical Stage-3C-27 analysis grouped seven
-small positive margins into a `1e-8` near-tie category and then described that category
-as latest-tie use. Stage 3C-37 proves that none is a runtime tie: the actual selector
-uses float64 scores and a `1e-12` comparator, and latest-on-tie changes no winner.
+seed `12301–12309` 上的 Stage 3C-23→34 结果继续冻结。Stage 3C-35 之所以停止独立 panel，是因为历史 Stage 3C-27 分析把 7 个小但严格为正的 margin 归入 `1e-8` near-tie 类别，并将该类别描述为 latest-tie use。Stage 3C-37 证明它们都不是 runtime tie：实际 selector 使用 float64 score 和 `1e-12` comparator，latest-on-tie 没有改变 winner。
 
-The Stage-3C-34 crossing prediction therefore remains untested rather than refuted or
-qualified. The disjoint panel may proceed only through the explicit Stage-3C-37
-selector-consistent qualification overlay; historical checksum-bound artifacts remain
-unchanged.
+因此 Stage 3C-34 crossing 预测仍是“未测试”，不是“被反驳”或“已获得资格支持”。独立 panel 只能通过明确的 Stage 3C-37 selector-consistent qualification overlay 继续；历史 checksum-bound 产物保持不变。
 
-## Next authorized evidence boundary
+## 下一项获授权的证据边界
 
-Stage 3C-38 may execute the preregistered Stage-3C-28 through crossing-replication chain
-on seeds 12401–12409 using the frozen runtime and the Stage-3C-37 qualification overlay.
-It may not select sources, change exposure, addressing, horizon, crossing definitions or
-runtime score comparison, and may not interpret a zero-positive panel as non-empty
-replication support.
+Stage 3C-38 可以在 seed `12401–12409` 上，使用冻结 runtime 和 Stage 3C-37 qualification overlay，执行预注册的 Stage 3C-28 至 crossing-replication 链。
+
+不得挑选 source，不得改变 exposure、addressing、horizon、crossing definition 或 runtime score comparison，也不得把“零阳性 panel”解释为非空复现支持。

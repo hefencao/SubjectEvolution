@@ -29,7 +29,7 @@ def package_version(path: Path) -> str:
 
 def status_version(path: Path) -> str:
     text = path.read_text(encoding="utf-8")
-    match = re.search(r"^Version:\s*\*\*([^*]+)\*\*\s*$", text, flags=re.MULTILINE)
+    match = re.search(r"^(?:Version|版本)[：:]\s*\*\*([^*]+)\*\*\s*$", text, flags=re.MULTILINE)
     if not match:
         raise RuntimeError(f"durable project status version not found in {path}")
     return match.group(1).strip()
