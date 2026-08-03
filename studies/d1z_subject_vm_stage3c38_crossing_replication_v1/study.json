@@ -1,0 +1,28 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c38_crossing_replication_v1",
+  "title": "D1-Z Subject VM Stage 3C-38 selector-consistent disjoint-panel crossing replication",
+  "status": "frozen-not-refuted-vacuous-zero-positive-panel",
+  "scientific_stage": "stage3c38-disjoint-crossing-replication-frozen-next-cross-panel-boundary-opportunity-audit",
+  "authorization": {
+    "reuse_replication_source_seeds_12401_through_12409": true,
+    "require_stage3c37_selector_consistent_qualification_overlay": true,
+    "rewrite_historical_stage3c27_or_stage3c35": false,
+    "change_runtime_tie_semantics": false,
+    "change_exposure_or_horizon": false,
+    "change_crossing_definition": false,
+    "select_or_replace_sources": false,
+    "scalar_objective": false,
+    "permanent_parameter_retention": false
+  },
+  "frozen_result": {
+    "continuous_potential_divergence_source_count": 9,
+    "alignment_differential_action_crossing_source_count": 0,
+    "surviving_objective_fact_effect_source_count": 0,
+    "false_positive_source_count": 0,
+    "false_negative_source_count": 0,
+    "prediction_not_refuted": true,
+    "prediction_supported_nonvacuously": false,
+    "vacuous_match_only": true
+  }
+}

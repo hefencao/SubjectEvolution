@@ -41,15 +41,14 @@
 | 3C-35 | `[MAIN-EXP]` 独立 source 资格 | 在测试预注册 crossing classifier 前，用 seed 12401–12409 重建冻结 rank-two 链。 | panel 未通过历史 Stage 3C-27 geometry prerequisite：strict age-one geometry 从 386/387 降至 363/369，记录的 latest-tie use 从 1/864 升至 6/864。未运行 Stage 3C-28 及以后阶段；crossing 预测仍未测试。 | 替换 seed、放宽 gate、提出 crossing/value/learning/retention 结论。 |
 | 3C-36 | `[MAIN-EXP]` 只读 transport decomposition | 比较原 panel 与独立 panel 的冻结 Stage 3C-25–27 输出。 | candidate support 和 winner reuse 精确迁移；age-one occupancy 下降由 first-state recurrence composition 预测；5 个额外 near-exact tie 直接触发形式 gate。local-step scale separation 仍约 200×。 | 把聚合 tie 计数当作机制已解析，修改 tolerance 或恢复 crossing replication。 |
 | 3C-37 | `[MAIN-EXP]` 只读 selector audit | 重放两个冻结 rank-two panel，按存储坐标与真实 runtime ordering 解析所有 Stage 3C-27 near-tie query。 | 7 个 `1e-8` 诊断案例都有严格正的 float64 age-one margin（`4.42e-9`–`7.37e-9`），normalized direction 不同，第二坐标相差 1715–2140 个 float32 ULP。runtime `1e-12` comparator 在 1728 个 multi-candidate query 中判定 0 个 tie，latest-on-tie 未改变任何 winner。两个 panel 的 selector-consistent strict fraction 都为 1.0。 | 改写历史产物、修改 runtime tie 语义，或把资格修正当作 crossing replication。 |
+| 3C-38 | `[MAIN-EXP]` qualification-corrected replication | 在 seed 12401–12409 上通过 Stage 3C-37 overlay 恢复冻结的 3C-28→34 链；不改变 runtime、exposure、horizon 或 crossing definition。 | 9/9 source 都有连续 potential divergence，但 action crossing、differential Objective-Fact crossing 与 surviving fact effect 均为 0。predictor=outcome=空集，分类器未被反驳但只形成 vacuous match，不构成非空复现。 | 把零阳性 panel 当作复制成功，或授权 value、credit、keep/revert、learning、retention。 |
 
 ## 当前冻结链
 
-seed `12301–12309` 上的 Stage 3C-23→34 结果继续冻结。Stage 3C-35 之所以停止独立 panel，是因为历史 Stage 3C-27 分析把 7 个小但严格为正的 margin 归入 `1e-8` near-tie 类别，并将该类别描述为 latest-tie use。Stage 3C-37 证明它们都不是 runtime tie：实际 selector 使用 float64 score 和 `1e-12` comparator，latest-on-tie 没有改变 winner。
+seed `12301–12309` 的原 panel 中，Stage 3C-34 找到 2 个 alignment-specific action-crossing source，并且这两个 source 恰好也是 exposure-only Objective-Fact 非零 source。seed `12401–12409` 的独立 panel 经 Stage 3C-37 selector-consistent overlay 后完成同一链，但 9/9 source 虽有 continuous potential divergence，均未跨越实际 sampled-action 边界。
 
-因此 Stage 3C-34 crossing 预测仍是“未测试”，不是“被反驳”或“已获得资格支持”。独立 panel 只能通过明确的 Stage 3C-37 selector-consistent qualification overlay 继续；历史 checksum-bound 产物保持不变。
+因此预注册的 source-level predictor 在独立 panel 上没有 false positive 或 false negative，但阳性数为零。结果只能冻结为“未反驳的 vacuous match”，不能称为非空复现，也不能据此授权 retention 或 learned addressing。
 
 ## 下一项获授权的证据边界
 
-Stage 3C-38 可以在 seed `12401–12409` 上，使用冻结 runtime 和 Stage 3C-37 qualification overlay，执行预注册的 Stage 3C-28 至 crossing-replication 链。
-
-不得挑选 source，不得改变 exposure、addressing、horizon、crossing definition 或 runtime score comparison，也不得把“零阳性 panel”解释为非空复现支持。
+Stage 3C-39 只能只读比较两个冻结 panel 的 crossing opportunity：continuous potential divergence 的频率与幅度、tick 分布、action composition 和已导出的 sampled probability。不得新增 source、调整 exposure、改变 crossing definition 或使用后见阈值。由于完整 masked logits 与 categorical draw 不可见，Stage 3C-39 不得声称得到精确 categorical boundary margin。

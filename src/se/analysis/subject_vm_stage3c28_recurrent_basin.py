@@ -37,6 +37,7 @@ from .subject_vm_stage3c25_winner_basin import _visible_token
 from .subject_vm_stage3c27_token_kinematics import (
     STAGE3C27_TOKEN_KINEMATICS_SCHEMA,
 )
+from .subject_vm_stage3c37_tie_origin import STAGE3C37_TIE_ORIGIN_SCHEMA
 
 STAGE3C28_RECURRENT_BASIN_SCHEMA = (
     "se-subject-vm-stage3c28-recurrent-basin-assessment-v1"
@@ -359,11 +360,45 @@ def _source_basin(checkpoint: str | Path) -> dict[str, Any]:
     }
 
 
+def _validate_stage3c37_qualification_overlay(
+    overlay: dict[str, Any],
+    *,
+    rank2_study: dict[str, Any],
+    stage3c27_assessment: dict[str, Any],
+) -> None:
+    if overlay.get("schema") != STAGE3C37_TIE_ORIGIN_SCHEMA:
+        raise ValueError("Stage-3C-28 requires a Stage-3C-37 qualification overlay")
+    recorded = str(overlay.get("assessment_sha256", ""))
+    unsigned = dict(overlay)
+    unsigned.pop("assessment_sha256", None)
+    if not recorded or recorded != _canonical_sha256(unsigned):
+        raise ValueError("Stage-3C-28 Stage-3C-37 qualification checksum mismatch")
+    checks = overlay.get("input_checksums", {})
+    if checks.get("replication_replay_study") != rank2_study.get("study_sha256"):
+        raise ValueError("Stage-3C-28 Stage-3C-37 replay rank-two lineage mismatch")
+    if checks.get("replication_frozen_study") != stage3c27_assessment.get("rank2_study_sha256"):
+        raise ValueError("Stage-3C-28 Stage-3C-37 frozen rank-two lineage mismatch")
+    if checks.get("replication_stage3c27") != stage3c27_assessment.get("assessment_sha256"):
+        raise ValueError("Stage-3C-28 Stage-3C-37 Stage-3C-27 lineage mismatch")
+    identity = overlay.get("replay_identity", {})
+    if not bool(identity.get("replication_source_state_hashes_match_frozen_report")):
+        raise ValueError("Stage-3C-28 Stage-3C-37 source-state identity failed")
+    if not bool(identity.get("stored_winner_ids_exactly_reconstructed")):
+        raise ValueError("Stage-3C-28 Stage-3C-37 winner reconstruction failed")
+    resolution = overlay.get("cross_panel_resolution", {})
+    interpretation = overlay.get("frozen_interpretation", {})
+    if not bool(resolution.get("selector_consistent_stage3c28_prerequisite_passed_in_both_panels")):
+        raise ValueError("Stage-3C-28 selector-consistent qualification did not pass")
+    if not bool(interpretation.get("corrected_crossing_replication_authorized_next")):
+        raise ValueError("Stage-3C-28 corrected replication is not authorized")
+
+
 def assess_stage3c28_recurrent_basin(
     rank2_study: dict[str, Any],
     rank2_component: dict[str, Any],
     rank2_diagnostics: dict[str, Any],
     stage3c27_assessment: dict[str, Any],
+    stage3c37_qualification: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Audit shared codebook, synchrony and subject-anchored recurrent basins."""
     if stage3c27_assessment.get("schema") != STAGE3C27_TOKEN_KINEMATICS_SCHEMA:
@@ -379,16 +414,32 @@ def assess_stage3c28_recurrent_basin(
     _validate_report_set(
         rank2_study, rank2_component, rank2_diagnostics, label="rank2"
     )
-    if stage3c27_assessment.get("rank2_study_sha256") != rank2_study.get(
-        "study_sha256"
-    ):
-        raise ValueError("Stage-3C-28 Stage-3C-27 lineage mismatch")
-    if not bool(
+    historical_lineage_match = bool(
+        stage3c27_assessment.get("rank2_study_sha256") == rank2_study.get("study_sha256")
+    )
+    historical_gate_passed = bool(
         stage3c27_assessment["diagnostic_interpretation"].get(
             "local_token_geometry_is_the_primary_multi_candidate_age_one_driver"
         )
-    ):
-        raise ValueError("Stage-3C-28 requires the complete Stage-3C-27 screen")
+    )
+    qualification_mode = "historical-stage3c27-diagnostic"
+    qualification_sha256: str | None = None
+    if not historical_gate_passed or not historical_lineage_match:
+        if stage3c37_qualification is None:
+            if not historical_lineage_match:
+                raise ValueError(
+                    "Stage-3C-28 Stage-3C-27 lineage mismatch; a Stage-3C-37 qualification overlay is required"
+                )
+            raise ValueError(
+                "Stage-3C-28 requires the complete Stage-3C-27 screen or a Stage-3C-37 qualification overlay"
+            )
+        _validate_stage3c37_qualification_overlay(
+            stage3c37_qualification,
+            rank2_study=rank2_study,
+            stage3c27_assessment=stage3c27_assessment,
+        )
+        qualification_mode = "stage3c37-selector-consistent-overlay"
+        qualification_sha256 = str(stage3c37_qualification["assessment_sha256"])
 
     source_records = _source_records(rank2_study)
     per_source: list[dict[str, Any]] = []
@@ -462,6 +513,14 @@ def assess_stage3c28_recurrent_basin(
         "producer_version": __version__,
         "rank2_study_sha256": rank2_study["study_sha256"],
         "stage3c27_assessment_sha256": stage3c27_assessment["assessment_sha256"],
+        "qualification": {
+            "mode": qualification_mode,
+            "historical_stage3c27_diagnostic_gate_passed": historical_gate_passed,
+            "historical_stage3c27_direct_study_lineage_match": historical_lineage_match,
+            "stage3c37_qualification_sha256": qualification_sha256,
+            "runtime_selection_semantics_changed": False,
+            "historical_stage3c27_artifact_rewritten": False,
+        },
         "analysis_only_factor": (
             "separate a shared discrete first-coordinate codebook, cross-subject "
             "transition synchrony, subject-anchored second-coordinate drift and "
@@ -589,6 +648,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--rank2-component", required=True)
     parser.add_argument("--rank2-diagnostics", required=True)
     parser.add_argument("--stage3c27-assessment", required=True)
+    parser.add_argument("--stage3c37-qualification")
     parser.add_argument("--output", required=True)
     return parser
 
@@ -600,6 +660,7 @@ def main() -> None:
         _load_json(args.rank2_component),
         _load_json(args.rank2_diagnostics),
         _load_json(args.stage3c27_assessment),
+        _load_json(args.stage3c37_qualification) if args.stage3c37_qualification else None,
     )
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)

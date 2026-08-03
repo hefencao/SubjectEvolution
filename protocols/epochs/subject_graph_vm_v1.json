@@ -851,5 +851,37 @@
     "learned_weight_authorized": false,
     "permanent_write_authorized": false,
     "next_authorized_boundary": "disjoint-panel-crossing-replication-through-stage3c37-selector-consistent-qualification-overlay"
+  },
+  "stage_3c38_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_stage3c38_crossing_replication_v1.json",
+    "runtime_or_checkpoint_schema_change": false,
+    "analysis_only_qualification_change": true,
+    "replication_source_seeds": [
+      12401,
+      12402,
+      12403,
+      12404,
+      12405,
+      12406,
+      12407,
+      12408,
+      12409
+    ],
+    "stage3c37_selector_consistent_overlay_required": true,
+    "historical_stage3c27_or_stage3c35_rewrite_authorized": false,
+    "frozen_result": {
+      "continuous_potential_divergence_source_count": 9,
+      "alignment_differential_action_crossing_source_count": 0,
+      "surviving_fact_effect_source_count": 0,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "prediction_not_refuted": true,
+      "prediction_supported_nonvacuously": false,
+      "vacuous_match_only": true
+    },
+    "automatic_keep_or_revert_authorized": false,
+    "learned_weight_authorized": false,
+    "permanent_write_authorized": false,
+    "next_authorized_boundary": "read-only-cross-panel-action-boundary-opportunity-transport-audit"
   }
 }

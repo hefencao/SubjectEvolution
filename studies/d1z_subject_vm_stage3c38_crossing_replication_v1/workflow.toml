@@ -1,0 +1,56 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c38_crossing_replication_v1"
+title = "D1-Z Subject VM Stage 3C-38 selector-consistent disjoint-panel crossing replication"
+
+[parameters.rank2_study_report]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c37_tie_origin_v1/final/replay/replication_rank2/study_report.json"
+[parameters.rank2_component]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c37_tie_origin_v1/final/replay/replication_rank2/component_reproducibility.json"
+[parameters.rank2_diagnostics]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c37_tie_origin_v1/final/replay/replication_rank2/stage3c10_diagnostics.json"
+[parameters.stage3c27_assessment]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c35_crossing_replication_v1/final/stage3c27_token_kinematics.json"
+[parameters.stage3c37_qualification]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c37_tie_origin_v1/final/stage3c37_tie_origin.json"
+[parameters.historical_stage3c35_assessment]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c35_crossing_replication_v1/final/stage3c35_crossing_replication.json"
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c38_crossing_replication_v1/final"
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c38_crossing_replication_v1_results.zip"
+
+[steps.assess-stage3c28]
+command = ["se-subject-vm-stage3c28-recurrent-basin", "--rank2-study-report", "{rank2_study_report}", "--rank2-component", "{rank2_component}", "--rank2-diagnostics", "{rank2_diagnostics}", "--stage3c27-assessment", "{stage3c27_assessment}", "--stage3c37-qualification", "{stage3c37_qualification}", "--output", "{analysis_root}/stage3c28_recurrent_basin.json"]
+[steps.assess-stage3c29]
+command = ["se-subject-vm-stage3c29-transition-occupancy", "--rank2-study-report", "{rank2_study_report}", "--rank2-component", "{rank2_component}", "--rank2-diagnostics", "{rank2_diagnostics}", "--stage3c28-assessment", "{analysis_root}/stage3c28_recurrent_basin.json", "--output", "{analysis_root}/stage3c29_transition_occupancy.json"]
+[steps.assess-stage3c30]
+command = ["se-subject-vm-stage3c30-weight-robustness", "--rank2-study-report", "{rank2_study_report}", "--rank2-component", "{rank2_component}", "--rank2-diagnostics", "{rank2_diagnostics}", "--stage3c29-assessment", "{analysis_root}/stage3c29_transition_occupancy.json", "--output", "{analysis_root}/stage3c30_weight_robustness.json"]
+[steps.assess-stage3c31]
+command = ["se-subject-vm-stage3c31-alignment-ablation", "--rank2-study-report", "{rank2_study_report}", "--rank2-component", "{rank2_component}", "--rank2-diagnostics", "{rank2_diagnostics}", "--stage3c30-assessment", "{analysis_root}/stage3c30_weight_robustness.json", "--output", "{analysis_root}/stage3c31_alignment_ablation.json"]
+[steps.run-stage3c33]
+command = ["se-subject-vm-stage3c33-exposure-propagation-study", "--rank2-study-report", "{rank2_study_report}", "--stage3c31-assessment", "{analysis_root}/stage3c31_alignment_ablation.json", "--frozen-baseline-horizon-ticks", "8", "--common-horizon-ticks", "11", "--baseline-exposure-ticks", "3", "--extended-exposure-ticks", "6", "--backend", "cpu", "--output", "{analysis_root}/stage3c33", "--overwrite"]
+[steps.assess-stage3c33]
+command = ["se-subject-vm-stage3c33-exposure-propagation", "--study-report", "{analysis_root}/stage3c33/study_report.json", "--output", "{analysis_root}/stage3c33_exposure_propagation.json"]
+[steps.assess-stage3c34]
+command = ["se-subject-vm-stage3c34-threshold-crossing", "--stage3c33-study-report", "{analysis_root}/stage3c33/study_report.json", "--stage3c33-assessment", "{analysis_root}/stage3c33_exposure_propagation.json", "--output", "{analysis_root}/stage3c34_threshold_crossing.json"]
+[steps.assess-stage3c38]
+command = ["se-subject-vm-stage3c38-crossing-replication", "--reference-stage3c34-decision", "protocols/decisions/subject_graph_vm_stage3c34_threshold_crossing_v1.json", "--historical-stage3c35-assessment", "{historical_stage3c35_assessment}", "--stage3c37-qualification", "{stage3c37_qualification}", "--replication-stage3c34-assessment", "{analysis_root}/stage3c34_threshold_crossing.json", "--output", "{analysis_root}/stage3c38_crossing_replication.json", "--summary-output", "{analysis_root}/stage3c38_study_summary.json", "--diagnostic-report", "{analysis_root}/stage3c38_diagnostic_report.md"]
+
+[steps.pack-results]
+requires_json = [
+  { path = "{analysis_root}/stage3c28_recurrent_basin.json", field = "qualification.mode", equals = "stage3c37-selector-consistent-overlay" },
+  { path = "{analysis_root}/stage3c33_exposure_propagation.json", field = "cross_source_findings.fixed_horizon_trajectory_support_matches_in_all_sources_modes_and_roles", equals = true },
+  { path = "{analysis_root}/stage3c34_threshold_crossing.json", field = "cross_source_findings.all_eight_arm_event_support_matches", equals = true },
+  { path = "{analysis_root}/stage3c38_crossing_replication.json", field = "prediction_assessment.prediction_supported_nonvacuously", equals = false },
+  { path = "{analysis_root}/stage3c38_crossing_replication.json", field = "prediction_assessment.vacuous_match_only", equals = true },
+  { path = "{analysis_root}/stage3c38_crossing_replication.json", field = "permanent_parameter_retention_authorized", equals = false }
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--required-file", "{analysis_root}/inputs/replication_rank2_study_report.json", "--required-file", "{analysis_root}/inputs/replication_rank2_component_reproducibility.json", "--required-file", "{analysis_root}/inputs/replication_rank2_stage3c10_diagnostics.json", "--required-file", "{analysis_root}/inputs/replication_stage3c27_token_kinematics.json", "--required-file", "{analysis_root}/inputs/historical_stage3c35_crossing_replication.json", "--required-file", "{analysis_root}/inputs/stage3c37_tie_origin_qualification.json", "--required-file", "{analysis_root}/stage3c28_recurrent_basin.json", "--required-file", "{analysis_root}/stage3c29_transition_occupancy.json", "--required-file", "{analysis_root}/stage3c30_weight_robustness.json", "--required-file", "{analysis_root}/stage3c31_alignment_ablation.json", "--required-file", "{analysis_root}/stage3c33/study_report.json", "--required-file", "{analysis_root}/stage3c33/frozen-baseline/study_report.json", "--required-file", "{analysis_root}/stage3c33/horizon-control/study_report.json", "--required-file", "{analysis_root}/stage3c33/extended-exposure/study_report.json", "--required-file", "{analysis_root}/stage3c33_exposure_propagation.json", "--required-file", "{analysis_root}/stage3c34_threshold_crossing.json", "--required-file", "{analysis_root}/stage3c38_crossing_replication.json", "--required-file", "{analysis_root}/stage3c38_study_summary.json", "--required-file", "{analysis_root}/stage3c38_diagnostic_report.md", "--required-file", "protocols/decisions/subject_graph_vm_stage3c38_crossing_replication_v1.json", "--output", "{output}"]

@@ -1,16 +1,16 @@
 # SubjectEvolution 当前项目状态
 
-版本：**0.155.0**
+版本：**0.156.0**
 
 ## 当前迭代身份
 
-- 进度类型：**`[DOC-GOV]` 中文权威文档统一**
-- Git 标题：**`[DOC-GOV] docs: make active contracts Chinese-authoritative`**
-- Git 分支：**`docs/v0.155-chinese-authoritative-contracts`**
-- 工作流档位：**`SCOPED-FIX` + 版本化 `RELEASE-HANDOFF`**
+- 进度类型：**`[MAIN-EXP]` Stage 3C-38 独立 panel crossing replication**
+- Git 标题：**`[MAIN-EXP] D1-Z: replicate crossing classifier on qualified disjoint panel`**
+- Git 分支：**`main-exp/stage3c38-disjoint-crossing-replication`**
+- 工作流档位：**`SCIENTIFIC-FREEZE` + `RELEASE-HANDOFF`**
 - runtime/config/checkpoint 变化：**无**
-- 当前冻结科学前沿：**Stage 3C-37**
-- 下一项已授权主线实验：**Stage 3C-38，通过 selector-consistent qualification overlay 在独立 panel 上复现 crossing 分类**
+- 当前冻结科学前沿：**Stage 3C-38**
+- 下一项已授权主线实验：**Stage 3C-39，跨 panel 分解 continuous divergence 到 sampled-action boundary 的机会差异**
 
 ## 类型化任务进度树
 
@@ -23,7 +23,8 @@ SubjectEvolution
 │       ├── [FROZEN] Stage 3C-35 在历史诊断门下停止独立 panel
 │       ├── [FROZEN] Stage 3C-36 bootstrap geometry 跨 panel 分解
 │       ├── [FROZEN] Stage 3C-37 按 selector 真实语义解析 near-tie 来源
-│       ├── [NEXT]   Stage 3C-38 独立 panel crossing replication
+│       ├── [FROZEN] Stage 3C-38 独立 panel crossing replication：零阳性、仅 vacuous match
+│       ├── [NEXT]   Stage 3C-39 跨 panel action-boundary opportunity 分解
 │       └── [BLOCKED] retention、learned weight 与 topology evolution
 │
 ├── [BRANCH-EXP] 分支实验
@@ -52,9 +53,9 @@ SubjectEvolution
 
 ## 当前主线判断
 
-Stage 3C-37 仍是最新冻结科学结果。它确认 Stage 3C-27 的七个 near-tie 都只是分析分箱结果，并非 runtime comparator 判定的 tie。按 selector 真实语义重新分类后，两个 source panel 都保留 strict bootstrap geometry，因此 Stage 3C-34 的 crossing 预测仍未在独立 panel 上测试。
+Stage 3C-38 在 seed `12401–12409` 上完成了 Stage 3C-37 qualification overlay 之后的完整 3C-28→34 链。九个 source 都产生 exposure-dependent、alignment-dependent 的连续 Subject VM potential divergence，但没有 source 跨越实际 sampled-action 边界，也没有 source 产生 exposure-only Objective-Fact effect。
 
-本轮只改变活动文档的权威语言和术语表达，不改变上述证据、checksum 或 Stage 3C-38 的授权边界。
+因此 predictor 与 outcome 集合精确相等且都为空：分类器在独立 panel 上**未被反驳**，但只形成 vacuous match，不能计为非空复现支持。下一步不得继续增加随机 panel 来追逐阳性，而应只读比较原 panel 与独立 panel 的连续差异幅度、action composition 和可见 sampled probability，定位 crossing opportunity 为什么没有迁移；精确 categorical boundary margin 仍受 SG-07 的 trace 可观测性限制。
 
 ## 文档与证据索引
 
@@ -67,6 +68,6 @@ Stage 3C-37 仍是最新冻结科学结果。它确认 Stage 3C-27 的七个 nea
 | 当前任务与队列 | `docs/PROJECT_STATUS.md` |
 | 当前科学问题 | `docs/SCIENTIFIC_ISSUES.md` |
 | 已冻结 Stage 3C 结果 | `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` |
-| 当前迭代记录 | `docs/迭代/v0.155_活动规范文档中文化.md` |
+| 当前迭代记录 | `docs/迭代/v0.156_D1-Z_主体图Stage3C38_独立Panel跨界分类复现.md` |
 | 可执行 decision contract | `protocols/decisions/` |
 | 仓库执行规则 | `AGENTS.md` |

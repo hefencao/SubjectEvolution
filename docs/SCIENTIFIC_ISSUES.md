@@ -10,7 +10,7 @@
 
 | ID | 类型 | 状态 | 问题 | 当前证据边界 |
 |---|---|---|---|---|
-| SG-08 | Crossing replication | OPEN | 通过 selector-consistent qualification 后，Stage 3C-34 的 action-crossing 分类是否能在独立 panel 上识别全部且仅识别 exposure-only 非零 source？ | Stage 3C-37 已把七个历史 near-tie 解析为诊断分箱产物，并允许建立独立冻结协议；预测仍未测试。 |
+| SG-09 | Crossing opportunity transport | OPEN | 为什么原 panel 有 2/9 alignment-specific sampled-action crossing，而独立 panel 在 9/9 continuous divergence 下仍为 0/9 crossing？ | Stage 3C-38 形成 predictor=outcome=空集的 vacuous match；需要只读跨 panel 分解 divergence 幅度、action composition 与已导出的 sampled probability，不能把零阳性当成非空复现。 |
 | SG-03 | 证据语义 | OPEN | 不引入固定价值函数时，逐组件 Objective-Fact 能否支持任何 retention 决策？ | 在建立非标量决策合同前，不授权 retention study。 |
 | SG-04 | Bootstrap 通用性 | PARKED | 哪些结果依赖 normalized-dot/latest/top-1 bootstrap addressing？ | crossing 结果获得独立复现后再比较。 |
 | SG-05 | 持续性 | BLOCKED | 临时 graph-parameter 效应能否在独立论证的决策规则下持续？ | 需要可复现下游证据和单独的 keep/revert 合同。 |
@@ -20,11 +20,11 @@
 | ENV-02 | 人口结构 | OPEN | source checkpoint 是否足以支持演化解释，而不仅是短程机制诊断？ | 需要 population、descendant、generation depth、founder replacement 与 checkpoint stability gate。 |
 | SOC-01 | 身份 | BLOCKED | 实体死亡后，延迟 partner evidence 如何继续存在而不附着到回收行？ | 需要历史 subject identity，以及 retention、inheritance、eviction 与 regional-branch 语义。 |
 
-## 3. SG-08：独立 panel crossing replication
+## 3. SG-09：crossing opportunity 的跨 panel 迁移
 
-Stage 3C-37 证明 Stage 3C-27 使用的 `1e-8` 分析 bin 宽于 runtime 实际使用的 `1e-12` score comparator。七个分箱案例都有严格正的 float64 age-one margin，latest-on-tie 从未被调用。这解决了先前的资格停止原因，但没有追溯性地测试 Stage 3C-34 的预测。
+Stage 3C-38 在独立 panel 的九个 source 中都观察到连续 Subject VM potential divergence，但没有任何 sampled-action crossing。原 panel 则有 12305、12308 两个 alignment-specific crossing source，并继续传播到 Objective-Fact。
 
-下一实验必须保留 seed `12401–12409`、冻结 rank-two source state、addressing、exposure、horizon 与 crossing definition。可以使用 checksum-bound 的 Stage 3C-37 qualification overlay，但不得改写历史产物，也不得只选择早期描述性筛选通过的两个 source。
+下一审计必须复用两个冻结 panel，不新增 source、不修改 exposure、addressing 或 crossing definition。可以比较 potential divergence 的 event count、L1/L∞ 幅度、tick 分布、基础 action composition 和同 action 条件下的 sampled probability 变化；由于完整 masked logits 和 categorical draw 未导出，不得声称测得了精确 action-boundary margin。
 
 ## 4. SG-03：Objective-Fact 不是价值
 

@@ -2,6 +2,14 @@
 
 历史条目保留各版本交付时的原始措辞，仅用于版本追溯，不构成当前规范合同。自 v0.155 起，新增条目以中文为权威文本。
 
+## 0.156.0
+
+- 使用 Stage 3C-37 checksum-bound selector-consistent qualification overlay，在独立 seed panel `12401–12409` 上完成原先预注册的 Stage 3C-28→34 crossing replication 链。
+- 九个独立 source 均出现 exposure-dependent、alignment-dependent 的连续 Subject VM potential divergence，但没有任何 source 跨越实际 sampled-action 边界。
+- alignment-differential action crossing、Objective-Fact crossing 和 surviving fact effect source 均为空；predictor 与 outcome 精确相等，但由于没有阳性 source，只冻结为未反驳的 vacuous match，不构成非空复现支持。
+- 为 Stage 3C-28 增加严格的 frozen-study→deterministic-replay lineage bridge；必须同时验证 Stage 3C-37 checksum、两侧 study identity、Stage 3C-27 identity、source-state hash 与 winner reconstruction。
+- 下一边界转为只读跨 panel crossing-opportunity 分解，不授权新 source 搜索、value、keep/revert、learned weight 或 permanent retention。
+
 ## 0.155.0
 
 - 将当前具有规范效力的活动文档统一改为中文权威文本，以减少术语、权限边界和证据表述中的翻译歧义。
