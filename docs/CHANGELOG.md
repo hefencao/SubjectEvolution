@@ -1,3 +1,11 @@
+## 0.138.0
+
+- Adds Subject VM Stage 3C-24 read-only rank-two selection coverage and score-margin assessment.
+- Reconstructs every delay-valid, nonzero and above-threshold candidate and exactly verifies stored latest/top-1 event IDs and similarities.
+- Confirms rank-one and rank-two arms retain the same 112 eligible historical events and 432 above-threshold references per source.
+- Finds rank two eliminates exact best-score ties but selects a strict subset of rank-one event identities in all nine sources, lowers inverse-Simpson effective coverage and increases reuse concentration.
+- Adds no runtime or checkpoint field, persistent memory, addressing change, learned weight, retention authorization or scientific learning claim.
+
 ## 0.137.0
 
 - Adds Subject VM Stage 3C-23 dual-readout rank reachability assessment.

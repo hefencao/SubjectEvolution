@@ -1,0 +1,51 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c24_rank2_selection_v1"
+title = "D1-Z Subject VM Stage 3C-24 rank-two selection coverage and score-margin audit"
+
+[parameters.config]
+type = "path"
+default = "configs/mvp_short_subject_vm_stage3c24_rank2_selection_audit.json"
+description = "Frozen ten-node Stage-3C-23 source configuration."
+
+[parameters.seeds]
+type = "csv-int"
+default = "12301,12302,12303,12304,12305,12306,12307,12308,12309"
+description = "Frozen nine independent-source panel."
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c24_rank2_selection_v1/final"
+description = "Rank-one/rank-two arms and Stage-3C-23/24 assessments."
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c24_rank2_selection_v1_results.zip"
+description = "Compact declared-evidence result bundle separate from the project archive."
+
+[steps.run-rank1]
+description = "Run the common dual-readout graph with duplicated uncertainty coordinates."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "2", "--horizon-ticks", "8", "--bootstrap-subjects", "16", "--rollback-after-ticks", "3", "--bootstrap-target-family", "edge_forward_gate", "--bootstrap-edge-carrier-enabled", "--bootstrap-readout-input-port", "11", "--bootstrap-second-readout-input-port", "11", "--association-tie-break", "latest", "--association-candidate-limit", "1", "--backend", "cpu", "--output", "{analysis_root}/rank1", "--overwrite"]
+
+[steps.run-rank2]
+description = "Change only node-9 input to the frozen screened port 7 rank-two coordinate."
+command = ["se-subject-vm-short-paired-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "2", "--horizon-ticks", "8", "--bootstrap-subjects", "16", "--rollback-after-ticks", "3", "--bootstrap-target-family", "edge_forward_gate", "--bootstrap-edge-carrier-enabled", "--bootstrap-readout-input-port", "11", "--bootstrap-second-readout-input-port", "7", "--association-tie-break", "latest", "--association-candidate-limit", "1", "--backend", "cpu", "--output", "{analysis_root}/rank2", "--overwrite"]
+
+[steps.assess-stage3c23]
+description = "Re-establish the isolated rank-two reachability and lineage contract."
+command = ["se-subject-vm-stage3c23-dual-readout-rank", "--rank1-study-report", "{analysis_root}/rank1/study_report.json", "--rank1-component", "{analysis_root}/rank1/component_reproducibility.json", "--rank1-diagnostics", "{analysis_root}/rank1/stage3c10_diagnostics.json", "--rank2-study-report", "{analysis_root}/rank2/study_report.json", "--rank2-component", "{analysis_root}/rank2/component_reproducibility.json", "--rank2-diagnostics", "{analysis_root}/rank2/stage3c10_diagnostics.json", "--output", "{analysis_root}/stage3c23_dual_readout_rank.json"]
+
+[steps.assess-stage3c24]
+description = "Audit candidate opportunity, exact ties, score margins, selected identities and reuse."
+command = ["se-subject-vm-stage3c24-rank2-selection", "--rank1-study-report", "{analysis_root}/rank1/study_report.json", "--rank1-component", "{analysis_root}/rank1/component_reproducibility.json", "--rank1-diagnostics", "{analysis_root}/rank1/stage3c10_diagnostics.json", "--rank2-study-report", "{analysis_root}/rank2/study_report.json", "--rank2-component", "{analysis_root}/rank2/component_reproducibility.json", "--rank2-diagnostics", "{analysis_root}/rank2/stage3c10_diagnostics.json", "--stage3c23-assessment", "{analysis_root}/stage3c23_dual_readout_rank.json", "--output", "{analysis_root}/stage3c24_rank2_selection.json"]
+
+[steps.pack-results]
+description = "Package declared Stage-3C-23/24 evidence without checkpoints or run directories."
+requires_json = [
+  { path = "{analysis_root}/rank1/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/rank2/study_report.json", field = "engineering_summary.stage3c7_engineering_screen_passed", equals = true },
+  { path = "{analysis_root}/stage3c24_rank2_selection.json", field = "comparison.candidate_opportunity_equal_in_all_sources", equals = true },
+  { path = "{analysis_root}/stage3c24_rank2_selection.json", field = "comparison.rank2_eliminates_exact_best_ties_in_all_sources", equals = true },
+  { path = "{analysis_root}/stage3c24_rank2_selection.json", field = "diagnostic_interpretation.rank_two_increases_selected_event_identity_diversity", equals = false },
+  { path = "{analysis_root}/stage3c24_rank2_selection.json", field = "permanent_parameter_retention_authorized", equals = false }
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--required-file", "{analysis_root}/rank1/study_report.json", "--required-file", "{analysis_root}/rank1/bootstrap_profile.json", "--required-file", "{analysis_root}/rank1/paired_evidence_assessment.json", "--required-file", "{analysis_root}/rank1/component_reproducibility.json", "--required-file", "{analysis_root}/rank1/stage3c10_diagnostics.json", "--required-file", "{analysis_root}/rank2/study_report.json", "--required-file", "{analysis_root}/rank2/bootstrap_profile.json", "--required-file", "{analysis_root}/rank2/paired_evidence_assessment.json", "--required-file", "{analysis_root}/rank2/component_reproducibility.json", "--required-file", "{analysis_root}/rank2/stage3c10_diagnostics.json", "--required-file", "{analysis_root}/stage3c23_dual_readout_rank.json", "--required-file", "{analysis_root}/stage3c24_rank2_selection.json", "--output", "{output}"]

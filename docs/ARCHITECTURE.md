@@ -1672,3 +1672,9 @@ Stage 3C-23 adds no runtime subsystem or checkpoint field. The short-study boots
 Both formal arms use the same ten-node capacity, primary uncertainty readout on port 29, `edge_forward_gate` target/carrier, normalized-dot latest top-1 addressing, update budget, exposure and rollback. Only node 9 input changes from uncertainty port 11 to screened objective port 7. The common extra storage is one node slot per entity: `63 * max_entities + 3` bytes for the host-authoritative fixed graph arrays and templates, or 2019 bytes at 32 entities. No trace array, branch, ledger or lifecycle owner is added.
 
 Candidate screening is external analysis. It replays trusted source checkpoints on CPU and captures the already-approved objective input adapter without persisting those arrays. Selection is based only on cross-source rank, subject/time variance, threshold-candidate preservation and residual geometric variance; no sign or magnitude receives value semantics.
+
+### Stage 3C-24 — rank-two selection coverage and score-margin audit (implemented in v0.138)
+
+Stage 3C-24 is external analysis only. It consumes the frozen Stage 3C-23 rank-one and rank-two read-only control checkpoints, reconstructs the complete bounded candidate opportunity with the authoritative normalized-dot/latest/top-1 comparator, and verifies the stored associated event ID and similarity for every request.
+
+The analyzer reports candidate eligibility separately from selected identity coverage, reuse concentration, threshold margin, best-versus-second margin and exact best-score tie frequency. It treats the independent pre-bootstrap source checkpoint as the highest replicate unit. No Subject VM activation, addressing, checkpoint, branch, ledger, lifecycle or retention subsystem is added or changed; persistent runtime memory growth is zero.

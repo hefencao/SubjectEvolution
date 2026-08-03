@@ -718,3 +718,20 @@ Stage 3C-23 在所有九个 source 中把 association-visible centered rank 从 
 更高 rank 没有增加 temporary commit，完成窗口略减，离散 action difference 与 objective-divergent source 也未增加，Stage 3C-8 仍为 0/21。因此“token geometry 更高维”只能说明内容可分离性可达，不能直接推断 credit 更正确、更新更有效或已经形成学习。
 
 下一问题不是继续增加维度，而是在固定 rank-two geometry 下检查 threshold margin、实际选择覆盖和复用集中度，区分“更多几何自由度”与“更均衡或更独立的历史证据使用”。
+
+## Stage 3C-24：消除 score 并列不等于扩大历史证据覆盖
+
+Stage 3C-24 在固定 rank-two readout 下重建完整候选机会。Rank-one 与 rank-two 每 source 都保留 112 个唯一 above-threshold 历史事件和 432 个 above-threshold references，说明第二坐标没有改变候选资格。
+
+Rank two 在 9/9 source 消除了 exact best-score ties，但实际只选择 80–88 个 identity，低于 rank one 的 85–94；rank-two selected set 在每个 source 都是 rank-one selected set 的严格子集，maximum reuse 可达 4，Gini 增加且 inverse-Simpson effective coverage 降低。
+
+因此必须区分：
+
+- geometry rank；
+- exact tie elimination；
+- score margin；
+- candidate eligibility；
+- selected identity diversity；
+- repeated local winner reuse。
+
+更大 rank 或正 margin 不具有固定价值，也不证明 causal credit、学习或更新收益。下一步只能继续只读诊断近零 margin 与重复 geometry 的来源，不能直接扩大 top-k、加入 novelty/coverage reward 或 learned weights。

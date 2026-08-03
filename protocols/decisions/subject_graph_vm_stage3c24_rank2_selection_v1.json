@@ -1,0 +1,111 @@
+{
+  "schema": "se-subject-vm-stage3c24-rank2-selection-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c24-rank2-selection-v1",
+  "status": "accepted-engineering-read-only-selection-and-margin-audit-only",
+  "project_version": "0.138.0",
+  "question": "After association-visible geometry reaches rank two, does it enlarge eligible or selected historical-event identity coverage, or does it mainly sharpen deterministic score ordering and reuse concentration?",
+  "source_panel": {
+    "independent_source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "target_family": "edge_forward_gate",
+    "edge_local_eligibility_carrier": true,
+    "association_similarity": "normalized-dot",
+    "association_threshold": 0.8,
+    "association_tie_break": "latest",
+    "association_candidate_limit": 1,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "analysis_factor": {
+    "runtime_change": false,
+    "rank_one_control": "uncertainty duplicated on visible ports 29 and 30",
+    "rank_two_alternative": "uncertainty on port 29 and screened port 7 on port 30",
+    "reconstructed_measures": [
+      "complete above-threshold candidate opportunity",
+      "selected historical-event identity coverage",
+      "historical-event reuse concentration",
+      "selected threshold margin",
+      "best-versus-second score margin",
+      "exact best-score tie frequency"
+    ]
+  },
+  "observed_panel_result": {
+    "candidate_opportunity": {
+      "unique_eligible_historical_events_per_source_both_arms": 112,
+      "above_threshold_references_per_source_both_arms": 432,
+      "changed_by_rank_two": false
+    },
+    "rank_one_control": {
+      "selected_identity_coverage_fraction_range": [
+        0.7589285714285714,
+        0.8392857142857143
+      ],
+      "maximum_event_reuse": 3,
+      "inverse_simpson_effective_fraction_range": [
+        0.6436781609195402,
+        0.7466666666666667
+      ],
+      "exact_best_score_ties_present": true,
+      "exact_best_score_tie_fraction_range": [
+        0.44642857142857145,
+        0.6428571428571429
+      ]
+    },
+    "rank_two_alternative": {
+      "selected_identity_coverage_fraction_range": [
+        0.7142857142857143,
+        0.7857142857142857
+      ],
+      "maximum_event_reuse": 4,
+      "inverse_simpson_effective_fraction_range": [
+        0.577319587628866,
+        0.6829268292682927
+      ],
+      "exact_best_score_ties_present": false,
+      "minimum_observed_best_second_margin_positive": true,
+      "minimum_best_second_margin_range": [
+        4.675568487932935e-09,
+        3.958183225627465e-08
+      ]
+    },
+    "cross_arm": {
+      "rank_two_selected_set_strict_subset_in_all_sources": true,
+      "rank_two_adds_new_selected_identity": false,
+      "rank_two_reduces_unique_identity_coverage_in_all_sources": true,
+      "rank_two_increases_selection_gini_in_all_sources": true,
+      "rank_two_reduces_inverse_simpson_effective_coverage_in_all_sources": true,
+      "stable_objective_coordinates_both_arms": 0
+    }
+  },
+  "interpretation": {
+    "rank_two_changes_score_ordering_not_candidate_eligibility": true,
+    "rank_two_eliminates_exact_best_ties": true,
+    "rank_two_increases_selected_identity_diversity": false,
+    "rank_two_proves_better_causal_credit": false,
+    "rank_two_proves_learning": false,
+    "larger_score_margin_has_fixed_value_semantics": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "runtime_and_storage": {
+    "runtime_or_checkpoint_schema_changed": false,
+    "runtime_memory_growth_bytes": 0,
+    "default_bootstrap_path_changed": false,
+    "old_config_identity_changed": false
+  },
+  "next_boundary": "Hold the rank-two readout, normalized-dot similarity, threshold, latest top-1, target/carrier, delta, exposure and rollback fixed. Diagnose whether repeated winners arise from near-zero margins or repeated geometry before any addressing change; do not increase top-k or introduce learned weights."
+}

@@ -728,3 +728,11 @@ Stage 3C-23 在 experiment-only fixed bootstrap 中增加一个可选 readout-on
 候选筛选要求九个 source 全部达到 centered rank≥2、每 tick 有主体间方差、每主体有时间方差，并且不让任何 query 丢失全部 threshold 以上历史候选。port 7 按跨 source 最小残差方差最大规则被选择；该规则不解释其符号或大小的价值。
 
 正式结果在 9/9 source 中达到 rank 2，但 commits 仍为 144，稳定客观坐标仍为 0/21。该结果只说明第二个主体/事件特异可见坐标机械可达，不授权 learned attention、因果 credit、永久写入或主体性结论。
+
+## v0.138：Stage 3C-24 Rank-2 选择覆盖与 Score Margin 审计
+
+Stage 3C-24 不修改 VM。它复用 Stage 3C-23 的十节点 rank-one/rank-two readout arms，从 read-only control trace 中逐 query 重建 delay-valid、nonzero、above-threshold 候选，并使用正式 normalized-dot、threshold 0.8、latest/top-1 排序精确复算 winner。
+
+两个 arm 每 source 都有 112 个唯一 eligible 历史事件和 432 个 eligible references。Rank-one 仍有大量 exact best-score ties；rank-two 在九个 source 中全部消除 exact ties，但 selected identity coverage 从 0.759–0.839 下降到 0.714–0.786，maximum reuse 从 3 提高到 4，effective identity coverage 下降。Rank-two 没有选择任何 rank-one 未覆盖的新 identity。
+
+该结果说明第二坐标改变了 score ordering 与 winner determinacy，但没有扩大证据身份覆盖。不得把更高 rank、更大 margin 或更确定的 winner 解释为价值、因果质量、学习或永久写入授权。runtime/checkpoint schema 与默认 bootstrap 均不变。
