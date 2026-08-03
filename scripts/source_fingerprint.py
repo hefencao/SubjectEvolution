@@ -10,6 +10,11 @@ from typing import Iterable
 
 FINGERPRINT_ROOT_FILES = ("Makefile", "pyproject.toml")
 FINGERPRINT_ROOT_DIRS = ("src", "scripts", "tests", "configs")
+# ``src/gui`` is an independent native GUI workspace.  It may contain source,
+# dependency trees and compiler outputs, and is not part of the Python/Subject VM
+# release-freshness boundary exercised by ``make test``.  Keep the exclusion
+# exact so the packaged Python bridge at ``src/se/gui`` remains protected.
+FINGERPRINT_EXCLUDED_SUBTREES = (Path("src/gui"),)
 _GENERATED_PARTS = {
     "__pycache__",
     ".pytest_cache",
@@ -23,6 +28,11 @@ _GENERATED_FILE_SUFFIXES = (".pyc", ".pyo")
 
 def _is_generated(path: Path, *, project: Path) -> bool:
     relative = path.relative_to(project)
+    if any(
+        relative == root or root in relative.parents
+        for root in FINGERPRINT_EXCLUDED_SUBTREES
+    ):
+        return True
     if any(part in _GENERATED_PARTS for part in relative.parts):
         return True
     if any(

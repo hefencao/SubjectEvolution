@@ -1,10 +1,10 @@
 # SE project status
 
-Version: **0.143.0**
+Version: **0.144.0**
 
 ## Current scientific task
 
-Version 0.143 implements **Subject VM Stage 3C-29: transition-class and opportunity-conditioned basin-occupancy audit**.
+Version 0.144 implements **Subject VM Stage 3C-30: second-coordinate weight robustness and rank-collapse audit**.
 
 Stage 3A remains the authoritative long-term internal-history boundary: the unified graph emits a fixed-width continuous token and a bounded event ring stores that token with objective post-commit facts. Historical node IDs, edge IDs, activation masks and complete execution paths are not persisted.
 
@@ -274,8 +274,20 @@ Before controlling the current first-coordinate state, exact query/candidate tra
 
 The subject-anchor result is much stronger and invariant. Same-state winners account for 77.1%–85.4% of multi-candidate queries. Whenever a same-state candidate is selected, the winner is the nearest second-coordinate candidate in 9/9 sources: nearest opportunities have selection rate 1.0 and non-nearest same-state opportunities have rate 0.0. The selected candidate's local second-coordinate step mismatch median is only 0.425–0.533 of the unselected median in every source.
 
-### Frozen Stage 3C-23→29 run-chain summary
+## Stage 3C-30 current result
 
-The chain first established rank-two visible geometry without changing action output (3C-23), reconstructed opportunity and selected identity (3C-24), separated small margins from deterministic winner reuse (3C-25), removed source-boundary forcing and normalized by age opportunity (3C-26), showed that strict local score geometry rather than latest tie-break drives the age-one basin (3C-27), rejected global phase synchrony and exact-token recurrence in favor of a subject-anchored recurrent basin (3C-28), and finally showed that current-state opportunity plus second-coordinate locality, not stable exact transition replay, accounts for occupancy (3C-29).
+Stage 3C-30 is external analysis only. It reuses the frozen Stage 3C-23 rank-two read-only-control checkpoints and verifies the checksum and lineage of the Stage 3C-29 assessment. For every source it reconstructs the unchanged raw-threshold candidate opportunity, verifies the stored baseline winner, excludes the 16 forced single-candidate assignments, and rescales only the second association-visible coordinate over the preregistered panel `0, 0.1, 0.25, 0.5, 1, 2, 4, 10`. Candidate admission, delay bounds, threshold, latest/top-1 ordering, target/carrier, rollback, evaluation cost and retention remain fixed.
+
+Collapsing the second-coordinate rank at weight zero changes 6.25%–17.71% of multi-candidate winner identities across the nine independent sources, while the same-first-state winner fraction is exactly unchanged in every source. The zero-weight ablation also increases age-one winner fraction by 4.17–10.42 percentage points in all sources. The first coordinate therefore owns the observed state basin, but cannot fully resolve identity inside that basin.
+
+Every positive weight from 0.1 through 10 preserves the nearest-second-coordinate ordering for every same-state winner in every source. The minimum baseline-winner agreement over the complete positive panel is 94.79%–98.96% per source, and maximum same-state-fraction displacement is at most 2.08 percentage points. The second coordinate is therefore a robust nonzero within-state ordering dimension at this fixed-bootstrap operating point; the exact weight 1.0 is not supported as a finely tuned optimum.
+
+### Frozen Stage 3C-23→30 run-chain summary
+
+The chain first established rank-two visible geometry without changing action output (3C-23), reconstructed opportunity and selected identity (3C-24), separated small margins from deterministic winner reuse (3C-25), removed source-boundary forcing and normalized by age opportunity (3C-26), showed that strict local score geometry rather than latest tie-break drives the age-one basin (3C-27), rejected global phase synchrony and exact-token recurrence in favor of a subject-anchored recurrent basin (3C-28), showed that current-state opportunity plus second-coordinate locality—not stable exact transition replay—accounts for occupancy (3C-29), and finally separated first-coordinate state-basin ownership from robust nonzero second-coordinate within-state ordering (3C-30).
 
 The complete frozen chain still has 0/21 stable objective coordinates. It establishes an addressing-geometry diagnosis only. It does not validate causal credit, assign value, establish learning or subjecthood, justify age penalties or randomized allocation, authorize learned weights, or permit permanent retention.
+
+### Test and release-freshness boundary
+
+`make test` excludes only the independent top-level native GUI workspace `src/gui/` from its source-tree freshness fingerprint. That workspace may contain C/C++ sources, vendored dependencies and compiler outputs and is built by its own toolchain. The Python GUI integration layer `src/se/gui/`, all Python source, tests, scripts and configurations remain inside test discovery and the release-freshness hash. The exclusion is exact and covered by regression tests; it does not hide changes elsewhere under `src/`.

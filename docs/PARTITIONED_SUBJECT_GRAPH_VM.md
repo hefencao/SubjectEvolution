@@ -773,3 +773,13 @@ Stage 3C-27 固定 Stage 3C-23 rank-two readout、normalized-dot、threshold 0.8
 ## v0.142：Stage 3C-28 离散状态码本与主体锚定 Basin 审计
 
 Stage 3C-28 固定 Stage 3C-23 rank-two readout、normalized-dot、threshold 0.8、latest/top-1、target/carrier、delta、exposure 与 rollback，只读重建 Rank-2 control trace。它区分共享第一坐标码本、跨主体 transition synchrony、第二坐标主体锚定程度、同状态 winner enrichment 和完整 token 精确复现。结果显示共享码本并未形成一致全局 phase；winner 复用主要表现为主体内离散状态与慢第二坐标共同形成的 recurrent geometric basin。该结果不授权年龄惩罚、随机化、learned weights、永久写入或学习声明。
+
+## v0.143：Stage 3C-29 Transition-Class / Opportunity-Conditioned Basin 审计
+
+Stage 3C-29 固定 Stage 3C-23 rank-two readout 与完整 addressing/runtime 合同，只读重建多候选 query。raw exact-transition enrichment 在九个 source 中均高于一，但控制当前第一状态后降至 0.908–1.165，并有两个 source 低于一。相反，同状态内第二坐标最近候选在九个 source 中始终胜出。当前 occupancy 更符合“第一坐标状态机会 + 第二坐标局部锚定”，不支持稳定 transition replay。
+
+## v0.144：Stage 3C-30 Second-Coordinate Weight Robustness / Rank-Collapse 审计
+
+Stage 3C-30 不修改 VM、checkpoint、候选 admission、threshold、delay、latest/top-1、target/carrier、rollback 或 retention。它在固定 raw-threshold candidate set 上把第二 visible coordinate 外部缩放为 `0, 0.1, 0.25, 0.5, 1, 2, 4, 10`。
+
+weight 0 在所有 source 中保留完全相同的 same-first-state basin，却改变 6.25%–17.71% winner identity，并一致提高 age-one winner fraction。任意正 weight 都保持同状态内最近第二坐标候选为唯一 winner，positive-panel 最低 baseline agreement 为 94.79%–98.96%。这说明第一坐标负责当前状态 basin，非零第二坐标鲁棒地负责同状态排序；它不证明精确权重最优，不授权 learned weight、reward、causal-credit、permanent retention、learning、subjecthood 或 universal attention claim。

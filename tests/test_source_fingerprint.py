@@ -24,8 +24,19 @@ def test_source_fingerprint_ignores_generated_metadata(tmp_path: Path) -> None:
     _write(tmp_path / "src/stray.pyc", "generated\n")
     _write(tmp_path / "build/generated.txt", "generated\n")
     _write(tmp_path / "dist/generated.whl", "generated\n")
+    _write(tmp_path / "src/gui/main.cpp", "native GUI source\n")
+    _write(tmp_path / "src/gui/build/gui.obj", "native GUI compiler output\n")
 
     assert source_tree_fingerprint(tmp_path) == expected
 
-    _write(tmp_path / "src/example.py", "VALUE = 2\n")
+    # The exclusion is deliberately limited to the independent top-level native
+    # GUI workspace.  The packaged Python GUI bridge remains release-relevant.
+    _write(tmp_path / "src/se/gui/bridge.py", "VALUE = 1\n")
     assert source_tree_fingerprint(tmp_path) != expected
+
+    expected_with_bridge = source_tree_fingerprint(tmp_path)
+    _write(tmp_path / "src/gui/main.cpp", "changed native GUI source\n")
+    assert source_tree_fingerprint(tmp_path) == expected_with_bridge
+
+    _write(tmp_path / "src/example.py", "VALUE = 2\n")
+    assert source_tree_fingerprint(tmp_path) != expected_with_bridge

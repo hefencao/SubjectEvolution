@@ -1,0 +1,117 @@
+{
+  "schema": "se-subject-vm-stage3c30-weight-robustness-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c30-weight-robustness-v1",
+  "status": "accepted-engineering-read-only-coordinate-weight-ablation-only",
+  "project_version": "0.144.0",
+  "question": "Does the Stage-3C-29 within-state basin require one exact second-coordinate scale, or does any non-zero contribution robustly resolve winner identity while zero-weight rank collapse preserves only the first-coordinate state basin?",
+  "source_panel": {
+    "independent_source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "initial_entities_per_source": 32,
+    "bootstrap_subjects_per_source": 16,
+    "source_tick": 2,
+    "branch_horizon_ticks": 8,
+    "rollback_after_ticks": 3,
+    "rank_two_visible_coordinates": [
+      11,
+      7
+    ],
+    "target_family": "edge_forward_gate",
+    "edge_local_eligibility_carrier": true,
+    "association_similarity": "normalized-dot",
+    "association_threshold": 0.8,
+    "association_tie_break": "latest",
+    "association_candidate_limit": 1,
+    "backend": "cpu",
+    "permanent_parameter_retention": false
+  },
+  "analysis_factor": {
+    "runtime_change": false,
+    "arm_analyzed": "Stage-3C-23 frozen rank-two read-only control",
+    "authoritative_raw_threshold_candidate_set_reused": true,
+    "forced_single_candidate_queries_excluded": true,
+    "second_coordinate_weight_panel": [
+      0.0,
+      0.1,
+      0.25,
+      0.5,
+      1.0,
+      2.0,
+      4.0,
+      10.0
+    ],
+    "zero_weight_meaning": "rank-collapse ablation",
+    "baseline_weight": 1.0,
+    "measures": [
+      "winner agreement with baseline",
+      "same-first-state winner occupancy",
+      "age-one winner occupancy",
+      "nearest-second-coordinate ordering within state",
+      "candidate threshold survival",
+      "selection concentration and score margins"
+    ]
+  },
+  "cost_and_ablation": {
+    "candidate_evaluation_count_matched_per_weight_arm": true,
+    "runtime_memory_growth_bytes": 0,
+    "checkpoint_growth_bytes": 0,
+    "runtime_mechanism_added": false,
+    "learned_weight_added": false,
+    "rank_collapse_ablation_present": true
+  },
+  "interpretation_boundary": {
+    "coordinate_weight_has_fixed_value_semantics": false,
+    "causal_credit_quality_proven": false,
+    "learning_claim_authorized": false,
+    "learned_weight_authorized": false,
+    "permanent_write_authorized": false,
+    "universal_attention_claim_authorized": false
+  },
+  "observed_panel_result": {
+    "requested_queries_per_source": 128,
+    "assigned_queries_per_source": 112,
+    "forced_single_candidate_queries_per_source": 16,
+    "multi_candidate_queries_per_source": 96,
+    "rank_collapse_changed_winner_fraction_range": [
+      0.0625,
+      0.17708333333333337
+    ],
+    "rank_collapse_same_state_fraction_absolute_change_range": [
+      0.0,
+      0.0
+    ],
+    "rank_collapse_age_one_fraction_increase_range": [
+      0.04166666666666663,
+      0.10416666666666663
+    ],
+    "positive_weight_minimum_winner_agreement_range": [
+      0.9479166666666666,
+      0.9895833333333334
+    ],
+    "positive_weight_maximum_same_state_fraction_change_range": [
+      0.0,
+      0.02083333333333337
+    ],
+    "positive_weight_minimum_nearest_second_coordinate_fraction": 1.0,
+    "stable_objective_coordinates": 0
+  },
+  "interpretation": {
+    "first_coordinate_owns_state_basin_in_this_fixed_bootstrap": true,
+    "nonzero_second_coordinate_resolves_within_state_winner_identity": true,
+    "exact_positive_second_coordinate_weight_is_fine_tuned": false,
+    "beneficial_weight_identified": false,
+    "causal_credit_quality_proven": false,
+    "learning_claim_authorized": false,
+    "permanent_write_authorized": false
+  },
+  "next_boundary": "Do not introduce learned weights from this scale-robustness result. Any future weighting intervention must be costed, use a zero-weight ablation and shared source checkpoints, preserve branch identity, and be evaluated through objective-fact evidence rather than selector agreement alone."
+}

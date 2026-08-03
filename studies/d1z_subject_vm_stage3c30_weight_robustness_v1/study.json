@@ -1,0 +1,37 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c30_weight_robustness_v1",
+  "title": "D1-Z Subject VM Stage 3C-30 second-coordinate weight robustness and rank-collapse audit",
+  "status": "planned-and-reproducible",
+  "scientific_stage": "stage3c30-read-only-second-coordinate-weight-robustness-and-rank-collapse",
+  "authorization": {
+    "fixed_bootstrap_graph": true,
+    "short_cpu_paired_source_panel": true,
+    "reuse_stage3c23_rank_two_arm": true,
+    "reuse_stage3c29_checksum_bound_assessment": true,
+    "exclude_forced_single_candidate_queries": true,
+    "preserve_authoritative_raw_candidate_opportunity": true,
+    "predeclared_second_coordinate_weight_panel": [
+      0.0,
+      0.1,
+      0.25,
+      0.5,
+      1.0,
+      2.0,
+      4.0,
+      10.0
+    ],
+    "runtime_mechanism_change": false,
+    "checkpoint_schema_change": false,
+    "permanent_parameter_retention": false,
+    "scalar_objective": false,
+    "topology_evolution": false,
+    "learned_weight": false,
+    "universal_attention": false,
+    "subjecthood_claim": false
+  },
+  "question": "Does the Stage-3C-29 within-state basin require one finely tuned second-coordinate scale, or does any non-zero contribution robustly resolve winner identity while zero-weight rank collapse preserves only the first-coordinate state basin?",
+  "analysis_outputs": [
+    "analyses/d1z_subject_vm_stage3c30_weight_robustness_v1/final/stage3c30_weight_robustness.json"
+  ]
+}

@@ -782,3 +782,11 @@ Stage 3C-26 证明排除 source-boundary 单候选 query 后仍存在近因偏�
 未控制当前第一状态时，九个 source 的 exact transition-class match 都出现 1.032–1.825× 的 winner 富集；但这把“相同 transition 终点”与“相同当前状态”混在一起。仅在同当前状态候选内部比较后，富集缩小到 0.908–1.165×，中位数 1.014，并有 2/9 source 低于 1。最高机会条件化胜率的 transition class 也不统一。因此不能把 raw transition enrichment 解释为稳定 transition replay、规则学习或离散状态机信用。
 
 相对地，同状态内第二坐标最近候选在 9/9 source 中占据全部可选 winner，非最近同状态候选选择率为零；selected candidate 的局部第二坐标 step mismatch 中位数始终只有 unselected 的 42.5%–53.3%。这说明当前 fixed-bootstrap normalized-dot addressing 主要重放主体锚定的局部几何邻域。该结果仍是机制诊断，不是 value、causal credit、learning 或 permanent retention 证据。
+
+## Stage 3C-30：第二坐标是鲁棒的同状态排序维度，不是已优化权重
+
+Stage 3C-30 在不改变 raw-threshold candidate opportunity 的前提下，只在外部重算中把第二可见坐标乘以预声明因子。因子为零时，九个 source 中有 6.25%–17.71% 的多候选 winner identity 改变，但 same-first-state winner fraction 在所有 source 中完全不变；age-one winner fraction 同时增加 4.17–10.42 个百分点。因此第一坐标足以维持当前离散状态 basin，第二坐标则参与该 basin 内的 identity 消歧。
+
+任意正因子 `0.1–10` 都在 9/9 source 中保持“同状态内第二坐标最近候选必胜”，对原始 weight 1 winner 的最低一致率仍为 94.79%–98.96%。这排除了“只有精确 weight 1 才能产生当前局部 basin”的解释，但不能把宽容区间解释为权重最优、价值、因果信用或学习证据。
+
+下一步若要从诊断走向干预，必须重新建立有明确成本、共享 checkpoint、客观事实消融和永久保留关闭的独立合同；不得直接把该结果转成 learned weighting、reward、自动 keep/revert 或通用注意力机制。

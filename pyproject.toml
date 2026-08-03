@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "se-mvp"
-version = "0.143.0"
+version = "0.144.0"
 description = "Reference implementation for nested-subject existence evolution simulation"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -95,6 +95,7 @@ se-subject-vm-stage3c26-age-phase-opportunity = "se.analysis.subject_vm_stage3c2
 se-subject-vm-stage3c27-token-kinematics = "se.analysis.subject_vm_stage3c27_token_kinematics:main"
 se-subject-vm-stage3c28-recurrent-basin = "se.analysis.subject_vm_stage3c28_recurrent_basin:main"
 se-subject-vm-stage3c29-transition-occupancy = "se.analysis.subject_vm_stage3c29_transition_occupancy:main"
+se-subject-vm-stage3c30-weight-robustness = "se.analysis.subject_vm_stage3c30_weight_robustness:main"
 se-epoch = "se.cmd.epoch:main"
 se-source-health-gate = "se.analysis.source_health:main"
 se-turnover-substrate-config = "se.experiments.d1_turnover_substrate:main"
