@@ -10,40 +10,33 @@
 
 | ID | 类型 | 状态 | 问题 | 当前证据边界 |
 |---|---|---|---|---|
-| SG-09 | Crossing opportunity transport | OPEN | 为什么原 panel 有 2/9 alignment-specific sampled-action crossing，而独立 panel 在 9/9 continuous divergence 下仍为 0/9 crossing？ | Stage 3C-38 形成 predictor=outcome=空集的 vacuous match；需要只读跨 panel 分解 divergence 幅度、action composition 与已导出的 sampled probability，不能把零阳性当成非空复现。 |
 | SG-03 | 证据语义 | OPEN | 不引入固定价值函数时，逐组件 Objective-Fact 能否支持任何 retention 决策？ | 在建立非标量决策合同前，不授权 retention study。 |
 | SG-04 | Bootstrap 通用性 | PARKED | 哪些结果依赖 normalized-dot/latest/top-1 bootstrap addressing？ | crossing 结果获得独立复现后再比较。 |
 | SG-05 | 持续性 | BLOCKED | 临时 graph-parameter 效应能否在独立论证的决策规则下持续？ | 需要可复现下游证据和单独的 keep/revert 合同。 |
 | SG-06 | Topology evolution | BLOCKED | topology、readout 和 addressing 能否演化而不退化为不可诊断搜索？ | 需要成本、mutation/development 时程、inheritance、neutralization 和健康 source 资格。 |
-| SG-07 | 决策边界可观测性 | BLOCKED | 连续内部差异距离 categorical sampled-action 边界的精确数值距离是多少？ | 需要单独类型化的只导出 instrumentation：记录完整 masked policy logits 与 counter-based categorical draw，且不得改变采样语义。 |
+| SG-07 | 决策边界可观测性 | OPEN | 连续内部差异距离 categorical sampled-action 边界的精确数值距离是多少？ | Stage 3C-39 已排除 divergence 整体更弱、时程更早、selected-action probability 变化更小和 bootstrap 几何未迁移等解释；下一步必须先完成语义中立的 logits/draw 导出。 |
 | ENV-01 | 环境 | PARKED | 环境能否为分化能力持续提供正交机会？ | 只能作为 `[EVOLVE-ENV]` 恢复，并包含守恒与 source-health gate。 |
 | ENV-02 | 人口结构 | OPEN | source checkpoint 是否足以支持演化解释，而不仅是短程机制诊断？ | 需要 population、descendant、generation depth、founder replacement 与 checkpoint stability gate。 |
 | SOC-01 | 身份 | BLOCKED | 实体死亡后，延迟 partner evidence 如何继续存在而不附着到回收行？ | 需要历史 subject identity，以及 retention、inheritance、eviction 与 regional-branch 语义。 |
 
-## 3. SG-09：crossing opportunity 的跨 panel 迁移
+## 3. SG-07：精确 action boundary 可观测性
 
-Stage 3C-38 在独立 panel 的九个 source 中都观察到连续 Subject VM potential divergence，但没有任何 sampled-action crossing。原 panel 则有 12305、12308 两个 alignment-specific crossing source，并继续传播到 Objective-Fact。
+Stage 3C-39 表明两个 panel 的 continuous divergence 频率、幅度、晚期 tick 分布和已导出的 selected-action probability 变化大量重叠，独立 panel 并不整体更弱。现有摘要也不存在能隔离 crossing source 的单调幅度阈值。
 
-下一审计必须复用两个冻结 panel，不新增 source、不修改 exposure、addressing 或 crossing definition。可以比较 potential divergence 的 event count、L1/L∞ 幅度、tick 分布、基础 action composition 和同 action 条件下的 sampled probability 变化；由于完整 masked logits 和 categorical draw 未导出，不得声称测得了精确 action-boundary margin。
+但冻结 trace 只保存已选 action 的概率，没有完整 masked policy logits，也没有精确 counter-based categorical draw；因此不能重建其他 action 的竞争关系或计算随机采样边界距离。增加这些字段必须标记为 `[ENGINEERING]`，并证明采样结果、random stream、branch identity、checkpoint 兼容性和运行成本不变。
 
 ## 4. SG-03：Objective-Fact 不是价值
 
 post-commit Objective-Fact 没有内置正负含义。分析不得使用未声明权重求和，不得挑选看起来有利的坐标，不得从资源丰度推导 reward，也不得根据方向混合的组件授权 keep/revert。
 
-## 5. SG-07：精确 action margin 可观测性
-
-冻结 trace 导出了 Subject VM residual action-potential vector 和已选 action 的概率，但没有导出完整 masked policy logit vector，也没有导出精确 counter-based categorical draw。因此 Stage 3C-34 可以识别实际 crossing，却不能为未 crossing 事件计算距离 sampled-action boundary 的数值 margin。
-
-增加这些字段属于 `[ENGINEERING]` export-instrumentation，不是科学结果。它必须先证明语义中立、random-stream identity 固定、trace cost 有界、checkpoint 兼容且 sampled action 不变。
-
-## 6. 暂停的环境与 topology 问题
+## 5. 暂停的环境与 topology 问题
 
 环境变化必须标记为 `[EVOLVE-ENV]`；topology、genetics、developmental expression 与 inherited graph capability 变化必须标记为 `[EVOLVE-SUBJECT]`。二者都不得作为未标记实验插入当前 fixed-bootstrap 主线。
 
-## 7. 不属于本文档的内容
+## 6. 不属于本文档的内容
 
 GPU 可用性、测试发现、source fingerprint、console-entry metadata、打包、patch replay、archive pruning、文件权限和 Git 命令格式都属于工程或交付问题，不是科学问题。
 
-## 8. 更新规则
+## 7. 更新规则
 
 暂定观察保留在分析产物或当前迭代记录中。验证后的结果只进入 `docs/results/` 一次。只有当未解决问题被新增、实质收窄、阻塞或暂停时，才更新本注册表。

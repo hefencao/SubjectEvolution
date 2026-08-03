@@ -1,0 +1,34 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c39_boundary_opportunity_transport_v1"
+title = "D1-Z Subject VM Stage 3C-39 action-boundary opportunity transport audit"
+
+[parameters.reference_stage3c34]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c34_threshold_crossing_v1/final/stage3c34_threshold_crossing.json"
+[parameters.replication_stage3c34]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c38_crossing_replication_v1/final/stage3c34_threshold_crossing.json"
+[parameters.stage3c36_transport]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c36_geometry_transport_v1/final/stage3c36_geometry_transport.json"
+[parameters.stage3c38_replication]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c38_crossing_replication_v1/final/stage3c38_crossing_replication.json"
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c39_boundary_opportunity_transport_v1/final"
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c39_boundary_opportunity_transport_v1_results.zip"
+
+[steps.assess-stage3c39]
+command = ["se-subject-vm-stage3c39-boundary-opportunity-transport", "--reference-stage3c34", "{reference_stage3c34}", "--replication-stage3c34", "{replication_stage3c34}", "--stage3c36-transport", "{stage3c36_transport}", "--stage3c38-replication", "{stage3c38_replication}", "--output", "{analysis_root}/stage3c39_boundary_opportunity_transport.json", "--summary-output", "{analysis_root}/stage3c39_study_summary.json", "--diagnostic-report", "{analysis_root}/stage3c39_diagnostic_report.md"]
+
+[steps.pack-results]
+requires_json = [
+  { path = "{analysis_root}/stage3c39_boundary_opportunity_transport.json", field = "frozen_interpretation.exact_action_boundary_opportunity_is_resolved", equals = false },
+  { path = "{analysis_root}/stage3c39_boundary_opportunity_transport.json", field = "frozen_interpretation.neutral_trace_instrumentation_is_required_before_further_boundary_claims", equals = true },
+  { path = "{analysis_root}/stage3c39_boundary_opportunity_transport.json", field = "governance.runtime_semantics_changed", equals = false },
+  { path = "{analysis_root}/stage3c39_boundary_opportunity_transport.json", field = "permanent_parameter_retention_authorized", equals = false }
+]
+command = ["python", "scripts/package_required_results.py", "--study-root", "{study_dir}", "--required-file", "{reference_stage3c34}", "--required-file", "{replication_stage3c34}", "--required-file", "{stage3c36_transport}", "--required-file", "{stage3c38_replication}", "--required-file", "{analysis_root}/stage3c39_boundary_opportunity_transport.json", "--required-file", "{analysis_root}/stage3c39_study_summary.json", "--required-file", "{analysis_root}/stage3c39_diagnostic_report.md", "--required-file", "protocols/decisions/subject_graph_vm_stage3c39_boundary_opportunity_transport_v1.json", "--output", "{output}"]

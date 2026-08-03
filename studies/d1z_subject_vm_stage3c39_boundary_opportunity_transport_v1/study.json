@@ -1,0 +1,27 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c39_boundary_opportunity_transport_v1",
+  "title": "D1-Z Subject VM Stage 3C-39 cross-panel action-boundary opportunity transport audit",
+  "status": "frozen-narrowed-to-unobserved-categorical-boundary-state",
+  "scientific_stage": "stage3c39-boundary-opportunity-transport-frozen-next-neutral-trace-instrumentation",
+  "authorization": {
+    "reuse_reference_stage3c34": true,
+    "reuse_replication_stage3c34": true,
+    "require_stage3c36_transport": true,
+    "require_stage3c38_vacuous_result": true,
+    "runtime_rerun": false,
+    "new_source_panel": false,
+    "change_exposure_or_crossing_definition": false,
+    "post_hoc_scalar_threshold": false,
+    "exact_categorical_boundary_claim": false,
+    "permanent_parameter_retention": false
+  },
+  "frozen_result": {
+    "continuous_divergence_metric_ranges_overlap": true,
+    "replication_panel_has_uniformly_weaker_divergence": false,
+    "replication_panel_has_uniformly_weaker_selected_probability_change": false,
+    "single_monotone_magnitude_threshold_separates_reference_positive_sources": false,
+    "exact_action_boundary_opportunity_resolved": false,
+    "neutral_trace_instrumentation_required": true
+  }
+}

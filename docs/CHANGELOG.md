@@ -2,6 +2,14 @@
 
 历史条目保留各版本交付时的原始措辞，仅用于版本追溯，不构成当前规范合同。自 v0.155 起，新增条目以中文为权威文本。
 
+## 0.157.0
+
+- 完成 Stage 3C-39 跨 panel action-boundary opportunity 只读审计，复用原 panel 与独立 panel 的冻结 Stage 3C-34 输出。
+- 两个 panel 的 continuous divergence event 总数为 129 与 123；potential L1 mean 的 source 中位数为 0.07092 与 0.06866，tick 10 及以后占比为 0.543 与 0.577。
+- 独立 panel 的 selected-action probability 绝对变化并不更弱；所有已观察幅度指标范围重叠，且没有单一单调高阈值能分离原 panel 的 crossing source。
+- 结合 Stage 3C-36，排除 candidate support 或局部 token 几何未迁移作为零 crossing 的解释；first-state recurrence composition 变化仍未被证明是直接原因。
+- 将剩余不确定性收窄到冻结 trace 未记录的完整 masked logits 与 counter-based categorical draw；下一步转为 `[ENGINEERING]` 语义中立导出，禁止继续抽取 panel 或调整 exposure/threshold。
+
 ## 0.156.0
 
 - 使用 Stage 3C-37 checksum-bound selector-consistent qualification overlay，在独立 seed panel `12401–12409` 上完成原先预注册的 Stage 3C-28→34 crossing replication 链。

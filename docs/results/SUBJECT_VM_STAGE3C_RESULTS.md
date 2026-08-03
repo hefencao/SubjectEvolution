@@ -42,13 +42,14 @@
 | 3C-36 | `[MAIN-EXP]` 只读 transport decomposition | 比较原 panel 与独立 panel 的冻结 Stage 3C-25–27 输出。 | candidate support 和 winner reuse 精确迁移；age-one occupancy 下降由 first-state recurrence composition 预测；5 个额外 near-exact tie 直接触发形式 gate。local-step scale separation 仍约 200×。 | 把聚合 tie 计数当作机制已解析，修改 tolerance 或恢复 crossing replication。 |
 | 3C-37 | `[MAIN-EXP]` 只读 selector audit | 重放两个冻结 rank-two panel，按存储坐标与真实 runtime ordering 解析所有 Stage 3C-27 near-tie query。 | 7 个 `1e-8` 诊断案例都有严格正的 float64 age-one margin（`4.42e-9`–`7.37e-9`），normalized direction 不同，第二坐标相差 1715–2140 个 float32 ULP。runtime `1e-12` comparator 在 1728 个 multi-candidate query 中判定 0 个 tie，latest-on-tie 未改变任何 winner。两个 panel 的 selector-consistent strict fraction 都为 1.0。 | 改写历史产物、修改 runtime tie 语义，或把资格修正当作 crossing replication。 |
 | 3C-38 | `[MAIN-EXP]` qualification-corrected replication | 在 seed 12401–12409 上通过 Stage 3C-37 overlay 恢复冻结的 3C-28→34 链；不改变 runtime、exposure、horizon 或 crossing definition。 | 9/9 source 都有连续 potential divergence，但 action crossing、differential Objective-Fact crossing 与 surviving fact effect 均为 0。predictor=outcome=空集，分类器未被反驳但只形成 vacuous match，不构成非空复现。 | 把零阳性 panel 当作复制成功，或授权 value、credit、keep/revert、learning、retention。 |
+| 3C-39 | `[MAIN-EXP]` 只读 opportunity transport | 比较原 panel 与独立 panel 冻结的 continuous divergence、tick 和同 action sampled probability，并复用 Stage 3C-36 bootstrap transport。 | 两 panel 的 divergence event 为 129 与 123，L1 与 probability-change 范围大量重叠，独立 panel 的晚期 divergence 和 selected-action probability 变化不更弱；没有单调幅度阈值能隔离 crossing source。剩余不确定性被收窄到未导出的完整 categorical competition 与 draw state。 | 把根因视为已解析，继续抽取 panel、调整 exposure/threshold，或从 selected-action probability 推导精确 boundary margin。 |
 
 ## 当前冻结链
 
-seed `12301–12309` 的原 panel 中，Stage 3C-34 找到 2 个 alignment-specific action-crossing source，并且这两个 source 恰好也是 exposure-only Objective-Fact 非零 source。seed `12401–12409` 的独立 panel 经 Stage 3C-37 selector-consistent overlay 后完成同一链，但 9/9 source 虽有 continuous potential divergence，均未跨越实际 sampled-action 边界。
+原 panel 与独立 panel 都普遍产生 continuous Subject VM divergence，但只有原 panel 的 12305、12308 跨越 alignment-specific sampled-action 边界。Stage 3C-39 证明独立 panel 并不整体缺少 divergence 幅度、晚期 divergence 或 selected-action probability 变化，且 candidate support 与局部 token geometry 已迁移。
 
-因此预注册的 source-level predictor 在独立 panel 上没有 false positive 或 false negative，但阳性数为零。结果只能冻结为“未反驳的 vacuous match”，不能称为非空复现，也不能据此授权 retention 或 learned addressing。
+因此 crossing opportunity 的 panel 差异不能由现有聚合幅度指标解释。冻结 trace 缺少完整 masked policy logits 和 counter-based categorical draw，无法重建每个事件的完整 categorical competition 或精确采样边界。
 
 ## 下一项获授权的证据边界
 
-Stage 3C-39 只能只读比较两个冻结 panel 的 crossing opportunity：continuous potential divergence 的频率与幅度、tick 分布、action composition 和已导出的 sampled probability。不得新增 source、调整 exposure、改变 crossing definition 或使用后见阈值。由于完整 masked logits 与 categorical draw 不可见，Stage 3C-39 不得声称得到精确 categorical boundary margin。
+下一项不是新的科学 panel，而是 `[ENGINEERING]` 语义中立 trace instrumentation：导出完整 masked policy logits 与 counter-based categorical draw，并证明 sampled action、random stream、branch identity、checkpoint 兼容性与运行成本边界不变。完成前 Stage 3C-40 保持阻塞；不得继续增加 source、延长 exposure 或建立后见阈值。

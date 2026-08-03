@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "se-mvp"
-version = "0.156.0"
+version = "0.157.0"
 description = "Reference implementation for nested-subject existence evolution simulation"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -107,6 +107,7 @@ se-subject-vm-stage3c35-crossing-replication = "se.analysis.subject_vm_stage3c35
 se-subject-vm-stage3c36-geometry-transport = "se.analysis.subject_vm_stage3c36_geometry_transport:main"
 se-subject-vm-stage3c37-tie-origin = "se.analysis.subject_vm_stage3c37_tie_origin:main"
 se-subject-vm-stage3c38-crossing-replication = "se.analysis.subject_vm_stage3c38_crossing_replication:main"
+se-subject-vm-stage3c39-boundary-opportunity-transport = "se.analysis.subject_vm_stage3c39_boundary_opportunity_transport:main"
 se-epoch = "se.cmd.epoch:main"
 se-source-health-gate = "se.analysis.source_health:main"
 se-turnover-substrate-config = "se.experiments.d1_turnover_substrate:main"

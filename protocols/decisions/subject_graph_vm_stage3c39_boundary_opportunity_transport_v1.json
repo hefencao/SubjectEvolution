@@ -1,0 +1,64 @@
+{
+  "schema": "se-subject-vm-stage3c39-boundary-opportunity-transport-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c39-boundary-opportunity-transport-v1",
+  "status": "frozen-narrowed-to-unobserved-categorical-boundary-state",
+  "project_version": "0.157.0",
+  "git_title": "[MAIN-EXP] D1-Z: audit action-boundary opportunity transport across panels",
+  "question": "为什么原 panel 的两个 source 跨越 sampled-action 边界，而独立 panel 在连续 Subject VM divergence 普遍存在时仍为零 crossing？",
+  "input_identity": {
+    "reference_source_seeds": [12301, 12302, 12303, 12304, 12305, 12306, 12307, 12308, 12309],
+    "replication_source_seeds": [12401, 12402, 12403, 12404, 12405, 12406, 12407, 12408, 12409],
+    "panels_are_disjoint": true,
+    "reference_stage3c34_frozen": true,
+    "replication_stage3c34_frozen": true,
+    "stage3c36_transport_required": true,
+    "stage3c38_vacuous_result_required": true
+  },
+  "authorized_observations": {
+    "continuous_divergence_event_count_and_fraction": true,
+    "potential_l1_and_linf_summary": true,
+    "divergence_tick_distribution": true,
+    "same_action_selected_probability_change": true,
+    "bootstrap_candidate_and_local_geometry_transport": true,
+    "first_state_recurrence_composition": true,
+    "full_masked_policy_logits": false,
+    "counter_based_categorical_draw": false,
+    "exact_categorical_boundary_margin": false
+  },
+  "forbidden_changes": {
+    "runtime_rerun": true,
+    "new_source_panel": true,
+    "source_selection_or_replacement": true,
+    "exposure_change": true,
+    "crossing_definition_change": true,
+    "post_hoc_scalar_threshold": true,
+    "runtime_sampling_semantics_change": true,
+    "objective_fact_scalarization": true
+  },
+  "observed_result": {
+    "reference_divergence_event_count": 129,
+    "replication_divergence_event_count": 123,
+    "reference_potential_l1_mean_source_median": 0.0709218680858612,
+    "replication_potential_l1_mean_source_median": 0.0686552921930949,
+    "reference_selected_probability_abs_mean_source_median": 0.003283509612083435,
+    "replication_selected_probability_abs_mean_source_median": 0.0034825626541586485,
+    "reference_late_tick_10_or_later_fraction": 0.5426356589147286,
+    "replication_late_tick_10_or_later_fraction": 0.5772357723577236,
+    "all_observed_metric_ranges_overlap": true,
+    "single_monotone_magnitude_threshold_separates_positive_sources": false,
+    "candidate_support_and_local_geometry_transport": true,
+    "exact_action_boundary_opportunity_resolved": false,
+    "assessment_sha256": "19a61032ee46111e4852289923d6145bb6d8ad4d2dce4ddc68206ed519412276"
+  },
+  "frozen_interpretation": {
+    "zero_crossing_is_explained_by_uniformly_weaker_continuous_divergence": false,
+    "zero_crossing_is_explained_by_missing_late_divergence": false,
+    "zero_crossing_is_explained_by_uniformly_smaller_selected_probability_change": false,
+    "zero_crossing_is_explained_by_candidate_or_local_geometry_failure": false,
+    "first_state_recurrence_composition_differs_but_is_not_proven_causal": true,
+    "remaining_uncertainty_is_unobserved_categorical_competition_and_draw_state": true,
+    "neutral_trace_instrumentation_required_before_further_boundary_claims": true,
+    "new_panel_or_parameter_search_authorized": false,
+    "value_or_retention_claim_authorized": false
+  }
+}

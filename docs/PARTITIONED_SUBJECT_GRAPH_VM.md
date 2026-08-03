@@ -2,7 +2,7 @@
 
 状态：**当前机制合同**
 合同代次：**v1**
-仓库审查版本：**v0.155**
+仓库审查版本：**v0.157**
 
 本文档定义当前有效的 Subject Graph VM 架构和安全边界。它不是版本日志，也不是实验结果台账。Stage 3C 的历史结论由 `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` 汇总；可执行细节由 `protocols/decisions/` 管理。
 
