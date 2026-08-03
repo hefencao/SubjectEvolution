@@ -1,7 +1,7 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c34-threshold-crossing-audit-frozen",
+  "status": "stage-3c35-disjoint-source-qualification-failure-frozen",
   "project_version": "0.149.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3C-34",
+  "current_stage": "3C-35",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -748,5 +748,52 @@
     "permanent_write_authorized": false,
     "scientific_qualification": false,
     "next_authorized_boundary": "disjoint-source-crossing-taxonomy-replication-with-frozen-protocol"
+  },
+  "stage_3c35_contract": {
+    "decision_file": "protocols/decisions/subject_graph_vm_stage3c35_crossing_replication_v1.json",
+    "runtime_or_checkpoint_schema_change": false,
+    "reference_source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "replication_source_seeds": [
+      12401,
+      12402,
+      12403,
+      12404,
+      12405,
+      12406,
+      12407,
+      12408,
+      12409
+    ],
+    "source_panels_disjoint": true,
+    "stage3c27_prerequisite_must_pass_before_stage3c28_or_later": true,
+    "selected_seed_replacement_authorized": false,
+    "gate_relaxation_authorized": false,
+    "frozen_result": {
+      "reference_stage3c28_gate_passed": true,
+      "replication_stage3c28_gate_passed": false,
+      "reference_strict_geometry_fraction": 0.9974160206718347,
+      "replication_strict_geometry_fraction": 0.983739837398374,
+      "reference_latest_tie_break_fraction": 0.0011574074074074073,
+      "replication_latest_tie_break_fraction": 0.006944444444444444,
+      "complete_source_screen_seeds": [
+        12402,
+        12408
+      ],
+      "crossing_prediction_tested": false
+    },
+    "automatic_keep_or_revert_authorized": false,
+    "learned_weight_authorized": false,
+    "permanent_write_authorized": false,
+    "next_authorized_boundary": "read-only-cross-panel-bootstrap-geometry-transport-decomposition"
   }
 }

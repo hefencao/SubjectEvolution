@@ -1,0 +1,97 @@
+{
+  "schema": "se-subject-vm-stage3c35-crossing-replication-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c35-crossing-replication-v1",
+  "status": "frozen-upstream-qualification-failure",
+  "project_version": "0.150.0",
+  "git_title": "[MAIN-EXP] D1-Z: replicate crossing taxonomy on disjoint sources",
+  "question": "Does the Stage-3C-34 source-level crossing taxonomy replicate on an independent source checkpoint panel under the unchanged Stage-3C-33/34 protocol?",
+  "input_identity": {
+    "reference_source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "replication_source_seeds": [
+      12401,
+      12402,
+      12403,
+      12404,
+      12405,
+      12406,
+      12407,
+      12408,
+      12409
+    ],
+    "panels_are_disjoint": true,
+    "exposure_conditions": [
+      [
+        3,
+        11
+      ],
+      [
+        6,
+        11
+      ]
+    ],
+    "arms_per_condition": [
+      "aligned/read-only-control",
+      "aligned/guarded-live",
+      "alignment-ablated/read-only-control",
+      "alignment-ablated/guarded-live"
+    ]
+  },
+  "preregistered_prediction": {
+    "predictor": "source has at least one alignment-differential sampled-action crossing",
+    "outcome": "source has a nonzero exposure-only subject-balanced Objective-Fact effect",
+    "expected_relation": "predictor and outcome source sets are exactly equal",
+    "nonvacuous_support_requires_at_least_one_positive_source": true
+  },
+  "fixed_contract": {
+    "exposure_changed": false,
+    "addressing_changed": false,
+    "crossing_definition_changed": false,
+    "objective_fact_coordinates_changed": false,
+    "selected_seed_rerun": false,
+    "post_hoc_threshold": false,
+    "scalar_objective": false
+  },
+  "interpretation_boundary": {
+    "objective_coordinate_direction_has_value_semantics": false,
+    "causal_credit_quality_proven": false,
+    "automatic_keep_or_revert_authorized": false,
+    "learned_weight_authorized": false,
+    "permanent_parameter_retention_authorized": false,
+    "subjecthood_claim_authorized": false
+  },
+  "observed_result": {
+    "stage3c28_gate_passed": false,
+    "reference_strict_geometry_fraction": 0.9974160206718347,
+    "replication_strict_geometry_fraction": 0.983739837398374,
+    "strict_geometry_fraction_delta": -0.013676183273460651,
+    "reference_latest_tie_break_fraction": 0.0011574074074074073,
+    "replication_latest_tie_break_fraction": 0.006944444444444444,
+    "complete_source_screen_count": 2,
+    "complete_source_screen_seeds": [
+      12402,
+      12408
+    ],
+    "crossing_prediction_tested": false,
+    "prediction_supported": false,
+    "prediction_refuted": false,
+    "assessment_sha256": "c17104f468ba3ad771e0cf5fa46303a213e75ccfff5f081eb35587cf16bcd8fa"
+  },
+  "frozen_interpretation": {
+    "disjoint_panel_reproduces_frozen_stage3c27_geometry_prerequisite": false,
+    "stage3c28_and_later_execution_authorized": false,
+    "crossing_taxonomy_replication_completed": false,
+    "seed_replacement_authorized": false,
+    "gate_relaxation_authorized": false,
+    "next_boundary": "Read-only cross-panel decomposition of candidate opportunity, first-state recurrence and strict-geometry loss before any new source run or Stage-3C-33 intervention."
+  }
+}

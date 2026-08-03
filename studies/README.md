@@ -27,3 +27,12 @@ project once with `se-study config --set-result-dir /absolute/external/path`.
 Relative bundle filenames then resolve under that directory; paths inside the
 project are rejected. The ignored `.se-workspace.toml` pointer is local state
 and is not included in release archives.
+
+## External patch storage
+
+Configure a project-external patch directory once with
+`se-study config --set-patch-dir /absolute/external/path`. Delivery Git commands
+must apply `${patch_dir}/<actual-patch-name>` rather than a bare patch filename.
+For the bootstrap patch that first introduces this option, define `PATCH_DIR`, apply
+the prefixed patch, and persist the setting immediately afterward through the patched
+source. The same ignored `.se-workspace.toml` stores both directory pointers.

@@ -59,7 +59,11 @@ def test_agents_enforces_git_title_branch_and_document_placement() -> None:
     assert "Do not write provisional" in text
     assert "Deliver only three top-level artifacts" in text
     assert "### 2.1 Git command delivery contract" in text
-    assert "git apply --index" not in text  # exact commands belong to each handoff
+    assert "se-study config --set-patch-dir" in text
+    assert 'git apply --index "$PATCH_DIR/<actual-baseline-to-current.patch>"' in text
+    assert "Bootstrap iteration that introduces --set-patch-dir" in text
+    assert "PYTHONPATH=src python -m se.cmd.study config --set-patch-dir" in text
+    assert "persistent cross-chat command-format authority" in text
     assert "fast-forward merge" in text
     assert "annotated release tag" in text
     assert "main-exp/" in text and "docs/" in text
@@ -70,7 +74,8 @@ def test_frozen_stage_results_live_in_dedicated_ledger() -> None:
     assert "| 3C-17 |" in text
     assert "| 3C-33 |" in text
     assert "| 3C-34 |" in text
-    assert "Stage 3C-35 may test" in text
+    assert "| 3C-35 |" in text
+    assert "Stage 3C-36 may compare" in text
 
 
 def test_previous_active_docs_are_explicitly_non_normative_snapshots() -> None:

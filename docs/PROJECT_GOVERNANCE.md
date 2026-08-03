@@ -432,9 +432,15 @@ retain all mandatory progress-type branches.
 Every delivered iteration must provide concrete commands for a dedicated typed branch,
 patch application with staging, the exact typed commit title, return to the main branch,
 fast-forward merge, and annotated version tag. Root `AGENTS.md` owns the branch-prefix
-mapping and exact command requirements. The handoff must use the actual delivered patch
-name and may not assume a remote, destructive reset, or forced checkout. Missing commands
-from a prior delivered iteration must be supplied in the next response when identified.
+mapping and exact command requirements. The handoff must use the actual delivered patch name and a project-external patch
+directory; a bare patch filename is not an executable handoff. Normally the directory
+is persisted before application with `se-study config --set-patch-dir`. The bootstrap
+iteration that introduces this option must apply the directory-prefixed patch first and
+then persist it immediately through the patched source. Root `AGENTS.md` is the
+persistent cross-chat authority for the command block, bootstrap ordering, and
+directory-prefix format. The handoff may not assume a remote,
+destructive reset, or forced checkout. Missing commands from a prior delivered iteration
+must be supplied in the next response when identified.
 
 ## v0.148 documentation-governance check
 

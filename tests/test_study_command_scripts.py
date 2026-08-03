@@ -6,6 +6,7 @@ import pytest
 
 from se.cmd.study import (
     check_step_preconditions,
+    configure_patch_dir,
     configure_result_bundle_dir,
     describe,
     load_workflow,
@@ -102,6 +103,41 @@ def test_result_bundle_directory_cannot_be_inside_project(tmp_path: Path) -> Non
     with pytest.raises(ValueError, match="outside the project tree"):
         configure_result_bundle_dir(project, project / "results")
 
+
+
+def test_patch_directory_is_external_and_preserves_result_setting(tmp_path: Path) -> None:
+    project = tmp_path / "project"
+    _write_minimal_workflow(project)
+    results = tmp_path / "results"
+    patches = tmp_path / "patches"
+    configure_result_bundle_dir(project, results)
+    settings = configure_patch_dir(project, patches)
+    assert settings["result_bundle_configured"] is True
+    assert settings["patch_dir_configured"] is True
+    assert settings["result_bundle_dir"] == str(results.resolve())
+    assert settings["patch_dir"] == str(patches.resolve())
+    text = (project / ".se-workspace.toml").read_text(encoding="utf-8")
+    assert "result_bundle_dir" in text
+    assert "patch_dir" in text
+
+
+def test_patch_directory_cannot_be_inside_project(tmp_path: Path) -> None:
+    project = tmp_path / "project"
+    _write_minimal_workflow(project)
+    with pytest.raises(ValueError, match="patch directory must be outside"):
+        configure_patch_dir(project, project / "patches")
+
+
+def test_patch_only_workspace_does_not_enable_result_paths(tmp_path: Path) -> None:
+    project = tmp_path / "project"
+    workflow_path = _write_minimal_workflow(project)
+    configure_patch_dir(project, tmp_path / "patches")
+    settings = load_workspace_settings(project)
+    assert settings["configured"] is False
+    assert settings["patch_dir_configured"] is True
+    path, workflow = load_workflow(workflow_path)
+    with pytest.raises(ValueError, match="result bundle directory is not configured"):
+        resolve_step(path, workflow, "pack-results")
 
 def test_workflow_json_precondition_blocks_failed_source(tmp_path: Path) -> None:
     project = tmp_path / "project"

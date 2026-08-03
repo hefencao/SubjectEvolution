@@ -1,12 +1,12 @@
-# SubjectEvolution v0.149.0
+# SubjectEvolution v0.150.0
 
 SubjectEvolution is an experimental simulation project for evolving subject-like
 internal organization without preassigned reward or human social semantics.
 
-Version 0.149.0 completes the read-only Stage 3C-34 action and objective-event
-crossing audit over the frozen Stage 3C-33 matched-horizon trajectories. It changes
-no runtime behavior, configuration, checkpoint schema, exposure, addressing rule, or
-retention authority.
+Version 0.150.0 freezes Stage 3C-35 as a preregistered disjoint-source
+qualification failure. The new source panel does not reproduce the Stage 3C-27
+geometry prerequisite required before Stage 3C-28; the Stage 3C-33/34 crossing
+classifier is therefore not tested, refuted, or supported on this panel.
 
 ## Documentation map
 
@@ -19,14 +19,13 @@ retention authority.
 
 ## Current scientific frontier
 
-All nine frozen sources show exposure-dependent, alignment-dependent Subject-VM
-action-potential divergence. Six sources do not cross the realized sampled-action
-boundary. Seed 12307 crosses the action boundary in the same way in both alignment
-modes and is removed by the cross-mode contrast. Only seeds 12305 and 12308 contain
-alignment-specific action crossings; four such crossings lead to twelve differential
-Objective-Fact events, including eight delayed events, and exactly reproduce the two
-nonzero Stage 3C-33 source effects.
+The original panel has 386/387 strict-geometry age-one selections; the disjoint
+panel has 363/369. Exact latest-tie use rises from 1/864 to 6/864. Only seeds
+12402 and 12408 satisfy all three per-source diagnostic thresholds. Stage 3C-28
+correctly blocks the later chain, so no responsive-seed replacement or gate
+relaxation is authorized.
 
-The next authorized experiment is a disjoint-source replication of this crossing
-taxonomy under the unchanged protocol. No reward, learned weight, automatic
-keep/revert, or permanent retention is authorized.
+The next mainline step is a read-only cross-panel decomposition of candidate
+opportunity, first-state recurrence, and strict-geometry loss. It must not run a
+new panel, alter addressing, or resume Stage 3C-33 until the transport failure is
+understood.

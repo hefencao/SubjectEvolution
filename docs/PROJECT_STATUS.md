@@ -1,19 +1,17 @@
 # SE project status
 
-Version: **0.149.0**
+Version: **0.150.0**
 
 ## Current iteration identity
 
 - Progress type: **`[MAIN-EXP]` mainline experiment**
-- Git title: **`[MAIN-EXP] D1-Z: audit action and objective-event threshold crossings`**
-- Git branch: **`main-exp/stage3c34-threshold-crossing`**
+- Git title: **`[MAIN-EXP] D1-Z: replicate crossing taxonomy on disjoint sources`**
+- Git branch: **`main-exp/stage3c35-disjoint-crossing-replication`**
 - Runtime/config/checkpoint change: **none**
-- Frozen scientific frontier: **Stage 3C-34**
-- Next authorized mainline experiment: **Stage 3C-35 disjoint-source crossing-taxonomy replication**
+- Frozen scientific frontier: **Stage 3C-35**
+- Next authorized mainline experiment: **Stage 3C-36 read-only bootstrap-geometry transport decomposition**
 
-Stage 3C-34 is a read-only audit over the frozen Stage 3C-33 eight-arm trajectories.
-It localizes the exposure-only alignment contrast at continuous Subject-VM action
-potentials, sampled actions, Objective-Fact events, and source-balanced aggregation.
+Stage 3C-35 stopped at its preregistered Stage 3C-27 qualification gate. The disjoint panel does not reproduce the geometry prerequisite required by Stage 3C-28, so the later crossing classifier was not run.
 
 ## Typed task progress tree
 
@@ -23,8 +21,9 @@ SubjectEvolution
 │   └── D1-Z unified Subject Graph VM
 │       ├── [FROZEN] Stage 3C-33 matched-horizon exposure propagation
 │       ├── [FROZEN] Stage 3C-34 action/objective-event crossing audit
-│       ├── [NEXT]   Stage 3C-35 disjoint-source crossing-taxonomy replication
-│       └── [BLOCKED] retention, learned weights, topology evolution
+│       ├── [FROZEN] Stage 3C-35 disjoint-source prerequisite failure
+│       ├── [NEXT]   Stage 3C-36 read-only bootstrap-geometry transport decomposition
+│       └── [BLOCKED] crossing replication, retention, learned weights, topology evolution
 │
 ├── [BRANCH-EXP] Branch experiment
 │   └── none active
@@ -40,6 +39,7 @@ SubjectEvolution
 │       mutation, cost, development, inheritance, and neutralization contract
 │
 ├── [ENGINEERING] Runtime, tooling, tests, packaging
+│   ├── [DONE] project-external patch directory configuration and directory-prefixed Git handoff
 │   └── [PARKED] optional full-policy-logit and categorical-draw trace export
 │       for exact numeric action-margin measurement
 │
@@ -51,44 +51,19 @@ SubjectEvolution
 
 ## Current mainline decision
 
-Stage 3C-34 resolves the current nine-source crossing location:
-
-- all nine sources contain exposure-dependent, alignment-dependent Subject-VM
-  action-potential divergence;
-- six sources do not cross the realized sampled-action boundary;
-- seed 12307 crosses the sampled-action boundary in both alignment modes in the same
-  way, so the alignment difference-in-differences removes it;
-- seeds 12305 and 12308 contain alignment-specific action crossings and are exactly
-  the two sources with nonzero Stage 3C-33 source-balanced Objective-Fact effects;
-- no source contains a differential Objective-Fact crossing that is later cancelled
-  only by source balancing.
-
-The next authorized mainline step is an out-of-sample replication using a disjoint
-source checkpoint panel and the unchanged Stage 3C-33/34 protocol. It must preregister
-the prediction that alignment-differential sampled-action crossings identify every
-nonzero exposure-only fact source. It may not select seeds, alter exposure, add a
-value function, or authorize retention.
+Stage 3C-35 does not test the crossing classifier. The disjoint panel lowers pooled
+strict-geometry age-one selection from 386/387 (0.9974) to 363/369 (0.9837), below
+the frozen Stage 3C-28 gate. Exact latest-tie use rises from 1/864 to 6/864, and only
+12402 and 12408 pass all three per-source diagnostic thresholds. Stage 3C-28 and all
+later stages were not executed. The next step is a read-only cross-panel decomposition;
+seed replacement, gate relaxation and a new runtime intervention are blocked.
 
 ## Frozen evidence boundary
 
-Stage 3C-34 establishes a narrow causal localization for this panel:
-
-```text
-continuous Subject-VM decision divergence in 9/9 sources
-  → any sampled-action crossing in 3/9 sources
-  → alignment-specific sampled-action crossing in 2/9 sources
-  → differential Objective-Fact crossing in the same 2/9 sources
-  → surviving source-balanced effect in the same 2/9 sources
-```
-
-Four alignment-specific sampled-action crossing events lead to twelve differential
-Objective-Fact events, including eight delayed events after the original crossing.
-This does not establish value, correct causal credit, learning, keep/revert, or
-permanent retention.
-
-The exact numeric distance to the categorical action boundary remains unobservable
-because the frozen trace contains Subject-VM residual potentials and selected-action
-probability, but not the complete masked policy logits or categorical draw.
+Stage 3C-35 establishes that the fixed-bootstrap geometry qualification is not yet
+transportable across the first disjoint nine-source panel. This is a scientific
+prerequisite failure, not a runtime, export, checksum, or packaging error. The
+preregistered Stage 3C-34 source classifier remains untested out of sample.
 
 ## Not implemented or authorized
 
@@ -107,6 +82,6 @@ probability, but not the complete masked policy logits or categorical draw.
 | Current task and queue | `docs/PROJECT_STATUS.md` |
 | Active unresolved scientific questions | `docs/SCIENTIFIC_ISSUES.md` |
 | Frozen Stage 3C results | `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` |
-| Current iteration record | `docs/迭代/v0.149_D1-Z_主体图Stage3C34_动作与客观事件跨界审计.md` |
-| Executable decision contract | `protocols/decisions/subject_graph_vm_stage3c34_threshold_crossing_v1.json` |
+| Current iteration record | `docs/迭代/v0.150_D1-Z_主体图Stage3C35_独立面板前置资格失败.md` |
+| Executable decision contract | `protocols/decisions/subject_graph_vm_stage3c35_crossing_replication_v1.json` |
 | Repository execution rules | `AGENTS.md` |

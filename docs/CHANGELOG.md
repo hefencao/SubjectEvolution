@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.150.0
+
+- Adds project-external `patch_dir` workspace configuration and requires directory-prefixed patch paths in Git handoff commands.
+- Preregisters Stage 3C-35 on disjoint source seeds 12401–12409 without changing the frozen rank-two protocol.
+- Stops the chain when Stage 3C-28 rejects the new panel because the Stage 3C-27 geometry prerequisite does not reproduce.
+- Finds pooled strict-geometry age-one selection decreases from 386/387 to 363/369 and exact latest-tie use increases from 1/864 to 6/864; only 12402 and 12408 pass all three per-source diagnostics.
+- Leaves the crossing classifier untested rather than replacing seeds or relaxing the gate.
+
 ## 0.149.0
 
 - Adds the Stage 3C-34 read-only event-level audit over the frozen Stage 3C-33 eight-arm trajectories.

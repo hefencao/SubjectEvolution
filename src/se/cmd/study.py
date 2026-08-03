@@ -39,56 +39,118 @@ def _workspace_config_path(project_root: Path) -> Path:
     return project_root / WORKSPACE_CONFIG_NAME
 
 
+def _external_workspace_dir(
+    root: Path,
+    data: dict[str, Any],
+    *,
+    field: str,
+    label: str,
+) -> Path | None:
+    raw = data.get(field)
+    if raw is None:
+        return None
+    if not isinstance(raw, str) or not raw.strip():
+        raise ValueError(f"workspace settings {field} must be a non-empty string")
+    destination = Path(raw).expanduser().resolve()
+    try:
+        destination.relative_to(root)
+    except ValueError:
+        return destination
+    raise ValueError(f"{label} directory must be outside the project tree")
+
+
 def load_workspace_settings(project_root: str | Path) -> dict[str, Any]:
     root = Path(project_root).resolve()
     path = _workspace_config_path(root)
-    if not path.is_file():
-        return {
-            "schema": WORKSPACE_SCHEMA,
-            "project_root": str(root),
-            "config_path": str(path),
-            "configured": False,
-            "result_bundle_dir": None,
-        }
-    data = tomllib.loads(path.read_text(encoding="utf-8"))
-    if data.get("schema") != WORKSPACE_SCHEMA:
-        raise ValueError(f"unsupported workspace settings schema: {data.get('schema')!r}")
-    raw = data.get("result_bundle_dir")
-    if not isinstance(raw, str) or not raw.strip():
-        raise ValueError("workspace settings must define a non-empty result_bundle_dir")
-    result_dir = Path(raw).expanduser().resolve()
-    try:
-        result_dir.relative_to(root)
-    except ValueError:
-        pass
+    data: dict[str, Any]
+    if path.is_file():
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
+        if data.get("schema") != WORKSPACE_SCHEMA:
+            raise ValueError(
+                f"unsupported workspace settings schema: {data.get('schema')!r}"
+            )
     else:
-        raise ValueError("result bundle directory must be outside the project tree")
+        data = {"schema": WORKSPACE_SCHEMA}
+    result_dir = _external_workspace_dir(
+        root,
+        data,
+        field="result_bundle_dir",
+        label="result bundle",
+    )
+    patch_dir = _external_workspace_dir(
+        root,
+        data,
+        field="patch_dir",
+        label="patch",
+    )
     return {
         "schema": WORKSPACE_SCHEMA,
         "project_root": str(root),
         "config_path": str(path),
-        "configured": True,
-        "result_bundle_dir": str(result_dir),
+        # Backward-compatible meaning: result paths can be resolved.
+        "configured": result_dir is not None,
+        "result_bundle_configured": result_dir is not None,
+        "patch_dir_configured": patch_dir is not None,
+        "result_bundle_dir": str(result_dir) if result_dir is not None else None,
+        "patch_dir": str(patch_dir) if patch_dir is not None else None,
     }
 
 
-def configure_result_bundle_dir(project_root: str | Path, result_dir: str | Path) -> dict[str, Any]:
+def _configure_workspace_dir(
+    project_root: str | Path,
+    destination_dir: str | Path,
+    *,
+    field: str,
+    label: str,
+) -> dict[str, Any]:
     root = Path(project_root).resolve()
-    destination = Path(result_dir).expanduser().resolve()
+    destination = Path(destination_dir).expanduser().resolve()
     try:
         destination.relative_to(root)
     except ValueError:
         pass
     else:
-        raise ValueError("result bundle directory must be outside the project tree")
+        raise ValueError(f"{label} directory must be outside the project tree")
     destination.mkdir(parents=True, exist_ok=True)
     path = _workspace_config_path(root)
-    path.write_text(
-        f'schema = {json.dumps(WORKSPACE_SCHEMA)}\n'
-        f'result_bundle_dir = {json.dumps(str(destination))}\n',
-        encoding="utf-8",
-    )
+    existing: dict[str, Any] = {}
+    if path.is_file():
+        existing = tomllib.loads(path.read_text(encoding="utf-8"))
+        if existing.get("schema") != WORKSPACE_SCHEMA:
+            raise ValueError(
+                f"unsupported workspace settings schema: {existing.get('schema')!r}"
+            )
+    existing["schema"] = WORKSPACE_SCHEMA
+    existing[field] = str(destination)
+    lines = [f'schema = {json.dumps(WORKSPACE_SCHEMA)}']
+    for name in ("result_bundle_dir", "patch_dir"):
+        value = existing.get(name)
+        if isinstance(value, str) and value.strip():
+            lines.append(f'{name} = {json.dumps(value)}')
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return load_workspace_settings(root)
+
+
+def configure_result_bundle_dir(
+    project_root: str | Path, result_dir: str | Path
+) -> dict[str, Any]:
+    return _configure_workspace_dir(
+        project_root,
+        result_dir,
+        field="result_bundle_dir",
+        label="result bundle",
+    )
+
+
+def configure_patch_dir(
+    project_root: str | Path, patch_dir: str | Path
+) -> dict[str, Any]:
+    return _configure_workspace_dir(
+        project_root,
+        patch_dir,
+        field="patch_dir",
+        label="patch",
+    )
 
 
 def _resolve_result_path(
@@ -382,6 +444,7 @@ def main(argv: list[str] | None = None) -> None:
         "config", help="show or set project-local workspace output settings"
     )
     config.add_argument("--set-result-dir")
+    config.add_argument("--set-patch-dir")
     config.add_argument("--json", action="store_true")
     args, unknown = parser.parse_known_args(argv)
     if args.action == "config":
@@ -389,11 +452,11 @@ def main(argv: list[str] | None = None) -> None:
             parser.error(f"unexpected arguments: {unknown}")
         try:
             root = _find_project_root()
-            data = (
-                configure_result_bundle_dir(root, args.set_result_dir)
-                if args.set_result_dir
-                else load_workspace_settings(root)
-            )
+            data = load_workspace_settings(root)
+            if args.set_result_dir:
+                data = configure_result_bundle_dir(root, args.set_result_dir)
+            if args.set_patch_dir:
+                data = configure_patch_dir(root, args.set_patch_dir)
         except (ValueError, FileNotFoundError) as exc:
             parser.error(str(exc))
         if args.json:
@@ -403,7 +466,19 @@ def main(argv: list[str] | None = None) -> None:
             print(f"settings: {data['config_path']}")
             print(
                 "result bundle directory: "
-                + (str(data['result_bundle_dir']) if data['configured'] else "not configured")
+                + (
+                    str(data["result_bundle_dir"])
+                    if data["result_bundle_configured"]
+                    else "not configured"
+                )
+            )
+            print(
+                "patch directory: "
+                + (
+                    str(data["patch_dir"])
+                    if data["patch_dir_configured"]
+                    else "not configured"
+                )
             )
         return
     workflow_path, workflow = load_workflow(args.study)

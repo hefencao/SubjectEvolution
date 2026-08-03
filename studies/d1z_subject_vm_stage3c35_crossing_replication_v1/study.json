@@ -1,0 +1,44 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c35_crossing_replication_v1",
+  "title": "D1-Z Subject VM Stage 3C-35 disjoint-source crossing-taxonomy replication",
+  "status": "frozen-upstream-qualification-failure",
+  "scientific_stage": "stage3c35-disjoint-source-qualification-frozen",
+  "git_title": "[MAIN-EXP] D1-Z: replicate crossing taxonomy on disjoint sources",
+  "authorization": {
+    "source_seeds": [
+      12401,
+      12402,
+      12403,
+      12404,
+      12405,
+      12406,
+      12407,
+      12408,
+      12409
+    ],
+    "source_panel_disjoint_from_stage3c34": true,
+    "change_exposure": false,
+    "change_addressing": false,
+    "change_crossing_definition": false,
+    "selected_seed_rerun": false,
+    "scalar_objective": false,
+    "automatic_keep_or_revert": false,
+    "permanent_parameter_retention": false
+  },
+  "preregistered_prediction": "alignment-differential sampled-action crossing identifies every and only source with a nonzero exposure-only subject-balanced Objective-Fact effect",
+  "frozen_result": {
+    "stage3c28_gate_passed": false,
+    "reference_strict_geometry_fraction": 0.9974160206718347,
+    "replication_strict_geometry_fraction": 0.983739837398374,
+    "reference_latest_tie_break_fraction": 0.0011574074074074073,
+    "replication_latest_tie_break_fraction": 0.006944444444444444,
+    "complete_source_screen_seeds": [
+      12402,
+      12408
+    ],
+    "crossing_prediction_tested": false,
+    "assessment_sha256": "c17104f468ba3ad771e0cf5fa46303a213e75ccfff5f081eb35587cf16bcd8fa",
+    "retention_authorized": false
+  }
+}

@@ -83,10 +83,37 @@ Use these branch prefixes:
 | `[RELEASE]` | `release/` |
 
 The command block must name the actual baseline-to-current patch, branch, commit title,
-and version tag. Do not substitute a generic template. When the user identifies a
-missing prior-round command block, provide that prior block together with the current
-iteration commands. Do not include destructive reset, forced checkout, or an assumed
-remote pull in the default handoff.
+and version tag. Do not substitute a generic template. Patch application must never
+use a bare filename. Every handoff first defines one project-external `PATCH_DIR` and
+prefixes the actual patch filename with it. The directory is persisted with
+`se-study config --set-patch-dir <directory>` whenever that command exists in the
+baseline.
+
+The iteration that first introduces `--set-patch-dir` is a bootstrap exception: its
+baseline cannot call the new option before applying the patch. That handoff must define
+`PATCH_DIR`, apply the prefixed patch, and then persist the setting immediately through
+the patched source with `PYTHONPATH=src python -m se.cmd.study config --set-patch-dir`.
+Subsequent iterations configure or confirm the directory before patch application.
+When no operator-specific path is known, use these executable shapes:
+
+```bash
+# Bootstrap iteration that introduces --set-patch-dir
+PATCH_DIR="../SubjectEvolution-patches"
+git apply --index "$PATCH_DIR/<actual-baseline-to-current.patch>"
+PYTHONPATH=src python -m se.cmd.study config --set-patch-dir "$PATCH_DIR"
+
+# Later iterations
+PATCH_DIR="../SubjectEvolution-patches"
+se-study config --set-patch-dir "$PATCH_DIR"
+git apply --index "$PATCH_DIR/<actual-baseline-to-current.patch>"
+```
+
+The final handoff replaces the placeholder with the actual delivered patch name. When
+the user identifies a missing prior-round command block, provide that prior block
+together with the current iteration commands. Do not include destructive reset,
+forced checkout, or an assumed remote pull in the default handoff. This section is the
+persistent cross-chat command-format authority; new sessions must read `AGENTS.md`
+before preparing a handoff.
 
 ## 3. Typed progress tree
 

@@ -11,7 +11,7 @@ Status values are `OPEN`, `BLOCKED`, and `PARKED`.
 
 | ID | Type | Status | Question | Current evidence boundary |
 |---|---|---|---|---|
-| SG-02 | Replication | OPEN | Does the Stage 3C-34 crossing taxonomy predict sparse exposure propagation in a disjoint source panel? | Stage 3C-35 must reuse the frozen protocol and preregister alignment-differential action crossing as the event-level predictor. |
+| SG-02 | Bootstrap transport | OPEN | Why does the Stage 3C-27 fixed-bootstrap geometry qualification fail on the first disjoint source panel? | Stage 3C-35 stops before Stage 3C-28; the crossing classifier remains untested out of sample. |
 | SG-03 | Evidence semantics | OPEN | Can component-wise objective facts support any retention decision without importing a fixed value function? | No retention study is authorized until a non-scalar decision contract exists. |
 | SG-04 | Bootstrap generality | PARKED | Which results depend on normalized-dot/latest/top-1 bootstrap addressing? | Compare only after the current crossing result is independently replicated. |
 | SG-05 | Persistence | BLOCKED | Can a temporary graph-parameter effect persist under an independently justified decision rule? | Requires replicated downstream evidence and a separate keep/revert contract. |
@@ -21,30 +21,18 @@ Status values are `OPEN`, `BLOCKED`, and `PARKED`.
 | ENV-02 | Demography | OPEN | Are source checkpoints healthy enough for evolutionary interpretation rather than short-run mechanism diagnosis? | Require population, descendant, generation-depth, founder-replacement, and checkpoint-stability gates. |
 | SOC-01 | Identity | BLOCKED | How should delayed partner evidence survive entity death without attaching to recycled rows? | Requires historical subject identity with retention, inheritance, eviction, and regional-branch semantics. |
 
-## 3. SG-02 — disjoint-source crossing replication
+## 3. SG-02 — bootstrap-geometry transport failure
 
-Stage 3C-34 resolved the original nine-source panel into three classes:
+Stage 3C-35 used disjoint source seeds 12401–12409. The original panel has 386/387
+strict-geometry age-one selections; the replication panel has 363/369. Exact
+latest-tie use rises from 1/864 to 6/864. The frozen Stage 3C-28 prerequisite therefore
+fails, and only sources 12402 and 12408 satisfy all three per-source diagnostics.
 
-1. six sources with continuous Subject-VM decision divergence but no sampled-action
-   crossing;
-2. one source with the same sampled-action transition in both alignment modes, removed
-   by the cross-mode contrast;
-3. two sources with alignment-specific sampled-action crossings followed by
-   differential Objective-Fact events and surviving source-balanced effects.
-
-The next scientific question is whether this event-level rule predicts results in a
-new source checkpoint panel. Stage 3C-35 must use disjoint seeds and the unchanged
-3-tick/6-tick matched-horizon intervention. Before execution it must preregister:
-
-- event support and lineage checks identical to Stage 3C-34;
-- alignment-differential action crossing as the predictor;
-- nonzero source-balanced exposure-only Objective-Fact effect as the outcome;
-- source checkpoint as the independent replicate;
-- no post-hoc seed replacement, threshold selection, exposure change, or coordinate
-  scalarization.
-
-A successful event-level association still would not assign value or prove correct
-causal credit.
+The active question is which already-recorded factor explains the transport loss:
+candidate opportunity composition, first-state recurrence, local second-coordinate
+step geometry, or their interaction. The next audit must be read-only over the two
+frozen panels. It may not replace seeds, relax the gate, change addressing, or run the
+Stage 3C-33 intervention.
 
 ## 4. SG-03 — objective facts are not value
 

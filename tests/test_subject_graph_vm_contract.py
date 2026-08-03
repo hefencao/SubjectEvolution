@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c34-threshold-crossing-audit-frozen"
+    assert contract["status"] == "stage-3c35-disjoint-source-qualification-failure-frozen"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,7 +24,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3C-34"
+    assert contract["current_stage"] == "3C-35"
     assert contract["stage_2_contract"]["plasticity"] is False
     assert contract["stage_3a_contract"]["persistent_node_edge_path"] is False
     assert contract["stage_3a_contract"]["plasticity"] is False
@@ -309,6 +309,15 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["stage_3c34_contract"]["automatic_keep_or_revert_authorized"] is False
     assert contract["stage_3c34_contract"]["learned_weight_authorized"] is False
     assert contract["stage_3c34_contract"]["permanent_write_authorized"] is False
+    assert contract["stage_3c35_contract"]["source_panels_disjoint"] is True
+    assert contract["stage_3c35_contract"]["stage3c27_prerequisite_must_pass_before_stage3c28_or_later"] is True
+    assert contract["stage_3c35_contract"]["frozen_result"]["reference_stage3c28_gate_passed"] is True
+    assert contract["stage_3c35_contract"]["frozen_result"]["replication_stage3c28_gate_passed"] is False
+    assert contract["stage_3c35_contract"]["frozen_result"]["complete_source_screen_seeds"] == [12402, 12408]
+    assert contract["stage_3c35_contract"]["frozen_result"]["crossing_prediction_tested"] is False
+    assert contract["stage_3c35_contract"]["selected_seed_replacement_authorized"] is False
+    assert contract["stage_3c35_contract"]["gate_relaxation_authorized"] is False
+    assert contract["stage_3c35_contract"]["permanent_write_authorized"] is False
     assert contract["stage_3c21_contract"]["common_readout_only_node_index"] == 8
     assert contract["stage_3c21_contract"]["readout_changes_action_output"] is False
     assert contract["stage_3c21_contract"][
