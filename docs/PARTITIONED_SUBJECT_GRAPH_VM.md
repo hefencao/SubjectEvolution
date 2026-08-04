@@ -2,7 +2,7 @@
 
 状态：**当前机制合同**
 合同代次：**v1**
-仓库审查版本：**v0.165**
+仓库审查版本：**v0.166**
 
 本文档定义当前有效的 Subject Graph VM 架构和安全边界。它不是版本日志，也不是实验结果台账。Stage 3C 的历史结论由 `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` 汇总；可执行细节由 `protocols/decisions/` 管理。
 
@@ -112,6 +112,22 @@ VM 使用固定容量存储，并显式记录 occupancy 与稳定 subject bindin
 
 world history、graph token history、local eligibility、subject-owned memory 与 analysis output 是彼此独立的容量。
 
+### 4.4 ThoughtEvent 与最小前向 recall
+
+统一 ThoughtEvent arena 保存 graph-produced pre-action token 和稳定 event identity。启用 T3 时，runtime 可以为每个主体确定性选择最近一个严格早于当前 tick 的 retained ThoughtEvent，并通过最多一条声明式 `node_recall_port`/`node_recall_gate` ingress 进入普通 node accumulator。
+
+该路径：
+
+- 默认关闭；
+- 不读取同 tick 新事件；
+- 不拥有 query network、随机检索、temperature 或固定认知角色；
+- 不直接回灌 action logits、Objective-Fact 或 value；
+- 将实际 selected event 记录为 child ThoughtEvent 的 parent DAG edge；
+- 启用时属于 configuration、checkpoint、clone 与 branch identity；
+- 成本只记录搜索、读取、ingress 和 parent-link 计数，不自动影响 energy 或 retention。
+
+当前 T3 fixed-bootstrap ingress 位于 readout-only node，不构成长期规范拓扑，也不证明思维链、语义记忆或延迟信息效用。
+
 ## 5. 所有权与依赖方向
 
 现有 action strategy 仍是最小可遗传感觉—运动基线。feasibility mask、categorical sampling、intent 与 world settlement 仍由物理 action 系统权威拥有。
@@ -204,9 +220,11 @@ T1 已增加与现有 graph-produced continuous token 同源的统一 ThoughtEve
 
 arena 默认关闭且有界。启用后属于 normalized configuration、checkpoint、clone 和 branch identity；禁用精确默认值会从 canonical payload 移除。parent 必须属于同一 subject、已经保留且早于 child tick；禁止 self-parent、same-tick parent 和 child append 时覆盖 active parent。当前 T1 runtime 不读取 arena，所有自动产生事件的 parent_count 为 0。
 
-T2 已只读审计当前 fixed-bootstrap token：重复坐标负对照在九 seed 中稳定坍缩为 centered rank 1；rank-two 候选避免精确重复并保持 centered rank 2，但连续同主体 token 仍高度相似。该证据只授权 T3 最小前向 recall 机制 smoke，不证明已形成思维链、分布式认知或语言。
+T2 已只读审计当前 fixed-bootstrap token：重复坐标负对照在九 seed 中稳定坍缩为 centered rank 1；rank-two 候选避免精确重复并保持 centered rank 2，但连续同主体 token 仍高度相似。
 
-当前 continuous token/event history 仍主要服务 delayed association，ThoughtEvent arena 尚未作为下一轮 activation 的前向记忆。未来能力不得把极短暂思维链和较长期记忆拆成两套 token；二者必须共享统一 ThoughtEvent vector、identity、lineage、comparator 与 graph ingress，只能通过生命周期、索引、容量和访问成本连续分化。
+T3 已实现最小前向 recall。每个主体只读取最近一个严格早于当前 tick 的 retained ThoughtEvent；selector 确定性运行，不使用 query network、随机检索、temperature 或固定认知角色。recalled coordinate 通过最多一条 `node_recall_port`/`node_recall_gate` 进入普通 graph node，commit 时将实际 selected event 记录为 parent DAG edge。正式 control 证明 content、selector、parent linkage 和计数成本可分离，且 readout-only ingress 不改变 action/event 语义。
+
+该机制仍受 T2 低秩边界限制，identity parent-child token 高度相似；它不证明已形成思维链、分布式认知、语义记忆或语言。未来能力不得把极短暂思维链和较长期记忆拆成两套 token；二者必须共享统一 ThoughtEvent vector、identity、lineage、comparator 与 graph ingress，只能通过生命周期、索引、容量和访问成本连续分化。
 
 未来 communication region 只能是统一图与物理 SignalEvent channel 之间的接口区域，不拥有对象指称、词义、价值或语法。不同 seed/区域可以通过不同 signal、node、topology 或 region 分布实现相同功能；跨世界对齐必须保留符号置换和 graph permutation 的等价可能。完整尚未实现的设计边界见 `docs/THOUGHT_EVENT_LANGUAGE_COGNITION.md`。
 

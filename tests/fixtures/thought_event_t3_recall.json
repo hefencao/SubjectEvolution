@@ -1,0 +1,94 @@
+{
+  "schema": "se-subject-vm-thought-event-t3-recall-fixture-v1",
+  "project_version": "0.166.0",
+  "assessment_sha256": "30540e9d5d93b8987f042eef414b16eb6b28a435b997f4fecf95b81d7e9447dd",
+  "status": "mechanism-smoke-passed-single-latest-prior-low-rank-recall",
+  "design": {
+    "seeds": [
+      12601,
+      12602,
+      12603,
+      12604,
+      12605,
+      12606,
+      12607,
+      12608,
+      12609
+    ],
+    "arms": [
+      "no-recall",
+      "identity-recall",
+      "rotate-one-coordinate-control",
+      "zero-content-equal-cost-control"
+    ],
+    "subjects_per_seed": 16,
+    "audit_ticks": 10,
+    "selector": "latest-retained-strictly-prior-event",
+    "recall_ingress_node": 9,
+    "recall_token_port": 30,
+    "recall_gate": 0.25
+  },
+  "mechanism_contract": {
+    "single_role_neutral_latest_prior_path": true,
+    "strict_prior_tick_only": true,
+    "real_parent_dag_recorded": true,
+    "graph_ingress_reconstruction_max_abs_residual": 5.960464477539063e-08,
+    "zero_content_equal_cost_control_exact": true,
+    "action_event_semantics_unchanged": true,
+    "random_retrieval_enabled": false,
+    "query_network_enabled": false,
+    "multi_head_enabled": false,
+    "retention_policy_change": false
+  },
+  "formal_support": {
+    "events_per_arm_per_seed": 160,
+    "subjects_per_seed": 16,
+    "ticks_per_seed": 10,
+    "parent_links_per_enabled_arm_per_seed": 144,
+    "root_events_per_enabled_arm_per_seed": 16
+  },
+  "dynamics": {
+    "identity_parent_child_cosine_median_across_seeds": {
+      "min": 0.9990810910420445,
+      "q25": 0.9990989360079254,
+      "median": 0.9991320601817367,
+      "q75": 0.999141415398167,
+      "max": 0.9997893416011894
+    },
+    "rotated_parent_child_cosine_median_across_seeds": {
+      "min": 0.999035711471171,
+      "q25": 0.9990444124762967,
+      "median": 0.9990732458482283,
+      "q75": 0.999102945969671,
+      "max": 0.9993086238038945
+    },
+    "interpretation": "The path performs exact prior-event content feedback, but the fixed rank-two bootstrap remains highly locally similar; this is an echo-risk observation, not evidence of a formed chain of thought."
+  },
+  "qualification": {
+    "formal_nine_seed_panel": true,
+    "minimal_forward_recall_mechanism_qualified": true,
+    "t4_audit_authorized": true,
+    "thought_chain_claim_authorized": false,
+    "delayed_information_utility_claim_authorized": false,
+    "distributed_cognitive_representation_claim_authorized": false,
+    "multi_head_or_retention_implementation_authorized": false
+  },
+  "authorized_claims": [
+    "one deterministic latest-prior ThoughtEvent can enter a declared graph ingress",
+    "the selected prior event is recorded as a real parent DAG edge",
+    "identity and transformed content effects are exactly reconstructable",
+    "enabled content controls have equal counted search/read/ingress cost",
+    "the readout-only ingress does not alter action or world-facing semantics"
+  ],
+  "forbidden_claims": [
+    "formed chain of thought",
+    "delayed-information utility",
+    "distributed cognition",
+    "semantic memory",
+    "language or object reference",
+    "usefulness inferred from reference count",
+    "retention or permanent memory qualification",
+    "multi-head or fixed retrieval-role qualification"
+  ],
+  "source_assessment_sha256": "30540e9d5d93b8987f042eef414b16eb6b28a435b997f4fecf95b81d7e9447dd"
+}

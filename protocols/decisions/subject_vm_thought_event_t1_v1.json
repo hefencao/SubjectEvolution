@@ -63,8 +63,8 @@
     "event_identity_and_token_join_required": true,
     "checkpoint_restore_identity_required": true,
     "clone_identity_required": true,
-    "integrity_assessment_sha256": "c6225166a4a2768221b3be0f48921f1b0fc7fbd1d4895fcd81b189c3d2779fa9",
-    "revalidated_project_version": "0.165.0"
+    "integrity_assessment_sha256": "5f876fc37278b3067ad1a8cd44f30b0aff30ac6cfe3ae7d80e3c8aaa9440e183",
+    "revalidated_project_version": "0.166.0"
   },
   "forbidden_in_t1": [
     "forward ThoughtEvent recall",

@@ -40,6 +40,34 @@ class SubjectVMThoughtEventAppendBatch:
     parent_weights: np.ndarray
 
 
+@dataclass(frozen=True)
+class SubjectVMThoughtEventRecallSelectionBatch:
+    """One deterministic latest-prior-event selection aligned with rows."""
+
+    tick: int
+    rows: np.ndarray
+    selected: np.ndarray
+    event_ids: np.ndarray
+    event_ticks: np.ndarray
+    raw_tokens: np.ndarray
+    recalled_tokens: np.ndarray
+    content_mode: str
+
+
+@dataclass
+class SubjectVMThoughtEventRecallAccounting:
+    recall_calls: int = 0
+    requested_rows: int = 0
+    candidate_slots_scanned: int = 0
+    selected_events: int = 0
+    read_coordinates: int = 0
+    ingress_paths: int = 0
+    counted_search_cost_units: int = 0
+    counted_read_cost_units: int = 0
+    counted_ingress_cost_units: int = 0
+    last_recall_tick: int = -1
+
+
 @dataclass
 class SubjectVMThoughtEventAccounting:
     emitted_events: int = 0
@@ -380,6 +408,84 @@ class SubjectVMThoughtEventArena:
             )
             accounting.last_event_tick = int(batch.tick)
 
+    def select_latest_prior(
+        self,
+        rows: np.ndarray,
+        *,
+        tick: int,
+        accounting: SubjectVMThoughtEventRecallAccounting,
+    ) -> SubjectVMThoughtEventRecallSelectionBatch:
+        """Select one latest retained event from a strictly earlier tick.
+
+        T3 deliberately has no learned query and consumes no random numbers.
+        Two non-identity content modes are declared experimental controls; the
+        selected parent identity and age stay unchanged.
+        """
+        recall_cfg = self.cfg.thought_event.recall
+        if not recall_cfg.enabled:
+            raise RuntimeError("subject_vm ThoughtEvent forward recall is not enabled")
+        normalized = self._rows(rows)
+        now = int(tick)
+        count = int(normalized.size)
+        selected = np.zeros(count, dtype=bool)
+        event_ids = np.zeros(count, dtype=np.uint64)
+        event_ticks = np.full(count, -1, dtype=np.int64)
+        raw_tokens = np.zeros((count, self.token_width), dtype=np.float32)
+        latest_allowed_tick = now - int(recall_cfg.min_age_ticks)
+        for index, row in enumerate(normalized.tolist()):
+            candidates = np.flatnonzero(
+                self.event_valid[row]
+                & (self.event_tick[row] <= np.int64(latest_allowed_tick))
+            )
+            if candidates.size == 0:
+                continue
+            ticks = self.event_tick[row, candidates]
+            newest_tick = np.max(ticks)
+            newest = candidates[ticks == newest_tick]
+            ids = self.event_id[row, newest]
+            slot = int(newest[int(np.argmax(ids))])
+            selected[index] = True
+            event_ids[index] = self.event_id[row, slot]
+            event_ticks[index] = self.event_tick[row, slot]
+            raw_tokens[index] = self.token[row, slot]
+
+        mode = str(recall_cfg.content_mode)
+        if mode == "identity":
+            recalled = raw_tokens.copy()
+        elif mode == "rotate-one-coordinate-control":
+            recalled = np.roll(raw_tokens, shift=1, axis=1)
+        elif mode == "zero-content-control":
+            recalled = np.zeros_like(raw_tokens)
+        else:  # configuration validation should make this unreachable
+            raise ValueError("unsupported subject_vm ThoughtEvent recall content mode")
+        recalled[~selected] = 0.0
+
+        accounting.recall_calls += 1
+        accounting.requested_rows += count
+        accounting.candidate_slots_scanned += count * self.capacity
+        accounting.selected_events += int(np.count_nonzero(selected))
+        accounting.read_coordinates += int(np.count_nonzero(selected)) * self.token_width
+        accounting.counted_search_cost_units += (
+            count
+            * self.capacity
+            * int(recall_cfg.search_per_slot_cost_units)
+        )
+        accounting.counted_read_cost_units += int(np.count_nonzero(selected)) * (
+            int(recall_cfg.read_base_cost_units)
+            + self.token_width * int(recall_cfg.read_per_coordinate_cost_units)
+        )
+        accounting.last_recall_tick = now
+        return SubjectVMThoughtEventRecallSelectionBatch(
+            tick=now,
+            rows=normalized.copy(),
+            selected=selected,
+            event_ids=event_ids,
+            event_ticks=event_ticks,
+            raw_tokens=raw_tokens,
+            recalled_tokens=recalled,
+            content_mode=mode,
+        )
+
     def latest_slot(self, row: int) -> int | None:
         normalized = self._rows(np.asarray([row], dtype=np.int32))
         valid = np.flatnonzero(self.event_valid[int(normalized[0])])
@@ -515,8 +621,10 @@ class SubjectVMThoughtEventArena:
             "stored_parent_links": int(np.sum(self.parent_count, dtype=np.uint64)),
             "objective_fact_fields": False,
             "action_fields": False,
-            "forward_recall_enabled": False,
-            "runtime_feedback_enabled": False,
+            "forward_recall_enabled": bool(self.cfg.thought_event_recall_enabled),
+            "runtime_feedback_enabled": bool(self.cfg.thought_event_recall_enabled),
+            "recall_schema": self.cfg.thought_event.recall.schema,
+            "recall_content_mode": self.cfg.thought_event.recall.content_mode,
             "counted_cost_only": True,
         }
 
@@ -526,4 +634,6 @@ __all__ = [
     "SubjectVMThoughtEventAccounting",
     "SubjectVMThoughtEventAppendBatch",
     "SubjectVMThoughtEventArena",
+    "SubjectVMThoughtEventRecallAccounting",
+    "SubjectVMThoughtEventRecallSelectionBatch",
 ]

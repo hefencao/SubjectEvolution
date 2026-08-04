@@ -25,6 +25,8 @@ from .thought_event import (
     SubjectVMThoughtEventAccounting,
     SubjectVMThoughtEventAppendBatch,
     SubjectVMThoughtEventArena,
+    SubjectVMThoughtEventRecallAccounting,
+    SubjectVMThoughtEventRecallSelectionBatch,
 )
 
 RUNTIME_SCHEMA_V1 = "se-subject-vm-runtime-stage1-v1"
@@ -38,7 +40,8 @@ RUNTIME_SCHEMA_V8 = "se-subject-vm-runtime-v8"
 RUNTIME_SCHEMA_V9 = "se-subject-vm-runtime-v9"
 RUNTIME_SCHEMA_V10 = "se-subject-vm-runtime-v10"
 RUNTIME_SCHEMA_V11 = "se-subject-vm-runtime-v11"
-RUNTIME_SCHEMA = "se-subject-vm-runtime-v12"
+RUNTIME_SCHEMA_V12 = "se-subject-vm-runtime-v12"
+RUNTIME_SCHEMA = "se-subject-vm-runtime-v13"
 
 
 @dataclass(frozen=True)
@@ -180,6 +183,7 @@ class SubjectVMActivationAccounting:
     cross_region_transmission_units: int = 0
     output_contribution_units: int = 0
     token_contribution_units: int = 0
+    recall_ingress_contribution_units: int = 0
     last_activation_tick: int = -1
 
     def record(self, result: SubjectVMActivationResult) -> None:
@@ -192,6 +196,7 @@ class SubjectVMActivationAccounting:
         self.cross_region_transmission_units += usage.cross_region_transmissions
         self.output_contribution_units += usage.output_contributions
         self.token_contribution_units += usage.token_contributions
+        self.recall_ingress_contribution_units += usage.recall_ingress_contributions
         self.last_activation_tick = usage.tick
 
 
@@ -236,6 +241,7 @@ class SubjectVMRuntime:
         activation_accounting: SubjectVMActivationAccounting | None = None,
         trace_accounting: SubjectVMTraceAccounting | None = None,
         thought_event_accounting: SubjectVMThoughtEventAccounting | None = None,
+        thought_event_recall_accounting: SubjectVMThoughtEventRecallAccounting | None = None,
         eligibility_accounting: SubjectVMEligibilityAccounting | None = None,
     ) -> None:
         self.cfg = cfg
@@ -253,11 +259,18 @@ class SubjectVMRuntime:
         self.thought_event_accounting = (
             thought_event_accounting or SubjectVMThoughtEventAccounting()
         )
+        self.thought_event_recall_accounting = (
+            thought_event_recall_accounting
+            or SubjectVMThoughtEventRecallAccounting()
+        )
         self.eligibility_accounting = (
             eligibility_accounting or SubjectVMEligibilityAccounting()
         )
         self._pending_thought_tokens: SubjectVMThoughtTokenBatch | None = None
         self._pending_target_candidates: SubjectVMTargetCandidateBatch | None = None
+        self._pending_thought_event_recall: tuple[
+            SubjectVMThoughtEventRecallSelectionBatch, np.ndarray
+        ] | None = None
         if cfg.enabled != (storage is not None):
             raise ValueError("subject_vm runtime enabled/storage state disagrees")
         if cfg.trace_enabled != (trace_storage is not None):
@@ -357,6 +370,10 @@ class SubjectVMRuntime:
     @property
     def thought_event_enabled(self) -> bool:
         return self.cfg.thought_event_enabled
+
+    @property
+    def thought_event_recall_enabled(self) -> bool:
+        return self.cfg.thought_event_recall_enabled
 
     @property
     def eligibility_enabled(self) -> bool:
@@ -469,7 +486,11 @@ class SubjectVMRuntime:
     ) -> SubjectVMActivationResult:
         if not self.activation_enabled or self.storage is None:
             raise RuntimeError("subject_vm activation is not enabled")
-        if self._pending_thought_tokens is not None or self._pending_target_candidates is not None:
+        if (
+            self._pending_thought_tokens is not None
+            or self._pending_target_candidates is not None
+            or self._pending_thought_event_recall is not None
+        ):
             raise RuntimeError("subject_vm prior activation metadata was not committed")
         if self.live_write_ledger is not None:
             normalized_rows = np.asarray(rows, dtype=np.int32)
@@ -489,6 +510,36 @@ class SubjectVMRuntime:
                 self.live_write_ledger,
                 rows=np.asarray(contribution_trace_rows, dtype=np.int32),
             )
+        recall_selection = None
+        recall_parent_weights = None
+        if self.thought_event_recall_enabled:
+            if self.thought_event_arena is None:
+                raise RuntimeError("subject_vm recall requires ThoughtEvent arena")
+            recall_selection = self.thought_event_arena.select_latest_prior(
+                np.asarray(rows, dtype=np.int32),
+                tick=int(tick),
+                accounting=self.thought_event_recall_accounting,
+            )
+            recall_parent_weights = np.zeros(recall_selection.rows.size, dtype=np.float32)
+            for index, row in enumerate(recall_selection.rows.tolist()):
+                paths = np.flatnonzero(
+                    self.storage.node_expressed[row]
+                    & (self.storage.node_recall_port[row] >= 0)
+                )
+                if paths.size > 1:
+                    raise ValueError("T3 supports at most one recall ingress path")
+                if paths.size == 1:
+                    recall_parent_weights[index] = self.storage.node_recall_gate[
+                        row, int(paths[0])
+                    ]
+            active_ingress = recall_selection.selected & (recall_parent_weights != 0.0)
+            ingress_count = int(np.count_nonzero(active_ingress))
+            self.thought_event_recall_accounting.ingress_paths += ingress_count
+            self.thought_event_recall_accounting.counted_ingress_cost_units += (
+                ingress_count
+                * int(self.cfg.thought_event.recall.ingress_per_path_cost_units)
+            )
+
         result = execute_activation(
             self.storage,
             rows=rows,
@@ -497,6 +548,18 @@ class SubjectVMRuntime:
             output_width=output_width,
             contribution_trace_rows=contribution_trace_rows,
             temporary_write_lineage_by_row=trace_lineage,
+            recalled_tokens=(
+                None if recall_selection is None else recall_selection.recalled_tokens
+            ),
+            recalled_event_ids=(
+                None if recall_selection is None else recall_selection.event_ids
+            ),
+            recalled_event_ticks=(
+                None if recall_selection is None else recall_selection.event_ticks
+            ),
+            recall_content_mode=(
+                None if recall_selection is None else recall_selection.content_mode
+            ),
         )
         self.activation_accounting.record(result)
         if result.eligibility_usage is not None:
@@ -510,6 +573,11 @@ class SubjectVMRuntime:
         self._pending_target_candidates = (
             result.target_candidates if self._pending_thought_tokens is not None else None
         )
+        self._pending_thought_event_recall = (
+            None
+            if recall_selection is None or recall_parent_weights is None
+            else (recall_selection, recall_parent_weights)
+        )
         return result
 
     def commit_objective_events(self, batch: SubjectVMObjectiveEventBatch) -> None:
@@ -518,6 +586,7 @@ class SubjectVMRuntime:
         if self.evaluation_ledger is not None:
             self.evaluation_ledger.observe(batch)
         if self._pending_thought_tokens is None:
+            self._pending_thought_event_recall = None
             if self.evaluation_ledger is None:
                 raise RuntimeError("subject_vm objective event has no pending thought token")
             return
@@ -537,6 +606,23 @@ class SubjectVMRuntime:
                 int(batch.rows.size),
                 int(self.cfg.thought_event.max_parent_count),
             )
+            parent_count = np.zeros(batch.rows.size, dtype=np.uint8)
+            parent_event_ids = np.zeros(parent_shape, dtype=np.uint64)
+            parent_weights = np.zeros(parent_shape, dtype=np.float32)
+            if self._pending_thought_event_recall is not None:
+                recall_selection, recall_parent_weights = self._pending_thought_event_recall
+                batch_rows = np.asarray(batch.rows, dtype=np.int32)
+                if not np.array_equal(batch_rows, recall_selection.rows):
+                    raise RuntimeError("subject_vm recall rows drifted before event commit")
+                emitted = np.asarray(self._pending_thought_tokens.emitted, dtype=bool)
+                linked = (
+                    recall_selection.selected
+                    & emitted
+                    & (recall_parent_weights != 0.0)
+                )
+                parent_count[linked] = np.uint8(1)
+                parent_event_ids[linked, 0] = recall_selection.event_ids[linked]
+                parent_weights[linked, 0] = recall_parent_weights[linked]
             self.thought_event_arena.append(
                 SubjectVMThoughtEventAppendBatch(
                     tick=int(batch.tick),
@@ -550,9 +636,9 @@ class SubjectVMRuntime:
                     tokens=np.asarray(
                         self._pending_thought_tokens.tokens, dtype=np.float32
                     ),
-                    parent_count=np.zeros(batch.rows.size, dtype=np.uint8),
-                    parent_event_ids=np.zeros(parent_shape, dtype=np.uint64),
-                    parent_weights=np.zeros(parent_shape, dtype=np.float32),
+                    parent_count=parent_count,
+                    parent_event_ids=parent_event_ids,
+                    parent_weights=parent_weights,
                 ),
                 owner_entity_ids=self.storage.owner_entity_id,
                 owner_subject_ids=self.storage.owner_subject_id,
@@ -560,10 +646,12 @@ class SubjectVMRuntime:
             )
         self._pending_thought_tokens = None
         self._pending_target_candidates = None
+        self._pending_thought_event_recall = None
 
     def discard_pending_thought_tokens(self) -> None:
         self._pending_thought_tokens = None
         self._pending_target_candidates = None
+        self._pending_thought_event_recall = None
 
     def inherit_births(
         self,
@@ -650,7 +738,11 @@ class SubjectVMRuntime:
     def snapshot_state(self) -> dict[str, Any] | None:
         if self.storage is None:
             return None
-        if self._pending_thought_tokens is not None or self._pending_target_candidates is not None:
+        if (
+            self._pending_thought_tokens is not None
+            or self._pending_target_candidates is not None
+            or self._pending_thought_event_recall is not None
+        ):
             raise RuntimeError("subject_vm cannot checkpoint a partial activation phase")
         payload: dict[str, Any] = {
             "schema": RUNTIME_SCHEMA,
@@ -670,6 +762,10 @@ class SubjectVMRuntime:
             payload["thought_event_arena"] = (
                 self.thought_event_arena.snapshot_state()
             )
+            if self.thought_event_recall_enabled:
+                payload["thought_event_recall_accounting"] = asdict(
+                    self.thought_event_recall_accounting
+                )
         if self.eligibility_enabled:
             payload["eligibility_accounting"] = asdict(
                 self.eligibility_accounting
@@ -709,6 +805,7 @@ class SubjectVMRuntime:
         schema = payload.get("schema")
         if schema not in {
             RUNTIME_SCHEMA,
+            RUNTIME_SCHEMA_V12,
             RUNTIME_SCHEMA_V11,
             RUNTIME_SCHEMA_V10,
             RUNTIME_SCHEMA_V9,
@@ -751,7 +848,8 @@ class SubjectVMRuntime:
             cfg.evaluation_enabled and schema == RUNTIME_SCHEMA_V10
         )
         compatibility_empty_thought_event = (
-            cfg.thought_event_enabled and schema != RUNTIME_SCHEMA
+            cfg.thought_event_enabled
+            and schema not in {RUNTIME_SCHEMA, RUNTIME_SCHEMA_V12}
         )
         if schema == RUNTIME_SCHEMA_V1:
             expected_contract = STAGE1_DEVICE_CONTRACT.schema
@@ -855,6 +953,17 @@ class SubjectVMRuntime:
                     }
                 )
             thought_event_arena.validate_owners(alive, entity_ids, subject_ids)
+        thought_event_recall_accounting = SubjectVMThoughtEventRecallAccounting()
+        if cfg.thought_event_recall_enabled and schema == RUNTIME_SCHEMA:
+            recall_raw = payload.get("thought_event_recall_accounting", {})
+            thought_event_recall_accounting = SubjectVMThoughtEventRecallAccounting(
+                **{
+                    key: int(recall_raw.get(key, default))
+                    for key, default in asdict(
+                        SubjectVMThoughtEventRecallAccounting()
+                    ).items()
+                }
+            )
         if cfg.eligibility_enabled:
             if compatibility_empty_eligibility:
                 restore_mode = (
@@ -916,6 +1025,7 @@ class SubjectVMRuntime:
             activation_accounting=activation_accounting,
             trace_accounting=trace_accounting,
             thought_event_accounting=thought_event_accounting,
+            thought_event_recall_accounting=thought_event_recall_accounting,
             eligibility_accounting=eligibility_accounting,
         )
 
@@ -928,6 +1038,7 @@ class SubjectVMRuntime:
             "activation_enabled": self.activation_enabled,
             "trace_enabled": self.trace_enabled,
             "thought_event_enabled": self.thought_event_enabled,
+            "thought_event_recall_enabled": self.thought_event_recall_enabled,
             "eligibility_enabled": self.eligibility_enabled,
             "association_enabled": self.association_enabled,
             "modulation_enabled": self.modulation_enabled,
@@ -942,6 +1053,9 @@ class SubjectVMRuntime:
             "activation_accounting": asdict(self.activation_accounting),
             "trace_accounting": asdict(self.trace_accounting),
             "thought_event_accounting": asdict(self.thought_event_accounting),
+            "thought_event_recall_accounting": asdict(
+                self.thought_event_recall_accounting
+            ),
             "eligibility_accounting": asdict(self.eligibility_accounting),
             "trace_storage": (
                 None if self.trace_storage is None else self.trace_storage.diagnostics()
@@ -961,7 +1075,11 @@ class SubjectVMRuntime:
         }
 
     def clone(self) -> "SubjectVMRuntime":
-        if self._pending_thought_tokens is not None or self._pending_target_candidates is not None:
+        if (
+            self._pending_thought_tokens is not None
+            or self._pending_target_candidates is not None
+            or self._pending_thought_event_recall is not None
+        ):
             raise RuntimeError("subject_vm cannot clone a partial activation phase")
         return type(self)(
             self.cfg,
@@ -989,6 +1107,9 @@ class SubjectVMRuntime:
             thought_event_accounting=SubjectVMThoughtEventAccounting(
                 **asdict(self.thought_event_accounting)
             ),
+            thought_event_recall_accounting=SubjectVMThoughtEventRecallAccounting(
+                **asdict(self.thought_event_recall_accounting)
+            ),
             eligibility_accounting=SubjectVMEligibilityAccounting(
                 **asdict(self.eligibility_accounting)
             ),
@@ -1008,6 +1129,7 @@ __all__ = [
     "RUNTIME_SCHEMA_V9",
     "RUNTIME_SCHEMA_V10",
     "RUNTIME_SCHEMA_V11",
+    "RUNTIME_SCHEMA_V12",
     "STAGE1_DEVICE_CONTRACT",
     "STAGE2_DEVICE_CONTRACT",
     "STAGE3_DEVICE_CONTRACT",

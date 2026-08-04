@@ -1,0 +1,82 @@
+{
+  "schema": "se-subject-vm-thought-event-t3-decision-v1",
+  "decision_id": "subject-vm-thought-event-t3-minimal-forward-recall",
+  "project_version": "0.166.0",
+  "task_type": "EVOLVE-SUBJECT",
+  "status": "frozen-minimal-forward-recall-mechanism-smoke-passed",
+  "study": "studies/d1z_subject_vm_thought_event_t3_recall_v1/study.json",
+  "design": {
+    "seeds": [
+      12601,
+      12602,
+      12603,
+      12604,
+      12605,
+      12606,
+      12607,
+      12608,
+      12609
+    ],
+    "source_ticks": 2,
+    "audit_ticks": 10,
+    "subjects_per_seed": 16,
+    "events_per_arm_per_seed": 160,
+    "selector": "latest-retained-strictly-prior-event",
+    "recall_ingress_node": 9,
+    "recall_token_port": 30,
+    "recall_gate": 0.25,
+    "arms": [
+      "no-recall",
+      "identity-recall",
+      "rotate-one-coordinate-control",
+      "zero-content-equal-cost-control"
+    ]
+  },
+  "required_identity": {
+    "event_identity": true,
+    "action_identity": true,
+    "sampled_probability_identity": true,
+    "action_potential_identity": true,
+    "zero_content_token_identity": true,
+    "content_effect_only_coordinate_30": true
+  },
+  "mechanism_contract": {
+    "single_role_neutral_latest_prior_path": true,
+    "strict_prior_tick_only": true,
+    "real_parent_dag_recorded": true,
+    "graph_ingress_reconstruction_max_abs_residual": 5.960464477539063e-08,
+    "zero_content_equal_cost_control_exact": true,
+    "action_event_semantics_unchanged": true,
+    "random_retrieval_enabled": false,
+    "query_network_enabled": false,
+    "multi_head_enabled": false,
+    "retention_policy_change": false
+  },
+  "formal_assessment": {
+    "assessment_sha256": "30540e9d5d93b8987f042eef414b16eb6b28a435b997f4fecf95b81d7e9447dd",
+    "study_sha256": "d6ff7dbbac35425c08ec2db6ef458c4be3e3d68d93a7322e15c89e6a2cf55d52",
+    "seed_count": 9,
+    "parent_links_per_enabled_arm_per_seed": 144,
+    "root_events_per_enabled_arm_per_seed": 16,
+    "maximum_ingress_reconstruction_residual": 5.960464477539063e-08,
+    "identity_parent_child_cosine_median_range": [
+      0.9990810910420445,
+      0.9997893416011894
+    ],
+    "t4_audit_authorized": true,
+    "thought_chain_claim_authorized": false,
+    "delayed_information_utility_claim_authorized": false,
+    "multi_head_or_retention_implementation_authorized": false
+  },
+  "claims_not_authorized": [
+    "formed chain of thought",
+    "delayed-information utility",
+    "distributed cognition",
+    "semantic memory",
+    "language or object reference",
+    "usefulness inferred from reference count",
+    "retention or permanent memory qualification",
+    "multi-head or fixed retrieval-role qualification"
+  ],
+  "next_boundary": "T4 delayed-information utility and lineage-echo audit using the same single read path before any multi-head or retention mechanism"
+}

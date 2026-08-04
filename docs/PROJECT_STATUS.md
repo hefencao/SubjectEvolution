@@ -1,16 +1,16 @@
 # SubjectEvolution 当前项目状态
 
-版本：**0.165.0**
+版本：**0.166.0**
 
 ## 当前迭代身份
 
-- 进度类型：**`[BRANCH-EXP]` 分支实验**
-- Git 标题：**`[BRANCH-EXP] subject-vm: audit pre-recall ThoughtEvent degeneration`**
-- Git 分支：**`branch-exp/thought-event-t2-degeneration`**
+- 进度类型：**`[EVOLVE-SUBJECT]` 主体能力演化代码**
+- Git 标题：**`[EVOLVE-SUBJECT] subject-vm: introduce minimal forward ThoughtEvent recall`**
+- Git 分支：**`evolve-subject/thought-event-t3-recall`**
 - 工作流档位：**`SCIENTIFIC-FREEZE` + `RELEASE-HANDOFF`**
 - 当前冻结科学前沿：**Stage 3C-42**
-- 当前完成边界：**T2 前向 recall 前 ThoughtEvent 退化审计**
-- 下一项项目边界：**T3 最小前向 recall 机制 smoke**
+- 当前完成边界：**T3 最小前向 ThoughtEvent recall 机制 smoke**
+- 下一项项目边界：**T4 延迟信息效用与 lineage echo 只读审计**
 
 ## 类型化任务进度树
 
@@ -24,9 +24,9 @@ SubjectEvolution
 │       └── [OPEN] SG-09 history/association/modulation→temporary-write proposal
 ├── [BRANCH-EXP] 分支实验
 │   ├── [DONE] T2：前向 recall 前 ThoughtEvent 退化审计
-│   ├── [NEXT] T3：最小前向 recall 机制 smoke
+│   ├── [NEXT] T4：延迟信息效用与 lineage echo 审计
 │   ├── [PARKED] 低代价/低扰动 action
-│   └── [PARKED] read-head diversity、temperature 与 retrieval-role 对照
+│   └── [BLOCKED] multi-head、temperature、retrieval-role 与 retention 对照
 ├── [PARAM-EXP] 代码参数探索
 │   └── 当前无活动项
 ├── [EVOLVE-ENV] 环境/底物演化代码
@@ -34,8 +34,9 @@ SubjectEvolution
 │   └── [OPEN] 非对称可观测与因子化语言资格环境
 ├── [EVOLVE-SUBJECT] 主体能力演化代码
 │   ├── [DONE] T1：统一 ThoughtEvent schema、identity、parent DAG 与 bounded arena
-│   ├── [QUALIFIED] T3：仅允许最小前向 recall 机制 smoke
-│   ├── [BLOCKED] 分布式思维链资格与回声治理
+│   ├── [DONE] T3：单一路径最近严格历史事件 recall 机制 smoke
+│   ├── [QUALIFIED] T4：延迟信息效用与 lineage echo 只读审计
+│   ├── [BLOCKED] 分布式思维链资格、多头读取与连续 retention
 │   ├── [BLOCKED] communication interface 与 SignalEvent mapping
 │   └── [BLOCKED] topology/readout/addressing evolution
 ├── [ENGINEERING] 运行时、工具、测试与打包
@@ -47,37 +48,39 @@ SubjectEvolution
     └── [DONE] ThoughtEvent、思维链、通信和语言研究合同
 ```
 
-## T2 冻结边界
+## T3 冻结边界
 
-T2 使用 9 个新 seed（12501～12509）、16 个稳定主体和 12 tick 审计窗口，对比两条 action-identical 只读臂：
+T3 使用 9 个新 seed（12601～12609）、16 个稳定主体和 10 tick 审计窗口，冻结四臂：
 
-- `duplicate-coordinate-control`：thought readout 使用 `port 11 + port 11`；
-- `rank-two-candidate`：thought readout 使用 `port 11 + port 7`。
+- `no-recall`：完全关闭 recall；
+- `identity-recall`：读取最近一个严格早于当前 tick 的 ThoughtEvent 原内容；
+- `rotate-one-coordinate-control`：parent identity、age 与成本相同，但循环置换 token coordinate；
+- `zero-content-equal-cost-control`：selector、parent DAG 和计数成本相同，读入零内容。
 
-两臂的 event identity、action、sampled probability 和 action potentials 完全一致，只允许 token coordinate 30 不同。
+Recall 只通过 fixed-bootstrap node 9 的 graph-defined ingress 进入 readout-only 路径；node 9 不拥有 action output。冻结结果：
 
-冻结结果：
+- 每 enabled arm/seed 形成 144 条真实 parent link，16 个首事件为 root；
+- 所有 parent 均严格来自前一 tick，未读取同 tick 新事件；
+- identity、rotate 与 zero 三臂的搜索、读取、ingress 和 parent-link 计数成本完全一致；
+- zero-content 与 no-recall 的 ThoughtEvent token 完全一致；
+- identity 与 rotate 只改变 token coordinate 30，并可由 parent token 与 `0.25` ingress gate 重建；
+- 最大重建残差为 `5.960464477539063e-08`；
+- 四臂 event identity、action、sampled probability 与 action potentials 完全一致；
+- identity parent-child cosine 的跨 seed 中位数范围为 `0.999081～0.999789`。
 
-- 负对照每 seed centered rank 均为 1，精确重复比例为 95.83%～98.44%；
-- rank-two 候选每 seed 192/192 个事件精确不同，centered rank 均为 2；
-- rank-two 候选连续同主体 token 的 cosine 中位数为 0.999049～0.999097；
-- 每 arm/seed 均为 192 次 emission、48 次 expiry、0 次 overwrite、144 个最终保留事件；
-- runtime parent_count 保持 0。
-
-因此 T1 arena 和退化诊断获得资格，但当前 fixed bootstrap 仍是低秩、高局部相似的工程表示。T2 不支持“已形成思维链”“已形成分布式认知表示”或“已形成语言”。
+因此 T3 证明最小前向 recall、真实 parent DAG、等成本 control、checkpoint/clone 和 graph ingress 链路可以运行；但 fixed-bootstrap token 仍低秩且高度局部相似。T3 不证明延迟信息效用、思维链、分布式认知、语义记忆、语言或长期 retention。
 
 ## 下一实现边界
 
-T3 只允许最小机制 smoke：
+T4 只能在保持同一单一路径机制的前提下，审计：
 
-- 单一、无固定认知角色的只读路径；
-- 只读取前一 tick 以前已提交的 ThoughtEvent；
-- parent DAG 记录真实 recalled parent；
-- 与无 recall、token 内容打乱及等成本 control 比较；
-- 保持 action、Objective-Fact、reward、confidence 与语言边界隔离；
-- 不授权 retention、multi-head、temperature、novelty route 或永久写入。
+- recall 是否携带当前 observation 中已缺失的延迟信息；
+- identity recall 相对内容置换、零内容和 no-recall 是否具有内容特异效应；
+- 最新事件链是否形成机械回声、lineage 垄断或 observation 压制；
+- parent-child 加工是否只是 coordinate 30 的稳定自回灌；
+- 使用相同成本预算时，下游信息与行为差异是否可复现。
 
-T3 的目的只是证明 recalled ThoughtEvent 能以有界、可审计且非退化的方式进入统一图，并不证明思维链已经出现。
+T4 之前不得实现 multi-head、temperature、novelty/contrast role、reference-count retention、永久保留或语言接口。
 
 ## 语言与跨世界研究边界
 
@@ -102,4 +105,4 @@ T3 的目的只是证明 recalled ThoughtEvent 能以有界、可审计且非退
 | 当前科学问题 | `docs/SCIENTIFIC_ISSUES.md` |
 | Stage 3C 冻结结果 | `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` |
 | ThoughtEvent 冻结结果 | `docs/results/THOUGHT_EVENT_RESULTS.md` |
-| 当前迭代记录 | `docs/迭代/v0.165_ThoughtEvent_T2退化审计.md` |
+| 当前迭代记录 | `docs/迭代/v0.166_ThoughtEvent_T3最小前向recall.md` |

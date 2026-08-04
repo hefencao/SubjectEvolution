@@ -162,6 +162,9 @@ def bootstrap_profile(
     node0_visible_readout_enabled: bool = False,
     readout_input_port: int | None = None,
     second_readout_input_port: int | None = None,
+    recall_ingress_node: int | None = None,
+    recall_token_port: int | None = None,
+    recall_gate: float = 0.0,
 ) -> dict[str, Any]:
     if target_family not in _BOOTSTRAP_TARGET_FAMILY_PORTS:
         raise ValueError("unsupported fixed bootstrap target family")
@@ -169,6 +172,19 @@ def bootstrap_profile(
         raise ValueError("edge carrier shaping is only valid for edge_forward_gate")
     if second_readout_input_port is not None and readout_input_port is None:
         raise ValueError("second readout requires the primary readout-only node")
+    if recall_ingress_node is not None:
+        recall_ingress_node = int(recall_ingress_node)
+        if recall_token_port is None:
+            raise ValueError("recall ingress requires a token port")
+        recall_token_port = int(recall_token_port)
+        if not 0 <= recall_token_port < 32:
+            raise ValueError("recall token port must be in [0, 31]")
+        if recall_ingress_node < 0:
+            raise ValueError("recall ingress node must be non-negative")
+        if not np.isfinite(float(recall_gate)) or float(recall_gate) == 0.0:
+            raise ValueError("recall ingress gate must be finite and non-zero")
+    elif recall_token_port is not None or float(recall_gate) != 0.0:
+        raise ValueError("recall token port/gate require an ingress node")
     if readout_input_port is not None:
         readout_input_port = int(readout_input_port)
         if not 0 <= readout_input_port < 16:
@@ -246,6 +262,15 @@ def bootstrap_profile(
             "trace_gate": 1.0 if node0_visible_readout_enabled else 0.0,
             "source": "existing-action-producing-node-state",
             "classification": "replaceable-fixed-bootstrap-readout-bias",
+            "value_semantics": None,
+        },
+        "thought_event_recall_ingress": {
+            "enabled": recall_ingress_node is not None,
+            "node_index": recall_ingress_node,
+            "token_port": recall_token_port,
+            "gate": float(recall_gate),
+            "changes_action_output": False,
+            "classification": "replaceable-fixed-bootstrap-recall-ingress-bias",
             "value_semantics": None,
         },
         "objective_value_interpretation": None,
@@ -370,6 +395,9 @@ def prime_fixed_bootstrap_graph(
     node0_visible_readout_enabled: bool = False,
     readout_input_port: int | None = None,
     second_readout_input_port: int | None = None,
+    recall_ingress_node: int | None = None,
+    recall_token_port: int | None = None,
+    recall_gate: float = 0.0,
 ) -> dict[str, Any]:
     """Install the explicit fixed bootstrap graph into a quiescent source.
 
@@ -382,6 +410,8 @@ def prime_fixed_bootstrap_graph(
         raise ValueError("short paired study requires allocated Subject VM storage")
     if second_readout_input_port is not None and readout_input_port is None:
         raise ValueError("second readout requires the primary readout-only node")
+    if recall_ingress_node is not None and not runtime.thought_event_recall_enabled:
+        raise ValueError("recall ingress requires enabled ThoughtEvent recall")
     required_nodes = 10 if second_readout_input_port is not None else 9
     if readout_input_port is not None and storage.node_capacity < required_nodes:
         capacity_label = "nine" if required_nodes == 9 else str(required_nodes)
@@ -458,6 +488,16 @@ def prime_fixed_bootstrap_graph(
         storage.node_trace_port[rows, 9] = np.int16(30)
         storage.node_trace_gate[rows, 9] = np.float32(1.0)
 
+    if recall_ingress_node is not None:
+        node = int(recall_ingress_node)
+        port = int(recall_token_port) if recall_token_port is not None else -1
+        if node >= storage.node_capacity or not np.all(storage.node_expressed[rows, node]):
+            raise ValueError("recall ingress requires an expressed bootstrap node")
+        if not 0 <= port < storage.cfg.trace.token_width:
+            raise ValueError("recall ingress token port is outside token width")
+        storage.node_recall_port[rows, node] = np.int16(port)
+        storage.node_recall_gate[rows, node] = np.float32(recall_gate)
+
     storage.edge_expressed[rows, 0] = True
     storage.edge_source[rows, 0] = np.int32(0)
     storage.edge_target[rows, 0] = np.int32(0)
@@ -481,6 +521,9 @@ def prime_fixed_bootstrap_graph(
         node0_visible_readout_enabled=node0_visible_readout_enabled,
         readout_input_port=readout_input_port,
         second_readout_input_port=second_readout_input_port,
+        recall_ingress_node=recall_ingress_node,
+        recall_token_port=recall_token_port,
+        recall_gate=recall_gate,
     )
     record = {
         "schema": BOOTSTRAP_LINEAGE_SCHEMA,

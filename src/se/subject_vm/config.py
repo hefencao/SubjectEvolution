@@ -46,6 +46,13 @@ SUBJECT_VM_EVALUATION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_EVALUATION_SCHEMA = "objective-score-free-window-v1"
 SUBJECT_VM_THOUGHT_EVENT_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_THOUGHT_EVENT_SCHEMA = "unified-thought-event-arena-t1-v1"
+SUBJECT_VM_THOUGHT_EVENT_RECALL_DISABLED_SCHEMA = "disabled"
+SUBJECT_VM_THOUGHT_EVENT_RECALL_SCHEMA = "single-latest-prior-thought-event-recall-v1"
+SUBJECT_VM_THOUGHT_EVENT_RECALL_CONTENT_MODES = (
+    "identity",
+    "rotate-one-coordinate-control",
+    "zero-content-control",
+)
 SUBJECT_VM_MODULATION_FACT_WIDTH = 21
 SUBJECT_VM_MODULATION_TARGET_NAMES = (
     "node-bias",
@@ -259,8 +266,29 @@ class SubjectVMEvaluationConfig:
 
 
 @dataclass(frozen=True)
+class SubjectVMThoughtEventRecallConfig:
+    """T3 single-path read of one already-committed prior ThoughtEvent.
+
+    The selector is deliberately minimal and deterministic: latest retained
+    event from a strictly earlier tick.  ``content_mode`` includes two declared
+    experimental controls, not cognitive roles.  Cost units are count-only
+    instrumentation and are never interpreted as reward or confidence.
+    """
+
+    schema: str = SUBJECT_VM_THOUGHT_EVENT_RECALL_DISABLED_SCHEMA
+    enabled: bool = False
+    content_mode: str = "identity"
+    min_age_ticks: int = 0
+    max_ingress_paths: int = 0
+    search_per_slot_cost_units: int = 0
+    read_base_cost_units: int = 0
+    read_per_coordinate_cost_units: int = 0
+    ingress_per_path_cost_units: int = 0
+
+
+@dataclass(frozen=True)
 class SubjectVMThoughtEventConfig:
-    """T1 bounded immutable ThoughtEvent arena without forward recall.
+    """Bounded immutable ThoughtEvent arena with optional T3 forward recall.
 
     Cost units are count-only instrumentation.  They are not debited from
     energy and do not define value, importance, confidence, or retention
@@ -276,6 +304,7 @@ class SubjectVMThoughtEventConfig:
     emission_per_coordinate_cost_units: int = 0
     parent_link_cost_units: int = 0
     retention_per_event_tick_cost_units: int = 0
+    recall: SubjectVMThoughtEventRecallConfig = SubjectVMThoughtEventRecallConfig()
 
 
 @dataclass(frozen=True)
@@ -405,6 +434,10 @@ class SubjectVMConfig:
     @property
     def thought_event_enabled(self) -> bool:
         return bool(self.thought_event.enabled)
+
+    @property
+    def thought_event_recall_enabled(self) -> bool:
+        return self.thought_event_enabled and bool(self.thought_event.recall.enabled)
 
 
 def _scan_forbidden_keys(value: Any, path: str = "subject_vm") -> None:
@@ -681,6 +714,38 @@ def _load_evaluation_config(raw: Any) -> SubjectVMEvaluationConfig:
     )
 
 
+def _load_thought_event_recall_config(raw: Any) -> SubjectVMThoughtEventRecallConfig:
+    if raw is None:
+        return SubjectVMThoughtEventRecallConfig()
+    if not isinstance(raw, Mapping):
+        raise ValueError("subject_vm.thought_event.recall must be an object")
+    allowed = {
+        "schema",
+        "enabled",
+        "content_mode",
+        "min_age_ticks",
+        "max_ingress_paths",
+        "search_per_slot_cost_units",
+        "read_base_cost_units",
+        "read_per_coordinate_cost_units",
+        "ingress_per_path_cost_units",
+    }
+    unknown = sorted(set(raw) - allowed)
+    if unknown:
+        raise ValueError(f"unknown subject_vm.thought_event.recall fields: {unknown}")
+    return SubjectVMThoughtEventRecallConfig(
+        schema=str(raw.get("schema", SUBJECT_VM_THOUGHT_EVENT_RECALL_DISABLED_SCHEMA)),
+        enabled=bool(raw.get("enabled", False)),
+        content_mode=str(raw.get("content_mode", "identity")),
+        min_age_ticks=int(raw.get("min_age_ticks", 0)),
+        max_ingress_paths=int(raw.get("max_ingress_paths", 0)),
+        search_per_slot_cost_units=int(raw.get("search_per_slot_cost_units", 0)),
+        read_base_cost_units=int(raw.get("read_base_cost_units", 0)),
+        read_per_coordinate_cost_units=int(raw.get("read_per_coordinate_cost_units", 0)),
+        ingress_per_path_cost_units=int(raw.get("ingress_per_path_cost_units", 0)),
+    )
+
+
 def _load_thought_event_config(raw: Any) -> SubjectVMThoughtEventConfig:
     if raw is None:
         return SubjectVMThoughtEventConfig()
@@ -696,6 +761,7 @@ def _load_thought_event_config(raw: Any) -> SubjectVMThoughtEventConfig:
         "emission_per_coordinate_cost_units",
         "parent_link_cost_units",
         "retention_per_event_tick_cost_units",
+        "recall",
     }
     unknown = sorted(set(raw) - allowed)
     if unknown:
@@ -714,6 +780,7 @@ def _load_thought_event_config(raw: Any) -> SubjectVMThoughtEventConfig:
         retention_per_event_tick_cost_units=int(
             raw.get("retention_per_event_tick_cost_units", 0)
         ),
+        recall=_load_thought_event_recall_config(raw.get("recall")),
     )
 
 
@@ -864,6 +931,47 @@ def _validate_disabled_thought_event(cfg: SubjectVMThoughtEventConfig) -> None:
         )
 
 
+def _validate_disabled_thought_event_recall(
+    cfg: SubjectVMThoughtEventRecallConfig,
+) -> None:
+    if cfg != SubjectVMThoughtEventRecallConfig():
+        raise ValueError(
+            "inactive subject_vm thought_event recall requires exact disabled defaults"
+        )
+
+
+def _validate_thought_event_recall(
+    cfg: SubjectVMThoughtEventRecallConfig,
+    *,
+    thought_event: SubjectVMThoughtEventConfig,
+    trace: SubjectVMTraceConfig,
+) -> None:
+    if cfg.schema != SUBJECT_VM_THOUGHT_EVENT_RECALL_SCHEMA or not cfg.enabled:
+        raise ValueError(
+            "enabled subject_vm thought_event recall requires the approved T3 schema"
+        )
+    if cfg.content_mode not in SUBJECT_VM_THOUGHT_EVENT_RECALL_CONTENT_MODES:
+        raise ValueError("subject_vm thought_event recall content_mode is unsupported")
+    if cfg.min_age_ticks != 1:
+        raise ValueError("T3 thought_event recall min_age_ticks is frozen at 1")
+    if cfg.max_ingress_paths != 1:
+        raise ValueError("T3 thought_event recall supports exactly one ingress path")
+    if thought_event.max_parent_count < 1:
+        raise ValueError("thought_event recall requires parent DAG capacity")
+    if trace.token_width <= 0:
+        raise ValueError("thought_event recall requires a positive token width")
+    costs = (
+        cfg.search_per_slot_cost_units,
+        cfg.read_base_cost_units,
+        cfg.read_per_coordinate_cost_units,
+        cfg.ingress_per_path_cost_units,
+    )
+    if any(int(value) < 0 or int(value) > 1_000_000 for value in costs):
+        raise ValueError(
+            "subject_vm thought_event recall count-only costs must be in [0, 1000000]"
+        )
+
+
 def _validate_thought_event(
     cfg: SubjectVMThoughtEventConfig, *, trace: SubjectVMTraceConfig
 ) -> None:
@@ -895,6 +1003,10 @@ def _validate_thought_event(
         raise ValueError(
             "subject_vm thought_event count-only costs must be in [0, 1000000]"
         )
+    if cfg.recall.enabled:
+        _validate_thought_event_recall(cfg.recall, thought_event=cfg, trace=trace)
+    else:
+        _validate_disabled_thought_event_recall(cfg.recall)
 
 
 def _validate_thought_event_extension(cfg: SubjectVMConfig) -> None:
@@ -1493,6 +1605,24 @@ def _disabled_evaluation_payload(value: Any) -> bool:
     )
 
 
+def _disabled_thought_event_recall_payload(value: Any) -> bool:
+    if value is None:
+        return True
+    if not isinstance(value, Mapping):
+        return False
+    return (
+        value.get("schema") == SUBJECT_VM_THOUGHT_EVENT_RECALL_DISABLED_SCHEMA
+        and value.get("enabled") is False
+        and value.get("content_mode", "identity") == "identity"
+        and int(value.get("min_age_ticks", 0)) == 0
+        and int(value.get("max_ingress_paths", 0)) == 0
+        and int(value.get("search_per_slot_cost_units", 0)) == 0
+        and int(value.get("read_base_cost_units", 0)) == 0
+        and int(value.get("read_per_coordinate_cost_units", 0)) == 0
+        and int(value.get("ingress_per_path_cost_units", 0)) == 0
+    )
+
+
 def _disabled_thought_event_payload(value: Any) -> bool:
     if value is None:
         return True
@@ -1508,6 +1638,7 @@ def _disabled_thought_event_payload(value: Any) -> bool:
         and int(value.get("emission_per_coordinate_cost_units", 0)) == 0
         and int(value.get("parent_link_cost_units", 0)) == 0
         and int(value.get("retention_per_event_tick_cost_units", 0)) == 0
+        and _disabled_thought_event_recall_payload(value.get("recall"))
     )
 
 
@@ -1550,6 +1681,12 @@ def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]
         section.get("evaluation")
     ):
         section.pop("evaluation", None)
+    if isinstance(section, dict):
+        thought_event_section = section.get("thought_event")
+        if isinstance(thought_event_section, dict) and _disabled_thought_event_recall_payload(
+            thought_event_section.get("recall")
+        ):
+            thought_event_section.pop("recall", None)
     if isinstance(section, dict) and _disabled_thought_event_payload(
         section.get("thought_event")
     ):
@@ -1609,6 +1746,9 @@ __all__ = [
     "SUBJECT_VM_TRACE_SCHEMA",
     "SUBJECT_VM_THOUGHT_EVENT_DISABLED_SCHEMA",
     "SUBJECT_VM_THOUGHT_EVENT_SCHEMA",
+    "SUBJECT_VM_THOUGHT_EVENT_RECALL_DISABLED_SCHEMA",
+    "SUBJECT_VM_THOUGHT_EVENT_RECALL_SCHEMA",
+    "SUBJECT_VM_THOUGHT_EVENT_RECALL_CONTENT_MODES",
     "SubjectVMActivationConfig",
     "SubjectVMAssociationConfig",
     "SubjectVMConfig",
@@ -1622,6 +1762,7 @@ __all__ = [
     "SubjectVMEvaluationConfig",
     "SubjectVMTraceConfig",
     "SubjectVMThoughtEventConfig",
+    "SubjectVMThoughtEventRecallConfig",
     "load_subject_vm_config",
     "strip_disabled_subject_vm_section",
     "validate_subject_vm_config",

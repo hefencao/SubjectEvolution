@@ -1,6 +1,6 @@
 # ThoughtEvent、思维链与语言认知研究合同
 
-状态：**T2 前向 recall 前退化审计已冻结；T3 仅获最小机制 smoke 资格，语言与通信仍未实现**
+状态：**T3 最小前向 recall 机制 smoke 已冻结；T4 仅获延迟信息效用与 lineage echo 审计资格，语言与通信仍未实现**
 适用边界：统一 Subject Graph 后续 `[EVOLVE-SUBJECT]` 能力、通信/语言实验与观察者侧跨世界分析。
 
 本文档将思维链、较长期记忆、主体间信号与语言研究放在同一设计边界内。它不声明当前 runtime 已经具有前向 ThoughtEvent recall、语言、对象词、组合语法或跨世界认知同态，也不授权通过固定 reward、confidence、词典或人工语义标签塑形主体。
@@ -188,13 +188,15 @@ lineage cap、near-duplicate suppression、多 head、temperature、stochastic r
 
 ### T3：最小短期前向 recall
 
-只获得**机制 smoke**资格。第一版应使用单一、无固定认知角色的只读路径，只读取前一 tick 以前已提交的 ThoughtEvent，并记录真实 parent DAG。必须与无 recall、token 内容打乱及等成本 control 比较。
+已完成。当前实现使用一个确定性的最近严格历史事件 selector，不使用 query network、随机检索、temperature 或固定认知角色。recalled coordinate 通过 fixed-bootstrap readout-only node 9 的声明式 ingress 进入普通 node accumulator；commit 后将实际 selected event 记录为 child 的 parent DAG edge。
 
-T3 不授权 multi-head、temperature、novelty/contrast role、reference-count retention、永久保留或语言接口。其目标只是证明 recalled ThoughtEvent 能以有界、可审计且不旁路统一图的方式进入 activation；即使机制 smoke 成功，也不能自动升级为思维链资格。
+正式九 seed panel 使用 `no-recall`、`identity-recall`、`rotate-one-coordinate-control` 与 `zero-content-equal-cost-control`。每 enabled arm/seed 形成 144 条严格滞后一 tick 的 parent link，enabled 三臂搜索、读取、ingress 与 parent-link 成本一致；zero-content 与 no-recall 的 token 完全一致；identity/rotate 只改变 coordinate 30，且可由 parent token 与 ingress gate 精确重建。四臂 action、sampled probability 与 action potentials 不变。
 
-### T4：回声治理与多头资格
+该结果只证明最小 recall 机制、真实 parent DAG 和等成本 control 可以运行。identity parent-child cosine 的跨 seed 中位数仍为 0.999081～0.999789，必须解释为低秩 fixed-bootstrap 下的 echo risk，而不是已形成思维链。
 
-只有观察到实际同质化、候选塌缩或 lineage 垄断后，才分别测试 diversity suppression、多 head、age-sensitive candidate generation 或随机化读取。
+### T4：延迟信息效用与 lineage echo 审计
+
+T4 只允许继续使用同一单一路径，检验 recall 是否携带当前 observation 已缺失的延迟信息，以及 latest-parent chain 是否形成机械回声、lineage 垄断或 observation 压制。只有出现并复核具体失败模式后，才可分别测试 diversity suppression、多 head、age-sensitive candidate generation 或随机化读取。
 
 ### T5：连续 retention
 
@@ -402,15 +404,15 @@ ThoughtEvent / node state
 
 ## 11. 下一实现边界
 
-下一项为 T3 最小前向 recall 机制 smoke。实现必须满足：
+下一项为 T4 延迟信息效用与 lineage echo 只读审计。它必须满足：
 
-1. 单一、无固定认知角色的读取路径；
-2. 只读已提交 ThoughtEvent，不读取本 tick 新事件；
-3. parent DAG 记录真实 recalled parent 与 contribution；
-4. recall 输入通过声明的 graph ingress，不直接回灌 action logits；
-5. 与无 recall、token 内容打乱和等成本 control 对照；
-6. checkpoint、clone、branch identity、成本与主体生命周期完整；
-7. 默认关闭，不改变 v0.165 及以前实验身份；
-8. 不实现语言、世界频道、multi-head、retention policy 或永久记忆。
+1. 继续使用 T3 已冻结的单一、无固定认知角色路径；
+2. 构造当前 observation 缺失、但严格历史 ThoughtEvent 可能携带的延迟信息条件；
+3. 与 no-recall、内容置换和 zero-content 等成本 control 比较；
+4. 分离内容效应、parent identity、读取成本和 graph ingress；
+5. 审计 parent-child cosine、lineage 独占、重复召回和 observation contribution；
+6. 不根据 reference count 自动延长 retention；
+7. 不增加 multi-head、temperature、novelty/contrast role 或随机检索；
+8. 不实现语言、世界频道或永久记忆。
 
-T2 的低秩结果必须保留为解释边界：T3 只能验证最小机制可行性，不能把 fixed-bootstrap rank-two token 称为完整思维表示。
+T2 的低秩边界和 T3 的高 parent-child similarity 必须共同保留：T4 即使观察到延迟信息效应，也不能自动升级为完整思维链或分布式认知资格。

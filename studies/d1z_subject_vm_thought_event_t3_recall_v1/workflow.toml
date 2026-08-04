@@ -1,0 +1,39 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_thought_event_t3_recall_v1"
+title = "Subject VM ThoughtEvent T3 minimal forward recall mechanism smoke"
+
+[parameters.config]
+type = "path"
+default = "configs/mvp_short_subject_vm_thought_event_t3_recall.json"
+description = "T1 arena enabled、recall 由各实验臂显式声明的短程配置。"
+
+[parameters.seeds]
+type = "csv-int"
+default = "12601,12602,12603,12604,12605,12606,12607,12608,12609"
+description = "冻结九个独立 seed panel。"
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_thought_event_t3_recall_v1/final"
+description = "项目内工作区中的 T3 分析目录；完整项目归档会排除 analyses。"
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_thought_event_t3_recall_v1_results.zip"
+description = "T3 结果与验证证据包。"
+
+[steps.run-t3-study]
+command = ["se-subject-vm-thought-event-t3-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "2", "--audit-ticks", "10", "--bootstrap-subjects", "16", "--backend", "cpu", "--output", "{analysis_root}/study", "--overwrite"]
+
+[steps.assess-t3]
+command = ["se-subject-vm-thought-event-t3", "--study-report", "{analysis_root}/study/study_report.json", "--output", "{analysis_root}/thought_event_t3_recall.json", "--summary-output", "{analysis_root}/thought_event_t3_summary.md"]
+
+[steps.pack-results]
+requires_json = [
+  { path = "{analysis_root}/thought_event_t3_recall.json", field = "passed", equals = true },
+  { path = "{analysis_root}/thought_event_t3_recall.json", field = "mechanism_contract.single_role_neutral_latest_prior_path", equals = true },
+  { path = "{analysis_root}/thought_event_t3_recall.json", field = "mechanism_contract.zero_content_equal_cost_control_exact", equals = true },
+  { path = "{analysis_root}/thought_event_t3_recall.json", field = "qualification.t4_audit_authorized", equals = true },
+  { path = "{analysis_root}/thought_event_t3_recall.json", field = "qualification.thought_chain_claim_authorized", equals = false }
+]
+command = ["python", "scripts/package_thought_event_t3_results.py", "--project", ".", "--analysis-root", "{analysis_root}", "--output", "{output}"]

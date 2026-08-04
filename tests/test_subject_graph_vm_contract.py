@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c42-frozen-thought-event-t2-qualified"
+    assert contract["status"] == "stage-3c42-frozen-thought-event-t3-mechanism-qualified"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,9 +24,9 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "ThoughtEvent-T2"
+    assert contract["current_stage"] == "ThoughtEvent-T3"
     design = contract["thought_event_language_design_contract"]
-    assert design["status"] == "t2-qualified-for-t3-mechanism-smoke-only"
+    assert design["status"] == "t3-minimal-forward-recall-mechanism-qualified-t4-audit-only"
     assert design["t1_unified_arena_implemented"] is True
     assert design["t1_runtime_parent_count"] == 0
     assert design["t2_read_only_audit_completed"] is True
@@ -35,7 +35,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert design["single_thought_representation"] is True
     assert design["rethink_action_authorized"] is False
     assert design["confidence_halt_gate_authorized"] is False
-    assert design["forward_recall_implemented"] is False
+    assert design["forward_recall_implemented"] is True
     assert design["communication_interface_implemented"] is False
     assert design["language_region_owns_semantics"] is False
     assert design["cross_seed_alignment_requires_functional_relational_evidence"] is True
@@ -52,6 +52,15 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert t2["rank_two_candidate_centered_rank"] == 2
     assert t2["t3_mechanism_smoke_authorized"] is True
     assert t2["thought_chain_claim_authorized"] is False
+    t3 = contract["thought_event_t3_contract"]
+    assert t3["seed_count"] == 9
+    assert t3["single_latest_prior_selector"] is True
+    assert t3["parent_links_per_enabled_arm_per_seed"] == 144
+    assert t3["zero_content_equal_cost_control_exact"] is True
+    assert t3["action_event_semantics_unchanged"] is True
+    assert t3["delayed_information_utility_demonstrated"] is False
+    assert t3["thought_chain_claim_authorized"] is False
+    assert t3["t4_audit_authorized"] is True
     assert contract["stage_3c36_contract"]["candidate_support_identity_required"] is True
     assert contract["stage_3c36_contract"]["frozen_result"]["exact_tie_origin_resolved"] is False
     assert contract["stage_3c36_contract"]["gate_relaxation_authorized"] is False

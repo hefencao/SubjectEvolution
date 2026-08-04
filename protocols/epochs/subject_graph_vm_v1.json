@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c42-frozen-thought-event-t2-qualified",
-  "project_version": "0.165.0",
+  "status": "stage-3c42-frozen-thought-event-t3-mechanism-qualified",
+  "project_version": "0.166.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "ThoughtEvent-T2",
+  "current_stage": "ThoughtEvent-T3",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -1018,15 +1018,15 @@
     "next_project_boundary": "evolve-subject-unified-thought-event-chain-substrate"
   },
   "thought_event_language_design_contract": {
-    "status": "t2-qualified-for-t3-mechanism-smoke-only",
+    "status": "t3-minimal-forward-recall-mechanism-qualified-t4-audit-only",
     "authoritative_document": "docs/THOUGHT_EVENT_LANGUAGE_COGNITION.md",
-    "next_implementation_stage": "T3-minimal-forward-recall-mechanism-smoke",
+    "next_implementation_stage": "T4-delayed-information-utility-and-lineage-echo-audit",
     "single_thought_representation": true,
     "short_and_long_memory_differ_only_by_lifecycle_index_cost": true,
     "rethink_action_authorized": false,
     "no_action_authorized": false,
     "confidence_halt_gate_authorized": false,
-    "forward_recall_implemented": false,
+    "forward_recall_implemented": true,
     "communication_interface_implemented": false,
     "language_region_owns_semantics": false,
     "objective_fact_unconditional_thought_feedback": false,
@@ -1046,7 +1046,15 @@
     "t2_low_rank_fixed_bootstrap_boundary": true,
     "t3_mechanism_smoke_authorized": true,
     "thought_chain_claim_authorized": false,
-    "distributed_cognitive_representation_claim_authorized": false
+    "distributed_cognitive_representation_claim_authorized": false,
+    "t3_mechanism_smoke_completed": true,
+    "t3_formal_seed_count": 9,
+    "t3_single_latest_prior_selector": true,
+    "t3_real_parent_dag": true,
+    "t3_zero_content_equal_cost_control": true,
+    "t3_action_event_semantics_unchanged": true,
+    "t4_audit_authorized": true,
+    "multi_head_or_retention_implementation_authorized": false
   },
   "thought_event_t1_contract": {
     "decision_protocol": "protocols/decisions/subject_vm_thought_event_t1_v1.json",
@@ -1090,5 +1098,32 @@
     "thought_chain_claim_authorized": false,
     "distributed_cognitive_representation_claim_authorized": false,
     "language_or_object_reference_claim_authorized": false
+  },
+  "thought_event_t3_contract": {
+    "decision_protocol": "protocols/decisions/subject_vm_thought_event_t3_recall_v1.json",
+    "formal_assessment_fixture": "tests/fixtures/thought_event_t3_recall.json",
+    "assessment_sha256": "30540e9d5d93b8987f042eef414b16eb6b28a435b997f4fecf95b81d7e9447dd",
+    "study_sha256": "d6ff7dbbac35425c08ec2db6ef458c4be3e3d68d93a7322e15c89e6a2cf55d52",
+    "seed_count": 9,
+    "events_per_arm_per_seed": 160,
+    "single_latest_prior_selector": true,
+    "minimum_age_ticks": 1,
+    "single_role_neutral_ingress": true,
+    "recall_ingress_node": 9,
+    "recall_token_port": 30,
+    "recall_gate": 0.25,
+    "parent_links_per_enabled_arm_per_seed": 144,
+    "zero_content_equal_cost_control_exact": true,
+    "content_effect_only_coordinate_30": true,
+    "action_event_semantics_unchanged": true,
+    "maximum_ingress_reconstruction_residual": 5.960464477539063e-08,
+    "identity_parent_child_cosine_median_range": [
+      0.9990810910420445,
+      0.9997893416011894
+    ],
+    "delayed_information_utility_demonstrated": false,
+    "thought_chain_claim_authorized": false,
+    "multi_head_or_retention_implementation_authorized": false,
+    "t4_audit_authorized": true
   }
 }

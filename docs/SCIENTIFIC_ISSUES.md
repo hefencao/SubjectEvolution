@@ -13,7 +13,7 @@
 | SG-05 | 持续性 | BLOCKED | 临时 graph-parameter 效应能否在独立论证的决策规则下持续？ | 需要可复现下游证据和单独 keep/revert 合同。 |
 | SG-06 | Topology evolution | BLOCKED | topology、readout 和 addressing 能否演化而不退化为不可诊断搜索？ | 需要成本、development、inheritance、neutralization 和健康 source 资格。 |
 | SG-09 | REST output 上游来源 | OPEN | 哪些 history、association 和 modulation 条件使不同 source 产生不同 edge-forward-gate temporary write？ | Stage 3C-42 已解析 temporary write 之后的执行路径，但未解析 proposal 形成原因；当前不继续机械追加 Stage 3C。 |
-| SG-10 | 思维链与记忆连续性 | NARROWED | 低秩、高局部相似的 graph-produced token 能否在不形成回声或旁路图拓扑的情况下支持最小前向 recall？ | T2 已证明 rank-one 负对照可识别、rank-two 候选避免精确重复但仍高度相似；只授权 T3 机制 smoke，不授权思维链或分布式认知声明。 |
+| SG-10 | 思维链与记忆连续性 | NARROWED | 最小前向 recall 是否能携带当前 observation 已缺失的延迟信息，同时避免机械回声、lineage 垄断和 observation 压制？ | T3 已证明单一路径、真实 parent DAG 和等成本 control 可运行，但 parent-child cosine 仍接近 1；只授权 T4 延迟信息效用与 echo 审计。 |
 | LANG-01 | 对象指称资格 | OPEN | 如何区分共享行为触发码、跨情境对象指称、组合语言和可复用认知把手？ | 必须使用非对称可观测性、跨情境解纠缠和未见组合；固定路径或极强反馈不能单独证明词义。 |
 | LANG-02 | 跨 seed/区域对齐 | OPEN | 同一类型对象在不同 seed、区域或谱系中是否由不同 signal、subgraph 和 region 指称？ | 不按词形、node ID 或 region 硬对齐；需要功能干预、指称分区、关系结构和未见组合上的 observer-side 映射。 |
 | LANG-03 | 成本约束编码同态 | OPEN | 相似环境统计与带宽成本下，不同世界的基础认知/语言是否形成保持组合关系与相对成本序的同态结构？ | “类似哈夫曼编码”只作为假设；不预设离散、prefix-free、无损、静态或信息论最优编码。 |
@@ -39,16 +39,19 @@ active edge-forward-gate write
 
 ## 4. SG-10：思维链与记忆连续性
 
-T1 已建立统一 ThoughtEvent arena，并复用同一 graph-produced token；arena 尚未被 activation 读取，runtime parent_count 为 0。T2 在 9 个新 seed 上冻结了前向 recall 前的表示退化边界。
+T1 已建立统一 ThoughtEvent arena，T2 冻结了 rank-two fixed-bootstrap token 仍低秩且高度局部相似的边界。T3 进一步建立了一条最小前向 recall：每个主体确定性读取最近一个严格早于当前 tick 的 retained ThoughtEvent，并通过 readout-only node 9 的 graph ingress 进入下一轮 activation。
 
-两条只读臂保持 event identity、action、sampled probability 和 action potentials 完全一致：
+正式九 seed panel 证明：
 
-- 重复坐标负对照 `port 11 + port 11` 在所有 seed 中 centered rank 均为 1，精确重复比例为 95.83%～98.44%；
-- rank-two 候选 `port 11 + port 7` 在所有 seed 中 192/192 个事件精确不同、centered rank 均为 2；
-- 候选连续同主体 token 的 cosine 中位数仍为 0.999049～0.999097，说明其避免完全重复，但仍是低秩且局部变化很小的 fixed-bootstrap 表示；
-- arena 每 arm/seed 精确产生 192 次 emission、48 次 expiry、0 次 overwrite 和 144 个最终保留事件。
+- 每 enabled arm/seed 形成 144 条真实 parent DAG edge，所有 parent age 均为 1 tick；
+- identity、coordinate-rotation 和 zero-content 三臂的搜索、读取、ingress 与 parent-link 计数成本完全一致；
+- zero-content 与 no-recall 的 token 完全一致；
+- identity/rotation 只改变 token coordinate 30，并可由 parent token 和 `0.25` gate 在最大 `5.96e-8` 残差内重建；
+- event identity、action、sampled probability 和 action potentials 在所有 arm 中一致。
 
-因此 SG-10 被收窄为：最小 recall 是否能使用该低秩表示产生可审计的 parent-child 信息传递，而不造成机械回声、action preference 回灌或 graph topology 旁路。T3 只允许单一无固定角色路径的机制 smoke；不授权多头、temperature、retention policy、永久记忆、思维链或语言资格。
+但 identity parent-child cosine 的跨 seed 中位数仍为 0.999081～0.999789。该机制当前只证明历史内容能进入统一图，并未证明内容携带当前 observation 缺失的信息，也未证明 parent-child 关系产生了实质加工。SG-10 因此收窄为：在保持同一单一路径和成本预算时，recall 是否产生可复现的延迟信息效用，以及 latest-parent 链是否形成 echo chamber、lineage monopoly 或对新 observation 的压制。
+
+T4 之前不授权 multi-head、temperature、固定 retrieval role、reference-count retention、永久记忆、思维链或语言资格。
 
 
 ## 5. LANG-01～04：语言、指称与跨世界结构

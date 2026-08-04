@@ -1,8 +1,8 @@
-# SubjectEvolution v0.165.0
+# SubjectEvolution v0.166.0
 
 SubjectEvolution 是一个实验性模拟项目，用于在不预设奖励和人类社会语义的前提下，研究类似主体的内部组织如何出现、变化并产生因果影响。
 
-v0.165.0 完成 ThoughtEvent T2 前向 recall 前退化审计：九 seed 的重复坐标负对照稳定坍缩为 centered rank 1；rank-two 候选每 seed 产生 192/192 个精确不同事件，但仍局限于 centered rank 2 且连续同主体 token 高度相似。该结果只授权 T3 最小前向 recall 机制 smoke，不构成思维链、分布式认知或语言资格。
+v0.166.0 完成 ThoughtEvent T3 最小前向 recall 机制 smoke：九 seed 四臂 panel 证明最近严格历史事件可通过单一 graph ingress 进入下一 tick activation，形成真实 parent DAG，且内容效应可与 selector、parent linkage 和计数成本分离。identity parent-child token 仍高度相似，因此只授权 T4 延迟信息效用与 lineage echo 审计，不构成思维链、分布式认知或语言资格。
 
 ## 文档索引
 
@@ -19,4 +19,4 @@ v0.165.0 完成 ThoughtEvent T2 前向 recall 前退化审计：九 seed 的重�
 
 ## 当前科学前沿
 
-Stage 3C-42 继续保持冻结。T1 arena 与 T2 退化诊断已经完成：当前 rank-two fixed bootstrap 避免了精确重复，但表示仍为低秩且跨 tick 高度相似。下一项只允许 T3 最小前向 recall 机制 smoke；不得把资格扩大为已形成思维链、分布式认知或语言。语言研究继续以统一 Subject Graph 与物理 SignalEvent 通道为边界。
+Stage 3C-42 继续保持冻结。T1 arena、T2 退化诊断与 T3 最小前向 recall 已完成；当前 selector、graph ingress、parent DAG 和等成本 control 可运行，但尚未证明延迟信息效用，且 parent-child token 高度相似。下一项只允许 T4 延迟信息效用与 lineage echo 审计；不得提前实现 multi-head、retention 或语言。

@@ -59,3 +59,52 @@ T1 是存储和身份基础设施，不构成思维链或记忆能力证据。
 - 预设 read-head 角色。
 
 冻结 assessment SHA-256：`fd553555909435de069067ea95c06baefa060e25a66d2de386be2c4e32374f7a`。
+
+## T3：最小前向 ThoughtEvent recall（v0.166）
+
+### 设计
+
+- seeds：12601～12609；
+- 每 seed 16 个稳定主体、10 个审计 tick；
+- 每 arm/seed 160 个事件；
+- selector：最近一个严格早于当前 tick 的 retained ThoughtEvent；
+- 单一 graph ingress：node 9、token port 30、gate `0.25`；
+- node 9 为 readout-only 节点，不拥有 action output；
+- 四臂：`no-recall`、`identity-recall`、`rotate-one-coordinate-control`、`zero-content-equal-cost-control`。
+
+### 冻结结果
+
+| 合同 | 结果 |
+|---|---:|
+| 每 enabled arm/seed parent links | 144 |
+| 每 enabled arm/seed root events | 16 |
+| parent age | 全部为 1 tick |
+| enabled 三臂计数成本 | 完全一致 |
+| zero-content token 与 no-recall | 完全一致 |
+| identity/rotate 改变的 token coordinate | 仅 30 |
+| 最大 ingress 重建残差 | `5.960464477539063e-08` |
+| event/action/probability/action potentials | 四臂完全一致 |
+| identity parent-child cosine 中位数范围 | `0.999081～0.999789` |
+| rotate parent-child cosine 中位数范围 | `0.999036～0.999309` |
+
+T3 证明：统一 arena 中已提交的历史 ThoughtEvent 可以通过单一、确定性、无固定认知角色的 graph ingress 进入下一 tick activation；该 parent identity 会作为真实 parent DAG edge 记录，且内容效应能够与 selector、parent linkage 和计数成本分离。
+
+### 资格边界
+
+授权：
+
+- 单一 latest-prior selector 与 graph ingress 机制；
+- 真实 parent DAG；
+- no-recall、内容置换和 zero-content 等成本 control；
+- T4 延迟信息效用与 lineage echo 只读审计。
+
+不授权：
+
+- 已形成思维链；
+- recall 已携带有用延迟信息；
+- 已形成分布式认知或语义记忆；
+- multi-head、temperature、固定 retrieval role；
+- reference-count retention、永久保留；
+- 语言、对象指称或通信接口。
+
+冻结 assessment SHA-256：`30540e9d5d93b8987f042eef414b16eb6b28a435b997f4fecf95b81d7e9447dd`。

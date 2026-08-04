@@ -1,0 +1,27 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_thought_event_t3_recall_v1",
+  "title": "Subject VM ThoughtEvent T3 minimal forward recall mechanism smoke",
+  "status": "frozen-minimal-forward-recall-mechanism-smoke",
+  "scientific_stage": "thought-event-t3-minimal-forward-recall",
+  "authorization": {
+    "new_independent_seed_panel": [12601, 12602, 12603, 12604, 12605, 12606, 12607, 12608, 12609],
+    "single_latest_prior_event_selector": true,
+    "single_role_neutral_ingress": true,
+    "real_parent_dag": true,
+    "no_recall_control": true,
+    "rotated_content_control": true,
+    "zero_content_equal_cost_control": true,
+    "fixed_bootstrap_graph": true,
+    "runtime_learning_mechanism_change": false,
+    "random_retrieval": false,
+    "query_network": false,
+    "multi_head": false,
+    "retention_policy_change": false,
+    "language_or_signal_channel": false,
+    "rethink_action": false,
+    "no_action": false,
+    "confidence_gate": false,
+    "permanent_retention": false
+  }
+}

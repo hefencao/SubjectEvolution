@@ -46,6 +46,7 @@ class SubjectVMActivationUsage:
     cross_region_transmissions: int
     output_contributions: int
     token_contributions: int
+    recall_ingress_contributions: int
     retained_state_values: int
 
 
@@ -105,6 +106,10 @@ def execute_activation(
     output_width: int,
     contribution_trace_rows: np.ndarray | None = None,
     temporary_write_lineage_by_row: dict[int, list[dict[str, Any]]] | None = None,
+    recalled_tokens: np.ndarray | None = None,
+    recalled_event_ids: np.ndarray | None = None,
+    recalled_event_ticks: np.ndarray | None = None,
+    recall_content_mode: str | None = None,
 ) -> SubjectVMActivationResult:
     """Execute bounded activation and optional graph-defined token readout."""
     normalized_rows = storage._rows(rows)
@@ -117,6 +122,30 @@ def execute_activation(
         raise ValueError("subject_vm output width does not match approved action ports")
     if np.any(~np.isfinite(inputs)):
         raise ValueError("subject_vm input batch must contain finite values")
+    token_width = int(storage.cfg.trace.token_width) if storage.cfg.trace_enabled else 0
+    if recalled_tokens is None:
+        recall_tokens = np.zeros((normalized_rows.size, token_width), dtype=np.float32)
+        recall_event_ids = np.zeros(normalized_rows.size, dtype=np.uint64)
+        recall_event_ticks = np.full(normalized_rows.size, -1, dtype=np.int64)
+        recall_mode = None
+    else:
+        recall_tokens = np.asarray(recalled_tokens, dtype=np.float32)
+        recall_event_ids = np.asarray(recalled_event_ids, dtype=np.uint64)
+        recall_event_ticks = np.asarray(recalled_event_ticks, dtype=np.int64)
+        recall_mode = str(recall_content_mode)
+        if not storage.cfg.thought_event_recall_enabled:
+            raise ValueError("subject_vm activation received recall while recall is disabled")
+        if recall_tokens.shape != (normalized_rows.size, token_width):
+            raise ValueError("subject_vm recalled token batch shape mismatch")
+        if recall_event_ids.shape != (normalized_rows.size,) or recall_event_ticks.shape != (normalized_rows.size,):
+            raise ValueError("subject_vm recalled event identity batch shape mismatch")
+        if np.any(~np.isfinite(recall_tokens)):
+            raise ValueError("subject_vm recalled token batch must be finite")
+        selected = recall_event_ids != 0
+        if np.any(recall_event_ticks[selected] >= int(tick)):
+            raise ValueError("subject_vm recall parent must predate activation tick")
+        if np.any(recall_event_ticks[~selected] != -1) or np.any(recall_tokens[~selected] != 0.0):
+            raise ValueError("subject_vm missing recall parent requires zero content")
     if normalized_rows.size and np.any(~storage.occupied[normalized_rows]):
         raise ValueError("subject_vm activation rows must be occupied")
     capture_rows = (
@@ -149,7 +178,6 @@ def execute_activation(
     activation_clip = float(activation_cfg.activation_clip)
     output_clip = float(activation_cfg.output_clip)
     potentials = np.zeros((normalized_rows.size, output_width), dtype=np.float32)
-    token_width = int(storage.cfg.trace.token_width) if storage.cfg.trace_enabled else 0
     token_clip = float(storage.cfg.trace.token_clip) if storage.cfg.trace_enabled else 0.0
     tokens = (
         np.zeros((normalized_rows.size, token_width), dtype=np.float32)
@@ -167,6 +195,7 @@ def execute_activation(
     cross_region_transmissions = 0
     output_contributions = 0
     token_contributions = 0
+    recall_ingress_contributions = 0
     contribution_records: list[dict[str, Any]] = []
     contribution_rows: list[int] = []
 
@@ -183,6 +212,9 @@ def execute_activation(
                     {
                         "world_row": int(row),
                         "input_values": [float(value) for value in inputs[batch_index]],
+                        "recalled_event_id": int(recall_event_ids[batch_index]),
+                        "recalled_event_tick": int(recall_event_ticks[batch_index]),
+                        "recall_content_mode": recall_mode,
                         "temporary_write_lineage": list(lineage_by_row.get(int(row), [])),
                         "node_activations": [],
                         "edge_transmissions": [],
@@ -219,6 +251,17 @@ def execute_activation(
                     input_gate = float(storage.node_input_gate[row, node])
                     input_contribution = input_gate * input_value
                     accumulator += input_contribution
+
+                recall_port = int(storage.node_recall_port[row, node])
+                recall_value = 0.0
+                recall_gate = 0.0
+                recall_contribution = 0.0
+                if recall_port >= 0:
+                    recall_value = float(recall_tokens[batch_index, recall_port])
+                    recall_gate = float(storage.node_recall_gate[row, node])
+                    recall_contribution = recall_gate * recall_value
+                    accumulator += recall_contribution
+                    recall_ingress_contributions += 1
 
                 incoming_total = 0.0
                 if storage.edge_capacity:
@@ -313,6 +356,10 @@ def execute_activation(
                             "input_value": input_value if input_port >= 0 else None,
                             "input_gate": input_gate,
                             "input_contribution": input_contribution,
+                            "recall_token_port": recall_port,
+                            "recall_value": recall_value if recall_port >= 0 else None,
+                            "recall_gate": recall_gate,
+                            "recall_contribution": recall_contribution,
                             "incoming_edge_contribution": float(incoming_total),
                             "accumulator": float(accumulator),
                             "operator_argument": operator_argument,
@@ -390,6 +437,9 @@ def execute_activation(
                 {
                     "world_row": int(row),
                     "input_values": [float(value) for value in inputs[batch_index]],
+                    "recalled_event_id": int(recall_event_ids[batch_index]),
+                    "recalled_event_tick": int(recall_event_ticks[batch_index]),
+                    "recall_content_mode": recall_mode,
                     "temporary_write_lineage": list(lineage_by_row.get(int(row), [])),
                     "node_activations": node_records,
                     "edge_transmissions": edge_records,
@@ -414,6 +464,7 @@ def execute_activation(
         cross_region_transmissions=cross_region_transmissions,
         output_contributions=output_contributions,
         token_contributions=token_contributions,
+        recall_ingress_contributions=recall_ingress_contributions,
         retained_state_values=int(np.count_nonzero(storage.node_state[normalized_rows])),
     )
     thought_tokens = None

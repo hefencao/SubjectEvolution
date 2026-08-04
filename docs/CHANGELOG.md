@@ -1,5 +1,13 @@
 # 版本变更记录
 
+## 0.166.0
+
+- 增加默认关闭的 T3 单一路径前向 ThoughtEvent recall：确定性选择最近一个严格早于当前 tick 的 retained event，不使用 query network、随机检索、temperature 或固定认知角色。
+- 增加 `node_recall_port`/`node_recall_gate` graph ingress、真实 parent DAG commit、recall checkpoint/clone/branch identity 与搜索/读取/ingress 计数成本。
+- 冻结九 seed 四臂 panel：no-recall、identity、coordinate-rotation 和 zero-content 等成本 control；enabled 三臂每 seed 均形成 144 条前一 tick parent link。
+- zero-content 与 no-recall token 完全一致；identity/rotation 只改变 coordinate 30，最大重建残差为 `5.96e-8`，四臂 action/event 语义保持一致。
+- identity parent-child cosine 中位数仍为 0.999081～0.999789，因此 T3 只获得最小机制资格；下一项为 T4 延迟信息效用与 lineage echo 审计，不授权思维链、multi-head 或 retention。
+
 ## 0.165.0
 
 - 完成 T2 前向 recall 前 ThoughtEvent 退化审计，使用 9 个新 seed、16 个稳定主体和每主体 12 个事件。

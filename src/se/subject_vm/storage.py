@@ -23,7 +23,8 @@ from .config import (
 STORAGE_SCHEMA_V1 = "se-subject-vm-inert-storage-v1"
 STORAGE_SCHEMA_V2 = "se-subject-vm-storage-v2"
 STORAGE_SCHEMA_V3 = "se-subject-vm-storage-v3"
-STORAGE_SCHEMA = "se-subject-vm-storage-v4"
+STORAGE_SCHEMA_V4 = "se-subject-vm-storage-v4"
+STORAGE_SCHEMA = "se-subject-vm-storage-v5"
 ACTIVATION_PHASE_MASK = np.uint8(1)
 LOCAL_ELIGIBILITY_FLAG = np.uint8(1)
 SUPPORTED_PLASTICITY_FLAGS = np.uint8(LOCAL_ELIGIBILITY_FLAG)
@@ -81,6 +82,8 @@ class SubjectVMStorage:
         self.node_output_gate = np.zeros((e, n), dtype=np.float32)
         self.node_trace_port = np.full((e, n), -1, dtype=np.int16)
         self.node_trace_gate = np.zeros((e, n), dtype=np.float32)
+        self.node_recall_port = np.full((e, n), -1, dtype=np.int16)
+        self.node_recall_gate = np.zeros((e, n), dtype=np.float32)
         self.node_eligibility_gate = np.zeros((e, n), dtype=np.float32)
         self.node_eligibility_value = np.zeros((e, n), dtype=np.float32)
         self.node_eligibility_age = np.zeros((e, n), dtype=np.uint16)
@@ -181,6 +184,8 @@ class SubjectVMStorage:
         self.node_output_gate[rows] = 0.0
         self.node_trace_port[rows] = -1
         self.node_trace_gate[rows] = 0.0
+        self.node_recall_port[rows] = -1
+        self.node_recall_gate[rows] = 0.0
         self.node_eligibility_gate[rows] = 0.0
         self.node_eligibility_value[rows] = 0.0
         self.node_eligibility_age[rows] = 0
@@ -256,6 +261,8 @@ class SubjectVMStorage:
             "node_output_gate",
             "node_trace_port",
             "node_trace_gate",
+            "node_recall_port",
+            "node_recall_gate",
             "node_eligibility_gate",
             "node_plasticity_flags",
             "edge_expressed",
@@ -318,7 +325,7 @@ class SubjectVMStorage:
         ) + names[insertion:]
 
     @classmethod
-    def snapshot_array_names(cls) -> tuple[str, ...]:
+    def stage4_snapshot_array_names(cls) -> tuple[str, ...]:
         names = cls.stage3_snapshot_array_names()
         insertion = names.index("edge_id")
         return names[:insertion] + (
@@ -330,6 +337,15 @@ class SubjectVMStorage:
             "edge_eligibility_gate",
             "eligibility_last_tick",
         )
+
+    @classmethod
+    def snapshot_array_names(cls) -> tuple[str, ...]:
+        names = cls.stage4_snapshot_array_names()
+        insertion = names.index("node_eligibility_gate")
+        return names[:insertion] + (
+            "node_recall_port",
+            "node_recall_gate",
+        ) + names[insertion:]
 
     def snapshot_state(self) -> dict[str, Any]:
         return {
@@ -353,7 +369,7 @@ class SubjectVMStorage:
     ) -> "SubjectVMStorage":
         schema = payload.get("schema")
         if schema not in {
-            STORAGE_SCHEMA, STORAGE_SCHEMA_V3, STORAGE_SCHEMA_V2, STORAGE_SCHEMA_V1
+            STORAGE_SCHEMA, STORAGE_SCHEMA_V4, STORAGE_SCHEMA_V3, STORAGE_SCHEMA_V2, STORAGE_SCHEMA_V1
         }:
             raise ValueError("unsupported subject_vm storage snapshot schema")
         if schema == STORAGE_SCHEMA_V1 and cfg.activation_enabled:
@@ -382,6 +398,8 @@ class SubjectVMStorage:
             names = result.stage2_snapshot_array_names()
         elif schema == STORAGE_SCHEMA_V3:
             names = result.stage3_snapshot_array_names()
+        elif schema == STORAGE_SCHEMA_V4:
+            names = result.stage4_snapshot_array_names()
         else:
             names = result.snapshot_array_names()
         for name in names:
@@ -411,6 +429,7 @@ class SubjectVMStorage:
             "node_input_gate",
             "node_output_gate",
             "node_trace_gate",
+            "node_recall_gate",
             "node_eligibility_gate",
         ):
             if np.any(~np.isfinite(getattr(self, name)[expressed])):
@@ -440,6 +459,21 @@ class SubjectVMStorage:
                 raise ValueError("subject_vm trace port is outside the approved token width")
         elif np.any(trace_port != -1) or np.any(self.node_trace_gate[expressed] != 0.0):
             raise ValueError("Stage-1/2 subject_vm cannot express trace-token readouts")
+        recall_port = self.node_recall_port[expressed]
+        recall_gate = self.node_recall_gate[expressed]
+        if self.cfg.thought_event_recall_enabled:
+            if np.any(recall_port < -1) or np.any(recall_port >= self.cfg.trace.token_width):
+                raise ValueError("subject_vm recall port is outside the approved token width")
+            if np.any((recall_port == -1) & (recall_gate != 0.0)):
+                raise ValueError("subject_vm disabled node recall port requires zero gate")
+            for row in np.flatnonzero(self.occupied).tolist():
+                active_paths = self.node_expressed[row] & (self.node_recall_port[row] >= 0)
+                if int(np.count_nonzero(active_paths)) > int(
+                    self.cfg.thought_event.recall.max_ingress_paths
+                ):
+                    raise ValueError("subject_vm recall ingress path count exceeds config")
+        elif np.any(self.node_recall_port != -1) or np.any(self.node_recall_gate != 0.0):
+            raise ValueError("subject_vm cannot contain recall ingress while recall is disabled")
 
     def _validate_stage2_edges(self) -> None:
         expressed = self.edge_expressed
@@ -645,6 +679,7 @@ __all__ = [
     "STORAGE_SCHEMA_V1",
     "STORAGE_SCHEMA_V2",
     "STORAGE_SCHEMA_V3",
+    "STORAGE_SCHEMA_V4",
     "SUPPORTED_OPERATOR_IDS",
     "SubjectVMRegionUsage",
     "SubjectVMStorage",
