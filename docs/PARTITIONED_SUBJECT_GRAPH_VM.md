@@ -2,7 +2,7 @@
 
 状态：**当前机制合同**
 合同代次：**v1**
-仓库审查版本：**v0.163**
+仓库审查版本：**v0.165**
 
 本文档定义当前有效的 Subject Graph VM 架构和安全边界。它不是版本日志，也不是实验结果台账。Stage 3C 的历史结论由 `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` 汇总；可执行细节由 `protocols/decisions/` 管理。
 
@@ -203,6 +203,8 @@ trace payload、pending join 状态和 writer lifecycle 都不属于 Subject VM 
 T1 已增加与现有 graph-produced continuous token 同源的统一 ThoughtEvent arena。事件核心只包含 token、tick、entity/subject/event identity、expiry 和 parent DAG metadata；不包含 action、Objective-Fact、value、confidence 或 modulation 结果。现有 delayed-association trace 继续保持原合同，不被 arena 替代。
 
 arena 默认关闭且有界。启用后属于 normalized configuration、checkpoint、clone 和 branch identity；禁用精确默认值会从 canonical payload 移除。parent 必须属于同一 subject、已经保留且早于 child tick；禁止 self-parent、same-tick parent 和 child append 时覆盖 active parent。当前 T1 runtime 不读取 arena，所有自动产生事件的 parent_count 为 0。
+
+T2 已只读审计当前 fixed-bootstrap token：重复坐标负对照在九 seed 中稳定坍缩为 centered rank 1；rank-two 候选避免精确重复并保持 centered rank 2，但连续同主体 token 仍高度相似。该证据只授权 T3 最小前向 recall 机制 smoke，不证明已形成思维链、分布式认知或语言。
 
 当前 continuous token/event history 仍主要服务 delayed association，ThoughtEvent arena 尚未作为下一轮 activation 的前向记忆。未来能力不得把极短暂思维链和较长期记忆拆成两套 token；二者必须共享统一 ThoughtEvent vector、identity、lineage、comparator 与 graph ingress，只能通过生命周期、索引、容量和访问成本连续分化。
 

@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c42-frozen-thought-event-t1-implemented"
+    assert contract["status"] == "stage-3c42-frozen-thought-event-t2-qualified"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,11 +24,14 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "ThoughtEvent-T1"
+    assert contract["current_stage"] == "ThoughtEvent-T2"
     design = contract["thought_event_language_design_contract"]
-    assert design["status"] == "t1-implemented-forward-recall-not-implemented"
+    assert design["status"] == "t2-qualified-for-t3-mechanism-smoke-only"
     assert design["t1_unified_arena_implemented"] is True
     assert design["t1_runtime_parent_count"] == 0
+    assert design["t2_read_only_audit_completed"] is True
+    assert design["t3_mechanism_smoke_authorized"] is True
+    assert design["thought_chain_claim_authorized"] is False
     assert design["single_thought_representation"] is True
     assert design["rethink_action_authorized"] is False
     assert design["confidence_halt_gate_authorized"] is False
@@ -43,6 +46,12 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert t1["action_and_objective_fact_excluded"] is True
     assert t1["enabled_configuration_checkpoint_clone_branch_identity_member"] is True
     assert t1["forward_recall"] is False
+    t2 = contract["thought_event_t2_contract"]
+    assert t2["seed_count"] == 9
+    assert t2["duplicate_coordinate_control_centered_rank"] == 1
+    assert t2["rank_two_candidate_centered_rank"] == 2
+    assert t2["t3_mechanism_smoke_authorized"] is True
+    assert t2["thought_chain_claim_authorized"] is False
     assert contract["stage_3c36_contract"]["candidate_support_identity_required"] is True
     assert contract["stage_3c36_contract"]["frozen_result"]["exact_tie_origin_resolved"] is False
     assert contract["stage_3c36_contract"]["gate_relaxation_authorized"] is False

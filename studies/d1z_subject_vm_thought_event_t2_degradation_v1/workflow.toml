@@ -1,0 +1,39 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_thought_event_t2_degradation_v1"
+title = "Subject VM ThoughtEvent T2 pre-recall degeneration audit"
+
+[parameters.config]
+type = "path"
+default = "configs/mvp_short_subject_vm_thought_event_t2_audit.json"
+description = "T1 arena enabled、无 recall 的短程审计配置。"
+
+[parameters.seeds]
+type = "csv-int"
+default = "12501,12502,12503,12504,12505,12506,12507,12508,12509"
+description = "冻结九个独立 seed panel。"
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_thought_event_t2_degradation_v1/final"
+description = "项目外 T2 分析目录。"
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_thought_event_t2_degradation_v1_results.zip"
+description = "T2 结果与验证证据包。"
+
+[steps.run-t2-study]
+command = ["se-subject-vm-thought-event-t2-study", "--config", "{config}", "--seeds", "{seeds}", "--source-ticks", "2", "--audit-ticks", "12", "--bootstrap-subjects", "16", "--backend", "cpu", "--output", "{analysis_root}/study", "--overwrite"]
+
+[steps.assess-t2]
+command = ["se-subject-vm-thought-event-t2", "--study-report", "{analysis_root}/study/study_report.json", "--output", "{analysis_root}/thought_event_t2_degradation.json", "--summary-output", "{analysis_root}/thought_event_t2_summary.json", "--diagnostic-report", "{analysis_root}/thought_event_t2_diagnostic_report.md"]
+
+[steps.pack-results]
+requires_json = [
+  { path = "{analysis_root}/thought_event_t2_degradation.json", field = "cross_arm_findings.all_action_event_and_probability_fields_identical", equals = true },
+  { path = "{analysis_root}/thought_event_t2_degradation.json", field = "cross_arm_findings.duplicate_coordinate_control_is_rank_one_in_all_seeds", equals = true },
+  { path = "{analysis_root}/thought_event_t2_degradation.json", field = "cross_arm_findings.rank_two_candidate_is_rank_two_in_all_seeds", equals = true },
+  { path = "{analysis_root}/thought_event_t2_degradation.json", field = "qualification.t3_mechanism_smoke_authorized", equals = true },
+  { path = "{analysis_root}/thought_event_t2_degradation.json", field = "qualification.thought_chain_claim_authorized", equals = false }
+]
+command = ["python", "scripts/package_thought_event_t2_results.py", "--project", ".", "--analysis-root", "{analysis_root}", "--output", "{output}"]

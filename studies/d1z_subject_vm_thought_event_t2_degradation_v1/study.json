@@ -1,0 +1,22 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_thought_event_t2_degradation_v1",
+  "title": "Subject VM ThoughtEvent T2 pre-recall degeneration audit",
+  "status": "frozen-read-only-pre-recall-degeneration-audit",
+  "scientific_stage": "thought-event-t2-degeneration",
+  "authorization": {
+    "new_independent_seed_panel": [12501, 12502, 12503, 12504, 12505, 12506, 12507, 12508, 12509],
+    "duplicate_coordinate_negative_control": true,
+    "rank_two_candidate": true,
+    "fixed_bootstrap_graph": true,
+    "runtime_learning_mechanism_change": false,
+    "forward_recall": false,
+    "read_head": false,
+    "retention_policy_change": false,
+    "language_or_signal_channel": false,
+    "rethink_action": false,
+    "no_action": false,
+    "confidence_gate": false,
+    "permanent_retention": false
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "schema": "se-subject-vm-thought-event-t2-decision-v1",
+  "decision_id": "subject-vm-thought-event-t2-pre-recall-degeneration",
+  "project_version": "0.165.0",
+  "task_type": "BRANCH-EXP",
+  "status": "frozen-qualified-for-t3-mechanism-smoke-only",
+  "study": "studies/d1z_subject_vm_thought_event_t2_degradation_v1/study.json",
+  "design": {
+    "seeds": [
+      12501,
+      12502,
+      12503,
+      12504,
+      12505,
+      12506,
+      12507,
+      12508,
+      12509
+    ],
+    "source_ticks": 2,
+    "audit_ticks": 12,
+    "subjects_per_seed": 16,
+    "events_per_subject": 12,
+    "capacity_per_subject": 16,
+    "retention_ticks": 8,
+    "duplicate_coordinate_control_ports": [
+      11,
+      11
+    ],
+    "rank_two_candidate_ports": [
+      11,
+      7
+    ]
+  },
+  "required_identity": {
+    "event_identity": true,
+    "action_identity": true,
+    "sampled_probability_identity": true,
+    "action_potential_identity": true,
+    "arm_token_difference_only_coordinate_30": true
+  },
+  "claims_not_authorized": [
+    "forward recall exists",
+    "a thought chain exists",
+    "distributed cognition exists",
+    "token coordinates have human semantic meaning",
+    "language or object reference exists",
+    "reference count defines usefulness",
+    "permanent retention is warranted"
+  ],
+  "next_boundary": "T3 minimal forward-recall mechanism smoke with low-rank fixed-bootstrap interpretation only",
+  "formal_assessment": {
+    "assessment_sha256": "fd553555909435de069067ea95c06baefa060e25a66d2de386be2c4e32374f7a",
+    "study_sha256": "8857b4bc0046d081d68a4092aa046ecb8a238b360d59ea473de484114ec5c53a",
+    "seed_count": 9,
+    "events_per_arm_per_seed": 192,
+    "duplicate_coordinate_control_centered_rank": 1,
+    "rank_two_candidate_centered_rank": 2,
+    "rank_two_candidate_exact_unique_events_per_seed": 192,
+    "rank_two_candidate_consecutive_cosine_median_range": [
+      0.9990487382319151,
+      0.9990967808212253
+    ],
+    "arena_expired_events_per_seed": 48,
+    "arena_overwritten_events_per_seed": 0,
+    "runtime_parent_count": 0,
+    "t3_mechanism_smoke_authorized": true,
+    "thought_chain_claim_authorized": false,
+    "distributed_cognitive_representation_claim_authorized": false
+  }
+}

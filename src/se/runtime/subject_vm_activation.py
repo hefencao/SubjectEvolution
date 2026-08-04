@@ -42,7 +42,9 @@ def subject_vm_action_potentials(
     if not runtime.has_expressed_graph(active):
         simulation._stage_subject_vm_activation_contribution_trace(None)
         return None
-    runtime.require_execution_backend(simulation.execution_backend)
+    runtime.require_execution_backend(
+        simulation.execution_backend, requested_backend=simulation.requested_backend
+    )
     inputs = build_objective_input_ports(
         energy=energy,
         max_energy=simulation.cfg.entities.max_energy,

@@ -141,6 +141,7 @@ def test_active_normative_documents_are_chinese_authoritative() -> None:
         "docs/SCIENTIFIC_ISSUES.md": ("当前科学问题", "活动问题注册表"),
         "docs/WORKFLOW_PROFILES.md": ("工作流档位", "档位选择"),
         "docs/results/SUBJECT_VM_STAGE3C_RESULTS.md": ("冻结结果台账", "当前冻结链"),
+        "docs/results/THOUGHT_EVENT_RESULTS.md": ("ThoughtEvent 冻结结果台账", "T2：前向 recall 前退化审计"),
     }
     for relative, markers in required_markers.items():
         text = _text(relative)
@@ -158,7 +159,7 @@ def test_thought_event_language_contract_is_chinese_and_non_runtime() -> None:
         "不增加独立 `RETHINK`",
     ):
         assert marker in text
-    assert "状态：**T1 统一 ThoughtEvent 基础设施已实现；前向 recall、语言与通信仍未实现**" in text
+    assert "状态：**T2 前向 recall 前退化审计已冻结；T3 仅获最小机制 smoke 资格，语言与通信仍未实现**" in text
     assert len(text.splitlines()) < 600
 
 

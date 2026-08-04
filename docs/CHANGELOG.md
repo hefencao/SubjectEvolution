@@ -1,5 +1,14 @@
 # 版本变更记录
 
+## 0.165.0
+
+- 完成 T2 前向 recall 前 ThoughtEvent 退化审计，使用 9 个新 seed、16 个稳定主体和每主体 12 个事件。
+- 冻结两条 action-identical 只读臂：`port 11 + port 11` 重复坐标负对照，以及 `port 11 + port 7` rank-two 候选；两臂只在 token coordinate 30 上不同。
+- 负对照每 seed centered rank 均为 1，精确重复比例为 95.83%～98.44%，证明诊断能识别 rank-one collapse。
+- rank-two 候选每 seed 产生 192/192 个精确不同事件且 centered rank 均为 2，但连续同主体 token 的 cosine 中位数仍为 0.999049～0.999097。
+- arena 生命周期逐 seed 精确满足 192 次 emission、48 次 expiry、0 次 overwrite、144 个最终保留事件，runtime parent_count 继续为 0。
+- T2 只授权 T3 最小前向 recall 机制 smoke；不授权思维链、分布式认知、语言、对象指称、reference-count retention 或永久保留。
+
 ## 0.164.0
 
 - 增加默认关闭的统一 ThoughtEvent T1 sidecar，复用 graph-produced continuous token 与稳定 event identity，同时与 action、Objective-Fact、value 和 modulation 结果分离。

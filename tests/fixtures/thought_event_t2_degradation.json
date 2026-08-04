@@ -1,0 +1,2032 @@
+{
+  "schema": "se-subject-vm-thought-event-t2-degeneration-assessment-v1",
+  "project_version": "0.165.0",
+  "study_report_file": "study_report.json",
+  "study_report_file_sha256": "baf580d731c4707fdc80e98816ca6eab2ca1c6e74159d43bba7e4210b444ed98",
+  "study_sha256": "8857b4bc0046d081d68a4092aa046ecb8a238b360d59ea473de484114ec5c53a",
+  "design": {
+    "seeds": [
+      12501,
+      12502,
+      12503,
+      12504,
+      12505,
+      12506,
+      12507,
+      12508,
+      12509
+    ],
+    "source_ticks": 2,
+    "audit_ticks": 12,
+    "bootstrap_subjects": 16,
+    "arms": {
+      "duplicate-coordinate-control": {
+        "second_readout_input_port": 11,
+        "bootstrap_profile_sha256": "57ffd0b56810128f00a2190a86cd12cf0ec4f0a0143b5fd70ac5746efdca822a"
+      },
+      "rank-two-candidate": {
+        "second_readout_input_port": 7,
+        "bootstrap_profile_sha256": "412cf4d1ba8b3e4b549069684863ce0f93804f7cbd6b0a6a5456428a522d1cca"
+      }
+    },
+    "new_runtime_mechanism": false,
+    "forward_recall": false,
+    "read_head": false
+  },
+  "per_seed": [
+    {
+      "arm": "duplicate-coordinate-control",
+      "seed": 12501,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 4,
+      "exact_duplicate_fraction": 0.9791666666666666,
+      "per_tick_unique_count": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 3.0,
+        "q90": 3.0,
+        "max": 4.0
+      },
+      "per_subject_unique_count": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 2.0,
+        "q90": 3.0,
+        "max": 4.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 1,
+      "stable_rank": 1.0,
+      "effective_rank": 1.0,
+      "singular_values": [
+        1.330243188409379,
+        5.876712103705018e-16,
+        2.775520654570896e-17,
+        1.0010339513030899e-32,
+        1.3964960970276796e-33,
+        3.50369422444403e-49,
+        4.1414819510498184e-50,
+        5.157731057368469e-66
+      ],
+      "per_tick_centered_rank": {
+        "min": 1.0,
+        "q10": 1.0,
+        "median": 1.0,
+        "q90": 1.0,
+        "max": 1.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 80,
+        "cosine": {
+          "min": 0.9921431238245662,
+          "q10": 0.9981842180227303,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "l2": {
+          "min": 0.0,
+          "q10": 0.0,
+          "median": 0.15713478875086237,
+          "q90": 0.15713483089771088,
+          "max": 0.31426966179542176
+        },
+        "cosine_ge_0_999_fraction": 0.45454545454545453,
+        "cosine_ge_0_9999_fraction": 0.45454545454545453
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9830493109293762,
+          "q10": 0.9981053441818568,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "cosine_ge_0_999_fraction": 0.46597222222222223,
+        "cosine_ge_0_9999_fraction": 0.46597222222222223
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "duplicate-coordinate-control",
+      "seed": 12502,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 4,
+      "exact_duplicate_fraction": 0.9791666666666666,
+      "per_tick_unique_count": {
+        "min": 2.0,
+        "q10": 3.0,
+        "median": 3.0,
+        "q90": 3.0,
+        "max": 4.0
+      },
+      "per_subject_unique_count": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 3.0,
+        "q90": 3.5,
+        "max": 4.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 1,
+      "stable_rank": 1.0,
+      "effective_rank": 1.0,
+      "singular_values": [
+        1.5301746851464377,
+        1.9578882528112258e-16,
+        4.323817826198512e-17,
+        2.0782397435297556e-33,
+        1.1795879799412075e-33,
+        1.079197171738996e-49,
+        7.101043379835459e-50,
+        5.104582960149102e-66
+      ],
+      "per_tick_centered_rank": {
+        "min": 1.0,
+        "q10": 1.0,
+        "median": 1.0,
+        "q90": 1.0,
+        "max": 1.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 79,
+        "cosine": {
+          "min": 0.9830493109293762,
+          "q10": 0.9927468846244046,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "l2": {
+          "min": 0.0,
+          "q10": 0.0,
+          "median": 0.15713478875086237,
+          "q90": 0.31426961964857325,
+          "max": 0.47140449269313267
+        },
+        "cosine_ge_0_999_fraction": 0.44886363636363635,
+        "cosine_ge_0_9999_fraction": 0.44886363636363635
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9830493109293762,
+          "q10": 0.9927468846244046,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "cosine_ge_0_999_fraction": 0.41388888888888886,
+        "cosine_ge_0_9999_fraction": 0.41388888888888886
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "duplicate-coordinate-control",
+      "seed": 12503,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 7,
+      "exact_duplicate_fraction": 0.9635416666666666,
+      "per_tick_unique_count": {
+        "min": 3.0,
+        "q10": 3.0,
+        "median": 4.0,
+        "q90": 4.0,
+        "max": 4.0
+      },
+      "per_subject_unique_count": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 3.0,
+        "q90": 5.0,
+        "max": 5.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 1,
+      "stable_rank": 1.0,
+      "effective_rank": 1.0,
+      "singular_values": [
+        1.4762755680121626,
+        2.264630496139299e-16,
+        1.72757662924191e-17,
+        3.178778695920448e-33,
+        1.8607724404378583e-33,
+        3.512017592405372e-49,
+        7.501301965185762e-50,
+        8.661959145842515e-66
+      ],
+      "per_tick_centered_rank": {
+        "min": 1.0,
+        "q10": 1.0,
+        "median": 1.0,
+        "q90": 1.0,
+        "max": 1.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 65,
+        "cosine": {
+          "min": 0.9820804097753485,
+          "q10": 0.997070730683025,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "l2": {
+          "min": 0.0,
+          "q10": 0.0,
+          "median": 0.15713478875086237,
+          "q90": 0.19641851754871437,
+          "max": 0.4714045348399812
+        },
+        "cosine_ge_0_999_fraction": 0.45454545454545453,
+        "cosine_ge_0_9999_fraction": 0.3693181818181818
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9728506683380096,
+          "q10": 0.997070730683025,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "cosine_ge_0_999_fraction": 0.4666666666666667,
+        "cosine_ge_0_9999_fraction": 0.36180555555555555
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "duplicate-coordinate-control",
+      "seed": 12504,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 3,
+      "exact_duplicate_fraction": 0.984375,
+      "per_tick_unique_count": {
+        "min": 2.0,
+        "q10": 2.1,
+        "median": 3.0,
+        "q90": 3.0,
+        "max": 3.0
+      },
+      "per_subject_unique_count": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 3.0,
+        "q90": 3.0,
+        "max": 3.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 1,
+      "stable_rank": 1.0,
+      "effective_rank": 1.0,
+      "singular_values": [
+        1.423955266574694,
+        2.4102622488970806e-16,
+        5.705105845520402e-17,
+        3.95170306359696e-33,
+        2.806769713305034e-33,
+        9.560395301385706e-50,
+        3.5191868090295075e-50,
+        4.381312582108452e-66
+      ],
+      "per_tick_centered_rank": {
+        "min": 1.0,
+        "q10": 1.0,
+        "median": 1.0,
+        "q90": 1.0,
+        "max": 1.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 83,
+        "cosine": {
+          "min": 0.9927468846244046,
+          "q10": 0.9981053441818568,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "l2": {
+          "min": 0.0,
+          "q10": 0.0,
+          "median": 0.15713478875086237,
+          "q90": 0.15713483089771088,
+          "max": 0.31426961964857325
+        },
+        "cosine_ge_0_999_fraction": 0.4715909090909091,
+        "cosine_ge_0_9999_fraction": 0.4715909090909091
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9927468846244046,
+          "q10": 0.9927468846244046,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "cosine_ge_0_999_fraction": 0.42430555555555555,
+        "cosine_ge_0_9999_fraction": 0.42430555555555555
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "duplicate-coordinate-control",
+      "seed": 12505,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 6,
+      "exact_duplicate_fraction": 0.96875,
+      "per_tick_unique_count": {
+        "min": 2.0,
+        "q10": 3.0,
+        "median": 3.0,
+        "q90": 4.0,
+        "max": 5.0
+      },
+      "per_subject_unique_count": {
+        "min": 3.0,
+        "q10": 3.0,
+        "median": 3.0,
+        "q90": 4.0,
+        "max": 5.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 1,
+      "stable_rank": 1.0,
+      "effective_rank": 1.0,
+      "singular_values": [
+        1.6212561524098055,
+        6.348797168062876e-17,
+        2.315813038754931e-17,
+        1.656729967124321e-33,
+        5.221107448024774e-34,
+        6.897912782699523e-50,
+        5.892566106876327e-51,
+        1.0746902825188999e-66
+      ],
+      "per_tick_centered_rank": {
+        "min": 1.0,
+        "q10": 1.0,
+        "median": 1.0,
+        "q90": 1.0,
+        "max": 1.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 69,
+        "cosine": {
+          "min": 0.9830493109293762,
+          "q10": 0.9927468846244046,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "l2": {
+          "min": 0.0,
+          "q10": 0.0,
+          "median": 0.15713483089771088,
+          "q90": 0.31426961964857325,
+          "max": 0.47140449269313267
+        },
+        "cosine_ge_0_999_fraction": 0.4090909090909091,
+        "cosine_ge_0_9999_fraction": 0.39204545454545453
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9830493109293762,
+          "q10": 0.9927468846244046,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "cosine_ge_0_999_fraction": 0.4326388888888889,
+        "cosine_ge_0_9999_fraction": 0.40625
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "duplicate-coordinate-control",
+      "seed": 12506,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 4,
+      "exact_duplicate_fraction": 0.9791666666666666,
+      "per_tick_unique_count": {
+        "min": 3.0,
+        "q10": 3.0,
+        "median": 3.0,
+        "q90": 4.0,
+        "max": 4.0
+      },
+      "per_subject_unique_count": {
+        "min": 2.0,
+        "q10": 2.5,
+        "median": 3.0,
+        "q90": 3.5,
+        "max": 4.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 1,
+      "stable_rank": 1.0,
+      "effective_rank": 1.0,
+      "singular_values": [
+        1.5921616597575559,
+        3.047682233168316e-16,
+        6.646573759359872e-17,
+        3.394777891438607e-33,
+        6.268241691173004e-34,
+        1.9907642267376927e-49,
+        8.186067157532845e-51,
+        2.9427827853221816e-66
+      ],
+      "per_tick_centered_rank": {
+        "min": 1.0,
+        "q10": 1.0,
+        "median": 1.0,
+        "q90": 1.0,
+        "max": 1.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 70,
+        "cosine": {
+          "min": 0.9830493109293762,
+          "q10": 0.9981053441818568,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "l2": {
+          "min": 0.0,
+          "q10": 0.0,
+          "median": 0.15713478875086237,
+          "q90": 0.15713483089771088,
+          "max": 0.47140449269313267
+        },
+        "cosine_ge_0_999_fraction": 0.3977272727272727,
+        "cosine_ge_0_9999_fraction": 0.3977272727272727
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9830493109293762,
+          "q10": 0.9927468846244046,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "cosine_ge_0_999_fraction": 0.38125,
+        "cosine_ge_0_9999_fraction": 0.38125
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "duplicate-coordinate-control",
+      "seed": 12507,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 7,
+      "exact_duplicate_fraction": 0.9635416666666666,
+      "per_tick_unique_count": {
+        "min": 3.0,
+        "q10": 3.0,
+        "median": 4.0,
+        "q90": 4.0,
+        "max": 5.0
+      },
+      "per_subject_unique_count": {
+        "min": 2.0,
+        "q10": 2.5,
+        "median": 3.0,
+        "q90": 4.5,
+        "max": 6.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 1,
+      "stable_rank": 1.0,
+      "effective_rank": 1.0,
+      "singular_values": [
+        1.8591729386294453,
+        6.768151774262764e-16,
+        4.697591440641441e-17,
+        2.0253711945342638e-32,
+        1.847983802092193e-33,
+        2.90010192389784e-48,
+        6.151317002281003e-49,
+        1.0964541961546891e-64
+      ],
+      "per_tick_centered_rank": {
+        "min": 1.0,
+        "q10": 1.0,
+        "median": 1.0,
+        "q90": 1.0,
+        "max": 1.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 64,
+        "cosine": {
+          "min": 0.9830493109293762,
+          "q10": 0.9927468846244046,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "l2": {
+          "min": 0.0,
+          "q10": 0.0,
+          "median": 0.15713483089771088,
+          "q90": 0.31426961964857325,
+          "max": 0.47140449269313267
+        },
+        "cosine_ge_0_999_fraction": 0.3806818181818182,
+        "cosine_ge_0_9999_fraction": 0.36363636363636365
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9830493109293762,
+          "q10": 0.9927468846244046,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "cosine_ge_0_999_fraction": 0.33541666666666664,
+        "cosine_ge_0_9999_fraction": 0.32708333333333334
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "duplicate-coordinate-control",
+      "seed": 12508,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 8,
+      "exact_duplicate_fraction": 0.9583333333333334,
+      "per_tick_unique_count": {
+        "min": 3.0,
+        "q10": 3.0,
+        "median": 3.5,
+        "q90": 5.0,
+        "max": 6.0
+      },
+      "per_subject_unique_count": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 3.0,
+        "q90": 5.0,
+        "max": 8.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 1,
+      "stable_rank": 1.0,
+      "effective_rank": 1.0,
+      "singular_values": [
+        1.7608033288302618,
+        2.018752079579656e-16,
+        2.893497247494505e-17,
+        8.870082418616166e-33,
+        4.3504452539117566e-33,
+        4.091696190733886e-49,
+        1.363671709744499e-49,
+        1.8532293877857989e-65
+      ],
+      "per_tick_centered_rank": {
+        "min": 1.0,
+        "q10": 1.0,
+        "median": 1.0,
+        "q90": 1.0,
+        "max": 1.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 72,
+        "cosine": {
+          "min": 0.9830493109293762,
+          "q10": 0.9927468846244046,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "l2": {
+          "min": 0.0,
+          "q10": 0.0,
+          "median": 0.15713478875086237,
+          "q90": 0.31426961964857325,
+          "max": 0.47140449269313267
+        },
+        "cosine_ge_0_999_fraction": 0.42613636363636365,
+        "cosine_ge_0_9999_fraction": 0.4090909090909091
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9830493109293762,
+          "q10": 0.9927468846244046,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "cosine_ge_0_999_fraction": 0.3909722222222222,
+        "cosine_ge_0_9999_fraction": 0.36319444444444443
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "duplicate-coordinate-control",
+      "seed": 12509,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 8,
+      "exact_duplicate_fraction": 0.9583333333333334,
+      "per_tick_unique_count": {
+        "min": 2.0,
+        "q10": 2.1,
+        "median": 3.0,
+        "q90": 4.0,
+        "max": 5.0
+      },
+      "per_subject_unique_count": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 3.0,
+        "q90": 4.0,
+        "max": 6.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 1,
+      "stable_rank": 1.0,
+      "effective_rank": 1.0,
+      "singular_values": [
+        1.580396324574181,
+        2.2631036053127007e-16,
+        6.213044605283197e-17,
+        1.7737979646661395e-32,
+        5.300716048493458e-33,
+        8.75231075561215e-49,
+        2.773296194046586e-49,
+        7.483323305416362e-65
+      ],
+      "per_tick_centered_rank": {
+        "min": 1.0,
+        "q10": 1.0,
+        "median": 1.0,
+        "q90": 1.0,
+        "max": 1.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 68,
+        "cosine": {
+          "min": 0.9830493109293762,
+          "q10": 0.9979610291947368,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "l2": {
+          "min": 0.0,
+          "q10": 0.0,
+          "median": 0.15713483089771088,
+          "q90": 0.1571348730445594,
+          "max": 0.47140449269313267
+        },
+        "cosine_ge_0_999_fraction": 0.4034090909090909,
+        "cosine_ge_0_9999_fraction": 0.38636363636363635
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9728506683380096,
+          "q10": 0.9945037706904257,
+          "median": 0.9982630918636036,
+          "q90": 1.0,
+          "max": 1.0
+        },
+        "cosine_ge_0_999_fraction": 0.4152777777777778,
+        "cosine_ge_0_9999_fraction": 0.38819444444444445
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "rank-two-candidate",
+      "seed": 12501,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 192,
+      "exact_duplicate_fraction": 0.0,
+      "per_tick_unique_count": {
+        "min": 16.0,
+        "q10": 16.0,
+        "median": 16.0,
+        "q90": 16.0,
+        "max": 16.0
+      },
+      "per_subject_unique_count": {
+        "min": 12.0,
+        "q10": 12.0,
+        "median": 12.0,
+        "q90": 12.0,
+        "max": 12.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 2,
+      "stable_rank": 1.1328159468863364,
+      "effective_rank": 1.4353342964978393,
+      "singular_values": [
+        2.5802255429802257,
+        0.940335390722713,
+        1.2825642121244666e-16,
+        5.277628733767255e-17,
+        8.715381892623135e-33,
+        3.4187880698053245e-33,
+        7.469237129205625e-49,
+        2.0872698061662414e-49
+      ],
+      "per_tick_centered_rank": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 2.0,
+        "q90": 2.0,
+        "max": 2.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 0,
+        "cosine": {
+          "min": 0.9959839418634554,
+          "q10": 0.998999700794114,
+          "median": 0.9990967808212253,
+          "q90": 0.9999999967547982,
+          "max": 0.999999999075432
+        },
+        "l2": {
+          "min": 0.00011730194091796875,
+          "q10": 0.00021353363990783691,
+          "median": 0.11111124365538952,
+          "q90": 0.11249140463917079,
+          "max": 0.2229181815438019
+        },
+        "cosine_ge_0_999_fraction": 0.8977272727272727,
+        "cosine_ge_0_9999_fraction": 0.45454545454545453
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9627260147093103,
+          "q10": 0.9836060813994808,
+          "median": 0.995615015873818,
+          "q90": 0.9995988055649918,
+          "max": 0.9999999968857414
+        },
+        "cosine_ge_0_999_fraction": 0.18055555555555555,
+        "cosine_ge_0_9999_fraction": 0.049305555555555554
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "rank-two-candidate",
+      "seed": 12502,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 192,
+      "exact_duplicate_fraction": 0.0,
+      "per_tick_unique_count": {
+        "min": 16.0,
+        "q10": 16.0,
+        "median": 16.0,
+        "q90": 16.0,
+        "max": 16.0
+      },
+      "per_subject_unique_count": {
+        "min": 12.0,
+        "q10": 12.0,
+        "median": 12.0,
+        "q90": 12.0,
+        "max": 12.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 2,
+      "stable_rank": 1.1604682188757154,
+      "effective_rank": 1.494552404297803,
+      "singular_values": [
+        2.6894832359926037,
+        1.077366228013313,
+        1.1637582160582258e-16,
+        7.192402715687118e-17,
+        6.3950369761888e-33,
+        4.4514117688750805e-33,
+        4.561518116885089e-49,
+        1.8357257349054576e-49
+      ],
+      "per_tick_centered_rank": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 2.0,
+        "q90": 2.0,
+        "max": 2.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 0,
+        "cosine": {
+          "min": 0.9909741502060114,
+          "q10": 0.9962269224083597,
+          "median": 0.9990916130500995,
+          "q90": 0.9999999863099923,
+          "max": 0.9999999984796472
+        },
+        "l2": {
+          "min": 0.00014913082122802734,
+          "q10": 0.00042006373405456543,
+          "median": 0.11111128074594004,
+          "q90": 0.22222240573457158,
+          "max": 0.3333336975848558
+        },
+        "cosine_ge_0_999_fraction": 0.7897727272727273,
+        "cosine_ge_0_9999_fraction": 0.4375
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9617387174150671,
+          "q10": 0.9796154145106584,
+          "median": 0.9955234631559347,
+          "q90": 0.9994154821986841,
+          "max": 0.9999999621869052
+        },
+        "cosine_ge_0_999_fraction": 0.1388888888888889,
+        "cosine_ge_0_9999_fraction": 0.034027777777777775
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "rank-two-candidate",
+      "seed": 12503,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 192,
+      "exact_duplicate_fraction": 0.0,
+      "per_tick_unique_count": {
+        "min": 16.0,
+        "q10": 16.0,
+        "median": 16.0,
+        "q90": 16.0,
+        "max": 16.0
+      },
+      "per_subject_unique_count": {
+        "min": 12.0,
+        "q10": 12.0,
+        "median": 12.0,
+        "q90": 12.0,
+        "max": 12.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 2,
+      "stable_rank": 1.1655956688502709,
+      "effective_rank": 1.504864152929175,
+      "singular_values": [
+        2.5637735284765344,
+        1.0432878408359456,
+        7.318051569375338e-17,
+        1.826971506454536e-17,
+        8.035290027847396e-33,
+        1.983276693101168e-33,
+        4.496401905558464e-49,
+        3.619657092012788e-49
+      ],
+      "per_tick_centered_rank": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 2.0,
+        "q90": 2.0,
+        "max": 2.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 0,
+        "cosine": {
+          "min": 0.9905594732513263,
+          "q10": 0.9983913364232647,
+          "median": 0.9990856994277086,
+          "q90": 0.9999999928444598,
+          "max": 0.9999999991378806
+        },
+        "l2": {
+          "min": 0.00011235475540161133,
+          "q10": 0.00031000375747680664,
+          "median": 0.11111133246959022,
+          "q90": 0.13942921563964428,
+          "max": 0.3337876341002367
+        },
+        "cosine_ge_0_999_fraction": 0.8579545454545454,
+        "cosine_ge_0_9999_fraction": 0.42613636363636365
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9611178682983245,
+          "q10": 0.9834836337008404,
+          "median": 0.9957766313449992,
+          "q90": 0.9992944518976313,
+          "max": 0.999999753428224
+        },
+        "cosine_ge_0_999_fraction": 0.13819444444444445,
+        "cosine_ge_0_9999_fraction": 0.02847222222222222
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "rank-two-candidate",
+      "seed": 12504,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 192,
+      "exact_duplicate_fraction": 0.0,
+      "per_tick_unique_count": {
+        "min": 16.0,
+        "q10": 16.0,
+        "median": 16.0,
+        "q90": 16.0,
+        "max": 16.0
+      },
+      "per_subject_unique_count": {
+        "min": 12.0,
+        "q10": 12.0,
+        "median": 12.0,
+        "q90": 12.0,
+        "max": 12.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 2,
+      "stable_rank": 1.2246112263204803,
+      "effective_rank": 1.6104787158871732,
+      "singular_values": [
+        2.0716670666244354,
+        0.9818286292722965,
+        7.27120492841384e-17,
+        3.2195773613580325e-17,
+        6.291239142984287e-33,
+        2.2306418109115827e-33,
+        3.0724332286652953e-49,
+        1.3317602682669796e-49
+      ],
+      "per_tick_centered_rank": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 2.0,
+        "q90": 2.0,
+        "max": 2.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 0,
+        "cosine": {
+          "min": 0.9959552952622107,
+          "q10": 0.9990119803378186,
+          "median": 0.9990787408858517,
+          "q90": 0.9999999928435962,
+          "max": 0.9999999979560198
+        },
+        "l2": {
+          "min": 0.0001703500747680664,
+          "q10": 0.00031128525733947754,
+          "median": 0.11111125368203636,
+          "q90": 0.11250562679735794,
+          "max": 0.22292353822870814
+        },
+        "cosine_ge_0_999_fraction": 0.9147727272727273,
+        "cosine_ge_0_9999_fraction": 0.4659090909090909
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9674499380919399,
+          "q10": 0.9888999925198985,
+          "median": 0.9970849609988801,
+          "q90": 0.9995040314505556,
+          "max": 0.9999999980554403
+        },
+        "cosine_ge_0_999_fraction": 0.2013888888888889,
+        "cosine_ge_0_9999_fraction": 0.04097222222222222
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "rank-two-candidate",
+      "seed": 12505,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 192,
+      "exact_duplicate_fraction": 0.0,
+      "per_tick_unique_count": {
+        "min": 16.0,
+        "q10": 16.0,
+        "median": 16.0,
+        "q90": 16.0,
+        "max": 16.0
+      },
+      "per_subject_unique_count": {
+        "min": 12.0,
+        "q10": 12.0,
+        "median": 12.0,
+        "q90": 12.0,
+        "max": 12.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 2,
+      "stable_rank": 1.1465143099893076,
+      "effective_rank": 1.4654552987388951,
+      "singular_values": [
+        2.994998071865851,
+        1.1464010342336186,
+        1.3258460749270965e-16,
+        5.727475891926412e-17,
+        6.65475082479705e-33,
+        4.095183341477219e-33,
+        4.0191339254845504e-49,
+        1.8503486957647027e-49
+      ],
+      "per_tick_centered_rank": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 2.0,
+        "q90": 2.0,
+        "max": 2.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 0,
+        "cosine": {
+          "min": 0.9911945158052508,
+          "q10": 0.996117149312495,
+          "median": 0.99906145089749,
+          "q90": 0.9999999899749895,
+          "max": 0.9999999990641014
+        },
+        "l2": {
+          "min": 0.0001169443130493164,
+          "q10": 0.000363767147064209,
+          "median": 0.11111166388002708,
+          "q90": 0.2222226254239985,
+          "max": 0.33333350865136135
+        },
+        "cosine_ge_0_999_fraction": 0.75,
+        "cosine_ge_0_9999_fraction": 0.3977272727272727
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9580905349741737,
+          "q10": 0.9752935808444992,
+          "median": 0.9941608056578253,
+          "q90": 0.9991443823940372,
+          "max": 0.9999998441270105
+        },
+        "cosine_ge_0_999_fraction": 0.12916666666666668,
+        "cosine_ge_0_9999_fraction": 0.03333333333333333
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "rank-two-candidate",
+      "seed": 12506,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 192,
+      "exact_duplicate_fraction": 0.0,
+      "per_tick_unique_count": {
+        "min": 16.0,
+        "q10": 16.0,
+        "median": 16.0,
+        "q90": 16.0,
+        "max": 16.0
+      },
+      "per_subject_unique_count": {
+        "min": 12.0,
+        "q10": 12.0,
+        "median": 12.0,
+        "q90": 12.0,
+        "max": 12.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 2,
+      "stable_rank": 1.1604508743354198,
+      "effective_rank": 1.4945171840923606,
+      "singular_values": [
+        2.8059950985924096,
+        1.1239783658632958,
+        8.90187043881177e-17,
+        3.90196308070482e-17,
+        6.538053579443782e-33,
+        2.2474965283193305e-33,
+        8.260369796649314e-49,
+        1.0020904573972877e-49
+      ],
+      "per_tick_centered_rank": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 2.0,
+        "q90": 2.0,
+        "max": 2.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 0,
+        "cosine": {
+          "min": 0.9909412615184957,
+          "q10": 0.9989344201057664,
+          "median": 0.9990793710088823,
+          "q90": 0.9999999944423017,
+          "max": 0.999999998718588
+        },
+        "l2": {
+          "min": 0.0001373291015625,
+          "q10": 0.00027495622634887695,
+          "median": 0.11111137705297937,
+          "q90": 0.11250426614737488,
+          "max": 0.33333371432253633
+        },
+        "cosine_ge_0_999_fraction": 0.8409090909090909,
+        "cosine_ge_0_9999_fraction": 0.3977272727272727
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9645436670743693,
+          "q10": 0.9798990741529777,
+          "median": 0.9950426919932656,
+          "q90": 0.9992431403385607,
+          "max": 0.9999999196709015
+        },
+        "cosine_ge_0_999_fraction": 0.14166666666666666,
+        "cosine_ge_0_9999_fraction": 0.034027777777777775
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "rank-two-candidate",
+      "seed": 12507,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 192,
+      "exact_duplicate_fraction": 0.0,
+      "per_tick_unique_count": {
+        "min": 16.0,
+        "q10": 16.0,
+        "median": 16.0,
+        "q90": 16.0,
+        "max": 16.0
+      },
+      "per_subject_unique_count": {
+        "min": 12.0,
+        "q10": 12.0,
+        "median": 12.0,
+        "q90": 12.0,
+        "max": 12.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 2,
+      "stable_rank": 1.2607533224017748,
+      "effective_rank": 1.6648206879244767,
+      "singular_values": [
+        2.5744090862475484,
+        1.3145965401484272,
+        8.769528378986347e-17,
+        4.2707922730274045e-17,
+        5.009916080693826e-33,
+        2.2272220250795742e-33,
+        4.365272231120179e-49,
+        1.3909354797281228e-49
+      ],
+      "per_tick_centered_rank": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 2.0,
+        "q90": 2.0,
+        "max": 2.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 0,
+        "cosine": {
+          "min": 0.9906627815081955,
+          "q10": 0.9961340256450335,
+          "median": 0.999071509852818,
+          "q90": 0.9999999903273373,
+          "max": 0.999999999388446
+        },
+        "l2": {
+          "min": 9.512901306152344e-05,
+          "q10": 0.0003528594970703125,
+          "median": 0.11111133813300653,
+          "q90": 0.22222257896301503,
+          "max": 0.333795598966585
+        },
+        "cosine_ge_0_999_fraction": 0.75,
+        "cosine_ge_0_9999_fraction": 0.36363636363636365
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9512660483528725,
+          "q10": 0.9842699960677054,
+          "median": 0.9951237427934816,
+          "q90": 0.9991569406275557,
+          "max": 0.9999994421405315
+        },
+        "cosine_ge_0_999_fraction": 0.13680555555555557,
+        "cosine_ge_0_9999_fraction": 0.03819444444444445
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "rank-two-candidate",
+      "seed": 12508,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 192,
+      "exact_duplicate_fraction": 0.0,
+      "per_tick_unique_count": {
+        "min": 16.0,
+        "q10": 16.0,
+        "median": 16.0,
+        "q90": 16.0,
+        "max": 16.0
+      },
+      "per_subject_unique_count": {
+        "min": 12.0,
+        "q10": 12.0,
+        "median": 12.0,
+        "q90": 12.0,
+        "max": 12.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 2,
+      "stable_rank": 1.2897678581414658,
+      "effective_rank": 1.7036129830626907,
+      "singular_values": [
+        2.248397673481596,
+        1.2103144895236821,
+        9.642796863606835e-17,
+        5.736611762680444e-17,
+        6.029210526331373e-33,
+        2.7382544359491228e-33,
+        5.5209999670330396e-49,
+        1.1809571435510688e-49
+      ],
+      "per_tick_centered_rank": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 2.0,
+        "q90": 2.0,
+        "max": 2.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 0,
+        "cosine": {
+          "min": 0.9911106672632877,
+          "q10": 0.9960962512502294,
+          "median": 0.9990487382319151,
+          "q90": 0.9999999856146631,
+          "max": 0.9999999990398535
+        },
+        "l2": {
+          "min": 0.00011754035949707031,
+          "q10": 0.00043085217475891113,
+          "median": 0.11111187221773142,
+          "q90": 0.22222264990005278,
+          "max": 0.3333335676971333
+        },
+        "cosine_ge_0_999_fraction": 0.75,
+        "cosine_ge_0_9999_fraction": 0.42613636363636365
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9558224505378716,
+          "q10": 0.9875197224595547,
+          "median": 0.9960815730096169,
+          "q90": 0.9996152928586994,
+          "max": 0.9999997063853563
+        },
+        "cosine_ge_0_999_fraction": 0.19236111111111112,
+        "cosine_ge_0_9999_fraction": 0.04027777777777778
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    },
+    {
+      "arm": "rank-two-candidate",
+      "seed": 12509,
+      "event_count": 192,
+      "subject_count": 16,
+      "tick_count": 12,
+      "exact_unique_token_count": 192,
+      "exact_duplicate_fraction": 0.0,
+      "per_tick_unique_count": {
+        "min": 16.0,
+        "q10": 16.0,
+        "median": 16.0,
+        "q90": 16.0,
+        "max": 16.0
+      },
+      "per_subject_unique_count": {
+        "min": 12.0,
+        "q10": 12.0,
+        "median": 12.0,
+        "q90": 12.0,
+        "max": 12.0
+      },
+      "active_coordinates": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinates": [
+        29,
+        30
+      ],
+      "centered_numerical_rank": 2,
+      "stable_rank": 1.207383888650735,
+      "effective_rank": 1.5819696786403272,
+      "singular_values": [
+        2.438407954885112,
+        1.1104368700265954,
+        1.0867511247834114e-16,
+        2.8783929382115967e-17,
+        3.591775865148201e-33,
+        2.5317314721549376e-33,
+        2.9171957438336285e-49,
+        1.8960401737531832e-49
+      ],
+      "per_tick_centered_rank": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 2.0,
+        "q90": 2.0,
+        "max": 2.0
+      },
+      "consecutive_same_subject": {
+        "pair_count": 176,
+        "exact_duplicate_count": 0,
+        "cosine": {
+          "min": 0.9906811077213603,
+          "q10": 0.9989489713710378,
+          "median": 0.9990820038048174,
+          "q90": 0.999999989142732,
+          "max": 0.9999999982510647
+        },
+        "l2": {
+          "min": 0.0001595616340637207,
+          "q10": 0.00037804245948791504,
+          "median": 0.1111113689266729,
+          "q90": 0.11375616240145481,
+          "max": 0.33378168453424045
+        },
+        "cosine_ge_0_999_fraction": 0.8579545454545454,
+        "cosine_ge_0_9999_fraction": 0.39204545454545453
+      },
+      "same_tick_cross_subject": {
+        "pair_count": 1440,
+        "cosine": {
+          "min": 0.9633941952914259,
+          "q10": 0.9847888609213772,
+          "median": 0.9960141213834941,
+          "q90": 0.9993023252178872,
+          "max": 0.9999990566809555
+        },
+        "cosine_ge_0_999_fraction": 0.14583333333333334,
+        "cosine_ge_0_9999_fraction": 0.03958333333333333
+      },
+      "lifecycle": {
+        "final_stored_events": 144,
+        "minimum_events_per_subject": 9,
+        "maximum_events_per_subject": 9,
+        "expired_events": 48,
+        "overwritten_events": 0,
+        "emission_cost_units": 6336,
+        "retention_cost_units": 1008,
+        "parent_link_cost_units": 0,
+        "allocated_nbytes": 120320
+      }
+    }
+  ],
+  "arms": {
+    "duplicate-coordinate-control": {
+      "seed_count": 9,
+      "exact_unique_token_count": {
+        "min": 3.0,
+        "q10": 3.8,
+        "median": 6.0,
+        "q90": 8.0,
+        "max": 8.0
+      },
+      "exact_duplicate_fraction": {
+        "min": 0.9583333333333334,
+        "q10": 0.9583333333333334,
+        "median": 0.96875,
+        "q90": 0.9802083333333333,
+        "max": 0.984375
+      },
+      "centered_numerical_rank": {
+        "min": 1.0,
+        "q10": 1.0,
+        "median": 1.0,
+        "q90": 1.0,
+        "max": 1.0
+      },
+      "stable_rank": {
+        "min": 1.0,
+        "q10": 1.0,
+        "median": 1.0,
+        "q90": 1.0,
+        "max": 1.0
+      },
+      "effective_rank": {
+        "min": 1.0,
+        "q10": 1.0,
+        "median": 1.0,
+        "q90": 1.0,
+        "max": 1.0
+      },
+      "consecutive_cosine_median": {
+        "min": 0.9982630918636036,
+        "q10": 0.9982630918636036,
+        "median": 0.9982630918636036,
+        "q90": 0.9982630918636036,
+        "max": 0.9982630918636036
+      },
+      "same_tick_cross_subject_cosine_median": {
+        "min": 0.9982630918636036,
+        "q10": 0.9982630918636036,
+        "median": 0.9982630918636036,
+        "q90": 0.9982630918636036,
+        "max": 0.9982630918636036
+      },
+      "all_parent_counts_zero": true,
+      "all_event_counts_complete": true,
+      "all_lifecycle_contracts_exact": true,
+      "active_coordinate_union": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinate_union": [
+        29,
+        30
+      ]
+    },
+    "rank-two-candidate": {
+      "seed_count": 9,
+      "exact_unique_token_count": {
+        "min": 192.0,
+        "q10": 192.0,
+        "median": 192.0,
+        "q90": 192.0,
+        "max": 192.0
+      },
+      "exact_duplicate_fraction": {
+        "min": 0.0,
+        "q10": 0.0,
+        "median": 0.0,
+        "q90": 0.0,
+        "max": 0.0
+      },
+      "centered_numerical_rank": {
+        "min": 2.0,
+        "q10": 2.0,
+        "median": 2.0,
+        "q90": 2.0,
+        "max": 2.0
+      },
+      "stable_rank": {
+        "min": 1.1328159468863364,
+        "q10": 1.1437746373687134,
+        "median": 1.1655956688502709,
+        "q90": 1.266556229549713,
+        "max": 1.2897678581414658
+      },
+      "effective_rank": {
+        "min": 1.4353342964978393,
+        "q10": 1.459431098290684,
+        "median": 1.504864152929175,
+        "q90": 1.6725791469521194,
+        "max": 1.7036129830626907
+      },
+      "consecutive_cosine_median": {
+        "min": 0.9990487382319151,
+        "q10": 0.999058908364375,
+        "median": 0.9990793710088823,
+        "q90": 0.9990926466043247,
+        "max": 0.9990967808212253
+      },
+      "same_tick_cross_subject_cosine_median": {
+        "min": 0.9941608056578253,
+        "q10": 0.9948663147261775,
+        "median": 0.995615015873818,
+        "q90": 0.9962822506074696,
+        "max": 0.9970849609988801
+      },
+      "all_parent_counts_zero": true,
+      "all_event_counts_complete": true,
+      "all_lifecycle_contracts_exact": true,
+      "active_coordinate_union": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        27,
+        29,
+        30,
+        31
+      ],
+      "varying_coordinate_union": [
+        29,
+        30
+      ]
+    }
+  },
+  "cross_arm_findings": {
+    "all_action_event_and_probability_fields_identical": true,
+    "arms_differ_only_at_second_readout_coordinate_30": true,
+    "duplicate_coordinate_control_is_rank_one_in_all_seeds": true,
+    "rank_two_candidate_is_rank_two_in_all_seeds": true,
+    "rank_two_candidate_events_are_exactly_distinct": true,
+    "rank_two_candidate_subjects_are_distinct_each_tick": true,
+    "rank_two_candidate_remains_low_rank_fixed_bootstrap": true
+  },
+  "qualification": {
+    "arena_lifecycle_and_identity_qualified": true,
+    "degeneration_diagnostic_control_qualified": true,
+    "formal_nine_seed_panel": true,
+    "t3_mechanism_smoke_authorized": true,
+    "distributed_cognitive_representation_claim_authorized": false,
+    "thought_chain_claim_authorized": false,
+    "language_or_object_reference_claim_authorized": false,
+    "status": "qualified-for-t3-mechanism-smoke-only-low-rank-fixed-bootstrap"
+  },
+  "interpretation": {
+    "control": "duplicate readout coordinates collapse the centered token stream to one independent direction, so the diagnostics detect the intended negative control",
+    "candidate": "the selected second readout removes exact event duplication and preserves subject/tick distinctions, but the stream remains an engineered rank-two subspace with high local cosine similarity",
+    "boundary": "T2 qualifies only a minimal forward-recall mechanism smoke; it does not qualify a distributed thought representation or a cognitive chain"
+  },
+  "governance": {
+    "parent_count_runtime_expected_zero": true,
+    "retention_policy_changed": false,
+    "objective_fact_fed_into_thought": false,
+    "action_logits_fed_into_thought": false,
+    "reward_or_confidence_gate_added": false,
+    "read_head_role_predefined": false,
+    "permanent_retention_authorized": false
+  },
+  "assessment_sha256": "fd553555909435de069067ea95c06baefa060e25a66d2de386be2c4e32374f7a"
+}

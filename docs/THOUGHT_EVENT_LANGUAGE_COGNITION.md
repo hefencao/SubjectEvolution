@@ -1,6 +1,6 @@
 # ThoughtEvent、思维链与语言认知研究合同
 
-状态：**T1 统一 ThoughtEvent 基础设施已实现；前向 recall、语言与通信仍未实现**
+状态：**T2 前向 recall 前退化审计已冻结；T3 仅获最小机制 smoke 资格，语言与通信仍未实现**
 适用边界：统一 Subject Graph 后续 `[EVOLVE-SUBJECT]` 能力、通信/语言实验与观察者侧跨世界分析。
 
 本文档将思维链、较长期记忆、主体间信号与语言研究放在同一设计边界内。它不声明当前 runtime 已经具有前向 ThoughtEvent recall、语言、对象词、组合语法或跨世界认知同态，也不授权通过固定 reward、confidence、词典或人工语义标签塑形主体。
@@ -180,13 +180,17 @@ lineage cap、near-duplicate suppression、多 head、temperature、stochastic r
 
 ### T2：只读退化审计
 
-审计当前 token 的频率、重复度、信息漂移、lineage 结构、容量和跨 source 差异。若 token 本身退化，不得直接接入 recall。
+已完成。正式 panel 使用 9 个新 seed、16 个稳定主体和 12 tick 窗口，对比 `port 11 + port 11` 重复坐标负对照与 `port 11 + port 7` rank-two 候选。两臂保持 event identity、action、sampled probability 与 action potentials 一致，只允许第二个 readout coordinate 不同。
+
+负对照在所有 seed 中稳定为 centered rank 1，精确重复比例为 95.83%～98.44%。rank-two 候选在所有 seed 中产生 192/192 个精确不同事件并保持 centered rank 2，但连续同主体 token 的 cosine 中位数仍为 0.999049～0.999097。arena 生命周期、expiry 和成本计量符合 T1 合同，runtime parent_count 保持 0。
+
+该结果证明诊断可以识别 rank-one collapse，也证明候选 readout 避免了完全重复；但它仍是低秩、高局部相似的 fixed-bootstrap 表示。不得据此声明已经形成思维链、分布式认知或语言。
 
 ### T3：最小短期前向 recall
 
-使用单 read path 或少量无固定角色 read heads，只读取已提交 ThoughtEvent；与无 recall、token 内容打乱、lineage 打乱和等成本 control 比较。
+只获得**机制 smoke**资格。第一版应使用单一、无固定认知角色的只读路径，只读取前一 tick 以前已提交的 ThoughtEvent，并记录真实 parent DAG。必须与无 recall、token 内容打乱及等成本 control 比较。
 
-资格环境应包含短延迟的信息依赖，但不得用固定 scalar reward 取代生态后果。
+T3 不授权 multi-head、temperature、novelty/contrast role、reference-count retention、永久保留或语言接口。其目标只是证明 recalled ThoughtEvent 能以有界、可审计且不旁路统一图的方式进入 activation；即使机制 smoke 成功，也不能自动升级为思维链资格。
 
 ### T4：回声治理与多头资格
 
@@ -398,6 +402,15 @@ ThoughtEvent / node state
 
 ## 11. 下一实现边界
 
-下一 `[EVOLVE-SUBJECT]` 首轮执行 T2 只读退化审计，不接语言、不接外部世界频道，也不启用前向 recall。T2 使用 T1 identity、容量、生命周期和成本证据，检查 token 频率、重复度、漂移与跨 source 差异；只有表示通过资格后才允许设计 T3 recall。
+下一项为 T3 最小前向 recall 机制 smoke。实现必须满足：
 
-语言与跨世界编码同态继续作为后续研究议程；它们依赖 ThoughtEvent、通信接口、非对称可观测环境和跨 seed 观察工具，不应与 T1 一次性实现。
+1. 单一、无固定认知角色的读取路径；
+2. 只读已提交 ThoughtEvent，不读取本 tick 新事件；
+3. parent DAG 记录真实 recalled parent 与 contribution；
+4. recall 输入通过声明的 graph ingress，不直接回灌 action logits；
+5. 与无 recall、token 内容打乱和等成本 control 对照；
+6. checkpoint、clone、branch identity、成本与主体生命周期完整；
+7. 默认关闭，不改变 v0.165 及以前实验身份；
+8. 不实现语言、世界频道、multi-head、retention policy 或永久记忆。
+
+T2 的低秩结果必须保留为解释边界：T3 只能验证最小机制可行性，不能把 fixed-bootstrap rank-two token 称为完整思维表示。

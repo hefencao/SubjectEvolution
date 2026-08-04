@@ -13,7 +13,7 @@
 | SG-05 | 持续性 | BLOCKED | 临时 graph-parameter 效应能否在独立论证的决策规则下持续？ | 需要可复现下游证据和单独 keep/revert 合同。 |
 | SG-06 | Topology evolution | BLOCKED | topology、readout 和 addressing 能否演化而不退化为不可诊断搜索？ | 需要成本、development、inheritance、neutralization 和健康 source 资格。 |
 | SG-09 | REST output 上游来源 | OPEN | 哪些 history、association 和 modulation 条件使不同 source 产生不同 edge-forward-gate temporary write？ | Stage 3C-42 已解析 temporary write 之后的执行路径，但未解析 proposal 形成原因；当前不继续机械追加 Stage 3C。 |
-| SG-10 | 思维链与记忆连续性 | NARROWED | 统一 ThoughtEvent 表示与 arena 已建立后，现有 graph-produced token 是否具有足够多样性、稳定性与容量效率，可安全进入前向 recall？ | T1 已实现同一 token/identity、parent DAG、bounded arena 和成本；T2 必须先做只读退化审计，当前不授权 recall。 |
+| SG-10 | 思维链与记忆连续性 | NARROWED | 低秩、高局部相似的 graph-produced token 能否在不形成回声或旁路图拓扑的情况下支持最小前向 recall？ | T2 已证明 rank-one 负对照可识别、rank-two 候选避免精确重复但仍高度相似；只授权 T3 机制 smoke，不授权思维链或分布式认知声明。 |
 | LANG-01 | 对象指称资格 | OPEN | 如何区分共享行为触发码、跨情境对象指称、组合语言和可复用认知把手？ | 必须使用非对称可观测性、跨情境解纠缠和未见组合；固定路径或极强反馈不能单独证明词义。 |
 | LANG-02 | 跨 seed/区域对齐 | OPEN | 同一类型对象在不同 seed、区域或谱系中是否由不同 signal、subgraph 和 region 指称？ | 不按词形、node ID 或 region 硬对齐；需要功能干预、指称分区、关系结构和未见组合上的 observer-side 映射。 |
 | LANG-03 | 成本约束编码同态 | OPEN | 相似环境统计与带宽成本下，不同世界的基础认知/语言是否形成保持组合关系与相对成本序的同态结构？ | “类似哈夫曼编码”只作为假设；不预设离散、prefix-free、无损、静态或信息论最优编码。 |
@@ -39,18 +39,16 @@ active edge-forward-gate write
 
 ## 4. SG-10：思维链与记忆连续性
 
-当前 `node_state` 仍只提供较薄的连续递归状态；历史 thought token 主要服务 delayed association，没有进入下一轮前向 activation。T1 已建立统一 ThoughtEvent arena，并复用同一 graph-produced token，但 arena 不被 activation 读取，自动事件 parent_count 仍为 0。
+T1 已建立统一 ThoughtEvent arena，并复用同一 graph-produced token；arena 尚未被 activation 读取，runtime parent_count 为 0。T2 在 9 个新 seed 上冻结了前向 recall 前的表示退化边界。
 
-T1 已满足：
+两条只读臂保持 event identity、action、sampled probability 和 action potentials 完全一致：
 
-- 统一 ThoughtEvent vector 与 identity；
-- 短暂链和较长期记忆共享 comparator、readout 格式与 graph ingress；
-- 时间尺度差异由 retention lifecycle、近期/稀疏索引和访问成本表达；
-- 不设置独立 `RETHINK` action；
-- 不把 action preference 或 Objective-Fact 无条件作为 thought 内容回灌；
-- 工程缓存层级不得升级为认知语义层级。
+- 重复坐标负对照 `port 11 + port 11` 在所有 seed 中 centered rank 均为 1，精确重复比例为 95.83%～98.44%；
+- rank-two 候选 `port 11 + port 7` 在所有 seed 中 192/192 个事件精确不同、centered rank 均为 2；
+- 候选连续同主体 token 的 cosine 中位数仍为 0.999049～0.999097，说明其避免完全重复，但仍是低秩且局部变化很小的 fixed-bootstrap 表示；
+- arena 每 arm/seed 精确产生 192 次 emission、48 次 expiry、0 次 overwrite 和 144 个最终保留事件。
 
-T2 需要先审计 emission frequency、exact/near duplicate、跨 tick 漂移、arena occupancy、expiry/overwrite、计数成本与跨 source 差异。只有 token 表示未退化时，才讨论少量 read heads、分布式递归路径或其他可塑路由。
+因此 SG-10 被收窄为：最小 recall 是否能使用该低秩表示产生可审计的 parent-child 信息传递，而不造成机械回声、action preference 回灌或 graph topology 旁路。T3 只允许单一无固定角色路径的机制 smoke；不授权多头、temperature、retention policy、永久记忆、思维链或语言资格。
 
 
 ## 5. LANG-01～04：语言、指称与跨世界结构

@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c42-frozen-thought-event-t1-implemented",
-  "project_version": "0.164.0",
+  "status": "stage-3c42-frozen-thought-event-t2-qualified",
+  "project_version": "0.165.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "ThoughtEvent-T1",
+  "current_stage": "ThoughtEvent-T2",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -1018,9 +1018,9 @@
     "next_project_boundary": "evolve-subject-unified-thought-event-chain-substrate"
   },
   "thought_event_language_design_contract": {
-    "status": "t1-implemented-forward-recall-not-implemented",
+    "status": "t2-qualified-for-t3-mechanism-smoke-only",
     "authoritative_document": "docs/THOUGHT_EVENT_LANGUAGE_COGNITION.md",
-    "next_implementation_stage": "T2-read-only-thought-event-degeneration-audit",
+    "next_implementation_stage": "T3-minimal-forward-recall-mechanism-smoke",
     "single_thought_representation": true,
     "short_and_long_memory_differ_only_by_lifecycle_index_cost": true,
     "rethink_action_authorized": false,
@@ -1038,7 +1038,15 @@
     "t1_runtime_parent_count": 0,
     "t1_bounded_lifecycle_implemented": true,
     "t1_checkpoint_clone_branch_identity_implemented": true,
-    "t1_counted_cost_instrumentation_implemented": true
+    "t1_counted_cost_instrumentation_implemented": true,
+    "t2_read_only_audit_completed": true,
+    "t2_formal_seed_count": 9,
+    "t2_candidate_centered_rank": 2,
+    "t2_candidate_exact_unique_events_per_seed": 192,
+    "t2_low_rank_fixed_bootstrap_boundary": true,
+    "t3_mechanism_smoke_authorized": true,
+    "thought_chain_claim_authorized": false,
+    "distributed_cognitive_representation_claim_authorized": false
   },
   "thought_event_t1_contract": {
     "decision_protocol": "protocols/decisions/subject_vm_thought_event_t1_v1.json",
@@ -1059,5 +1067,28 @@
     "counted_cost_only": true,
     "forward_recall": false,
     "language_or_signal_channel": false
+  },
+  "thought_event_t2_contract": {
+    "decision_protocol": "protocols/decisions/subject_vm_thought_event_t2_degradation_v1.json",
+    "formal_assessment_fixture": "tests/fixtures/thought_event_t2_degradation.json",
+    "assessment_sha256": "fd553555909435de069067ea95c06baefa060e25a66d2de386be2c4e32374f7a",
+    "study_sha256": "8857b4bc0046d081d68a4092aa046ecb8a238b360d59ea473de484114ec5c53a",
+    "seed_count": 9,
+    "events_per_arm_per_seed": 192,
+    "duplicate_coordinate_control_centered_rank": 1,
+    "rank_two_candidate_centered_rank": 2,
+    "rank_two_candidate_exact_unique_events_per_seed": 192,
+    "rank_two_candidate_consecutive_cosine_median_range": [
+      0.9990487382319151,
+      0.9990967808212253
+    ],
+    "arena_expired_events_per_seed": 48,
+    "arena_overwritten_events_per_seed": 0,
+    "runtime_parent_count": 0,
+    "forward_recall": false,
+    "t3_mechanism_smoke_authorized": true,
+    "thought_chain_claim_authorized": false,
+    "distributed_cognitive_representation_claim_authorized": false,
+    "language_or_object_reference_claim_authorized": false
   }
 }

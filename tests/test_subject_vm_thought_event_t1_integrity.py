@@ -27,23 +27,24 @@ def test_thought_event_t1_integrity_and_protocol_checksum(tmp_path: Path) -> Non
     )
 
 
-def test_epoch_contract_marks_t1_implemented_and_t2_next() -> None:
+def test_epoch_contract_marks_t1_and_t2_completed_with_t3_next() -> None:
     epoch = json.loads(
         Path("protocols/epochs/subject_graph_vm_v1.json").read_text(encoding="utf-8")
     )
-    assert epoch["project_version"] == "0.164.0"
-    assert epoch["current_stage"] == "ThoughtEvent-T1"
+    assert epoch["project_version"] == "0.165.0"
+    assert epoch["current_stage"] == "ThoughtEvent-T2"
     assert epoch["thought_event_t1_contract"]["forward_recall"] is False
     design = epoch["thought_event_language_design_contract"]
     assert design["t1_unified_arena_implemented"] is True
-    assert design["next_implementation_stage"].startswith("T2-")
+    assert design["t2_read_only_audit_completed"] is True
+    assert design["next_implementation_stage"].startswith("T3-")
 
 
-def test_t1_documentation_keeps_language_and_recall_blocked() -> None:
+def test_thought_event_documentation_keeps_language_blocked_and_t3_narrow() -> None:
     text = Path("docs/THOUGHT_EVENT_LANGUAGE_COGNITION.md").read_text(
         encoding="utf-8"
     )
-    assert "T1 统一 ThoughtEvent 基础设施已实现" in text
-    assert "T2 只读退化审计" in text
-    assert "不接入前向 recall" in text
+    assert "T2 前向 recall 前退化审计已冻结" in text
+    assert "最小前向 recall 机制 smoke" in text
+    assert "不能自动升级为思维链资格" in text
     assert "communication interface" in text
