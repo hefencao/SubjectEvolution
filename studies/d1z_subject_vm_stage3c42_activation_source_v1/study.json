@@ -1,0 +1,26 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c42_activation_source_v1",
+  "title": "D1-Z Subject VM Stage 3C-42 REST activation contribution 来源审计",
+  "status": "frozen-read-only-activation-source-audit",
+  "scientific_stage": "stage3c42-activation-source",
+  "authorization": {
+    "runtime_rerun_only_for_observation_trace": true,
+    "selected_reference_seeds": [
+      12305,
+      12307,
+      12308
+    ],
+    "selected_replication_seeds": [
+      12401
+    ],
+    "events_per_source": 5,
+    "event_selection_source": "Stage-3C-40 frozen top-five boundary opportunities",
+    "new_source_panel": false,
+    "sampling_semantics_change": false,
+    "exposure_or_horizon_change": false,
+    "graph_change": false,
+    "thought_chain_implementation": false,
+    "permanent_parameter_retention": false
+  }
+}

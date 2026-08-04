@@ -1,0 +1,61 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c42_activation_source_v1"
+title = "D1-Z Subject VM Stage 3C-42 REST activation contribution 来源审计"
+
+[parameters.reference_rank2]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c42_activation_source_v1/final/inputs/reference_rank2_study_report.json"
+description = "原 panel deterministic rank-two study report。"
+[parameters.reference_stage3c31]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c42_activation_source_v1/final/inputs/reference_stage3c31_alignment_ablation.json"
+description = "原 panel Stage 3C-31 assessment。"
+[parameters.replication_rank2]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c42_activation_source_v1/final/inputs/replication_rank2_study_report.json"
+description = "独立 panel deterministic rank-two study report。"
+[parameters.replication_stage3c31]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c42_activation_source_v1/final/inputs/replication_stage3c31_alignment_ablation.json"
+description = "独立 panel Stage 3C-31 assessment。"
+[parameters.stage3c40]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c42_activation_source_v1/final/inputs/stage3c40_categorical_boundary.json"
+description = "冻结 Stage 3C-40 assessment。"
+[parameters.stage3c41]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c42_activation_source_v1/final/inputs/stage3c41_pressure_source.json"
+description = "冻结 Stage 3C-41 assessment。"
+[parameters.activation_trace_integrity]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c42_activation_source_v1/final/inputs/subject_vm_activation_contribution_trace_integrity.json"
+description = "v0.161 activation trace 中立性 assessment。"
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c42_activation_source_v1/final"
+description = "Stage 3C-42 输出目录。"
+[parameters.backend]
+type = "choice"
+default = "auto"
+choices = ["auto", "cpu"]
+description = "正式 trace replay backend。"
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c42_activation_source_v1_results.zip"
+description = "项目外结果包。"
+
+[steps.run-stage3c42-trace-study]
+command = ["se-subject-vm-stage3c42-activation-source-study", "--reference-rank2-study-report", "{reference_rank2}", "--reference-stage3c31-assessment", "{reference_stage3c31}", "--replication-rank2-study-report", "{replication_rank2}", "--replication-stage3c31-assessment", "{replication_stage3c31}", "--stage3c40-assessment", "{stage3c40}", "--stage3c41-assessment", "{stage3c41}", "--activation-trace-integrity", "{activation_trace_integrity}", "--backend", "{backend}", "--output", "{analysis_root}/stage3c42", "--overwrite"]
+
+[steps.assess-stage3c42]
+command = ["se-subject-vm-stage3c42-activation-source", "--study-report", "{analysis_root}/stage3c42/study_report.json", "--stage3c40-assessment", "{stage3c40}", "--stage3c41-assessment", "{stage3c41}", "--activation-trace-integrity", "{activation_trace_integrity}", "--output", "{analysis_root}/stage3c42_activation_source.json", "--summary-output", "{analysis_root}/stage3c42_study_summary.json", "--diagnostic-report", "{analysis_root}/stage3c42_diagnostic_report.md"]
+
+[steps.pack-results]
+requires_json = [
+  { path = "{analysis_root}/stage3c42_activation_source.json", field = "cross_panel_findings.all_rest_output_deltas_exactly_reconstructed", equals = true },
+  { path = "{analysis_root}/stage3c42_activation_source.json", field = "cross_panel_findings.all_observed_temporary_write_targets_are_edge_forward_gate", equals = true },
+  { path = "{analysis_root}/stage3c42_activation_source.json", field = "cross_panel_findings.all_exposure_did_structural_contribution_is_current_edge_gate", equals = true },
+  { path = "{analysis_root}/stage3c42_activation_source.json", field = "governance.sampling_semantics_changed", equals = false },
+  { path = "{analysis_root}/stage3c42_activation_source.json", field = "permanent_parameter_retention_authorized", equals = false }
+]
+command = ["python", "scripts/package_stage3c42_results.py", "--project", ".", "--analysis-root", "{analysis_root}", "--output", "{output}"]

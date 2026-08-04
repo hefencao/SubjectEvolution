@@ -1,5 +1,13 @@
 # 版本变更记录
 
+## 0.162.0
+
+- 完成 Stage 3C-42 REST activation contribution 来源审计，只读复用 Stage 3C-40 冻结 top-five event support。
+- 在 4 个 source、20 个 event identity、40 个 mode-event 上精确重建 REST output exposure DID；28 个 mode-event 非零，全部结构贡献来自当前 recurrent `edge-forward-gate`。
+- inherited node-state、state×gate interaction、input、bias 与 output-gate 均未形成 exposure DID；gate 幅度不能区分 crossing 与 noncrossing。
+- 将 SG-09 收窄到更上游 history/association/modulation→temporary-write proposal 来源，但暂停继续机械追加 Stage 3C。
+- 下一项目边界切换为 `[EVOLVE-SUBJECT]` 统一 ThoughtEvent/思维链底层；不增加独立 `RETHINK` action，不拆分短期与长期 thought-token 表示。
+
 ## 0.161.0
 
 - 增加默认关闭、观测专用的 Subject VM activation contribution trace，记录 node、edge、output-port、action-potential aggregation 与 active temporary-write/control-reservation lineage。

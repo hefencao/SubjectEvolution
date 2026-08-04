@@ -1,0 +1,72 @@
+{
+  "schema": "se-subject-vm-stage3c42-activation-source-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c42-activation-source-v1",
+  "project_version": "0.162.0",
+  "task_type": "MAIN-EXP",
+  "git_title": "[MAIN-EXP] D1-Z: audit activation contribution sources of REST output",
+  "scientific_question": "Stage 3C-41 定位到 REST action-port 的 logit 变化，在 fixed bootstrap graph 内由哪些当前 node、edge、output 与 temporary-write contribution 形成？",
+  "input_contract": {
+    "stage3c40_frozen_top_five_opportunity_support_required": true,
+    "stage3c41_pressure_source_assessment_required": true,
+    "activation_trace_integrity_assessment_required": true,
+    "selected_reference_seeds": [12305, 12307, 12308],
+    "selected_replication_seeds": [12401],
+    "events_per_source": 5,
+    "runtime_rerun_only_for_observation_trace": true,
+    "new_source_panel_authorized": false
+  },
+  "authorized_observations": {
+    "live_control_node_activation_decomposition": true,
+    "delay_one_recurrent_edge_transmission": true,
+    "rest_output_gate_contribution": true,
+    "temporary_write_lineage": true,
+    "three_vs_six_tick_exposure_difference_in_differences": true,
+    "categorical_trace_identity_crosscheck": true
+  },
+  "forbidden_changes": {
+    "subject_graph_or_bootstrap_change": true,
+    "sampling_kernel_change": true,
+    "random_stream_change": true,
+    "source_panel_change": true,
+    "exposure_or_horizon_change": true,
+    "event_selection_after_trace_observation": true,
+    "thought_chain_implementation": true,
+    "post_hoc_scalar_classifier": true,
+    "automatic_keep_or_revert": true,
+    "permanent_retention": true
+  },
+  "observed_result": {
+    "source_count": 4,
+    "event_identity_count": 20,
+    "mode_event_count": 40,
+    "crossing_mode_event_count": 6,
+    "noncrossing_mode_event_count": 34,
+    "nonzero_rest_output_did_mode_event_count": 28,
+    "temporary_write_target_family_counts": {
+      "edge-forward-gate": 76
+    },
+    "all_rest_output_deltas_exactly_reconstructed": true,
+    "all_exposure_did_structural_contribution_is_current_edge_gate": true,
+    "maximum_abs_inherited_node_state_component": 0.0,
+    "maximum_abs_state_gate_interaction_component": 0.0,
+    "maximum_abs_numerical_component": 1.7881393432617188e-7,
+    "crossing_abs_current_gate_component_minimum": 0.03826908767223358,
+    "crossing_abs_current_gate_component_maximum": 0.12205637991428375,
+    "noncrossing_abs_current_gate_component_maximum": 0.16775809228420258,
+    "current_gate_component_magnitude_alone_separates_crossing": false,
+    "alignment_common_current_gate_component_absolute_difference": 6.705522537231445e-7,
+    "replication_highest_opportunity_pressure_ratio": 0.688481985025035,
+    "replication_highest_opportunity_current_gate_component": 0.0823221355676651,
+    "assessment_sha256": "b9b4962b391bf92b26f02d91c5952eb9e8a38fe944782a1358749b09320e49e7"
+  },
+  "frozen_interpretation": {
+    "fixed_bootstrap_execution_path_resolved": "active temporary edge-forward-gate write -> delay-one self-edge transmission -> linear node-0 accumulator -> REST output gate",
+    "exposure_did_requires_inherited_node_state_divergence_on_frozen_support": false,
+    "temporary_gate_write_magnitude_is_sufficient_crossing_classifier": false,
+    "source_history_proposal_origin_is_fully_resolved": false,
+    "execution_contribution_is_causal_attribution": false,
+    "rest_action_port_has_value_semantics": false,
+    "thought_chain_implemented": false,
+    "next_project_boundary": "evolve-subject-unified-thought-event-chain-substrate"
+  }
+}

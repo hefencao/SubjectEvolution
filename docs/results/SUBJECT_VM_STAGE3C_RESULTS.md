@@ -45,6 +45,7 @@
 | 3C-39 | `[MAIN-EXP]` 只读 opportunity transport | 比较原 panel 与独立 panel 冻结的 continuous divergence、tick 和同 action sampled probability，并复用 Stage 3C-36 bootstrap transport。 | 两 panel 的 divergence event 为 129 与 123，L1 与 probability-change 范围大量重叠，独立 panel 的晚期 divergence 和 selected-action probability 变化不更弱；没有单调幅度阈值能隔离 crossing source。剩余不确定性被收窄到未导出的完整 categorical competition 与 draw state。 | 把根因视为已解析，继续抽取 panel、调整 exposure/threshold，或从 selected-action probability 推导精确 boundary margin。 |
 | 3C-40 | `[MAIN-EXP]` 精确边界审计 | 在 matched-horizon 四臂链中导出完整 categorical probability/CDF/draw，并以边界压力/原 draw 余量重建实际 crossing。 | 原 panel 的 alignment-specific crossing source 为 12305、12308；12307 为 alignment-common crossing。独立 panel 最大压力/余量比 0.68848，全部保留正余量；trace 精确重现 Stage 3C-34。 | 将 draw proximity 或 CDF shift 单独视为充分解释；value、credit quality 或 retention。 |
 | 3C-41 | `[MAIN-EXP]` 只读 pressure-source 分解 | 读取 Stage 3C-40 每 source 冻结的 top-five opportunity，逐 action 分解 masked-logit、probability mass 和 selected CDF endpoint pressure。 | 180 个 mode-event 中 130 个非零 logit 变化全部只在 `REST` port；六个 crossing 的正负 REST delta 各三次，5/6 被其他 action 概率部分抵消。noncrossing 的 REST logit/probability 变化可大于 crossing，符号或幅度不能单独分界。 | 把 `REST` 赋予价值语义，或从单一 action-port 幅度授权 reward、credit、keep/revert、learning、retention。 |
+| 3C-42 | `[MAIN-EXP]` 只读 activation-source 审计 | 对 12305、12307、12308、12401 的冻结 top-five 事件重放语义中立 activation trace，分解 3-tick/6-tick exposure 的 REST output DID。 | 40 个 mode-event 的结构 DID 全部由当前 recurrent `edge-forward-gate` temporary write 贡献；inherited state、state×gate、input、bias 和 output gate 均为零。noncrossing gate contribution 可大于 crossing，幅度仍不能分界。 | 把执行 contribution 解释为 causal attribution/value，声称 proposal 来源已解析，或授权 keep/revert、learning、retention。 |
 
 ## 当前冻结链
 
@@ -52,6 +53,8 @@
 
 Stage 3C-41 进一步证明，冻结 top opportunity 中所有非零 masked-logit 变化都只发生在 `REST` action port；其他 action 的概率变化是 softmax 归一化后的质量重分配。crossing 同时包含正、负 REST delta，且 noncrossing 可具有更大的 REST logit 或 probability 变化，因此 `REST` 的符号与幅度都不是充分分界。
 
-## 下一项获授权的证据边界
+Stage 3C-42 将当前 fixed bootstrap 的执行路径收窄为：active temporary `edge-forward-gate` write 经 delay-one recurrent self-edge 改变 node-0 与 REST output。在冻结支持上没有 inherited node-state exposure divergence，且 gate contribution 幅度仍不能区分 crossing。更上游 proposal 形成原因继续开放。
 
-下一项为 `[ENGINEERING]` 语义中立 Subject VM activation contribution trace。它必须导出 node activation、edge transmission、output gate contribution、temporary-write lineage 与 action-port aggregation，并证明 trace 不改变 action、RNG、checkpoint state 或 branch identity。该工程门完成前，不得执行 Stage 3C-42，也不得把 `REST` action port 解释为价值。
+## 当前项目边界
+
+Stage 3C 在执行贡献层暂时冻结，不继续机械追加 Stage 3C-43。下一项目任务切换到 `[EVOLVE-SUBJECT]` 统一 ThoughtEvent/思维链底层实现；Stage 3C-42 不授权 value、credit、keep/revert、learning 或 retention。

@@ -1,15 +1,15 @@
 # SubjectEvolution 当前项目状态
 
-版本：**0.161.0**
+版本：**0.162.0**
 
 ## 当前迭代身份
 
-- 进度类型：**`[ENGINEERING]` 运行时观测设施**
-- Git 标题：**`[ENGINEERING] subject-vm: export neutral activation contribution trace`**
-- Git 分支：**`engineering/subject-vm-activation-contribution-trace`**
-- 工作流档位：**`STANDARD-CODE` + `RELEASE-HANDOFF`**
-- 当前冻结科学前沿：**Stage 3C-41**
-- 下一项科学边界：**Stage 3C-42 只读 activation contribution 来源审计**
+- 进度类型：**`[MAIN-EXP]` 主线实验**
+- Git 标题：**`[MAIN-EXP] D1-Z: audit activation contribution sources of REST output`**
+- Git 分支：**`main-exp/stage3c42-rest-activation-source-audit`**
+- 工作流档位：**`SCIENTIFIC-FREEZE` + `RELEASE-HANDOFF`**
+- 当前冻结科学前沿：**Stage 3C-42**
+- 下一项项目边界：**`[EVOLVE-SUBJECT]` 统一 ThoughtEvent/思维链底层实现**
 
 ## 类型化任务进度树
 
@@ -19,8 +19,8 @@ SubjectEvolution
 │   └── D1-Z 统一 Subject Graph VM
 │       ├── [FROZEN] Stage 3C-40 精确 categorical action-boundary opportunity
 │       ├── [FROZEN] Stage 3C-41 action-logit/CDF pressure source 分解
-│       ├── [NEXT] Stage 3C-42 source-history→activation→REST output 来源审计
-│       └── [BLOCKED] retention、learned weight 与 topology evolution
+│       ├── [FROZEN] Stage 3C-42 REST activation contribution 来源审计
+│       └── [OPEN] SG-09 上游 history/association/modulation→temporary-write proposal 来源
 ├── [BRANCH-EXP] 分支实验
 │   └── [PARKED] 低代价/低扰动 action 的独立行为合同；不得与当前 action 集合混入
 ├── [PARAM-EXP] 代码参数探索
@@ -28,6 +28,9 @@ SubjectEvolution
 ├── [EVOLVE-ENV] 环境/底物演化代码
 │   └── [PARKED] 持续多压力环境与 source-health 工作
 ├── [EVOLVE-SUBJECT] 主体能力演化代码
+│   ├── [NEXT] 统一 ThoughtEvent 表示与有界短暂思维链底层
+│   ├── [CONSTRAINT] 不增加独立 RETHINK action
+│   ├── [CONSTRAINT] 短期链与较长期记忆不得使用两种 token 表示
 │   └── [BLOCKED] topology/readout/addressing evolution 尚无完整合同
 ├── [ENGINEERING] 运行时、工具、测试与打包
 │   ├── [DONE] 语义中立 categorical sampling trace
@@ -37,38 +40,50 @@ SubjectEvolution
     └── [DONE] 活动规范文档为中文权威文本
 ```
 
-## 本轮工程冻结判断
+## 本轮科学冻结判断
 
-activation contribution trace 直接消费同一次权威 graph activation 已计算出的 node、edge、output-port 与 temporary-write lineage，不重新执行图、不读取随机流，也不向 runtime 回馈。
+Stage 3C-42 只分析 Stage 3C-40 已冻结的 reference crossing source `12305、12308`、alignment-common source `12307` 和 replication 最高 opportunity source `12401`。每个 source 固定使用 top-five event identity，共 20 个事件、40 个 aligned/ablated mode-event。
 
-正式 fresh continuation 与 paired-branch 对照确认：
+结果表明：
 
-- sampled action 与 selected probability 完全一致；
-- categorical action/RNG JSONL 逐字节一致；
-- checkpoint authoritative state hash 完全一致；
-- paired branch identity 文件逐字节一致；
-- node accumulator、edge bounded transmission、output-port 聚合与 clipped action potential 可从 trace 精确重建；
-- guarded-live 与 read-only-control temporary-write lineage 符合实际 pre/post/current 状态。
+- 40 个 mode-event 的 REST output exposure DID 均可由 activation trace 精确重建；
+- 28 个 mode-event 具有非零 REST output DID；
+- 所有已观测 active temporary-write target 都是 recurrent edge 0 的 `edge-forward-gate`；
+- exposure DID 的结构贡献全部来自**当前 edge gate**；
+- inherited node-state、state×gate interaction、input、bias 与 output-gate 的 DID 均为零；
+- 六个 crossing 的绝对 gate contribution 为 `0.038269…0.122056`；
+- noncrossing 的最大绝对 gate contribution 为 `0.167758`，因此 gate 变化幅度不能单独区分 crossing；
+- seed `12307` 两种 alignment mode 的 gate contribution 几乎相同，符合 alignment-common crossing；
+- seed `12401` 最高 opportunity 的 gate contribution 为 `0.082322`，但 categorical pressure/余量比仍只有 `0.688482`。
 
-该结果只证明观测设施语义中立，不构成新的科学 Stage，也不证明 trace contribution 具有因果、价值或信用语义。
+该结果解析的是 fixed bootstrap 的执行路径：
+
+```text
+active temporary edge-forward-gate write
+→ delay-one recurrent self-edge transmission
+→ linear node-0 accumulator
+→ REST output gate
+```
+
+它没有解释 association/modulation 为什么提出该 gate write，也不把执行贡献升级为 causal attribution、value 或 credit quality。
 
 ## 暂停的 action 方案
 
-`NO_ACTION` 不进入当前设计。它会引入不自然且容易混淆的“未形成动作”语义。
+`NO_ACTION` 不进入当前设计。低代价/低扰动 action 可能更符合现有行为系统，但会改变生态成本、action competition 与 sampling boundary，继续保持 `PARKED`，未来只能使用独立 `[BRANCH-EXP]` 或 `[EVOLVE-SUBJECT]` 合同。
 
-低代价/低扰动 action 可能比 `NO_ACTION` 更符合现有行为系统，但它会改变生态成本、action competition 与 sampling boundary，必须在独立 `[BRANCH-EXP]` 或 `[EVOLVE-SUBJECT]` 合同中处理。当前仅记录为 `PARKED`，不得在 Stage 3C-42 前混入主线。
+思维链不依赖单独 `RETHINK` action。下一轮先实现内部状态与 ThoughtEvent 的递归/召回底层，让旧思考与新信息能够共同参与后续 activation，再独立判断是否需要任何额外行为类型。
 
 ## 下一边界约束
 
-Stage 3C-42 可以只读使用本轮冻结 trace，比较 crossing-positive、alignment-common 与独立 panel 高机会事件中的 node、edge、output gate 和 temporary-write contribution。
+下一轮开始 `[EVOLVE-SUBJECT]` 思维链实现，但首个实现边界必须满足：
 
-不得：
-
-- 修改 Subject VM activation、action sampling、source panel 或 exposure；
-- 把执行 contribution 直接解释为因果 attribution；
-- 将 `REST` 或任一 node/edge 赋予价值语义；
-- 增加 `NO_ACTION` 或低扰动 action；
-- 授权 automatic keep/revert、learned weight 或 permanent retention。
+- 思维链 token 与较长期记忆 token 使用同一 ThoughtEvent 表示和 identity；
+- 短期与长期的差异只允许体现在生命周期、索引与访问成本，不得依赖固定转译形成两套表示；
+- `node_state` 负责当前连续计算，ThoughtEvent 负责可重新寻址的历史思考片段；
+- 不增加独立 `RETHINK` action；
+- 不把 action logits、Objective-Fact 或价值式汇总无条件回灌为 thought；
+- 新机制必须默认关闭、具有成本与消融合同，并保持当前 Stage 3C bootstrap 结果可重现；
+- 本轮 Stage 3C-42 结果不得作为 retention、reward 或 learned-weight 授权。
 
 ## 文档与证据索引
 
@@ -79,5 +94,5 @@ Stage 3C-42 可以只读使用本轮冻结 trace，比较 crossing-positive、al
 | Subject VM 机制合同 | `docs/PARTITIONED_SUBJECT_GRAPH_VM.md` |
 | 当前科学问题 | `docs/SCIENTIFIC_ISSUES.md` |
 | Stage 3C 冻结结果 | `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` |
-| activation trace 工程决策 | `protocols/decisions/subject_vm_activation_contribution_trace_v1.json` |
-| 当前迭代记录 | `docs/迭代/v0.161_主体图activation_contribution_trace.md` |
+| Stage 3C-42 决策 | `protocols/decisions/subject_graph_vm_stage3c42_activation_source_v1.json` |
+| 当前迭代记录 | `docs/迭代/v0.162_Stage3C42_REST_activation来源审计.md` |

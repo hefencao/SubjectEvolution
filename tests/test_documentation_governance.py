@@ -23,7 +23,7 @@ def test_scientific_issues_is_active_registry_not_append_only_history() -> None:
     text = _text("docs/SCIENTIFIC_ISSUES.md")
     assert not re.search(r"^##\s+(?:v0\.\d+|Stage 3C-\d+)", text, re.MULTILINE)
     assert "## 2. 活动问题注册表" in text
-    assert "SG-09" in text and "ENV-01" in text
+    assert "SG-09" in text and "SG-10" in text and "ENV-01" in text
     assert len(text.splitlines()) < 350
 
 
@@ -96,6 +96,7 @@ def test_frozen_stage_results_live_in_dedicated_ledger() -> None:
     assert "| 3C-39 |" in text
     assert "| 3C-40 |" in text
     assert "| 3C-41 |" in text
+    assert "| 3C-42 |" in text
 
 
 def test_project_charter_is_durable_and_not_current_status() -> None:

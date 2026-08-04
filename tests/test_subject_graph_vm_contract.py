@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c41-frozen-activation-contribution-trace-engineering-ready"
+    assert contract["status"] == "stage-3c42-frozen-thought-chain-substrate-next"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,7 +24,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3C-41"
+    assert contract["current_stage"] == "3C-42"
     assert contract["stage_3c36_contract"]["candidate_support_identity_required"] is True
     assert contract["stage_3c36_contract"]["frozen_result"]["exact_tie_origin_resolved"] is False
     assert contract["stage_3c36_contract"]["gate_relaxation_authorized"] is False
@@ -495,3 +495,17 @@ def test_stage3c41_contract_is_frozen_read_only_and_nonretaining() -> None:
     assert stage["frozen_result"]["rest_logit_magnitude_alone_separates_crossing"] is False
     assert stage["rest_action_port_has_value_semantics"] is False
     assert stage["permanent_write_authorized"] is False
+
+
+def test_stage3c42_contract_is_frozen_read_only_and_nonretaining() -> None:
+    contract = _load("protocols/epochs/subject_graph_vm_v1.json")
+    stage = contract["stage_3c42_contract"]
+    assert stage["runtime_or_checkpoint_schema_change"] is False
+    assert stage["runtime_rerun_only_for_observation_trace"] is True
+    assert stage["frozen_result"]["all_exposure_did_structural_contribution_is_current_edge_gate"] is True
+    assert stage["frozen_result"]["maximum_abs_inherited_node_state_component"] == 0.0
+    assert stage["frozen_result"]["current_gate_component_magnitude_alone_separates_crossing"] is False
+    assert stage["frozen_result"]["source_history_proposal_origin_is_fully_resolved"] is False
+    assert stage["rest_action_port_has_value_semantics"] is False
+    assert stage["permanent_write_authorized"] is False
+    assert stage["next_project_boundary"] == "evolve-subject-unified-thought-event-chain-substrate"

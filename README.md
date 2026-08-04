@@ -1,8 +1,8 @@
-# SubjectEvolution v0.161.0
+# SubjectEvolution v0.162.0
 
 SubjectEvolution 是一个实验性模拟项目，用于在不预设奖励和人类社会语义的前提下，研究类似主体的内部组织如何出现、变化并产生因果影响。
 
-v0.161.0 完成语义中立的 Subject VM activation contribution trace，导出 node、edge、output-port 与 temporary-write lineage，并证明 trace 开关不改变 action、RNG、checkpoint state 或 branch identity。Stage 3C-41 仍是冻结科学前沿，Stage 3C-42 仅获得只读启动资格。
+v0.162.0 完成 Stage 3C-42 REST activation contribution 来源审计。在预先冻结的 20 个事件、40 个 mode-event 上，exposure difference-in-differences 的结构贡献全部来自当前仍生效的 delay-one recurrent edge-forward-gate 写入；未观察到 inherited node-state divergence、state×gate interaction、input、bias 或 output-gate 的 DID。该 gate 变化幅度仍不能区分 crossing 与 noncrossing，更上游 temporary-write proposal 的形成原因仍未解析。
 
 ## 文档索引
 
@@ -17,4 +17,4 @@ v0.161.0 完成语义中立的 Subject VM activation contribution trace，导出
 
 ## 当前科学前沿
 
-Stage 3C-41 已冻结。activation contribution trace 工程门已完成；下一项为 Stage 3C-42 只读 source-history→activation→REST output contribution 审计，不授权 causal attribution、value 或 retention。
+Stage 3C-42 已冻结，Stage 3C 暂停继续向上游机械展开。下一项按主体能力主线启动统一 ThoughtEvent/思维链底层实现：不增加独立 `RETHINK` action，不把短暂思维链 token 与较长期记忆 token 拆成两种表示，也不把现有 Stage 3C 结果当作价值或 retention 依据。
