@@ -1,0 +1,91 @@
+{
+  "schema": "se-subject-vm-thought-event-t1-decision-v1",
+  "decision_id": "subject-vm-thought-event-t1-v1",
+  "project_version": "0.164.0",
+  "status": "implemented-disabled-by-default-no-forward-recall",
+  "task_type": "EVOLVE-SUBJECT",
+  "git_title": "[EVOLVE-SUBJECT] subject-vm: establish unified ThoughtEvent chain substrate",
+  "purpose": "建立极短暂思维链与较长期记忆共用的统一 ThoughtEvent 事件核心、parent DAG、bounded arena、生命周期和成本边界，不接入前向 recall。",
+  "representation_contract": {
+    "one_thought_event_type": true,
+    "same_graph_produced_token_as_existing_trace": true,
+    "immutable_pre_action_core": true,
+    "stable_event_identity": true,
+    "parent_dag_supported": true,
+    "runtime_t1_parent_count": 0,
+    "action_field_in_core": false,
+    "objective_fact_field_in_core": false,
+    "value_or_confidence_field_in_core": false
+  },
+  "arena_contract": {
+    "default_enabled": false,
+    "bounded_capacity_per_subject": true,
+    "hard_retention_age_ceiling": true,
+    "age_ceiling_is_storage_safety_not_importance": true,
+    "child_inherits_arena": false,
+    "death_releases_arena": true,
+    "compaction_moves_arena": true,
+    "same_tick_parent_forbidden": true,
+    "self_parent_forbidden": true,
+    "cross_subject_parent_forbidden": true,
+    "parent_eviction_during_child_append_forbidden": true
+  },
+  "identity_and_state_contract": {
+    "disabled_defaults_removed_from_canonical_configuration": true,
+    "enabled_configuration_identity_member": true,
+    "enabled_checkpoint_state_member": true,
+    "enabled_clone_state_member": true,
+    "enabled_branch_identity_member_via_configuration_and_checkpoint": true,
+    "legacy_checkpoint_can_rebuild_empty_arena": true
+  },
+  "runtime_contract": {
+    "forward_recall_enabled": false,
+    "activation_reads_arena": false,
+    "policy_or_action_feedback": false,
+    "random_numbers_consumed": false,
+    "energy_debit_enabled": false,
+    "count_only_cost_instrumentation": true,
+    "existing_stage3_trace_unchanged": true
+  },
+  "cost_contract": {
+    "emission_base_cost_units": true,
+    "emission_per_coordinate_cost_units": true,
+    "parent_link_cost_units": true,
+    "retention_per_event_tick_cost_units": true,
+    "costs_have_value_semantics": false,
+    "costs_affect_runtime_behavior_in_t1": false
+  },
+  "integrity_gate": {
+    "action_potential_identity_required": true,
+    "graph_token_identity_required": true,
+    "authoritative_graph_state_identity_required": true,
+    "legacy_trace_state_identity_required": true,
+    "event_identity_and_token_join_required": true,
+    "checkpoint_restore_identity_required": true,
+    "clone_identity_required": true,
+    "integrity_assessment_sha256": "23b0fb5ee6e85a5c56080f1ed7d4519f55ba47a5ecb2265dfd9201d386166b86"
+  },
+  "forbidden_in_t1": [
+    "forward ThoughtEvent recall",
+    "read head",
+    "RETHINK or NO_ACTION",
+    "confidence halt gate",
+    "language or SignalEvent world channel",
+    "Objective-Fact feedback into thought vector",
+    "automatic retention from reference count",
+    "thought correctness or toxicity label",
+    "reward, value, keep/revert or permanent learned weight"
+  ],
+  "next_boundary": {
+    "task": "T2 read-only ThoughtEvent degeneration audit",
+    "must_not_enable_recall": true,
+    "measurements": [
+      "emission frequency and occupancy",
+      "token duplicate and near-duplicate structure",
+      "token drift across tick and source",
+      "parent DAG shape when future parents exist",
+      "capacity and counted cost",
+      "whether existing token representation is degenerate before recall"
+    ]
+  }
+}

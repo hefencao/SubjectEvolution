@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c42-frozen-thought-language-design-governed",
-  "project_version": "0.163.0",
+  "status": "stage-3c42-frozen-thought-event-t1-implemented",
+  "project_version": "0.164.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3C-42",
+  "current_stage": "ThoughtEvent-T1",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -1018,9 +1018,9 @@
     "next_project_boundary": "evolve-subject-unified-thought-event-chain-substrate"
   },
   "thought_event_language_design_contract": {
-    "status": "documented-not-implemented",
+    "status": "t1-implemented-forward-recall-not-implemented",
     "authoritative_document": "docs/THOUGHT_EVENT_LANGUAGE_COGNITION.md",
-    "next_implementation_stage": "T1-unified-thought-event-infrastructure",
+    "next_implementation_stage": "T2-read-only-thought-event-degeneration-audit",
     "single_thought_representation": true,
     "short_and_long_memory_differ_only_by_lifecycle_index_cost": true,
     "rethink_action_authorized": false,
@@ -1032,6 +1032,32 @@
     "objective_fact_unconditional_thought_feedback": false,
     "observer_mapping_feedback_to_runtime": false,
     "cross_seed_alignment_requires_functional_relational_evidence": true,
-    "huffman_like_encoding_is_hypothesis_not_contract": true
+    "huffman_like_encoding_is_hypothesis_not_contract": true,
+    "t1_unified_arena_implemented": true,
+    "t1_parent_dag_schema_implemented": true,
+    "t1_runtime_parent_count": 0,
+    "t1_bounded_lifecycle_implemented": true,
+    "t1_checkpoint_clone_branch_identity_implemented": true,
+    "t1_counted_cost_instrumentation_implemented": true
+  },
+  "thought_event_t1_contract": {
+    "decision_protocol": "protocols/decisions/subject_vm_thought_event_t1_v1.json",
+    "default_enabled": false,
+    "same_graph_token_as_stage3_trace": true,
+    "immutable_pre_action_core": true,
+    "action_and_objective_fact_excluded": true,
+    "parent_dag_storage": true,
+    "runtime_parent_count": 0,
+    "same_subject_earlier_tick_parent_only": true,
+    "bounded_arena": true,
+    "hard_age_ceiling_is_storage_safety": true,
+    "birth_inheritance": false,
+    "death_release": true,
+    "row_compaction_move": true,
+    "enabled_configuration_checkpoint_clone_branch_identity_member": true,
+    "disabled_default_preserves_legacy_identity": true,
+    "counted_cost_only": true,
+    "forward_recall": false,
+    "language_or_signal_channel": false
   }
 }

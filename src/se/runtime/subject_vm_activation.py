@@ -38,6 +38,7 @@ def subject_vm_action_potentials(
 ) -> np.ndarray | None:
     """Return bounded potentials only when an expressed Stage-2 graph exists."""
     runtime = simulation.subject_vm
+    runtime.advance_thought_events(active, tick=simulation.tick)
     if not runtime.has_expressed_graph(active):
         simulation._stage_subject_vm_activation_contribution_trace(None)
         return None

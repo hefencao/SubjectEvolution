@@ -67,6 +67,8 @@ from .config import (
     SUBJECT_VM_EVALUATION_SCHEMA,
     SUBJECT_VM_TRACE_DISABLED_SCHEMA,
     SUBJECT_VM_TRACE_SCHEMA,
+    SUBJECT_VM_THOUGHT_EVENT_DISABLED_SCHEMA,
+    SUBJECT_VM_THOUGHT_EVENT_SCHEMA,
     SUBJECT_VM_OBJECTIVE_EVENT_SCHEMA,
     SubjectVMActivationConfig,
     SubjectVMAssociationConfig,
@@ -80,6 +82,7 @@ from .config import (
     SubjectVMLiveWriteConfig,
     SubjectVMEvaluationConfig,
     SubjectVMTraceConfig,
+    SubjectVMThoughtEventConfig,
     load_subject_vm_config,
     strip_disabled_subject_vm_section,
     validate_subject_vm_config,
@@ -194,6 +197,12 @@ from .storage import (
     SubjectVMRegionUsage,
     SubjectVMStorage,
 )
+from .thought_event import (
+    THOUGHT_EVENT_ARENA_SCHEMA,
+    SubjectVMThoughtEventAccounting,
+    SubjectVMThoughtEventAppendBatch,
+    SubjectVMThoughtEventArena,
+)
 
 __all__ = [
     "ACTION_PORT_WIDTH",
@@ -264,6 +273,13 @@ __all__ = [
     "SubjectVMTargetCandidateBatch",
     "SubjectVMTraceConfig",
     "SubjectVMTraceStorage",
+    "THOUGHT_EVENT_ARENA_SCHEMA",
+    "SUBJECT_VM_THOUGHT_EVENT_DISABLED_SCHEMA",
+    "SUBJECT_VM_THOUGHT_EVENT_SCHEMA",
+    "SubjectVMThoughtEventConfig",
+    "SubjectVMThoughtEventAccounting",
+    "SubjectVMThoughtEventAppendBatch",
+    "SubjectVMThoughtEventArena",
     "SubjectVMLocalEligibilityUsage",
     "ACTIVATION_PHASE_MASK",
     "LOCAL_ELIGIBILITY_FLAG",

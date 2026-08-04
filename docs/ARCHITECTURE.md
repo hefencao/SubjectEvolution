@@ -176,9 +176,13 @@ trace runtime 为 subject-time alignment 研究提供明确的 experiment-only a
 这些 policy 只用于检验因果路由，不定义生产级 attention 机制。
 
 
-### 7.7 尚未实现的 ThoughtEvent 与通信边界
+### 7.7 已实现的 ThoughtEvent T1 与尚未实现的 recall/通信边界
 
-前向 ThoughtEvent recall、思维链和语言尚未进入当前 runtime。未来实现必须继续使用统一 Subject Graph：极短暂思维链与较长期记忆共享一种 ThoughtEvent 表示与 identity；通信区域只能承担 SignalEvent 的发送、传播与接收接口，不拥有对象词义、方位、价值或语法角色。
+当前 runtime 已增加默认关闭的统一 ThoughtEvent T1 sidecar。它复用同一次权威 activation 产生的 continuous token，并在 Objective-Fact 与 action 之外保存不可变 pre-action event core。T1 提供稳定 event identity、parent DAG 字段、有界 per-subject arena、硬 retention age ceiling、生命周期、checkpoint/clone、enabled configuration/branch identity 和计数成本。
+
+T1 不读取 arena，不接入 activation，不产生随机数，不改变 action、graph state 或旧 Stage-3 trace。当前 runtime emission 的 parent_count 固定为 0；parent DAG 只是为后续 recall 保留同一事件表示和机械校验。出生不继承 arena，死亡释放，row compaction 随主体移动。
+
+前向 ThoughtEvent recall、read head、思维链效应和语言尚未进入 runtime。未来能力必须继续使用统一 Subject Graph：极短暂思维链与较长期记忆共享一种 ThoughtEvent 表示与 identity；通信区域只能承担 SignalEvent 的发送、传播与接收接口，不拥有对象词义、方位、价值或语法角色。
 
 跨 seed、区域或谱系比较不得按词形、node ID 或 region 硬对齐；观察者侧只能通过标准化反事实、功能干预、指称关系和成本结构建立候选映射，且该映射不得反馈进 runtime cognition。完整研究合同见 `docs/THOUGHT_EVENT_LANGUAGE_COGNITION.md`。
 

@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c42-frozen-thought-language-design-governed"
+    assert contract["status"] == "stage-3c42-frozen-thought-event-t1-implemented"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,9 +24,11 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3C-42"
+    assert contract["current_stage"] == "ThoughtEvent-T1"
     design = contract["thought_event_language_design_contract"]
-    assert design["status"] == "documented-not-implemented"
+    assert design["status"] == "t1-implemented-forward-recall-not-implemented"
+    assert design["t1_unified_arena_implemented"] is True
+    assert design["t1_runtime_parent_count"] == 0
     assert design["single_thought_representation"] is True
     assert design["rethink_action_authorized"] is False
     assert design["confidence_halt_gate_authorized"] is False
@@ -35,6 +37,12 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert design["language_region_owns_semantics"] is False
     assert design["cross_seed_alignment_requires_functional_relational_evidence"] is True
     assert design["huffman_like_encoding_is_hypothesis_not_contract"] is True
+    t1 = contract["thought_event_t1_contract"]
+    assert t1["default_enabled"] is False
+    assert t1["same_graph_token_as_stage3_trace"] is True
+    assert t1["action_and_objective_fact_excluded"] is True
+    assert t1["enabled_configuration_checkpoint_clone_branch_identity_member"] is True
+    assert t1["forward_recall"] is False
     assert contract["stage_3c36_contract"]["candidate_support_identity_required"] is True
     assert contract["stage_3c36_contract"]["frozen_result"]["exact_tie_origin_resolved"] is False
     assert contract["stage_3c36_contract"]["gate_relaxation_authorized"] is False

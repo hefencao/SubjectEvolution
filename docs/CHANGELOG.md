@@ -1,5 +1,13 @@
 # 版本变更记录
 
+## 0.164.0
+
+- 增加默认关闭的统一 ThoughtEvent T1 sidecar，复用 graph-produced continuous token 与稳定 event identity，同时与 action、Objective-Fact、value 和 modulation 结果分离。
+- 实现有界 per-subject arena、parent DAG、硬 age ceiling、出生/死亡/compaction 生命周期、checkpoint/clone 与 enabled configuration/branch identity。
+- parent 合同禁止 self、same-tick、cross-subject 引用，并禁止 child append 覆盖其 active parent；当前 runtime 自动事件 parent_count 保持 0。
+- 增加 emission、coordinate、parent-link 与 retention 的计数成本；不扣除 energy，不形成价值、重要性或 retention 语义。
+- T1 不读取 arena、不启用 read head 或前向 recall；下一项为 T2 token 退化、漂移、容量和成本的只读资格审计。
+
 ## 0.163.0
 
 - 新增 `docs/THOUGHT_EVENT_LANGUAGE_COGNITION.md`，将统一 ThoughtEvent、思维链、较长期记忆、communication interface、语言资格与外部原生频道干预收敛为独立研究合同。

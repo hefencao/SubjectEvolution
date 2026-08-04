@@ -1,6 +1,6 @@
 # ThoughtEvent、思维链与语言认知研究合同
 
-状态：**设计约束与研究议程；尚未实现**
+状态：**T1 统一 ThoughtEvent 基础设施已实现；前向 recall、语言与通信仍未实现**
 适用边界：统一 Subject Graph 后续 `[EVOLVE-SUBJECT]` 能力、通信/语言实验与观察者侧跨世界分析。
 
 本文档将思维链、较长期记忆、主体间信号与语言研究放在同一设计边界内。它不声明当前 runtime 已经具有前向 ThoughtEvent recall、语言、对象词、组合语法或跨世界认知同态，也不授权通过固定 reward、confidence、词典或人工语义标签塑形主体。
@@ -176,7 +176,7 @@ lineage cap、near-duplicate suppression、多 head、temperature、stochastic r
 
 ### T1：统一 ThoughtEvent 基础设施
 
-只实现 schema、identity、parent DAG、bounded arena、lifecycle metadata、checkpoint/clone/branch identity、成本计量和默认关闭。不接入前向 recall。
+已完成。当前实现包括 schema、identity、parent DAG、bounded arena、lifecycle metadata、checkpoint/clone/branch identity、成本计量和默认关闭。事件核心复用 graph-produced token，但与 action、Objective-Fact 和 modulation 结果分离；当前 runtime emission 的 parent_count 为 0，不接入前向 recall。
 
 ### T2：只读退化审计
 
@@ -398,6 +398,6 @@ ThoughtEvent / node state
 
 ## 11. 下一实现边界
 
-下一 `[EVOLVE-SUBJECT]` 首轮只建立 T1 统一 ThoughtEvent 基础设施，不接语言、不接外部世界频道，也不直接启用前向 recall。实现必须保持当前 Stage 3C bootstrap 可重现，并为后续 T2 退化审计提供足够 identity、lineage、容量和成本证据。
+下一 `[EVOLVE-SUBJECT]` 首轮执行 T2 只读退化审计，不接语言、不接外部世界频道，也不启用前向 recall。T2 使用 T1 identity、容量、生命周期和成本证据，检查 token 频率、重复度、漂移与跨 source 差异；只有表示通过资格后才允许设计 T3 recall。
 
 语言与跨世界编码同态继续作为后续研究议程；它们依赖 ThoughtEvent、通信接口、非对称可观测环境和跨 seed 观察工具，不应与 T1 一次性实现。

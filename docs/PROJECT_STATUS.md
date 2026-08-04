@@ -1,15 +1,16 @@
 # SubjectEvolution 当前项目状态
 
-版本：**0.163.0**
+版本：**0.164.0**
 
 ## 当前迭代身份
 
-- 进度类型：**`[DOC-GOV]` 文档治理**
-- Git 标题：**`[DOC-GOV] subject cognition: formalize ThoughtEvent and language boundaries`**
-- Git 分支：**`docs/thought-language-research-boundaries`**
-- 工作流档位：**`SCOPED-FIX` + `RELEASE-HANDOFF`**
+- 进度类型：**`[EVOLVE-SUBJECT]` 主体能力基础设施**
+- Git 标题：**`[EVOLVE-SUBJECT] subject-vm: establish unified ThoughtEvent chain substrate`**
+- Git 分支：**`evolve-subject/thought-event-t1`**
+- 工作流档位：**`STANDARD-CODE` + `RELEASE-HANDOFF`**
 - 当前冻结科学前沿：**Stage 3C-42**
-- 下一项项目边界：**`[EVOLVE-SUBJECT]` T1 统一 ThoughtEvent 基础设施**
+- 当前完成边界：**T1 统一 ThoughtEvent 基础设施**
+- 下一项项目边界：**T2 只读 ThoughtEvent 退化审计**
 
 ## 类型化任务进度树
 
@@ -30,8 +31,8 @@ SubjectEvolution
 │   ├── [PARKED] 持续多压力环境与 source-health
 │   └── [OPEN] 非对称可观测与因子化语言资格环境
 ├── [EVOLVE-SUBJECT] 主体能力演化代码
-│   ├── [NEXT] T1：统一 ThoughtEvent schema、identity、parent DAG 与 bounded arena
-│   ├── [BLOCKED] T2：ThoughtEvent 退化与 lineage 审计
+│   ├── [DONE] T1：统一 ThoughtEvent schema、identity、parent DAG 与 bounded arena
+│   ├── [NEXT] T2：ThoughtEvent 退化、漂移、容量与 lineage 只读审计
 │   ├── [BLOCKED] T3：最小前向 recall
 │   ├── [BLOCKED] communication interface 与 SignalEvent mapping
 │   └── [BLOCKED] topology/readout/addressing evolution
@@ -46,22 +47,25 @@ SubjectEvolution
 
 ## 下一实现边界
 
-下一轮只实现 T1 基础设施：
+T1 已实现并默认关闭：
 
-- 统一 ThoughtEvent vector 与稳定 event identity；
-- parent DAG 与 source/configuration/branch/checkpoint lineage；
-- 有界 arena、lifecycle metadata 与明确回收；
-- checkpoint、clone、branch identity 和成本计量；
-- 默认关闭，并保持 Stage 3C bootstrap 可重现。
+- 同一 graph-produced token vector 与稳定 event identity；
+- 不可变 pre-action ThoughtEvent 核心；
+- parent DAG 的有界存储和 same-subject/earlier-tick 校验；
+- bounded arena、硬 age ceiling、出生清空、死亡释放和 compaction 移动；
+- checkpoint、clone 与 enabled configuration/branch identity；
+- emission、coordinate、parent-link 与 retention 的计数成本；
+- 禁用默认值从 canonical configuration 中移除，保持旧实验身份。
 
-下一轮不实现：
+下一轮只执行 T2 只读退化审计：
 
-- 独立 `RETHINK`、`NO_ACTION` 或 confidence gate；
-- 前向 read head/recall；
-- 长期 retention policy；
-- communication interface、语言环境或世界频道；
-- 短期 thought 与 memory thought 两套表示；
-- Objective-Fact、action logits 或价值式摘要的无条件回灌。
+- emission frequency、arena occupancy 与 expiry/overwrite；
+- exact/near-duplicate token、跨 tick 漂移和跨 source 差异；
+- 当前 runtime 的 parent_count 应保持 0；
+- 容量和计数成本；
+- 判断现有 token 是否足以进入 T3 recall。
+
+T2 不实现 read head、前向 recall、retention policy、语言、世界频道、`RETHINK`、`NO_ACTION` 或 confidence gate。
 
 ## 语言与跨世界研究边界
 
@@ -87,4 +91,4 @@ SubjectEvolution
 | 当前科学问题 | `docs/SCIENTIFIC_ISSUES.md` |
 | Stage 3C 冻结结果 | `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` |
 | 上一科学迭代记录 | `docs/迭代/v0.162_Stage3C42_REST_activation来源审计.md` |
-| 当前文档治理记录 | `docs/迭代/v0.163_思维链与语言认知设计治理.md` |
+| 当前能力迭代记录 | `docs/迭代/v0.164_统一ThoughtEvent_T1基础设施.md` |

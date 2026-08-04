@@ -198,9 +198,13 @@ trace payload、pending join 状态和 writer lifecycle 都不属于 Subject VM 
 该 trace 只是执行 contribution decomposition，不是 causal attribution、credit assignment、价值解释或 retention 依据。只有通过 action、RNG、checkpoint state 与 branch identity 中立性门后，才能用于后续只读分析。
 
 
-### 7.3 ThoughtEvent 与通信的未来边界
+### 7.3 ThoughtEvent T1 当前机制与通信的未来边界
 
-当前 continuous token/event history 仍主要服务 delayed association，尚未作为下一轮 activation 的前向记忆。未来能力不得把极短暂思维链和较长期记忆拆成两套 token；二者必须共享统一 ThoughtEvent vector、identity、lineage、comparator 与 graph ingress，只能通过生命周期、索引、容量和访问成本连续分化。
+T1 已增加与现有 graph-produced continuous token 同源的统一 ThoughtEvent arena。事件核心只包含 token、tick、entity/subject/event identity、expiry 和 parent DAG metadata；不包含 action、Objective-Fact、value、confidence 或 modulation 结果。现有 delayed-association trace 继续保持原合同，不被 arena 替代。
+
+arena 默认关闭且有界。启用后属于 normalized configuration、checkpoint、clone 和 branch identity；禁用精确默认值会从 canonical payload 移除。parent 必须属于同一 subject、已经保留且早于 child tick；禁止 self-parent、same-tick parent 和 child append 时覆盖 active parent。当前 T1 runtime 不读取 arena，所有自动产生事件的 parent_count 为 0。
+
+当前 continuous token/event history 仍主要服务 delayed association，ThoughtEvent arena 尚未作为下一轮 activation 的前向记忆。未来能力不得把极短暂思维链和较长期记忆拆成两套 token；二者必须共享统一 ThoughtEvent vector、identity、lineage、comparator 与 graph ingress，只能通过生命周期、索引、容量和访问成本连续分化。
 
 未来 communication region 只能是统一图与物理 SignalEvent channel 之间的接口区域，不拥有对象指称、词义、价值或语法。不同 seed/区域可以通过不同 signal、node、topology 或 region 分布实现相同功能；跨世界对齐必须保留符号置换和 graph permutation 的等价可能。完整尚未实现的设计边界见 `docs/THOUGHT_EVENT_LANGUAGE_COGNITION.md`。
 

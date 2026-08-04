@@ -21,6 +21,11 @@ from .trace import (
     SubjectVMTraceAccounting,
     SubjectVMTraceStorage,
 )
+from .thought_event import (
+    SubjectVMThoughtEventAccounting,
+    SubjectVMThoughtEventAppendBatch,
+    SubjectVMThoughtEventArena,
+)
 
 RUNTIME_SCHEMA_V1 = "se-subject-vm-runtime-stage1-v1"
 RUNTIME_SCHEMA_V2 = "se-subject-vm-runtime-v2"
@@ -32,7 +37,8 @@ RUNTIME_SCHEMA_V7 = "se-subject-vm-runtime-v7"
 RUNTIME_SCHEMA_V8 = "se-subject-vm-runtime-v8"
 RUNTIME_SCHEMA_V9 = "se-subject-vm-runtime-v9"
 RUNTIME_SCHEMA_V10 = "se-subject-vm-runtime-v10"
-RUNTIME_SCHEMA = "se-subject-vm-runtime-v11"
+RUNTIME_SCHEMA_V11 = "se-subject-vm-runtime-v11"
+RUNTIME_SCHEMA = "se-subject-vm-runtime-v12"
 
 
 @dataclass(frozen=True)
@@ -223,17 +229,20 @@ class SubjectVMRuntime:
         storage: SubjectVMStorage | None = None,
         *,
         trace_storage: SubjectVMTraceStorage | None = None,
+        thought_event_arena: SubjectVMThoughtEventArena | None = None,
         live_write_ledger: SubjectVMLiveWriteLedger | None = None,
         evaluation_ledger: SubjectVMEvaluationLedger | None = None,
         restore_mode: str = "initialized",
         activation_accounting: SubjectVMActivationAccounting | None = None,
         trace_accounting: SubjectVMTraceAccounting | None = None,
+        thought_event_accounting: SubjectVMThoughtEventAccounting | None = None,
         eligibility_accounting: SubjectVMEligibilityAccounting | None = None,
     ) -> None:
         self.cfg = cfg
         self.entity_capacity = int(entity_capacity)
         self.storage = storage
         self.trace_storage = trace_storage
+        self.thought_event_arena = thought_event_arena
         self.live_write_ledger = live_write_ledger
         self.evaluation_ledger = evaluation_ledger
         self.restore_mode = str(restore_mode)
@@ -241,6 +250,9 @@ class SubjectVMRuntime:
             activation_accounting or SubjectVMActivationAccounting()
         )
         self.trace_accounting = trace_accounting or SubjectVMTraceAccounting()
+        self.thought_event_accounting = (
+            thought_event_accounting or SubjectVMThoughtEventAccounting()
+        )
         self.eligibility_accounting = (
             eligibility_accounting or SubjectVMEligibilityAccounting()
         )
@@ -250,6 +262,10 @@ class SubjectVMRuntime:
             raise ValueError("subject_vm runtime enabled/storage state disagrees")
         if cfg.trace_enabled != (trace_storage is not None):
             raise ValueError("subject_vm runtime trace configuration/storage disagrees")
+        if cfg.thought_event_enabled != (thought_event_arena is not None):
+            raise ValueError(
+                "subject_vm runtime ThoughtEvent configuration/arena disagrees"
+            )
         if cfg.live_write_configured != (live_write_ledger is not None):
             raise ValueError("subject_vm runtime live-write configuration/ledger disagrees")
         if cfg.evaluation_enabled != (evaluation_ledger is not None):
@@ -275,6 +291,13 @@ class SubjectVMRuntime:
         )
         if trace_storage is not None:
             trace_storage.initialize_rows(rows)
+        thought_event_arena = (
+            SubjectVMThoughtEventArena(cfg, entity_capacity)
+            if cfg.thought_event_enabled
+            else None
+        )
+        if thought_event_arena is not None:
+            thought_event_arena.initialize_rows(rows)
         live_write_ledger = (
             SubjectVMLiveWriteLedger(cfg.live_write, entity_capacity)
             if cfg.live_write_configured else None
@@ -313,6 +336,7 @@ class SubjectVMRuntime:
             entity_capacity,
             storage,
             trace_storage=trace_storage,
+            thought_event_arena=thought_event_arena,
             live_write_ledger=live_write_ledger,
             evaluation_ledger=evaluation_ledger,
             restore_mode=mode,
@@ -329,6 +353,10 @@ class SubjectVMRuntime:
     @property
     def trace_enabled(self) -> bool:
         return self.cfg.trace_enabled
+
+    @property
+    def thought_event_enabled(self) -> bool:
+        return self.cfg.thought_event_enabled
 
     @property
     def eligibility_enabled(self) -> bool:
@@ -421,6 +449,15 @@ class SubjectVMRuntime:
             and self.storage.has_expressed_graph(rows)
         )
 
+    def advance_thought_events(self, rows: np.ndarray, *, tick: int) -> None:
+        if self.thought_event_arena is None:
+            return
+        self.thought_event_arena.advance_rows(
+            np.asarray(rows, dtype=np.int32),
+            tick=int(tick),
+            accounting=self.thought_event_accounting,
+        )
+
     def activate(
         self,
         *,
@@ -495,6 +532,32 @@ class SubjectVMRuntime:
             live_write_ledger=self.live_write_ledger,
             evaluation_ledger=self.evaluation_ledger,
         )
+        if self.thought_event_arena is not None:
+            parent_shape = (
+                int(batch.rows.size),
+                int(self.cfg.thought_event.max_parent_count),
+            )
+            self.thought_event_arena.append(
+                SubjectVMThoughtEventAppendBatch(
+                    tick=int(batch.tick),
+                    rows=np.asarray(batch.rows, dtype=np.int32),
+                    event_ids=np.asarray(batch.event_ids, dtype=np.uint64),
+                    entity_ids=np.asarray(batch.entity_ids, dtype=np.uint64),
+                    subject_ids=np.asarray(batch.subject_ids, dtype=np.uint64),
+                    emitted=np.asarray(
+                        self._pending_thought_tokens.emitted, dtype=bool
+                    ),
+                    tokens=np.asarray(
+                        self._pending_thought_tokens.tokens, dtype=np.float32
+                    ),
+                    parent_count=np.zeros(batch.rows.size, dtype=np.uint8),
+                    parent_event_ids=np.zeros(parent_shape, dtype=np.uint64),
+                    parent_weights=np.zeros(parent_shape, dtype=np.float32),
+                ),
+                owner_entity_ids=self.storage.owner_entity_id,
+                owner_subject_ids=self.storage.owner_subject_id,
+                accounting=self.thought_event_accounting,
+            )
         self._pending_thought_tokens = None
         self._pending_target_candidates = None
 
@@ -525,6 +588,10 @@ class SubjectVMRuntime:
             )
         if self.trace_storage is not None:
             self.trace_storage.initialize_rows(np.asarray(child_rows, dtype=np.int32))
+        if self.thought_event_arena is not None:
+            self.thought_event_arena.initialize_rows(
+                np.asarray(child_rows, dtype=np.int32)
+            )
         if self.live_write_ledger is not None:
             self.live_write_ledger.initialize_rows(np.asarray(child_rows, dtype=np.int32))
         if self.evaluation_ledger is not None:
@@ -541,6 +608,8 @@ class SubjectVMRuntime:
             return
         if self.trace_storage is not None:
             self.trace_storage.clear_rows(normalized)
+        if self.thought_event_arena is not None:
+            self.thought_event_arena.clear_rows(normalized)
         if self.live_write_ledger is not None:
             self.live_write_ledger.clear_rows(normalized)
         if self.evaluation_ledger is not None:
@@ -560,6 +629,8 @@ class SubjectVMRuntime:
         self.storage.move_rows(source_rows, destination_rows)
         if self.trace_storage is not None:
             self.trace_storage.move_rows(source_rows, destination_rows)
+        if self.thought_event_arena is not None:
+            self.thought_event_arena.move_rows(source_rows, destination_rows)
         if self.live_write_ledger is not None:
             self.live_write_ledger.move_rows(source_rows, destination_rows)
         if self.evaluation_ledger is not None:
@@ -573,6 +644,8 @@ class SubjectVMRuntime:
     ) -> None:
         if self.storage is not None:
             self.storage.validate_owners(alive, entity_ids, subject_ids)
+        if self.thought_event_arena is not None:
+            self.thought_event_arena.validate_owners(alive, entity_ids, subject_ids)
 
     def snapshot_state(self) -> dict[str, Any] | None:
         if self.storage is None:
@@ -590,6 +663,13 @@ class SubjectVMRuntime:
             assert self.trace_storage is not None
             payload["trace_accounting"] = asdict(self.trace_accounting)
             payload["trace_storage"] = self.trace_storage.snapshot_state()
+        if self.thought_event_arena is not None:
+            payload["thought_event_accounting"] = asdict(
+                self.thought_event_accounting
+            )
+            payload["thought_event_arena"] = (
+                self.thought_event_arena.snapshot_state()
+            )
         if self.eligibility_enabled:
             payload["eligibility_accounting"] = asdict(
                 self.eligibility_accounting
@@ -629,6 +709,7 @@ class SubjectVMRuntime:
         schema = payload.get("schema")
         if schema not in {
             RUNTIME_SCHEMA,
+            RUNTIME_SCHEMA_V11,
             RUNTIME_SCHEMA_V10,
             RUNTIME_SCHEMA_V9,
             RUNTIME_SCHEMA_V8,
@@ -668,6 +749,9 @@ class SubjectVMRuntime:
         )
         compatibility_empty_evaluation = (
             cfg.evaluation_enabled and schema == RUNTIME_SCHEMA_V10
+        )
+        compatibility_empty_thought_event = (
+            cfg.thought_event_enabled and schema != RUNTIME_SCHEMA
         )
         if schema == RUNTIME_SCHEMA_V1:
             expected_contract = STAGE1_DEVICE_CONTRACT.schema
@@ -750,6 +834,27 @@ class SubjectVMRuntime:
                         for key, default in asdict(SubjectVMTraceAccounting()).items()
                     }
                 )
+        thought_event_arena = None
+        thought_event_accounting = SubjectVMThoughtEventAccounting()
+        if cfg.thought_event_enabled:
+            if compatibility_empty_thought_event:
+                thought_event_arena = SubjectVMThoughtEventArena(cfg, entity_capacity)
+                thought_event_arena.initialize_rows(rows)
+                restore_mode = "compatibility-empty-thought-event-arena-rebuild"
+            else:
+                thought_event_arena = SubjectVMThoughtEventArena.from_snapshot(
+                    cfg, entity_capacity, payload["thought_event_arena"]
+                )
+                thought_event_raw = payload.get("thought_event_accounting", {})
+                thought_event_accounting = SubjectVMThoughtEventAccounting(
+                    **{
+                        key: int(thought_event_raw.get(key, default))
+                        for key, default in asdict(
+                            SubjectVMThoughtEventAccounting()
+                        ).items()
+                    }
+                )
+            thought_event_arena.validate_owners(alive, entity_ids, subject_ids)
         if cfg.eligibility_enabled:
             if compatibility_empty_eligibility:
                 restore_mode = (
@@ -804,11 +909,13 @@ class SubjectVMRuntime:
             entity_capacity,
             storage,
             trace_storage=trace_storage,
+            thought_event_arena=thought_event_arena,
             live_write_ledger=live_write_ledger,
             evaluation_ledger=evaluation_ledger,
             restore_mode=restore_mode,
             activation_accounting=activation_accounting,
             trace_accounting=trace_accounting,
+            thought_event_accounting=thought_event_accounting,
             eligibility_accounting=eligibility_accounting,
         )
 
@@ -820,6 +927,7 @@ class SubjectVMRuntime:
             "enabled": self.enabled,
             "activation_enabled": self.activation_enabled,
             "trace_enabled": self.trace_enabled,
+            "thought_event_enabled": self.thought_event_enabled,
             "eligibility_enabled": self.eligibility_enabled,
             "association_enabled": self.association_enabled,
             "modulation_enabled": self.modulation_enabled,
@@ -833,9 +941,15 @@ class SubjectVMRuntime:
             "device_contract": self.device_contract.schema,
             "activation_accounting": asdict(self.activation_accounting),
             "trace_accounting": asdict(self.trace_accounting),
+            "thought_event_accounting": asdict(self.thought_event_accounting),
             "eligibility_accounting": asdict(self.eligibility_accounting),
             "trace_storage": (
                 None if self.trace_storage is None else self.trace_storage.diagnostics()
+            ),
+            "thought_event_arena": (
+                None
+                if self.thought_event_arena is None
+                else self.thought_event_arena.diagnostics()
             ),
             "live_write_ledger": (
                 None if self.live_write_ledger is None else self.live_write_ledger.diagnostics()
@@ -856,6 +970,11 @@ class SubjectVMRuntime:
             trace_storage=(
                 None if self.trace_storage is None else self.trace_storage.clone()
             ),
+            thought_event_arena=(
+                None
+                if self.thought_event_arena is None
+                else self.thought_event_arena.clone()
+            ),
             live_write_ledger=(
                 None if self.live_write_ledger is None else self.live_write_ledger.clone()
             ),
@@ -867,6 +986,9 @@ class SubjectVMRuntime:
                 **asdict(self.activation_accounting)
             ),
             trace_accounting=SubjectVMTraceAccounting(**asdict(self.trace_accounting)),
+            thought_event_accounting=SubjectVMThoughtEventAccounting(
+                **asdict(self.thought_event_accounting)
+            ),
             eligibility_accounting=SubjectVMEligibilityAccounting(
                 **asdict(self.eligibility_accounting)
             ),
@@ -885,6 +1007,7 @@ __all__ = [
     "RUNTIME_SCHEMA_V8",
     "RUNTIME_SCHEMA_V9",
     "RUNTIME_SCHEMA_V10",
+    "RUNTIME_SCHEMA_V11",
     "STAGE1_DEVICE_CONTRACT",
     "STAGE2_DEVICE_CONTRACT",
     "STAGE3_DEVICE_CONTRACT",

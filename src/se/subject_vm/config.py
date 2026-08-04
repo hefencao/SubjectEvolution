@@ -44,6 +44,8 @@ SUBJECT_VM_LIVE_WRITE_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_LIVE_WRITE_SCHEMA = "guarded-live-write-rollback-window-v1"
 SUBJECT_VM_EVALUATION_DISABLED_SCHEMA = "disabled"
 SUBJECT_VM_EVALUATION_SCHEMA = "objective-score-free-window-v1"
+SUBJECT_VM_THOUGHT_EVENT_DISABLED_SCHEMA = "disabled"
+SUBJECT_VM_THOUGHT_EVENT_SCHEMA = "unified-thought-event-arena-t1-v1"
 SUBJECT_VM_MODULATION_FACT_WIDTH = 21
 SUBJECT_VM_MODULATION_TARGET_NAMES = (
     "node-bias",
@@ -257,6 +259,26 @@ class SubjectVMEvaluationConfig:
 
 
 @dataclass(frozen=True)
+class SubjectVMThoughtEventConfig:
+    """T1 bounded immutable ThoughtEvent arena without forward recall.
+
+    Cost units are count-only instrumentation.  They are not debited from
+    energy and do not define value, importance, confidence, or retention
+    utility.
+    """
+
+    schema: str = SUBJECT_VM_THOUGHT_EVENT_DISABLED_SCHEMA
+    enabled: bool = False
+    capacity_per_subject: int = 0
+    max_parent_count: int = 0
+    retention_ticks: int = 0
+    emission_base_cost_units: int = 0
+    emission_per_coordinate_cost_units: int = 0
+    parent_link_cost_units: int = 0
+    retention_per_event_tick_cost_units: int = 0
+
+
+@dataclass(frozen=True)
 class SubjectVMConfig:
     """Disabled-by-default partitioned graph capacity contract."""
 
@@ -275,6 +297,7 @@ class SubjectVMConfig:
     transaction: SubjectVMTransactionConfig = SubjectVMTransactionConfig()
     live_write: SubjectVMLiveWriteConfig = SubjectVMLiveWriteConfig()
     evaluation: SubjectVMEvaluationConfig = SubjectVMEvaluationConfig()
+    thought_event: SubjectVMThoughtEventConfig = SubjectVMThoughtEventConfig()
 
     @property
     def total_node_capacity(self) -> int:
@@ -378,6 +401,10 @@ class SubjectVMConfig:
     @property
     def evaluation_enabled(self) -> bool:
         return self.schema == SUBJECT_VM_STAGE3C5_SCHEMA and bool(self.evaluation.enabled)
+
+    @property
+    def thought_event_enabled(self) -> bool:
+        return bool(self.thought_event.enabled)
 
 
 def _scan_forbidden_keys(value: Any, path: str = "subject_vm") -> None:
@@ -654,6 +681,42 @@ def _load_evaluation_config(raw: Any) -> SubjectVMEvaluationConfig:
     )
 
 
+def _load_thought_event_config(raw: Any) -> SubjectVMThoughtEventConfig:
+    if raw is None:
+        return SubjectVMThoughtEventConfig()
+    if not isinstance(raw, Mapping):
+        raise ValueError("subject_vm.thought_event must be an object")
+    allowed = {
+        "schema",
+        "enabled",
+        "capacity_per_subject",
+        "max_parent_count",
+        "retention_ticks",
+        "emission_base_cost_units",
+        "emission_per_coordinate_cost_units",
+        "parent_link_cost_units",
+        "retention_per_event_tick_cost_units",
+    }
+    unknown = sorted(set(raw) - allowed)
+    if unknown:
+        raise ValueError(f"unknown subject_vm.thought_event fields: {unknown}")
+    return SubjectVMThoughtEventConfig(
+        schema=str(raw.get("schema", SUBJECT_VM_THOUGHT_EVENT_DISABLED_SCHEMA)),
+        enabled=bool(raw.get("enabled", False)),
+        capacity_per_subject=int(raw.get("capacity_per_subject", 0)),
+        max_parent_count=int(raw.get("max_parent_count", 0)),
+        retention_ticks=int(raw.get("retention_ticks", 0)),
+        emission_base_cost_units=int(raw.get("emission_base_cost_units", 0)),
+        emission_per_coordinate_cost_units=int(
+            raw.get("emission_per_coordinate_cost_units", 0)
+        ),
+        parent_link_cost_units=int(raw.get("parent_link_cost_units", 0)),
+        retention_per_event_tick_cost_units=int(
+            raw.get("retention_per_event_tick_cost_units", 0)
+        ),
+    )
+
+
 def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
     """Parse an optional Subject VM section without inventing legacy fields."""
     if raw is None:
@@ -675,6 +738,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         "transaction",
         "live_write",
         "evaluation",
+        "thought_event",
     }
     unknown = sorted(set(raw) - allowed)
     if unknown:
@@ -721,6 +785,7 @@ def load_subject_vm_config(raw: Mapping[str, Any] | None) -> SubjectVMConfig:
         transaction=_load_transaction_config(raw.get("transaction")),
         live_write=_load_live_write_config(raw.get("live_write")),
         evaluation=_load_evaluation_config(raw.get("evaluation")),
+        thought_event=_load_thought_event_config(raw.get("thought_event")),
     )
     validate_subject_vm_config(cfg)
     return cfg
@@ -790,6 +855,57 @@ def _validate_disabled_evaluation(cfg: SubjectVMEvaluationConfig) -> None:
         raise ValueError(
             "inactive subject_vm evaluation requires exact disabled defaults"
         )
+
+
+def _validate_disabled_thought_event(cfg: SubjectVMThoughtEventConfig) -> None:
+    if cfg != SubjectVMThoughtEventConfig():
+        raise ValueError(
+            "inactive subject_vm thought_event requires exact disabled defaults"
+        )
+
+
+def _validate_thought_event(
+    cfg: SubjectVMThoughtEventConfig, *, trace: SubjectVMTraceConfig
+) -> None:
+    if cfg.schema != SUBJECT_VM_THOUGHT_EVENT_SCHEMA or not cfg.enabled:
+        raise ValueError(
+            "enabled subject_vm thought_event requires the approved T1 schema"
+        )
+    if trace.schema != SUBJECT_VM_TRACE_SCHEMA or trace.token_width <= 0:
+        raise ValueError("subject_vm thought_event requires enabled token trace")
+    if not 1 <= cfg.capacity_per_subject <= 65535:
+        raise ValueError(
+            "subject_vm thought_event capacity_per_subject must be in [1, 65535]"
+        )
+    if not 1 <= cfg.max_parent_count <= min(8, cfg.capacity_per_subject):
+        raise ValueError(
+            "subject_vm thought_event max_parent_count must be in [1, min(8, capacity)]"
+        )
+    if not 1 <= cfg.retention_ticks <= 2_147_483_647:
+        raise ValueError(
+            "subject_vm thought_event retention_ticks must be in [1, 2147483647]"
+        )
+    costs = (
+        cfg.emission_base_cost_units,
+        cfg.emission_per_coordinate_cost_units,
+        cfg.parent_link_cost_units,
+        cfg.retention_per_event_tick_cost_units,
+    )
+    if any(int(value) < 0 or int(value) > 1_000_000 for value in costs):
+        raise ValueError(
+            "subject_vm thought_event count-only costs must be in [0, 1000000]"
+        )
+
+
+def _validate_thought_event_extension(cfg: SubjectVMConfig) -> None:
+    if cfg.thought_event_enabled:
+        if not cfg.enabled or not cfg.trace_enabled:
+            raise ValueError(
+                "subject_vm thought_event requires enabled Stage-3-or-later Subject VM"
+            )
+        _validate_thought_event(cfg.thought_event, trace=cfg.trace)
+    else:
+        _validate_disabled_thought_event(cfg.thought_event)
 
 
 def _validate_activation(cfg: SubjectVMActivationConfig) -> None:
@@ -1104,6 +1220,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_transaction(cfg.transaction)
             _validate_disabled_live_write(cfg.live_write)
             _validate_disabled_evaluation(cfg.evaluation)
+            _validate_thought_event_extension(cfg)
             return
 
         _validate_activation(cfg.activation)
@@ -1117,6 +1234,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_transaction(cfg.transaction)
             _validate_disabled_live_write(cfg.live_write)
             _validate_disabled_evaluation(cfg.evaluation)
+            _validate_thought_event_extension(cfg)
             return
 
         _validate_trace(cfg.trace)
@@ -1129,6 +1247,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_transaction(cfg.transaction)
             _validate_disabled_live_write(cfg.live_write)
             _validate_disabled_evaluation(cfg.evaluation)
+            _validate_thought_event_extension(cfg)
             return
 
         _validate_eligibility(cfg.eligibility)
@@ -1140,6 +1259,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_transaction(cfg.transaction)
             _validate_disabled_live_write(cfg.live_write)
             _validate_disabled_evaluation(cfg.evaluation)
+            _validate_thought_event_extension(cfg)
             return
 
         _validate_association(
@@ -1154,6 +1274,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_transaction(cfg.transaction)
             _validate_disabled_live_write(cfg.live_write)
             _validate_disabled_evaluation(cfg.evaluation)
+            _validate_thought_event_extension(cfg)
             return
 
         _validate_modulation(
@@ -1167,6 +1288,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_disabled_transaction(cfg.transaction)
             _validate_disabled_live_write(cfg.live_write)
             _validate_disabled_evaluation(cfg.evaluation)
+            _validate_thought_event_extension(cfg)
             return
 
         _validate_target_binding(cfg.target_binding, eligibility=cfg.eligibility)
@@ -1195,6 +1317,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
             _validate_transaction(cfg.transaction)
             _validate_live_write(cfg.live_write, trace=cfg.trace)
             _validate_evaluation(cfg.evaluation, live_write=cfg.live_write)
+        _validate_thought_event_extension(cfg)
         return
 
     if cfg.schema != SUBJECT_VM_DISABLED_SCHEMA:
@@ -1217,6 +1340,7 @@ def validate_subject_vm_config(cfg: SubjectVMConfig) -> None:
     _validate_disabled_transaction(cfg.transaction)
     _validate_disabled_live_write(cfg.live_write)
     _validate_disabled_evaluation(cfg.evaluation)
+    _validate_disabled_thought_event(cfg.thought_event)
 
 
 def _disabled_activation_payload(value: Any) -> bool:
@@ -1369,6 +1493,24 @@ def _disabled_evaluation_payload(value: Any) -> bool:
     )
 
 
+def _disabled_thought_event_payload(value: Any) -> bool:
+    if value is None:
+        return True
+    if not isinstance(value, Mapping):
+        return False
+    return (
+        value.get("schema") == SUBJECT_VM_THOUGHT_EVENT_DISABLED_SCHEMA
+        and value.get("enabled") is False
+        and int(value.get("capacity_per_subject", 0)) == 0
+        and int(value.get("max_parent_count", 0)) == 0
+        and int(value.get("retention_ticks", 0)) == 0
+        and int(value.get("emission_base_cost_units", 0)) == 0
+        and int(value.get("emission_per_coordinate_cost_units", 0)) == 0
+        and int(value.get("parent_link_cost_units", 0)) == 0
+        and int(value.get("retention_per_event_tick_cost_units", 0)) == 0
+    )
+
+
 def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]:
     """Remove exact inert extensions without changing frozen identities."""
     section = payload.get("subject_vm")
@@ -1408,6 +1550,10 @@ def strip_disabled_subject_vm_section(payload: dict[str, Any]) -> dict[str, Any]
         section.get("evaluation")
     ):
         section.pop("evaluation", None)
+    if isinstance(section, dict) and _disabled_thought_event_payload(
+        section.get("thought_event")
+    ):
+        section.pop("thought_event", None)
     if (
         section.get("enabled") is False
         and section.get("schema") == SUBJECT_VM_DISABLED_SCHEMA
@@ -1461,6 +1607,8 @@ __all__ = [
     "SUBJECT_VM_EVALUATION_SCHEMA",
     "SUBJECT_VM_TRACE_DISABLED_SCHEMA",
     "SUBJECT_VM_TRACE_SCHEMA",
+    "SUBJECT_VM_THOUGHT_EVENT_DISABLED_SCHEMA",
+    "SUBJECT_VM_THOUGHT_EVENT_SCHEMA",
     "SubjectVMActivationConfig",
     "SubjectVMAssociationConfig",
     "SubjectVMConfig",
@@ -1473,6 +1621,7 @@ __all__ = [
     "SubjectVMLiveWriteConfig",
     "SubjectVMEvaluationConfig",
     "SubjectVMTraceConfig",
+    "SubjectVMThoughtEventConfig",
     "load_subject_vm_config",
     "strip_disabled_subject_vm_section",
     "validate_subject_vm_config",

@@ -158,7 +158,7 @@ def test_thought_event_language_contract_is_chinese_and_non_runtime() -> None:
         "不增加独立 `RETHINK`",
     ):
         assert marker in text
-    assert "状态：**设计约束与研究议程；尚未实现**" in text
+    assert "状态：**T1 统一 ThoughtEvent 基础设施已实现；前向 recall、语言与通信仍未实现**" in text
     assert len(text.splitlines()) < 600
 
 
