@@ -1,0 +1,67 @@
+{
+  "schema": "se-subject-vm-activation-contribution-trace-decision-v1",
+  "decision_id": "subject-vm-activation-contribution-trace-v1",
+  "project_version": "0.161.0",
+  "status": "implemented-engineering-observation-only",
+  "task_type": "ENGINEERING",
+  "git_title": "[ENGINEERING] subject-vm: export neutral activation contribution trace",
+  "purpose": "导出同一次权威 Subject VM activation 中的 node、edge、output-port 与 temporary-write contribution，以支持后续只读来源审计。",
+  "activation": {
+    "default_enabled": false,
+    "configuration_identity_member": false,
+    "checkpoint_state_member": false,
+    "clone_state_member": false,
+    "branch_identity_member": false,
+    "paired_runner_flag": "--subject-vm-activation-contribution-trace",
+    "optional_subject_filter_flag": "--subject-vm-activation-contribution-trace-subject-id"
+  },
+  "captured_fields": [
+    "subject、entity、tick 与稳定 event identity",
+    "node identity、region、phase、operator、retention、bias、input gate 与 accumulator",
+    "edge identity、source/target、delay、forward gate、bandwidth 与 bounded transmission",
+    "output node、action port、output gate、float32 contribution 与运行和",
+    "raw/clipped action-potential vector",
+    "guarded-live/control-reservation temporary-write transaction、target 与 pre/post/current lineage",
+    "source checkpoint、plan、branch role 与 branch identity metadata"
+  ],
+  "runtime_contract": {
+    "authoritative_activation_executed_once": true,
+    "writer_reexecutes_graph": false,
+    "writer_reads_or_consumes_random_stream": false,
+    "writer_changes_node_edge_output_or_policy": false,
+    "writer_has_runtime_feedback": false,
+    "trace_payload_removed_from_checkpoint_and_clone_state": true,
+    "observation_writer_owned_outside_simulation_core": true,
+    "event_id_join_occurs_after_intent_creation_without_state_writeback": true
+  },
+  "integrity_gate": {
+    "fresh_action_identity_required": true,
+    "fresh_selected_probability_identity_required": true,
+    "fresh_checkpoint_state_hash_identity_required": true,
+    "paired_branch_checkpoint_state_hash_identity_required": true,
+    "paired_branch_identity_file_byte_identity_required": true,
+    "categorical_rng_trace_byte_identity_required": true,
+    "node_edge_output_exact_reconstruction_required": true,
+    "temporary_write_lineage_consistency_required": true,
+    "guarded_live_temporary_write_observation_required": true,
+    "integrity_assessment_sha256": "1c79eaa89ca6ee85bda1e4638f24f54537233c2ff5dc5dfbce903d258634fb8f"
+  },
+  "interpretation_boundary": {
+    "execution_contribution_decomposition": true,
+    "causal_attribution": false,
+    "objective_value_semantics": false,
+    "rest_action_port_value_semantics": false,
+    "credit_quality_proven": false
+  },
+  "scientific_boundary": {
+    "stage3c42_authorized_after_integrity_gate": true,
+    "stage3c42_must_be_read_only": true,
+    "causal_attribution_from_trace_alone": false,
+    "automatic_keep_or_revert_authorized": false,
+    "learned_weight_authorized": false,
+    "permanent_retention_authorized": false,
+    "no_action_authorized": false,
+    "low_disturbance_action_authorized": false,
+    "low_disturbance_action_status": "parked-for-separate-branch-contract"
+  }
+}

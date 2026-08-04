@@ -1,5 +1,13 @@
 # 版本变更记录
 
+## 0.161.0
+
+- 增加默认关闭、观测专用的 Subject VM activation contribution trace，记录 node、edge、output-port、action-potential aggregation 与 active temporary-write/control-reservation lineage。
+- activation 只执行一次；独立 observation writer 不读取随机流、不回写 runtime，也不进入 configuration、checkpoint、clone 或 branch identity。
+- fresh continuation 与 paired branches 的 action、selected probability、categorical RNG trace、checkpoint state hash 和 branch identity 全部保持一致。
+- trace 可精确重建 edge bounded transmission、node accumulator、output contribution 与 clipped action potential；仅证明执行分解，不构成 causal attribution。
+- Stage 3C-42 获得只读启动资格；`NO_ACTION` 不采用，低代价/低扰动 action 作为独立分支议题暂时搁置。
+
 ## 0.160.0
 
 - 完成 Stage 3C-41 action-logit 与 CDF boundary pressure 来源分解，只读取 Stage 3C-40 冻结的每 source top-five opportunity。

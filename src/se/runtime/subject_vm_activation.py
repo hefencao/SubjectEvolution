@@ -39,6 +39,7 @@ def subject_vm_action_potentials(
     """Return bounded potentials only when an expressed Stage-2 graph exists."""
     runtime = simulation.subject_vm
     if not runtime.has_expressed_graph(active):
+        simulation._stage_subject_vm_activation_contribution_trace(None)
         return None
     runtime.require_execution_backend(simulation.execution_backend)
     inputs = build_objective_input_ports(
@@ -52,12 +53,19 @@ def subject_vm_action_potentials(
         uncertainty=information.uncertainty,
         retained_policy_state=simulation.entities.memory[active],
     )
-    return runtime.activate(
+    result = runtime.activate(
         rows=active,
         input_values=inputs,
         tick=simulation.tick,
         output_width=len(Action),
-    ).action_potentials
+        contribution_trace_rows=(
+            simulation._subject_vm_activation_contribution_rows(active)
+        ),
+    )
+    simulation._stage_subject_vm_activation_contribution_trace(
+        result.contribution_trace
+    )
+    return result.action_potentials
 
 
 __all__ = ["initialize_subject_vm_runtime", "subject_vm_action_potentials"]

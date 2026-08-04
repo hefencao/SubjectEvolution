@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c41-frozen-rest-logit-softmax-pressure-source-resolved",
-  "project_version": "0.160.0",
+  "status": "stage-3c41-frozen-activation-contribution-trace-engineering-ready",
+  "project_version": "0.161.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -973,5 +973,21 @@
     "learned_weight_authorized": false,
     "permanent_write_authorized": false,
     "next_authorized_boundary": "engineering-neutral-subject-vm-activation-contribution-trace"
+  },
+  "activation_contribution_trace_contract": {
+    "decision_file": "protocols/decisions/subject_vm_activation_contribution_trace_v1.json",
+    "task_type": "ENGINEERING",
+    "runtime_semantics_changed": false,
+    "configuration_identity_changed": false,
+    "checkpoint_state_changed": false,
+    "branch_identity_changed": false,
+    "random_stream_consumed_by_trace": false,
+    "node_edge_output_reconstruction_required": true,
+    "temporary_write_lineage_required": true,
+    "integrity_assessment_sha256": "1c79eaa89ca6ee85bda1e4638f24f54537233c2ff5dc5dfbce903d258634fb8f",
+    "stage3c42_read_only_boundary_unlocked": true,
+    "scientific_conclusion_authorized": false,
+    "no_action_authorized": false,
+    "low_disturbance_action_status": "parked-for-separate-branch-contract"
   }
 }

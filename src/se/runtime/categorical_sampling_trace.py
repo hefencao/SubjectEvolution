@@ -6,7 +6,6 @@ logits、mask、概率、action、checkpoint state 或 branch identity。
 from __future__ import annotations
 
 from dataclasses import dataclass
-import copy
 import hashlib
 import json
 from pathlib import Path
@@ -226,73 +225,10 @@ class CategoricalSamplingTraceWriter:
         )
 
 
-class RuntimeObservationMixin:
-    """管理观测 trace 生命周期，不参与 Simulation 的语义状态。"""
-
-    def _initialize_observation_outputs(self) -> None:
-        self._trajectory_file = None
-        if self.cfg.run.trajectory_subject_ids:
-            self._trajectory_file = (
-                self.output_dir / "trajectory.jsonl"
-            ).open("w", encoding="utf-8")
-        self._categorical_sampling_trace_writer: CategoricalSamplingTraceWriter | None = None
-        self._categorical_sampling_trace_summary = None
-
-    @property
-    def categorical_sampling_trace_enabled(self) -> bool:
-        return self._categorical_sampling_trace_writer is not None
-
-    def enable_categorical_sampling_trace(
-        self,
-        *,
-        metadata: dict[str, object] | None = None,
-        subject_ids: tuple[int, ...] | None = None,
-    ) -> Path:
-        if self._categorical_sampling_trace_writer is not None:
-            raise RuntimeError("categorical sampling trace is already enabled")
-        payload: dict[str, object] = {
-            "run_seed": int(self.cfg.run.seed),
-            "requested_backend": str(self.requested_backend),
-            "execution_backend": str(self.execution_backend),
-            "checkpoint_lineage": copy.deepcopy(self.checkpoint_lineage),
-        }
-        if metadata:
-            payload.update(copy.deepcopy(metadata))
-        self._categorical_sampling_trace_writer = CategoricalSamplingTraceWriter(
-            self.output_dir, metadata=payload, subject_ids=subject_ids
-        )
-        return self._categorical_sampling_trace_writer.trace_path
-
-    def _record_categorical_sampling_trace(
-        self, *, active: np.ndarray, entities: Any, intents: Any, decision: PolicyDecision
-    ) -> None:
-        writer = self._categorical_sampling_trace_writer
-        if writer is None or int(active.size) == 0:
-            return
-        writer.record(
-            tick=int(self.tick),
-            world_rows=np.asarray(active, dtype=np.int32),
-            entity_ids=np.asarray(entities.entity_id[active], dtype=np.uint64),
-            subject_ids=np.asarray(
-                entities.primary_subject_id[active], dtype=np.uint64
-            ),
-            event_ids=np.asarray(intents.intent_id, dtype=np.uint64),
-            decision=decision,
-        )
-
-    def _close_observation_outputs(self) -> None:
-        if self._trajectory_file is not None:
-            self._trajectory_file.close()
-        if self._categorical_sampling_trace_writer is not None:
-            self._categorical_sampling_trace_summary = (
-                self._categorical_sampling_trace_writer.close()
-            )
-
 
 __all__ = [
     "CATEGORICAL_SAMPLING_TRACE_MANIFEST_SCHEMA",
     "CATEGORICAL_SAMPLING_TRACE_SCHEMA",
-    "RuntimeObservationMixin",
     "CategoricalSamplingTraceSummary",
     "CategoricalSamplingTraceWriter",
 ]

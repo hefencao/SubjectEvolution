@@ -145,7 +145,7 @@ from .reporting import SimulationReportingMixin
 from .state import EntityState, StepStats, _wrap_periodic_float32
 from .subject_vm_activation import initialize_subject_vm_runtime, subject_vm_action_potentials
 from .subject_vm_trace import capture_subject_vm_objective_snapshot, commit_subject_vm_objective_events
-from .categorical_sampling_trace import RuntimeObservationMixin
+from .observation import RuntimeObservationMixin
 from .share_settlement import commit_shares, finalize_share_capacity
 from .embodied import apply_material_repair, movement_cost_with_power
 from .harvest_commit import commit_harvest_resolution
@@ -1337,7 +1337,7 @@ class Simulation(RuntimeObservationMixin, SimulationCheckpointMixin, SimulationE
             heuristic_control=arbitration.heuristic_applied,
             autonomy_control=arbitration.autonomy_applied,
         )
-        self._record_categorical_sampling_trace(active=active, entities=ent, intents=intents, decision=decision)
+        self._record_policy_observation_traces(active=active, entities=ent, intents=intents, decision=decision)
         active_raw_harvest_room = raw_harvest_room(
             ent,
             active,

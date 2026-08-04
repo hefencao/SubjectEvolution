@@ -14,6 +14,11 @@ from .association import (
     select_delayed_association_candidate,
 )
 """Partitioned unified Subject Graph VM public boundary."""
+from .activation_contribution import (
+    SUBJECT_VM_ACTIVATION_CONTRIBUTION_SCHEMA,
+    SubjectVMActivationContributionBatch,
+    snapshot_temporary_write_lineage,
+)
 from .activation import (
     OP_LINEAR,
     OP_RETAINED_LINEAR,
@@ -280,6 +285,8 @@ __all__ = [
     "SUBJECT_VM_REGION_NAMES",
     "SUBJECT_VM_STAGE1_SCHEMA",
     "SUBJECT_VM_STAGE2_SCHEMA",
+    "SUBJECT_VM_ACTIVATION_CONTRIBUTION_SCHEMA",
+    "SubjectVMActivationContributionBatch",
     "SubjectVMActivationAccounting",
     "SubjectVMActivationConfig",
     "SubjectVMAssociationConfig",
@@ -328,6 +335,7 @@ __all__ = [
     "build_objective_input_ports",
     "compact_rows",
     "execute_activation",
+    "snapshot_temporary_write_lineage",
     "advance_local_eligibility",
     "mark_edge_eligibility",
     "mark_node_eligibility",

@@ -72,7 +72,13 @@ requested value 是因果意图，realized value 是受约束结果。分析或�
 
 可选 categorical sampling trace 直接消费实际采样核已经计算出的 action mask、masked logits、完整 probability/CDF、counter-based random key、uniform draw 与 sampled interval。它默认关闭，不进入 configuration identity、checkpoint state、clone state 或 branch identity，也不向 runtime 反馈。CPU 与 GPU 只允许在相同采样语义下导出这些字段。
 
-### 3.3 报告与 checkpoint 物化
+### 3.4 Subject VM activation contribution 观测 trace
+
+activation executor 可以在明确启用时返回同一次权威执行的 node、edge、output-port 与 temporary-write contribution 记录。独立 observation writer 负责 JSONL、manifest 与 event identity join；`Simulation` 主编排不拥有文件输出实现。
+
+该观测状态不进入 normalized configuration、checkpoint、clone 或 branch identity，不重新执行 graph，也不读取 random stream。它只能重建执行贡献，不能单独证明 causal attribution、价值或信用质量。
+
+### 3.5 报告与 checkpoint 物化
 
 报告和 checkpoint 导出必须在每个 tick 看到同一个权威物化状态。设备镜像可在内部延迟同步，但最终 summary、checkpoint、branch export 和 reproducibility assessment 必须标识物化 tick 与来源。
 

@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c41-frozen-rest-logit-softmax-pressure-source-resolved"
+    assert contract["status"] == "stage-3c41-frozen-activation-contribution-trace-engineering-ready"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -35,6 +35,17 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert trace["branch_identity_changed"] is False
     assert trace["stage3c40_read_only_boundary_unlocked"] is True
     assert trace["scientific_conclusion_authorized"] is False
+    activation_trace = contract["activation_contribution_trace_contract"]
+    assert activation_trace["task_type"] == "ENGINEERING"
+    assert activation_trace["runtime_semantics_changed"] is False
+    assert activation_trace["checkpoint_state_changed"] is False
+    assert activation_trace["branch_identity_changed"] is False
+    assert activation_trace["random_stream_consumed_by_trace"] is False
+    assert activation_trace["node_edge_output_reconstruction_required"] is True
+    assert activation_trace["temporary_write_lineage_required"] is True
+    assert activation_trace["stage3c42_read_only_boundary_unlocked"] is True
+    assert activation_trace["scientific_conclusion_authorized"] is False
+    assert activation_trace["no_action_authorized"] is False
     assert contract["stage_2_contract"]["plasticity"] is False
     assert contract["stage_3a_contract"]["persistent_node_edge_path"] is False
     assert contract["stage_3a_contract"]["plasticity"] is False

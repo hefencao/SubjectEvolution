@@ -2,7 +2,7 @@
 
 状态：**当前机制合同**
 合同代次：**v1**
-仓库审查版本：**v0.157**
+仓库审查版本：**v0.161**
 
 本文档定义当前有效的 Subject Graph VM 架构和安全边界。它不是版本日志，也不是实验结果台账。Stage 3C 的历史结论由 `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` 汇总；可执行细节由 `protocols/decisions/` 管理。
 
@@ -188,6 +188,14 @@ runtime score comparator 是 selection semantics 的唯一权威。分析专用 
 ### 7.1 Categorical sampling trace
 
 policy action sampling 仍由现有 action system 权威拥有。可选 trace 只能记录实际采样核的完整 mask、logits、probability、CDF、counter-based key/draw 和 selected interval；不得重新采样或修改 action。trace 不属于 Subject VM state、checkpoint、branch identity 或演化成本。其唯一用途是支持后续只读 action-boundary 审计。
+
+### 7.2 Activation contribution trace
+
+可选 activation contribution trace 只能消费同一次权威 activation 已产生的执行中间量，记录 node activation、edge transmission、output gate contribution、action-port 聚合和 active temporary-write/control-reservation lineage。writer 不得重新执行 graph、读取随机流或修改 node/edge/output。
+
+trace payload、pending join 状态和 writer lifecycle 都不属于 Subject VM storage、configuration identity、checkpoint、clone 或 branch identity。event identity 可以在 intent 建立后由 observation 层补齐，但不得回写 runtime cognition。
+
+该 trace 只是执行 contribution decomposition，不是 causal attribution、credit assignment、价值解释或 retention 依据。只有通过 action、RNG、checkpoint state 与 branch identity 中立性门后，才能用于后续只读分析。
 
 ## 8. 仅用于实验的干预
 

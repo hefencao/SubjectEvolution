@@ -1,8 +1,8 @@
-# SubjectEvolution v0.160.0
+# SubjectEvolution v0.161.0
 
 SubjectEvolution 是一个实验性模拟项目，用于在不预设奖励和人类社会语义的前提下，研究类似主体的内部组织如何出现、变化并产生因果影响。
 
-v0.160.0 完成 Stage 3C-41 action-logit 与 CDF boundary pressure 来源分解。研究确认 Stage 3C-40 top opportunity 中所有非零 masked-logit 变化都只发生在 `REST` action port；其他 action 的概率变化来自 softmax 耦合，且 `REST` logit 的符号或幅度不能单独区分 crossing。
+v0.161.0 完成语义中立的 Subject VM activation contribution trace，导出 node、edge、output-port 与 temporary-write lineage，并证明 trace 开关不改变 action、RNG、checkpoint state 或 branch identity。Stage 3C-41 仍是冻结科学前沿，Stage 3C-42 仅获得只读启动资格。
 
 ## 文档索引
 
@@ -17,4 +17,4 @@ v0.160.0 完成 Stage 3C-41 action-logit 与 CDF boundary pressure 来源分解�
 
 ## 当前科学前沿
 
-Stage 3C-41 已冻结。下一项为 `[ENGINEERING]` 语义中立 Subject VM activation contribution trace；完成该工程门前，Stage 3C-42 source-history→activation→REST output 分解保持阻塞。
+Stage 3C-41 已冻结。activation contribution trace 工程门已完成；下一项为 Stage 3C-42 只读 source-history→activation→REST output contribution 审计，不授权 causal attribution、value 或 retention。

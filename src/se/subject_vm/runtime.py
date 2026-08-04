@@ -8,6 +8,7 @@ import numpy as np
 
 from .binding import SubjectVMTargetCandidateBatch
 from .activation import SubjectVMActivationResult, execute_activation
+from .activation_contribution import snapshot_temporary_write_lineage
 from .config import SubjectVMConfig
 from .eligibility import SubjectVMLocalEligibilityUsage
 from .evaluation import SubjectVMEvaluationLedger
@@ -427,6 +428,7 @@ class SubjectVMRuntime:
         input_values: np.ndarray,
         tick: int,
         output_width: int,
+        contribution_trace_rows: np.ndarray | None = None,
     ) -> SubjectVMActivationResult:
         if not self.activation_enabled or self.storage is None:
             raise RuntimeError("subject_vm activation is not enabled")
@@ -443,12 +445,21 @@ class SubjectVMRuntime:
                     tick=int(tick),
                     live_write_ledger=self.live_write_ledger,
                 )
+        trace_lineage = None
+        if contribution_trace_rows is not None:
+            trace_lineage = snapshot_temporary_write_lineage(
+                self.storage,
+                self.live_write_ledger,
+                rows=np.asarray(contribution_trace_rows, dtype=np.int32),
+            )
         result = execute_activation(
             self.storage,
             rows=rows,
             input_values=input_values,
             tick=tick,
             output_width=output_width,
+            contribution_trace_rows=contribution_trace_rows,
+            temporary_write_lineage_by_row=trace_lineage,
         )
         self.activation_accounting.record(result)
         if result.eligibility_usage is not None:

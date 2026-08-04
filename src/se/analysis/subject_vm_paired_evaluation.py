@@ -568,6 +568,8 @@ def run_plan(
     backend: str = "auto",
     categorical_sampling_trace: bool = False,
     categorical_sampling_trace_subject_ids: tuple[int, ...] | None = None,
+    subject_vm_activation_contribution_trace: bool = False,
+    subject_vm_activation_contribution_trace_subject_ids: tuple[int, ...] | None = None,
 ) -> dict[str, Any]:
     _validate_plan(plan)
     source = Path(source_checkpoint).resolve()
@@ -678,6 +680,22 @@ def run_plan(
                 },
                 subject_ids=categorical_sampling_trace_subject_ids,
             )
+        if subject_vm_activation_contribution_trace:
+            sim.enable_subject_vm_activation_contribution_trace(
+                metadata={
+                    "paired_evaluation_plan_sha256": manifest["plan_sha256"],
+                    "branch_id": manifest["branch_id"],
+                    "branch_role": role,
+                    "source_checkpoint_state_sha256": manifest[
+                        "source_checkpoint_state_sha256"
+                    ],
+                    "source_checkpoint_file_sha256": plan["source"][
+                        "checkpoint_file_sha256"
+                    ],
+                    "branch_identity_sha256": _canonical_sha256(manifest),
+                },
+                subject_ids=subject_vm_activation_contribution_trace_subject_ids,
+            )
     control.run(until_tick=int(plan["final_tick"]))
     live.run(until_tick=int(plan["final_tick"]))
     finalization = None
@@ -713,6 +731,25 @@ def run_plan(
                 else None
             ),
         }
+    activation_trace_manifests = None
+    if subject_vm_activation_contribution_trace:
+        activation_trace_manifests = {
+            "read-only-control": (
+                str(
+                    control._subject_vm_activation_contribution_trace_summary.manifest_path
+                )
+                if control._subject_vm_activation_contribution_trace_summary
+                is not None
+                else None
+            ),
+            "guarded-live": (
+                str(
+                    live._subject_vm_activation_contribution_trace_summary.manifest_path
+                )
+                if live._subject_vm_activation_contribution_trace_summary is not None
+                else None
+            ),
+        }
     return {
         "plan_sha256": plan["plan_sha256"],
         "guarded_live_checkpoint": str(live_checkpoint),
@@ -721,6 +758,9 @@ def run_plan(
         "paired_window_count": export["window_evidence"]["paired_window_count"],
         "transient_finalization": finalization,
         "categorical_sampling_trace_manifests": trace_manifests,
+        "subject_vm_activation_contribution_trace_manifests": (
+            activation_trace_manifests
+        ),
     }
 
 
@@ -829,6 +869,15 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=None,
     )
+    run.add_argument(
+        "--subject-vm-activation-contribution-trace", action="store_true"
+    )
+    run.add_argument(
+        "--subject-vm-activation-contribution-trace-subject-id",
+        action="append",
+        type=int,
+        default=None,
+    )
     export = sub.add_parser("export")
     export.add_argument("--plan", required=True)
     export.add_argument("--guarded-live-checkpoint", required=True)
@@ -868,6 +917,16 @@ def main() -> None:
                 categorical_sampling_trace_subject_ids=(
                     tuple(args.categorical_sampling_trace_subject_id)
                     if args.categorical_sampling_trace_subject_id
+                    else None
+                ),
+                subject_vm_activation_contribution_trace=(
+                    args.subject_vm_activation_contribution_trace
+                ),
+                subject_vm_activation_contribution_trace_subject_ids=(
+                    tuple(
+                        args.subject_vm_activation_contribution_trace_subject_id
+                    )
+                    if args.subject_vm_activation_contribution_trace_subject_id
                     else None
                 ),
             )

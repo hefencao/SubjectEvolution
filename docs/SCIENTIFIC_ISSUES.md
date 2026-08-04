@@ -12,7 +12,7 @@
 | SG-04 | Bootstrap 通用性 | PARKED | 哪些结果依赖 normalized-dot/latest/top-1 bootstrap addressing？ | 当前 crossing 因果链完成 activation-source 分解后再比较。 |
 | SG-05 | 持续性 | BLOCKED | 临时 graph-parameter 效应能否在独立论证的决策规则下持续？ | 需要可复现下游证据和单独 keep/revert 合同。 |
 | SG-06 | Topology evolution | BLOCKED | topology、readout 和 addressing 能否演化而不退化为不可诊断搜索？ | 需要成本、development、inheritance、neutralization 和健康 source 资格。 |
-| SG-09 | REST output 来源 | OPEN | 不同 source history 为什么产生不同符号和幅度的 `REST` action-port output，并进一步形成不同的 CDF endpoint pressure？ | Stage 3C-41 已确认 policy-level 非零 logit source 全部为 `REST`；下一步先完成语义中立 activation contribution trace，之后才能审计 graph 内部来源。 |
+| SG-09 | REST output 来源 | OPEN | 不同 source history 为什么产生不同符号和幅度的 `REST` action-port output，并进一步形成不同的 CDF endpoint pressure？ | Stage 3C-41 已确认 policy-level 非零 logit source 全部为 `REST`；v0.161 已完成语义中立 activation contribution trace。下一步 Stage 3C-42 只读审计 graph 内部 execution contribution，不得直接升级为 causal attribution。 |
 | ENV-01 | 环境 | PARKED | 环境能否为分化能力持续提供正交机会？ | 只能作为 `[EVOLVE-ENV]` 恢复，并包含守恒与 source-health gate。 |
 | ENV-02 | 人口结构 | OPEN | source checkpoint 是否足以支持演化解释，而不仅是短程机制诊断？ | 需要 population、descendant、generation depth、founder replacement 与 checkpoint stability gate。 |
 | SOC-01 | 身份 | BLOCKED | 实体死亡后，延迟 partner evidence 如何继续存在而不附着到回收行？ | 需要历史 subject identity 以及 retention、inheritance、eviction 语义。 |
