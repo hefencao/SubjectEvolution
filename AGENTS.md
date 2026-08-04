@@ -88,6 +88,7 @@ git apply --index "$(se-workspace path patch)/<actual-patch-name>"
 | 长期流程与推断规则 | `docs/PROJECT_GOVERNANCE.md` 与本文件 |
 | 当前结构合同 | `docs/ARCHITECTURE.md` |
 | 当前 Subject Graph VM 机制合同 | `docs/PARTITIONED_SUBJECT_GRAPH_VM.md` 与 `protocols/decisions/` |
+| 思维链、ThoughtEvent 与语言认知设计边界 | `docs/THOUGHT_EVENT_LANGUAGE_COGNITION.md` |
 | 当前类型化任务树 | `docs/PROJECT_STATUS.md` |
 | 当前尚未解决的科学问题 | `docs/SCIENTIFIC_ISSUES.md` |
 | 已冻结且已验证的结果 | `docs/results/` |

@@ -175,6 +175,13 @@ trace runtime 为 subject-time alignment 研究提供明确的 experiment-only a
 
 这些 policy 只用于检验因果路由，不定义生产级 attention 机制。
 
+
+### 7.7 尚未实现的 ThoughtEvent 与通信边界
+
+前向 ThoughtEvent recall、思维链和语言尚未进入当前 runtime。未来实现必须继续使用统一 Subject Graph：极短暂思维链与较长期记忆共享一种 ThoughtEvent 表示与 identity；通信区域只能承担 SignalEvent 的发送、传播与接收接口，不拥有对象词义、方位、价值或语法角色。
+
+跨 seed、区域或谱系比较不得按词形、node ID 或 region 硬对齐；观察者侧只能通过标准化反事实、功能干预、指称关系和成本结构建立候选映射，且该映射不得反馈进 runtime cognition。完整研究合同见 `docs/THOUGHT_EVENT_LANGUAGE_COGNITION.md`。
+
 ## 8. 证据管线
 
 证据栈刻意位于 runtime learning path 之外：
@@ -220,6 +227,7 @@ release packaging、patch replay、archive governance 与 isolated wheel/sdist �
 | `PROJECT_GOVERNANCE.md` | 长期流程与推断规则 | 原始实验叙事、版本日志 |
 | `ARCHITECTURE.md` | 当前结构合同 | 逐版本结果、任务队列、暂定结论 |
 | `PARTITIONED_SUBJECT_GRAPH_VM.md` | 当前 VM 机制与安全合同 | 按 Stage 排列的结果历史 |
+| `THOUGHT_EVENT_LANGUAGE_COGNITION.md` | 尚未实现的思维链、通信和语言研究合同 | 当前 runtime 能力声明、冻结实验结果 |
 | `PROJECT_STATUS.md` | 当前类型化任务树与冻结前沿 | Stage-by-Stage 历史、测试报告 |
 | `SCIENTIFIC_ISSUES.md` | 当前未解决科学问题 | 发布说明、已解决历史、工程缺陷 |
 | `docs/results/` | 已冻结且验证的结果台账 | 暂定解释 |

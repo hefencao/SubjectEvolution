@@ -2,7 +2,7 @@
 
 状态：**当前机制合同**
 合同代次：**v1**
-仓库审查版本：**v0.161**
+仓库审查版本：**v0.163**
 
 本文档定义当前有效的 Subject Graph VM 架构和安全边界。它不是版本日志，也不是实验结果台账。Stage 3C 的历史结论由 `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` 汇总；可执行细节由 `protocols/decisions/` 管理。
 
@@ -197,6 +197,13 @@ trace payload、pending join 状态和 writer lifecycle 都不属于 Subject VM 
 
 该 trace 只是执行 contribution decomposition，不是 causal attribution、credit assignment、价值解释或 retention 依据。只有通过 action、RNG、checkpoint state 与 branch identity 中立性门后，才能用于后续只读分析。
 
+
+### 7.3 ThoughtEvent 与通信的未来边界
+
+当前 continuous token/event history 仍主要服务 delayed association，尚未作为下一轮 activation 的前向记忆。未来能力不得把极短暂思维链和较长期记忆拆成两套 token；二者必须共享统一 ThoughtEvent vector、identity、lineage、comparator 与 graph ingress，只能通过生命周期、索引、容量和访问成本连续分化。
+
+未来 communication region 只能是统一图与物理 SignalEvent channel 之间的接口区域，不拥有对象指称、词义、价值或语法。不同 seed/区域可以通过不同 signal、node、topology 或 region 分布实现相同功能；跨世界对齐必须保留符号置换和 graph permutation 的等价可能。完整尚未实现的设计边界见 `docs/THOUGHT_EVENT_LANGUAGE_COGNITION.md`。
+
 ## 8. 仅用于实验的干预
 
 冻结协议需要因果操纵时，runtime 可以暴露明确的 experiment-only policy。当前实例包括 subject-time coordinate identity 与 cyclic donor alignment mode。
@@ -319,6 +326,7 @@ assessment 必须区分：
 - learned attention/addressing weight；
 - online topology evolution；
 - 语义化 partner、trust 或 role network；
+- 前向 ThoughtEvent recall、思维链与 communication-language mapping；
 - Epoch 1 资格或主体性结论。
 
 当前科学前沿和下一任务刻意不写在这里；见 `docs/PROJECT_STATUS.md` 与 `docs/SCIENTIFIC_ISSUES.md`。
@@ -334,5 +342,6 @@ assessment 必须区分：
 | 已冻结 Stage 3C 结果 | `docs/results/SUBJECT_VM_STAGE3C_RESULTS.md` |
 | 当前任务前沿 | `PROJECT_STATUS.md` |
 | 当前开放问题 | `SCIENTIFIC_ISSUES.md` |
+| 尚未实现的 ThoughtEvent 与语言研究合同 | `THOUGHT_EVENT_LANGUAGE_COGNITION.md` |
 
 具体研究中，若自然语言与可执行 decision protocol 冲突，以冻结协议控制执行；二者都不得超出 Charter 规定的解释边界。

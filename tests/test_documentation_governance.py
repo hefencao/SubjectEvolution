@@ -136,6 +136,7 @@ def test_active_normative_documents_are_chinese_authoritative() -> None:
         "docs/PROJECT_GOVERNANCE.md": ("项目治理规则", "每轮治理检查"),
         "docs/ARCHITECTURE.md": ("当前架构", "职责与权威"),
         "docs/PARTITIONED_SUBJECT_GRAPH_VM.md": ("分区式 Subject Graph VM", "当前机制合同"),
+        "docs/THOUGHT_EVENT_LANGUAGE_COGNITION.md": ("ThoughtEvent、思维链与语言认知研究合同", "成本约束编码同态假设"),
         "docs/PROJECT_STATUS.md": ("当前项目状态", "类型化任务进度树"),
         "docs/SCIENTIFIC_ISSUES.md": ("当前科学问题", "活动问题注册表"),
         "docs/WORKFLOW_PROFILES.md": ("工作流档位", "档位选择"),
@@ -145,6 +146,20 @@ def test_active_normative_documents_are_chinese_authoritative() -> None:
         text = _text(relative)
         for marker in markers:
             assert marker in text, (relative, marker)
+
+
+def test_thought_event_language_contract_is_chinese_and_non_runtime() -> None:
+    text = _text("docs/THOUGHT_EVENT_LANGUAGE_COGNITION.md")
+    for marker in (
+        "统一 ThoughtEvent",
+        "成本约束编码同态假设",
+        "跨 seed/区域",
+        "communication interface",
+        "不增加独立 `RETHINK`",
+    ):
+        assert marker in text
+    assert "状态：**设计约束与研究议程；尚未实现**" in text
+    assert len(text.splitlines()) < 600
 
 
 def test_v0153_core_contract_snapshots_are_non_normative() -> None:

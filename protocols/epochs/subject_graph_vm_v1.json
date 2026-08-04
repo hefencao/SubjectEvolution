@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c42-frozen-thought-chain-substrate-next",
-  "project_version": "0.162.0",
+  "status": "stage-3c42-frozen-thought-language-design-governed",
+  "project_version": "0.163.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -1016,5 +1016,22 @@
     "learned_weight_authorized": false,
     "permanent_write_authorized": false,
     "next_project_boundary": "evolve-subject-unified-thought-event-chain-substrate"
+  },
+  "thought_event_language_design_contract": {
+    "status": "documented-not-implemented",
+    "authoritative_document": "docs/THOUGHT_EVENT_LANGUAGE_COGNITION.md",
+    "next_implementation_stage": "T1-unified-thought-event-infrastructure",
+    "single_thought_representation": true,
+    "short_and_long_memory_differ_only_by_lifecycle_index_cost": true,
+    "rethink_action_authorized": false,
+    "no_action_authorized": false,
+    "confidence_halt_gate_authorized": false,
+    "forward_recall_implemented": false,
+    "communication_interface_implemented": false,
+    "language_region_owns_semantics": false,
+    "objective_fact_unconditional_thought_feedback": false,
+    "observer_mapping_feedback_to_runtime": false,
+    "cross_seed_alignment_requires_functional_relational_evidence": true,
+    "huffman_like_encoding_is_hypothesis_not_contract": true
   }
 }

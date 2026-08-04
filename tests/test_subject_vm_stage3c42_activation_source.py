@@ -99,10 +99,7 @@ def test_stage3c42_study_contract_is_frozen_before_trace() -> None:
 
 def test_stage3c42_frozen_assessment_records_current_gate_only_did() -> None:
     assessment = json.loads(
-        Path(
-            "analyses/d1z_subject_vm_stage3c42_activation_source_v1/final/"
-            "stage3c42_activation_source.json"
-        ).read_text(encoding="utf-8")
+        Path("tests/fixtures/stage3c42_activation_source.json").read_text(encoding="utf-8")
     )
     findings = assessment["cross_panel_findings"]
     assert findings["all_rest_output_deltas_exactly_reconstructed"] is True

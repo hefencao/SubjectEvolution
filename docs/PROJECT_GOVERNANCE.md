@@ -145,6 +145,7 @@ workflow 必须记录前置门、source panel、branch plan、assessment、打�
 | 长期流程与推断规则 | `PROJECT_GOVERNANCE.md` 与 `AGENTS.md` |
 | 当前结构架构 | `ARCHITECTURE.md` |
 | 当前 Subject Graph VM 机制合同 | `PARTITIONED_SUBJECT_GRAPH_VM.md` |
+| 尚未实现的 ThoughtEvent、思维链与语言研究合同 | `THOUGHT_EVENT_LANGUAGE_COGNITION.md` |
 | 当前类型化任务树 | `PROJECT_STATUS.md` |
 | 当前未解决科学问题 | `SCIENTIFIC_ISSUES.md` |
 | 已冻结且验证的科学结果 | `docs/results/` |

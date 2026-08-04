@@ -1,5 +1,13 @@
 # 版本变更记录
 
+## 0.163.0
+
+- 新增 `docs/THOUGHT_EVENT_LANGUAGE_COGNITION.md`，将统一 ThoughtEvent、思维链、较长期记忆、communication interface、语言资格与外部原生频道干预收敛为独立研究合同。
+- 明确下一轮只实现 T1 schema/identity/parent DAG/bounded arena/lifecycle/cost，不实现前向 recall、语言、世界频道、`RETHINK`、`NO_ACTION` 或 confidence gate。
+- 将不同 seed/区域对同一对象的 signal、subgraph 和 region 差异登记为功能对齐问题；禁止按词形、node ID 或 region 硬对齐。
+- 将“基础认知编码类似哈夫曼编码”收敛为成本约束编码同态假设：允许表面编码不同，只研究指称关系、组合运算和相对成本序是否保持；不预设 prefix-free、无损或最优编码。
+- 同步项目治理、架构边界、科学问题注册表、机器可读 Epoch 合同和下一任务树；不改变 runtime 或 Stage 3C 冻结结果。
+
 ## 0.162.0
 
 - 完成 Stage 3C-42 REST activation contribution 来源审计，只读复用 Stage 3C-40 冻结 top-five event support。
