@@ -68,6 +68,10 @@ requested value 是因果意图，realized value 是受约束结果。分析或�
 - parity 是验证边界，不是科学干预；
 - allocator cache、编译产物和设备可用性都是工程因素，不得解释为生物或认知效应。
 
+### 3.3 Categorical sampling 观测 trace
+
+可选 categorical sampling trace 直接消费实际采样核已经计算出的 action mask、masked logits、完整 probability/CDF、counter-based random key、uniform draw 与 sampled interval。它默认关闭，不进入 configuration identity、checkpoint state、clone state 或 branch identity，也不向 runtime 反馈。CPU 与 GPU 只允许在相同采样语义下导出这些字段。
+
 ### 3.3 报告与 checkpoint 物化
 
 报告和 checkpoint 导出必须在每个 tick 看到同一个权威物化状态。设备镜像可在内部延迟同步，但最终 summary、checkpoint、branch export 和 reproducibility assessment 必须标识物化 tick 与来源。

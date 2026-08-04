@@ -1,5 +1,14 @@
 # 版本变更记录
 
+## 0.158.0
+
+- 增加默认关闭、观测专用的 categorical sampling trace，记录完整 mask、masked logits、probability、CDF、counter-based RNG key/draw、sampled action 与 CDF interval。
+- 普通采样与 trace 采样共用同一计算核；writer 不生成随机数，不参与 policy、intent 或 settlement。
+- 从 checkpoint、restore 与 clone 语义状态中排除 trace payload，保持旧 checkpoint 兼容。
+- paired runner 支持按全部主体或指定 subject ID 导出，并把 source、plan、branch 与 checkpoint lineage 写入 manifest。
+- 增加 fresh-run 与 paired-branch 完整性审计，要求 action、selected probability、checkpoint state hash、lineage 和 branch identity 在 trace 开/关之间完全一致。
+- 修正 Subject Graph VM epoch 顶层状态长期停在 Stage 3C-36 的过期合同；科学前沿仍冻结在 Stage 3C-39，Stage 3C-40 仅因观测能力完成而解除阻塞。
+
 历史条目保留各版本交付时的原始措辞，仅用于版本追溯，不构成当前规范合同。自 v0.155 起，新增条目以中文为权威文本。
 
 ## 0.157.0

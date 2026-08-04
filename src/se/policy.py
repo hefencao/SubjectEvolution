@@ -15,7 +15,14 @@ from se.knowledge import OUTCOME_WIDTH
 from se.knowledge.policy import KnowledgePolicyPlan
 from se.knowledge.latent import latent_router_gene_count, sparse_selection_gene_count
 from se.knowledge.working_memory import working_memory_gene_count
-from .random_api import RandomContext, Stream, categorical_from_logits, normal
+from .random_api import (
+    CategoricalSamplingTrace,
+    RandomContext,
+    Stream,
+    categorical_from_logits,
+    categorical_from_logits_with_trace,
+    normal,
+)
 from .runtime.danger_messages import direct_danger_bearing
 from .runtime.reproduction import reproduction_energy_requirement
 
@@ -57,6 +64,7 @@ class PolicyDecision:
     cost_free_knowledge_action: Any | None = None
     # Same knowledge plan and random draw with working-memory coordinates zeroed.
     memory_free_knowledge_action: Any | None = None
+    categorical_sampling_trace: CategoricalSamplingTrace | None = None
 
 
 class ParametricPolicy:
@@ -223,6 +231,7 @@ class ParametricPolicy:
         position_x: Any | None = None,
         position_y: Any | None = None,
         subject_vm_potentials: Any | None = None,
+        capture_categorical_sampling_trace: bool = False,
     ) -> PolicyDecision:
         xp = backend_from_array(active).xp
         ids = stable_ids[active]
@@ -337,14 +346,25 @@ class ParametricPolicy:
                 mask=mask,
                 validate_mask=False,
             )
-        action, probability, entropy = categorical_from_logits(
-            action_ctx,
-            ids,
-            logits,
-            temperature=self.cfg.policy.temperature,
-            mask=mask,
-            validate_mask=False,
-        )
+        categorical_trace = None
+        if capture_categorical_sampling_trace:
+            action, probability, entropy, categorical_trace = categorical_from_logits_with_trace(
+                action_ctx,
+                ids,
+                logits,
+                temperature=self.cfg.policy.temperature,
+                mask=mask,
+                validate_mask=False,
+            )
+        else:
+            action, probability, entropy = categorical_from_logits(
+                action_ctx,
+                ids,
+                logits,
+                temperature=self.cfg.policy.temperature,
+                mask=mask,
+                validate_mask=False,
+            )
 
         gx, gy = resource_gradient
         dx = gx[active].astype(xp.float64)
@@ -414,6 +434,7 @@ class ParametricPolicy:
             genetic_action=genetic_action,
             linear_knowledge_logits=linear_knowledge_logits,
             linear_knowledge_action=linear_knowledge_action,
+            categorical_sampling_trace=categorical_trace,
         )
 
     def update_memory(

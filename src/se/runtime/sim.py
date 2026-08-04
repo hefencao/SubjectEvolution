@@ -1,8 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field, replace
 import copy
-import hashlib
-import json
+import hashlib, json
 import platform
 from pathlib import Path
 from typing import Callable
@@ -146,6 +145,7 @@ from .reporting import SimulationReportingMixin
 from .state import EntityState, StepStats, _wrap_periodic_float32
 from .subject_vm_activation import initialize_subject_vm_runtime, subject_vm_action_potentials
 from .subject_vm_trace import capture_subject_vm_objective_snapshot, commit_subject_vm_objective_events
+from .categorical_sampling_trace import RuntimeObservationMixin
 from .share_settlement import commit_shares, finalize_share_capacity
 from .embodied import apply_material_repair, movement_cost_with_power
 from .harvest_commit import commit_harvest_resolution
@@ -171,7 +171,7 @@ from .functional_execution import (
     physiology_checkpoint_arrays,
     record_physiology_capacity_development_cost,
 )
-class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, SimulationReportingMixin):
+class Simulation(RuntimeObservationMixin, SimulationCheckpointMixin, SimulationExperimentMixin, SimulationReportingMixin):
     def __init__(
         self,
         cfg: SimulationConfig,
@@ -500,9 +500,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
         # monolithic ``run()`` can defer that costly device->host copy until
         # completion because every intervening field consumer is device-side.
         self._defer_gpu_field_sync = False
-        self._trajectory_file = None
-        if cfg.run.trajectory_subject_ids:
-            self._trajectory_file = (self.output_dir / "trajectory.jsonl").open("w", encoding="utf-8")
+        self._initialize_observation_outputs()
         self._write_run_manifest(backend)
     def _validate_invariants(self) -> None:
         ent = self.entities
@@ -1005,6 +1003,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 tick=self.tick,
                 knowledge_plan=knowledge_policy_plan,
                 position_x=ent.x, position_y=ent.y, subject_vm_potentials=subject_vm_potentials,
+                capture_categorical_sampling_trace=self.categorical_sampling_trace_enabled,
             )
             if cost_free_decision is not None:
                 decision.cost_free_knowledge_action = cost_free_decision.action
@@ -1032,6 +1031,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                     self._trajectory_file is not None or cfg.run.validation_mode
                 ),
                 retain_policy_diagnostics=(evaluation_due or cfg.run.validation_mode),
+                capture_categorical_sampling_trace=self.categorical_sampling_trace_enabled,
                 need_host_resource_gradient=(
                     self.autonomy_recovery_enabled
                     or (
@@ -1337,6 +1337,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
             heuristic_control=arbitration.heuristic_applied,
             autonomy_control=arbitration.autonomy_applied,
         )
+        self._record_categorical_sampling_trace(active=active, entities=ent, intents=intents, decision=decision)
         active_raw_harvest_room = raw_harvest_room(
             ent,
             active,
@@ -2348,8 +2349,7 @@ class Simulation(SimulationCheckpointMixin, SimulationExperimentMixin, Simulatio
                 self.group_function_diagnostics.close()
             if self.reconnaissance_diagnostics is not None:
                 self.reconnaissance_diagnostics.close()
-            if self._trajectory_file is not None:
-                self._trajectory_file.close()
+            self._close_observation_outputs()
         interventions_metadata: dict[str, object] = {
             "social_control_enabled": self.social_control_enabled,
             "social_connections_enabled": self.social_connections_enabled,

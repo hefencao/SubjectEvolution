@@ -14,7 +14,7 @@
 | SG-04 | Bootstrap 通用性 | PARKED | 哪些结果依赖 normalized-dot/latest/top-1 bootstrap addressing？ | crossing 结果获得独立复现后再比较。 |
 | SG-05 | 持续性 | BLOCKED | 临时 graph-parameter 效应能否在独立论证的决策规则下持续？ | 需要可复现下游证据和单独的 keep/revert 合同。 |
 | SG-06 | Topology evolution | BLOCKED | topology、readout 和 addressing 能否演化而不退化为不可诊断搜索？ | 需要成本、mutation/development 时程、inheritance、neutralization 和健康 source 资格。 |
-| SG-07 | 决策边界可观测性 | OPEN | 连续内部差异距离 categorical sampled-action 边界的精确数值距离是多少？ | Stage 3C-39 已排除 divergence 整体更弱、时程更早、selected-action probability 变化更小和 bootstrap 几何未迁移等解释；下一步必须先完成语义中立的 logits/draw 导出。 |
+| SG-07 | 决策边界可观测性 | OPEN | 连续内部差异距离 categorical sampled-action 边界的精确数值距离是多少？ | 语义中立 categorical sampling trace 已完成并通过 action、RNG、checkpoint 与 branch identity 完整性门；下一步为 Stage 3C-40 只读精确边界审计。 |
 | ENV-01 | 环境 | PARKED | 环境能否为分化能力持续提供正交机会？ | 只能作为 `[EVOLVE-ENV]` 恢复，并包含守恒与 source-health gate。 |
 | ENV-02 | 人口结构 | OPEN | source checkpoint 是否足以支持演化解释，而不仅是短程机制诊断？ | 需要 population、descendant、generation depth、founder replacement 与 checkpoint stability gate。 |
 | SOC-01 | 身份 | BLOCKED | 实体死亡后，延迟 partner evidence 如何继续存在而不附着到回收行？ | 需要历史 subject identity，以及 retention、inheritance、eviction 与 regional-branch 语义。 |
@@ -23,7 +23,7 @@
 
 Stage 3C-39 表明两个 panel 的 continuous divergence 频率、幅度、晚期 tick 分布和已导出的 selected-action probability 变化大量重叠，独立 panel 并不整体更弱。现有摘要也不存在能隔离 crossing source 的单调幅度阈值。
 
-但冻结 trace 只保存已选 action 的概率，没有完整 masked policy logits，也没有精确 counter-based categorical draw；因此不能重建其他 action 的竞争关系或计算随机采样边界距离。增加这些字段必须标记为 `[ENGINEERING]`，并证明采样结果、random stream、branch identity、checkpoint 兼容性和运行成本不变。
+但冻结 trace 只保存已选 action 的概率，没有完整 masked policy logits，也没有精确 counter-based categorical draw；因此不能重建其他 action 的竞争关系或计算随机采样边界距离。这些字段已由 `[ENGINEERING]` trace 导出并通过语义中立性审计。Stage 3C-40 只能读取冻结 trace，不能修改 sampling、exposure、source panel 或 crossing 定义。
 
 ## 4. SG-03：Objective-Fact 不是价值
 

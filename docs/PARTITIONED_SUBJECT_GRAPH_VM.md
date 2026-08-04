@@ -185,6 +185,10 @@ evaluation 记录 post-commit Objective-Fact，不赋分。live 与 control bran
 
 runtime score comparator 是 selection semantics 的唯一权威。分析专用 tolerance 或 bin 必须明确标记为诊断，不得替代 runtime tie 语义。若 checksum-bound 证据证明诊断分类与 runtime 语义不一致，可以通过 qualification overlay 修正资格解释，但不得改写历史产物。
 
+### 7.1 Categorical sampling trace
+
+policy action sampling 仍由现有 action system 权威拥有。可选 trace 只能记录实际采样核的完整 mask、logits、probability、CDF、counter-based key/draw 和 selected interval；不得重新采样或修改 action。trace 不属于 Subject VM state、checkpoint、branch identity 或演化成本。其唯一用途是支持后续只读 action-boundary 审计。
+
 ## 8. 仅用于实验的干预
 
 冻结协议需要因果操纵时，runtime 可以暴露明确的 experiment-only policy。当前实例包括 subject-time coordinate identity 与 cyclic donor alignment mode。

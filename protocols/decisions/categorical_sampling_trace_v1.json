@@ -1,0 +1,63 @@
+{
+  "schema": "se-categorical-sampling-trace-decision-v1",
+  "decision_id": "categorical-sampling-trace-v1",
+  "status": "implemented-engineering-observation-only",
+  "task_type": "ENGINEERING",
+  "purpose": "导出 categorical sampling 的完整竞争状态与 counter-based draw，以支持后续只读 action-boundary 审计。",
+  "activation": {
+    "default_enabled": false,
+    "configuration_identity_member": false,
+    "checkpoint_state_member": false,
+    "branch_identity_member": false,
+    "paired_runner_flag": "--categorical-sampling-trace",
+    "optional_subject_filter_flag": "--categorical-sampling-trace-subject-id"
+  },
+  "captured_fields": [
+    "action mask 与稳定 action 顺序",
+    "mask 后完整 raw logits",
+    "temperature",
+    "完整 softmax probability vector",
+    "完整 cumulative probability vector",
+    "counter-based random uint64 key",
+    "uniform draw",
+    "draw index、phase 与 stream",
+    "sampled action",
+    "sampled action 的 CDF lower/upper interval",
+    "source/entity/subject/event/tick/branch lineage"
+  ],
+  "runtime_contract": {
+    "ordinary_and_traced_sampling_share_one_kernel": true,
+    "random_key_generated_once": true,
+    "writer_generates_random_numbers": false,
+    "writer_changes_logits_mask_probability_or_action": false,
+    "writer_has_runtime_feedback": false,
+    "trace_payload_removed_from_checkpoint_and_clone_state": true,
+    "cpu_and_gpu_trace_fields_use_same_semantics": true
+  },
+  "integrity_gate": {
+    "fresh_run_action_identity_required": true,
+    "fresh_run_selected_probability_identity_required": true,
+    "fresh_run_checkpoint_state_hash_identity_required": true,
+    "paired_branch_checkpoint_state_hash_identity_required": true,
+    "paired_branch_lineage_identity_required": true,
+    "paired_branch_identity_file_byte_identity_required": true,
+    "rng_key_reconstruction_required": true,
+    "cdf_action_reconstruction_required": true,
+    "integrity_assessment_sha256": "32acb92c4a1cad14dddd502aca033de447c8b2f5b8aaca0c3eb36f48473006b2"
+  },
+  "cost_accounting": {
+    "jsonl_bytes_per_event_reported": true,
+    "physical_entity_energy_debit": false,
+    "evolutionary_cost": false,
+    "scientific_effect": false
+  },
+  "scientific_boundary": {
+    "stage3c40_authorized_after_integrity_gate": true,
+    "stage3c40_must_be_read_only": true,
+    "scientific_conclusion_from_instrumentation_alone": false,
+    "objective_coordinates_have_value_semantics": false,
+    "automatic_keep_or_revert_authorized": false,
+    "learned_weight_authorized": false,
+    "permanent_retention_authorized": false
+  }
+}

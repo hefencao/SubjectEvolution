@@ -44,6 +44,28 @@ class RandomContext:
     stream: Stream
 
 
+@dataclass(frozen=True)
+class CategoricalSamplingTrace:
+    """Read-only sampling diagnostics produced by the exact categorical kernel.
+
+    Arrays stay on the backend that owns ``subject_ids``.  The payload is not
+    checkpoint state and never feeds policy or world settlement.
+    """
+
+    masked_logits: Any
+    probabilities: Any
+    cumulative_probabilities: Any
+    uniform_draw: Any
+    random_key: Any
+    cdf_lower: Any
+    cdf_upper: Any
+    draw_index: Any
+    temperature: float
+    phase: int
+    stream: int
+
+
+
 _MASK = 0xFFFFFFFFFFFFFFFF
 _C1 = 0x9E3779B97F4A7C15
 _C2 = 0xBF58476D1CE4E5B9
@@ -215,21 +237,22 @@ def normal(
     return xp.asarray(mean, dtype=np.float64) + std * z
 
 
-def categorical_from_logits(
+def _categorical_from_logits_impl(
     ctx: RandomContext,
     subject_ids: np.ndarray,
     logits: np.ndarray,
     temperature: float,
-    mask: np.ndarray | None = None,
-    draw_index: int | Any = 0,
+    mask: np.ndarray | None,
+    draw_index: int | Any,
     *,
-    validate_mask: bool = True,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Sample one categorical action per row, returning action, probability and entropy."""
+    validate_mask: bool,
+    capture_trace: bool,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, CategoricalSamplingTrace | None]:
     if not np.isfinite(temperature) or temperature <= 0:
         raise ValueError("temperature must be positive")
     xp = backend_from_array(subject_ids).xp
-    values = xp.asarray(logits, dtype=np.float64) / temperature
+    raw_logits = xp.asarray(logits, dtype=np.float64)
+    values = raw_logits / temperature
     if values.ndim != 2:
         raise ValueError("logits must be a 2-D array")
     ids = xp.asarray(subject_ids, dtype=np.uint64)
@@ -242,12 +265,74 @@ def categorical_from_logits(
         if validate_mask and _any_true(xp, ~valid.any(axis=1)):
             raise ValueError("every row must contain at least one valid action")
         values = xp.where(valid, values, -np.inf)
+        masked_logits = xp.where(valid, raw_logits, -np.inf)
+    else:
+        valid = xp.ones_like(values, dtype=bool)
+        masked_logits = raw_logits
     max_values = xp.max(values, axis=1, keepdims=True)
     exp_values = xp.exp(values - max_values)
     probs = exp_values / exp_values.sum(axis=1, keepdims=True)
     cdf = xp.cumsum(probs, axis=1)
-    u = _uniform01_on_backend(ctx, ids, draw_index, xp)
+    random_key = _keys_on_backend(ctx, ids, draw_index, xp)
+    u = ((random_key >> xp.uint64(11)).astype(np.float64)) * (1.0 / (1 << 53))
     action = (cdf < u[:, None]).sum(axis=1).astype(np.int16)
     selected = probs[xp.arange(probs.shape[0]), action]
     entropy = -(probs * xp.log(xp.clip(probs, 1e-12, 1.0))).sum(axis=1)
-    return action, selected.astype(np.float32), entropy.astype(np.float32)
+    trace = None
+    if capture_trace:
+        row_index = xp.arange(probs.shape[0])
+        lower_index = xp.maximum(action.astype(xp.int64) - 1, 0)
+        previous = cdf[row_index, lower_index]
+        cdf_lower = xp.where(action == 0, 0.0, previous)
+        cdf_upper = cdf[row_index, action]
+        trace = CategoricalSamplingTrace(
+            masked_logits=masked_logits,
+            probabilities=probs,
+            cumulative_probabilities=cdf,
+            uniform_draw=u,
+            random_key=random_key,
+            cdf_lower=cdf_lower,
+            cdf_upper=cdf_upper,
+            draw_index=xp.asarray(draw_index, dtype=xp.uint64),
+            temperature=float(temperature),
+            phase=int(ctx.phase),
+            stream=int(ctx.stream),
+        )
+    return action, selected.astype(np.float32), entropy.astype(np.float32), trace
+
+
+def categorical_from_logits(
+    ctx: RandomContext,
+    subject_ids: np.ndarray,
+    logits: np.ndarray,
+    temperature: float,
+    mask: np.ndarray | None = None,
+    draw_index: int | Any = 0,
+    *,
+    validate_mask: bool = True,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Sample one categorical action per row."""
+    action, selected, entropy, _ = _categorical_from_logits_impl(
+        ctx, subject_ids, logits, temperature, mask, draw_index,
+        validate_mask=validate_mask, capture_trace=False,
+    )
+    return action, selected, entropy
+
+
+def categorical_from_logits_with_trace(
+    ctx: RandomContext,
+    subject_ids: np.ndarray,
+    logits: np.ndarray,
+    temperature: float,
+    mask: np.ndarray | None = None,
+    draw_index: int | Any = 0,
+    *,
+    validate_mask: bool = True,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, CategoricalSamplingTrace]:
+    """Sample with the exact ordinary kernel and return read-only diagnostics."""
+    action, selected, entropy, trace = _categorical_from_logits_impl(
+        ctx, subject_ids, logits, temperature, mask, draw_index,
+        validate_mask=validate_mask, capture_trace=True,
+    )
+    assert trace is not None
+    return action, selected, entropy, trace

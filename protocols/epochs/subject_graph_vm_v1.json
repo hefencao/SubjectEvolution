@@ -1,8 +1,8 @@
 {
   "schema": "se-subject-graph-vm-contract-v1",
   "contract_id": "partitioned-subject-graph-vm-v1",
-  "status": "stage-3c36-bootstrap-geometry-transport-frozen",
-  "project_version": "0.153.0",
+  "status": "stage-3c39-frozen-categorical-sampling-trace-ready",
+  "project_version": "0.158.0",
   "principle": "The runtime may prescribe a general cognitive architecture and causal phase order, but must not prescribe concrete cognitive contents, subjective valence, social concepts or role conclusions.",
   "graph_model": {
     "identity": "one-unified-node-edge-identity-space",
@@ -82,7 +82,7 @@
     "d1x_d1y": "rejected-as-primary-subject-model-retained-as-fixed-cognition-baseline",
     "trust_group_graph": "legacy-observational-structure-not-subject-vm"
   },
-  "current_stage": "3C-36",
+  "current_stage": "3C-39",
   "stage_2_contract": {
     "decision_file": "protocols/decisions/subject_graph_vm_activation_v1.json",
     "input_port_schema": "objective-entity-input-ports-v1",
@@ -906,5 +906,17 @@
     "learned_weight_authorized": false,
     "permanent_write_authorized": false,
     "next_authorized_boundary": "engineering-neutral-masked-logit-and-categorical-draw-trace-instrumentation"
+  },
+  "categorical_sampling_trace_contract": {
+    "decision_file": "protocols/decisions/categorical_sampling_trace_v1.json",
+    "task_type": "ENGINEERING",
+    "runtime_semantics_changed": false,
+    "configuration_identity_changed": false,
+    "checkpoint_state_changed": false,
+    "branch_identity_changed": false,
+    "full_masked_logits_probability_cdf_and_draw_exported": true,
+    "integrity_gate_required": true,
+    "stage3c40_read_only_boundary_unlocked": true,
+    "scientific_conclusion_authorized": false
   }
 }

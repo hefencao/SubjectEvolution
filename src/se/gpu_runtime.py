@@ -44,7 +44,7 @@ from se.runtime.resource_metabolism import storage_room_fraction
 from se.knowledge.routing_cost import RoutingCostBudgetResult, apply_routing_cost_budget
 from .intents import ActionIntentBatch
 from .policy import Action, ParametricPolicy, PolicyDecision
-from .random_api import RandomContext, Stream, uniform01
+from .random_api import CategoricalSamplingTrace, RandomContext, Stream, uniform01
 from .reductions import stable_segmented_sum
 from se.env.spatial import SpatialIndex
 
@@ -786,7 +786,8 @@ class HybridGpuRuntime:
         tick: int,
         retain_logits: bool,
         retain_policy_diagnostics: bool,
-        need_host_resource_gradient: bool,
+        capture_categorical_sampling_trace: bool = False,
+        need_host_resource_gradient: bool = False,
         entity_state_version: int,
         physiology_environment: Any | None = None,
         knowledge: KnowledgeSystem | None = None,
@@ -1305,6 +1306,7 @@ class HybridGpuRuntime:
             knowledge_plan=knowledge_policy_plan,
             position_x=x,
             position_y=y,
+            capture_categorical_sampling_trace=capture_categorical_sampling_trace,
         )
         self.backend.synchronize()
         if routing_cost_result is not None and routing_cost_result.committed_total > 0.0:
@@ -1383,6 +1385,39 @@ class HybridGpuRuntime:
             if need_host_information
             else None
         )
+        host_categorical_trace = None
+        if device_decision.categorical_sampling_trace is not None:
+            device_trace = device_decision.categorical_sampling_trace
+            host_categorical_trace = CategoricalSamplingTrace(
+                masked_logits=self._download(device_trace.masked_logits).astype(
+                    np.float64, copy=False
+                ),
+                probabilities=self._download(device_trace.probabilities).astype(
+                    np.float64, copy=False
+                ),
+                cumulative_probabilities=self._download(
+                    device_trace.cumulative_probabilities
+                ).astype(np.float64, copy=False),
+                uniform_draw=self._download(device_trace.uniform_draw).astype(
+                    np.float64, copy=False
+                ),
+                random_key=self._download(device_trace.random_key).astype(
+                    np.uint64, copy=False
+                ),
+                cdf_lower=self._download(device_trace.cdf_lower).astype(
+                    np.float64, copy=False
+                ),
+                cdf_upper=self._download(device_trace.cdf_upper).astype(
+                    np.float64, copy=False
+                ),
+                draw_index=self._download(device_trace.draw_index).astype(
+                    np.uint64, copy=False
+                ),
+                temperature=float(device_trace.temperature),
+                phase=int(device_trace.phase),
+                stream=int(device_trace.stream),
+            )
+
         host_decision = PolicyDecision(
             action=self._download(device_decision.action).astype(np.int16, copy=False),
             probability=self._download(device_decision.probability).astype(np.float32, copy=False),
@@ -1392,7 +1427,7 @@ class HybridGpuRuntime:
             selected_partner=self._download(device_decision.selected_partner).astype(np.int32, copy=False),
             logits=(
                 self._download(device_decision.logits).astype(np.float32, copy=False)
-                if retain_logits or retain_policy_diagnostics
+                if retain_logits or retain_policy_diagnostics or capture_categorical_sampling_trace
                 else np.empty((active_result.size, 0), dtype=np.float32)
             ),
             features=(
@@ -1407,7 +1442,7 @@ class HybridGpuRuntime:
                 self._download(device_decision.action_mask).astype(
                     bool, copy=False
                 )
-                if retain_policy_diagnostics
+                if (retain_policy_diagnostics or capture_categorical_sampling_trace)
                 and device_decision.action_mask is not None
                 else None
             ),
@@ -1455,6 +1490,7 @@ class HybridGpuRuntime:
                 if memory_free_device_decision is not None
                 else None
             ),
+            categorical_sampling_trace=host_categorical_trace,
         )
         return GpuPreparedStep(
             active_result,

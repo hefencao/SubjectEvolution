@@ -1,8 +1,8 @@
-# SubjectEvolution v0.155.0
+# SubjectEvolution v0.158.0
 
 SubjectEvolution 是一个实验性模拟项目，用于在不预设奖励和人类社会语义的前提下，研究类似主体的内部组织如何出现、变化并产生因果影响。
 
-v0.155.0 不改变运行时或冻结科学结论。本版本把当前具有规范效力的仓库文档统一改为中文权威文本，并保留代码标识、CLI、协议字段、任务类型和数学符号的原始名称，以降低翻译造成的合同歧义。
+v0.158.0 增加语义中立的 categorical sampling trace：导出完整 action competition 与 counter-based draw，同时证明 trace 开/关不改变 sampled action、RNG、checkpoint state 或 branch identity。本版本不形成新的科学结论。
 
 ## 文档索引
 
@@ -18,7 +18,7 @@ v0.155.0 不改变运行时或冻结科学结论。本版本把当前具有规�
 
 ## 当前科学前沿
 
-Stage 3C-38 可以通过明确的 Stage 3C-37 selector-consistent qualification overlay，恢复预注册的独立 panel crossing replication。不得改写历史 Stage 3C-27 产物，不得改变 runtime comparator、选择 source，也不得修改 exposure、addressing 或 crossing definition。
+Stage 3C-39 仍是冻结科学前沿。categorical trace 工程边界完成后，下一主线为 Stage 3C-40 只读精确 categorical boundary 审计；不得修改 sampling、exposure、source panel 或 crossing definition。
 
 ## 工作区配置
 

@@ -138,6 +138,15 @@ from .state import EntityState, StepStats, _wrap_periodic_float32
 class SimulationCheckpointMixin:
     """Trusted checkpoint, restore, and clone operations."""
 
+    def _checkpoint_policy_decision(self):
+        """Return semantic policy state without observation-only trace payloads."""
+        decision = copy.deepcopy(self.last_policy_decision)
+        if decision is None:
+            return None
+        if getattr(decision, "categorical_sampling_trace", None) is not None:
+            decision = replace(decision, categorical_sampling_trace=None)
+        return decision
+
     def _full_checkpoint_state(self) -> dict[str, object]:
         """Capture all semantic state required for exact continuation.
 
@@ -298,7 +307,7 @@ class SimulationCheckpointMixin:
             "last_cells": self.last_cells.copy(),
             "last_local_resources": self.last_local_resources.copy(),
             "last_information": copy.deepcopy(self.last_information),
-            "last_policy_decision": copy.deepcopy(self.last_policy_decision),
+            "last_policy_decision": self._checkpoint_policy_decision(),
             "last_knowledge_policy_plan": copy.deepcopy(
                 self.last_knowledge_policy_plan
             ),
@@ -768,6 +777,14 @@ class SimulationCheckpointMixin:
         ).copy()
         self.last_information = copy.deepcopy(state["last_information"])
         self.last_policy_decision = copy.deepcopy(state["last_policy_decision"])
+        if (
+            self.last_policy_decision is not None
+            and getattr(self.last_policy_decision, "categorical_sampling_trace", None)
+            is not None
+        ):
+            self.last_policy_decision = replace(
+                self.last_policy_decision, categorical_sampling_trace=None
+            )
         self.last_knowledge_policy_plan = copy.deepcopy(
             state.get("last_knowledge_policy_plan", KnowledgePolicyPlan.empty(self.tick))
         )
@@ -1158,7 +1175,7 @@ class SimulationCheckpointMixin:
         branch.last_cells = self.last_cells.copy()
         branch.last_local_resources = self.last_local_resources.copy()
         branch.last_information = copy.deepcopy(self.last_information)
-        branch.last_policy_decision = copy.deepcopy(self.last_policy_decision)
+        branch.last_policy_decision = self._checkpoint_policy_decision()
         branch.last_intents = copy.deepcopy(self.last_intents)
         branch.last_resolutions = copy.deepcopy(self.last_resolutions)
         branch.heuristic_guidance_actions = self.heuristic_guidance_actions

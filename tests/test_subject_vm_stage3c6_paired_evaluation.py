@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 from se.cfg import load_config
-from se.checkpointing import write_checkpoint_bundle
+from se.checkpointing import read_checkpoint_bundle, write_checkpoint_bundle
 from se.analysis.subject_vm_paired_evaluation import (
     PAIRED_EVALUATION_BRANCH_SCHEMA,
     _branch_config,
@@ -397,3 +397,76 @@ def test_plan_records_only_authorized_association_candidate_limit_runtime_overri
             horizon_ticks=3,
             association_candidate_limit_override=3,
         )
+
+
+def test_categorical_sampling_trace_preserves_paired_branch_identity_and_state(
+    tmp_path: Path,
+) -> None:
+    cfg = _config(live_enabled=False)
+    cfg = replace(
+        cfg,
+        world=replace(
+            cfg.world,
+            initial_entities=16,
+            max_entities=32,
+            width=16.0,
+            height=16.0,
+            grid_x=4,
+            grid_y=4,
+        ),
+        run=replace(
+            cfg.run,
+            ticks=3,
+            metrics_period=99,
+            checkpoint_period=99,
+            full_checkpoint_enabled=False,
+            checkpoint_ticks=(),
+        ),
+    )
+    source_sim = Simulation(cfg, tmp_path / "trace_source_run", backend="cpu")
+    source = source_sim.save_full_checkpoint(tmp_path / "trace_source.sechk")
+    source_sim.metrics.close()
+    source_sim.evolution_progress.close()
+    source_sim.knowledge.close()
+    plan = build_plan(source, horizon_ticks=3)
+
+    baseline = run_plan(
+        plan,
+        source_checkpoint=source,
+        output_dir=tmp_path / "paired_baseline",
+        backend="cpu",
+    )
+    traced = run_plan(
+        plan,
+        source_checkpoint=source,
+        output_dir=tmp_path / "paired_traced",
+        backend="cpu",
+        categorical_sampling_trace=True,
+    )
+
+    for role, checkpoint_key, directory in (
+        ("guarded_live", "guarded_live_checkpoint", "guarded_live"),
+        ("read_only_control", "read_only_control_checkpoint", "read_only_control"),
+    ):
+        baseline_meta, _ = read_checkpoint_bundle(baseline[checkpoint_key])
+        traced_meta, _ = read_checkpoint_bundle(traced[checkpoint_key])
+        assert baseline_meta["config_sha256"] == traced_meta["config_sha256"]
+        assert baseline_meta["state_sha256"] == traced_meta["state_sha256"]
+        baseline_identity = (
+            tmp_path / "paired_baseline" / directory / "branch_identity.json"
+        ).read_bytes()
+        traced_identity = (
+            tmp_path / "paired_traced" / directory / "branch_identity.json"
+        ).read_bytes()
+        assert baseline_identity == traced_identity
+
+    manifests = traced["categorical_sampling_trace_manifests"]
+    assert manifests is not None
+    assert set(manifests) == {"guarded-live", "read-only-control"}
+    for role, manifest_path in manifests.items():
+        assert manifest_path is not None
+        manifest = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
+        assert manifest["event_count"] > 0
+        assert manifest["metadata"]["branch_role"] == role
+        assert manifest["checkpoint_state_member"] is False
+        assert manifest["semantic_feedback"] is False

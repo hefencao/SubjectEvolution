@@ -566,6 +566,8 @@ def _finalize_pending_transients_at_export(
 def run_plan(
     plan: dict[str, Any], *, source_checkpoint: str | Path, output_dir: str | Path,
     backend: str = "auto",
+    categorical_sampling_trace: bool = False,
+    categorical_sampling_trace_subject_ids: tuple[int, ...] | None = None,
 ) -> dict[str, Any]:
     _validate_plan(plan)
     source = Path(source_checkpoint).resolve()
@@ -660,6 +662,22 @@ def run_plan(
         (directory / "config.json").write_text(resolved, encoding="utf-8")
         (directory / "resolved_config.json").write_text(resolved, encoding="utf-8")
         sim._write_run_manifest(sim.requested_backend)
+        if categorical_sampling_trace:
+            sim.enable_categorical_sampling_trace(
+                metadata={
+                    "paired_evaluation_plan_sha256": manifest["plan_sha256"],
+                    "branch_id": manifest["branch_id"],
+                    "branch_role": role,
+                    "source_checkpoint_state_sha256": manifest[
+                        "source_checkpoint_state_sha256"
+                    ],
+                    "source_checkpoint_file_sha256": plan["source"][
+                        "checkpoint_file_sha256"
+                    ],
+                    "branch_identity_sha256": _canonical_sha256(manifest),
+                },
+                subject_ids=categorical_sampling_trace_subject_ids,
+            )
     control.run(until_tick=int(plan["final_tick"]))
     live.run(until_tick=int(plan["final_tick"]))
     finalization = None
@@ -681,6 +699,20 @@ def run_plan(
     )
     export_path = root / "paired_evaluation_export.json"
     export_path.write_text(json.dumps(export, ensure_ascii=False, indent=2), encoding="utf-8")
+    trace_manifests = None
+    if categorical_sampling_trace:
+        trace_manifests = {
+            "read-only-control": (
+                str(control._categorical_sampling_trace_summary.manifest_path)
+                if control._categorical_sampling_trace_summary is not None
+                else None
+            ),
+            "guarded-live": (
+                str(live._categorical_sampling_trace_summary.manifest_path)
+                if live._categorical_sampling_trace_summary is not None
+                else None
+            ),
+        }
     return {
         "plan_sha256": plan["plan_sha256"],
         "guarded_live_checkpoint": str(live_checkpoint),
@@ -688,6 +720,7 @@ def run_plan(
         "export": str(export_path),
         "paired_window_count": export["window_evidence"]["paired_window_count"],
         "transient_finalization": finalization,
+        "categorical_sampling_trace_manifests": trace_manifests,
     }
 
 
@@ -789,6 +822,13 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--source-checkpoint", required=True)
     run.add_argument("--output", required=True)
     run.add_argument("--backend", choices=("cpu", "gpu", "auto"), default="auto")
+    run.add_argument("--categorical-sampling-trace", action="store_true")
+    run.add_argument(
+        "--categorical-sampling-trace-subject-id",
+        action="append",
+        type=int,
+        default=None,
+    )
     export = sub.add_parser("export")
     export.add_argument("--plan", required=True)
     export.add_argument("--guarded-live-checkpoint", required=True)
@@ -824,6 +864,12 @@ def main() -> None:
                 source_checkpoint=args.source_checkpoint,
                 output_dir=args.output,
                 backend=args.backend,
+                categorical_sampling_trace=args.categorical_sampling_trace,
+                categorical_sampling_trace_subject_ids=(
+                    tuple(args.categorical_sampling_trace_subject_id)
+                    if args.categorical_sampling_trace_subject_id
+                    else None
+                ),
             )
         else:
             payload = export_pair(
