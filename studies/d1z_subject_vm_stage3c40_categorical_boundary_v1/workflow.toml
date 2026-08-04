@@ -1,0 +1,66 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c40_categorical_boundary_v1"
+title = "D1-Z Subject VM Stage 3C-40 exact categorical action-boundary opportunity audit"
+
+[parameters.reference_rank2]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c40_categorical_boundary_v1/final/inputs/reference/rank2_study_report.json"
+description = "原 panel deterministic rank-two source study report。"
+[parameters.reference_stage3c31]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c40_categorical_boundary_v1/final/reference/stage3c31_alignment_ablation.json"
+description = "原 panel Stage 3C-31 alignment assessment。"
+[parameters.reference_stage3c34]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c40_categorical_boundary_v1/final/inputs/reference/stage3c34_threshold_crossing.json"
+description = "原 panel 冻结 Stage 3C-34 crossing assessment。"
+[parameters.replication_rank2]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c40_categorical_boundary_v1/final/inputs/replication/rank2_study_report.json"
+description = "独立 panel deterministic rank-two source study report。"
+[parameters.replication_stage3c31]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c40_categorical_boundary_v1/final/replication/stage3c31_alignment_ablation.json"
+description = "独立 panel Stage 3C-31 alignment assessment。"
+[parameters.replication_stage3c34]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c40_categorical_boundary_v1/final/inputs/replication/stage3c34_threshold_crossing.json"
+description = "独立 panel 冻结 Stage 3C-34 crossing assessment。"
+[parameters.trace_integrity]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c40_categorical_boundary_v1/final/inputs/engineering/categorical_sampling_trace_integrity.json"
+description = "v0.158 categorical trace 语义中立完整性 assessment。"
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c40_categorical_boundary_v1/final"
+description = "Stage 3C-40 分析根目录。"
+[parameters.backend]
+type = "choice"
+default = "auto"
+choices = ["auto", "cpu"]
+description = "正式 branch 执行 backend；高层默认 auto。"
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c40_categorical_boundary_v1_results.zip"
+description = "项目外的 Stage 3C-40 结果包路径。"
+
+[steps.run-reference-horizon-control]
+command = ["se-subject-vm-stage3c32-alignment-intervention-study", "--rank2-study-report", "{reference_rank2}", "--stage3c31-assessment", "{reference_stage3c31}", "--horizon-ticks", "11", "--rollback-after-ticks", "3", "--backend", "{backend}", "--categorical-sampling-trace", "--output", "{analysis_root}/stage3c40/reference/horizon-control", "--overwrite"]
+[steps.run-reference-extended-exposure]
+command = ["se-subject-vm-stage3c32-alignment-intervention-study", "--rank2-study-report", "{reference_rank2}", "--stage3c31-assessment", "{reference_stage3c31}", "--horizon-ticks", "11", "--rollback-after-ticks", "6", "--backend", "{backend}", "--categorical-sampling-trace", "--output", "{analysis_root}/stage3c40/reference/extended-exposure", "--overwrite"]
+[steps.run-replication-horizon-control]
+command = ["se-subject-vm-stage3c32-alignment-intervention-study", "--rank2-study-report", "{replication_rank2}", "--stage3c31-assessment", "{replication_stage3c31}", "--horizon-ticks", "11", "--rollback-after-ticks", "3", "--backend", "{backend}", "--categorical-sampling-trace", "--output", "{analysis_root}/stage3c40/replication/horizon-control", "--overwrite"]
+[steps.run-replication-extended-exposure]
+command = ["se-subject-vm-stage3c32-alignment-intervention-study", "--rank2-study-report", "{replication_rank2}", "--stage3c31-assessment", "{replication_stage3c31}", "--horizon-ticks", "11", "--rollback-after-ticks", "6", "--backend", "{backend}", "--categorical-sampling-trace", "--output", "{analysis_root}/stage3c40/replication/extended-exposure", "--overwrite"]
+[steps.assemble-study]
+command = ["se-subject-vm-stage3c40-categorical-boundary-study", "--reference-rank2-study-report", "{reference_rank2}", "--reference-stage3c31-assessment", "{reference_stage3c31}", "--replication-rank2-study-report", "{replication_rank2}", "--replication-stage3c31-assessment", "{replication_stage3c31}", "--trace-integrity-assessment", "{trace_integrity}", "--backend", "{backend}", "--output", "{analysis_root}/stage3c40", "--assemble-existing"]
+[steps.assess-stage3c40]
+command = ["se-subject-vm-stage3c40-categorical-boundary", "--study-report", "{analysis_root}/stage3c40/study_report.json", "--reference-stage3c34", "{reference_stage3c34}", "--replication-stage3c34", "{replication_stage3c34}", "--output", "{analysis_root}/stage3c40_categorical_boundary.json", "--summary-output", "{analysis_root}/stage3c40_study_summary.json", "--diagnostic-report", "{analysis_root}/stage3c40_diagnostic_report.md"]
+[steps.pack-results]
+requires_json = [
+  { path = "{analysis_root}/stage3c40_categorical_boundary.json", field = "cross_panel_findings.trace_reproduces_frozen_stage3c34_crossing_counts", equals = true },
+  { path = "{analysis_root}/stage3c40_categorical_boundary.json", field = "cross_panel_findings.replication_all_pressure_ratios_below_one", equals = true },
+  { path = "{analysis_root}/stage3c40_categorical_boundary.json", field = "governance.sampling_semantics_changed", equals = false },
+  { path = "{analysis_root}/stage3c40_categorical_boundary.json", field = "permanent_parameter_retention_authorized", equals = false }
+]
+command = ["python", "scripts/package_stage3c40_results.py", "--project", ".", "--analysis-root", "{analysis_root}", "--output", "{output}"]

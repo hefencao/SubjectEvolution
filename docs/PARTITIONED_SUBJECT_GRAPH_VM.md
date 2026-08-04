@@ -300,6 +300,7 @@ assessment 必须区分：
 - 无 score 的 objective evaluation；
 - paired/multi-arm export、integrity 与 reproducibility assessment；
 - experiment-only alignment intervention；
+- 语义中立 categorical sampling trace，可导出完整 mask、logits、probability、CDF 与 draw，但不进入 checkpoint 或 branch identity；
 - 外部只读诊断研究。
 
 尚未授权或尚未作为通用能力实现：

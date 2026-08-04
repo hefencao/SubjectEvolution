@@ -365,7 +365,7 @@ def _validate_stage3c37_qualification_overlay(
     *,
     rank2_study: dict[str, Any],
     stage3c27_assessment: dict[str, Any],
-) -> None:
+) -> str:
     if overlay.get("schema") != STAGE3C37_TIE_ORIGIN_SCHEMA:
         raise ValueError("Stage-3C-28 requires a Stage-3C-37 qualification overlay")
     recorded = str(overlay.get("assessment_sha256", ""))
@@ -374,14 +374,18 @@ def _validate_stage3c37_qualification_overlay(
     if not recorded or recorded != _canonical_sha256(unsigned):
         raise ValueError("Stage-3C-28 Stage-3C-37 qualification checksum mismatch")
     checks = overlay.get("input_checksums", {})
-    if checks.get("replication_replay_study") != rank2_study.get("study_sha256"):
-        raise ValueError("Stage-3C-28 Stage-3C-37 replay rank-two lineage mismatch")
-    if checks.get("replication_frozen_study") != stage3c27_assessment.get("rank2_study_sha256"):
-        raise ValueError("Stage-3C-28 Stage-3C-37 frozen rank-two lineage mismatch")
-    if checks.get("replication_stage3c27") != stage3c27_assessment.get("assessment_sha256"):
-        raise ValueError("Stage-3C-28 Stage-3C-37 Stage-3C-27 lineage mismatch")
+    matching_panels = [
+        panel
+        for panel in ("reference", "replication")
+        if checks.get(f"{panel}_replay_study") == rank2_study.get("study_sha256")
+        and checks.get(f"{panel}_frozen_study") == stage3c27_assessment.get("rank2_study_sha256")
+        and checks.get(f"{panel}_stage3c27") == stage3c27_assessment.get("assessment_sha256")
+    ]
+    if len(matching_panels) != 1:
+        raise ValueError("Stage-3C-28 Stage-3C-37 panel rank-two lineage mismatch")
+    panel = matching_panels[0]
     identity = overlay.get("replay_identity", {})
-    if not bool(identity.get("replication_source_state_hashes_match_frozen_report")):
+    if not bool(identity.get(f"{panel}_source_state_hashes_match_frozen_report")):
         raise ValueError("Stage-3C-28 Stage-3C-37 source-state identity failed")
     if not bool(identity.get("stored_winner_ids_exactly_reconstructed")):
         raise ValueError("Stage-3C-28 Stage-3C-37 winner reconstruction failed")
@@ -391,6 +395,7 @@ def _validate_stage3c37_qualification_overlay(
         raise ValueError("Stage-3C-28 selector-consistent qualification did not pass")
     if not bool(interpretation.get("corrected_crossing_replication_authorized_next")):
         raise ValueError("Stage-3C-28 corrected replication is not authorized")
+    return panel
 
 
 def assess_stage3c28_recurrent_basin(
@@ -433,12 +438,12 @@ def assess_stage3c28_recurrent_basin(
             raise ValueError(
                 "Stage-3C-28 requires the complete Stage-3C-27 screen or a Stage-3C-37 qualification overlay"
             )
-        _validate_stage3c37_qualification_overlay(
+        qualification_panel = _validate_stage3c37_qualification_overlay(
             stage3c37_qualification,
             rank2_study=rank2_study,
             stage3c27_assessment=stage3c27_assessment,
         )
-        qualification_mode = "stage3c37-selector-consistent-overlay"
+        qualification_mode = f"stage3c37-selector-consistent-overlay-{qualification_panel}"
         qualification_sha256 = str(stage3c37_qualification["assessment_sha256"])
 
     source_records = _source_records(rank2_study)

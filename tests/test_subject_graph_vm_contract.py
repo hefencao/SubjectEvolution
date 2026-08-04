@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c39-frozen-categorical-sampling-trace-ready"
+    assert contract["status"] == "stage-3c40-frozen-exact-categorical-boundary-resolved"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,7 +24,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3C-39"
+    assert contract["current_stage"] == "3C-40"
     assert contract["stage_3c36_contract"]["candidate_support_identity_required"] is True
     assert contract["stage_3c36_contract"]["frozen_result"]["exact_tie_origin_resolved"] is False
     assert contract["stage_3c36_contract"]["gate_relaxation_authorized"] is False
@@ -466,3 +466,11 @@ def test_old_interest_contract_is_retained_only_as_superseded_baseline() -> None
     assert old["status"] == "superseded-as-primary-contract"
     assert old["superseded_by"] == "entity-subject-functional-qualification-v2"
     assert "fixed-cognition comparison baseline" in old["retained_use"]
+
+
+def test_stage3c40_contract_is_frozen_and_nonretaining() -> None:
+    contract = _load("protocols/epochs/subject_graph_vm_v1.json")
+    stage = contract["stage_3c40_contract"]
+    assert stage["trace_instrumentation_semantics_changed"] is False
+    assert stage["frozen_result"]["replication_all_pressure_ratios_below_one"] is True
+    assert stage["permanent_write_authorized"] is False

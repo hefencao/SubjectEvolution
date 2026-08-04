@@ -1,0 +1,34 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c40_categorical_boundary_v1",
+  "title": "D1-Z Subject VM Stage 3C-40 精确 categorical action-boundary opportunity 审计",
+  "status": "frozen-exact-categorical-boundary-geometry-resolved",
+  "scientific_stage": "stage3c40-categorical-boundary-frozen-next-pressure-source-decomposition",
+  "authorization": {
+    "reuse_reference_and_replication_rank2_source_states": true,
+    "categorical_trace_integrity_required": true,
+    "matched_horizon_only": true,
+    "sampling_semantics_change": false,
+    "new_source_panel": false,
+    "post_hoc_threshold": false,
+    "permanent_parameter_retention": false
+  },
+  "frozen_result": {
+    "reference_crossing_source_seeds": [
+      12305,
+      12308
+    ],
+    "replication_crossing_source_seeds": [],
+    "reference_alignment_differential_crossing_event_count": 4,
+    "reference_alignment_common_crossing_event_count": 1,
+    "replication_crossing_event_count": 0,
+    "reference_global_maximum_pressure_ratio": 6.3326187050823215,
+    "replication_global_maximum_pressure_ratio": 0.688481985025035,
+    "replication_all_pressure_ratios_below_one": true,
+    "trace_reproduces_frozen_stage3c34_crossing_counts": true,
+    "all_continuous_divergence_events_have_exact_draw_and_cdf_geometry": true,
+    "assessment_sha256": "e0443a395f68a0587b26eb2754e38b0f59c1038bdefc097b845a30720c78aa11",
+    "source_history_origin_of_boundary_pressure_resolved": false,
+    "retention_authorized": false
+  }
+}

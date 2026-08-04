@@ -55,6 +55,7 @@ class Stage3C32InterventionParameters:
     horizon_ticks: int = 8
     rollback_after_ticks: int = 3
     backend: str = "auto"
+    categorical_sampling_trace: bool = False
 
     def validate(self) -> None:
         if int(self.horizon_ticks) < int(self.rollback_after_ticks) + 1:
@@ -126,6 +127,9 @@ def _mode_seed_record(
         "unpaired_guarded_live_count": len(evidence["unpaired_guarded_live"]),
         "unpaired_read_only_control_count": len(
             evidence["unpaired_read_only_control"]
+        ),
+        "categorical_sampling_trace_manifests": result.get(
+            "categorical_sampling_trace_manifests"
         ),
     }
 
@@ -211,6 +215,9 @@ def run_stage3c32_alignment_intervention(
                 source_checkpoint=source,
                 output_dir=mode_root / "paired",
                 backend=resolved_backend,
+                categorical_sampling_trace=bool(
+                    parameters.categorical_sampling_trace
+                ),
             )
             record = _mode_seed_record(
                 seed=seed,
@@ -282,6 +289,10 @@ def run_stage3c32_alignment_intervention(
         "shared_source_checkpoint_across_all_four_arms": True,
         "same_runtime_alignment_code_path_in_both_modes": True,
         "branch_specific_persistent_storage_added": False,
+        "categorical_sampling_trace_enabled": bool(
+            parameters.categorical_sampling_trace
+        ),
+        "categorical_sampling_trace_is_observation_only": True,
         "forced_rollback": True,
         "componentwise_score_free_evaluation": True,
         "automatic_keep_or_revert_decision": False,
@@ -307,6 +318,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--horizon-ticks", type=int, default=8)
     parser.add_argument("--rollback-after-ticks", type=int, default=3)
     parser.add_argument("--backend", choices=("cpu", "auto"), default="auto")
+    parser.add_argument("--categorical-sampling-trace", action="store_true")
     parser.add_argument("--output", required=True)
     parser.add_argument("--overwrite", action="store_true")
     return parser.parse_args()
@@ -322,6 +334,7 @@ def main() -> None:
             horizon_ticks=args.horizon_ticks,
             rollback_after_ticks=args.rollback_after_ticks,
             backend=args.backend,
+            categorical_sampling_trace=args.categorical_sampling_trace,
         ),
         overwrite=args.overwrite,
     )

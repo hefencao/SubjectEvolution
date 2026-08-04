@@ -1,5 +1,13 @@
 # 版本变更记录
 
+## 0.159.0
+
+- 完成 Stage 3C-40 精确 categorical action-boundary opportunity 审计，在原 panel 与独立 panel 的 matched-horizon 四臂链上导出完整 categorical trace。
+- 逐事件重建原 sampled action 的 CDF interval、uniform draw、原余量、extended exposure 边界移动及压力/余量比，并精确重现 Stage 3C-34 crossing。
+- 原 panel 的 alignment-specific crossing source 仍为 12305、12308；另有 12307 的 alignment-common crossing。独立 panel 全部事件保留正余量，最大压力/余量比为 0.68848。
+- 证明 draw proximity 或 CDF shift 绝对值单独都不足以解释 crossing；边界移动方向、幅度与 alignment mode 共同决定结果。
+- 将下一边界收窄为 Stage 3C-41 只读 action-logit/CDF pressure source 分解，不授权新 panel、后见阈值、value 或 retention。
+
 ## 0.158.0
 
 - 增加默认关闭、观测专用的 categorical sampling trace，记录完整 mask、masked logits、probability、CDF、counter-based RNG key/draw、sampled action 与 CDF interval。

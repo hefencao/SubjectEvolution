@@ -1,0 +1,87 @@
+{
+  "schema": "se-subject-vm-stage3c40-categorical-boundary-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c40-categorical-boundary-v1",
+  "status": "frozen-exact-categorical-boundary-geometry-resolved",
+  "project_version": "0.159.0",
+  "git_title": "[MAIN-EXP] D1-Z: audit exact categorical action-boundary opportunity",
+  "question": "为什么原 panel 的部分连续决策差异跨越 sampled-action 边界，而独立 panel 的连续差异全部停在边界内？",
+  "input_identity": {
+    "reference_source_seeds": [
+      12301,
+      12302,
+      12303,
+      12304,
+      12305,
+      12306,
+      12307,
+      12308,
+      12309
+    ],
+    "replication_source_seeds": [
+      12401,
+      12402,
+      12403,
+      12404,
+      12405,
+      12406,
+      12407,
+      12408,
+      12409
+    ],
+    "panels_are_disjoint": true,
+    "matched_horizon_ticks": 11,
+    "baseline_exposure_ticks": 3,
+    "extended_exposure_ticks": 6,
+    "categorical_trace_integrity_assessment_sha256": "32acb92c4a1cad14dddd502aca033de447c8b2f5b8aaca0c3eb36f48473006b2",
+    "study_sha256": "9451a7c410e9c05b99b5fc988d3183b1dab5e6bb2481f9ae659843273998bdaa"
+  },
+  "authorized_observations": {
+    "full_action_mask_and_order": true,
+    "masked_logits_and_probability_vector": true,
+    "complete_cdf": true,
+    "counter_based_uniform_draw": true,
+    "sampled_interval_margin": true,
+    "cdf_boundary_movement": true,
+    "pressure_to_original_margin_ratio": true
+  },
+  "forbidden_changes": {
+    "sampling_kernel_change": true,
+    "random_stream_change": true,
+    "exposure_change": true,
+    "source_panel_change": true,
+    "crossing_definition_change": true,
+    "post_hoc_metric_threshold": true,
+    "objective_fact_scalarization": true,
+    "automatic_keep_or_revert": true,
+    "permanent_retention": true,
+    "runtime_sampling_semantics_change": true,
+    "source_selection_or_replacement": true
+  },
+  "observed_result": {
+    "reference_crossing_source_seeds": [
+      12305,
+      12308
+    ],
+    "replication_crossing_source_seeds": [],
+    "reference_alignment_differential_crossing_event_count": 4,
+    "reference_alignment_common_crossing_event_count": 1,
+    "replication_crossing_event_count": 0,
+    "reference_global_maximum_pressure_ratio": 6.3326187050823215,
+    "replication_global_maximum_pressure_ratio": 0.688481985025035,
+    "replication_all_pressure_ratios_below_one": true,
+    "trace_reproduces_frozen_stage3c34_crossing_counts": true,
+    "all_continuous_divergence_events_have_exact_draw_and_cdf_geometry": true,
+    "assessment_sha256": "e0443a395f68a0587b26eb2754e38b0f59c1038bdefc097b845a30720c78aa11"
+  },
+  "frozen_interpretation": {
+    "exact_realized_crossing_requires_boundary_pressure_to_exhaust_original_draw_margin": true,
+    "draw_proximity_alone_is_sufficient": false,
+    "cdf_shift_magnitude_alone_is_sufficient": false,
+    "alignment_mode_and_boundary_movement_direction_are_material": true,
+    "replication_zero_crossing_is_explained_by_retained_positive_residual_margin": true,
+    "source_history_origin_of_boundary_pressure_is_resolved": false,
+    "value_or_credit_quality_is_proven": false,
+    "next_boundary": "read-only-action-logit-and-cdf-pressure-source-decomposition",
+    "objective_coordinates_have_value_semantics": false
+  }
+}

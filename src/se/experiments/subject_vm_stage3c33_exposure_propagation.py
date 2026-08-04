@@ -41,6 +41,7 @@ class Stage3C33ExposureParameters:
     baseline_exposure_ticks: int = 3
     extended_exposure_ticks: int = 6
     backend: str = "auto"
+    categorical_sampling_trace: bool = False
 
     def validate(self) -> None:
         if int(self.baseline_exposure_ticks) < 1:
@@ -142,6 +143,9 @@ def run_stage3c33_exposure_propagation(
                 horizon_ticks=condition.horizon_ticks,
                 rollback_after_ticks=condition.exposure_ticks,
                 backend=parameters.backend,
+                categorical_sampling_trace=bool(
+                    parameters.categorical_sampling_trace
+                ),
             ),
             overwrite=False,
         )
@@ -183,6 +187,10 @@ def run_stage3c33_exposure_propagation(
         },
         "shared_source_checkpoint_across_all_twelve_arms": True,
         "same_runtime_alignment_code_path_in_all_conditions": True,
+        "categorical_sampling_trace_enabled": bool(
+            parameters.categorical_sampling_trace
+        ),
+        "categorical_sampling_trace_is_observation_only": True,
         "forced_rollback": True,
         "componentwise_score_free_evaluation": True,
         "adaptive_exposure_extension": False,
@@ -210,6 +218,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--baseline-exposure-ticks", type=int, default=3)
     parser.add_argument("--extended-exposure-ticks", type=int, default=6)
     parser.add_argument("--backend", choices=("cpu", "auto"), default="auto")
+    parser.add_argument("--categorical-sampling-trace", action="store_true")
     parser.add_argument("--output", required=True)
     parser.add_argument("--overwrite", action="store_true")
     return parser
@@ -227,6 +236,7 @@ def main() -> None:
             baseline_exposure_ticks=args.baseline_exposure_ticks,
             extended_exposure_ticks=args.extended_exposure_ticks,
             backend=args.backend,
+            categorical_sampling_trace=args.categorical_sampling_trace,
         ),
         overwrite=args.overwrite,
     )
