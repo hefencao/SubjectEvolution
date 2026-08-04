@@ -95,6 +95,7 @@ def test_frozen_stage_results_live_in_dedicated_ledger() -> None:
     assert "| 3C-38 |" in text
     assert "| 3C-39 |" in text
     assert "| 3C-40 |" in text
+    assert "| 3C-41 |" in text
 
 
 def test_project_charter_is_durable_and_not_current_status() -> None:

@@ -1,5 +1,13 @@
 # 版本变更记录
 
+## 0.160.0
+
+- 完成 Stage 3C-41 action-logit 与 CDF boundary pressure 来源分解，只读取 Stage 3C-40 冻结的每 source top-five opportunity。
+- 在 18 个 source、90 个事件、180 个 mode-event comparison 中，130 个非零 masked-logit 变化全部只发生在 `REST` action port；其他 action 概率变化均来自 softmax 质量重分配。
+- 六个 crossing 中 `REST` logit 正、负变化各三次；五次受到其他 action probability 净抵消，两次发生 nearest endpoint 切换。
+- noncrossing 的最大 `|REST logit delta|=0.169867` 和 `|REST probability delta|=0.029693` 都高于 crossing 最大值，排除符号或幅度作为单独分界。
+- 将未解决问题收窄到 source history 如何经 temporary write、node/edge activation 和 output gate 形成 `REST` output；下一步先完成语义中立 activation contribution trace，不授权 value、reward 或 retention。
+
 ## 0.159.0
 
 - 完成 Stage 3C-40 精确 categorical action-boundary opportunity 审计，在原 panel 与独立 panel 的 matched-horizon 四臂链上导出完整 categorical trace。

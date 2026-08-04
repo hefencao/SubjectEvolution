@@ -1,0 +1,33 @@
+{
+  "schema": "se-study-definition-v1",
+  "study_id": "d1z_subject_vm_stage3c41_pressure_source_v1",
+  "title": "D1-Z Subject VM Stage 3C-41 action-logit 与 CDF boundary pressure 来源分解",
+  "status": "frozen-rest-logit-softmax-pressure-source-resolved",
+  "scientific_stage": "stage3c41-pressure-source-frozen-next-activation-contribution-trace-engineering",
+  "authorization": {
+    "read_only_stage3c40_trace": true,
+    "runtime_rerun": false,
+    "new_source_panel": false,
+    "sampling_semantics_change": false,
+    "post_hoc_scalar_classifier": false,
+    "permanent_parameter_retention": false
+  },
+  "frozen_result": {
+    "source_count": 18,
+    "event_identity_count": 90,
+    "mode_event_count": 180,
+    "nonzero_masked_logit_mode_event_count": 130,
+    "all_nonzero_masked_logit_changes_are_rest_only": true,
+    "crossing_mode_event_count": 6,
+    "positive_rest_logit_crossing_count": 3,
+    "negative_rest_logit_crossing_count": 3,
+    "crossing_events_with_other_action_cancellation": 5,
+    "crossing_events_with_endpoint_switch": 2,
+    "maximum_abs_rest_logit_delta_crossing": 0.12205624580383301,
+    "maximum_abs_rest_logit_delta_noncrossing": 0.16986703872680664,
+    "replication_maximum_pressure_ratio": 0.688481985025035,
+    "assessment_sha256": "5e0725f738d3a95330004c2439bf2d6f27eeeb965deb1dac25ae19e47f306f84",
+    "rest_action_port_has_value_semantics": false,
+    "retention_authorized": false
+  }
+}

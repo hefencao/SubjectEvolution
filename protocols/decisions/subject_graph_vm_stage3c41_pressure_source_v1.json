@@ -1,0 +1,60 @@
+{
+  "schema": "se-subject-vm-stage3c41-pressure-source-decision-v1",
+  "decision_id": "subject-graph-vm-stage3c41-pressure-source-v1",
+  "project_version": "0.160.0",
+  "task_type": "MAIN-EXP",
+  "git_title": "[MAIN-EXP] D1-Z: decompose action-logit and CDF boundary pressure sources",
+  "scientific_question": "Stage 3C-40 的 sampled-interval boundary pressure 由哪些 masked-logit 与 softmax probability-mass 转移形成？",
+  "input_contract": {
+    "stage3c40_assessment_required": true,
+    "stage3c40_top_five_opportunity_support_frozen": true,
+    "all_stage3c40_crossing_events_required": true,
+    "categorical_trace_manifest_and_file_checksums_required": true,
+    "runtime_rerun_authorized": false,
+    "new_source_panel_authorized": false
+  },
+  "authorized_observations": {
+    "masked_logit_delta_per_action": true,
+    "probability_delta_per_action": true,
+    "selected_interval_lower_and_upper_endpoint_pressure": true,
+    "per_action_endpoint_probability_contribution": true,
+    "endpoint_switch_offset": true,
+    "alignment_specific_and_alignment_common_comparison": true
+  },
+  "forbidden_changes": {
+    "sampling_kernel_change": true,
+    "random_stream_change": true,
+    "source_panel_change": true,
+    "exposure_or_horizon_change": true,
+    "crossing_definition_change": true,
+    "post_hoc_scalar_classifier": true,
+    "objective_fact_scalarization": true,
+    "automatic_keep_or_revert": true,
+    "permanent_retention": true
+  },
+  "observed_result": {
+    "source_count": 18,
+    "event_identity_count": 90,
+    "mode_event_count": 180,
+    "nonzero_masked_logit_mode_event_count": 130,
+    "all_nonzero_masked_logit_changes_are_rest_only": true,
+    "crossing_mode_event_count": 6,
+    "positive_rest_logit_crossing_count": 3,
+    "negative_rest_logit_crossing_count": 3,
+    "crossing_events_with_other_action_cancellation": 5,
+    "crossing_events_with_endpoint_switch": 2,
+    "maximum_abs_rest_logit_delta_crossing": 0.12205624580383301,
+    "maximum_abs_rest_logit_delta_noncrossing": 0.16986703872680664,
+    "replication_maximum_pressure_ratio": 0.688481985025035,
+    "assessment_sha256": "5e0725f738d3a95330004c2439bf2d6f27eeeb965deb1dac25ae19e47f306f84"
+  },
+  "frozen_interpretation": {
+    "policy_level_pressure_source_is_rest_logit_only": true,
+    "other_action_probability_changes_are_softmax_coupling": true,
+    "rest_logit_sign_or_magnitude_alone_is_sufficient": false,
+    "selected_action_order_endpoint_and_draw_margin_are_material": true,
+    "source_history_origin_of_rest_logit_change_is_resolved": false,
+    "rest_action_port_has_value_semantics": false,
+    "next_boundary": "engineering-neutral-subject-vm-activation-contribution-trace"
+  }
+}

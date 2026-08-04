@@ -1,0 +1,35 @@
+schema = "se-study-workflow-v1"
+study_id = "d1z_subject_vm_stage3c41_pressure_source_v1"
+title = "D1-Z Subject VM Stage 3C-41 action-logit 与 CDF boundary pressure 来源分解"
+
+[parameters.stage3c40_assessment]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c41_pressure_source_v1/final/inputs/stage3c40_categorical_boundary.json"
+description = "冻结 Stage 3C-40 assessment。"
+
+[parameters.stage3c40_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c41_pressure_source_v1/final/inputs/stage3c40"
+description = "上一版本 Stage 3C-40 结果包中的 trace 根目录。"
+
+[parameters.analysis_root]
+type = "path"
+default = "analyses/d1z_subject_vm_stage3c41_pressure_source_v1/final"
+description = "Stage 3C-41 输出目录。"
+
+[parameters.output]
+type = "result-path"
+default = "d1z_subject_vm_stage3c41_pressure_source_v1_results.zip"
+description = "项目外结果包。"
+
+[steps.assess-stage3c41]
+command = ["se-subject-vm-stage3c41-pressure-source", "--stage3c40-assessment", "{stage3c40_assessment}", "--trace-root", "{stage3c40_root}", "--output", "{analysis_root}/stage3c41_pressure_source.json", "--summary-output", "{analysis_root}/stage3c41_study_summary.json", "--diagnostic-report", "{analysis_root}/stage3c41_diagnostic_report.md"]
+
+[steps.pack-results]
+requires_json = [
+  { path = "{analysis_root}/stage3c41_pressure_source.json", field = "masked_logit_source.all_nonzero_changes_are_rest_only", equals = true },
+  { path = "{analysis_root}/stage3c41_pressure_source.json", field = "cross_panel_findings.rest_logit_magnitude_alone_separates_crossing", equals = false },
+  { path = "{analysis_root}/stage3c41_pressure_source.json", field = "governance.runtime_rerun_used", equals = false },
+  { path = "{analysis_root}/stage3c41_pressure_source.json", field = "permanent_parameter_retention_authorized", equals = false }
+]
+command = ["python", "scripts/package_stage3c41_results.py", "--project", ".", "--analysis-root", "{analysis_root}", "--output", "{output}"]

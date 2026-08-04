@@ -9,21 +9,21 @@
 | ID | 类型 | 状态 | 问题 | 当前证据边界 |
 |---|---|---|---|---|
 | SG-03 | 证据语义 | OPEN | 不引入固定价值函数时，逐组件 Objective-Fact 能否支持 retention 决策？ | 在建立非标量决策合同前不授权 retention study。 |
-| SG-04 | Bootstrap 通用性 | PARKED | 哪些结果依赖 normalized-dot/latest/top-1 bootstrap addressing？ | 当前 crossing 因果链完成 source-pressure 分解后再比较。 |
+| SG-04 | Bootstrap 通用性 | PARKED | 哪些结果依赖 normalized-dot/latest/top-1 bootstrap addressing？ | 当前 crossing 因果链完成 activation-source 分解后再比较。 |
 | SG-05 | 持续性 | BLOCKED | 临时 graph-parameter 效应能否在独立论证的决策规则下持续？ | 需要可复现下游证据和单独 keep/revert 合同。 |
 | SG-06 | Topology evolution | BLOCKED | topology、readout 和 addressing 能否演化而不退化为不可诊断搜索？ | 需要成本、development、inheritance、neutralization 和健康 source 资格。 |
-| SG-09 | 边界压力来源 | OPEN | 为什么原 panel 的部分 source 产生足以耗尽 draw margin 的 CDF 边界压力，而独立 panel 全部保留正余量？ | Stage 3C-41 只读分解各 action 的 masked-logit、概率和 CDF endpoint 贡献；不得增加 panel 或拟合后见阈值。 |
+| SG-09 | REST output 来源 | OPEN | 不同 source history 为什么产生不同符号和幅度的 `REST` action-port output，并进一步形成不同的 CDF endpoint pressure？ | Stage 3C-41 已确认 policy-level 非零 logit source 全部为 `REST`；下一步先完成语义中立 activation contribution trace，之后才能审计 graph 内部来源。 |
 | ENV-01 | 环境 | PARKED | 环境能否为分化能力持续提供正交机会？ | 只能作为 `[EVOLVE-ENV]` 恢复，并包含守恒与 source-health gate。 |
 | ENV-02 | 人口结构 | OPEN | source checkpoint 是否足以支持演化解释，而不仅是短程机制诊断？ | 需要 population、descendant、generation depth、founder replacement 与 checkpoint stability gate。 |
 | SOC-01 | 身份 | BLOCKED | 实体死亡后，延迟 partner evidence 如何继续存在而不附着到回收行？ | 需要历史 subject identity 以及 retention、inheritance、eviction 语义。 |
 
-## 3. SG-09：边界压力来源
+## 3. SG-09：REST output 来源
 
-Stage 3C-40 已获得每个连续 divergence 事件的完整 action mask、masked logits、概率、CDF、uniform draw 与 sampled interval。实际 crossing 可精确表示为：朝 draw 方向移动的 interval 边界压力不小于原 interval 余量。
+Stage 3C-41 对 Stage 3C-40 已冻结的 90 个 top boundary opportunity 做了逐 action 分解。180 个 mode-event comparison 中，130 个具有非零 masked-logit 变化，且全部只改变 `REST` logit。其他 action 的 probability delta 是 softmax 耦合后的质量重分配，不是独立 action-logit source。
 
-原 panel 有四个 alignment-specific crossing 事件；独立 panel 的最大压力/余量比为 `0.68848`，全部小于 1。draw proximity 或 CDF shift 的绝对大小单独都不能解释 crossing，alignment 模式和边界移动方向同样重要。
+六个 crossing 同时包含正、负 `REST` logit delta；五个 crossing 的 REST probability driver 被其他 action 的概率变化部分抵消。独立 panel 中存在比 crossing 更大的 `|REST logit delta|` 和 `|REST probability delta|`，但由于 selected action 顺序、endpoint 方向、抵消和原 draw margin 不同，仍未 crossing。
 
-下一步必须在已有 trace 上逐 action 分解：哪些 logit 改变移动了 selected interval 的下界或上界，哪些竞争 action 吸收或释放概率质量，以及这种模式与 source state、action 类型和 alignment mode 的关系。不能把这些量事后组合成 reward 或经验分类分数。
+所以 policy-level pressure source 已收窄到 `REST` output，但 source history→temporary write→node/edge activation→REST output 的内部路径尚不可观测。不得把 `REST` 解释为价值、静息偏好或 reward。
 
 ## 4. Objective-Fact 不是价值
 

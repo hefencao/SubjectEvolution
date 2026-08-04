@@ -44,13 +44,14 @@
 | 3C-38 | `[MAIN-EXP]` qualification-corrected replication | 在 seed 12401–12409 上通过 Stage 3C-37 overlay 恢复冻结的 3C-28→34 链；不改变 runtime、exposure、horizon 或 crossing definition。 | 9/9 source 都有连续 potential divergence，但 action crossing、differential Objective-Fact crossing 与 surviving fact effect 均为 0。predictor=outcome=空集，分类器未被反驳但只形成 vacuous match，不构成非空复现。 | 把零阳性 panel 当作复制成功，或授权 value、credit、keep/revert、learning、retention。 |
 | 3C-39 | `[MAIN-EXP]` 只读 opportunity transport | 比较原 panel 与独立 panel 冻结的 continuous divergence、tick 和同 action sampled probability，并复用 Stage 3C-36 bootstrap transport。 | 两 panel 的 divergence event 为 129 与 123，L1 与 probability-change 范围大量重叠，独立 panel 的晚期 divergence 和 selected-action probability 变化不更弱；没有单调幅度阈值能隔离 crossing source。剩余不确定性被收窄到未导出的完整 categorical competition 与 draw state。 | 把根因视为已解析，继续抽取 panel、调整 exposure/threshold，或从 selected-action probability 推导精确 boundary margin。 |
 | 3C-40 | `[MAIN-EXP]` 精确边界审计 | 在 matched-horizon 四臂链中导出完整 categorical probability/CDF/draw，并以边界压力/原 draw 余量重建实际 crossing。 | 原 panel 的 alignment-specific crossing source 为 12305、12308；12307 为 alignment-common crossing。独立 panel 最大压力/余量比 0.68848，全部保留正余量；trace 精确重现 Stage 3C-34。 | 将 draw proximity 或 CDF shift 单独视为充分解释；value、credit quality 或 retention。 |
+| 3C-41 | `[MAIN-EXP]` 只读 pressure-source 分解 | 读取 Stage 3C-40 每 source 冻结的 top-five opportunity，逐 action 分解 masked-logit、probability mass 和 selected CDF endpoint pressure。 | 180 个 mode-event 中 130 个非零 logit 变化全部只在 `REST` port；六个 crossing 的正负 REST delta 各三次，5/6 被其他 action 概率部分抵消。noncrossing 的 REST logit/probability 变化可大于 crossing，符号或幅度不能单独分界。 | 把 `REST` 赋予价值语义，或从单一 action-port 幅度授权 reward、credit、keep/revert、learning、retention。 |
 
 ## 当前冻结链
 
-原 panel 与独立 panel 都普遍产生 continuous Subject VM divergence。Stage 3C-40 用完整 categorical trace 证明，实际 sampled-action crossing 由“朝 uniform draw 方向移动的 CDF interval 边界压力”与“原 sampled interval 剩余余量”的关系决定。
+原 panel 与独立 panel 都普遍产生 continuous Subject VM divergence。Stage 3C-40 证明实际 sampled-action crossing 取决于 selected CDF endpoint 朝 uniform draw 的移动是否耗尽原余量。
 
-原 panel 的 `12305、12308` 出现 alignment-specific crossing；`12307` 在两种 alignment 模式中发生相同 crossing，因此被 difference-in-differences 消去。独立 panel 的最大压力/余量比为 `0.6884819850`，所有事件都保留正余量。draw proximity 或 CDF shift 绝对值单独都不足以解释 crossing。
+Stage 3C-41 进一步证明，冻结 top opportunity 中所有非零 masked-logit 变化都只发生在 `REST` action port；其他 action 的概率变化是 softmax 归一化后的质量重分配。crossing 同时包含正、负 REST delta，且 noncrossing 可具有更大的 REST logit 或 probability 变化，因此 `REST` 的符号与幅度都不是充分分界。
 
 ## 下一项获授权的证据边界
 
-Stage 3C-41 只能读取冻结 Stage 3C-40 trace，逐 action 分解 masked-logit、概率质量转移与 CDF endpoint pressure 的来源，比较 crossing-positive source、alignment-common source 与独立 panel。不得新增 panel、改变 exposure 或 sampling kernel，也不得构造后见标量分类器。
+下一项为 `[ENGINEERING]` 语义中立 Subject VM activation contribution trace。它必须导出 node activation、edge transmission、output gate contribution、temporary-write lineage 与 action-port aggregation，并证明 trace 不改变 action、RNG、checkpoint state 或 branch identity。该工程门完成前，不得执行 Stage 3C-42，也不得把 `REST` action port 解释为价值。

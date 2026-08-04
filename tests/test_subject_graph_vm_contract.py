@@ -12,7 +12,7 @@ def _load(relative: str) -> dict:
 
 def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     contract = _load("protocols/epochs/subject_graph_vm_v1.json")
-    assert contract["status"] == "stage-3c40-frozen-exact-categorical-boundary-resolved"
+    assert contract["status"] == "stage-3c41-frozen-rest-logit-softmax-pressure-source-resolved"
     assert contract["graph_model"]["identity"] == "one-unified-node-edge-identity-space"
     assert contract["graph_model"]["initial_regions"] == [
         "fast-sensorimotor",
@@ -24,7 +24,7 @@ def test_subject_graph_vm_contract_freezes_partitioned_unified_graph() -> None:
     assert contract["routing"]["same_tick_self_confirmation_forbidden"] is True
     assert contract["routing"]["unassigned_credit_allowed"] is True
     assert contract["implementation_stages"][1]["name"] == "inert-schema-storage"
-    assert contract["current_stage"] == "3C-40"
+    assert contract["current_stage"] == "3C-41"
     assert contract["stage_3c36_contract"]["candidate_support_identity_required"] is True
     assert contract["stage_3c36_contract"]["frozen_result"]["exact_tie_origin_resolved"] is False
     assert contract["stage_3c36_contract"]["gate_relaxation_authorized"] is False
@@ -473,4 +473,14 @@ def test_stage3c40_contract_is_frozen_and_nonretaining() -> None:
     stage = contract["stage_3c40_contract"]
     assert stage["trace_instrumentation_semantics_changed"] is False
     assert stage["frozen_result"]["replication_all_pressure_ratios_below_one"] is True
+    assert stage["permanent_write_authorized"] is False
+
+
+def test_stage3c41_contract_is_frozen_read_only_and_nonretaining() -> None:
+    contract = _load("protocols/epochs/subject_graph_vm_v1.json")
+    stage = contract["stage_3c41_contract"]
+    assert stage["runtime_rerun_authorized"] is False
+    assert stage["frozen_result"]["all_nonzero_masked_logit_changes_are_rest_only"] is True
+    assert stage["frozen_result"]["rest_logit_magnitude_alone_separates_crossing"] is False
+    assert stage["rest_action_port_has_value_semantics"] is False
     assert stage["permanent_write_authorized"] is False
